@@ -143,14 +143,14 @@ describe("the deciders' view of the split", () => {
 describe("the example price follows the slider (production check, 18 Nov 2026)", () => {
   const BAND9 = { amount: 9000, currency: "USD", per: "month" as const };
   it("prices the slider's commitment, held to the role's range, and says nothing at 100%", () => {
-    expect(rewardWords(i18n, BAND9, 30, "", [], [], 60).proposal).toContain("At 60%, the suggested price is $5,400 a month.");
-    expect(rewardWords(i18n, BAND9, 30, "", [], [], 10).proposal).toContain("At 30%, the suggested price is $2,700 a month.");
-    expect(rewardWords(i18n, BAND9, 30, "", [], [], 100).proposal).not.toContain("suggested price is");
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 60).proposal).toContain("At 60%, the suggested compensation is $5,400 a month.");
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 10).proposal).toContain("At 30%, the suggested compensation is $2,700 a month.");
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 100).proposal).not.toContain("suggested compensation is");
   });
   it("with no slider and no choice, uses the role's minimum as the example", () => {
     expect(exampleShare(30)).toBe(30);
-    expect(rewardWords(i18n, BAND9, 30).proposal).toContain("At 30%, the suggested price is $2,700 a month.");
-    expect(rewardWords(i18n, BAND9, null).proposal).not.toContain("suggested price is");
+    expect(rewardWords(i18n, BAND9, 30).proposal).toContain("At 30%, the suggested compensation is $2,700 a month.");
+    expect(rewardWords(i18n, BAND9, null).proposal).not.toContain("suggested compensation is");
   });
 });
 
@@ -184,9 +184,9 @@ describe("the slider on the full role card", () => {
     render(<FullRoleCard seat={seat({ commitmentMin: 30 })} sections={SECTIONS} register="founding" allPieces />);
     const slider = (await screen.findByLabelText("Your commitment")) as HTMLInputElement;
     // At 100% the listed price is the figure, so no example line; slid to 50%, the line names 50%.
-    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).not.toContain("suggested price is"));
+    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).not.toContain("suggested compensation is"));
     fireEvent.change(slider, { target: { value: "50" } });
-    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).toContain("At 50%, the suggested price is $6,014 a month."));
+    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).toContain("At 50%, the suggested compensation is $6,014 a month."));
   });
   it("the Apply link carries what the reader chose", () => {
     expect(applyHrefForRole("finance", "commitment=50&split=50.50.0")).toBe("/propose-a-role?role=finance&commitment=50&split=50.50.0");

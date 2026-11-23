@@ -114,6 +114,12 @@ msgctxt "role card rewards: the price at an example share"
 msgid "At {at}%, the suggested price is {atPrice}."
 msgstr "Al {at}%, el precio sugerido es {atPrice}."
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the price at an example share"
+msgid "At {at}%, the suggested compensation is {atPrice}."
+msgstr "Al {at}%, la compensación sugerida es {atPrice}."
+
 #: client/src/components/map/TodayOnTheMap.tsx
 msgctxt "circles map, today card link to the setting"
 msgid "Change it"
@@ -12385,6 +12391,66 @@ msgctxt "under a lead role: the coming-soon roles of the circles it leads"
 msgid "Roles to be added:"
 msgstr "Roles por añadir:"
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "under a lead role: the coming-soon roles of the circles it leads"
+msgid "Related roles this role will onboard:"
+msgstr "Roles relacionados que este rol incorporará:"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the cash share of the pay mix"
+msgid "{cash}% cash"
+msgstr "{cash}% en efectivo"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: a token share of the pay mix"
+msgid "{equity}% {token}"
+msgstr "{equity}% {token}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: a token share of the pay mix"
+msgid "{credits}% {usage}"
+msgstr "{credits}% {usage}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: a share of the pay mix as the card names it"
+msgid "{pct}% {label}"
+msgstr "{pct}% {label}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the pay mix when the card names no shares"
+msgid "Compensation in cash and tokens"
+msgstr "Compensación en efectivo y tokens"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the role's kind"
+msgid "Volunteer role"
+msgstr "Rol voluntario"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the role's kind, then its pay mix"
+msgid "Open paid role · {mix}"
+msgstr "Rol remunerado abierto · {mix}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the last day to apply"
+msgid "Apply by {when}"
+msgstr "Postúlate hasta el {when}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "upcoming role card: the role will be paid, no amount"
+msgid "Paid role"
+msgstr "Rol remunerado"
+
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
@@ -13376,6 +13442,12 @@ msgstr "Idioma: {current} ({code})"
 msgctxt "role in one minute: a fact"
 msgid "Price"
 msgstr "Precio"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: a fact"
+msgid "Compensation"
+msgstr "Compensación"
 
 #: client/src/pages/rites/ComeAboard.tsx
 #: client/src/pages/rites/Door.tsx
@@ -16224,6 +16296,12 @@ msgstr ""
 msgctxt "role card rewards: the full role's listed price"
 msgid "Listed price: {full} for the full role*"
 msgstr "Precio publicado: {full} por el rol completo*"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the full role's listed price"
+msgid "Listed compensation: {full} for the full role*"
+msgstr "Compensación publicada: {full} por el rol completo*"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"

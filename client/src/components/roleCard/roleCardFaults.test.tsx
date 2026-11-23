@@ -70,7 +70,7 @@ describe("the team sheet", () => {
     const onOpen = vi.fn();
     const { container } = render(<FoundingTeam roles={[role("a", "Role A"), role("b", "Role B")]} toBeAdded={{ a: [{ id: "dev", name: "Development Steward" }, { id: "perma", name: "Permaculture Steward" }] }} onOpenBuilt={onOpen} />);
     const line = container.querySelector('[data-role-frame="a"] [data-roles-to-be-added]') as HTMLElement;
-    expect(line.textContent).toBe("Roles to be added: Development Steward · Permaculture Steward");
+    expect(line.textContent).toBe("Related roles this role will onboard: Development Steward · Permaculture Steward");
     fireEvent.click(line.querySelector('[data-role-to-be-added="perma"]')!);
     expect(onOpen).toHaveBeenCalledWith("perma");
     // A role that leads no circle has no line (control).

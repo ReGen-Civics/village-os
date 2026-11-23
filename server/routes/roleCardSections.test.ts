@@ -197,6 +197,18 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     await setVar("org.role_card_onboarding", null);
   });
 
+  it("saves the last day to apply, refuses a day that is not real, and a blank clears it (the lead, 23 Nov 2026)", async () => {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    const bad = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { applyBy: "2026-11-31" } });
+    expect(bad.status).toBe(400);
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { applyBy: "2026-11-30" } })).status).toBe(200);
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.sections.applyBy).toBe("2026-11-30");
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { applyBy: "" } })).status).toBe(200);
+    // The date was the card's only section, so the card reads as having none.
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.sections?.applyBy).toBeUndefined();
+  });
+
   it("a part of the sections changes that part alone, and the pay sections stay as they were (Rye, 15 Nov 2026)", async () => {
     const { id } = await seedRole();
     holders = new Set(["holder-1"]);

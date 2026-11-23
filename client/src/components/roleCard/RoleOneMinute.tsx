@@ -46,7 +46,8 @@ export default function RoleOneMinute({ goal, next, commitment, price, where, ac
   const locale = i18n.locale || "en";
   const facts: Array<{ key: string; icon: typeof Clock; label: string; value: ReactNode }> = [
     { key: "commitment", icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: commitment },
-    { key: "price", icon: Coins, label: t({ message: "Price", context: "role in one minute: a fact" }), value: price },
+    // "Compensation", never "Price" (the lead, 23 Nov 2026); the key stays, so the card's hooks and tests still find it.
+    { key: "price", icon: Coins, label: t({ message: "Compensation", context: "role in one minute: a fact" }), value: price },
     { key: "where", icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: where },
   ].filter((f) => !!f.value);
   if (!goal && !next.length && !facts.length && !act) return null;

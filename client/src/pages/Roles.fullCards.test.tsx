@@ -210,7 +210,7 @@ describe("one frame per role", () => {
     renderRoles();
     await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const line = frame("finance").querySelector("[data-roles-to-be-added]") as HTMLElement;
-    expect(line.textContent).toBe("Roles to be added: Development Steward · Permaculture Steward");
+    expect(line.textContent).toBe("Related roles this role will onboard: Development Steward · Permaculture Steward");
     expect(frame("land").querySelector("[data-roles-to-be-added]")).toBeNull();
     expect(document.body.textContent).not.toContain("Will grow into");
     fireEvent.click(line.querySelector('[data-role-to-be-added="perma"]') as HTMLElement);

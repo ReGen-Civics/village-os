@@ -193,6 +193,7 @@ export default function FoundingTeam({
           toBeAdded={toBeAdded}
           onOpenAdded={onOpenBuilt}
           sheetRoster={sheetRoster}
+          villagePay={villagePay}
           cardSlot={inlineCard ? cardSlot : null}
           fill={fill}
           view={view}

@@ -2,7 +2,7 @@
  * /roles, AS APPROVED IN 1.3.41 (the lead, 21 Nov 2026): 1.3.42's compact index cards are undone, and the founding
  * team leads with its full role cards again (FoundingTeam.tsx). Kept from the lead's asks: the groups in order (Open
  * roles, Open ventures, Upcoming roles, then the roles held now), one frame per role with its card inside it
- * (FoundingLineup.tsx), and "Roles to be added:" in a lead role's row. Old links to one role (`?seat=`, `?role=`,
+ * (FoundingLineup.tsx), and "Related roles this role will onboard:" in a lead role's row. Old links to one role (`?seat=`, `?role=`,
  * `#<id>`, `#role-<id>`, `#<slug>`) land on its own page, `/roles/<slug>` (RoleShare.tsx), its share link.
  */
 import ArchetypeStep from "@/components/roleDraft/ArchetypeStep";
@@ -34,6 +34,7 @@ import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
 import ComingSoonRoles, { type SoonRole } from "@/components/roleCard/ComingSoonRoles";
+import { soonIsPaid } from "@/components/roleCard/frontWords";
 import { waitlistHash } from "@shared/roleWaitlist";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
@@ -494,7 +495,8 @@ export default function Roles() {
   const liveCircles = circles.filter((c: any) => c && c.status !== "dormant" && !c.isExample);
   const soon = (roles ?? []).filter((r) => r.raw?.comingSoon === true && r.raw?.futureVenture !== true && !r.isExample && r.status !== "filled" && !featuredShown.has(r.id));
   const soonIds = new Set(soon.map((r) => r.id));
-  const soonRoles: SoonRole[] = soon.map((r) => ({ id: r.id, name: r.name, aim: typeof r.raw?.aim === "string" ? r.raw.aim : null, circleName: r.group || null }));
+  // Every upcoming role will be paid (the lead, 23 Nov 2026): each says so unless its track says otherwise (soonIsPaid).
+  const soonRoles: SoonRole[] = soon.map((r) => ({ id: r.id, name: r.name, aim: typeof r.raw?.aim === "string" ? r.raw.aim : null, circleName: r.group || null, paid: soonIsPaid(r.raw) }));
   // Future ventures and the coming-soon roles each get their own group while the founding team leads (the lead,
   // 20 Nov 2026: Open roles, then Open ventures, then Upcoming roles).
   const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && !soonIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
@@ -542,7 +544,7 @@ export default function Roles() {
   const featuredReach = rolesWithinReach(featured, (f) => ({ commitmentPct: f.seat?.card?.commitmentPct ?? null, commitmentRequired: f.seat?.card?.commitmentRequired === true }), memberPct);
   const featuredHidden = featuredReach.beyond;
   const featuredVisible = showBeyond ? featured : featured.filter((f) => !featuredHidden.includes(f));
-  // "Roles to be added:" in a lead role's row: the coming-soon roles of the circles it leads (the lead, 21 Nov 2026).
+  // "Related roles this role will onboard:" in a lead role's row: the coming-soon roles of the circles it leads (the lead, 21 Nov 2026).
   const toBeAdded: Record<string, Array<{ id: string; name: string }>> = Object.fromEntries(Object.entries(builds).map(([id, list]) => [id, list.filter((b) => !b.held).map((b) => ({ id: b.id, name: b.name }))]));
   // "N roles, one timeline" (the lead, 20 Nov 2026): the open founding roles' dated deliverables, one lane each.
   const withDates = featuredVisible.filter((f) => (f.sections?.deliverables?.length ?? 0) > 0);

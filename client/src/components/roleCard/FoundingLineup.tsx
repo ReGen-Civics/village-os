@@ -27,10 +27,13 @@
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
 import { Fragment, lazy, Suspense, type ReactNode } from "react";
-import { ArrowRight, LayoutList, Sprout, Target } from "lucide-react";
+import { ArrowRight, CalendarClock, LayoutList, Sprout, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import { fillLine } from "./cardWordsT";
+import { applyByWords, frontKind, frontKindLine } from "./frontWords";
+import { cardPay, NO_VILLAGE_PAY, type VillagePay } from "@shared/roleCardSections";
+import { useShareNames } from "@/components/ContributionWord";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { useRoleArt } from "@/lib/natureArt";
@@ -106,15 +109,20 @@ export interface FoundingLineupProps {
   onOpenAdded?: (id: string) => void;
   /** Whether the team sheet draws the roles held now. The /roles page draws them itself, below its other groups. */
   sheetRoster?: boolean;
+  /** The village's pay shape, for the front's pay mix where a card writes none of its own (the lead, 23 Nov 2026). */
+  villagePay?: VillagePay | null;
 }
 
-/** "Roles to be added:", the roles still to come under a lead role, each one press away (the lead, 21 Nov 2026). */
+/**
+ * "Related roles this role will onboard:", the roles still to come under a lead role, each one press away (the lead,
+ * 21 Nov 2026; worded so since 23 Nov 2026).
+ */
 function ToBeAdded({ roles, onOpen }: { roles: ReadonlyArray<{ id: string; name: string }>; onOpen?: (id: string) => void }) {
   const { t } = useLingui();
   if (roles.length === 0) return null;
   return (
     <p className="mt-2 text-sm text-muted-foreground" data-roles-to-be-added="">
-      <span className="font-semibold text-card-foreground">{t({ message: "Roles to be added:", context: "under a lead role: the coming-soon roles of the circles it leads" })}</span>{" "}
+      <span className="font-semibold text-card-foreground">{t({ message: "Related roles this role will onboard:", context: "under a lead role: the coming-soon roles of the circles it leads" })}</span>{" "}
       {roles.map((c, i) => (
         <Fragment key={c.id}>
           {i > 0 && " · "}
@@ -152,10 +160,11 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
   );
 }
 
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true, villagePay = null }: FoundingLineupProps) {
   const roleArt = useRoleArt();
   const artOf = (seat: Record<string, any>) => roleArt(seat?.id) ?? characterArtOf(seat);
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const shareNames = useShareNames();
   const circle = roles[0]?.circleName ?? null;
 
   const toggle = (
@@ -216,6 +225,9 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               const tileSeat = whereWords ? { ...r.seat, card: { ...(r.seat.card ?? {}), whereText: whereWords } } : r.seat;
               const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
               const facts = [r.circleName, typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null, where].filter((x): x is string => !!x);
+              // The front's kind and pay mix, never an amount, and the last day to apply (the lead, 23 Nov 2026).
+              const kindLine = frontKindLine(i18n, frontKind(r.seat, r.sections), cardPay(r.sections, villagePay ?? NO_VILLAGE_PAY)?.shape ?? [], shareNames);
+              const applyBy = applyByWords(i18n, r.sections?.applyBy);
               return (
                 <li key={id} className={`rounded-2xl border-2 bg-card p-2 shadow-sm sm:p-3 ${here && cardSlot ? "border-notice" : "border-notice/50"}`} data-role-frame={id}>
                 <div className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-xl p-1 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 ${here ? "bg-notice/10" : ""}`}>
@@ -224,8 +236,15 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                     <OpenPill />
                     <p className="mt-1 font-display text-xl leading-snug text-card-foreground">{String(r.seat.name ?? "")}</p>
                     {typeof r.seat.aim === "string" && r.seat.aim && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{r.seat.aim}</p>}
-                    {facts.length > 0 && (
+                    {kindLine && <p className="mt-1.5 text-sm font-semibold text-card-foreground" data-front-kind="">{kindLine}</p>}
+                    {(facts.length > 0 || applyBy) && (
                       <ul className="mt-2 flex flex-wrap gap-1.5">
+                        {applyBy && (
+                          <li className="inline-flex items-center gap-1 rounded-full border border-notice/50 px-2.5 py-0.5 text-xs font-semibold text-notice" data-front-apply-by="">
+                            <CalendarClock className="size-3" aria-hidden="true" />
+                            {applyBy}
+                          </li>
+                        )}
                         {facts.map((f) => (
                           <li key={f} className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">{f}</li>
                         ))}

@@ -244,7 +244,7 @@ describe("Join the founding team", () => {
     }
     expect(within(card).queryByRole("heading", { name: "Why it matters" })).toBeNull();
     const pay = within(card).getByTestId("pay-shape");
-    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
+    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% Contribution tokens, 5% Credits. To be decided in the onboarding process.");
     expect(within(pay).getByTestId("pay-at-risk").textContent).toBe(VILLAGE_PAY.atRisk);
     // One footnote: the ceiling's own, so the village's note is not drawn again (copy sweep, 15 Nov 2026).
@@ -291,7 +291,7 @@ describe("Join the founding team", () => {
     expect(explainer.textContent).toContain("Proposals can go up to 120%");
     // No 120% money amount on the card: 120% of $9,000 is $10,800.
     expect(section.textContent).not.toContain("$10,800");
-    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
+    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*");
   });
 
   it("opening a role moves focus to its card, where the eye goes (a11y sweep P1-3)", async () => {
@@ -390,7 +390,7 @@ describe("the two pay lines on the card", () => {
   it("split unset: only the ceiling line, with the footer kept", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: SECTIONS, lastEdited: null, showPayRanges: false, villagePay: { shape: [], atRisk: VILLAGE_PAY.atRisk, note: VILLAGE_PAY.note }, mayEdit: false });
     const section = await open();
-    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
+    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
     expect(within(section).queryByTestId("pay-split")).toBeNull();
     expect(within(section).getByTestId("pay-at-risk")).toBeTruthy();
   });
@@ -399,7 +399,7 @@ describe("the two pay lines on the card", () => {
     const village = { shape: [{ label: "cash", pct: 60 }, { label: "equity", pct: 40 }, { label: long, pct: 0 }], atRisk: VILLAGE_PAY.atRisk, note: "*The total shown is the full band available for this role." };
     roleCard = (id: string) => ({ roleId: id, sections: SECTIONS, lastEdited: null, showPayRanges: false, villagePay: village, mayEdit: false });
     const section = await open();
-    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
+    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
     // The editable split is the one place the shares read (the lead, 18 Nov 2026): no tiles beside it.
     expect(within(section).queryByTestId("pay-tiles")).toBeNull();
     const rowsNow = () => Array.from(section.querySelectorAll<HTMLElement>("[data-split-share]"));
@@ -540,7 +540,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const card = await open();
     fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
-    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
     expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
     // The editable split reads the shares; no tiles beside it (the lead, 18 Nov 2026).
     expect(within(piece).queryByTestId("pay-tiles")).toBeNull();
@@ -552,12 +552,12 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const card = await open();
     fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
-    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
     // The example follows the card's slider (production check, 18 Nov 2026): none at 100%, the price at 50% once slid there.
-    expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("suggested price is");
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("suggested compensation is");
     fireEvent.change(await within(piece).findByLabelText("Your commitment"), { target: { value: "50" } });
-    await waitFor(() => expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less."));
+    await waitFor(() => expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested compensation is $4,500 a month. You can propose more or less."));
     // No cap line (lead, 17 Nov 2026): the 120% cap is a backend rule, never drawn on the card.
     expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
     expect(piece.textContent).not.toContain("Proposals up to");
