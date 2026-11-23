@@ -121,6 +121,17 @@ export interface NotifyPrefs {
    * Its email, when on, rides `gratitudeEmail`.
    */
   gratitudeNudge: "on" | "off";
+  /**
+   * Operations reports: the daily failed-actions report
+   * (server/lib/failedActions.ts), which goes to every admin and founder.
+   * DAILY by default, so nobody's mail changed when this arrived; `off` keeps
+   * the report to the bell. EMAIL ONLY: the in-app row lands either way, so the
+   * admin tab still shows what failed. Only the report gathered for whoever
+   * handles operations rides this. The failures that cannot wait
+   * (`payments_alert`, `village_export`, `signing_key_rotated`) keep their own
+   * fixed immediate cadence, and the steward window notices stay pinned above.
+   */
+  opsEmail: "daily" | "off";
 }
 
 /** Junk-tolerant, field-by-field: a malformed blob degrades to defaults. */
@@ -141,6 +152,7 @@ export function resolveNotifyPrefs(prefs: any): NotifyPrefs {
     weeklyBrief: pick(n.weeklyBrief, ["on", "off"], "on"),
     celebrations: pick(n.celebrations, ["on", "off"], "on"),
     gratitudeNudge: pick(n.gratitudeNudge, ["on", "off"], "on"),
+    opsEmail: pick(n.opsEmail, ["daily", "off"], "daily"),
   };
 }
 
@@ -389,9 +401,11 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
     // purpose: the failures that cannot wait already alert on their own
     // (payments_alert for a refused signature or a dispute, reportError for a
     // job that threw), and this is the one line that gathers everything else.
-    // Without a case here it would be in-app only, and silently so.
+    // Without a case here it would be in-app only, and silently so. It rides
+    // `opsEmail`, daily until the member chooses, so an admin or founder whose
+    // seat is not operational can keep it to the bell without `emailsOff`.
     case "failed_action":
-      return "daily";
+      return p.opsEmail;
     case "restorative_intake":
       return "immediate"; // a human reached out about a rupture — same day matters
     // One of the canvas's four key moments (shared/canvasRevisit.ts). The
