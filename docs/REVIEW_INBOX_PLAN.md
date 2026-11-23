@@ -242,11 +242,11 @@ must group; near misses must not.
 
 ## Migrations (expand only)
 
-One table. Numbers are **not yet claimed**: this session could not reach the private ops
-repository (access refused), so the claim in SEASON2_FLEET_LEDGER section 3 happens when
-Phase 2 starts. On today's tree `check-migration-numbers --next` answers `0419`.
+One table, number **0424**, claimed in the ops ledger's section 3 by the coordinator on
+23 Nov 2026 (0419 to 0423 are held by other lanes). Confirm with
+`check-migration-numbers --next` before creating the file.
 
-`04NN_a_decision_is_kept_for_every_suggestion.sql`
+`0424_a_decision_is_kept_for_every_suggestion.sql`
 
 ```sql
 CREATE TABLE IF NOT EXISTS `suggestion_outcomes` (
