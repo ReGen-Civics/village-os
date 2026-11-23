@@ -40,6 +40,20 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.53 (2026-11-23)
+
+### What changed for your village
+
+- **The daily failures email can be switched off, one person at a time.** Admins and founders each have an "Operations reports" row in their notification settings, and an admin can switch it off for another admin or founder in Admin, Players ("Ops report email"). Only the daily list of actions that did not go through stops; the bell notice still arrives, and payment and security alerts still come straight away.
+
+### What you must do
+
+Nothing. Everybody keeps the daily email until they or an admin switch it off.
+
+### Does it touch your data
+
+No. The setting lives with each member's other email preferences.
+
 ## 1.3.52 (2026-11-21)
 
 ### What changed for your village

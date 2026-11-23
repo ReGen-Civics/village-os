@@ -12,6 +12,7 @@ import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { BulkStageGrant } from "./StageFloorPicker";
 import PersonalListsPanel from "@/components/yourList/PersonalListsPanel";
 import AgeBandCorrection from "./AgeBandCorrection";
+import OpsEmailSwitch from "./OpsEmailSwitch";
 
 const AgentsPanel = lazy(() => import("./AgentsPanel"));
 // Only opened when a steward goes to delete someone, so it loads then.
@@ -190,7 +191,13 @@ export default function PlayersTab({ password }: { password: string }) {
                 onStage={(id) => grant(p.id, id ?? "")}
                 onSignOut={() => revokeSessions(p.id, p.name)}
                 onDelete={() => setErasing({ id: p.id, email: p.email })}
-                footerExtra={<AgeBandCorrection userId={p.id} name={p.name} password={password} />}
+                footerExtra={
+                  <>
+                    {/* The daily failed-actions report goes to admins and founders only, so the switch shows on their cards. */}
+                    {(p.role === "admin" || p.role === "founder") && <OpsEmailSwitch key={`${p.id}:${p.opsEmail ?? "daily"}`} userId={p.id} initial={p.opsEmail} password={password} />}
+                    <AgeBandCorrection userId={p.id} name={p.name} password={password} />
+                  </>
+                }
               />
             ))}
           </div>
