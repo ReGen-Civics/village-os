@@ -240,6 +240,18 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(sent?.body.sections.applyBy).toBe("2026-11-30");
   });
 
+  it("FILING MIRRORS ACCEPT: words naming a split the card does not pay are refused when filed; its own split files (control)", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-split'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-split', 'Mill Keeper', 'Keep the mill.', 1, 1)");
+    const item = (aim: string) => ({ kind: "role_card", target: { roleId: "rc-split" }, body: { words: { aim }, sections: { payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] } }, summary: "Say the split." });
+    const off = await call("POST", "/api/admin/proposals", { batch: "Split", items: [item("Paid 70% cash and 30% tokens.")] }, AGENT.id);
+    expect(off.status).toBe(400);
+    expect(off.body.refused[0].field).toBe("aim");
+    expect(off.body.refused[0].error).toContain("this card's split is 60% Cash, 40% Equity");
+    const same = await call("POST", "/api/admin/proposals", { batch: "Split", items: [item("Paid 60% cash and 40% tokens.")] }, AGENT.id);
+    expect(same.status).toBe(200);
+  });
+
   it("FILING MIRRORS ACCEPT: listing a card that would fail the listing gate is refused when filed; coming soon needs only its aim and domain", async () => {
     await q("DELETE FROM org_roles WHERE id IN ('rc-list', 'rc-soon')");
     await q("INSERT INTO org_roles (id, name, aim, seats, active, listed) VALUES ('rc-list', 'Seed Keeper', 'Keep the seeds.', 1, 1, 0)");

@@ -314,7 +314,7 @@ export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup
           {t({ message: "How compensation is shaped", context: "founding application compensation" })}
         </h3>
         <p className={`mt-1 ${HINT}`}>
-          <TokenText text={t({ message: `How your pay is split between cash, ${names.equity} and ${names.credits}. Your price is set above, by your proposal.`, context: "founding application compensation, with the village's token names" })} />
+          <TokenText text={t({ message: `How your pay is split between cash, ${names.equity} and ${names.credits}. Your compensation is set above, by your proposal.`, context: "founding application compensation, with the village's token names" })} />
         </p>
       </div>
       {/* The phone's stand-in for the rail (production check of 1.3.25): what the rail says, the applicant's own split for

@@ -42,8 +42,8 @@ function priceOf(i18n: I18n, c: PayCeiling, pct: number | null, ask: PayAsk | nu
   const diff = ask?.kind === "amount" && suggested && askPeriod(ask) === c.per ? priceDifferencePct(suggested, ask.monthly) : null;
   const line = !ask
     ? suggested
-      ? i18n._(msg({ message: `The suggested price, ${priced(suggested)}`, context: "founding application review: the price" }))
-      : i18n._(msg({ message: "Choose your commitment to see a suggested price", context: "founding application review: the price" }))
+      ? i18n._(msg({ message: `The suggested compensation, ${priced(suggested)}`, context: "founding application review: the price" }))
+      : i18n._(msg({ message: "Choose your commitment to see a suggested compensation", context: "founding application review: the price" }))
     : ask.kind === "negotiate"
       ? i18n._(msg({ message: "Negotiate on the first call if chosen", context: "founding application review: the price" }))
       : diff !== null
@@ -68,7 +68,7 @@ export function reviewExtras(
       if (r.ceiling) {
         const price = priceOf(i18n, r.ceiling, r.pct, r.ask ?? null, p.showCap === true);
         if (price.amount) amounts.push({ amount: price.amount, currency: r.ceiling.currency, per: r.ceiling.per });
-        out.push({ step: p.termsStep, label: i18n._(msg({ message: `Your price: ${r.name}`, context: "founding application review, one of several roles" })), line: price.line });
+        out.push({ step: p.termsStep, label: i18n._(msg({ message: `Your compensation: ${r.name}`, context: "founding application review, one of several roles" })), line: price.line });
       }
       if (r.split?.line) out.push({ step: p.termsStep, label: i18n._(msg({ message: `Your split: ${r.name}`, context: "founding application review, one of several roles" })), line: r.split.line });
     }
@@ -78,7 +78,7 @@ export function reviewExtras(
       out.push({ step: p.termsStep, label: i18n._(msg({ message: "Across your roles", context: "founding application review, several roles" })), line: i18n._(msg({ message: `${total} together`, context: "founding application review: the prices of several roles added" })) });
     }
   } else {
-    if (p.ceiling) out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: priceOf(i18n, p.ceiling, p.pct, p.ask ?? null, p.showCap === true).line });
+    if (p.ceiling) out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your compensation", context: "founding application review" })), line: priceOf(i18n, p.ceiling, p.pct, p.ask ?? null, p.showCap === true).line });
   // The split's line is worked where the split is (governance/TermsSplit.tsx), so its words load with it.
     if (p.split?.line) out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your split", context: "founding application review" })), line: p.split.line });
   }

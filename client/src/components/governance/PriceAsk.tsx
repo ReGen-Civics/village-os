@@ -95,7 +95,7 @@ export default function PriceAsk({
   const savedDiff = value?.kind === "amount" && suggested && askPeriod(value) === per ? priceDifferencePct(suggested, value.monthly) : null;
   const summary = !value
     ? suggested
-      ? t({ message: "You'll take the suggested price.", context: "price ask summary" })
+      ? t({ message: "You'll take the suggested compensation.", context: "price ask summary" })
       : null
     : value.kind === "negotiate"
       ? t({ message: "Negotiate on the first call if chosen.", context: "price ask summary" })
@@ -103,13 +103,13 @@ export default function PriceAsk({
 
   return (
     <div className="mt-4 grid gap-2 border-t border-border pt-3" data-price-ask="">
-      <p className="text-sm font-semibold text-foreground">{t({ message: "Your price", context: "price ask heading" })}</p>
+      <p className="text-sm font-semibold text-foreground">{t({ message: "Your compensation", context: "price ask heading" })}</p>
       {suggested ? (
         <p className="text-foreground" data-suggested-price="">
           <MoonText text={t({ message: `Suggested: ${priced(suggested)}, from your commitment of ${pct}%.`, context: "price ask: the suggested price" })} />
         </p>
       ) : (
-        <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
+        <p className={HINT}>{t({ message: "Choose your commitment to see a suggested compensation.", context: "price ask" })}</p>
       )}
       <p className={HINT}><MoonText text={t({ message: "Your first moon starts lower and follows what you deliver.", context: "price ask: the first moon" })} /></p>
       {/* Across roles (QA-1115 Spanish applicant P1-2): said once, under "More than one role" (MoreRoles.tsx; idea 16). */}
@@ -126,7 +126,7 @@ export default function PriceAsk({
         data-adjust-price=""
       >
         <SlidersHorizontal className="size-4" aria-hidden="true" />
-        {t({ message: "Adjust the price", context: "price ask: open the popup" })}
+        {t({ message: "Adjust your compensation", context: "price ask: open the popup" })}
       </button>
 
       {loaded && (
@@ -142,28 +142,28 @@ export default function PriceAsk({
                   }}
                 >
                   <DialogHeader>
-                    <DialogTitle>{t({ message: "Your price", context: "price popup title" })}</DialogTitle>
+                    <DialogTitle>{t({ message: "Your compensation", context: "price popup title" })}</DialogTitle>
                     <DialogDescription>
                       <MoonText
                         text={
                           suggested
                             ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first moon's contract.`, context: "price popup lede" })
-                            : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first moon's contract.", context: "price popup lede" })
+                            : t({ message: "Your proposal sets your rewards: propose your own compensation, and we agree it together in your first moon's contract.", context: "price popup lede" })
                         }
                       />
                     </DialogDescription>
                   </DialogHeader>
                   <fieldset className="grid gap-2" data-price-popup="">
-                    <legend className="sr-only">{t({ message: "Your price", context: "price popup" })}</legend>
+                    <legend className="sr-only">{t({ message: "Your compensation", context: "price popup" })}</legend>
                     {suggested && (
                       <label className="flex min-h-11 items-center gap-2 text-foreground">
                         <input type="radio" name={`${idPrefix}-price`} className="size-5 accent-notice" checked={choice === "suggested"} onChange={() => setChoice("suggested")} />
-                        <MoonText text={t({ message: `Take the suggested price, ${priced(suggested)}`, context: "price popup choice" })} />
+                        <MoonText text={t({ message: `Take the suggested compensation, ${priced(suggested)}`, context: "price popup choice" })} />
                       </label>
                     )}
                     <label className="flex min-h-11 items-center gap-2 text-foreground">
                       <input type="radio" name={`${idPrefix}-price`} className="size-5 accent-notice" checked={choice === "amount"} onChange={() => setChoice("amount")} />
-                      {t({ message: "Propose my own price", context: "price popup choice" })}
+                      {t({ message: "Propose my own compensation", context: "price popup choice" })}
                     </label>
                     {choice === "amount" && (
                       <div className="grid gap-1 pl-7">
@@ -174,7 +174,7 @@ export default function PriceAsk({
                           min={1}
                           max={cap > 0 ? cap : undefined}
                           step={100}
-                          aria-label={t({ message: `Your price each moon, in ${ceiling.currency}`, context: "price popup" })}
+                          aria-label={t({ message: `Your compensation each moon, in ${ceiling.currency}`, context: "price popup" })}
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
                           className={`${FIELD} min-h-11 sm:max-w-xs`}
@@ -182,12 +182,12 @@ export default function PriceAsk({
                         />
                         {diff !== null && (
                           <p className={HINT} aria-live="polite" data-price-diff="">
-                            {t({ message: `${signedPct(diff)} on the suggested price`, context: "price popup: the difference" })}
+                            {t({ message: `${signedPct(diff)} on the suggested compensation`, context: "price popup: the difference" })}
                           </p>
                         )}
                         {overCap ? (
                           <p id={`${idPrefix}-price-over-cap`} className="text-sm font-medium text-foreground" role="alert" data-price-over-cap="">
-                            {t({ message: "That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call.", context: "price popup: above the cap, with no figure" })}
+                            {t({ message: "That's more than a proposal can ask for this role at your commitment. Choose a lower amount, or negotiate on the first call.", context: "price popup: above the cap, with no figure" })}
                           </p>
                         ) : typed > ceiling.amount && (
                           <p className="text-sm text-foreground" data-price-above-band="">
@@ -204,13 +204,13 @@ export default function PriceAsk({
                   {choice !== "suggested" && (
                     <div className="grid gap-1">
                       <label htmlFor={`${idPrefix}-price-why`} className="text-sm font-semibold text-foreground">
-                        {t({ message: "Why this price (optional)", context: "price popup" })}
+                        {t({ message: "Why this compensation (optional)", context: "price popup" })}
                       </label>
                       {suggestionCount > 0 && (
                         <p className={HINT} data-price-nudge="">
                           {suggestionCount === 1
-                            ? t({ message: "You suggested 1 change to the role. If it changes the work, say how it changes the price.", context: "price popup nudge, one" })
-                            : t({ message: `You suggested ${suggestionCount} changes to the role. If they change the work, say how they change the price.`, context: "price popup nudge, several" })}
+                            ? t({ message: "You suggested 1 change to the role. If it changes the work, say how it changes the compensation.", context: "price popup nudge, one" })
+                            : t({ message: `You suggested ${suggestionCount} changes to the role. If they change the work, say how they change the compensation.`, context: "price popup nudge, several" })}
                         </p>
                       )}
                       <textarea id={`${idPrefix}-price-why`} rows={3} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} aria-describedby={`${idPrefix}-price-why-count`} aria-invalid={why.trim().length > PRICE_WHY_MAX || undefined} />
@@ -219,7 +219,7 @@ export default function PriceAsk({
                   )}
                   {choice === "amount" && typed <= 0 && (
                     <p id={`${idPrefix}-price-why-off`} className={HINT} data-price-needs-amount="">
-                      {t({ message: `Enter a price above ${money(0)}.`, context: "price popup: why Use this price is off" })}
+                      {t({ message: `Enter an amount above ${money(0)}.`, context: "price popup: why Use this price is off" })}
                     </p>
                   )}
                   <DialogFooter>
@@ -234,7 +234,7 @@ export default function PriceAsk({
                       className="min-h-11 rounded-lg border border-notice bg-notice px-4 font-semibold text-background disabled:opacity-40"
                       data-save-price=""
                     >
-                      {t({ message: "Use this price", context: "price popup" })}
+                      {t({ message: "Use this amount", context: "price popup" })}
                     </button>
                   </DialogFooter>
                 </DialogContent>

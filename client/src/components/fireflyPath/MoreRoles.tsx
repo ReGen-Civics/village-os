@@ -101,7 +101,7 @@ export default function MoreRoles({
           {t({ message: "More than one role", context: "founding application, roles added to one application" })}
         </h3>
         <p className={HINT}>
-          {t({ message: `Up to ${max} roles in one application, in any circle, each with its own commitment, price and agreement. The prices add up: two roles at 50% are rewarded like one whole role.`, context: "founding application, roles added to one application" })}
+          {t({ message: `Up to ${max} roles in one application, in any circle, each with its own commitment, compensation and agreement. The amounts add up: two roles at 50% are rewarded like one whole role.`, context: "founding application, roles added to one application" })}
         </p>
       </div>
       {extras.map((x, i) => {

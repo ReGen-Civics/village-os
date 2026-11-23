@@ -197,6 +197,29 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     await setVar("org.role_card_onboarding", null);
   });
 
+  it("refuses words that name a split the card does not pay, naming the stored split; the same words with its numbers save (control)", async () => {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    await setVar("org.pay_shape", "cash 60, equity 40, credits 0");
+    // A section line, and a word field, each naming 70/30 against the village's 60/40.
+    const line = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Paid 70% cash, 30% tokens"] } });
+    expect(line.status).toBe(400);
+    expect(line.json.error).toBe('Qualities we\'re looking for says "70% cash", but this card\'s split is 60% cash, 40% equity, 0% credits. Change the words to match, or change the split under How rewards work.');
+    const words = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { words: { aim: "Rewarded 70/30 in cash and tokens." } });
+    expect(words.status).toBe(400);
+    expect(words.json.error).toContain('says "70/30"');
+    // Control: the same line with the split the card pays.
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Paid 60% cash, 40% tokens"] } })).status).toBe(200);
+    // Changing the card's own split reads every line again: the qualities now say an old split.
+    const moved = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { payShape: [{ label: "Cash", pct: 70 }, { label: "Equity", pct: 30 }] } });
+    expect(moved.status).toBe(400);
+    expect(moved.json.error).toContain("this card's split is 70% Cash, 30% Equity");
+    // An unrelated save on a card whose words already disagree with the village's new split is not blocked.
+    await setVar("org.pay_shape", "cash 50, equity 50");
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { where: "On the land" } })).status).toBe(200);
+    await setVar("org.pay_shape", null);
+  });
+
   it("saves the last day to apply, refuses a day that is not real, and a blank clears it (the lead, 23 Nov 2026)", async () => {
     const { id } = await seedRole();
     holders = new Set(["holder-1"]);
