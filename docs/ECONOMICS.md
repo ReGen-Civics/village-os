@@ -159,6 +159,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `ord:<orderId>:leg1` | `server/index.ts`, `server/lib/exchange.ts` |
 | `ord:<orderId>:reversal-leg1` | `server/index.ts` |
 | `ord:sp-<Date.now()>-<Math.random().toString(36).slice(2, 6)>:leg1` | `server/routes/stays.ts` |
+| `org-send:<fromUserId>:<nonce>` | `server/lib/orgAccounts.ts` |
 | `pp:<purchaseId>:grant:evt_<id>` | `server/index.ts` |
 | `pp:<purchaseId>:grant:inv_<String(invoiceId)>` | `server/index.ts` |
 | `pp:<purchaseId>:grant:manual` | `server/index.ts` |
@@ -184,7 +185,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `xstock-<Date.now()>-<Math.random().toString(36).slice(2, 8)>` | `server/index.ts` |
 | `xstock:<slug>:<body>` | `server/index.ts` |
 
-54 distinct shapes across 61 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
+55 distinct shapes across 62 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
 <!-- generated:triggers end -->
 
 ---
