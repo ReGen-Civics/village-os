@@ -15,13 +15,24 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, H1, LEDE, WORLD } from "@/components/journey/look";
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  CARD_FEATURED,
+  EYEBROW,
+  H1,
+  LEDE,
+  WORLD,
+} from "@/components/journey/look";
 
 type Verdict = "asking" | "open" | "members_only";
 
-export default function MapMembersDoor({ children }: { children: ReactNode }) {
+/** Whether this reader may open the map, asked of the map once; and whether they are signed in. */
+export function useMapVerdict(): { verdict: Verdict; signedIn: boolean } {
   const auth = useOptionalAuth();
-  const userId = auth?.user ? String((auth.user as { id?: unknown }).id ?? "") : "";
+  const userId = auth?.user
+    ? String((auth.user as { id?: unknown }).id ?? "")
+    : "";
   const authLoading = !!auth?.loading;
   const [verdict, setVerdict] = useState<Verdict>("asking");
 
@@ -30,56 +41,97 @@ export default function MapMembersDoor({ children }: { children: ReactNode }) {
     let live = true;
     setVerdict("asking");
     gameFetch("/api/map/config")
-      .then(async (r) => {
+      .then(async r => {
         if (r.status === 401 || r.status === 403) {
-          const body = (await r.json().catch(() => null)) as { error?: string } | null;
-          return body?.error === "auth_required" || body?.error === "entrance_required" ? "members_only" : "open";
+          const body = (await r.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          return body?.error === "auth_required" ||
+            body?.error === "entrance_required"
+            ? "members_only"
+            : "open";
         }
         return "open";
       })
       .catch(() => "open" as const)
-      .then((v) => live && setVerdict(v as Verdict));
+      .then(v => live && setVerdict(v as Verdict));
     return () => {
       live = false;
     };
   }, [userId, authLoading]);
 
-  if (verdict === "asking") return null;
-  if (verdict === "open") return <>{children}</>;
-  return <MapForMembers signedIn={!!userId} />;
+  return { verdict, signedIn: !!userId };
 }
 
-function MapForMembers({ signedIn }: { signedIn: boolean }) {
-  const { t } = useLingui();
+/** The door alone, around any map page: the page when the map opens, the members' page when it does not. */
+export default function MapMembersDoor({ children }: { children: ReactNode }) {
+  const { verdict, signedIn } = useMapVerdict();
+  if (verdict === "asking") return null;
+  if (verdict === "open") return <>{children}</>;
   return (
     <Layout>
-      <div className={WORLD}>
-        <main className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-map-members-only="">
-          <section className={`${CARD_FEATURED} flex flex-col gap-6`}>
-            <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
-              <MapIcon className="size-6" />
-            </span>
-            <p className={EYEBROW}>{t({ message: "The living map", context: "map members only: eyebrow" })}</p>
-            <h1 className={H1}>{t({ message: "The living map is for members", context: "map members only: heading" })}</h1>
-            <p className={LEDE}>
-              {t({
-                message: "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now.",
-                context: "map members only: what the map holds, and what is open instead",
-              })}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <a href="/circles" className={`${BTN_PRIMARY} text-base`}>
-                {t({ message: "See the circles", context: "map members only: the main button" })}
-              </a>
-              {!signedIn && (
-                <a href={`/login?next=${encodeURIComponent("/map")}`} className={BTN_SECONDARY}>
-                  {t({ message: "I am a member: sign in", context: "map members only: sign in" })}
-                </a>
-              )}
-            </div>
-          </section>
-        </main>
-      </div>
+      <MapForMembers signedIn={signedIn} />
     </Layout>
+  );
+}
+
+/** The members-only panel, inside whatever page frame the caller draws (the map pages draw Layout). */
+export function MapForMembers({ signedIn }: { signedIn: boolean }) {
+  const { t } = useLingui();
+  return (
+    <div className={WORLD}>
+      <main
+        className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20"
+        data-map-members-only=""
+      >
+        <section className={`${CARD_FEATURED} flex flex-col gap-6`}>
+          <span
+            className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice"
+            aria-hidden="true"
+          >
+            <MapIcon className="size-6" />
+          </span>
+          <p className={EYEBROW}>
+            {t({
+              message: "The living map",
+              context: "map members only: eyebrow",
+            })}
+          </p>
+          <h1 className={H1}>
+            {t({
+              message: "The living map is for members",
+              context: "map members only: heading",
+            })}
+          </h1>
+          <p className={LEDE}>
+            {t({
+              message:
+                "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now.",
+              context:
+                "map members only: what the map holds, and what is open instead",
+            })}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a href="/circles" className={`${BTN_PRIMARY} text-base`}>
+              {t({
+                message: "See the circles",
+                context: "map members only: the main button",
+              })}
+            </a>
+            {!signedIn && (
+              <a
+                href={`/login?next=${encodeURIComponent("/map")}`}
+                className={BTN_SECONDARY}
+              >
+                {t({
+                  message: "I am a member: sign in",
+                  context: "map members only: sign in",
+                })}
+              </a>
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
