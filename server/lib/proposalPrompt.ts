@@ -18,6 +18,32 @@
  * way a stranger's typing is.
  */
 
+import { VENTURE_KIND } from "../../shared/contributorRoutes";
+
+/**
+ * WHERE THE PERSON CAME FROM, when it changes how the guide opens. One value today: a person who pressed Start a
+ * venture lands on /work-with-us?kind=venture (the lead, 24 Nov 2026), and the guide opens on their business. It
+ * changes the opening context and the first questions only. The fields, the rules and the shape are the same, and
+ * the guide still only helps write the proposal: people decide what happens to it.
+ */
+export type ProposalFocus = typeof VENTURE_KIND;
+
+/** A focus the guide knows for this kind of proposal, or null. Anything else a caller sends is ignored. */
+export function proposalFocusOf(kind: string, raw: unknown): ProposalFocus | null {
+  return kind === "work-with-us" && raw === VENTURE_KIND ? VENTURE_KIND : null;
+}
+
+/** The venture's opening: what a venture is, and the three questions to ask first, each into the field it fills. */
+export function ventureOpening(guideName: string): string {
+  return `
+OPENING: this person pressed "Start a venture". A venture is their own business on the land: they run it and keep its upside, and ${guideName} shares in it through a lease or a profit share. Open on the business itself, and ask these first, one at a time:
+1. What the business is, and who it is for (it goes in "work").
+2. What it needs from the land and the village (it goes in "needsFromUs").
+3. How it gives back to the village, the land and the people around it (it goes in "serves").
+Then gather the remaining fields as usual.
+`;
+}
+
 export interface ProposalPromptInput {
   assistantName: string;
   guideName: string;
@@ -36,6 +62,8 @@ export interface ProposalPromptInput {
    * already cleaned. Blank or absent: today's persona, word for word.
    */
   voice?: string;
+  /** Where the person came from, when it changes the opening (proposalFocusOf). Absent: the general opening. */
+  focus?: ProposalFocus | null;
 }
 
 export function proposalSystemPrompt(input: ProposalPromptInput): string {
@@ -65,8 +93,10 @@ ${fence("village.guide_voice", voice)}`
 
 Voice: warm, encouraging, concrete, unhurried. Short replies (2-4 sentences). One question at a time. Reflect back what you heard before moving on. Never robotic, never salesy.`;
 
+  const opening = input.focus === VENTURE_KIND ? ventureOpening(guideName) : "";
+
   return `${persona}
-${words}
+${opening}${words}
 You are gathering these fields:
 ${fields}
 

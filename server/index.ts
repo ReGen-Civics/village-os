@@ -771,7 +771,7 @@ import {
   renderIndexMarkdown, renderSectionMarkdown, slugify,
   briefForPublicPrompt, briefAudienceFromBody, briefRowsForViewer,
 } from "./lib/villageBrain";
-import { proposalSystemPrompt } from "./lib/proposalPrompt";
+import { proposalFocusOf, proposalSystemPrompt } from "./lib/proposalPrompt";
 import {
   applyEscalationChoices, computeEscalations, draftById, draftQueue, markDecided, proposeDraft,
   roleBatchCap,
@@ -17010,7 +17010,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const system = proposalSystemPrompt({
       assistantName,
       guideName,
-      brief: spec.brief,
+      brief: spec.brief, focus: proposalFocusOf(kind, req.body?.focus), // Start a venture opens on the business (the lead, 24 Nov 2026)
       fields,
       shape,
       villageWords,

@@ -23,7 +23,14 @@ vi.mock("@/lib/gameApi", () => ({
 // Who is looking: null is a signed-out visitor. Reset before every test.
 const viewer = vi.hoisted(() => ({ user: null as null | { name: string; email: string; role?: string } }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: viewer.user }), useOptionalAuth: () => ({ user: viewer.user }) }));
-vi.mock("@/components/GuideChat", () => ({ default: () => null }));
+// The guide's props, so a test can see what the page asked of it.
+const chat = vi.hoisted(() => ({ props: null as null | Record<string, unknown> }));
+vi.mock("@/components/GuideChat", () => ({
+  default: (p: Record<string, unknown>) => {
+    chat.props = p;
+    return null;
+  },
+}));
 vi.mock("@/components/comms/PathConsentBox", () => ({ default: () => null, FORM_CONSENT_FIELD: "commsConsent" }));
 const sent = vi.hoisted(() => ({ calls: [] as unknown[] }));
 vi.mock("@/lib/proposals", () => ({
@@ -46,6 +53,8 @@ let config: { ok: boolean; body: Record<string, unknown> };
 let assistantOn = false;
 
 beforeEach(() => {
+  window.history.replaceState(null, "", "/work-with-us");
+  chat.props = null;
   viewer.user = null;
   assistantOn = false;
   saved.page = null;
@@ -220,5 +229,99 @@ describe("the guide's name on Work With Us", () => {
     await screen.findByText(/is built on reciprocity/);
     expect(screen.queryByText(/Talk it through with/)).toBeNull();
     expect(prompt()).toBeNull();
+  });
+});
+
+/*
+ * START A VENTURE LANDS ON A VENTURE (the lead, 24 Nov 2026). Every Start a venture link goes to
+ * /work-with-us?kind=venture: the heading says Start a venture, one line says what a venture is in the village's own
+ * name, the venture's three questions come first and fill the keys the proposal already has, and what is sent keeps
+ * its type and says `kind: "venture"`. Without the query the page is what it was.
+ */
+describe("set up for a venture", () => {
+  const labels = () => Array.from(document.querySelectorAll("form textarea[id^='work-']")).map((el) => document.querySelector(`label[for='${el.id}']`)?.textContent?.replace(/\s*\*\s*$/, "").trim());
+  const type = (id: string, value: string) => fireEvent.change(document.getElementById(id) as HTMLElement, { target: { value } });
+
+  it("says Start a venture at the top, with one line on what a venture is in the village's name", async () => {
+    window.history.replaceState(null, "", "/work-with-us?kind=venture");
+    render(<WorkWithUs />);
+    expect(await screen.findByRole("heading", { level: 1, name: "Start a venture" })).toBeTruthy();
+    await waitFor(() => expect(document.querySelector("[data-venture-line]")?.textContent).toBe("A venture is your own business on the land. You run it and keep its upside; Willowbrook shares in it through a lease or profit share."));
+    // The general intro is not said beside it.
+    await screen.findByText(/is built on reciprocity/);
+    expect(screen.queryByText("Bring what you have.")).toBeNull();
+  });
+
+  it("asks the venture's three questions first, then the rest in their usual order", async () => {
+    window.history.replaceState(null, "", "/work-with-us?kind=venture");
+    render(<WorkWithUs />);
+    await screen.findByRole("heading", { level: 2, name: "Your venture" });
+    expect(labels()).toEqual([
+      "What the business is",
+      "What it needs from the land and the village",
+      "How it gives back",
+      "Cost of materials",
+      "Time to implement",
+      "Maintenance & longevity",
+      "Tell us more about the exchange you're proposing",
+    ]);
+    // Each question fills the key the proposal already has, so the inbox reads a venture as it reads any offer.
+    expect(["work-work", "work-needsFromUs", "work-serves"].map((id) => document.querySelector(`label[for='${id}']`)?.textContent)).toEqual([
+      "What the business is *",
+      "What it needs from the land and the village *",
+      "How it gives back *",
+    ]);
+  });
+
+  it("sends the proposal as work-with-us with kind: venture beside the answers", async () => {
+    window.history.replaceState(null, "", "/work-with-us?kind=venture");
+    render(<WorkWithUs />);
+    await screen.findByRole("button", { name: /Barter/ });
+    type("work-name", "Ana");
+    type("work-email", "ana@example.test");
+    type("work-work", "A bakery with a wood oven.");
+    type("work-needsFromUs", "A small plot near the road, water and power.");
+    type("work-serves", "Bread for the village and a share of the takings.");
+    for (const key of ["materialsCost", "timeToImplement", "maintenance"]) type(`work-${key}`, "Something real.");
+    fireEvent.click(screen.getByRole("button", { name: /Barter/ }));
+    send();
+    await screen.findByRole("heading", { level: 1, name: "Your proposal is with us" });
+    expect(sent.calls).toHaveLength(1);
+    const [formType, data] = sent.calls[0] as [string, Record<string, unknown>];
+    expect(formType).toBe("work-with-us");
+    expect(data).toMatchObject({ kind: "venture", work: "A bakery with a wood oven.", needsFromUs: "A small plot near the road, water and power.", serves: "Bread for the village and a share of the takings." });
+  });
+
+  it("opens the guide on the venture", async () => {
+    assistantOn = true;
+    window.history.replaceState(null, "", "/work-with-us?kind=venture");
+    render(<WorkWithUs />);
+    await waitFor(() => expect(chat.props).not.toBeNull());
+    expect(chat.props).toMatchObject({ kind: "work-with-us", venture: true });
+  });
+
+  it("CONTROL: without the query the page is the one it always was, and sends no kind", async () => {
+    assistantOn = true;
+    render(<WorkWithUs />);
+    expect(await screen.findByRole("heading", { level: 1, name: "Build and grow alongside Willowbrook" })).toBeTruthy();
+    expect(await screen.findByText("Bring what you have.")).toBeTruthy();
+    expect(document.querySelector("[data-venture-line], [data-venture-heading]")).toBeNull();
+    await waitFor(() => expect(chat.props).not.toBeNull());
+    expect(chat.props?.venture).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: /Fill the form yourself/ }));
+    expect(await screen.findByRole("heading", { level: 2, name: "Your proposal" })).toBeTruthy();
+    expect(labels().slice(0, 3)).toEqual(["The work", "How it serves the community", "Cost of materials"]);
+    fillRequired();
+    fireEvent.click(screen.getByRole("button", { name: /Barter/ }));
+    send();
+    await screen.findByRole("heading", { level: 1, name: "Your proposal is with us" });
+    const [, data] = sent.calls[0] as [string, Record<string, unknown>];
+    expect(data).not.toHaveProperty("kind");
+  });
+
+  it("CONTROL: another kind in the query is not a venture", async () => {
+    window.history.replaceState(null, "", "/work-with-us?kind=partner");
+    render(<WorkWithUs />);
+    expect(await screen.findByRole("heading", { level: 1, name: "Build and grow alongside Willowbrook" })).toBeTruthy();
   });
 });

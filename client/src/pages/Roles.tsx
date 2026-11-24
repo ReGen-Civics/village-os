@@ -474,7 +474,8 @@ export default function Roles() {
   // leads; with none leading neither section is drawn, so they go to the role board and the venture form instead.
   const ventureHref = useVentureHref();
   const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
-  // Arriving on /roles#founding-team or /roles#open-ventures lands on the section once it is drawn (sectionAnchor.ts).
+  // Arriving on /roles#founding-team, #open-ventures or #four-ways lands on the section once it is drawn, and holds it
+  // there while the founding team above it finishes drawing (sectionAnchor.ts).
   useLandOnSection(heroShown, [leads, roles]);
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
