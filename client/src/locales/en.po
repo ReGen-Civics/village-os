@@ -602,6 +602,11 @@ msgctxt "canvas export button"
 msgid "Build it again"
 msgstr "Build it again"
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point refused"
+msgid "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+msgstr "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
 #~ msgid "Your role card"
@@ -616,6 +621,11 @@ msgstr "Open again"
 #~ msgctxt "admin role characters legend"
 #~ msgid "Characters {roleName} suits"
 #~ msgstr "Characters {roleName} suits"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: quests the mark-all left alone"
+msgid "Left as real, with work in flight: {names}"
+msgstr "Left as real, with work in flight: {names}"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "sera draft mark"
@@ -2946,6 +2956,12 @@ msgstr "Someone who reaches out hears back within {replyHours, plural, one {# ho
 msgid "Your idea is shared. Others can comment on it in its thread."
 msgstr "Your idea is shared. Others can comment on it in its thread."
 
+#: client/src/components/openWork/ExampleStamp.tsx
+#: client/src/components/QuestCard.tsx
+msgctxt "the example stamp, read aloud"
+msgid "Example quest"
+msgstr "Example quest"
+
 #: client/src/pages/Quests.tsx
 msgctxt "quests board, roots filter hid everything"
 msgid "Show every quest"
@@ -3452,6 +3468,11 @@ msgstr "A canvas moon gathering is on the calendar's list as a draft. It reaches
 #~ msgctxt "founding application review"
 #~ msgid "Your price"
 #~ msgstr "Your price"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: after marking all as examples"
+msgid "{marked} marked as examples"
+msgstr "{marked} marked as examples"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Answers for 1 thing"
@@ -7692,6 +7713,11 @@ msgctxt "split control: it is editable, percents only"
 msgid "You can change this split for your proposal. Type a percent for each share."
 msgstr "You can change this split for your proposal. Type a percent for each share."
 
+#: client/src/components/QuestCard.tsx
+msgctxt "open work card: in place of the status mark on an example quest"
+msgid "An example of the work to come. It cannot be taken yet."
+msgstr "An example of the work to come. It cannot be taken yet."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
 msgstr "Ideas other villages keep, added only if you tap one:"
@@ -7811,6 +7837,11 @@ msgstr "See where it stands"
 msgctxt "sera answers"
 msgid "Keep the vote"
 msgstr "Keep the vote"
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the take button on an example, disabled"
+msgid "Example quest"
+msgstr "Example quest"
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: flag"
@@ -9689,6 +9720,11 @@ msgstr "Transcribe all waiting"
 msgctxt "admin compare"
 msgid "Where they overlap"
 msgstr "Where they overlap"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: one quest marked as an example"
+msgid "Marked as an example"
+msgstr "Marked as an example"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 #~ msgctxt "founding application know us act"
@@ -12342,6 +12378,12 @@ msgctxt "admin protocols editor"
 msgid "Remove"
 msgstr "Remove"
 
+#: client/src/components/openWork/QuestsComingSoon.tsx
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quests coming soon banner: the one door"
+msgid "Propose a quest"
+msgstr "Propose a quest"
+
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, scanning a code"
 msgid "The camera did not open. Paste their link below."
@@ -12436,6 +12478,11 @@ msgstr "The village did not take every change. Each one says why, on its run."
 msgctxt "voice transcription switch"
 msgid "Write down my words automatically"
 msgstr "Write down my words automatically"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
+msgstr "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -16459,6 +16506,11 @@ msgctxt "budget line button"
 msgid "Withdraw {0}"
 msgstr "Withdraw {0}"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all button"
+msgid "Mark all current quests as examples"
+msgstr "Mark all current quests as examples"
+
 #: client/src/pages/Decision.tsx
 msgctxt "decision: your turn"
 msgid "You are on the roll and have not voted yet."
@@ -17375,6 +17427,11 @@ msgstr "{0} characters left in this answer."
 msgid "Why, in one sentence"
 msgstr "Why, in one sentence"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Show the board as examples"
+msgstr "Show the board as examples"
+
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review, several roles"
 msgid "Across your roles"
@@ -17780,6 +17837,11 @@ msgstr "That did not save. Your light is unchanged."
 msgctxt "sera changes"
 msgid "Hide them"
 msgstr "Hide them"
+
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point"
+msgid "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
+msgstr "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent drawing"
@@ -20127,6 +20189,11 @@ msgstr "See the founding roles"
 msgctxt "sera answers"
 msgid "Add to draft"
 msgstr "Add to draft"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: confirm marking all as examples"
+msgid "Mark every quest on the board as an example? Nobody can take an example."
+msgstr "Mark every quest on the board as an example? Nobody can take an example."
 
 #: client/src/components/fireflyPath/limitProblems.ts
 #~ msgctxt "founding application check, a box over its limit"
@@ -22983,6 +23050,11 @@ msgctxt "next step box, link to open roles"
 msgid "See the open roles"
 msgstr "See the open roles"
 
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner eyebrow"
+msgid "Open work"
+msgstr "Open work"
+
 #: client/src/components/priorities/RoomPriorities.tsx
 msgid "Keep this order on the board"
 msgstr "Keep this order on the board"
@@ -23601,6 +23673,11 @@ msgstr "How your work serves it"
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Read the pasted list"
 msgstr "Read the pasted list"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the per-quest example switch"
+msgid "Mark as example"
+msgstr "Mark as example"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "You are backing this quest (pending). The Backer badge comes when the quest is done."
@@ -24361,6 +24438,11 @@ msgctxt "role draft step"
 msgid "Select up to three"
 msgstr "Select up to three"
 
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests board banner while every quest is an example"
+msgid "Quests coming soon"
+msgstr "Quests coming soon"
+
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription"
 msgid "Stopped. Nothing more is sent. Your recording is kept."
@@ -24834,6 +24916,11 @@ msgstr "Answered"
 msgctxt "budget line status"
 msgid "Withdrawn"
 msgstr "Withdrawn"
+
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the note under an example quest's poster"
+msgid "An example of the quests to come. It cannot be taken yet."
+msgstr "An example of the quests to come. It cannot be taken yet."
 
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, menu button"
@@ -25860,6 +25947,11 @@ msgctxt "founding team tally: open roles"
 msgid "{0} open"
 msgstr "{0} open"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: under the disabled take button on an example"
+msgid "This shows the kind of quest to come. It cannot be taken."
+msgstr "This shows the kind of quest to come. It cannot be taken."
+
 #: client/src/components/notebook/NotebookAdd.tsx
 msgctxt "notebook add mode"
 msgid "Add a file"
@@ -26716,6 +26808,11 @@ msgctxt "admin protocols editor"
 msgid "Check the file"
 msgstr "Check the file"
 
+#: client/src/components/openWork/ExampleStamp.tsx
+msgctxt "the ink stamp across a quest that is an example of the work to come"
+msgid "Example"
+msgstr "Example"
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -26789,6 +26886,11 @@ msgstr "your guide"
 msgctxt "how pay works"
 msgid "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
 msgstr "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
+
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner: the one line under the heading"
+msgid "These are examples of the quests to come. Have one in mind?"
+msgstr "These are examples of the quests to come. Have one in mind?"
 
 #. placeholder {0}: me.needed
 #: client/src/pages/HiddenMap.tsx

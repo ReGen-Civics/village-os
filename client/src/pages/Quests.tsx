@@ -24,9 +24,11 @@ import { pageVarsFrom } from "@shared/pageContent/vars";
 import { useTokenName, useTokensWord, useValueTokenName } from "@/hooks/useTokenNames";
 import { useValueConversion } from "@/lib/moneyClaims";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
+import QuestsComingSoon from "@/components/openWork/QuestsComingSoon";
 import { useLadderTitle } from "@/hooks/useVillagePaths";
 import QuestCard, { iconFor, QuestPoster } from "@/components/QuestCard";
 import {
+  boardHasRealOpenWork,
   currentClaims,
   filterBoard,
   groupByCircle,
@@ -230,6 +232,10 @@ export default function Quests() {
   );
   const goalFor = (q: BoardQuest) => goalOf(q.goalId, goalList);
   const now = new Date();
+  // Quests coming soon (the lead, 24 Nov 2026): a board with quests on it and
+  // no real open work among them is a board of examples. It says so up top,
+  // and each card carries its own stamp. An empty board has its own meadow.
+  const comingSoon = !boardFailed && quests.length > 0 && !boardHasRealOpenWork(quests);
 
   return (
     <Layout>
@@ -254,7 +260,11 @@ export default function Quests() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
               Take a Quest, do the work, turn it in.
             </p>
-            <ExamplesBanner moduleId="quests" noun="quest" tone="night" />
+            {comingSoon ? (
+              <QuestsComingSoon className="mx-auto mb-4 mt-6 max-w-3xl" />
+            ) : (
+              <ExamplesBanner moduleId="quests" noun="quest" tone="night" />
+            )}
             <p className="text-sm italic text-muted-foreground mt-2 mb-8">
               Real work, on real land, beside people becoming your people.
             </p>
@@ -474,7 +484,11 @@ export default function Quests() {
        * your gift here" reads better anyway: after the board's filters rather
        * than before anyone has seen the board.
        */}
-      <section className="pb-2 bg-background">
+      {/* While "Quests coming soon" leads the page, it is the one door to
+          propose a quest, so this panel steps aside (the lead, 24 Nov 2026:
+          "hide the second panel"). It returns with the first real open quest. */}
+      {!comingSoon && (
+      <section className="pb-2 bg-background" data-gift-panel>
         <div className="container">
           <div className="max-w-2xl mx-auto bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center gap-4 text-left mt-6">
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
@@ -498,6 +512,7 @@ export default function Quests() {
           </div>
         </div>
       </section>
+      )}
 
       {/* "Show only what matches my roots", outside the sticky bar so a phone keeps its slim filter row. */}
       {rootsOffered && (
