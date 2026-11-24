@@ -16,6 +16,7 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
+import { membersHidingFirstName } from "../lib/profile";
 import { loadInventory } from "../repos/profileInventory";
 import { privacyChange, register } from "./profilePrivacy";
 
@@ -23,6 +24,7 @@ describe("what a privacy change may be", () => {
   it("takes real booleans for flags that exist", () => {
     expect(privacyChange({ showInventory: true })).toEqual({ change: { showInventory: true } });
     expect(privacyChange({ showInventory: false, showHome: true })).toEqual({ change: { showInventory: false, showHome: true } });
+    expect(privacyChange({ showFirstNameToVisitors: false })).toEqual({ change: { showFirstNameToVisitors: false } });
   });
   it("refuses a string, a number, an unknown flag, an array and an empty change", () => {
     for (const bad of [{ showInventory: "true" }, { showInventory: 1 }, { showEverything: true }, [true], {}, null, "on"]) {
@@ -132,5 +134,23 @@ describe.skipIf(!testDbConfigured())("inventory and the privacy switch, on a dat
     expect((await call("GET", "/api/me/privacy")).body.privacy.showInventory).toBe(false);
     me = null;
     expect((await call("PUT", "/api/me/privacy", { showInventory: true })).status).toBe(401);
+  });
+
+  it("\"Show my first name to visitors\": absent reads as on, and turning it off is what puts a member on the hidden list", async () => {
+    me = { id: "inv-ana" };
+    expect((await call("GET", "/api/me/privacy")).body.privacy.showFirstNameToVisitors).toBe(true);
+    expect((await membersHidingFirstName(pool as any)).size).toBe(0);
+    // A row that predates the flag (other flags set, this one absent) still shows the first name.
+    await pool.query("UPDATE users SET privacy = ? WHERE id = 'inv-ben'", [JSON.stringify({ showInventory: true })]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect((await membersHidingFirstName(pool as any)).has("inv-ben")).toBe(false);
+
+    const off = await call("PUT", "/api/me/privacy", { showFirstNameToVisitors: false });
+    expect(off.status).toBe(200);
+    expect(off.body.privacy).toMatchObject({ showFirstNameToVisitors: false, showBadges: true });
+    expect([...(await membersHidingFirstName(pool as any))]).toEqual(["inv-ana"]);
+
+    expect((await call("PUT", "/api/me/privacy", { showFirstNameToVisitors: true })).status).toBe(200);
+    expect((await membersHidingFirstName(pool as any)).size).toBe(0);
+    expect((await call("PUT", "/api/me/privacy", { showFirstNameToVisitors: "no" })).status).toBe(400);
   });
 });

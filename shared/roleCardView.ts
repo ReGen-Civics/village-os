@@ -41,7 +41,7 @@ export function readCardBooking(v: unknown): CardBooking | null {
 }
 
 export interface CardRow {
-  id: "heldBy" | "commitment" | "track" | "goals" | "where" | "languages" | "review" | "interviews" | "criteria" | "budget";
+  id: "heldBy" | "commitment" | "track" | "goals" | "where" | "nationality" | "languages" | "review" | "interviews" | "criteria" | "budget";
   label: string;
   lines: string[];
   /** How to book each line, beside it: only the interviews row has these, one per line (null where a line books nothing). */
@@ -62,6 +62,12 @@ export interface RoleCardView {
   comingSoon: boolean;
   /** A future venture (shared/roleListing.ts): its badge, and the pitch prompts beside Apply. */
   futureVenture: boolean;
+}
+
+/** The nationality line in its lines: one per line break or "|", so a preferred and a possible read as two lines. */
+export function nationalityLines(v: unknown): string[] {
+  if (typeof v !== "string") return [];
+  return v.split(/\r?\n|\s*\|\s*/).map((l) => l.trim()).filter(Boolean);
 }
 
 const list = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "") : []);
@@ -92,6 +98,10 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
   const whereText = typeof card.whereText === "string" ? card.whereText.trim() : "";
   if (whereText) rows.push({ id: "where", label: "Where", lines: [whereText] });
   else if (where && WHERE_WORDS[where]) rows.push({ id: "where", label: "Where", lines: [WHERE_WORDS[where]] });
+
+  // The village's one nationality line (`org.role_card_nationality`, the lead, 24 Nov 2026), sent on open roles only.
+  const nationality = nationalityLines(card.nationality);
+  if (nationality.length) rows.push({ id: "nationality", label: "Nationality", lines: nationality });
 
   const languages = list(card.languages);
   if (languages.length) rows.push({ id: "languages", label: "Languages", lines: [languages.join(", ")] });

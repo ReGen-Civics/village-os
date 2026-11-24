@@ -69,6 +69,8 @@ export const DOC_PATH = path.join(ROOT, "docs", "VARIABLES.md");
  */
 export const SOURCES = [
   "shared/gameVariables.ts",
+  // The default language's choices and one offer switch per language come from the registry (24 Nov 2026).
+  "shared/i18nLocales.ts",
   // `roles.prerequisites` checks its grammar with the reader here (2026-11-15).
   "shared/rolePrerequisites.ts",
   "shared/applyLimits.ts",

@@ -273,6 +273,14 @@ describe("moduleCatalog", () => {
      *                           moves it by the dial or a vote (internal spec
      *                           i18n, US3).
      *
+     * Judged on 2026-11-24, by the Spanish lane:
+     *
+     *   village.offer_locale.<tag>  matched on "locale". One switch per
+     *                           language the platform carries, on by default,
+     *                           so a village offers every language the
+     *                           platform has unless it chooses fewer. Neutral
+     *                           under any sky; nothing about a place decides it.
+     *
      * Judged on 2026-11-24, by credits lane 2 (a venture redeems, 0420):
      *
      *   ledger.org_redemption_currencies, ledger.org_redemption_rate
@@ -282,6 +290,14 @@ describe("moduleCatalog", () => {
      *                           the payment spine's `usd`. A village that pays
      *                           in its own money as well lists it second, and
      *                           the daily rate converts it.
+     *
+     * Judged on 2026-11-24, by the coordinator (the nationality row):
+     *
+     *   org.role_card_nationality
+     *                           matched on "country" in its own example. It
+     *                           ships blank, which shows no row, and blank is
+     *                           right under any sky: the words are the
+     *                           village's own, typed once in Admin.
      */
     expect(hits).toEqual([
       "calendar.cross_quarters",
@@ -302,6 +318,7 @@ describe("moduleCatalog", () => {
       "ledger.org_redemption_rate",
       "library.dispute_deadline_days",
       "map.concierge_enabled",
+      "org.role_card_nationality",
       "payments.donation_max_usd",
       "payments.purchase_limit_30d_usd",
       "payments.purchase_limit_annual_usd",
@@ -313,6 +330,7 @@ describe("moduleCatalog", () => {
       "redemption.min_amount",
       "stay.autopay_post_hour",
       "village.default_locale",
+      "village.offer_locale.es",
     ]);
   });
 

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { readVillageSection } from "@/hooks/useVillageContent";
 import { useGameConfig } from "@/lib/gameApi";
 import { storyPageOffAlone } from "@/lib/brochure";
 import { pageSectionKey, type PageSpec, type PageVars, type ResolvedItem, type ResolvedPage } from "@shared/pageContent/types";
 import { fillPage, resolvePageRaw } from "@shared/pageContent/resolve";
-import { overlayPageRaw, readPageTranslation, type PageTranslationWire } from "@shared/contentTranslationOverlay";
+import { fallbackLangOf, overlayPageRaw, readPageTranslation, type PageTranslationWire } from "@shared/contentTranslationOverlay";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { markMachineTranslated } from "@/i18n/machineTranslation";
 import { pageVarsFrom } from "@shared/pageContent/vars";
@@ -79,6 +79,43 @@ export function readPageTranslationFor(section: string, locale: string): Promise
     .catch(() => NO_TRANSLATION);
 }
 
+/**
+ * The translation each page section last received, so a page can mark the
+ * blocks that are still in English (`usePageLang`) without a second request.
+ */
+const lastTranslation = new Map<string, PageTranslationWire>();
+const translationListeners = new Set<() => void>();
+let translationVersion = 0;
+function rememberTranslation(section: string, t: PageTranslationWire) {
+  lastTranslation.set(section, t);
+  translationVersion++;
+  translationListeners.forEach((l) => l());
+}
+function subscribeTranslations(l: () => void) {
+  translationListeners.add(l);
+  return () => translationListeners.delete(l);
+}
+
+/**
+ * `lang` for a block of the village's words on this page: the source
+ * language's tag while that block has no translation in the reader's language,
+ * undefined once it does (shared/contentTranslationOverlay.ts, fallbackLangOf).
+ *
+ *   const langOf = usePageLang(STEWARD_JOURNEY);
+ *   <section lang={langOf("hero")}>...
+ */
+export function usePageLang(spec: PageSpec): (address: string) => string | undefined {
+  const { locale } = useLocale();
+  const version = useSyncExternalStore(subscribeTranslations, () => translationVersion, () => 0);
+  const section = pageSectionKey(spec);
+  return useCallback(
+    (address: string) => fallbackLangOf(lastTranslation.get(section) ?? null, locale, address),
+    // `version` moves when a translation arrives.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [section, locale, version],
+  );
+}
+
 export function usePageContent(spec: PageSpec): ResolvedPage | null {
   const config = useGameConfig();
   const vars = usePageVars();
@@ -97,7 +134,9 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
   useEffect(() => {
     let alive = true;
     readPageTranslationFor(pageSectionKey(spec), locale).then((t) => {
-      if (alive) setTranslated({ locale, t });
+      if (!alive) return;
+      rememberTranslation(pageSectionKey(spec), t.locale === locale ? t : { ...t, locale });
+      setTranslated({ locale, t });
     });
     return () => {
       alive = false;
