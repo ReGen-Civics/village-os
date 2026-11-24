@@ -24,7 +24,7 @@
  * confirmation are one thing. Light-only, like the rest of this folder.
  */
 import { useSettingFocus } from "@/components/admin/settingFocus";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 
 export default function SeasonTimezoneField({
   value,
@@ -40,7 +40,6 @@ export default function SeasonTimezoneField({
   onChange: (timezone: string) => void;
   onConfirm: () => void;
 }) {
-  const { t } = useLingui();
   useSettingFocus("season.timezone", "season-timezone", true);
   return (
     <div>
@@ -56,7 +55,7 @@ export default function SeasonTimezoneField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={t({ message: "Europe/Lisbon", context: "SeasonTimezoneField, placeholder" })}
+        placeholder="Europe/Lisbon" // i18n-ok: an IANA zone id, the same in every language
         aria-describedby={answered ? undefined : "season-timezone-answer"}
         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
       />

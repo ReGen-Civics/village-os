@@ -58356,7 +58356,7 @@ msgstr "Insignias"
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
 msgid "wear"
-msgstr "usar"
+msgstr "desgaste"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/TimePollEditor.tsx
