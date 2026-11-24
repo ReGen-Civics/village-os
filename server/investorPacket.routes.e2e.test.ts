@@ -185,35 +185,26 @@ describe.skipIf(!DB_CONFIGURED)("the investor packet only sends what a person ch
    * THE REGRESSION THAT MATTERS MOST. Two documents sit in the vault and a
    * stranger asks for the packet. Before this fix both of them were emailed.
    */
-  it("sends no documents at all when nobody has chosen any", async () => {
+  it("refuses a request while nobody has chosen any document, keeps no lead, and tells the page", async () => {
+    /*
+     * The lead, 24 Nov 2026: "If nothing is in packet let the button be
+     * disabled." Two documents sit in the vault, none chosen. Before the
+     * packet gate (PR #91) both were emailed; after it, an empty-packet
+     * thank-you went out and a lead was kept for a request that could
+     * receive nothing. Now the page disables its button (packReady) and a
+     * request that arrives anyway is refused before anything is written.
+     */
+    const summary = await call("GET", "/api/investor-summary", undefined, "");
+    expect(summary.status, summary.text).toBe(200);
+    expect(summary.json?.packReady, "the page must be told the pack is empty").toBe(false);
+
+    const before = await call("GET", "/api/admin/submissions?type=investor-doc-request");
     const res = await requestPacket("Curious Stranger", "stranger@example.test");
-    expect(res.status, res.text).toBe(200);
-
-    /*
-     * This assertion is FIRST on purpose. It is the one that means something
-     * against the unfixed tree: there, with two unchosen documents sitting in
-     * the vault, the route answers "Check your email for the documents." and
-     * the documents really are on their way. Everything below it can only
-     * report that a field or a route does not exist yet, which is a weaker
-     * kind of red. The requester must never be told they were sent something
-     * they were not sent.
-     */
-    expect(
-      String(res.json?.message ?? "").toLowerCase(),
-      "the route promised documents when nothing had been chosen",
-    ).not.toContain("document");
-
-    expect(res.json?.documentsSent, "a packet went out with nothing chosen").toBe(0);
-
-    const lead = await newestLead();
-    expect(lead?.data?.email).toBe("stranger@example.test");
-    expect(lead?.data?.documentsSent, "the lead record must say what was sent").toEqual([]);
-    /*
-     * This suite boots with RESEND_API_KEY empty, so no email is dispatched at
-     * all. The lead has to carry that fact next to the packet, or a founder
-     * reading a list of titles would believe somebody received them.
-     */
-    expect(lead?.data?.emailed, "the lead record must say whether an email went").toBe(false);
+    expect(res.status, res.text).toBe(409);
+    expect(res.json?.error).toBe("packet_empty");
+    expect(String(res.json?.message ?? "").toLowerCase(), "the refusal must not promise documents").not.toContain("check your email");
+    const after = await call("GET", "/api/admin/submissions?type=investor-doc-request");
+    expect(after.json?.length ?? 0, "a refused request must keep no lead").toBe(before.json?.length ?? 0);
   });
 
   it("sends the chosen document and withholds the one nobody chose", async () => {
@@ -221,9 +212,13 @@ describe.skipIf(!DB_CONFIGURED)("the investor packet only sends what a person ch
     expect(set.status, set.text).toBe(200);
     expect(set.json?.inPacket).toBe(true);
 
+    // With one document chosen, the page offers the pack again.
+    expect((await call("GET", "/api/investor-summary", undefined, "")).json?.packReady).toBe(true);
     const res = await requestPacket("Real Investor", "investor@example.test");
     expect(res.status, res.text).toBe(200);
     expect(res.json?.documentsSent).toBe(1);
+    // This suite boots with RESEND_API_KEY empty: the lead says no email went, beside what was released.
+    expect((await newestLead())?.data?.emailed, "the lead record must say whether an email went").toBe(false);
 
     const lead = await newestLead();
     expect(lead?.data?.email).toBe("investor@example.test");

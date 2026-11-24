@@ -54,13 +54,14 @@ export default function Feedback() {
     })
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) throw new Error(d.message ?? d.error ?? "Could not send that");
+        if (!r.ok) throw new Error(d.message ?? d.error ?? t({ message: "Could not send that", context: "feedback page: when it fails" }));
         setSent({ shared: !!d.shared });
       })
       .catch((e) => setError(failureWords(e)))
       .finally(() => setBusy(false));
   };
 
+  const village = cfg?.villageName ?? t({ message: "your village", context: "feedback page: where it goes, before the village name loads" });
   return (
     <Layout>
       {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. */}
@@ -68,10 +69,9 @@ export default function Feedback() {
       <section className="pt-12 pb-4 sm:pt-16">
         <div className="container max-w-xl">
           <p className={EYEBROW}>{t({ message: "Feedback", context: "feedback page eyebrow" })}</p>
-          <h1 className={`${H1} mt-2 mb-3`}>Something broken? Something missing?</h1>
+          <h1 className={`${H1} mt-2 mb-3`}>{t({ message: "Something broken? Something missing?", context: "feedback page: the heading" })}</h1>
           <p className={LEDE}>
-            Both are gifts. A bug named is a bug on its way out; an idea written
-            down is one the village can actually weigh.
+            {t({ message: "Both are gifts. A bug named is a bug on its way out; an idea written down is one the village can actually weigh.", context: "feedback page: under the heading" })}
           </p>
         </div>
       </section>
@@ -83,17 +83,17 @@ export default function Feedback() {
               <div className="w-12 h-12 bg-open/15 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="w-6 h-6 text-open" aria-hidden="true" />
               </div>
-              <p className="font-semibold text-foreground mb-1">Received, thank you.</p>
+              <p className="font-semibold text-foreground mb-1">{t({ message: "Received, thank you.", context: "feedback page: after sending" })}</p>
               <p className="text-sm text-muted-foreground">
                 {sent.shared
-                  ? "Your village's team has it, and a copy reaches the platform team so a fix can land for every village. Your name travels to neither the platform nor anywhere else. It stays here."
-                  : "Your village's team has it and will take it from here."}
+                  ? t({ message: "Your village's team has it, and a copy reaches the platform team so a fix can land for every village. Your name travels to neither the platform nor anywhere else. It stays here.", context: "feedback page: after sending, shared" })
+                  : t({ message: "Your village's team has it and will take it from here.", context: "feedback page: after sending" })}
               </p>
               <button
                 onClick={() => { setSent(null); setTitle(""); setDetail(""); }}
                 className="mt-5 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground"
               >
-                Send another
+                {t({ message: "Send another", context: "feedback page: after sending" })}
               </button>
             </div>
           ) : (
@@ -107,7 +107,7 @@ export default function Feedback() {
                     kind === "bug" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Bug className="w-4 h-4" /> Something broke
+                  <Bug className="w-4 h-4" /> {t({ message: "Something broke", context: "feedback page: the kind" })}
                 </button>
                 <button
                   onClick={() => setKind("idea")}
@@ -115,7 +115,7 @@ export default function Feedback() {
                     kind === "idea" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Lightbulb className="w-4 h-4" /> An idea
+                  <Lightbulb className="w-4 h-4" /> {t({ message: "An idea", context: "feedback page: the kind" })}
                 </button>
               </div>
 
@@ -124,7 +124,7 @@ export default function Feedback() {
                     was not tied to the field, so both controls reached a
                     screen reader unnamed. */}
                 <label htmlFor="feedback-title" className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  {kind === "bug" ? "What went wrong, in one line" : "The idea, in one line"}
+                  {kind === "bug" ? t({ message: "What went wrong, in one line", context: "feedback page: title label" }) : t({ message: "The idea, in one line", context: "feedback page: title label" })}
                 </label>
                 <input
                   id="feedback-title"
@@ -132,13 +132,13 @@ export default function Feedback() {
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
                   className={`${FIELD} w-full text-base px-3 py-2.5`}
-                  placeholder={kind === "bug" ? "The quest page shows a blank box when…" : "It would help if…"}
+                  placeholder={kind === "bug" ? t({ message: "The quest page shows a blank box when…", context: "feedback page: title example" }) : t({ message: "It would help if…", context: "feedback page: title example" })}
                 />
               </div>
 
               <div>
                 <label htmlFor="feedback-detail" className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  {kind === "bug" ? "What did you do, what did you expect, what happened instead?" : "How would it work, and who does it serve?"}
+                  {kind === "bug" ? t({ message: "What did you do, what did you expect, what happened instead?", context: "feedback page: detail label" }) : t({ message: "How would it work, and who does it serve?", context: "feedback page: detail label" })}
                 </label>
                 <VoiceArea
                   value={detail}
@@ -173,8 +173,8 @@ export default function Feedback() {
               {/* The disclosure, before the button, in plain words. */}
               <p className="text-xs text-muted-foreground border-t border-border pt-3">
                 {cfg?.relayOn
-                  ? `Where this goes: ${cfg?.villageName ?? "your village"}'s team, plus a copy to the ReGen Civics platform team, so a bug fixed once is fixed for every village. What you write travels; who you are does not.`
-                  : `Where this goes: ${cfg?.villageName ?? "your village"}'s team, and nowhere else.`}
+                  ? t({ message: `Where this goes: ${village}'s team, plus a copy to the ReGen Civics platform team, so a bug fixed once is fixed for every village. What you write travels; who you are does not.`, context: "feedback page: where it goes, shared" })
+                  : t({ message: `Where this goes: ${village}'s team, and nowhere else.`, context: "feedback page: where it goes" })}
               </p>
 
               {/* The thresholds used to be silent: the button was disabled with no title,
@@ -185,8 +185,8 @@ export default function Feedback() {
               {(title.trim().length < 4 || detail.trim().length < 10) && (
                 <p className="text-xs text-muted-foreground">
                   {title.trim().length < 4
-                    ? "Give it a short title first, at least four characters."
-                    : "Add a little more detail, at least ten characters, so somebody can act on it."}
+                    ? t({ message: "Give it a short title first, at least four characters.", context: "feedback page: why Send waits" })
+                    : t({ message: "Add a little more detail, at least ten characters, so somebody can act on it.", context: "feedback page: why Send waits" })}
                 </p>
               )}
               <button
@@ -195,7 +195,7 @@ export default function Feedback() {
                 disabled={busy || title.trim().length < 4 || detail.trim().length < 10}
                 className={`${BTN_PRIMARY} w-full py-3 text-sm`}
               >
-                {busy && <BreathingLoader decorative size={16} />} Send it
+                {busy && <BreathingLoader decorative size={16} />} {t({ message: "Send it", context: "feedback page: the button" })}
               </button>
             </div>
           )}

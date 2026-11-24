@@ -25,13 +25,17 @@ import { register, strangerSees } from "./gratitudeVoices";
 
 type Handler = (req: unknown, res: { json: (body: unknown) => void }) => Promise<void>;
 
-function wallFor(signedIn: boolean): Promise<unknown> {
+/** The log row behind ENTRIES[0], which is where the route reads each side's member id. */
+const LOG = [{ id: "g1", fromId: "u-juniper", fromName: "Juniper Ashdown", toId: "u-rowan", toName: "Rowan Hale", amount: 2, message: "For the bread on Thursday.", at: "2026-11-20T10:00:00.000Z" }];
+
+function wallFor(signedIn: boolean, hidingFirstName: string[] = []): Promise<unknown> {
   const routes = new Map<string, Handler>();
   const app = { get: (path: string, h: Handler) => routes.set(path, h) };
   register(app as never, {
     getPool: (() => ({})) as never,
     authedUser: (async () => (signedIn ? { id: "u-member" } : null)) as never,
-    gratitudeLog: async () => [],
+    gratitudeLog: async () => LOG,
+    hidingFirstName: async () => new Set(hidingFirstName),
   });
   return new Promise((resolve) => {
     void routes.get("/api/game/gratitude/wall")!({}, { json: resolve });
@@ -57,5 +61,31 @@ describe("GET /api/game/gratitude/wall", () => {
 
   it("keeps a departed member's recorded name", () => {
     expect(strangerSees({ name: "Rowan Hale", handle: "rowan", avatar: "/a.webp" })).toEqual({ name: "Rowan", handle: null, avatar: null });
+  });
+});
+
+describe("GET /api/game/gratitude/wall, with \"Show my first name to visitors\" turned off", () => {
+  it("a visitor reads A member for the side who turned it off, with no name, no initial, no portrait and no handle", async () => {
+    const body = (await wallFor(false, ["u-juniper"])) as WallEntry[];
+    expect(body[0].from).toEqual({ name: "A member", handle: null, avatar: null });
+    expect(body[0].to).toEqual({ name: "Rowan", handle: null, avatar: null });
+    const text = JSON.stringify(body);
+    for (const leak of ["Juniper", "Ashdown", "juniper", '"J"', '"J."', "/uploads/"]) expect(text).not.toContain(leak);
+  });
+
+  it("works for the side that received the thanks too", async () => {
+    const body = (await wallFor(false, ["u-rowan"])) as WallEntry[];
+    expect(body[0].from.name).toBe("Juniper");
+    expect(body[0].to.name).toBe("A member");
+  });
+
+  it("CONTROL: a signed-in member reads both names exactly as before, whatever either side chose", async () => {
+    const body = (await wallFor(true, ["u-juniper", "u-rowan"])) as WallEntry[];
+    expect(body[0].from).toEqual(ENTRIES[0].from);
+    expect(body[0].to).toEqual(ENTRIES[0].to);
+  });
+
+  it("strangerSees takes the choice as its second argument", () => {
+    expect(strangerSees({ name: "Rowan Hale", handle: "rowan", avatar: "/a.webp" }, true)).toEqual({ name: "A member", handle: null, avatar: null });
   });
 });

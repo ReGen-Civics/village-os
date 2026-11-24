@@ -39,12 +39,16 @@ import type { Express } from "express";
 
 import type { AppDeps } from "../lib/appDeps";
 import { heroVoices, wallEntries, type WallLogRow } from "../lib/gratitudeVoices";
-import { firstNameOf } from "../lib/peopleLock";
+import { firstNameOf, VISITOR_NEUTRAL_NAME } from "../lib/peopleLock";
+import { membersHidingFirstName } from "../lib/profile";
 import type { WallPerson } from "../../shared/gratitudeVoices";
 
-/** One side of a thanks as a visitor reads it: the first name, with no portrait and no profile address. */
-export function strangerSees(who: WallPerson): WallPerson {
-  return { name: firstNameOf(who.name), handle: null, avatar: null };
+/**
+ * One side of a thanks as a visitor reads it: the first name, with no portrait and no profile address. A member
+ * who turned off "Show my first name to visitors" is `VISITOR_NEUTRAL_NAME` instead, never a name or an initial.
+ */
+export function strangerSees(who: WallPerson, keepsNameFromVisitors = false): WallPerson {
+  return { name: keepsNameFromVisitors ? VISITOR_NEUTRAL_NAME : firstNameOf(who.name), handle: null, avatar: null };
 }
 
 /**
@@ -56,10 +60,15 @@ export function strangerSees(who: WallPerson): WallPerson {
  * what it can reach, and "one read of the log" is the honest size of what this
  * one needs.
  */
-type Deps = Pick<AppDeps, "getPool" | "authedUser"> & { gratitudeLog: () => Promise<WallLogRow[]> };
+type Deps = Pick<AppDeps, "getPool" | "authedUser"> & {
+  gratitudeLog: () => Promise<WallLogRow[]>;
+  /** The members who keep their first name from visitors (server/lib/profile.ts). Tests hand one in. */
+  hidingFirstName?: () => Promise<Set<string>>;
+};
 
 export function register(app: Express, deps: Deps): void {
   const { getPool, gratitudeLog, authedUser } = deps;
+  const hidingFirstName = deps.hidingFirstName ?? (() => membersHidingFirstName(getPool()));
 
   app.get("/api/game/gratitude/voices", async (_req, res) => {
     try {
@@ -77,11 +86,21 @@ export function register(app: Express, deps: Deps): void {
    * shows how we create and will keep it public"). The wall answers a signed-out visitor with each person's first
    * name and nothing else: no full name, no portrait and no handle, since a handle is the address of a profile.
    * While the village keeps its people for members the lock in front of every route (server/lib/peopleLock.ts)
-   * takes the first names too. A signed-in member reads the wall as before.
+   * takes the first names too. A signed-in member reads the wall as before. A member who turned off "Show my
+   * first name to visitors" reads as "A member" on either side of a thanks they gave or received.
    */
   app.get("/api/game/gratitude/wall", async (req, res) => {
-    const entries = await wallEntries(getPool(), await gratitudeLog());
+    const log = await gratitudeLog();
+    const entries = await wallEntries(getPool(), log);
     if (await authedUser(req)) return res.json(entries);
-    res.json(entries.map((e) => ({ ...e, from: strangerSees(e.from), to: strangerSees(e.to) })));
+    const hidden = await hidingFirstName();
+    const sides = new Map(log.map((g) => [g.id, g]));
+    const keeps = (id: string | undefined) => !!id && hidden.has(String(id));
+    res.json(
+      entries.map((e) => {
+        const g = sides.get(e.id);
+        return { ...e, from: strangerSees(e.from, keeps(g?.fromId)), to: strangerSees(e.to, keeps(g?.toId)) };
+      }),
+    );
   });
 }
