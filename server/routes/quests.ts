@@ -774,9 +774,11 @@ export function register(app: Express, deps: Deps): void {
    * existing cards and say quests coming soon"). A save whose body is exactly
    * `{ isExample: true }` or `{ isExample: false }` moves the flag and nothing
    * else, so an agent's `setting` proposal against this route is one small
-   * body. Words and the flag never ride one save: a body naming the flag and
-   * anything else is refused with the sentence, because an edit laundered
-   * through the switch is the trap the guard below exists for.
+   * body. Words and a CHANGE of the flag never ride one save: a body asking
+   * for the other state beside anything else is refused with the sentence,
+   * because an edit laundered through the switch is the trap the guard below
+   * exists for. A quest posted back whole carries the flag it already has,
+   * and saves as before (the repo's write path never writes the flag).
    *
    *   true   a real quest becomes an example: stamped on the board, every
    *          claim refused. Refused while a claim is in flight (settle first,
@@ -831,15 +833,23 @@ export function register(app: Express, deps: Deps): void {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const raw = (req.body ?? {}) as Record<string, unknown>;
     if (Object.prototype.hasOwnProperty.call(raw, "isExample")) {
-      if (typeof raw.isExample !== "boolean") {
-        return res.status(400).json({ error: "isExample is true or false." });
+      const alone = Object.keys(raw).every((k) => k === "isExample");
+      if (alone) {
+        if (typeof raw.isExample !== "boolean") {
+          return res.status(400).json({ error: "isExample is true or false." });
+        }
+        return switchExample(req, res, raw.isExample);
       }
-      if (Object.keys(raw).some((k) => k !== "isExample")) {
+      // A client that posts the quest back as it received it carries the
+      // flag it read, which changes nothing and saves as it always did. A
+      // body asking for the OTHER state beside words is refused: the switch
+      // moves alone.
+      const current = await questsRepo.byId(String(req.params.id));
+      if (current && typeof raw.isExample === "boolean" && raw.isExample !== Boolean(current.isExample)) {
         return res.status(400).json({
           error: "Change the example switch on its own, then save the quest's words separately.",
         });
       }
-      return switchExample(req, res, raw.isExample);
     }
     // Editing an example into a real quest would launder it: the row keeps
     // is_example, so retirement would later delete the admin's own work.

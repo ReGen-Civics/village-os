@@ -423,9 +423,14 @@ describe.skipIf(!configured)("a new village's starter quests", () => {
     await own("q-calm", "Sweep the hall");
     expect((await call(PUT, { params: { id: "q-calm" }, body: { isExample: true, title: "Renamed" } })).status).toBe(400);
     expect((await call(PUT, { params: { id: "q-calm" }, body: { isExample: "yes" } })).status).toBe(400);
+    expect((await row("q-calm")).title, "a refused switch changes no words").toBe("Sweep the hall");
+    // Posted back whole, with the flag it already has, it saves as it always did.
+    const whole = await call(PUT, { params: { id: "q-calm" }, body: { ...(await makeQuestsRepo(pool).byId("q-calm")), title: "Sweep the big hall" } });
+    expect(whole.status, JSON.stringify(whole.body)).toBe(200);
+    expect((await row("q-calm")).title).toBe("Sweep the big hall");
     const after = await row("q-calm");
     expect(Number(after.is_example)).toBe(0);
-    expect(after.title).toBe("Sweep the hall");
+    expect(after.title).toBe("Sweep the big hall");
     expect((await call(PUT, { params: { id: "q-nope" }, body: { isExample: true } })).status).toBe(404);
 
     admin = false;
