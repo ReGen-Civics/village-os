@@ -23,6 +23,7 @@ import {
   type CivilDay,
   type EventsPayload,
 } from "./calendarTime";
+import { Trans } from "@lingui/react/macro";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -90,7 +91,7 @@ export default function WeekView(p: WeekViewProps) {
               </div>
               <div className="text-[10px] text-muted-foreground mt-0.5">
                 {li ? moonDayLine(li, p.moonOneCycle) : ""}
-                {li?.newMoon && <span className="ml-1 font-medium text-foreground">new</span>}
+                {li?.newMoon && <span className="ml-1 font-medium text-foreground"><Trans context="WeekView, span">new</Trans></span>}
               </div>
               <ul className="mt-1 space-y-1">
                 {list.slice(0, 4).map((i) => (

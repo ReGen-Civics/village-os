@@ -13,6 +13,7 @@
  */
 import { useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface Suggestion {
   name: string;
@@ -39,6 +40,7 @@ export default function SuggestionChips({
   /** Bumped after a send, so somebody just thanked leaves the row. */
   refreshKey: number;
 }) {
+  const { t } = useLingui();
   const [people, setPeople] = useState<Suggestion[]>([]);
 
   useEffect(() => {
@@ -60,8 +62,8 @@ export default function SuggestionChips({
   return (
     <div className="mb-3">
       <p id="gratitude-suggestions-label" className="mb-2 text-sm text-muted-foreground">
-        People you worked with this cycle
-      </p>
+        <Trans context="SuggestionChips, p">People you worked with this cycle
+      </Trans></p>
       <ul aria-labelledby="gratitude-suggestions-label" className="flex flex-wrap gap-2">
         {people.map((p) => {
           const on = chosen === p.handle.toLowerCase();
@@ -71,7 +73,7 @@ export default function SuggestionChips({
               <button
                 type="button"
                 aria-pressed={on}
-                title={why ? `You shared ${why}` : undefined}
+                title={why ? t({ message: `You shared ${why}`, context: "SuggestionChips, title" }) : undefined}
                 onClick={() => onPick(`@${p.handle}`)}
                 className={`min-h-11 rounded-full border px-4 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring ${
                   on

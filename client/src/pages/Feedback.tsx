@@ -10,7 +10,7 @@
  */
 import Layout from "@/components/Layout";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { Bug, Check, Lightbulb } from "lucide-react";
@@ -68,11 +68,11 @@ export default function Feedback() {
       <section className="pt-12 pb-4 sm:pt-16">
         <div className="container max-w-xl">
           <p className={EYEBROW}>{t({ message: "Feedback", context: "feedback page eyebrow" })}</p>
-          <h1 className={`${H1} mt-2 mb-3`}>Something broken? Something missing?</h1>
+          <h1 className={`${H1} mt-2 mb-3`}><Trans context="Feedback, h1">Something broken? Something missing?</Trans></h1>
           <p className={LEDE}>
-            Both are gifts. A bug named is a bug on its way out; an idea written
+            <Trans context="Feedback, p">Both are gifts. A bug named is a bug on its way out; an idea written
             down is one the village can actually weigh.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -83,7 +83,7 @@ export default function Feedback() {
               <div className="w-12 h-12 bg-open/15 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check className="w-6 h-6 text-open" aria-hidden="true" />
               </div>
-              <p className="font-semibold text-foreground mb-1">Received, thank you.</p>
+              <p className="font-semibold text-foreground mb-1"><Trans context="Feedback, p">Received, thank you.</Trans></p>
               <p className="text-sm text-muted-foreground">
                 {sent.shared
                   ? "Your village's team has it, and a copy reaches the platform team so a fix can land for every village. Your name travels to neither the platform nor anywhere else. It stays here."
@@ -93,8 +93,8 @@ export default function Feedback() {
                 onClick={() => { setSent(null); setTitle(""); setDetail(""); }}
                 className="mt-5 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground"
               >
-                Send another
-              </button>
+                <Trans context="Feedback, button">Send another
+              </Trans></button>
             </div>
           ) : (
             <div className={`${CARD} space-y-4`}>
@@ -107,16 +107,16 @@ export default function Feedback() {
                     kind === "bug" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Bug className="w-4 h-4" /> Something broke
-                </button>
+                  <Trans context="Feedback, button"><Bug className="w-4 h-4" /> Something broke
+                </Trans></button>
                 <button
                   onClick={() => setKind("idea")}
                   className={`jw-btn flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
                     kind === "idea" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Lightbulb className="w-4 h-4" /> An idea
-                </button>
+                  <Trans context="Feedback, button"><Lightbulb className="w-4 h-4" /> An idea
+                </Trans></button>
               </div>
 
               <div>
@@ -132,7 +132,7 @@ export default function Feedback() {
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
                   className={`${FIELD} w-full text-base px-3 py-2.5`}
-                  placeholder={kind === "bug" ? "The quest page shows a blank box when…" : "It would help if…"}
+                  placeholder={kind === "bug" ? t({ message: "The quest page shows a blank box when…", context: "Feedback, placeholder" }) : t({ message: "It would help if…", context: "Feedback, placeholder" })}
                 />
               </div>
 

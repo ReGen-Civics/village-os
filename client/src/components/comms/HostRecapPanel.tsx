@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RECAP_EMPTY, type RecapAnswerRow, type RecapView } from "@shared/comms/recap";
 import { authToken } from "@/lib/gameApi";
 import AttendanceList from "./AttendanceList";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 // The Authorization header is attached HERE, in this declaration, so the auth
 // guard (scripts/check-auth-fetch.mjs) reads it one helper deep.
@@ -59,6 +60,7 @@ export default function HostRecapPanel({
   /** Name the gathering in the heading, where the panel stands apart from its card. */
   withTitle?: boolean;
 }) {
+  const { t } = useLingui();
   const [view, setView] = useState<RecapView | null>(null);
   const [open, setOpen] = useState(startOpen);
   const [body, setBody] = useState("");
@@ -146,7 +148,7 @@ export default function HostRecapPanel({
   const q2 = view.answers.filter((a) => a.questionKey === "q2");
 
   return (
-    <section aria-label="After the gathering" className="mt-3 rounded-xl border border-border bg-background p-3">
+    <section aria-label={t({ message: "After the gathering", context: "HostRecapPanel, aria-label" })} className="mt-3 rounded-xl border border-border bg-background p-3">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="text-sm font-medium text-foreground">
         {withTitle ? `${view.title}: ` : ""}
         {sent ? "Recap sent" : "Write the recap"}
@@ -158,9 +160,9 @@ export default function HostRecapPanel({
 
           {sent ? (
             <p className="text-sm text-foreground">
-              Sent
+              <Trans context="HostRecapPanel, p">Sent
               {view.recap?.sentAt ? ` ${new Date(view.recap.sentAt * 1000).toLocaleDateString()}` : ""}.
-            </p>
+            </Trans></p>
           ) : (
             <div className="space-y-2">
               <label className="block text-xs text-muted-foreground">
@@ -177,11 +179,11 @@ export default function HostRecapPanel({
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 <button type="button" className={quiet} disabled={busy !== null} onClick={draft}>
-                  Draft it for me
-                </button>
+                  <Trans context="HostRecapPanel, button">Draft it for me
+                </Trans></button>
                 <button type="button" className={quiet} disabled={busy !== null} onClick={() => void saveDraft()}>
-                  Save draft
-                </button>
+                  <Trans context="HostRecapPanel, button">Save draft
+                </Trans></button>
                 <button type="button" className={primary} disabled={busy !== null || !body.trim() || blocked} onClick={send}>
                   {reach === 1 ? "Send to 1 person" : `Send to ${reach} people`}
                 </button>
@@ -204,8 +206,8 @@ export default function HostRecapPanel({
           )}
 
           <div className="space-y-1">
-            <h4 className="text-sm font-semibold text-foreground">Answers</h4>
-            {view.answers.length === 0 && <p className="text-xs text-muted-foreground">No answers yet.</p>}
+            <h4 className="text-sm font-semibold text-foreground"><Trans context="HostRecapPanel, h4">Answers</Trans></h4>
+            {view.answers.length === 0 && <p className="text-xs text-muted-foreground"><Trans context="HostRecapPanel, p">No answers yet.</Trans></p>}
             {q1.length > 0 && (
               <p className="text-sm text-foreground">
                 {view.questions[0]} Yes: {q1.filter((a) => a.answer === "yes").length}, No: {q1.filter((a) => a.answer === "no").length}

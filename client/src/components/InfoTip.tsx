@@ -70,6 +70,7 @@
  */
 import { decayReachSentence } from "@shared/tokenScale";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 
 const PLAQUE_MAX_W = 264;
 
@@ -143,6 +144,7 @@ const BARE_TAP_MARK =
   "inline-flex items-center justify-center w-4 h-4 rounded-full border border-current/40 text-[10px] leading-none opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-ring";
 
 export default function InfoTip({ tip, children, label, className = "", triggerClassName = "", tapBox = false }: InfoTipProps) {
+  const { t } = useLingui();
   const tap = triggerClassName || WORDED_TAP;
   const padded = children != null && tap.includes(WORDED_TAP);
   const [open, setOpen] = useState(false);
@@ -231,7 +233,7 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
         ref={triggerRef}
         aria-expanded={open}
         aria-describedby={id}
-        aria-label={bare ? (label ?? "What is this?") : undefined}
+        aria-label={bare ? (label ?? t({ message: "What is this?", context: "InfoTip, aria-label" })) : undefined}
         onPointerDown={() => {
           pointerDown.current = true;
         }}

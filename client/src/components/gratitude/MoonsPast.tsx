@@ -36,6 +36,7 @@ import { useEffect, useState } from "react";
 
 import { moonCountLabel } from "@shared/villageMoon";
 import { useModuleOn } from "@/modules/ModuleProvider";
+import { Trans } from "@lingui/react/macro";
 
 interface Total {
   name: string;
@@ -111,12 +112,12 @@ export default function MoonsPast({ currency }: { currency: string }) {
   return (
     <section aria-labelledby="moons-h" className="mt-12">
       <h2 id="moons-h" className="font-display text-2xl font-bold text-foreground">
-        Moons past
-      </h2>
+        <Trans context="MoonsPast, h2">Moons past
+      </Trans></h2>
       <p className="mt-2 max-w-prose text-sm text-muted-foreground">
-        Every moon this village has closed, and what it settled to. A moon is closed by a
+        <Trans context="MoonsPast, p">Every moon this village has closed, and what it settled to. A moon is closed by a
         person, never by a clock, so a moon appears here once somebody has closed it.
-      </p>
+      </Trans></p>
 
       <div className="mt-6 space-y-4">
         {cycles.slice(0, MOONS_SHOWN).map((c) => {
@@ -134,8 +135,8 @@ export default function MoonsPast({ currency }: { currency: string }) {
 
               {totals.length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Nobody was named this moon.
-                </p>
+                  <Trans context="MoonsPast, p">Nobody was named this moon.
+                </Trans></p>
               ) : (
                 <ul className="mt-3 space-y-1.5">
                   {/*
@@ -155,8 +156,8 @@ export default function MoonsPast({ currency }: { currency: string }) {
                       </span>
                       {(t.credited ?? 0) > 0 && (
                         <span className="text-open">
-                          {t.credited} {t.poolToken ?? ""} released
-                        </span>
+                          <Trans context="MoonsPast, span">{t.credited} {t.poolToken ?? ""} released
+                        </Trans></span>
                       )}
                     </li>
                   ))}
@@ -168,9 +169,9 @@ export default function MoonsPast({ currency }: { currency: string }) {
                   chronicle of recognition and is told nothing about value. */}
               {pool && (
                 <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
-                  The value pool settled this moon, split by the recognition each person
+                  <Trans context="MoonsPast, p">The value pool settled this moon, split by the recognition each person
                   received from members whose sends counted.
-                </p>
+                </Trans></p>
               )}
             </article>
           );

@@ -39,6 +39,7 @@ import { m } from "framer-motion";
 
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import type { VoicesAnswer } from "@shared/gratitudeVoices";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * Size follows position, not importance.
@@ -110,8 +111,8 @@ export default function VoicesHero() {
     <section aria-labelledby="voices-h" className="mb-14">
       {/* An h2: the wall's own heading is the page's one h1 (QA P1-13). */}
       <h2 id="voices-h" className="sr-only">
-        What people here have thanked each other for
-      </h2>
+        <Trans context="VoicesHero, h2">What people here have thanked each other for
+      </Trans></h2>
 
       <div className="columns-1 gap-x-10 sm:columns-2 [&>*]:break-inside-avoid">
         {answer.voices.map((v, i) => (
@@ -175,10 +176,10 @@ export default function VoicesHero() {
       */}
       {anyExamples && (
         <p className="mt-2 max-w-prose text-sm text-muted-foreground">
-          The lines marked as examples ship with every village. They retire for
+          <Trans context="VoicesHero, p">The lines marked as examples ship with every village. They retire for
           good once enough people here have thanked each other, and nothing you
           send is ever mixed in with them.
-        </p>
+        </Trans></p>
       )}
     </section>
   );

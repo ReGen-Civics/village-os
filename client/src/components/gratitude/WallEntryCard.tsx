@@ -167,8 +167,8 @@ export default function WallEntryCard({ entry, mutual = false, lit = false, onLi
       onBlur={onLight ? () => onLight(false) : undefined}
     >
       <blockquote className="mb-3 font-display text-lg leading-snug text-card-foreground sm:text-xl">
-        &ldquo;{entry.message}&rdquo;
-      </blockquote>
+        <Trans context="WallEntryCard, blockquote">&ldquo;{entry.message}&rdquo;
+      </Trans></blockquote>
       <div className="flex flex-col gap-1 text-sm text-muted-foreground">
         <span className="inline-flex items-center">
           <Face who={entry.from} />

@@ -23,7 +23,7 @@ import {
   X,
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useReplyPromise } from "@/components/ContributorRoutes";
 import { useSearch } from "wouter";
 import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
@@ -230,7 +230,7 @@ export default function WorkWithUs() {
         <div className="container max-w-3xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-3">
             <Handshake className="w-6 h-6 text-amber-on-band" />
-            <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase">Work With Us</span>
+            <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase"><Trans context="WorkWithUs, span">Work With Us</Trans></span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold mb-4" data-venture-heading={venture ? "" : undefined}>
             {venture ? t({ message: "Start a venture", context: "four ways to build: a venture" }) : `Build and grow alongside ${projectName}`}
@@ -267,8 +267,8 @@ export default function WorkWithUs() {
               mode === "form" ? "bg-teal-deep text-white" : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-100"
             }`}
           >
-            <ClipboardList className="w-4 h-4" /> Fill the form yourself
-          </button>
+            <Trans context="WorkWithUs, button"><ClipboardList className="w-4 h-4" /> Fill the form yourself
+          </Trans></button>
         </div>
       </div>
 
@@ -295,9 +295,9 @@ export default function WorkWithUs() {
       </section>
 
       <p className="text-center text-xs text-muted-foreground max-w-2xl mx-auto px-4 pb-12">
-        This form is an invitation to propose and does not constitute an offer, agreement, or commitment.
+        <Trans context="WorkWithUs, p">This form is an invitation to propose and does not constitute an offer, agreement, or commitment.
         Any partnership is subject to mutual agreement and formal terms.
-      </p>
+      </Trans></p>
     </Layout>
   );
 }
@@ -387,23 +387,23 @@ function ProposalForm({
     <form onSubmit={submit} className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 md:p-8 space-y-8">
       {/* About you */}
       <div>
-        <h2 className="font-display text-xl font-bold text-teal-deep mb-1">About you</h2>
-        <p className="text-sm text-muted-foreground mb-4">So we know who we're speaking with.</p>
+        <h2 className="font-display text-xl font-bold text-teal-deep mb-1"><Trans context="WorkWithUs, h2">About you</Trans></h2>
+        <p className="text-sm text-muted-foreground mb-4"><Trans context="WorkWithUs, p">So we know who we're speaking with.</Trans></p>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="work-name" className="block text-sm font-semibold text-foreground mb-1">Name <span className="text-red-500">*</span></label>
+            <label htmlFor="work-name" className="block text-sm font-semibold text-foreground mb-1"><Trans context="WorkWithUs, label">Name <span className="text-red-500">*</span></Trans></label>
             <input id="work-name" autoComplete="name" type="text" value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none focus:border-teal-deep" />
           </div>
           <div>
-            <label htmlFor="work-email" className="block text-sm font-semibold text-foreground mb-1">Email <span className="text-red-500">*</span></label>
+            <label htmlFor="work-email" className="block text-sm font-semibold text-foreground mb-1"><Trans context="WorkWithUs, label">Email <span className="text-red-500">*</span></Trans></label>
             <input id="work-email" autoComplete="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none focus:border-teal-deep" />
           </div>
           <div>
-            <label htmlFor="work-phone" className="block text-sm font-semibold text-foreground mb-1">Phone / WhatsApp</label>
+            <label htmlFor="work-phone" className="block text-sm font-semibold text-foreground mb-1"><Trans context="WorkWithUs, label">Phone / WhatsApp</Trans></label>
             <input id="work-phone" autoComplete="tel" type="text" value={form.phone} onChange={(e) => set("phone", e.target.value)} className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none focus:border-teal-deep" />
           </div>
           <div>
-            <label htmlFor="work-background" className="block text-sm font-semibold text-foreground mb-1">What you do / where you're based</label>
+            <label htmlFor="work-background" className="block text-sm font-semibold text-foreground mb-1"><Trans context="WorkWithUs, label">What you do / where you're based</Trans></label>
             <input id="work-background" type="text" value={form.background} onChange={(e) => set("background", e.target.value)} className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none focus:border-teal-deep" />
           </div>
         </div>
@@ -422,7 +422,7 @@ function ProposalForm({
 
       {/* Reciprocity */}
       <div>
-        <h2 className="font-display text-xl font-bold text-teal-deep mb-1">Reciprocity</h2>
+        <h2 className="font-display text-xl font-bold text-teal-deep mb-1"><Trans context="WorkWithUs, h2">Reciprocity</Trans></h2>
         <p className={`text-sm text-muted-foreground mb-4 break-words${reciprocityLede === null ? " invisible" : ""}`}>
           <Emphasized text={reciprocityLede ?? "\u00a0"} />
           {reciprocityOptions.length > 0 && (
@@ -454,8 +454,8 @@ function ProposalForm({
           })}
         </div>
         )}
-        <label htmlFor="work-reciprocity" className="block text-sm font-semibold text-foreground mb-1">Tell us more about the exchange you're proposing</label>
-        <p className="text-xs text-muted-foreground mb-2">Amounts, structure, percentages, a blend, or something we haven't listed.</p>
+        <label htmlFor="work-reciprocity" className="block text-sm font-semibold text-foreground mb-1"><Trans context="WorkWithUs, label">Tell us more about the exchange you're proposing</Trans></label>
+        <p className="text-xs text-muted-foreground mb-2"><Trans context="WorkWithUs, p">Amounts, structure, percentages, a blend, or something we haven't listed.</Trans></p>
         <VoiceArea value={form.reciprocityDetail} onValue={(v) => set("reciprocityDetail", v)}
           talk={{
             label: t({ message: "What you offer in return", context: "voice field label: work with us reciprocity" }),
@@ -468,8 +468,8 @@ function ProposalForm({
 
       {/* Optional attachment */}
       <div>
-        <h2 className="font-display text-xl font-bold text-teal-deep mb-1">Bring a picture (optional)</h2>
-        <p className="text-sm text-muted-foreground mb-3">A sketch, a photo, or a one-pager helps us see it. Image or PDF, up to 10MB.</p>
+        <h2 className="font-display text-xl font-bold text-teal-deep mb-1"><Trans context="WorkWithUs, h2">Bring a picture (optional)</Trans></h2>
+        <p className="text-sm text-muted-foreground mb-3"><Trans context="WorkWithUs, p">A sketch, a photo, or a one-pager helps us see it. Image or PDF, up to 10MB.</Trans></p>
         {form.attachment ? (
           <div className="inline-flex items-center gap-2 bg-teal-deep/5 border border-teal-deep/20 rounded-lg px-3 py-2 text-sm text-teal-deep">
             <Paperclip className="w-4 h-4" /> {form.attachmentName || "Attached"}
@@ -502,7 +502,7 @@ function ProposalForm({
       <button type="submit" disabled={submitting} className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-teal-deep text-white font-semibold px-8 py-3 rounded-xl hover:bg-teal-deep-dark disabled:opacity-50 transition-colors">
         {submitting ? "Sending…" : "Send proposal"} <ArrowRight className="w-4 h-4" />
       </button>
-      <p className="text-xs text-stone-500">Your answers save as you go, so you can come back and finish later.</p>
+      <p className="text-xs text-stone-500"><Trans context="WorkWithUs, p">Your answers save as you go, so you can come back and finish later.</Trans></p>
     </form>
   );
 }

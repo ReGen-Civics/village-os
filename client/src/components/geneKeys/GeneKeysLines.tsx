@@ -23,6 +23,7 @@ import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import ShareLines from "./ShareLines";
 import { BTN_LINK, BTN_PLAIN, EYEBROW, HINT, TILE } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 function SphereTile({ s }: { s: SphereView }) {
   return (
@@ -31,7 +32,7 @@ function SphereTile({ s }: { s: SphereView }) {
       {s.tagline ? <span className="text-xs text-muted-foreground">{s.tagline}</span> : null}
       <span className="font-display text-3xl text-notice">{s.keyLine}</span>
       <span className="text-xs text-foreground">
-        Line {s.line} · {s.word}
+        <Trans context="GeneKeysLines, span">Line {s.line} · {s.word}</Trans>
       </span>
     </div>
   );
@@ -49,17 +50,17 @@ export function GeneKeysLines({ view, whose }: { view: GeneKeysView; whose: stri
       </div>
       {view.love?.length ? (
         <details className="group rounded-xl border border-border bg-background p-4">
-          <summary className="flex min-h-11 cursor-pointer items-center font-medium text-foreground">Love and Prosperity</summary>
-          <p className={`${EYEBROW} mt-3`}>Love</p>
+          <summary className="flex min-h-11 cursor-pointer items-center font-medium text-foreground"><Trans context="GeneKeysLines, summary">Love and Prosperity</Trans></summary>
+          <p className={`${EYEBROW} mt-3`}><Trans context="GeneKeysLines, p">Love</Trans></p>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {view.love.map((s) => (
               <SphereTile key={s.sphere} s={s} />
             ))}
           </div>
           {chosen && view.love.some((s) => MOON_SPHERES.has(s.sphere)) ? (
-            <p className={`${HINT} mt-2`}>Attraction follows the Moon. With a chosen birth time it may read differently.</p>
+            <p className={`${HINT} mt-2`}><Trans context="GeneKeysLines, p">Attraction follows the Moon. With a chosen birth time it may read differently.</Trans></p>
           ) : null}
-          <p className={`${EYEBROW} mt-4`}>Prosperity</p>
+          <p className={`${EYEBROW} mt-4`}><Trans context="GeneKeysLines, p">Prosperity</Trans></p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {view.prosperity.map((s) => (
               <SphereTile key={s.sphere} s={s} />
@@ -74,13 +75,13 @@ export function GeneKeysLines({ view, whose }: { view: GeneKeysView; whose: stri
           <span className="font-semibold text-notice">{view.strategy}.</span> {view.strategyLine}
         </p>
         <p className="text-sm leading-relaxed text-foreground">
-          <span className="font-semibold text-notice">{view.authorityName} authority.</span> {view.authorityLine}
+          <span className="font-semibold text-notice"><Trans context="GeneKeysLines, span">{view.authorityName} authority.</Trans></span> {view.authorityLine}
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">Type, strategy and authority come from Human Design.</p>
+        <p className="mt-1 text-xs text-muted-foreground"><Trans context="GeneKeysLines, p">Type, strategy and authority come from Human Design.</Trans></p>
       </div>
       <a className={BTN_LINK} href={GENE_KEYS_SITE} target="_blank" rel="noopener noreferrer">
-        Explore more in depth on genekeys.com
-      </a>
+        <Trans context="GeneKeysLines, a">Explore more in depth on genekeys.com
+      </Trans></a>
     </div>
   );
 }
@@ -141,7 +142,7 @@ export function GeneKeysOwnerControls({ mine }: { mine: OwnGeneKeysView }) {
       </p>
       {signs ? <p className={HINT}>{signs}</p> : null}
       {mine.stale ? (
-        <p className="text-sm text-notice">Your lines were found with an older calculator. Find them again to be sure they are right.</p>
+        <p className="text-sm text-notice"><Trans context="GeneKeysLines, p">Your lines were found with an older calculator. Find them again to be sure they are right.</Trans></p>
       ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={BTN_PLAIN} disabled={busy} onClick={() => act(() => changeMyGeneKeys({ visibility: shown ? "hide" : "show" }))}>
@@ -161,16 +162,16 @@ export function GeneKeysOwnerControls({ mine }: { mine: OwnGeneKeysView }) {
         </button>
         <ShareLines view={mine} />
         <Link href="/profile/gene-keys" className={BTN_PLAIN}>
-          Find them again
-        </Link>
+          <Trans context="GeneKeysLines, Link">Find them again
+        </Trans></Link>
         <button
           type="button"
           className={BTN_LINK}
           disabled={busy}
           onClick={() => act(async () => ((await removeMyGeneKeys()) ? null : mine))}
         >
-          Remove my Gene Keys
-        </button>
+          <Trans context="GeneKeysLines, button">Remove my Gene Keys
+        </Trans></button>
       </div>
       {problem ? (
         <p role="alert" className="text-sm text-destructive">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * A window onto the Living Map, on the landing page.
@@ -28,6 +29,7 @@ import { useModule } from "@/modules/ModuleProvider";
  * It is a picture that happens to be alive; the whole card is the link.
  */
 export default function MapPeek() {
+  const { t } = useLingui();
   const mapModule = useModule("map");
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [live, setLive] = useState(false);
@@ -69,8 +71,8 @@ export default function MapPeek() {
       <div className="container max-w-5xl">
         <div className="text-center mb-8">
           <h2 className="font-display text-3xl font-bold text-foreground mb-2">
-            See the village
-          </h2>
+            <Trans context="MapPeek, h2">See the village
+          </Trans></h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             {/* It promised every building traced to something true, the same
                 promise the map's own guide made over sample data, and both
@@ -85,7 +87,7 @@ export default function MapPeek() {
             className="group block relative rounded-2xl overflow-hidden border border-border shadow-lg
                        aspect-[16/9] bg-teal-deep/10 focus:outline-none focus-visible:ring-2
                        focus-visible:ring-teal-deep"
-            aria-label="Open the Living Map"
+            aria-label={t({ message: "Open the Living Map", context: "MapPeek, aria-label" })}
           >
             {live ? (
               <iframe
@@ -104,10 +106,10 @@ export default function MapPeek() {
             {/* A scrim so the label stays legible over painted land. */}
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-5">
               <span className="inline-flex items-center gap-2 text-white font-medium">
-                Open the Living Map
+                <Trans context="MapPeek, span">Open the Living Map
                 <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
                   &rarr;
-                </span>
+                </span></Trans>
               </span>
             </div>
           </a>

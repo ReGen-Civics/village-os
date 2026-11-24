@@ -45,6 +45,7 @@ import { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { useRoleWord } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 /** Exactly what `/api/org/roles/:id/history` answers with, per row. */
 export interface SeatSeating {
@@ -191,13 +192,13 @@ export default function SeatHistory({
     if (signedIn) return null;
     return (
       <p className="text-xs text-muted-foreground">
-        Sign in to see who has held this {roleWord.name.toLowerCase()} before.
-      </p>
+        <Trans context="SeatHistory, p">Sign in to see who has held this {roleWord.name.toLowerCase()} before.
+      </Trans></p>
     );
   }
 
   if (rows === null) {
-    return <p className="text-xs text-muted-foreground">Reading who has held this role…</p>;
+    return <p className="text-xs text-muted-foreground"><Trans context="SeatHistory, p">Reading who has held this role…</Trans></p>;
   }
 
   const names = holderOrder(rows);
@@ -207,9 +208,9 @@ export default function SeatHistory({
   return (
     <div>
       <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-        <History className="w-3.5 h-3.5" aria-hidden="true" />
+        <Trans context="SeatHistory, h4"><History className="w-3.5 h-3.5" aria-hidden="true" />
         Who has held this role
-      </h4>
+      </Trans></h4>
 
       {/* A SEAT NOBODY HAS HELD AND A SEAT WHOSE NAMES ARE GONE ARE NOT THE
           SAME SEAT, and they arrive here looking alike: `holderOrder` returns
@@ -221,27 +222,27 @@ export default function SeatHistory({
           were removed when the people asked. */}
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Nobody has been recorded in this role yet. That is what a role looks like before somebody
+          <Trans context="SeatHistory, p">Nobody has been recorded in this role yet. That is what a role looks like before somebody
           steps into it.
-        </p>
+        </Trans></p>
       ) : names.length === 0 ? (
         <p className="text-sm text-muted-foreground leading-relaxed">
-          This role has been held. The people who held it asked for their names to be removed, so its
+          <Trans context="SeatHistory, p">This role has been held. The people who held it asked for their names to be removed, so its
           record keeps the dates below.
-        </p>
+        </Trans></p>
       ) : names.length === 1 ? (
         <p className="text-sm text-foreground leading-relaxed">
-          {names[0]} is the first person on this role's record.
-        </p>
+          <Trans context="SeatHistory, p">{names[0]} is the first person on this role's record.
+        </Trans></p>
       ) : (
-        <p className="text-sm text-foreground leading-relaxed">This role has been held by: {chain(names)}.</p>
+        <p className="text-sm text-foreground leading-relaxed"><Trans context="SeatHistory, p">This role has been held by: {chain(names)}.</Trans></p>
       )}
 
       {passed && (
         <p className="mt-1.5 text-sm text-foreground leading-relaxed">
-          It passed from {passed.from} to {passed.to} on {day(passed.on)}. A role that outlasts the
+          <Trans context="SeatHistory, p">It passed from {passed.from} to {passed.to} on {day(passed.on)}. A role that outlasts the
           person holding it is one of the many reasons our village writes its roles down.
-        </p>
+        </Trans></p>
       )}
 
       {newestFirst.length > 0 && (

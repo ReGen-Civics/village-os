@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useVillageContent } from "@/hooks/useVillageContent";
 import { CARD, EYEBROW, HINT, LEDE, RING } from "@/components/journey/look";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The village's own legal, tax and residency environment (S2 brochure lane,
@@ -91,12 +92,12 @@ export default function WhyCostaRica() {
             </div>
             <div>
               <h2 className="font-display text-xl font-semibold text-card-foreground mb-1.5">
-                Legal, Tax and Residency Context
-              </h2>
+                <Trans context="WhyCostaRica, h2">Legal, Tax and Residency Context
+              </Trans></h2>
               <p className={`${HINT} leading-relaxed`}>
-                This village has not yet published the legal, tax and residency details
+                <Trans context="WhyCostaRica, p">This village has not yet published the legal, tax and residency details
                 for where it sits. Ask a steward, or check back in a few moons.
-              </p>
+              </Trans></p>
             </div>
           </div>
         </div>
@@ -109,8 +110,8 @@ export default function WhyCostaRica() {
       <div className="container max-w-5xl mx-auto px-4">
         <div className="text-center mb-10 sm:mb-12">
           <p className={`${EYEBROW} mb-3`}>
-            Location & Context
-          </p>
+            <Trans context="WhyCostaRica, p">Location & Context
+          </Trans></p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             {overview?.heading || "Legal, Tax and Residency Context"}
           </h2>

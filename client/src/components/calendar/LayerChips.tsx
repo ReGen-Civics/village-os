@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CalendarItem, CalendarLayer } from "@shared/gatherings";
 import { readStoredJson, writeStoredJson } from "@/lib/safeStorage";
+import { useLingui } from "@lingui/react/macro";
 
 const STORE_KEY = "calendar.layersOff";
 
@@ -58,10 +59,11 @@ export function useLayerFilter(items: CalendarItem[]): {
 }
 
 export function LayerChips({ present, off, toggle }: { present: CalendarLayer[]; off: Set<CalendarLayer>; toggle: (l: CalendarLayer) => void }) {
+  const { t } = useLingui();
   // One layer present means nothing to filter; the row would be noise.
   if (present.length < 2) return null;
   return (
-    <div className="print-hide flex items-center gap-1.5 flex-wrap mb-2" role="group" aria-label="Calendar layers">
+    <div className="print-hide flex items-center gap-1.5 flex-wrap mb-2" role="group" aria-label={t({ message: "Calendar layers", context: "LayerChips, aria-label" })}>
       {CHIP_ORDER.filter((c) => present.includes(c.id)).map((c) => {
         const on = !off.has(c.id);
         return (

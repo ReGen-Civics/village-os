@@ -4,6 +4,7 @@ import { useSeason } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { civilDayWords } from "@shared/seasonPlans";
 import { useNewcomer } from "@/lib/newcomer";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * "Plan your season", while the window is open (season plans RC1). Members
@@ -13,10 +14,10 @@ import { useNewcomer } from "@/lib/newcomer";
 function PlanLine({ window }: { window: { seasonName: string; closesOn: string } }) {
   return (
     <span className="basis-full text-amber-on-band text-sm">
-      Plan your season{window.seasonName ? `: ${window.seasonName}` : ""}. Open until {civilDayWords(window.closesOn)}.{" "}
+      <Trans context="SeasonBanner, span">Plan your season{window.seasonName ? `: ${window.seasonName}` : ""}. Open until {civilDayWords(window.closesOn)}.{" "}
       <Link href="/season-plans/mine" className="underline font-medium">
         Plan your season
-      </Link>
+      </Link></Trans>
     </span>
   );
 }
@@ -77,22 +78,22 @@ export default function SeasonBanner() {
         {active.focus && <span className="text-white text-sm">{active.focus}</span>}
         {goals.length > 0 && !newcomer && (
           <span className="text-white text-xs" data-season-goals-met="">
-            {met} of {goals.length} season goal{goals.length === 1 ? "" : "s"} met
-          </span>
+            <Trans context="SeasonBanner, span">{met} of {goals.length} season goal{goals.length === 1 ? "" : "s"} met
+          </Trans></span>
         )}
         {/* A date, never a countdown (the art rules, batch 158): it once read "49 days until the season turns". */}
         {!season.openEnded && active.endsOn && daysLeft != null && daysLeft >= 0 && (
           <span className="text-white text-xs" data-season-closes="">
-            {active.name} closes on {civilDayWords(active.endsOn)}.
-          </span>
+            <Trans context="SeasonBanner, span">{active.name} closes on {civilDayWords(active.endsOn)}.
+          </Trans></span>
         )}
         {turningSoon && (
           <span className="basis-full text-amber-on-band text-sm">
-            Before the season turns, run the end-of-season governance: record what this season did, and seat
+            <Trans context="SeasonBanner, span">Before the season turns, run the end-of-season governance: record what this season did, and seat
             people for the next season.{" "}
             <Link href="/seasonal-festivals" className="underline font-medium">
               See the season
-            </Link>
+            </Link></Trans>
           </span>
         )}
         {plan}
