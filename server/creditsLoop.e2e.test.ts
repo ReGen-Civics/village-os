@@ -12,9 +12,11 @@
  *      pays once; the person who runs the venture cannot pay it.
  *   5. The person who runs it sees the balance and the payment; the admin
  *      sees the same; the ledger still sums to zero.
- *   6. STOPS AT THE SEAM credits lane 2 fills: the venture redeems, a Treasury
- *      role confirms, inside the per-moon redemption cap. Marked `todo` below
- *      so the suite says what it does not yet prove.
+ *   6. The venture redeems (credits lane 2): the person who runs it asks, the
+ *      credits are held, a Treasury holder who does not run it confirms with
+ *      the payment's reference after paying outside the platform, and the held
+ *      credits burn to `sys:redeemed`. A Treasury holder who also runs the
+ *      venture is refused; the per-moon cap is counted and 0 means zero.
  *
  * `scripts/rehearse-credits-loop.mjs` drives the same steps over HTTP against
  * a scratch or staging village, for an admin to run by hand.
@@ -220,5 +222,90 @@ describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's accou
     expect(acct[0]).toMatchObject({ kind: "org", faucet: 0 });
   });
 
-  it.todo("6. SEAM for credits lane 2: the venture asks to redeem, a Treasury role confirms, inside the per-moon redemption cap, and the credits leave its account");
+  it("6. the venture redeems, the Treasury confirms after paying, the credits burn, and the ledger still sums to zero", async () => {
+    const ask = (amount: number, token = people.runner.token) =>
+      call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: SLUG, amount, currency: "USD", payTo: "Bank account 0001, Rae Runner" }, token);
+
+    // Shut when a village is born.
+    const shut = await ask(5);
+    expect(shut.status, shut.text).toBe(403);
+    await dial("ledger.org_redemption_open", "true");
+
+    // Two Treasury holders, admitted and seated in the seeded Treasury power group. One of them
+    // also runs the venture, which is the person the lead's rule refuses.
+    const tess = await register("Tess Treasurer", "cl-tess");
+    const oli = await register("Oli Operator", "cl-oli");
+    for (const p of [tess, oli]) {
+      const admitted = await call("PUT", `/api/admin/players/${p.id}/stage`, { stageId: "member" });
+      expect(admitted.status, admitted.text).toBe(200);
+      const seated = await call("POST", "/api/admin/roles/treasury/holders", { userId: p.id, action: "add" });
+      expect(seated.status, seated.text).toBe(200);
+    }
+    const alsoRuns = await call("POST", `/api/admin/org/roles/${roleId}/holders`, { userId: oli.id, holderKind: "member" });
+    expect(alsoRuns.status, alsoRuns.text).toBe(200);
+
+    // A member who runs nothing cannot redeem a venture's credits.
+    expect((await ask(5, people.payer.token)).status).toBe(403);
+
+    // The person who runs it asks. The credits are held at once, priced at the peg.
+    const asked = await ask(10);
+    expect(asked.status, asked.text).toBe(201);
+    const id = String(asked.json.redemption.id);
+    expect(asked.json.redemption).toMatchObject({ state: "requested", credits: 10, currency: "USD", rateMinor: 100, grossMinor: 1000, payTo: "Bank account 0001, Rae Runner" });
+    const mine = await call("GET", "/api/org-accounts/mine", undefined, people.runner.token);
+    expect(mine.json.accounts[0].account.balances[SLUG]).toBe(15 * UNIT);
+
+    // The queue is the key holders': the runner is refused it, Tess sees the request.
+    const runnerQueue = await call("GET", "/api/admin/org-redemptions", undefined, people.runner.token);
+    expect(runnerQueue.status).toBeGreaterThanOrEqual(401);
+    const queue = await call("GET", "/api/admin/org-redemptions", undefined, tess.token);
+    expect(queue.status, queue.text).toBe(200);
+    expect(queue.json.waiting.map((w: any) => w.id)).toEqual([id]);
+    const hint = await call("GET", "/api/org-redemptions/mine", undefined, tess.token);
+    expect(hint.json.mayConfirm, "the card is told to ask for the queue").toBe(true);
+    const [told] = await pool.query<any[]>("SELECT user_id FROM notifications WHERE dedupe_key LIKE ?", [`org-redemption:${id}:asked:%`]); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(told.map((r: any) => String(r.user_id)), "the Treasury hears, never the venture's own people").toEqual([tess.id]);
+
+    // Nobody who runs the venture confirms it, even holding the key. A confirmation needs a reference.
+    const self = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-SELF" }, oli.token);
+    expect(self.status, self.text).toBe(409);
+    expect(String(self.json?.error)).toMatch(/You run this venture/);
+    const noRef = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "" }, tess.token);
+    expect(noRef.status).toBe(409);
+
+    // Tess paid outside the platform, and confirms. The held credits burn to the retiring sink.
+    const confirmed = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-0001" }, tess.token);
+    expect(confirmed.status, confirmed.text).toBe(200);
+    expect(confirmed.json.redemption).toMatchObject({ state: "confirmed", paymentRef: "TX-0001", decidedByName: "Tess Treasurer" });
+    const twice = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-0001" }, tess.token);
+    expect(twice.status, "one burn per redemption").toBe(409);
+    const [burn] = await pool.query<any[]>("SELECT from_account, to_account, amount FROM token_ledger WHERE source = 'org_redemption_burn'"); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(burn).toEqual([{ from_account: "sys:org-redemption-hold", to_account: "sys:redeemed", amount: 10 * UNIT }]);
+    const [runnersTold] = await pool.query<any[]>("SELECT user_id FROM notifications WHERE dedupe_key LIKE ?", [`org-redemption:${id}:confirmed:%`]); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(runnersTold.map((r: any) => String(r.user_id)).sort()).toEqual([people.runner.id, oli.id].sort());
+
+    // The per-moon cap, counted across ventures: 10 spoken for, so a cap of 15 leaves 5.
+    await dial("ledger.org_redemption_moon_cap", "15");
+    const over = await ask(6);
+    expect(over.status, over.text).toBe(409);
+    expect(String(over.json?.error)).toMatch(/5 more/);
+    const fits = await ask(5);
+    expect(fits.status, fits.text).toBe(201);
+    const cancelled = await call("POST", `/api/org-redemptions/${fits.json.redemption.id}/cancel`, {}, people.runner.token);
+    expect(cancelled.status, cancelled.text).toBe(200);
+    await dial("ledger.org_redemption_moon_cap", "0");
+    expect((await ask(1)).status, "0 means zero").toBe(409);
+
+    // What is left: 15 in the venture, nothing held, 10 retired, and sum-zero for every token.
+    const after = await call("GET", "/api/org-accounts/mine", undefined, people.runner.token);
+    expect(after.json.accounts[0].account.balances[SLUG]).toBe(15 * UNIT);
+    const [bal] = await pool.query<any[]>("SELECT account_id, balance FROM token_balances WHERE token_type = ? AND account_id IN ('sys:org-redemption-hold','sys:redeemed')", [SLUG]); // module-review-ok: a read of the scratch schema this suite provisioned
+    const by = Object.fromEntries(bal.map((r: any) => [r.account_id, Number(r.balance)]));
+    expect(by["sys:org-redemption-hold"] ?? 0).toBe(0);
+    expect(by["sys:redeemed"]).toBe(10 * UNIT);
+    const [sums] = await pool.query<any[]>("SELECT token_type, SUM(balance) AS total FROM token_balances GROUP BY token_type"); // module-review-ok: a read of the scratch schema this suite provisioned
+    for (const s of sums) expect(Number(s.total), `sum-zero for ${s.token_type}`).toBe(0);
+    const myRecord = await call("GET", "/api/org-redemptions/mine", undefined, people.runner.token);
+    expect(myRecord.json.ventures[0].redeemed).toEqual([{ currency: "USD", minor: 1000, text: expect.any(String) }]);
+  });
 });

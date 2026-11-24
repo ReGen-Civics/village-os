@@ -2250,3 +2250,11 @@ Admin, Integrations has two new cards, `railway_project_token` (one Railway proj
 ## Venture credit accounts (migration 0419, 2026-11-23)
 
 - No env var. Migration 0419 adds `org_accounts` and `org_account_services` at boot. Two game variables, both off (Admin, Game Mechanics, Ledger): `ledger.org_accounts_open` lets members pay a venture's account and shows the people seated in the venture's role its balance, and `ledger.org_service_routing` sends the seat fee of a gathering a venture runs to that venture's account. Open an account in Admin, Tokens, Venture accounts (power: `operator.config`); which venture is first is yours to choose there. To rehearse the loop on a scratch or staging village: `node scripts/rehearse-credits-loop.mjs` (its header has the flags; tokens come from `VILLAGE_ADMIN_TOKEN`, `VILLAGE_PAYER_TOKEN`, `VILLAGE_RUNNER_TOKEN`, and issuance needs the village's launch vote to have carried).
+
+## A venture redeems its credits (migration 0420, 2026-11-23)
+
+- No env var. Migration 0420 adds `org_redemptions` and the system account `sys:org-redemption-hold` at boot. A boot step gives `redemption.confirm` to the seeded Treasury role once (`redemption-confirm-to-treasury-2026-11-23`); seat the people who pay venture redemptions there.
+- `ledger.org_redemption_open` (off): ventures may ask to redeem. Leave it off until your legal review clears paying out.
+- `ledger.org_redemption_moon_cap` (100): whole credits all ventures together may redeem per cycle, waiting plus confirmed. 0 means zero.
+- `ledger.org_redemption_rate` (1): what one credit is worth in the first listed currency. 0 means no venture can redeem.
+- `ledger.org_redemption_currencies` (USD): the currencies a venture may be paid in, first one is the rate's. A village paying in its local currency too lists it second (for example `USD,CRC`); the daily rate table converts it and the rate used is written on each redemption. To rehearse: `node scripts/rehearse-credits-loop.mjs ... --redeem N --pay-to "<where>"`, with `VILLAGE_TREASURER_TOKEN` and `--paid-ref` to confirm.

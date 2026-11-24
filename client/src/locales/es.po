@@ -1212,6 +1212,13 @@ msgstr "Pago en tokens, el bono sobre el pago"
 msgid "Open the canvas workbook"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: account.label
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Redemptions for {0}"
+msgstr "Canjes de {0}"
+
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
 msgid "underway"
@@ -2061,6 +2068,12 @@ msgctxt "AI transcript refusal"
 msgid "The service heard no words in this recording."
 msgstr "El servicio no oyó palabras en esta grabación."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Payment reference, or why not"
+msgstr "Referencia del pago, o por qué no"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"
 msgid "Say how we'll know value {n} is done."
@@ -2631,6 +2644,12 @@ msgctxt "application backup file"
 msgid "Roles"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Waiting for the Treasury"
+msgstr "Esperando a la Tesorería"
+
 #: client/src/pages/RoleDraft.tsx
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
 msgstr "No pudimos cargar los roles abiertos en este momento. Recarga la página para intentar de nuevo, o míralos en la página de Roles."
@@ -3006,6 +3025,12 @@ msgstr ""
 msgid "{notesArePublic} \"Nobody yet\" is an answer."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue button"
+msgid "Paid, confirm"
+msgstr "Pagado, confirmar"
+
 #: client/src/components/ComingSoon.tsx
 msgctxt "future venture pitch, part 3"
 msgid "Your experience building and running something like it"
@@ -3235,6 +3260,12 @@ msgstr "Para hablar: {0}"
 msgctxt "why a budget line does not count"
 msgid "it came from a source and nobody has adopted it yet"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "How many credits"
+msgstr "Cuántos créditos"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -3800,6 +3831,14 @@ msgstr "Cómo funciona la asignación"
 msgctxt "circle hearth, we meet"
 msgid "We will see you there. Your circle fills the seed."
 msgstr "Nos vemos allí. Tu círculo llena la semilla."
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: d.paymentRef
+#. placeholder {0}: h.paymentRef
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption payment reference"
+msgid "Ref {0}"
+msgstr "Ref. {0}"
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "Hide how this was worked out"
@@ -4886,6 +4925,12 @@ msgctxt "time zone field"
 msgid "Use a place name, such as Europe/Lisbon."
 msgstr "Usa el nombre de un lugar, como America/Costa_Rica."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Paid and confirmed"
+msgstr "Pagado y confirmado"
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "What was proposed"
@@ -4995,6 +5040,12 @@ msgstr "Compartido o completo"
 msgctxt "sera answers"
 msgid "A decision. It goes into a draft before it is live."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Which credits"
+msgstr "Qué créditos"
 
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: while a set of stock portraits uploads"
@@ -5234,6 +5285,13 @@ msgstr ""
 msgctxt "companion welcome"
 msgid "How do you like to be helped?"
 msgstr "¿Cómo te gusta que te ayuden?"
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: venture.redeemed.map((m) => m.text).join(", ")
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Paid to this venture through redemption so far: {0}"
+msgstr "Pagado a este emprendimiento por canjes hasta ahora: {0}"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -7351,6 +7409,12 @@ msgstr ""
 #~ msgid "Send"
 #~ msgstr "Enviar"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption currency"
+msgid "Paid in"
+msgstr "Pagado en"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: button"
 msgid "Split evenly"
@@ -8216,6 +8280,12 @@ msgstr ""
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Something hiccuped. Ask me that again?"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption button"
+msgid "Redeem"
+msgstr "Canjear"
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -9793,6 +9863,12 @@ msgstr "No llegó al servidor. Tu luz sigue igual."
 msgid "Minted: {remaining} left under this cycle's cap"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Cancelled"
+msgstr "Cancelado"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel, who answers"
 msgid "Answers come from Sera, through your village's org memory connection."
@@ -10643,6 +10719,12 @@ msgctxt "save bar"
 msgid "Saved."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Pay to:"
+msgstr "Pagar a:"
+
 #: client/src/pages/Reset.tsx
 msgid "A fresh start for this device"
 msgstr "Un nuevo comienzo para este dispositivo"
@@ -10763,6 +10845,12 @@ msgstr "Pendiente {owed}, enviado {sent}"
 msgctxt "admin venture accounts"
 msgid "Name members read"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue heading"
+msgid "Venture redemptions"
+msgstr "Canjes de emprendimientos"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -11163,6 +11251,15 @@ msgstr ""
 #~ msgctxt "level-up moment eyebrow"
 #~ msgid "A new stage"
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: w.credits
+#. placeholder {1}: w.tokenName
+#. placeholder {2}: w.rateText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "{0} {1} at {2} each"
+msgstr "{0} {1} a {2} cada uno"
 
 #. placeholder {0}: def.name
 #. placeholder {1}: adoptedOn(String(closing.adoptedAt))
@@ -13681,6 +13778,14 @@ msgctxt "voice invite"
 msgid "We love hearing your voice."
 msgstr "Nos encanta escuchar tu voz."
 
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: w.requestedByName ?? w.requestedBy
+#. placeholder {1}: day(w.createdAt)
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Asked by {0} on {1}"
+msgstr "Pedido por {0} el {1}"
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Places looking for a steward:"
 msgstr "Lugares que buscan quien los cuide:"
@@ -13947,6 +14052,11 @@ msgstr ""
 #: client/src/components/TreasurySync.tsx
 msgid "Your saved numbers did not load."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgid "Pay each venture outside the platform first, then confirm with the payment's reference. Confirming destroys the held credits. Nobody who runs a venture can confirm its own."
+msgstr "Primero paga a cada emprendimiento fuera de la plataforma y luego confirma con la referencia del pago. Confirmar destruye los créditos retenidos. Nadie que dirige un emprendimiento puede confirmar el suyo."
 
 #. placeholder {0}: civilDayWords(h.dueOn)
 #: client/src/components/profile/HandoffRespondRow.tsx
@@ -14493,6 +14603,16 @@ msgstr ""
 msgctxt "founding application compensation, with the village's token names"
 msgid "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
 msgstr "Cómo se reparte tu pago entre efectivo, {0} y {1}. Tu precio se fija arriba, con tu propuesta."
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: w.fxRate.toFixed(4)
+#. placeholder {1}: w.currency
+#. placeholder {2}: w.pegCurrency
+#. placeholder {3}: w.fxAsOf ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid ", converted at {0} {1} per {2} ({3})"
+msgstr ", convertido a {0} {1} por {2} ({3})"
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgctxt "role draft carry"
@@ -15605,6 +15725,12 @@ msgctxt "proposed changes"
 msgid "This page is for admins and for the people who hold the powers these changes need."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Not redeemed"
+msgstr "No canjeado"
+
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
 msgid "Accept all"
@@ -15796,6 +15922,12 @@ msgctxt "calendar spiral: what is on a day"
 msgid "something on the calendar"
 msgstr "algo en el calendario"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "The Treasury pays {gross}."
+msgstr "La Tesorería paga {gross}."
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 #~ msgctxt "coming-soon waitlist: what the details are for"
 #~ msgid "We use these details only to tell you when the role opens. You can ask us to remove them."
@@ -15949,6 +16081,12 @@ msgstr "Tú"
 #~ msgid "Apply with your draft"
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "The account, and the name on it"
+msgstr "La cuenta, y el nombre del titular"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "History"
@@ -15973,6 +16111,12 @@ msgstr ""
 msgctxt "roles page, opens a role's full card"
 msgid "Read the full card"
 msgstr "Leer la ficha completa"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "That did not go through."
+msgstr "Eso no se pudo hacer."
 
 #: client/src/components/priorities/TeamWeek.tsx
 msgid "This week, each person's top priority"
@@ -16449,6 +16593,12 @@ msgstr "Tus archivos y grabaciones suman {0}, {1} más de lo que puede llevar un
 msgctxt "admin quest roots"
 msgid "Roots it grows from"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "There is no daily rate for {currency} today."
+msgstr "Hoy no hay tipo de cambio diario para {currency}."
 
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "admin identity pack: the picture subjects field"
@@ -19023,6 +19173,12 @@ msgctxt "booking link field"
 msgid "Booking link"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Where the money should go"
+msgstr "A dónde debe ir el dinero"
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: the powers heading"
 msgid "What you can do"
@@ -19229,6 +19385,12 @@ msgstr ""
 msgctxt "sera answers"
 msgid "The line that follows has Undo, to bring them back."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Nothing is waiting."
+msgstr "No hay nada esperando."
 
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment heading"
@@ -20149,6 +20311,13 @@ msgstr ""
 msgctxt "admin: the village menu editor heading"
 msgid "Menu"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: r.json?.redemption?.grossText ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Asked. The Treasury pays {0} to where you said, then confirms."
+msgstr "Pedido. La Tesorería paga {0} a donde indicaste y luego confirma."
 
 #: client/src/components/Layout.tsx
 #, fuzzy
@@ -21401,6 +21570,12 @@ msgctxt "open proposal: the split badge"
 msgid "Split changed by applicant"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Cancel"
+msgstr "Cancelar"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Put back"
@@ -22226,6 +22401,12 @@ msgstr ""
 msgctxt "application backup file"
 msgid "Serves"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Not now"
+msgstr "Ahora no"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
@@ -24062,6 +24243,14 @@ msgctxt "pricing desk"
 msgid "Past prices"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: formatMoney(terms.rateMinor[terms.pegCurrency] ?? 0, terms.pegCurrency)
+#. placeholder {1}: terms.leftCredits
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "One credit is worth {0}. Ventures together can redeem {1} more credits this moon."
+msgstr "Un crédito vale {0}. Entre todos, los emprendimientos pueden canjear {1} créditos más esta luna."
+
 #. placeholder {0}: agreed.at.slice(0, 10)
 #. placeholder {1}: agreed.provider
 #: client/src/components/companion/CompanionPanel.tsx
@@ -25633,6 +25822,12 @@ msgctxt "admin compare row"
 msgid "Dates"
 msgstr "Fechas"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Decided recently"
+msgstr "Decididos hace poco"
+
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "founding application draft"
 msgid "We kept your answers from last time. References, files and recordings are never saved, so add them again."
@@ -25786,6 +25981,12 @@ msgctxt "hidden map page"
 msgid "Layers"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Ask to redeem"
+msgstr "Pedir el canje"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Applications are closed right now. Your draft stays here, and you can apply when they open."
 #~ msgstr ""
@@ -25871,6 +26072,12 @@ msgstr ""
 #~ msgctxt "role draft stat"
 #~ msgid "Answers for {answers} things"
 #~ msgstr "Respuestas para {answers} cosas"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue button"
+msgid "Do not redeem"
+msgstr "No canjear"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "a button that edits a matrix row"

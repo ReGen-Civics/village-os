@@ -3133,12 +3133,51 @@ runs). Neither holds a balance.
   venture's gathering goes to the treasury. Members never cash out, and a venture
   redeems, so moving your own credits into a venture you run would be cashing out
   with one extra step. Raised as an open question for the lead.
-- **No door out yet.** Redemption by a venture is credits lane 2. Until it lands a
-  venture account only fills, and the seams it will read are `orgBalances`,
-  `orgBalance`, `orgsOperatedBy` and `operatesOrg` in server/lib/orgAccounts.ts.
+- **One door out: redemption (0420, below).** A venture account never pays a member;
+  what it holds leaves only by being redeemed.
 - **Contribution.** `org_send` does not count as the village paying anybody
   (`server/lib/contributionPay.ts`): the payee is a venture and the payer bought
   something.
+
+### A venture redeems its credits (0420, credits lane 2)
+
+The lead's decisions of 23 Nov 2026: only ventures redeem, members never cash out; a
+redemption key holder (the Treasury role) confirms each one after the cash is paid
+outside the platform, never anybody who runs the venture; 1 credit is 1 USD, paid in
+whichever offered currency the venture chooses, with the rate used written on the
+row; a per-cycle cap across every venture that fails closed; switched off until the
+village's legal review clears it. Code: `server/lib/orgRedemptions.ts` (postings),
+`shared/orgRedemptions.ts` (the pure refusals and the quote),
+`server/routes/orgRedemptions.ts` (doors), table `org_redemptions`.
+
+- **Three postings, each in ONE transaction with its state change.** Ask: `org:<roleId>`
+  to `sys:org-redemption-hold`, source `org_redemption_hold`. Confirm: hold to
+  `sys:redeemed`, source `org_redemption_burn`, the member module's retiring sink, so
+  issued supply does not fall and the retired total rises. Refuse or cancel: hold back
+  to `org:<roleId>`, source `org_redemption_release`. The row and its posting commit
+  together (`postTransferOn`), so a waiting row always has its hold and the hold's
+  balance equals the waiting rows (`orgHoldReconciliation` reads both). Keys:
+  `org-redemption:<village>:<id>:hold|burn|release`, unique, so a burn and a release
+  can never both be written.
+- **A hold account of its own**, seeded by 0420, not a faucet. Reusing
+  `sys:redemption-hold` would break the member module's reconciliation, and a row in
+  `redemptions` would block the asker's exit and spend their member caps.
+- **The key is `redemption.confirm`**, through the one gate, given to the seeded
+  Treasury role (seed, plus a `runOnce` grant for a running village). On top of the
+  key, `orgDecideRefusal` refuses anybody seated in the venture's role and the person
+  who asked, and a confirmation needs the payment's reference.
+- **The cap.** `ledger.org_redemption_moon_cap`, whole credits per cycle across every
+  venture, counted from `cycleWindow()`: rows asked since the cycle began that are
+  waiting or confirmed. 0 means zero. Every move locks the hold account's row first,
+  so two ventures asking at once cannot both pass it.
+- **The price.** `ledger.org_redemption_rate` (1) in the first of
+  `ledger.org_redemption_currencies` (USD); another listed currency goes through the
+  daily rate table, and `peg_rate`, `fx_rate`, `fx_as_of`, `rate_minor` and
+  `gross_minor` are written once at the ask. A currency with no daily rate is refused.
+- **Not pay.** None of the three sources counts toward Contributor
+  (`server/lib/contributionPay.ts`): no credit reaches a member, and the cash a
+  venture is paid is counted on `org_redemptions` alone (`redeemedMoney`), never in
+  any "paid by the village" figure.
 
 ### What is not a spend
 

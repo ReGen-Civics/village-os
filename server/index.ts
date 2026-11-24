@@ -291,6 +291,7 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
+import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
 import { register as registerBudgetRoutes } from "./routes/budgets";
@@ -790,7 +791,7 @@ import { guardedFetchJson } from "./lib/toolcheck";
 import { register as registerTokenEditRoutes } from "./routes/tokenEdit";
 import { register as registerVillageExportRoutes } from "./routes/villageExport";
 import { register as registerSigningKeyRoutes } from "./routes/signingKey";
-import { grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, POT_STEWARD_GRANTS, ROLE_PAY_GRANTS, seedStarterRoles, STEWARD_CIRCLE_GRANTS } from "./lib/starterRoles";
+import { grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, POT_STEWARD_GRANTS, REDEMPTION_CONFIRM_GRANTS, ROLE_PAY_GRANTS, seedStarterRoles, STEWARD_CIRCLE_GRANTS } from "./lib/starterRoles";
 import { handTokenMintOverFor0112, handTokenMintToStewardsAndTreasury, type TokenMintHandoverDeps } from "./lib/tokenMintHandover"; // Rye, 2026-11-15
 import { endAgentReach, withAgentReachEnded } from "./lib/agentTokens"; // a new password and an admin's revoke end what the agent holds too
 import { proveAddress, raiseToFounder, sendPasswordEndedLetter, sendVerifyLetter } from "./lib/emailVerification"; // R104: an address is proved before its password is trusted
@@ -2094,6 +2095,7 @@ async function ensureDataFiles() {
   await runOnce("steward-circle-role-powers-2026-11-05", () => grantMoonReviewKeys(rolesRepo, STEWARD_CIRCLE_GRANTS, "Steward Circle's role and adoption powers (Rye, 2026-11-01)").then(() => undefined));
   await runOnce("redemption-ceilings-blank-2026-11-05", () => blankZeroRedemptionCeilings(getPool()).then((keys) => { if (keys.length) console.log(`[redemption] a stored 0 ceiling became blank, which is no ceiling: ${keys.join(", ")}`); })); // Rye, 2026-11-05: 0 now means zero
   await runOnce("pot-steward-to-treasury-2026-11-06", () => grantMoonReviewKeys(rolesRepo, POT_STEWARD_GRANTS, "the funding pots power, pot.steward (Rye, 2026-11-06)").then(() => undefined));
+  await runOnce("redemption-confirm-to-treasury-2026-11-23", () => grantMoonReviewKeys(rolesRepo, REDEMPTION_CONFIRM_GRANTS, "redemption.confirm on the Treasury role, for venture redemptions (the lead, 2026-11-23)").then(() => undefined));
   // A village started before the launch vote existed never ran the launch closer: token.mint goes to its stewards and Treasury here, once (server/lib/tokenMintHandover.ts).
   try { await handTokenMintOverFor0112({ ...tokenMintHandoverDeps(), gameStart: () => readGameStart(getPool()), applied: () => dataMigrations.get().applied ?? [], markApplied: (id) => dataMigrations.put({ applied: [...(dataMigrations.get().applied ?? []), id] }) }); } catch (e) { console.error("[token.mint] the boot hand-over failed (continuing; the admin keeps hand minting)", e); }
   await runOnce("comms-path-backfill-2026-10", async () => { await backfillPathEnrollments({ getPool, members }); }); // Village Comms 5.11: records paths, sends nothing
@@ -17913,6 +17915,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerRewardMomentRoutes(app, { authedUser, getPool, overLimit });
   registerSeasonSummaryRoutes(app, { authedUser, getPool, seasonState }); // idea 4: a member's season summed up (server/routes/seasonSummary.ts)
   registerRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, openRedemptionBallot: (id: string) => openRedemptionVote(id), overLimit, projectCurrency: () => mergedConfig().project.fiatCurrency, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") });
+  registerOrgRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, notifyAdmins, overLimit, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") }); // 0420: a venture redeems its credits (server/routes/orgRedemptions.ts)
   registerClosingPolicyRoutes(app, { isAdmin, adminActor, getPool, exitPolicy: exitPolicyRepo, ballot: { authedUser, capabilityCtx, notify, weightModeNow, buildElectorate, addActivity } });
 
   // â”€â”€ Project Settings (village dues + other editable numbers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
