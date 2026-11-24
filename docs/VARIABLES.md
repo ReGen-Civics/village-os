@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 283 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 284 open and 64 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 320 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 321 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-347 dials in 41 categories. 174 carry a minimum and a maximum. By type: 135 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 71 text, 13 longtext.
+348 dials in 41 categories. 174 carry a minimum and a maximum. By type: 135 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 72 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -71,7 +71,7 @@ Each dial also says WHEN a change lands. 320 of them as soon as it is saved, and
 | Payments | 4 | 4 | 0 |
 | Health | 1 | 1 | 0 |
 | Badges | 1 | 1 | 0 |
-| Platform | 4 | 0 | 4 |
+| Platform | 5 | 1 | 4 |
 | Calendar | 4 | 4 | 0 |
 | Introductions | 4 | 4 | 0 |
 | Exit | 10 | 10 | 0 |
@@ -395,6 +395,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Cooling-off before a key lands with nobody to co-sign | `platform.cosign_cooling_hours` | Platform | integer | `48` | the founder or an admin |
 | How long a key waits for its co-sign | `platform.cosign_expiry_hours` | Platform | integer | `72` | the founder or an admin |
 | The guide's helper in Admin | `platform.admin_helper` | Platform | boolean | `true` | the founder or an admin |
+| Accounts that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
 | The solar event that opens the village year | `calendar.year_anchor` | Calendar | choice | `december_solstice` | the whole village |
 | Hemisphere | `calendar.hemisphere` | Calendar | choice | `north` | the whole village |
 | Mark the cross-quarter days | `calendar.cross_quarters` | Calendar | boolean | `false` | the whole village |
@@ -5285,7 +5286,7 @@ How many badges a member may pin to their byline (forum posts, map chips). 0 tur
 
 ## Platform
 
-4 dials. 4 for the founder or an admin.
+5 dials. 1 for the whole village, 4 for the founder or an admin.
 
 ### Share bug reports and ideas with the platform team
 
@@ -5344,6 +5345,22 @@ Lets admins ask the village guide for help inside Admin: finding a page or setti
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
+
+### Accounts that hear about crashes
+
+The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ops.crash_alert_recipients` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+| Shown to the public | Listed, and open to proposals. Its value stays off the public rules page because it can carry a provider key; admins still see it. |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
 
 ## Calendar
 
@@ -6036,6 +6053,7 @@ The generator reads these and fails loudly if any of them moves:
 - `shared/closingPolicies.ts`
 - `shared/conflictAgreement.ts`
 - `shared/conflictIntro.ts`
+- `shared/crashAlerts.ts`
 - `shared/gameConfig.ts`
 - `shared/gameVariables.ts`
 - `shared/governanceEngine.ts`

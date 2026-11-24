@@ -6,11 +6,11 @@
  * but 204.
  */
 import { describe, expect, it, vi } from "vitest";
-import { CLIENT_CRASH_PATH, PER_ADDRESS, crashLine, register, sanitizeCrash } from "./clientCrash";
+import { CLIENT_CRASH_PATH, PER_ADDRESS, crashLine, entryBundleOf, isStaleBuildMiss, register, sanitizeCrash } from "./clientCrash";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
-function harness(opts: { admin?: boolean } = {}) {
+function harness(opts: { admin?: boolean; currentBundle?: string | null } = {}) {
   const handlers = new Map<string, Handler>();
   const app = { post: (p: string, h: Handler) => handlers.set(`POST ${p}`, h), get: (p: string, h: Handler) => handlers.set(`GET ${p}`, h) } as any;
   const inserts: unknown[][] = [];
@@ -27,7 +27,7 @@ function harness(opts: { admin?: boolean } = {}) {
     return n > max;
   });
   const report = vi.fn(async () => ({ suppressed: false, admins: "sent" as const, webhook: "sent" as const }));
-  register(app, { getPool: () => pool, overLimit, clientIp: (req: any) => req.ip, isAdmin: async () => !!opts.admin, buildMarker: "2026-11-19 abc1234", report });
+  register(app, { getPool: () => pool, overLimit, clientIp: (req: any) => req.ip, isAdmin: async () => !!opts.admin, buildMarker: "2026-11-19 abc1234", report, currentBundle: () => (opts.currentBundle === undefined ? null : opts.currentBundle) });
   const post = async (body: unknown, ip = "203.0.113.9") => {
     const res: any = { code: 0, status(c: number) { res.code = c; return res; }, end() { return res; } };
     await handlers.get(`POST ${CLIENT_CRASH_PATH}`)!({ body, ip }, res);
@@ -117,5 +117,69 @@ describe("POST /api/client-crash", () => {
     await harness({ admin: true }).handlers.get("GET /api/admin/client-crashes")!({}, admin);
     expect(admin.code).toBe(200);
     expect(admin.body).toEqual({ crashes: [] });
+  });
+});
+
+/*
+ * A PAGE THAT OUTLIVED A DEPLOY (2026-11-24). The report that started this:
+ * "Something broke in browser on /roles: copy part kxi1ofHr6p0P: 404", one
+ * email per admin per open tab, after every release.
+ */
+describe("a stale-build miss from an older bundle", () => {
+  const STALE = { ...GOOD, source: "boundary", name: "Error", message: "copy part kxi1ofHr6p0P: 404", frames: [], route: "/roles", bundle: "index-OLDbuild1" };
+
+  it("is a log line: no event, no alert", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const h = harness({ currentBundle: "index-NEWbuild2" });
+    expect(await h.post(STALE)).toBe(204);
+    expect(h.report).not.toHaveBeenCalled();
+    expect(h.inserts).toHaveLength(0);
+    expect(log).toHaveBeenCalledTimes(1);
+    log.mockRestore();
+  });
+
+  it("a missing chunk from an older bundle is the same case", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const h = harness({ currentBundle: "index-NEWbuild2" });
+    await h.post({ ...STALE, message: "Importing a module script failed." });
+    expect(h.report).not.toHaveBeenCalled();
+    log.mockRestore();
+  });
+
+  it("the same miss from the bundle this server serves is a broken build, and is reported", async () => {
+    const h = harness({ currentBundle: "index-OLDbuild1" });
+    await h.post(STALE);
+    expect(h.report).toHaveBeenCalledTimes(1);
+    expect(h.inserts).toHaveLength(1);
+  });
+
+  it("is reported as before when the served bundle cannot be read, or the page sent none", async () => {
+    const unknown = harness({ currentBundle: null });
+    await unknown.post(STALE);
+    expect(unknown.report).toHaveBeenCalledTimes(1);
+    const noBundle = harness({ currentBundle: "index-NEWbuild2" });
+    await noBundle.post({ ...STALE, bundle: "" });
+    expect(noBundle.report).toHaveBeenCalledTimes(1);
+  });
+
+  it("an ordinary crash from an older bundle is still a crash", async () => {
+    const h = harness({ currentBundle: "index-NEWbuild2" });
+    await h.post({ ...GOOD, bundle: "index-OLDbuild1" });
+    expect(h.report).toHaveBeenCalledTimes(1);
+  });
+
+  it("isStaleBuildMiss needs both: the words and a different bundle", () => {
+    expect(isStaleBuildMiss({ message: "copy part kxi1ofHr6p0P: 404", bundle: "index-a" }, "index-b")).toBe(true);
+    expect(isStaleBuildMiss({ message: "copy part kxi1ofHr6p0P: 500", bundle: "index-a" }, "index-b")).toBe(false);
+    expect(isStaleBuildMiss({ message: "copy part kxi1ofHr6p0P: 404", bundle: "index-a" }, "index-a")).toBe(false);
+  });
+});
+
+describe("entryBundleOf", () => {
+  it("reads the entry the way the browser names it, skipping scripts that are not the module entry", () => {
+    const html = '<head><script async fetchpriority="high" src="/assets/route-preload-Ab12.js"></script><script type="module" crossorigin src="/assets/index-B6yHa53f.js"></script></head>';
+    expect(entryBundleOf(html)).toBe("index-B6yHa53f");
+    expect(entryBundleOf('<script type="module" src="/src/main.tsx"></script>')).toBeNull();
+    expect(entryBundleOf(null)).toBeNull();
   });
 });

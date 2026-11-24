@@ -43,7 +43,7 @@ export default function FaqSection({ pathway, heading = "Common Questions" }: { 
             <AccordionItem
               key={item.id}
               value={item.id}
-              className="border border-border rounded-2xl px-5 bg-muted"
+              className="border border-border last:border-b rounded-2xl px-5 bg-muted"
             >
               <AccordionTrigger className="text-left font-semibold text-foreground py-4 hover:no-underline">
                 {item.question}

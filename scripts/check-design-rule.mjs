@@ -87,6 +87,9 @@ const PAGES = [
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
   "client/src/pages/SeasonalFestivals.tsx",
+  "client/src/pages/Team.tsx",
+  "client/src/pages/GoodNeighbor.tsx",
+  "client/src/pages/HowWeCreate.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
   // Decider calm (Phase D, decision 4): every page where people decide stands in the night world.
@@ -98,6 +101,8 @@ const PAGES = [
   // The review page as cards (2026-11-16): where every change an agent proposes is decided.
   "client/src/pages/ProposedChanges.tsx",  // The send and receive page (2026-11-23, credits lane 3): born inside the rule.
   "client/src/pages/Pay.tsx",
+  // The investor path (24 Nov 2026, investor remake): into the night world with the other paths.
+  "client/src/pages/InvestorJourney.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
@@ -116,8 +121,7 @@ const JOURNEY = [
   "client/src/components/calendar/MoonTurnings.tsx",
   "client/src/components/agent/ConnectorSetupPanel.tsx",
   "client/src/components/roleDraft/SeasonGoals.tsx",
-  // The commons (Phase D): the season's goals as circles with moss, on the landing, /roles and Your season.
-  "client/src/components/VillagePulse.tsx",
+  // The commons (Phase D): the season's goals as circles with moss, on Your season (it left the landing on 24 Nov 2026).
   "client/src/components/commons/Commons.tsx",
   "client/src/components/commons/CommonsPanel.tsx",
   "client/src/components/roleDraft/ArchetypeStep.tsx",
@@ -137,6 +141,9 @@ const JOURNEY = [
   "client/src/components/governance/SeatPicksField.tsx",
   "client/src/components/governance/DraftCards.tsx",
   "client/src/components/FaqSection.tsx",
+  // What the investor page and the landing draw beside it (24 Nov 2026, investor remake).
+  "client/src/components/InvestorSummary.tsx",
+  "client/src/components/BuildProgress.tsx",
   "client/src/components/approvals/ApprovalInbox.tsx",
   "client/src/components/profile/OnboardingPath.tsx",
   "client/src/components/alignment/EndingActions.tsx",

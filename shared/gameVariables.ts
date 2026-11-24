@@ -30,6 +30,7 @@ import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
 import { villageWordsProblem } from "./applyLimits";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
+import { CRASH_ALERT_RECIPIENTS_KEY, crashAlertRecipientsProblem } from "./crashAlerts";
 import { GATHERING_LIMIT_DEFAULT, GATHERING_LIMIT_KEY, REVIEW_DAYS_DEFAULT, REVIEW_DAYS_KEY } from "./changeRequestLimits";
 
 export type VariableType = "integer" | "decimal" | "percentage" | "boolean" | "choice" | "text" | "longtext";
@@ -4006,6 +4007,35 @@ export const VARIABLES: VariableDef[] = [
     type: "boolean",
     default: "true",
   },
+  /*
+   * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts, 2026-11-24). A crash
+   * alert went to every admin and founder, and an admin whose seat is not
+   * operational got crash emails that were never hers to act on. This narrows
+   * the alert to named accounts among them; blank keeps everyone.
+   *
+   * OPEN on purpose, though it sits under Platform: the value is set by a
+   * village proposal (`propose_setting`, approved through PUT
+   * /api/admin/variables), and a founder-held dial is refused there once the
+   * village holds `dial.set`. Opening it moves no power: it can only choose
+   * among accounts that already hear every crash, and a list that matches none
+   * of them falls back to all of them, so a typo can never mute the alarm.
+   *
+   * WITHHELD and MEMBERS ONLY because the value is a list of email addresses:
+   * no public mechanics door shows it, and Admin still reads it.
+   */
+  {
+    // Literal, so the generated docs can read it; shared/crashAlerts.test.ts holds it equal to CRASH_ALERT_RECIPIENTS_KEY.
+    key: "ops.crash_alert_recipients",
+    category: "Platform",
+    label: "Accounts that hear about crashes",
+    description:
+      "The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.",
+    type: "text",
+    default: "",
+    ring: "open",
+    withheld: true,
+    membersOnly: true,
+  },
 
   /*
    * THE VILLAGE'S OWN SOURCE-CODE LINK (AGPL-3.0-or-later, section 13,
@@ -4972,6 +5002,11 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     // could not read would stretch the season before it over months, with
     // nothing saying why, so the whole list is refused here instead
     // (shared/villageSeasons.ts holds the grammar). Blank passes.
+    // Who hears about a crash is a list of addresses or it is blank (shared/crashAlerts.ts).
+    if (def.key === CRASH_ALERT_RECIPIENTS_KEY) {
+      const problem = crashAlertRecipientsProblem(raw);
+      if (problem) return problem;
+    }
     if (def.key === "calendar.seasons") {
       const problem = villageSeasonsProblem(raw);
       if (problem) return problem;

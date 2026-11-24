@@ -16,6 +16,8 @@ import { Users } from "lucide-react";
 import InfoTip from "@/components/InfoTip";
 import { CrowdpoolStyles, MiniRing, phaseLabel, pledgedIsFloor, pooledLine, timeAgo } from "@/components/crowdpool/PoolPieces";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { useLingui } from "@lingui/react/macro";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -53,6 +55,7 @@ interface CampaignCard {
 }
 
 export default function Crowdpool() {
+  const { t } = useLingui();
   const modules = useModules();
   const crowdpool = useModule("crowdpool");
   const [cards, setCards] = useState<CampaignCard[] | null>(null);
@@ -98,11 +101,11 @@ export default function Crowdpool() {
             </div>
           )}
           {cards !== null && cards.length === 0 && (
-            <div className="cp-board p-8 text-center">
-              <p className="cp-smallcaps text-sm mb-2">No raisings yet</p>
-              <p className="text-sm" style={{ color: "#e4d3ae" }}>
-                When this village opens a raising, its ring appears here.
-              </p>
+            <div className="sheet-night text-left">
+              <ComingSoonPanel
+                title={t({ message: "Pooling resources", context: "coming soon: the crowdpool page" })}
+                body={t({ message: "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it.", context: "coming soon: the crowdpool page" })}
+              />
             </div>
           )}
           {(cards ?? []).map((c) =>

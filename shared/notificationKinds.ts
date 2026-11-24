@@ -497,6 +497,13 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     group: "economy",
     celebrate: false,
   },
+  // Something broke, in the server or in a member's browser (server/lib/errors.ts).
+  // Its own kind since 2026-11-24, so a crash no longer rides `payments_alert`,
+  // and it goes to the accounts `ops.crash_alert_recipients` names (shared/crashAlerts.ts).
+  crash_alert: {
+    group: "village",
+    celebrate: false,
+  },
   // The failed-actions report, at most once a day. Never celebrated: a list of
   // what is broken is a chore to get through, not a moment.
   failed_action: {

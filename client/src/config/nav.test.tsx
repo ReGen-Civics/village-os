@@ -63,7 +63,7 @@ const COMMAND_CENTRE = '/project-history';
  * dropdown mounts its items only while it is open. `null` is a signed-out
  * visitor.
  */
-function openDecide(who: { id: string; name: string; role?: string } | null) {
+function openDecide(who: { id: string; name: string; role?: string; membershipGranted?: boolean } | null) {
   authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
   render(
     <Router>
@@ -72,8 +72,9 @@ function openDecide(who: { id: string; name: string; role?: string } | null) {
       </Layout>
     </Router>,
   );
-  const buttons = screen.getAllByRole("button", { name: /Decide/i });
-  fireEvent.click(buttons[0]!);
+  // A visitor may have no Decide group at all: every entry in it is a member's (the front door, 24 Nov 2026).
+  const buttons = screen.queryAllByRole("button", { name: /Decide/i });
+  if (buttons[0]) fireEvent.click(buttons[0]);
 }
 
 /** Every anchor in the whole shell pointing at `href`, header and footer both. */
@@ -90,12 +91,17 @@ describe("the Launch Plan entry in the header", () => {
   it("is there for a signed-in member holding no admin role", () => {
     // R12: any member may run the village's test run, so any member has to be
     // able to find the page that offers it.
-    openDecide({ id: "u-wren", name: "Wren Ash", role: "member" });
+    openDecide({ id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true });
 
     expect(linksTo(LAUNCH_PLAN).length).toBeGreaterThan(0);
     // The control: the neighbouring entry is still shut, so this is the one
     // gate that moved and not the group.
     expect(linksTo(COMMAND_CENTRE)).toHaveLength(0);
+  });
+
+  it("is not offered to a signed-in account the village has not admitted (the front door, 24 Nov 2026)", () => {
+    openDecide({ id: "u-ana", name: "Ana Applicant", role: "member" });
+    expect(linksTo(LAUNCH_PLAN)).toHaveLength(0);
   });
 
   it("is still there for an admin, who did not lose the door they had", () => {
@@ -193,7 +199,7 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
    * menu entry gone; the difference is the menu alone.
    */
   function addedByOpening(label: RegExp, hrefs: string[]) {
-    authMock.mockReturnValue({ user: { id: "u-wren", name: "Wren Ash", role: "member" }, loading: false, logout: vi.fn() });
+    authMock.mockReturnValue({ user: { id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true }, loading: false, logout: vi.fn() });
     render(
       <Router>
         <Layout>

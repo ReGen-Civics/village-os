@@ -111,6 +111,7 @@ export const FORM_TYPE_TO_PATHWAY: Record<string, "investor" | "steward" | "resi
   prosperity: "prosperity",
   contact: "prosperity",
   "work-with-us": "prosperity",
+  "prosperity-packet": "prosperity",
   "quest-proposal": "steward",
 };
 

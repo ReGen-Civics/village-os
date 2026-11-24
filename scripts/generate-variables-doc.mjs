@@ -82,6 +82,8 @@ export const SOURCES = [
   "shared/changeRequestLimits.ts",
   // The conflict intro's key and default, said on /roles and /governance (lead, 2026-11-12).
   "shared/conflictIntro.ts",
+  // Who hears about a crash: the dial checks its address list with the reader here (2026-11-24).
+  "shared/crashAlerts.ts",
   "shared/gameConfig.ts",
   "shared/capabilities.ts",
   "shared/villageMoon.ts",

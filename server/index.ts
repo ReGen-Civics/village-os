@@ -91,6 +91,7 @@ import {
 } from "./lib/capabilityRegistry";
 import { partnerRecipients } from "./lib/partnerRouting";
 import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
+import { PROSPERITY_PACKET_FORM, packetFrom, packetProblems } from "../shared/prosperityPacket";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
@@ -583,6 +584,8 @@ import { normalizeSeasonConfig, seasonRunningProblem } from "./lib/seasonCalenda
 import { completionsFor, completionsForMany, gatingModuleIds, trainingIsComplete, trainingProgress } from "./lib/trainingRecord";
 import { starterTrainingModules } from "./lib/trainingStarter";
 import { respondToTerminalError, installCrashHandlers, installShutdownHandlers, reachedSomebody, reportError, reportErrorWithin, wireErrorReporting } from "./lib/errors";
+import { crashAlertNotifier } from "./lib/crashAlerts";
+import { CRASH_ALERT_RECIPIENTS_KEY } from "../shared/crashAlerts";
 import {
   STAY_CREDIT,
   ensureStayToken,
@@ -1305,6 +1308,7 @@ const PUBLIC_FORM_TYPES: ReadonlySet<string> = new Set([
   "work-with-us",
   "quest-proposal",
   "partner", // Partner.tsx: a project or business that would like to work with the village (the lead, 23 Nov 2026)
+  "prosperity-packet", // ProsperityJourney.tsx: a would-be business asks for the packet, in place of a mailto: link (the lead, 24 Nov 2026)
   "investor",
   "investor-pack",
   "investor-call",
@@ -4972,7 +4976,8 @@ async function startServer() {
    * was a log line in a stream with no reader.
    */
   wireErrorReporting({
-    notifyAdmins: (title, dedupeKey) => notifyAdmins("payments_alert", title, dedupeKey),
+    // Crashes ride their own kind, to the accounts the village names (shared/crashAlerts.ts).
+    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY) }),
     instanceLabel: mergedConfig().project.name,
   });
   installCrashHandlers();
@@ -7626,6 +7631,8 @@ async function startServer() {
     if (await overLimit(`submit:${clientIp(req)}`, 6, 10 * 60 * 1000)) {
       return res.status(429).json({ error: "Too many submissions. Please try again shortly." });
     }
+    // A packet request is checked as its form checks it (shared/prosperityPacket.ts); a bad one is refused and nothing is stored.
+    if (type === PROSPERITY_PACKET_FORM && packetProblems(packetFrom(data)).length) return res.status(400).json({ error: "invalid_request", problems: packetProblems(packetFrom(data)) });
     // Attribution: if a valid member token is present, stamp who submitted.
     const submitter = await authedUser(req);
     const entry: any = {
@@ -7657,7 +7664,7 @@ async function startServer() {
     (async () => { // fire-and-forget notifications
       // Notify the pathway inbox
       // A partner proposal goes to the holders of the role the village named for partnerships (server/lib/partnerRouting.ts).
-      const recipients = type === PARTNER_FORM ? await partnerRecipients({ pool: getPool(), roleId: stringVar(PARTNERSHIPS_ROLE_VARIABLE), emailOf: async (id) => ((await members.byId(id)) as any)?.email ?? null, fallback: () => (getEmailConfig().prosperity ? [getEmailConfig().prosperity as string] : recipientsForType(type)) }) : recipientsForType(type);
+      const recipients = type === PARTNER_FORM || type === PROSPERITY_PACKET_FORM ? await partnerRecipients({ pool: getPool(), roleId: stringVar(PARTNERSHIPS_ROLE_VARIABLE), emailOf: async (id) => ((await members.byId(id)) as any)?.email ?? null, fallback: () => (getEmailConfig().prosperity ? [getEmailConfig().prosperity as string] : recipientsForType(type)) }) : recipientsForType(type);
       if (recipients.length) {
         await sendResendEmail({
           to: recipients, origin: "forms.team_alert",
@@ -17887,7 +17894,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
   registerGuideChoiceRoutes(app, { authedUser, members, overLimit, villageGuideName: () => String(getWorkWithUs().assistantName ?? "") });
   registerI18nRoutes(app, { catalogDir: path.resolve(__dirname, ...(process.env.NODE_ENV === "production" ? [] : ["..", "dist"]), "i18n"), pseudoAllowed: () => process.env.NODE_ENV !== "production", authedUser, members, overLimit });
-  registerClientCrashRoutes(app, { getPool, overLimit, clientIp, isAdmin, buildMarker: BUILD_MARKER });
+  registerClientCrashRoutes(app, { getPool, overLimit, clientIp, isAdmin, buildMarker: BUILD_MARKER, publicDir: path.resolve(__dirname, ...(process.env.NODE_ENV === "production" ? [] : ["..", "dist"]), "public") });
   registerCompanionRoutes(app, { authedUser, guardCapability, overLimit, members, getPool, village: () => ({ name: mergedConfig().project.name, guideName: guidePromptName(getWorkWithUs().assistantName), timeZone: getSeasonConfig().timezone }) });
   registerMemberAskRoutes(app, { authedUser, getPool, members, notify, overLimit, firstName });
   registerLiveSessionsRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, notify, notifyAdmins, circlesRepo, lapseContext, seasonState, notifyDeps, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName });

@@ -10,6 +10,7 @@ import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import ErrorBoundary from "./ErrorBoundary";
 import { RELOAD_MARKER, resetStaleChunkStateForTests } from "@/lib/staleChunk";
+import { RELOAD_QUOTES } from "@shared/reloadQuotes";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -57,8 +58,9 @@ describe("ErrorBoundary and a page that outlived a deploy", () => {
     window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
     mount(stale());
     expect(reload).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toBe("We just updated the site");
-    expect(screen.getByRole("button", { name: /reload/i })).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toBe("The site just grew");
+    expect(screen.getByRole("button", { name: /refresh the page/i })).toBeTruthy();
+    expect(screen.getByText(/Nothing is broken/)).toBeTruthy();
     expect(screen.getByRole("link").getAttribute("href")).toBe("/reset");
   });
 
@@ -77,7 +79,7 @@ describe("a chunk that fails while offline (performance QA sweep, resilience P2-
     expect(window.sessionStorage.getItem(RELOAD_MARKER)).toBeNull();
     expect(screen.getByRole("alert").textContent).toBe("You're offline");
     expect(screen.getByText("We'll keep your answers. When you're back online, tap try again.")).toBeTruthy();
-    expect(screen.queryByText("We just updated the site")).toBeNull();
+    expect(screen.queryByText("The site just grew")).toBeNull();
 
     // Still offline: the button says so and reloads nothing.
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
@@ -88,5 +90,56 @@ describe("a chunk that fails while offline (performance QA sweep, resilience P2-
     online.mockReturnValue(true);
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the refresh screen (public launch, 24 Nov 2026)", () => {
+  it("shows one big refresh button that reloads, and a quote with who said it", async () => {
+    window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    mount(stale());
+    fireEvent.click(screen.getByRole("button", { name: /refresh the page/i }));
+    expect(reload).toHaveBeenCalledTimes(1);
+    const first = RELOAD_QUOTES[0];
+    expect(await screen.findByText(first.text)).toBeTruthy();
+    expect(screen.getByText(first.source)).toBeTruthy();
+  });
+
+  it("gives the crash screen the same button, a way home, and the stack tucked away", () => {
+    mount(new Error("something else"));
+    expect(screen.getByRole("button", { name: /refresh the page/i })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /home page/i }).getAttribute("href")).toBe("/");
+    expect(screen.getByText("Details for a bug report")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).not.toContain("Error");
+  });
+
+  it("does not show the same quote twice running in one tab", async () => {
+    window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    mount(stale());
+    expect(await screen.findByText(RELOAD_QUOTES[0].text)).toBeTruthy();
+    cleanup();
+    mount(stale());
+    expect(await screen.findByText(RELOAD_QUOTES[1].text)).toBeTruthy();
+  });
+
+  it("offers no quote on the offline card, whose file could not arrive anyway", async () => {
+    vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    mount(stale());
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByRole("figure")).toBeNull();
+  });
+
+  it("speaks the Spanish rendering to a Spanish reader", async () => {
+    window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    i18n.load("es", {});
+    i18n.activate("es");
+    try {
+      mount(stale());
+      expect(await screen.findByText(RELOAD_QUOTES[0].es)).toBeTruthy();
+    } finally {
+      i18n.activate("en");
+    }
   });
 });
