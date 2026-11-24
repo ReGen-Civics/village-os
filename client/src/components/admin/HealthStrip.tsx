@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { revealCard } from "./revealCard";
 import { connectionRows, type ConnectionRow, type ConnState } from "./todayGlance";
+import { useLingui } from "@lingui/react/macro";
 
 const SHAPE: Record<ConnState, string> = {
   working: "rounded-sm",
@@ -21,6 +22,7 @@ function openService(onOpen: (tab: string) => void, id: string) {
 }
 
 export default function HealthStrip({ password, onOpen, full = true }: { password: string; onOpen: (tab: string) => void; full?: boolean }) {
+  const { t } = useLingui();
   const [rows, setRows] = useState<ConnectionRow[] | null>(null);
   useEffect(() => {
     let gone = false;
@@ -41,7 +43,7 @@ export default function HealthStrip({ password, onOpen, full = true }: { passwor
     );
   }
   return (
-    <ul className="admin-chip-row mb-4 flex flex-nowrap gap-2 overflow-x-auto" aria-label="Connections">
+    <ul className="admin-chip-row mb-4 flex flex-nowrap gap-2 overflow-x-auto" aria-label={t({ message: "Connections", context: "HealthStrip, aria-label" })}>
       {rows.map((row) => (
         <li key={row.id} className="shrink-0">
           <button

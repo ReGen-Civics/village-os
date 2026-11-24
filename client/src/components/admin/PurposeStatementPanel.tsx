@@ -33,12 +33,13 @@
  * wizard's progress readout are untouched by it.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { countWords, PURPOSE_MIN_WORDS } from "@shared/governingPurpose";
 import { usePrefill } from "@/lib/profilePrefill";
 
 export default function PurposeStatementPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [statement, setStatement] = useState("");
   const [founderHoldsPen, setFounderHoldsPen] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -92,25 +93,25 @@ export default function PurposeStatementPanel({ password }: { password: string }
   const words = countWords(statement);
   return (
     <div className="bg-background text-foreground rounded-lg p-4 mb-4">
-      <h4 className="text-sm font-semibold mb-1">What this village is for, in one statement</h4>
+      <h4 className="text-sm font-semibold mb-1"><Trans context="PurposeStatementPanel, h4">What this village is for, in one statement</Trans></h4>
       <p className="text-xs text-gray-500 mb-3">
-        The sentence every later change is judged against. Your village cannot start its Game
+        <Trans context="PurposeStatementPanel, p">The sentence every later change is judged against. Your village cannot start its Game
         without one.
-      </p>
+      </Trans></p>
       <div>
         <p className="text-sm mb-3">
-          Say who this village serves, what they are up against, the move it is making, by what
+          <Trans context="PurposeStatementPanel, p">Say who this village serves, what they are up against, the move it is making, by what
           means, and what becomes true if it works. One statement, written the way you would say
           it out loud.
-        </p>
+        </Trans></p>
         {handed && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 mb-3 text-sm text-gray-900">
             <p>
-              {handed.fromFirstLine
+              <Trans context="PurposeStatementPanel, p">{handed.fromFirstLine
                 ? "This box now holds your first line from ReGen Civics. A purpose statement says more: who it serves, what they are up against, the move, the means, and what becomes true."
                 : "This box now holds the purpose statement from your ReGen Civics profile."}{" "}
               Nothing is saved until you press Save.
-            </p>
+            </Trans></p>
             <button
               type="button"
               className="mt-1 text-xs font-medium text-teal-deep underline"
@@ -119,8 +120,8 @@ export default function PurposeStatementPanel({ password }: { password: string }
                 setHanded(null);
               }}
             >
-              Put back what was saved
-            </button>
+              <Trans context="PurposeStatementPanel, button">Put back what was saved
+            </Trans></button>
           </div>
         )}
         <textarea
@@ -130,12 +131,12 @@ export default function PurposeStatementPanel({ password }: { password: string }
           rows={10}
           maxLength={20000}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white"
-          placeholder="This village exists for the people who..."
+          placeholder={t({ message: "This village exists for the people who...", context: "PurposeStatementPanel, placeholder" })}
         />
         <p className="text-xs text-gray-500 mt-2">
-          {words} word{words === 1 ? "" : "s"}. It takes at least {PURPOSE_MIN_WORDS} to answer all
+          <Trans context="PurposeStatementPanel, p">{words} word{words === 1 ? "" : "s"}. It takes at least {PURPOSE_MIN_WORDS} to answer all
           five parts.
-        </p>
+        </Trans></p>
         {/* THE ORDINARY PATH READS AS ORDINARY. `capability_holding` is empty
             at birth on every deployment, so a founder holding the pen is the
             normal state of every village and not a village waiting for
@@ -161,9 +162,9 @@ export default function PurposeStatementPanel({ password }: { password: string }
           </button>
         ) : (
           <p className="mt-3 text-sm text-gray-700">
-            This village looks after all of its powers now, so the statement is the village's to
+            <Trans context="PurposeStatementPanel, p">This village looks after all of its powers now, so the statement is the village's to
             change. Anybody who can open a proposal can take a change of purpose to the whole roll.
-          </p>
+          </Trans></p>
         )}
         {note && <p className="text-xs text-gray-600 mt-2">{note}</p>}
       </div>

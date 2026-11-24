@@ -40,7 +40,7 @@ import {
   type PortraitSource,
 } from "@shared/characterPortraits";
 import type { VillageMoon } from "@shared/villageMoon";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** One row of `character_portraits`, as the studio payload carries it. */
 export interface StudioPortrait {
@@ -102,6 +102,7 @@ export default function PortraitStudio({
   onChanged,
   authHeaders,
 }: Props) {
+  const { t } = useLingui();
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -285,7 +286,7 @@ export default function PortraitStudio({
                   type="button"
                   onClick={remove}
                   disabled={!!busy}
-                  aria-label="Remove this portrait"
+                  aria-label={t({ message: "Remove this portrait", context: "PortraitStudio, aria-label" })}
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-coral/40 px-4 py-2 text-sm font-medium text-coral disabled:opacity-50"
                 >
                   <Trans context="PortraitStudio, button"><Trash2 className="h-4 w-4" aria-hidden="true" />

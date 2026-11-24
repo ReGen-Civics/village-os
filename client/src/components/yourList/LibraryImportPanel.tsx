@@ -14,6 +14,7 @@ import { DEFAULT_IMPORT_PHRASE } from "@shared/memberTaskFeedback";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, LABEL_CAPS } from "@/components/sessions/roomUi";
 import type { PanelPerson } from "./PersonalListsPanel";
+import { Trans } from "@lingui/react/macro";
 
 interface Summary {
   dryRun: boolean;
@@ -94,41 +95,41 @@ export default function LibraryImportPanel({ password, players }: { password: st
 
   return (
     <div className="mt-5 border-t border-border pt-4">
-      <h4 className="font-semibold text-foreground">Bring in tasks from Organisational Memory</h4>
-      <p className={`${HINT} mt-1`}>A dry run first. Nothing is written until you read it and press Import for real.</p>
+      <h4 className="font-semibold text-foreground"><Trans context="LibraryImportPanel, h4">Bring in tasks from Organisational Memory</Trans></h4>
+      <p className={`${HINT} mt-1`}><Trans context="LibraryImportPanel, p">A dry run first. Nothing is written until you read it and press Import for real.</Trans></p>
       <label className="mt-3 block">
-        <span className={LABEL_CAPS}>Member</span>
+        <span className={LABEL_CAPS}><Trans context="LibraryImportPanel, span">Member</Trans></span>
         <select className={FIELD} value={userId} onChange={(e) => setUserId(e.target.value)}>
           <option value="">Choose a member</option>
           {players.map((p) => <option key={p.id} value={p.id}>{p.name || p.email || p.id}</option>)}
         </select>
       </label>
       <label className="mt-3 block">
-        <span className={LABEL_CAPS}>Their owner id in the library</span>
+        <span className={LABEL_CAPS}><Trans context="LibraryImportPanel, span">Their owner id in the library</Trans></span>
         <input className={FIELD} value={owner} onChange={(e) => setOwner(e.target.value)} />
       </label>
       <label className="mt-3 block">
-        <span className={LABEL_CAPS}>Only tasks whose evidence contains</span>
+        <span className={LABEL_CAPS}><Trans context="LibraryImportPanel, span">Only tasks whose evidence contains</Trans></span>
         <input className={FIELD} value={phrase} onChange={(e) => setPhrase(e.target.value)} />
       </label>
       <label className="mt-3 block">
-        <span className={LABEL_CAPS}>The library's answer (JSON, optional: leave empty to read from the library)</span>
+        <span className={LABEL_CAPS}><Trans context="LibraryImportPanel, span">The library's answer (JSON, optional: leave empty to read from the library)</Trans></span>
         <textarea className={`${FIELD} min-h-32 py-2 font-mono text-xs`} value={pasted} onChange={(e) => setPasted(e.target.value)} />
       </label>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId || !owner.trim() || (!pasted.trim() && !phrase.trim())} onClick={() => send(true)}>Dry run</button>
+        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId || !owner.trim() || (!pasted.trim() && !phrase.trim())} onClick={() => send(true)}><Trans context="LibraryImportPanel, button">Dry run</Trans></button>
         {fresh && (
-          <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => send(false)}>Import for real</button>
+          <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => send(false)}><Trans context="LibraryImportPanel, button">Import for real</Trans></button>
         )}
       </div>
       {problem && <p role="alert" className="mt-2 text-sm text-foreground">{problem}</p>}
       {s && (
         <div className="mt-3 text-sm text-foreground" role="status">
           <p>
-            Dry run: {s.counts.create} new, {s.counts.update} refreshed, {s.counts.keptEdits} kept as the member edited them,{" "}
+            <Trans context="LibraryImportPanel, p">Dry run: {s.counts.create} new, {s.counts.update} refreshed, {s.counts.keptEdits} kept as the member edited them,{" "}
             {s.counts.tombstoned} already removed or done, {s.counts.skipped} skipped, {s.counts.needsOwner} need an owner,{" "}
             {s.counts.flagged} with an unknown priority.
-          </p>
+          </Trans></p>
           {s.firstTitles.length > 0 && (
             <ol className="mt-1 list-decimal pl-5">{s.firstTitles.map((t, i) => <li key={i}>{t}</li>)}</ol>
           )}
@@ -139,13 +140,13 @@ export default function LibraryImportPanel({ password, players }: { password: st
       {done?.batch && (
         <div className="mt-3 text-sm text-foreground" role="status">
           <p>
-            Imported: {done.created} new, {done.updated} refreshed, {done.queued} queued for an owner. Batch {done.batch}.
-            {done.listOn === false ? " Their list is still off; turn it on above." : ""}
+            <Trans context="LibraryImportPanel, p">Imported: {done.created} new, {done.updated} refreshed, {done.queued} queued for an owner. Batch {done.batch}.
+            {done.listOn === false ? " Their list is still off; turn it on above." : ""}</Trans>
           </p>
           {undone === null ? (
-            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => undoBatch(done.batch!)}>Undo this import</button>
+            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => undoBatch(done.batch!)}><Trans context="LibraryImportPanel, button">Undo this import</Trans></button>
           ) : (
-            <p className={HINT}>Removed {undone} from their list. They can be brought back for 30 days.</p>
+            <p className={HINT}><Trans context="LibraryImportPanel, p">Removed {undone} from their list. They can be brought back for 30 days.</Trans></p>
           )}
         </div>
       )}

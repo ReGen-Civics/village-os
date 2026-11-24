@@ -16,6 +16,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { Trans } from "@lingui/react/macro";
 
 export default function VillageTokensWordField({ password }: { password: string }) {
   const [saved, setSaved] = useState<string | null>(null);
@@ -64,8 +65,8 @@ export default function VillageTokensWordField({ password }: { password: string 
   return (
     <div className="mb-6 rounded-xl border border-border px-4 py-3">
       <label htmlFor="village-tokens-word" className="text-sm font-medium text-foreground">
-        What your tokens are called together
-      </label>
+        <Trans context="VillageTokensWordField, label">What your tokens are called together
+      </Trans></label>
       <p className="text-xs text-muted-foreground mt-0.5">
         One word for every token below, used wherever a page speaks of them all at once. Pages write it as{" "}
         <code className="font-mono">{"{tokens}"}</code>. Leave it blank to keep {fallback}.
@@ -86,8 +87,8 @@ export default function VillageTokensWordField({ password }: { password: string 
           disabled={!changed || saving}
           className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"
         >
-          Save
-        </button>
+          <Trans context="VillageTokensWordField, button">Save
+        </Trans></button>
       </div>
     </div>
   );

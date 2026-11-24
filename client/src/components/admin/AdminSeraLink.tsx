@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from "react";
 import { authHeaders } from "@/components/admin/adminApi";
+import { Trans } from "@lingui/react/macro";
 
 // Sits in the header's right-hand cluster, on the light card.
 const CHIP = "inline-flex min-h-11 items-center rounded-full border border-border bg-card px-4 text-sm font-medium text-card-foreground hover:bg-muted";
@@ -22,17 +23,17 @@ export function AdminSeraChip({ password }: { password: string }) {
     return () => { gone = true; };
   }, [password]);
   if (!show) return null;
-  return <a href="/modules/saberra" className={CHIP}>Sera board</a>;
+  return <a href="/modules/saberra" className={CHIP}><Trans context="AdminSeraLink, a">Sera board</Trans></a>;
 }
 
 export function SeraAdminHome() {
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 text-gray-900">
-      <h2 className="text-xl font-semibold">Sera</h2>
-      <p className="mt-2 text-base text-gray-700">The Sera board is on its own page. Nothing here is changed by opening it.</p>
+      <h2 className="text-xl font-semibold"><Trans context="AdminSeraLink, h2">Sera</Trans></h2>
+      <p className="mt-2 text-base text-gray-700"><Trans context="AdminSeraLink, p">The Sera board is on its own page. Nothing here is changed by opening it.</Trans></p>
       <a href="/modules/saberra" className="mt-3 inline-flex min-h-[44px] items-center text-base font-medium text-teal-deep underline">
-        Open the Sera board
-      </a>
+        <Trans context="AdminSeraLink, a">Open the Sera board
+      </Trans></a>
     </section>
   );
 }

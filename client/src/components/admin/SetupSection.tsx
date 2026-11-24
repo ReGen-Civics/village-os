@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, CircleDashed, PenLine } from "lucide-react";
 import type { SetupRow, SetupStepKey } from "./setupProgress";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * One numbered step of the Setup Wizard: its header, its completion readout,
@@ -70,6 +71,7 @@ export default function SetupSection({
   onToggleStep: (key: SetupStepKey) => void;
   children: ReactNode;
 }) {
+  const { t } = useLingui();
   const row = rows.find((r) => r.key === id);
 
   /* Counted, from data.
@@ -86,7 +88,7 @@ export default function SetupSection({
         title={
           row.blank.length
             ? `Counted from what you have saved. Still empty: ${row.blank.join(", ")}.`
-            : row.detail ?? "Counted from what you have saved. Every field on this step has a value."
+            : row.detail ?? t({ message: "Counted from what you have saved. Every field on this step has a value.", context: "SetupSection, title" })
         }
       >
         {measuredDone && <CheckCircle2 className="w-4 h-4" />}
@@ -103,9 +105,9 @@ export default function SetupSection({
         className="flex items-center gap-1.5 text-xs font-medium shrink-0 text-muted-foreground"
         title="Nothing here has been read back yet, so this screen says nothing about this step either way."
       >
-        <CircleDashed className="w-3.5 h-3.5" />
+        <Trans context="SetupSection, span"><CircleDashed className="w-3.5 h-3.5" />
         Not counted
-      </span>
+      </Trans></span>
     ) : null;
 
   /* The founder's own note, and it stays a box so it can be taken back. Ticked,
@@ -117,8 +119,8 @@ export default function SetupSection({
         className={`flex items-center gap-2 text-xs font-medium shrink-0 cursor-pointer ${row.declaredDone ? "text-amber-700" : "text-muted-foreground"}`}
         title={
           row.declaredDone
-            ? "You marked this step done. Nothing on this screen checked it, so it says whose word it is."
-            : "Nothing on this step can be read back from your settings, so this box is your own note to yourself."
+            ? t({ message: "You marked this step done. Nothing on this screen checked it, so it says whose word it is.", context: "SetupSection, title" })
+            : t({ message: "Nothing on this step can be read back from your settings, so this box is your own note to yourself.", context: "SetupSection, title" })
         }
       >
         <input

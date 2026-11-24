@@ -30,6 +30,7 @@ import { useGameConfig } from "@/lib/gameApi";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { AppointToRole } from "@/components/admin/AppointToRole";
 import { BelowFloorDialog, RemoveHolderDialog } from "@/components/admin/PowerGroupDialogs";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The rung a stage granted at or above also lets somebody in (`ADMISSION_RUNG`, server/lib/admission.ts). */
 const ADMISSION_RUNG = "member";
@@ -43,6 +44,7 @@ const unstop = (s: string) => s.replace(/[.\s]+$/, "");
 type FloorAsk = { roleId: string; userId: string; termEndsOn: string; stageId: string; done: (ok: boolean) => void };
 
 export default function GameRolesTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const { user } = useAuth();
   const config = useGameConfig();
   const [roles, setRoles] = useState<any[]>([]);
@@ -199,14 +201,14 @@ export default function GameRolesTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Power groups</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="GameRolesTab, h2">Power groups</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Add and remove the people in each power group. Each group's stage floor
+          <Trans context="GameRolesTab, p">Add and remove the people in each power group. Each group's stage floor
           still applies, and a group is one of the two ways a member gains capabilities.
-        </p>
+        </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : roles.length === 0 ? (
-        <p className="text-sm text-gray-400">No power groups yet.</p>
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="GameRolesTab, div">Loading...</Trans></div> : roles.length === 0 ? (
+        <p className="text-sm text-gray-400"><Trans context="GameRolesTab, p">No power groups yet.</Trans></p>
       ) : (
         <div className="space-y-4">
           {roles.map((r) => (
@@ -219,7 +221,7 @@ export default function GameRolesTab({ password }: { password: string }) {
                 <div className="flex flex-wrap gap-1.5 min-w-0">
                   {r.minStage && (
                     <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
-                      stage ≥ {r.minStage}
+                      <Trans context="GameRolesTab, span">stage ≥ {r.minStage}</Trans>
                     </span>
                   )}
                   {(r.capabilities ?? []).map((c: string) => (
@@ -239,13 +241,13 @@ export default function GameRolesTab({ password }: { password: string }) {
                   className="mt-1 h-4 w-4"
                 />
                 <span>
-                  <span className="font-medium">Admin access.</span> Whoever holds this group can open the admin panel while they hold it.
-                </span>
+                  <Trans context="GameRolesTab, span"><span className="font-medium">Admin access.</span> Whoever holds this group can open the admin panel while they hold it.
+                </Trans></span>
               </label>
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {(r.holders ?? []).length === 0 && (
-                  <span className="text-xs text-gray-400 italic">Vacant, an open call</span>
+                  <span className="text-xs text-gray-400 italic"><Trans context="GameRolesTab, span">Vacant, an open call</Trans></span>
                 )}
                 {(r.holders ?? []).map((h: any) => (
                   <span key={h.userId} className="inline-flex items-center gap-0.5 text-xs bg-gray-100 text-gray-700 pl-2.5 py-1 rounded-full">
@@ -253,7 +255,7 @@ export default function GameRolesTab({ password }: { password: string }) {
                     <button
                       type="button"
                       onClick={() => setRemoving({ roleId: r.id, userId: h.userId })}
-                      title="Remove from this group"
+                      title={t({ message: "Remove from this group", context: "GameRolesTab, title" })}
                       aria-label={`Remove ${holderName(h)} from ${r.name}`}
                       className="group -my-2.5 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500"
                     >

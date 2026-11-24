@@ -628,7 +628,7 @@ export default function VillageMap() {
                     type="button"
                     onClick={exportSvg}
                     className="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-card text-muted-foreground border-border"
-                    aria-label="Download the map as SVG"
+                    aria-label={t({ message: "Download the map as SVG", context: "VillageMap, aria-label" })}
                   >
                     <Trans context="VillageMap, button"><Download className="w-3.5 h-3.5" aria-hidden="true" /> SVG
                   </Trans></button>
@@ -636,7 +636,7 @@ export default function VillageMap() {
                     type="button"
                     onClick={exportPng}
                     className="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-card text-muted-foreground border-border"
-                    aria-label="Download the map as PNG"
+                    aria-label={t({ message: "Download the map as PNG", context: "VillageMap, aria-label" })}
                   >
                     <Trans context="VillageMap, button"><Download className="w-3.5 h-3.5" aria-hidden="true" /> PNG
                   </Trans></button>

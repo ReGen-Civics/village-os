@@ -16,6 +16,7 @@
  * Light-only, like the rest of the admin panel.
  */
 import { POWER_HAND_KEYS, powerHandSentence } from "@shared/powerHands";
+import { Trans } from "@lingui/react/macro";
 
 /** The data keys this note says, which the generic table leaves out. */
 export { POWER_HAND_KEYS };
@@ -23,12 +24,12 @@ export { POWER_HAND_KEYS };
 export function PowerHandNote({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="mb-4 rounded-lg border border-gray-200 bg-white px-3 py-2" data-power-hand>
-      <p className="text-xs font-medium text-gray-500">What they ask for</p>
+      <p className="text-xs font-medium text-gray-500"><Trans context="PowerHandNote, p">What they ask for</Trans></p>
       <p className="text-sm text-gray-800">{powerHandSentence(data)}</p>
       <p className="mt-1 text-sm text-gray-600">
-        Saying yes here gives them nothing yet. To hand them the power, add them to a power group that carries it,
+        <Trans context="PowerHandNote, p">Saying yes here gives them nothing yet. To hand them the power, add them to a power group that carries it,
         under Power groups. If no group carries it yet, give the power to a group under The Handover first.
-      </p>
+      </Trans></p>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { SCREEN_REASON_WORDS, SERA_TEST_OWNER_ID, type ScreenReason } from "@shared/memberTaskFeedback";
 import { BTN_QUIET, BTN_SECONDARY, HINT } from "@/components/sessions/roomUi";
+import { Trans } from "@lingui/react/macro";
 
 const SeraActionsPanel = lazy(() => import("./SeraActionsPanel"));
 
@@ -60,12 +61,12 @@ export default function BridgePanel({ password }: { password: string }) {
 
   return (
     <div className="mt-5 border-t border-border pt-4">
-      <h4 className="font-semibold text-foreground">Feedback to Organisational Memory</h4>
+      <h4 className="font-semibold text-foreground"><Trans context="BridgePanel, h4">Feedback to Organisational Memory</Trans></h4>
       <p className={`${HINT} mt-1`}>
-        {count("queued")} waiting, {count("sent")} sent, {count("failed")} retrying, {count("held")} notes held.
-      </p>
+        <Trans context="BridgePanel, p">{count("queued")} waiting, {count("sent")} sent, {count("failed")} retrying, {count("held")} notes held.
+      </Trans></p>
       <details className={`${HINT} mt-2`}>
-        <summary className="cursor-pointer">Testing a send end to end</summary>
+        <summary className="cursor-pointer"><Trans context="BridgePanel, summary">Testing a send end to end</Trans></summary>
         <p className="mt-1">
           Use Sera's test person, never a real member's owner id. Link a test member to{" "}
           <code className="font-mono">{SERA_TEST_OWNER_ID}</code> in the import above, import, remove one task with a reason,
@@ -73,8 +74,8 @@ export default function BridgePanel({ password }: { password: string }) {
         </p>
       </details>
       <p className="mt-2 text-sm text-foreground">
-        Notes are {b.notes === "held" ? "held in the village" : "released to Organisational Memory"}.
-      </p>
+        <Trans context="BridgePanel, p">Notes are {b.notes === "held" ? "held in the village" : "released to Organisational Memory"}.
+      </Trans></p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button
           type="button"
@@ -84,32 +85,32 @@ export default function BridgePanel({ password }: { password: string }) {
         >
           {b.notes === "held" ? "Release notes" : "Hold notes again"}
         </button>
-        <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call("/admin/member-tasks/bridge/send", "POST", {}, (d) => String(d.result ?? "Done."))}>Send now</button>
+        <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call("/admin/member-tasks/bridge/send", "POST", {}, (d) => String(d.result ?? "Done."))}><Trans context="BridgePanel, button">Send now</Trans></button>
         <button
           type="button"
           className={BTN_QUIET}
           disabled={busy}
           onClick={() => call("/admin/member-tasks/bridge/sync", "POST", {}, (d) => `${d.status}: ${d.created ?? 0} new, ${d.updated ?? 0} refreshed, ${d.closed ?? 0} closed.`)}
         >
-          Read changes now
-        </button>
+          <Trans context="BridgePanel, button">Read changes now
+        </Trans></button>
       </div>
       {line && <p role="status" className="mt-2 text-sm text-foreground">{line}</p>}
       {b.errors.length > 0 && (
         <ul className={`${HINT} mt-2 list-disc pl-5`}>
-          {b.errors.map((e, i) => <li key={i}>{e.kind}: {e.error} (tried {e.attempts})</li>)}
+          {b.errors.map((e, i) => <li key={i}><Trans context="BridgePanel, li">{e.kind}: {e.error} (tried {e.attempts})</Trans></li>)}
         </ul>
       )}
       {b.review.length > 0 && (
         <>
-          <p className="mt-3 text-sm font-semibold text-foreground">For a steward to look at ({b.review.length})</p>
+          <p className="mt-3 text-sm font-semibold text-foreground"><Trans context="BridgePanel, p">For a steward to look at ({b.review.length})</Trans></p>
           <ul className="mt-1 space-y-1">
             {b.review.map((r) => (
               <li key={r.feedbackId} className="flex flex-wrap items-center gap-2 text-sm text-foreground">
                 <span className="min-w-0 flex-1">
                   {r.title || "A task"}: {r.reason ? SCREEN_REASON_WORDS[r.reason as ScreenReason] ?? r.reason : r.action}
                 </span>
-                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/review/${encodeURIComponent(r.feedbackId)}`, "POST", {})}>Looked at</button>
+                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/review/${encodeURIComponent(r.feedbackId)}`, "POST", {})}><Trans context="BridgePanel, button">Looked at</Trans></button>
               </li>
             ))}
           </ul>
@@ -117,13 +118,13 @@ export default function BridgePanel({ password }: { password: string }) {
       )}
       {b.roleQueue.length > 0 && (
         <>
-          <p className="mt-3 text-sm font-semibold text-foreground">Handed to a role ({b.roleQueue.length})</p>
+          <p className="mt-3 text-sm font-semibold text-foreground"><Trans context="BridgePanel, p">Handed to a role ({b.roleQueue.length})</Trans></p>
           <ul className="mt-1 space-y-1">
             {b.roleQueue.map((q) => (
               <li key={q.id} className="flex flex-wrap items-center gap-2 text-sm text-foreground">
-                <span className="min-w-0 flex-1">{q.title} <span className={HINT}>for {q.roleName ?? "a role"}</span></span>
-                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/role-queue/${encodeURIComponent(q.id)}`, "POST", { status: "taken" })}>Taken</button>
-                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/role-queue/${encodeURIComponent(q.id)}`, "POST", { status: "dismissed" })}>Dismiss</button>
+                <span className="min-w-0 flex-1">{q.title} <span className={HINT}><Trans context="BridgePanel, span">for {q.roleName ?? "a role"}</Trans></span></span>
+                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/role-queue/${encodeURIComponent(q.id)}`, "POST", { status: "taken" })}><Trans context="BridgePanel, button">Taken</Trans></button>
+                <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => call(`/admin/member-tasks/role-queue/${encodeURIComponent(q.id)}`, "POST", { status: "dismissed" })}><Trans context="BridgePanel, button">Dismiss</Trans></button>
               </li>
             ))}
           </ul>

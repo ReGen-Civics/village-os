@@ -16,6 +16,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The column's width (varchar 600). The server judges it again. */
 const MAX = 600;
@@ -36,6 +37,7 @@ export default function TokenMeaningField({
   password: string;
   onSaved: () => void;
 }) {
+  const { t } = useLingui();
   const [draft, setDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const stored = String(token.description ?? "").trim();
@@ -71,8 +73,8 @@ export default function TokenMeaningField({
           onKeyDown={(e) => { if (e.key === "Escape") setDraft(null); }}
           rows={3}
           autoFocus
-          aria-label={`What ${name} means`}
-          placeholder="Say in your own words what this token means here"
+          aria-label={t({ message: `What ${name} means`, context: "TokenMeaningField, aria-label" })}
+          placeholder={t({ message: "Say in your own words what this token means here", context: "TokenMeaningField, placeholder" })}
           className="w-full text-sm border border-border rounded-lg px-2 py-1.5"
         />
         <div className="mt-1 flex items-center gap-2">
@@ -82,11 +84,11 @@ export default function TokenMeaningField({
             disabled={saving || length > MAX}
             className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"
           >
-            Save
-          </button>
+            <Trans context="TokenMeaningField, button">Save
+          </Trans></button>
           <button type="button" onClick={() => setDraft(null)} className="text-xs text-muted-foreground">
-            Cancel
-          </button>
+            <Trans context="TokenMeaningField, button">Cancel
+          </Trans></button>
           <span className={`ml-auto text-[11px] ${length > MAX ? "text-red-600" : "text-muted-foreground"}`}>
             {length}/{MAX}
           </span>
@@ -100,7 +102,7 @@ export default function TokenMeaningField({
       {stored ? (
         <p className="text-xs text-muted-foreground whitespace-pre-line">{stored}</p>
       ) : (
-        <p className="text-xs text-muted-foreground italic">Nothing written yet about what this token means here.</p>
+        <p className="text-xs text-muted-foreground italic"><Trans context="TokenMeaningField, p">Nothing written yet about what this token means here.</Trans></p>
       )}
       {!token.isExample && (
         <button type="button" onClick={() => setDraft(stored)} className="text-xs text-teal-deep underline">

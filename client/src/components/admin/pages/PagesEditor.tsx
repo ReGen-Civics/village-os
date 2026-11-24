@@ -28,6 +28,7 @@ import { pageSectionKey, type FieldSpec, type ListSpec, type PageSpec, type Sect
 import { BrochureSwitch, PageSwitch, useBrochureSwitches } from "./PageSwitches";
 import VisitProgramEditor from "./VisitProgramEditor";
 import { VISIT_PAGE } from "@shared/pageContent/visit";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Doc = Record<string, any>;
 
@@ -88,7 +89,7 @@ function FieldBox({
       <div className="flex items-baseline justify-between gap-2 mb-1">
         <label htmlFor={id} className="text-xs font-medium text-foreground">
           {field.label}
-          {field.optional && <span className="ml-1 font-normal text-muted-foreground">(optional)</span>}
+          {field.optional && <span className="ml-1 font-normal text-muted-foreground"><Trans context="PagesEditor, span">(optional)</Trans></span>}
         </label>
         <span className={`text-[11px] tabular-nums ${full ? "text-amber-800 font-semibold" : "text-muted-foreground"}`} aria-live="polite">
           {n} / {field.max}
@@ -99,8 +100,8 @@ function FieldBox({
         {field.help ? <p className="text-[11px] text-muted-foreground">{field.help}</p> : <span />}
         {onReset && !isDefault && (
           <button type="button" onClick={onReset} className="shrink-0 inline-flex items-center gap-1 text-[11px] text-teal-deep hover:underline">
-            <RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset to default
-          </button>
+            <Trans context="PagesEditor, button"><RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset to default
+          </Trans></button>
         )}
       </div>
     </div>
@@ -181,15 +182,15 @@ function ListEditor({
             disabled={editable.length >= list.maxItems}
             className="inline-flex items-center gap-1 text-xs font-medium text-teal-deep disabled:opacity-40"
           >
-            <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add a {list.itemLabel.toLowerCase()} ({editable.length} of {list.maxItems})
-          </button>
+            <Trans context="PagesEditor, button"><Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add a {list.itemLabel.toLowerCase()} ({editable.length} of {list.maxItems})
+          </Trans></button>
         ) : (
           <span />
         )}
         {stored && (
           <button type="button" onClick={onReset} className="inline-flex items-center gap-1 text-[11px] text-teal-deep hover:underline">
-            <RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset {list.label.toLowerCase()} to default
-          </button>
+            <Trans context="PagesEditor, button"><RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset {list.label.toLowerCase()} to default
+          </Trans></button>
         )}
       </div>
     </fieldset>
@@ -289,6 +290,7 @@ function withoutBlanks(spec: PageSpec, doc: Doc): Doc {
 }
 
 export default function PagesEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   const [pageId, setPageId] = useState(PAGE_SPECS[0]?.id ?? "");
   const spec = useMemo(() => PAGE_SPECS.find((p) => p.id === pageId) ?? PAGE_SPECS[0], [pageId]);
   const [saved, setSaved] = useState<Doc>({});
@@ -360,13 +362,13 @@ export default function PagesEditor({ password }: { password: string }) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1 basis-64">
-          <h2 className="text-xl font-bold text-foreground">Pages</h2>
+          <h2 className="text-xl font-bold text-foreground"><Trans context="PagesEditor, h2">Pages</Trans></h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Every word your public pages say about this village. Boxes you leave alone follow the platform's default.
-          </p>
+            <Trans context="PagesEditor, p">Every word your public pages say about this village. Boxes you leave alone follow the platform's default.
+          </Trans></p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button type="button" onClick={load} aria-label="Reload the saved words" className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+          <button type="button" onClick={load} aria-label={t({ message: "Reload the saved words", context: "PagesEditor, aria-label" })} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -375,13 +377,13 @@ export default function PagesEditor({ password }: { password: string }) {
       <BrochureSwitch switches={switches} />
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        <label htmlFor="pages-picker" className="text-xs font-medium text-foreground">Page</label>
+        <label htmlFor="pages-picker" className="text-xs font-medium text-foreground"><Trans context="PagesEditor, label">Page</Trans></label>
         <select
           id="pages-picker"
           value={spec.id}
           onChange={(e) => setPageId(e.target.value)}
           disabled={dirty || programDirty}
-          title={dirty || programDirty ? "Save or reload before switching pages" : undefined}
+          title={dirty || programDirty ? t({ message: "Save or reload before switching pages", context: "PagesEditor, title" }) : undefined}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
         >
           {PAGE_SPECS.map((p) => (
@@ -389,7 +391,7 @@ export default function PagesEditor({ password }: { password: string }) {
           ))}
         </select>
         <a href={spec.path} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-teal-deep hover:underline">
-          Open this page <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+          <Trans context="PagesEditor, a">Open this page <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /></Trans>
         </a>
       </div>
       <PageSwitch path={spec.path} switches={switches} />
@@ -398,7 +400,7 @@ export default function PagesEditor({ password }: { password: string }) {
         <p role="status" className={`mb-4 text-sm ${message.kind === "ok" ? "text-teal-deep" : "text-red-700"}`}>{message.text}</p>
       )}
       {loadError && (
-        <p role="alert" className="mb-4 text-sm text-red-700">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</p>
+        <p role="alert" className="mb-4 text-sm text-red-700"><Trans context="PagesEditor, p">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</Trans></p>
       )}
       {problems.length > 0 && (
         <ul role="alert" className="mb-4 text-sm text-red-700 list-disc pl-5">
@@ -407,7 +409,7 @@ export default function PagesEditor({ password }: { password: string }) {
       )}
 
       <details className="mb-4 text-xs text-muted-foreground">
-        <summary className="cursor-pointer font-medium text-foreground">Words you can type in curly brackets</summary>
+        <summary className="cursor-pointer font-medium text-foreground"><Trans context="PagesEditor, summary">Words you can type in curly brackets</Trans></summary>
         <ul className="mt-2 grid sm:grid-cols-2 gap-1">
           {WORDS.map(([w, means]) => (
             <li key={w}><code className="text-foreground">{w}</code> becomes {means}</li>
@@ -416,7 +418,7 @@ export default function PagesEditor({ password }: { password: string }) {
       </details>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground"><Trans context="PagesEditor, p">Loading...</Trans></p>
       ) : (
         <div className="space-y-4">
           {spec.sections.map((section) => (
@@ -424,18 +426,18 @@ export default function PagesEditor({ password }: { password: string }) {
           ))}
           {spec.id === VISIT_PAGE.id && <VisitProgramEditor password={password} onDirtyChange={setProgramDirty} />}
           <div className="border border-gray-200 rounded-xl p-4 bg-muted/20">
-            <h3 className="text-sm font-bold text-foreground">Keep the words you see now</h3>
+            <h3 className="text-sm font-bold text-foreground"><Trans context="PagesEditor, h3">Keep the words you see now</Trans></h3>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Saves every box on this page as this village's own, including the ones still following the platform's default, so a later change to the defaults never changes your page.
-            </p>
+              <Trans context="PagesEditor, p">Saves every box on this page as this village's own, including the ones still following the platform's default, so a later change to the defaults never changes your page.
+            </Trans></p>
             <button
               type="button"
               onClick={() => put(adoptedDocument(spec, draft), "Every box on this page is now saved as your own.")}
               disabled={saving || loading || !!loadError || problems.length > 0}
               className="mt-2 px-3 py-1.5 text-xs font-medium border border-teal-deep text-teal-deep rounded-lg hover:bg-teal-deep/5 disabled:opacity-50"
             >
-              Keep these words as ours
-            </button>
+              <Trans context="PagesEditor, button">Keep these words as ours
+            </Trans></button>
           </div>
         </div>
       )}

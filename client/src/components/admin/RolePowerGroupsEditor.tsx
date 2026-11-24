@@ -12,6 +12,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { capabilityLabel } from "@shared/capabilities";
+import { Trans } from "@lingui/react/macro";
 
 interface GroupRow {
   id: string;
@@ -61,10 +62,10 @@ export default function RolePowerGroupsEditor({
       {open && (
         <div className="mt-2 space-y-2">
           <p className="text-xs text-gray-500">
-            Whoever holds this role holds the powers of each group you tick, for as long as they hold the role.
-          </p>
-          {!groups && <p className="text-xs text-gray-500">Loading the Power groups…</p>}
-          {groups?.length === 0 && <p className="text-xs text-gray-500">There are no Power groups yet.</p>}
+            <Trans context="RolePowerGroupsEditor, p">Whoever holds this role holds the powers of each group you tick, for as long as they hold the role.
+          </Trans></p>
+          {!groups && <p className="text-xs text-gray-500"><Trans context="RolePowerGroupsEditor, p">Loading the Power groups…</Trans></p>}
+          {groups?.length === 0 && <p className="text-xs text-gray-500"><Trans context="RolePowerGroupsEditor, p">There are no Power groups yet.</Trans></p>}
           {groups?.map((g) => (
             <label key={g.id} className="flex items-start gap-2 text-sm min-h-[44px]">
               <input
@@ -75,7 +76,7 @@ export default function RolePowerGroupsEditor({
               />
               <span>
                 <span className="font-medium text-gray-800">{g.name}</span>
-                {g.grantsAdmin && <span className="ml-1 text-xs text-gray-500">(opens the admin panel)</span>}
+                {g.grantsAdmin && <span className="ml-1 text-xs text-gray-500"><Trans context="RolePowerGroupsEditor, span">(opens the admin panel)</Trans></span>}
                 <span className="block text-xs text-gray-500">
                   {g.capabilities.length ? g.capabilities.map(capabilityLabel).join("; ") : "No powers yet"}
                 </span>
@@ -95,8 +96,8 @@ export default function RolePowerGroupsEditor({
                 }
               }}
             >
-              Save the powers this role carries
-            </button>
+              <Trans context="RolePowerGroupsEditor, button">Save the powers this role carries
+            </Trans></button>
           )}
         </div>
       )}

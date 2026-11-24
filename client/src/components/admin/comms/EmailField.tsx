@@ -1,4 +1,5 @@
-/**
+
+import { Trans, useLingui } from "@lingui/react/macro";/**
  * One inbox field that takes a comma-separated LIST of addresses.
  *
  * Hoisted out of any settings component on purpose (the cursor-jump bug): a
@@ -13,6 +14,7 @@
 export function EmailField({ label, value, onChange, hint }: {
   label: string; value: string; onChange: (v: string) => void; hint: string;
 }) {
+  const { t } = useLingui();
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 block mb-1">
@@ -26,10 +28,10 @@ export function EmailField({ label, value, onChange, hint }: {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="mt-1 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 font-normal focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
-          placeholder="one@example.org, two@example.org"
+          placeholder={t({ message: "one@example.org, two@example.org", context: "EmailField, placeholder" })}
         />
       </label>
-      <p className="text-xs text-gray-500 mt-1">{hint} Several people? Separate addresses with commas.</p>
+      <p className="text-xs text-gray-500 mt-1"><Trans context="EmailField, p">{hint} Several people? Separate addresses with commas.</Trans></p>
     </div>
   );
 }

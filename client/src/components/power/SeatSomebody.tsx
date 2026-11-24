@@ -29,6 +29,7 @@
 import { useState } from "react";
 import { useRoleWord, useSeatWord } from "@/lib/gameApi";
 import SeatTermField from "./SeatTermField";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const inputCls = "border border-gray-200 rounded-lg px-2 py-1.5 text-sm";
 
@@ -48,6 +49,7 @@ export function SeatSomebody({
   onSeated: (what: string) => void;
   onFailed?: (why: string) => void;
 }) {
+  const { t } = useLingui();
   /* What this village calls one person's turn holding a role. Default "Seat". */
   const seatWord = useSeatWord();
   const roleWord = useRoleWord();
@@ -96,7 +98,7 @@ export function SeatSomebody({
           <input
             className={`${inputCls} mt-1`}
             value={agentName}
-            placeholder="Meeting Memory"
+            placeholder={t({ message: "Meeting Memory", context: "SeatSomebody, placeholder" })}
             onChange={(e) => setAgentName(e.target.value)}
           />
         </label>
@@ -104,7 +106,7 @@ export function SeatSomebody({
       <SeatTermField
         value={termEndsOn}
         onChange={setTermEndsOn}
-        label="Ends on (optional)"
+        label={t({ message: "Ends on (optional)", context: "SeatSomebody, label" })}
         look={{
           label: "block text-xs text-muted-foreground",
           input: `${inputCls} mt-1`,
@@ -118,8 +120,8 @@ export function SeatSomebody({
         disabled={!ready}
         onClick={() => void seat()}
       >
-        Seat
-      </button>
+        <Trans context="SeatSomebody, button">Seat
+      </Trans></button>
     </>
   );
 }

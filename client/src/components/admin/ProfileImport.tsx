@@ -51,6 +51,7 @@ import {
   type DraftPreview,
   type StepResult,
 } from "./profileImportRun";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const BOX = "rounded-xl border border-gray-200 bg-white p-4";
 const PRIMARY =
@@ -151,15 +152,16 @@ function PasteBox({
   onText: (t: string) => void;
   onRead: (t: string) => void;
 }) {
+  const { t } = useLingui();
   return (
     <div className={BOX}>
       <label htmlFor="regen-file-text" className="block text-sm font-medium text-gray-900 mb-1">
-        Paste the file from your ReGen Civics profile
-      </label>
+        <Trans context="ProfileImport, label">Paste the file from your ReGen Civics profile
+      </Trans></label>
       <p className={`${HINT} mb-2`}>
-        The Week 4 card from the board's "Copy for Village OS", or the Village OS 1.0 file from your
+        <Trans context="ProfileImport, p">The Week 4 card from the board's "Copy for Village OS", or the Village OS 1.0 file from your
         profile. Reading it changes nothing here.
-      </p>
+      </Trans></p>
       <textarea
         id="regen-file-text"
         value={text}
@@ -167,7 +169,7 @@ function PasteBox({
         rows={6}
         spellCheck={false}
         className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-mono text-gray-900"
-        placeholder='{ "schema": "regen-civics/village@1", ... }'
+        placeholder={t({ message: "{ \"schema\": \"regen-civics/village@1\", ... }", context: "ProfileImport, placeholder" })}
       />
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <button type="button" className={PRIMARY} disabled={busy || !text.trim()} onClick={() => onRead(text)}>
@@ -222,9 +224,9 @@ function DecidesRow({
   const name = `decides-${circle.key}`;
   return (
     <fieldset className="border-t border-gray-100 pt-2">
-      <legend className="text-sm font-medium text-gray-900">How {circle.name} decides</legend>
-      {circle.choices.length ? <p className={HINT}>Your cards name more than one way. Pick the one this circle keeps.</p> : null}
-      {circle.liveDecidesBy ? <p className={HINT}>It decides by {decidesByLabel(circle.liveDecidesBy, circle.liveDecidesByGloss)} today.</p> : null}
+      <legend className="text-sm font-medium text-gray-900"><Trans context="ProfileImport, legend">How {circle.name} decides</Trans></legend>
+      {circle.choices.length ? <p className={HINT}><Trans context="ProfileImport, p">Your cards name more than one way. Pick the one this circle keeps.</Trans></p> : null}
+      {circle.liveDecidesBy ? <p className={HINT}><Trans context="ProfileImport, p">It decides by {decidesByLabel(circle.liveDecidesBy, circle.liveDecidesByGloss)} today.</Trans></p> : null}
       <div className="mt-1 space-y-1">
         {options.map((o, i) => (
           <label key={i} className="flex items-center gap-2 text-sm">
@@ -250,6 +252,7 @@ function Preview({
   choices: ImportChoices;
   onChoices: (c: ImportChoices) => void;
 }) {
+  const { t } = useLingui();
   const set = (patch: Partial<ImportChoices>) => onChoices({ ...choices, ...patch });
   const p = plan.profile;
   const createsCircles = plan.circles.some((c) => !c.reused);
@@ -263,26 +266,26 @@ function Preview({
           {p.from.weeks.length ? `, from weeks ${p.from.weeks.join(", ")}` : ""}.
         </p>
         <p className={`${HINT} mt-1`}>
-          Read every part. Untick what you do not want. Nothing is set until you press Load at the bottom, and
+          <Trans context="ProfileImport, p">Read every part. Untick what you do not want. Nothing is set until you press Load at the bottom, and
           your org chart changes only when you publish the draft it makes.
-        </p>
+        </Trans></p>
         {plan.leftOut.length ? (
           <div className="mt-2">
-            <p className="text-sm font-medium text-amber-800">Left out of this file, and why</p>
+            <p className="text-sm font-medium text-amber-800"><Trans context="ProfileImport, p">Left out of this file, and why</Trans></p>
             <Lines lines={plan.leftOut} />
           </div>
         ) : null}
       </div>
 
       {plan.needs.length ? (
-        <Part id="rc-needs" title="The human needs your village is here to meet" status={statusOf(p, "needs.scope")} checked={choices.needs} onToggle={(on) => set({ needs: on })}>
+        <Part id="rc-needs" title={t({ message: "The human needs your village is here to meet", context: "ProfileImport, title" })} status={statusOf(p, "needs.scope")} checked={choices.needs} onToggle={(on) => set({ needs: on })}>
           <Lines lines={plan.needs.map((n) => n.line)} />
-          <p className={`${HINT} mt-2`}>Saved on What this village is for. Nothing you have already taken on is taken off.</p>
+          <p className={`${HINT} mt-2`}><Trans context="ProfileImport, p">Saved on What this village is for. Nothing you have already taken on is taken off.</Trans></p>
         </Part>
       ) : null}
 
       {plan.ownNeeds.length ? (
-        <Part id="rc-own" title="Needs you named in Week 3 and have not taken on">
+        <Part id="rc-own" title={t({ message: "Needs you named in Week 3 and have not taken on", context: "ProfileImport, title" })}>
           <ul className="space-y-1">
             {plan.ownNeeds.map((n) => (
               <li key={n.needKey}>
@@ -300,12 +303,12 @@ function Preview({
               </li>
             ))}
           </ul>
-          <p className={`${HINT} mt-2`}>Each one waits for your own tick.</p>
+          <p className={`${HINT} mt-2`}><Trans context="ProfileImport, p">Each one waits for your own tick.</Trans></p>
         </Part>
       ) : null}
 
       {plan.totality ? (
-        <Part id="rc-whole" title="How much of its people's needs your village means to meet" checked={choices.totality} onToggle={(on) => set({ totality: on })}>
+        <Part id="rc-whole" title={t({ message: "How much of its people's needs your village means to meet", context: "ProfileImport, title" })} checked={choices.totality} onToggle={(on) => set({ totality: on })}>
           <p>{plan.totality.line}</p>
         </Part>
       ) : null}
@@ -313,14 +316,14 @@ function Preview({
       {plan.circles.length || plan.seats.length ? (
         <Part
           id="rc-structure"
-          title="Your circles and roles, as one draft"
+          title={t({ message: "Your circles and roles, as one draft", context: "ProfileImport, title" })}
           status={statusOf(p, "seats.cards") ?? statusOf(p, "circles.list")}
           checked={choices.structure}
           onToggle={(on) => set({ structure: on })}
         >
-          <p className="font-medium text-gray-900">Circles</p>
+          <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">Circles</Trans></p>
           <Lines lines={plan.circles.map((c) => (c.reused ? `${c.name}: your village has this circle already, and its roles go into it.` : `${c.name}: a new circle.`))} />
-          <p className="font-medium text-gray-900 mt-3">Roles</p>
+          <p className="font-medium text-gray-900 mt-3"><Trans context="ProfileImport, p">Roles</Trans></p>
           <ul className="space-y-2 mt-1">
             {plan.seats.map((s) => (
               <SeatRow
@@ -338,32 +341,32 @@ function Preview({
           </div>
           {plan.unseatedLinks.length ? (
             <div className="mt-3">
-              <p className="font-medium text-gray-900">Circles that meet a need no role carries yet</p>
+              <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">Circles that meet a need no role carries yet</Trans></p>
               <Lines lines={plan.unseatedLinks} />
             </div>
           ) : null}
           <p className={`${HINT} mt-2`}>
-            How each circle decides is declared once the circle exists: after the draft is published, or straight away for a circle you have already.
-          </p>
+            <Trans context="ProfileImport, p">How each circle decides is declared once the circle exists: after the draft is published, or straight away for a circle you have already.
+          </Trans></p>
         </Part>
       ) : null}
 
       {plan.seats.some((s) => s.holder && !s.holderAlready) ? (
-        <Part id="rc-holders" title="Who holds the roles" checked={choices.holders && !plan.holdersWait} onToggle={plan.holdersWait ? undefined : (on) => set({ holders: on })}>
+        <Part id="rc-holders" title={t({ message: "Who holds the roles", context: "ProfileImport, title" })} checked={choices.holders && !plan.holdersWait} onToggle={plan.holdersWait ? undefined : (on) => set({ holders: on })}>
           {plan.holdersWait ? <p className="text-amber-800">{plan.holdersWait}</p> : null}
           <Lines lines={plan.seats.filter((s) => s.holder && !s.holderAlready).map((s) => `${s.holder} in ${s.name}`)} />
           <p className={`${HINT} mt-2`}>
-            Each is written down as a name. When that person has an account, they claim the role from their profile.
-          </p>
+            <Trans context="ProfileImport, p">Each is written down as a name. When that person has an account, they claim the role from their profile.
+          </Trans></p>
         </Part>
       ) : null}
 
       {choices.structure && createsCircles && plan.oldCircles.length ? (
-        <Part id="rc-old" title="The circles this village started with">
-          <p>A village built from your file starts with your circles. These are the ones it has now that your file does not name.</p>
+        <Part id="rc-old" title={t({ message: "The circles this village started with", context: "ProfileImport, title" })}>
+          <p><Trans context="ProfileImport, p">A village built from your file starts with your circles. These are the ones it has now that your file does not name.</Trans></p>
           <Lines lines={plan.oldCircles.map((c) => (c.seats ? `${c.name}: ${c.seats} role${c.seats === 1 ? " sits" : "s sit"} in it, so it can only be marked forming.` : c.name))} />
           <fieldset className="mt-2 space-y-1">
-            <legend className="sr-only">What happens to them</legend>
+            <legend className="sr-only"><Trans context="ProfileImport, legend">What happens to them</Trans></legend>
             {(
               [
                 ["rest", `Rest them, as part of the draft${restable.length < plan.oldCircles.length ? " (the ones nobody sits in)" : ""}. Reverting the draft brings them back.`],
@@ -381,8 +384,8 @@ function Preview({
       ) : null}
 
       {plan.seats.some((s) => s.needLinks.length) ? (
-        <Part id="rc-links" title="Which human needs each role meets" checked={choices.links} onToggle={(on) => set({ links: on })}>
-          <p>Each role is tagged with its own needs once the role exists, and only with needs your village has taken on.</p>
+        <Part id="rc-links" title={t({ message: "Which human needs each role meets", context: "ProfileImport, title" })} checked={choices.links} onToggle={(on) => set({ links: on })}>
+          <p><Trans context="ProfileImport, p">Each role is tagged with its own needs once the role exists, and only with needs your village has taken on.</Trans></p>
         </Part>
       ) : null}
 
@@ -405,6 +408,7 @@ function Handover({
   onOpenTab: (tab: string) => void;
   onIdentity?: (p: IdentityPrefill) => void;
 }) {
+  const { t } = useLingui();
   const [handed, setHanded] = useState<Record<string, boolean>>({});
   // The checklist's ticks: for the founder while they work, saved nowhere.
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
@@ -417,19 +421,19 @@ function Handover({
   return (
     <div>
       {prefill.identity || prefill.purpose || prefill.covenant || prefill.tokenName || prefill.exitPolicy || prefill.quests.length ? (
-        <Part id="rc-prefill" title="Words to put in their own editors">
-          <p className="mb-2">Each button puts the words in the editor that saves them. Nothing is saved until you press Save there.</p>
+        <Part id="rc-prefill" title={t({ message: "Words to put in their own editors", context: "ProfileImport, title" })}>
+          <p className="mb-2"><Trans context="ProfileImport, p">Each button puts the words in the editor that saves them. Nothing is saved until you press Save there.</Trans></p>
           <div className="space-y-3">
             {plan.prefill.identity ? (
               <div>
-                <p className="font-medium text-gray-900">Identity <StatusChip status={statusOf(p, "identity.name")} /></p>
+                <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">Identity <StatusChip status={statusOf(p, "identity.name")} /></Trans></p>
                 <Lines lines={identityLines(plan.prefill.identity)} />
                 {onIdentity ? (
                   <button type="button" className={`${QUIET} mt-1`} onClick={() => hand("identity", () => onIdentity(plan.prefill.identity!))}>
                     {handed.identity ? "In the Identity boxes now" : "Put these in the Identity boxes"}
                   </button>
                 ) : (
-                  <p className={HINT}>Open Make This Site Yours to put these in the Identity boxes.</p>
+                  <p className={HINT}><Trans context="ProfileImport, p">Open Make This Site Yours to put these in the Identity boxes.</Trans></p>
                 )}
               </div>
             ) : null}
@@ -447,7 +451,7 @@ function Handover({
             ) : null}
             {plan.prefill.covenant ? (
               <div>
-                <p className="font-medium text-gray-900">What a member signs <StatusChip status={statusOf(p, "membership.covenant")} /></p>
+                <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">What a member signs <StatusChip status={statusOf(p, "membership.covenant")} /></Trans></p>
                 <p className="whitespace-pre-line">{plan.prefill.covenant}</p>
                 <button
                   type="button"
@@ -459,13 +463,13 @@ function Handover({
                     })
                   }
                 >
-                  Open the covenant editor with it
-                </button>
+                  <Trans context="ProfileImport, button">Open the covenant editor with it
+                </Trans></button>
               </div>
             ) : null}
             {prefill.tokenName ? (
               <div>
-                <p className="font-medium text-gray-900">Your recognition token's name <StatusChip status={statusOf(p, "quests.tokenName")} /></p>
+                <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">Your recognition token's name <StatusChip status={statusOf(p, "quests.tokenName")} /></Trans></p>
                 <p>{prefill.tokenName}</p>
                 <button
                   type="button"
@@ -477,13 +481,13 @@ function Handover({
                     })
                   }
                 >
-                  Open Tokens with it
-                </button>
+                  <Trans context="ProfileImport, button">Open Tokens with it
+                </Trans></button>
               </div>
             ) : null}
             {prefill.exitPolicy ? (
               <div>
-                <p className="font-medium text-gray-900">What happens when someone leaves <StatusChip status={statusOf(p, "legal.exitPolicy")} /></p>
+                <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">What happens when someone leaves <StatusChip status={statusOf(p, "legal.exitPolicy")} /></Trans></p>
                 <p className="whitespace-pre-line">{prefill.exitPolicy}</p>
                 <button
                   type="button"
@@ -495,13 +499,13 @@ function Handover({
                     })
                   }
                 >
-                  Open the exit policy with it
-                </button>
+                  <Trans context="ProfileImport, button">Open the exit policy with it
+                </Trans></button>
               </div>
             ) : null}
             {plan.prefill.quests.length ? (
               <div>
-                <p className="font-medium text-gray-900">Your first quests</p>
+                <p className="font-medium text-gray-900"><Trans context="ProfileImport, p">Your first quests</Trans></p>
                 <ul className="space-y-1">
                   {plan.prefill.quests.map((q, i) => (
                     <li key={i} className="flex flex-wrap items-center gap-2">
@@ -519,8 +523,8 @@ function Handover({
                           })
                         }
                       >
-                        Open Quests with this one
-                      </button>
+                        <Trans context="ProfileImport, button">Open Quests with this one
+                      </Trans></button>
                     </li>
                   ))}
                 </ul>
@@ -531,29 +535,29 @@ function Handover({
       ) : null}
 
       {plan.modules ? (
-        <Part id="rc-modules" title="What your village runs" status={statusOf(p, "modules.on")}>
+        <Part id="rc-modules" title={t({ message: "What your village runs", context: "ProfileImport, title" })} status={statusOf(p, "modules.on")}>
           {plan.modules.on.length ? (
             <p>
               Your stewards chose {plan.modules.on.map((m) => m.name).join(", ")}. Turn each one on yourself under
               Modules, in this order.
             </p>
           ) : (
-            <p>Your stewards have not chosen any modules yet.</p>
+            <p><Trans context="ProfileImport, p">Your stewards have not chosen any modules yet.</Trans></p>
           )}
           <Lines lines={plan.modules.order} />
-          {plan.modules.unknown.length ? <p className={HINT}>Not a module Village OS has: {plan.modules.unknown.join(", ")}.</p> : null}
+          {plan.modules.unknown.length ? <p className={HINT}><Trans context="ProfileImport, p">Not a module Village OS has: {plan.modules.unknown.join(", ")}.</Trans></p> : null}
           <p className="mt-1">
-            {plan.modules.moneyLeftOff.join(", ")} stay off. This file never turns on a module that moves or raises money.
-          </p>
+            <Trans context="ProfileImport, p">{plan.modules.moneyLeftOff.join(", ")} stay off. This file never turns on a module that moves or raises money.
+          </Trans></p>
         </Part>
       ) : null}
 
       {plan.notes.length ? (
-        <Part id="rc-notes" title="For you to set by hand">
+        <Part id="rc-notes" title={t({ message: "For you to set by hand", context: "ProfileImport, title" })}>
           <p className="mb-2">
-            Your stewards' words for what Village OS asks you to set yourself. This screen sets none of them. Tick each
+            <Trans context="ProfileImport, p">Your stewards' words for what Village OS asks you to set yourself. This screen sets none of them. Tick each
             as you go; the ticks are for you and are saved nowhere.
-          </p>
+          </Trans></p>
           <ul className="space-y-2">
             {plan.notes.map((n) => (
               <li key={n.key}>
@@ -618,29 +622,29 @@ function DraftBox({
           ))}
         </ul>
       ) : (
-        <p className={HINT}>The draft's lines could not be read back. Publishing still checks every one first.</p>
+        <p className={HINT}><Trans context="ProfileImport, p">The draft's lines could not be read back. Publishing still checks every one first.</Trans></p>
       )}
       <div className="mt-3 flex flex-wrap gap-3">
         {published ? (
           <button type="button" className={QUIET} disabled={busy} onClick={onRevert}>
-            Revert the draft
-          </button>
+            <Trans context="ProfileImport, button">Revert the draft
+          </Trans></button>
         ) : (
           <>
             <button type="button" className={PRIMARY} disabled={busy || (preview?.blocked ?? 0) > 0} onClick={onPublish}>
               {busy ? "Working..." : "Publish this draft"}
             </button>
             <button type="button" className={QUIET} disabled={busy} onClick={onWithdraw}>
-              Withdraw it
-            </button>
+              <Trans context="ProfileImport, button">Withdraw it
+            </Trans></button>
           </>
         )}
       </div>
       {!published && (preview?.blocked ?? 0) > 0 ? (
-        <p className="text-sm text-red-700 mt-2">A line above cannot be applied, so the draft cannot be published. Withdraw it, fix that part, and load the file again.</p>
+        <p className="text-sm text-red-700 mt-2"><Trans context="ProfileImport, p">A line above cannot be applied, so the draft cannot be published. Withdraw it, fix that part, and load the file again.</Trans></p>
       ) : null}
       {!published ? (
-        <p className={`${HINT} mt-2`}>Publishing applies every line at once. Reverting later puts back what was there.</p>
+        <p className={`${HINT} mt-2`}><Trans context="ProfileImport, p">Publishing applies every line at once. Reverting later puts back what was there.</Trans></p>
       ) : null}
     </section>
   );
@@ -783,26 +787,26 @@ export default function ProfileImport({
     <div className="space-y-3">
       {others.length ? (
         <div className={BOX}>
-          <p className="font-semibold text-gray-900">A draft from an earlier load, not published yet</p>
+          <p className="font-semibold text-gray-900"><Trans context="ProfileImport, p">A draft from an earlier load, not published yet</Trans></p>
           <ul className="mt-2 space-y-2">
             {others.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-3 text-sm">
                 <span>
-                  {d.title}, {d.changes} line{d.changes === 1 ? "" : "s"}
+                  <Trans context="ProfileImport, span">{d.title}, {d.changes} line{d.changes === 1 ? "" : "s"}</Trans>
                 </span>
                 <button type="button" className={QUIET} disabled={busy} onClick={() => readEarlier(d.id)}>
-                  Read it
-                </button>
+                  <Trans context="ProfileImport, button">Read it
+                </Trans></button>
                 <button type="button" className={QUIET} disabled={busy} onClick={() => withdraw(d.id)}>
-                  Withdraw it
-                </button>
+                  <Trans context="ProfileImport, button">Withdraw it
+                </Trans></button>
               </li>
             ))}
           </ul>
           <p className={`${HINT} mt-2`}>
-            Read it before you publish it. Published, it makes the circles and roles; load the same file again
+            <Trans context="ProfileImport, p">Read it before you publish it. Published, it makes the circles and roles; load the same file again
             afterwards to tag each role with its needs and say how each circle decides.
-          </p>
+          </Trans></p>
         </div>
       ) : null}
 

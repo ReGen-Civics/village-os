@@ -23,6 +23,7 @@ import {
   type LettersAnswer,
   type LetterView,
 } from "./lettersApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const STATE_LABEL: Record<LetterState, string> = {
   draft: "Draft",
@@ -41,6 +42,7 @@ const STATE_STYLE: Record<LetterState, string> = {
 };
 
 function Numbers({ l }: { l: LetterView }) {
+  const { t } = useLingui();
   const n = l.numbers;
   const cells: Array<[string, number]> = [
     ["Sent", n.sent],
@@ -53,7 +55,7 @@ function Numbers({ l }: { l: LetterView }) {
   if (n.failed) cells.push(["Failed", n.failed]);
   if (n.rehearsed) cells.push(["Rehearsed", n.rehearsed]);
   return (
-    <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600" aria-label="Numbers">
+    <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600" aria-label={t({ message: "Numbers", context: "CommsLetters, aria-label" })}>
       {cells.map(([label, value]) => (
         <div key={label} className="flex gap-1">
           <dt>{label}</dt>
@@ -83,8 +85,8 @@ function Scheduled({ password, l, onChanged }: { password: string; l: LetterView
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
       <label className="sr-only" htmlFor={`move-${l.id}`}>
-        New time
-      </label>
+        <Trans context="CommsLetters, label">New time
+      </Trans></label>
       <input
         id={`move-${l.id}`}
         type="datetime-local"
@@ -93,17 +95,18 @@ function Scheduled({ password, l, onChanged }: { password: string; l: LetterView
         className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
       />
       <button type="button" disabled={!when} onClick={move} className="text-gray-900 underline disabled:opacity-50">
-        Reschedule
-      </button>
+        <Trans context="CommsLetters, button">Reschedule
+      </Trans></button>
       <button type="button" onClick={cancel} className="text-red-700 underline">
-        Cancel
-      </button>
+        <Trans context="CommsLetters, button">Cancel
+      </Trans></button>
       {error && <span className="text-red-700">{error}</span>}
     </div>
   );
 }
 
 export default function CommsLetters({ password }: { password: string }) {
+  const { t } = useLingui();
   const [data, setData] = useState<LettersAnswer | null>(null);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
@@ -122,7 +125,7 @@ export default function CommsLetters({ password }: { password: string }) {
   }, [load]);
 
   if (error) return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  if (!data) return <p className="py-12 text-center text-sm text-gray-400">Loading...</p>;
+  if (!data) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsLetters, p">Loading...</Trans></p>;
 
   const editing = open && open !== "new" ? data.letters.find((l) => l.id === open) ?? null : null;
   const done = async (line: string, keepOpen: boolean) => {
@@ -135,41 +138,41 @@ export default function CommsLetters({ password }: { password: string }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Letters</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsLetters, h2">Letters</Trans></h2>
           <p className="mt-1 text-sm text-gray-500">
-            Village news, to the people who said yes to it. At most {data.limit.perDay} a day, ten minutes apart.{" "}
+            <Trans context="CommsLetters, p">Village news, to the people who said yes to it. At most {data.limit.perDay} a day, ten minutes apart.{" "}
             {data.limit.today} went in the last 24 hours.
-          </p>
+          </Trans></p>
         </div>
         {open === null && (
           <button type="button" onClick={() => setOpen("new")} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white">
-            Write a letter
-          </button>
+            <Trans context="CommsLetters, button">Write a letter
+          </Trans></button>
         )}
       </div>
       {!data.ready && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          This village cannot send email yet. Finish the setup in Comms Settings, then come back to send.
-        </p>
+          <Trans context="CommsLetters, p">This village cannot send email yet. Finish the setup in Comms Settings, then come back to send.
+        </Trans></p>
       )}
       {note && <p className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700">{note}</p>}
 
       {open !== null && (
-        <section aria-label="Write">
+        <section aria-label={t({ message: "Write", context: "CommsLetters, aria-label" })}>
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{editing ? "Your letter" : "A new letter"}</h3>
             <button type="button" onClick={() => setOpen(null)} className="text-sm text-gray-700 underline">
-              Close
-            </button>
+              <Trans context="CommsLetters, button">Close
+            </Trans></button>
           </div>
           <LetterComposer key={open} password={password} letter={editing} choices={data.choices} onDone={done} />
         </section>
       )}
 
-      <section aria-label="History">
-        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">History</h3>
+      <section aria-label={t({ message: "History", context: "CommsLetters, aria-label" })}>
+        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="CommsLetters, h3">History</Trans></h3>
         {data.letters.length === 0 ? (
-          <p className="text-sm text-gray-500">No letters yet.</p>
+          <p className="text-sm text-gray-500"><Trans context="CommsLetters, p">No letters yet.</Trans></p>
         ) : (
           <ul className="space-y-3">
             {data.letters.map((l) => (
@@ -190,8 +193,8 @@ export default function CommsLetters({ password }: { password: string }) {
                 {l.state === "scheduled" && <Scheduled password={password} l={l} onChanged={(line) => done(line, false)} />}
                 {(l.state === "draft" || l.state === "cancelled") && open !== l.id && (
                   <button type="button" onClick={() => setOpen(l.id)} className="mt-2 text-sm text-gray-900 underline">
-                    Open
-                  </button>
+                    <Trans context="CommsLetters, button">Open
+                  </Trans></button>
                 )}
               </li>
             ))}
