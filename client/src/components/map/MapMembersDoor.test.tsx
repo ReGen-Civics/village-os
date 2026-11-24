@@ -28,7 +28,7 @@ describe("the living map's door", () => {
   });
 
   it("sends a reader below the rung to the circles", async () => {
-    answer(403, { error: "members_only" });
+    answer(401, { error: "auth_required", module: "map" });
     render(<MapMembersDoor><p data-testid="map">map</p></MapMembersDoor>);
     const link = await screen.findByRole("link", { name: "See the circles" });
     expect(link).toHaveAttribute("href", "/circles");

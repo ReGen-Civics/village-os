@@ -27,6 +27,7 @@ import WaitingKeys from "@/components/setupGame/WaitingKeys";
 import { LAYER_WORD, layerEstablished, orderedLayers, seedLight } from "@/components/setupGame/journeyModel";
 import { readComms, readDomain, readLaunch, readMap, said, type LaunchItem, type SetupGameMap } from "@/components/setupGame/setupGameApi";
 import "@/components/setupGame/forest.css";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type View = "journey" | "spring" | "notes";
 const VIEW_KEY = "setup-game:view";
@@ -42,6 +43,7 @@ function firstView(): View {
 }
 
 export default function SetupGame() {
+  const { t } = useLingui();
   const { user, loading } = useAuth();
   const isFounder = !!user && (user.role === "admin" || user.role === "founder");
   const [view, setView] = useState<View>(firstView);
@@ -96,7 +98,7 @@ export default function SetupGame() {
       <Layout>
         <div className="sg-world">
           <div className="sg-wrap">
-            <p className="sg-note">Checking your access.</p>
+            <p className="sg-note"><Trans context="SetupGame, p">Checking your access.</Trans></p>
           </div>
         </div>
       </Layout>
@@ -109,8 +111,8 @@ export default function SetupGame() {
         <div className="sg-world">
           <div className="sg-wrap">
             <div className="sg-title">
-              <h1>The Setup Game</h1>
-              <span className="sg-where">for the village's founders</span>
+              <h1><Trans context="SetupGame, h1">The Setup Game</Trans></h1>
+              <span className="sg-where"><Trans context="SetupGame, span">for the village's founders</Trans></span>
             </div>
             <div className="sg-card">
               <p style={{ margin: 0 }}>
@@ -119,8 +121,8 @@ export default function SetupGame() {
               {!user ? (
                 <p style={{ margin: "10px 0 0" }}>
                   <a className="sg-hbtn" href="/login">
-                    Sign in
-                  </a>
+                    <Trans context="SetupGame, a">Sign in
+                  </Trans></a>
                 </p>
               ) : null}
             </div>
@@ -141,24 +143,24 @@ export default function SetupGame() {
           <div className="sg-hud">
             <div className="sg-hud-l">
               <span className="sg-hbtn" style={{ cursor: "default" }}>
-                ⚘ Setup game
-              </span>
-              <div className="sg-toggle" role="group" aria-label="View">
+                <Trans context="SetupGame, span">⚘ Setup game
+              </Trans></span>
+              <div className="sg-toggle" role="group" aria-label={t({ message: "View", context: "SetupGame, aria-label" })}>
                 <button type="button" aria-pressed={view === "journey"} onClick={() => choose("journey")}>
-                  Journey
-                </button>
+                  <Trans context="SetupGame, button">Journey
+                </Trans></button>
                 <button type="button" aria-pressed={view === "spring"} onClick={() => choose("spring")}>
-                  Spring plot
-                </button>
+                  <Trans context="SetupGame, button">Spring plot
+                </Trans></button>
                 <button type="button" aria-pressed={view === "notes"} onClick={() => choose("notes")}>
-                  Field notes
-                </button>
+                  <Trans context="SetupGame, button">Field notes
+                </Trans></button>
               </div>
             </div>
             <div className="sg-hud-r">
               <a className="sg-hbtn" href="/journey-to-launch">
-                Journey to Launch
-              </a>
+                <Trans context="SetupGame, a">Journey to Launch
+              </Trans></a>
             </div>
           </div>
 
@@ -173,7 +175,7 @@ export default function SetupGame() {
           </div>
 
           {map ? (
-            <div className="sg-stats sg-wood" aria-label="Forest layers">
+            <div className="sg-stats sg-wood" aria-label={t({ message: "Forest layers", context: "SetupGame, aria-label" })}>
               <div className="sg-layers">
                 {layers.map((l) => {
                   const est = layerEstablished(l.seeds, map, (s) => seedLight(s, rows, comms));
@@ -188,9 +190,9 @@ export default function SetupGame() {
                 })}
               </div>
               <div className="sg-rewild">
-                <span className="sg-sc">ready to rewild</span>
+                <span className="sg-sc"><Trans context="SetupGame, span">ready to rewild</Trans></span>
                 <b>
-                  {established} of {layers.length}
+                  <Trans context="SetupGame, b">{established} of {layers.length}</Trans>
                 </b>
               </div>
             </div>
@@ -198,7 +200,7 @@ export default function SetupGame() {
 
           {problem ? <div className="sg-card">{problem}</div> : null}
           <WaitingKeys />
-          {!map && !problem ? <p className="sg-note">Reading the forest.</p> : null}
+          {!map && !problem ? <p className="sg-note"><Trans context="SetupGame, p">Reading the forest.</Trans></p> : null}
 
           {map && view === "journey" ? <JourneyView map={map} launch={launch} comms={comms} onPlaySpring={() => choose("spring")} /> : null}
           {map && view === "spring" ? (

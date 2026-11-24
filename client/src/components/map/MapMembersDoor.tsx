@@ -1,8 +1,11 @@
 /**
- * THE LIVING MAP IS FOR MEMBERS (the lead, 24 Nov 2026; the gate is server/routes/mapView.ts).
+ * THE LIVING MAP IS FOR MEMBERS (the lead, 24 Nov 2026). The gate is the map module's own lifecycle:
+ * at Members (Admin, Modules, Map), `requireModule("map")` answers a reader who is not signed in with
+ * 401 `auth_required`, and a portal visitor is never signed in (visitors hold no accounts: the lead,
+ * 24 Nov 2026).
  *
  * In front of the map pages: asks the map once whether this reader may open it, and if the server
- * says members only, shows a calm page that sends them to the circles, which stay open. Anything
+ * says sign in first, shows a calm page that sends them to the circles, which stay open. Anything
  * else (the map answers, the module is off, the network fails) renders the page as before, which
  * then meets whatever the server says on its own reads.
  */
@@ -30,7 +33,7 @@ export default function MapMembersDoor({ children }: { children: ReactNode }) {
       .then(async (r) => {
         if (r.status === 401 || r.status === 403) {
           const body = (await r.json().catch(() => null)) as { error?: string } | null;
-          return body?.error === "members_only" || body?.error === "auth_required" || body?.error === "entrance_required" ? "members_only" : "open";
+          return body?.error === "auth_required" || body?.error === "entrance_required" ? "members_only" : "open";
         }
         return "open";
       })

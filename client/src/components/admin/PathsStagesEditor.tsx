@@ -29,6 +29,7 @@ import {
   type PathField,
   type StageField,
 } from "@shared/villagePaths";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Doc = Record<string, any>;
 type Group = "paths" | "stages" | "ladder";
@@ -90,8 +91,8 @@ function Box({
         <p className="text-[11px] text-muted-foreground">{shows}</p>
         {!isDefault && (
           <button type="button" onClick={onReset} className="shrink-0 inline-flex items-center gap-1 text-[11px] text-teal-deep hover:underline">
-            <RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset to default
-          </button>
+            <Trans context="PathsStagesEditor, button"><RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset to default
+          </Trans></button>
         )}
       </div>
     </div>
@@ -99,6 +100,7 @@ function Box({
 }
 
 export default function PathsStagesEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   const [saved, setSaved] = useState<Doc>({});
   const [draft, setDraft] = useState<Doc>({});
   const [loading, setLoading] = useState(true);
@@ -186,13 +188,13 @@ export default function PathsStagesEditor({ password }: { password: string }) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1 basis-64">
-          <h2 className="text-xl font-bold text-foreground">Paths &amp; Stages</h2>
+          <h2 className="text-xl font-bold text-foreground"><Trans context="PathsStagesEditor, h2">Paths &amp; Stages</Trans></h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Your words for the ways into your village and the stages of belonging. Boxes you leave alone keep the platform's words.
-          </p>
+            <Trans context="PathsStagesEditor, p">Your words for the ways into your village and the stages of belonging. Boxes you leave alone keep the platform's words.
+          </Trans></p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button type="button" onClick={load} aria-label="Reload the saved words" className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+          <button type="button" onClick={load} aria-label={t({ message: "Reload the saved words", context: "PathsStagesEditor, aria-label" })} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -202,7 +204,7 @@ export default function PathsStagesEditor({ password }: { password: string }) {
         <p role="status" className={`mb-4 text-sm ${message.kind === "ok" ? "text-teal-deep" : "text-red-700"}`}>{message.text}</p>
       )}
       {loadError && (
-        <p role="alert" className="mb-4 text-sm text-red-700">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</p>
+        <p role="alert" className="mb-4 text-sm text-red-700"><Trans context="PathsStagesEditor, p">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</Trans></p>
       )}
       {problems.length > 0 && (
         <ul role="alert" className="mb-4 text-sm text-red-700 list-disc pl-5">
@@ -217,14 +219,14 @@ export default function PathsStagesEditor({ password }: { password: string }) {
       </p>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground"><Trans context="PathsStagesEditor, p">Loading...</Trans></p>
       ) : (
         <div className="space-y-6">
           <section aria-labelledby="ps-paths-h" className="bg-card border border-gray-200 rounded-xl p-4">
-            <h3 id="ps-paths-h" className="text-sm font-bold text-foreground">Paths</h3>
+            <h3 id="ps-paths-h" className="text-sm font-bold text-foreground"><Trans context="PathsStagesEditor, h3">Paths</Trans></h3>
             <p className="text-[11px] text-muted-foreground mb-3">
-              The choices on the join form. Each path keeps its journey page and its emails, and you choose the words.
-            </p>
+              <Trans context="PathsStagesEditor, p">The choices on the join form. Each path keeps its journey page and its emails, and you choose the words.
+            </Trans></p>
             <div className="grid gap-3 lg:grid-cols-2">
               {GAME_CONFIG.paths.map((path) => {
                 const shown = typed("paths", path.id, "label") ?? DEFAULTS.paths[path.id].label;
@@ -258,15 +260,15 @@ export default function PathsStagesEditor({ password }: { password: string }) {
           </section>
 
           <section aria-labelledby="ps-stages-h" className="bg-card border border-gray-200 rounded-xl p-4">
-            <h3 id="ps-stages-h" className="text-sm font-bold text-foreground">Stages</h3>
+            <h3 id="ps-stages-h" className="text-sm font-bold text-foreground"><Trans context="PathsStagesEditor, h3">Stages</Trans></h3>
             <p className="text-[11px] text-muted-foreground mb-3">
-              The ladder members climb, in order. You can rename and re-describe every stage. Their order, how each one is earned and
+              <Trans context="PathsStagesEditor, p">The ladder members climb, in order. You can rename and re-describe every stage. Their order, how each one is earned and
               what each one opens stay as they are, because quests, roles, the library, the exchange and Game Mechanics are tied to them.
-            </p>
+            </Trans></p>
             <div className="mb-4 max-w-md">
               <Box
                 id="ps-ladder-title"
-                label="Name of the ladder"
+                label={t({ message: "Name of the ladder", context: "PathsStagesEditor, label" })}
                 shows="Shows as the heading of the ladder on each member's profile, on the quest board, and when a member reaches a new stage."
                 max={LADDER_LIMITS.title}
                 value={ladderTitle ?? DEFAULTS.ladder.title}
@@ -281,7 +283,7 @@ export default function PathsStagesEditor({ password }: { password: string }) {
                 return (
                   <li key={stage.id} className="rounded-lg bg-muted/30 p-3 space-y-2 min-w-0">
                     <p className="text-xs font-semibold text-foreground break-words">
-                      Stage {index + 1}: {shown.trim() || DEFAULTS.stages[stage.id].name}
+                      <Trans context="PathsStagesEditor, p">Stage {index + 1}: {shown.trim() || DEFAULTS.stages[stage.id].name}</Trans>
                     </p>
                     {STAGE_BOXES.map((box) => {
                       const own = typed("stages", stage.id, box.field);

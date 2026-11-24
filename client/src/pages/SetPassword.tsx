@@ -9,6 +9,7 @@ import { writeStored } from "@/lib/safeStorage";
 import { PROFILE_TODAY } from "@/lib/internalPath";
 import { PASSWORD_SET_STORAGE_BLOCKED, sessionWriteRefused } from "@/lib/signInStorage";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Claim an account by setting its password (S1). Reached from the founder
@@ -16,6 +17,7 @@ import { failureWords } from "@/lib/failureWords";
  * reset emails exist. The token arrives as ?token=… and expires in an hour.
  */
 export default function SetPassword() {
+  const { t } = useLingui();
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -79,9 +81,9 @@ export default function SetPassword() {
                   <CheckCircle2 className="size-7" aria-hidden="true" />
                 </div>
                 <h1 className={`${H2} mb-2`}>
-                  You're in
-                </h1>
-                <p className="text-muted-foreground">Password set. Taking you to your dashboard…</p>
+                  <Trans context="SetPassword, h1">You're in
+                </Trans></h1>
+                <p className="text-muted-foreground"><Trans context="SetPassword, p">Password set. Taking you to your dashboard…</Trans></p>
               </div>
             ) : (
               <>
@@ -89,24 +91,24 @@ export default function SetPassword() {
                   <KeyRound className="size-5" aria-hidden="true" />
                 </div>
                 <h1 className={`${H2} mb-2 text-center`}>
-                  Set your password
-                </h1>
+                  <Trans context="SetPassword, h1">Set your password
+                </Trans></h1>
                 <p className="text-sm text-muted-foreground text-center mb-8">
-                  Choose the password for your account. This link expires an hour
+                  <Trans context="SetPassword, p">Choose the password for your account. This link expires an hour
                   after it was sent.
-                </p>
+                </Trans></p>
                 {!token && (
                   <p className="text-sm text-destructive text-center mb-4">
-                    This link is incomplete. Open the link from your email
+                    <Trans context="SetPassword, p">This link is incomplete. Open the link from your email
                     again.
-                  </p>
+                  </Trans></p>
                 )}
                 <form onSubmit={submit} className="space-y-4">
                   {/* A placeholder is not a name: it disappears on the first
                       keystroke and a screen reader may never announce it.
                       Both fields carry a real one, plus the autocomplete
                       token that lets a password manager offer to save. */}
-                  <label htmlFor="set-password-new" className="sr-only">New password</label>
+                  <label htmlFor="set-password-new" className="sr-only"><Trans context="SetPassword, label">New password</Trans></label>
                   <div className="relative">
                   <input
                     id="set-password-new"
@@ -114,13 +116,13 @@ export default function SetPassword() {
                     autoComplete="new-password"
                     value={pw}
                     onChange={(e) => setPw(e.target.value)}
-                    placeholder="New password (8+ characters)"
+                    placeholder={t({ message: "New password (8+ characters)", context: "SetPassword, placeholder" })}
                     autoFocus
                     className={`${FIELD} min-h-11 py-3 pl-4 pr-12`}
                   />
                   <ShowPasswordButton shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
                   </div>
-                  <label htmlFor="set-password-repeat" className="sr-only">Repeat the new password</label>
+                  <label htmlFor="set-password-repeat" className="sr-only"><Trans context="SetPassword, label">Repeat the new password</Trans></label>
                   <div className="relative">
                   <input
                     id="set-password-repeat"
@@ -128,7 +130,7 @@ export default function SetPassword() {
                     autoComplete="new-password"
                     value={pw2}
                     onChange={(e) => setPw2(e.target.value)}
-                    placeholder="Repeat it"
+                    placeholder={t({ message: "Repeat it", context: "SetPassword, placeholder" })}
                     className={`${FIELD} min-h-11 py-3 pl-4 pr-12`}
                   />
                   <ShowPasswordButton shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />

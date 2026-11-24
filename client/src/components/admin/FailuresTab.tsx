@@ -16,6 +16,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import { Trans } from "@lingui/react/macro";
 
 interface FailureItem {
   area: string;
@@ -166,12 +167,12 @@ export default function FailuresTab({ password }: { password: string }) {
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-2xl">
-            <h2 className="text-xl font-semibold text-gray-900">What's failing</h2>
+            <h2 className="text-xl font-semibold text-gray-900"><Trans context="FailuresTab, h2">What's failing</Trans></h2>
             <p className="mt-2 text-sm text-gray-600">
-              Each item below is still failing, and says what to do about it. The report checks the village every
+              <Trans context="FailuresTab, p">Each item below is still failing, and says what to do about it. The report checks the village every
               hour. Admins and founders get at most one notice a day, when something new appears or an item has gone
               a week without a mention.
-            </p>
+            </Trans></p>
           </div>
           <button
             type="button"
@@ -196,8 +197,8 @@ export default function FailuresTab({ password }: { password: string }) {
         report.open.length === 0 &&
         (checkedCleanly(report.job) ? (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-            Nothing is failing that this report can see. Failed emails are listed under Sent mail. What else it cannot see is at the bottom of this page.
-          </p>
+            <Trans context="FailuresTab, p">Nothing is failing that this report can see. Failed emails are listed under Sent mail. What else it cannot see is at the bottom of this page.
+          </Trans></p>
         ) : (
           <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
             {report.job.lastResult == null
@@ -217,13 +218,13 @@ export default function FailuresTab({ password }: { password: string }) {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <h4 className="min-w-0 break-words font-medium text-gray-900">{item.title}</h4>
                   <span className="shrink-0 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs text-red-700">
-                    failing for {duration(item.failingForSeconds)}
+                    <Trans context="FailuresTab, span">failing for {duration(item.failingForSeconds)}</Trans>
                   </span>
                 </div>
                 <p className="mt-2 break-words text-sm text-gray-700">{item.advice}</p>
                 {item.lastError && (
                   <div className="mt-3">
-                    <p className="text-xs font-medium text-gray-600">What the system recorded</p>
+                    <p className="text-xs font-medium text-gray-600"><Trans context="FailuresTab, p">What the system recorded</Trans></p>
                     <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-gray-50 p-2 font-mono text-xs text-gray-700">
                       {item.lastError}
                     </pre>
@@ -236,16 +237,16 @@ export default function FailuresTab({ password }: { password: string }) {
 
       {report && report.resolved.length > 0 && (
         <section className="rounded-xl border border-gray-200 bg-white p-4">
-          <h3 className="text-sm font-semibold text-gray-900">Cleared from the list in the last week</h3>
+          <h3 className="text-sm font-semibold text-gray-900"><Trans context="FailuresTab, h3">Cleared from the list in the last week</Trans></h3>
           <ul className="mt-2 space-y-2 text-sm">
             {report.resolved.map((item) => (
               <li key={`${item.source}:${item.key}`}>
                 {/* The title was written while the thing was failing, so it is
                     quoted as what the report said, never restated as true now. */}
                 <p className="break-words text-gray-900">
-                  {item.area}, cleared {item.resolvedSecondsAgo != null ? `${duration(item.resolvedSecondsAgo)} ago` : "recently"}
+                  <Trans context="FailuresTab, p">{item.area}, cleared {item.resolvedSecondsAgo != null ? `${duration(item.resolvedSecondsAgo)} ago` : "recently"}</Trans>
                 </p>
-                <p className="break-words text-gray-600">It said: {item.title}</p>
+                <p className="break-words text-gray-600"><Trans context="FailuresTab, p">It said: {item.title}</Trans></p>
               </li>
             ))}
           </ul>
@@ -254,7 +255,7 @@ export default function FailuresTab({ password }: { password: string }) {
 
       {report && (
         <section className="rounded-xl border border-gray-200 bg-white p-4">
-          <h3 className="text-sm font-semibold text-gray-900">What this report cannot see yet</h3>
+          <h3 className="text-sm font-semibold text-gray-900"><Trans context="FailuresTab, h3">What this report cannot see yet</Trans></h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
             {report.blindSpots.map((line) => (
               <li key={line}>{line}</li>

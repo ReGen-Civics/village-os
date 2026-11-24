@@ -45,6 +45,7 @@ import { ROLE_PROPOSAL_WORDS as PW } from "@shared/playerCardProposals";
 import { CardEditContext, ChangedContext, ChangedMark, EditInPlace, Eyebrow, GOLD_FRAME, isChanged, ListSlot, PendingNote, SlotView, useChanged } from "./cardParts";
 import { CardTerm } from "./CcosTerm";
 import RoleCardParams from "@/components/power/RoleCardParams";
+import { useLingui } from "@lingui/react/macro";
 
 /** The hint under each "Holding this role well" line's edit control. */
 const HOLDING_HINTS: Record<HoldingKey, string> = {
@@ -141,6 +142,7 @@ function HealthLine({ health }: { health: HealthOut }) {
 }
 
 export function RoleInFull({ role, health = null }: { role: RoleOut; health?: HealthOut | null }) {
+  const { t } = useLingui();
   const { editing } = useContext(CardEditContext);
   /** A CCOS section draws once it is written, or in edit mode so the owner can propose words for it. */
   const draws = (slot: Slot<unknown>): boolean => slot.kind === "shown" || (slot.kind === "empty" && editing);
@@ -173,7 +175,7 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
       </h3>
 
       {role.chips.length || role.circle || chipTime || powers.length || role.plays ? (
-        <ul className="pc-chips" aria-label="About this role">
+        <ul className="pc-chips" aria-label={t({ message: "About this role", context: "RoleInFull, aria-label" })}>
           {keyRole ? <li className="pc-chip pc-gold">{W.keyRole}</li> : null}
           {role.circle ? (
             <li>

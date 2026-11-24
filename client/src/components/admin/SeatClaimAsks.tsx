@@ -23,6 +23,7 @@
  * Light-only, like the rest of the admin panel.
  */
 import { useState } from "react";
+import { Trans } from "@lingui/react/macro";
 
 export interface SeatClaimAsk {
   claimId: string;
@@ -74,9 +75,9 @@ export function SeatClaimAsks({ asks, call, onDone }: SeatClaimAsksProps) {
         {asks.length === 1 ? "Someone asks to be confirmed in this role" : "People ask to be confirmed in this role"}
       </p>
       <p className="text-[11px] text-gray-600 mt-0.5">
-        A name on an account is typed by whoever holds it, so this is a question
+        <Trans context="SeatClaimAsks, p">A name on an account is typed by whoever holds it, so this is a question
         and never a proof. Confirm only the person you know sits here.
-      </p>
+      </Trans></p>
       <ul className="mt-2 space-y-2">
         {asks.map((ask) => (
           <li key={ask.claimId} className="flex flex-wrap items-center gap-2 justify-between">
@@ -92,14 +93,14 @@ export function SeatClaimAsks({ asks, call, onDone }: SeatClaimAsksProps) {
                 aria-label={`Confirm ${ask.userName} as ${ask.roleName}`}
                 className="text-xs bg-teal-deep text-white rounded-lg px-3 py-2 font-medium disabled:opacity-40"
                 onClick={() => void answer(ask, "confirm")}
-              >Confirm</button>
+              ><Trans context="SeatClaimAsks, button">Confirm</Trans></button>
               <button
                 type="button"
                 disabled={busy === ask.claimId}
                 aria-label={`Decline ${ask.userName}'s ask for ${ask.roleName}`}
                 className="text-xs border border-gray-300 text-gray-700 rounded-lg px-3 py-2 disabled:opacity-40"
                 onClick={() => void answer(ask, "decline")}
-              >Decline</button>
+              ><Trans context="SeatClaimAsks, button">Decline</Trans></button>
             </span>
           </li>
         ))}

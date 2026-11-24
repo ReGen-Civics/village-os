@@ -15,14 +15,15 @@ import MetricScale from "./MetricScale";
 import ReviewStep from "./ReviewStep";
 import type { Sitting, Step } from "./sitting";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, INPUT } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 function DebriefMeta({ sitting, onChange }: { sitting: Sitting; onChange: (s: Sitting) => void }) {
   return (
     <div className="mb-6 flex flex-col gap-3 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:items-end">
       <div className="flex-1">
         <label htmlFor="debrief-call" className="block text-xs font-semibold text-muted-foreground">
-          Which call? (optional)
-        </label>
+          <Trans context="SittingFlow, label">Which call? (optional)
+        </Trans></label>
         <input
           id="debrief-call"
           type="text"
@@ -33,7 +34,7 @@ function DebriefMeta({ sitting, onChange }: { sitting: Sitting; onChange: (s: Si
         />
       </div>
       <fieldset className="shrink-0">
-        <legend className="text-xs font-semibold text-muted-foreground">Same call in another village? (optional)</legend>
+        <legend className="text-xs font-semibold text-muted-foreground"><Trans context="SittingFlow, legend">Same call in another village? (optional)</Trans></legend>
         <div className="mt-1 flex gap-2">
           {([
             [true, "Yes"],
@@ -112,8 +113,8 @@ export default function SittingFlow({
           {def.label}, {sitting.depth === "deep" ? "deep" : "light"}
         </p>
         <button type="button" className={BTN_QUIET} onClick={onStartOver}>
-          Choose another practice
-        </button>
+          <Trans context="SittingFlow, button">Choose another practice
+        </Trans></button>
       </div>
 
       {sitting.practice === "debrief" && <DebriefMeta sitting={sitting} onChange={onChange} />}
@@ -129,7 +130,7 @@ export default function SittingFlow({
             ))}
           </ol>
           <p className="text-sm text-muted-foreground">
-            {index + 1} of {asked.length}
+            <Trans context="SittingFlow, p">{index + 1} of {asked.length}</Trans>
           </p>
         </div>
       )}
@@ -158,7 +159,7 @@ export default function SittingFlow({
                 {step.hint}
               </p>
             )}
-            {step.extra && <p className={`${HINT} mt-2`}>A question the guide offered.</p>}
+            {step.extra && <p className={`${HINT} mt-2`}><Trans context="SittingFlow, p">A question the guide offered.</Trans></p>}
             <div className="mt-5">
               <GrowingTextarea
                 key={step.key}
@@ -190,8 +191,8 @@ export default function SittingFlow({
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <button type="button" className={BTN_SECONDARY} onClick={() => go(index - 1)} disabled={index === 0}>
-          Back
-        </button>
+          <Trans context="SittingFlow, button">Back
+        </Trans></button>
         {step.kind !== "review" && (
           <button type="button" className={BTN_PRIMARY} onClick={() => go(index + 1)}>
             {isLastAsked ? "Review" : "Next"}
@@ -201,12 +202,12 @@ export default function SittingFlow({
 
       <div className="mt-8 border-t border-border pt-5">
         <button ref={guideButtonRef} type="button" className={BTN_SECONDARY} onClick={onOpenGuide}>
-          <MessageCircleHeart className="h-4 w-4" aria-hidden="true" />
+          <Trans context="SittingFlow, button"><MessageCircleHeart className="h-4 w-4" aria-hidden="true" />
           Ask the guide
-        </button>
+        </Trans></button>
         <p className={`${HINT} mt-2`}>
-          Asking the guide sends what you have written in this entry to the AI model so it can answer. Saving never needs it.
-        </p>
+          <Trans context="SittingFlow, p">Asking the guide sends what you have written in this entry to the AI model so it can answer. Saving never needs it.
+        </Trans></p>
       </div>
     </div>
   );

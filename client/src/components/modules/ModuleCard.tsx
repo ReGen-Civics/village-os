@@ -12,6 +12,7 @@ import { POOL_REASON_COPY, TIER_PILL } from "@shared/moduleCatalog";
 import type { ModuleDataClass } from "@shared/modules";
 import type { ModuleNeed } from "@shared/moduleNeeds";
 import ModuleArt from "./ModuleArt";
+import { Trans } from "@lingui/react/macro";
 
 export interface CatalogModule {
   id: string;
@@ -92,19 +93,19 @@ export default function ModuleCard({ module: m, steward = false }: { module: Cat
         <div className="flex flex-wrap items-center gap-1.5 mt-2.5 min-h-[1rem]">
           {m.core && (
             <span className={`${PILL} bg-muted text-muted-foreground border-transparent uppercase tracking-wide`}>
-              Always on
-            </span>
+              <Trans context="ModuleCard, span">Always on
+            </Trans></span>
           )}
           {!m.core && m.on && (
-            <span className={`${PILL} bg-open/10 text-open border-open/40`}>On in this village</span>
+            <span className={`${PILL} bg-open/10 text-open border-open/40`}><Trans context="ModuleCard, span">On in this village</Trans></span>
           )}
           {m.lifecycle === "preview" && (
-            <span className={`${PILL} bg-notice/10 text-notice border-notice/40`}>Preview</span>
+            <span className={`${PILL} bg-notice/10 text-notice border-notice/40`}><Trans context="ModuleCard, span">Preview</Trans></span>
           )}
           {/* A steward reads the whole shelf as a plan, so "not on" is a
               state worth a pill for them. Never a call to action (R55). */}
           {steward && !m.core && (m.lifecycle ?? "off") === "off" && (
-            <span className={`${PILL} bg-muted text-muted-foreground border-border`}>Not on yet</span>
+            <span className={`${PILL} bg-muted text-muted-foreground border-border`}><Trans context="ModuleCard, span">Not on yet</Trans></span>
           )}
           {m.tier === "connected" && <span className={`${PILL} bg-muted text-foreground border-border`}>{TIER_PILL.connected}</span>}
           {m.tier === "managed" && <span className={`${PILL} bg-card text-muted-foreground border-border`}>{TIER_PILL.managed}</span>}
@@ -114,7 +115,7 @@ export default function ModuleCard({ module: m, steward = false }: { module: Cat
           {poolLine && <span className={`${PILL} bg-notice/10 text-notice border-notice/40`}>{poolLine}</span>}
         </div>
         {m.withdrawn && (
-          <p className="text-xs text-orange-700 mt-2">No longer offered since {m.withdrawn.since}.</p>
+          <p className="text-xs text-orange-700 mt-2"><Trans context="ModuleCard, p">No longer offered since {m.withdrawn.since}.</Trans></p>
         )}
       </div>
     </Link>

@@ -32,6 +32,7 @@ import ConsentCard from "./ConsentCard";
 import { dryRunTurnOn, proposeTurnOn, proposalHref, switchInOrder, type DryRun } from "./switchModules";
 import { alsoNeedsLine, joinNames, turnOnPlan, type LibraryViewer, type PlanModule } from "@shared/moduleSwitch";
 import type { ModuleLifecycle } from "@shared/modules";
+import { Trans } from "@lingui/react/macro";
 
 const BUTTON = "min-h-[44px] px-5 rounded-lg bg-teal-deep text-white font-semibold text-sm disabled:opacity-40";
 const QUIET = "min-h-[44px] px-4 rounded-lg border border-border bg-background text-sm font-medium";
@@ -122,11 +123,11 @@ export default function TurnOnAction({
   if (sent) {
     return (
       <div className="rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-4 text-sm">
-        <p className="font-semibold text-foreground">Your proposal is in.</p>
+        <p className="font-semibold text-foreground"><Trans context="TurnOnAction, p">Your proposal is in.</Trans></p>
         <p className="mt-1 text-muted-foreground">{sent.message}</p>
         <Link href={proposalHref(sent.id)} className="mt-2 inline-flex min-h-[44px] items-center font-medium text-teal-deep underline">
-          Go to your proposal
-        </Link>
+          <Trans context="TurnOnAction, Link">Go to your proposal
+        </Trans></Link>
       </div>
     );
   }
@@ -146,7 +147,7 @@ export default function TurnOnAction({
   if (direct) {
     return (
       <div className="space-y-3">
-        {needs && <p className="text-sm text-foreground">{needs}. One press turns on all of them, in order.</p>}
+        {needs && <p className="text-sm text-foreground"><Trans context="TurnOnAction, p">{needs}. One press turns on all of them, in order.</Trans></p>}
         {examplesAvailable && (
           <label className="flex items-center gap-2 text-sm text-foreground min-h-[44px]">
             <input
@@ -170,10 +171,10 @@ export default function TurnOnAction({
     <div className="space-y-3">
       {!open ? (
         <>
-          {needs && <p className="text-sm text-foreground">{needs}. One proposal asks for all of them.</p>}
+          {needs && <p className="text-sm text-foreground"><Trans context="TurnOnAction, p">{needs}. One proposal asks for all of them.</Trans></p>}
           <button type="button" onClick={() => setOpen(true)} className={BUTTON}>
-            Propose to turn on
-          </button>
+            <Trans context="TurnOnAction, button">Propose to turn on
+          </Trans></button>
         </>
       ) : (
         <form
@@ -183,12 +184,12 @@ export default function TurnOnAction({
             press(propose)();
           }}
         >
-          <p className="font-semibold text-foreground">Propose turning on {joinNames(names)}</p>
+          <p className="font-semibold text-foreground"><Trans context="TurnOnAction, p">Propose turning on {joinNames(names)}</Trans></p>
           <p className="text-sm text-muted-foreground">
-            The village votes on it. If the vote carries, {names.length > 1 ? "they come" : "it comes"} on.
-          </p>
+            <Trans context="TurnOnAction, p">The village votes on it. If the vote carries, {names.length > 1 ? "they come" : "it comes"} on.
+          </Trans></p>
           <fieldset className="space-y-1">
-            <legend className="text-sm font-medium text-foreground">Who should see it</legend>
+            <legend className="text-sm font-medium text-foreground"><Trans context="TurnOnAction, legend">Who should see it</Trans></legend>
             {(["members", "public"] as const).map((v) => (
               <label key={v} className="flex items-center gap-2 text-sm min-h-[44px]">
                 <input type="radio" name="wide" checked={wide === v} onChange={() => setWide(v)} className="w-5 h-5 accent-teal-deep" />
@@ -208,9 +209,9 @@ export default function TurnOnAction({
           </label>
           {dry && (
             <div className="text-sm text-muted-foreground space-y-1">
-              {plan.length > 1 && <p>This asks for {joinNames(names)}, in that order.</p>}
+              {plan.length > 1 && <p><Trans context="TurnOnAction, p">This asks for {joinNames(names)}, in that order.</Trans></p>}
               {priced.map((m) => (
-                <p key={m.id}>{m.name} costs {m.priceLine}.</p>
+                <p key={m.id}><Trans context="TurnOnAction, p">{m.name} costs {m.priceLine}.</Trans></p>
               ))}
               {funds.length > 0 && <p>{joinNames(funds.map((m) => m.name))} touches money, so the village reads the funds conditions first.</p>}
               {dry.blocker ? <p className="text-red-700">{dry.blocker.sentence}</p> : <p>{dry.landing}</p>}
@@ -221,8 +222,8 @@ export default function TurnOnAction({
               {busy ? "Sending…" : "Send the proposal"}
             </button>
             <button type="button" onClick={() => setOpen(false)} className={QUIET}>
-              Not now
-            </button>
+              <Trans context="TurnOnAction, button">Not now
+            </Trans></button>
           </div>
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         </form>

@@ -24,6 +24,7 @@ import {
   addTask, changeTier, markDone, newFeedbackId, pinTask, readFeedbackSwitch, readList, redirectTask, removeTask, saveFeedbackSwitch, undoTask,
   type ListPayload, type ListTask, type RankedTask,
 } from "./yourListApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export const HORIZON_WORDS: Record<Horizon, string> = { today: "Today", week: "This week", later: "Later" };
 export const TIER_WORDS: Record<Tier, string> = { high: "High", priority: "Priority", not_yet: "Not yet" };
@@ -61,31 +62,31 @@ function TaskRow({ task, busy, onDone, onPick, onPin, onTier, others, selected, 
       <div className="flex flex-wrap items-start gap-2">
         <input type="checkbox" aria-label={`Select ${task.title}`} className="mt-1 h-11 w-11 shrink-0" checked={selected} onChange={onToggle} />
         <span className="min-w-0 flex-1 break-words text-base">
-          {task.memberPinned ? <span className="mr-1 font-semibold">Pinned:</span> : null}
+          {task.memberPinned ? <span className="mr-1 font-semibold"><Trans context="YourListCard, span">Pinned:</Trans></span> : null}
           {task.title}
         </span>
-        {task.dueOn && <span className={HINT}>Due {task.dueOn}</span>}
+        {task.dueOn && <span className={HINT}><Trans context="YourListCard, span">Due {task.dueOn}</Trans></span>}
       </div>
-      {task.requestedBy && <p className={`${HINT} mt-1`}>Asked by {task.requestedBy}</p>}
-      {task.waitingForRole && <p className={`${HINT} mt-1`}>This one belongs to a role nobody holds yet. A steward will see it.</p>}
+      {task.requestedBy && <p className={`${HINT} mt-1`}><Trans context="YourListCard, p">Asked by {task.requestedBy}</Trans></p>}
+      {task.waitingForRole && <p className={`${HINT} mt-1`}><Trans context="YourListCard, p">This one belongs to a role nobody holds yet. A steward will see it.</Trans></p>}
       {task.privateDetail && (
         <p className={`${HINT} mt-1 whitespace-pre-line`}>
-          <span className="font-semibold">Only you see this: </span>
+          <span className="font-semibold"><Trans context="YourListCard, span">Only you see this: </Trans></span>
           {task.privateDetail}
         </p>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-1">
-        <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={onDone}>It's done</button>
-        <button type="button" className={BTN_QUIET} disabled={busy} aria-expanded={sheet === "remove"} onClick={() => setSheet(sheet === "remove" ? null : "remove")}>Remove</button>
-        <button type="button" className={BTN_QUIET} disabled={busy} aria-expanded={sheet === "redirect"} onClick={() => setSheet(sheet === "redirect" ? null : "redirect")}>Hand it on</button>
+        <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={onDone}><Trans context="YourListCard, button">It's done</Trans></button>
+        <button type="button" className={BTN_QUIET} disabled={busy} aria-expanded={sheet === "remove"} onClick={() => setSheet(sheet === "remove" ? null : "remove")}><Trans context="YourListCard, button">Remove</Trans></button>
+        <button type="button" className={BTN_QUIET} disabled={busy} aria-expanded={sheet === "redirect"} onClick={() => setSheet(sheet === "redirect" ? null : "redirect")}><Trans context="YourListCard, button">Hand it on</Trans></button>
         <button type="button" className={BTN_QUIET} disabled={busy} aria-pressed={!!task.memberPinned} onClick={onPin}>{task.memberPinned ? "Unpin" : "Pin to top"}</button>
         <label className="inline-flex items-center gap-1 text-sm text-foreground">
-          <span className="sr-only">Tier</span>
+          <span className="sr-only"><Trans context="YourListCard, span">Tier</Trans></span>
           <select className="min-h-11 rounded-lg border border-border bg-background px-2 text-foreground" value={task.tier} disabled={busy} onChange={(e) => onTier(e.target.value as Tier)}>
             {TIERS.map((t) => <option key={t} value={t}>{TIER_WORDS[t]}</option>)}
           </select>
         </label>
-        <button type="button" className={BTN_QUIET} aria-expanded={why} onClick={() => setWhy((w) => !w)}>Why this is here</button>
+        <button type="button" className={BTN_QUIET} aria-expanded={why} onClick={() => setWhy((w) => !w)}><Trans context="YourListCard, button">Why this is here</Trans></button>
       </div>
       {why && (
         <ul className={`${HINT} mt-1 list-disc pl-5`}>
@@ -109,6 +110,7 @@ function TaskRow({ task, busy, onDone, onPick, onPin, onTier, others, selected, 
 }
 
 export default function YourListCard() {
+  const { t } = useLingui();
   const [list, setList] = useState<ListPayload | null>(null);
   const [title, setTitle] = useState("");
   const [tier, setTier] = useState<Tier>("priority");
@@ -197,31 +199,31 @@ export default function YourListCard() {
   return (
     <section className={PANEL} aria-labelledby="your-list-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="your-list-h" className="font-display text-2xl text-foreground">Your list</h2>
+        <h2 id="your-list-h" className="font-display text-2xl text-foreground"><Trans context="YourListCard, h2">Your list</Trans></h2>
         <p className={HINT}>
-          {live.counts.today} today, {live.counts.week} this week, {live.counts.later} later
-          {live.counts.hidden > 0 ? `, ${live.counts.hidden} hidden` : ""}
+          <Trans context="YourListCard, p">{live.counts.today} today, {live.counts.week} this week, {live.counts.later} later
+          {live.counts.hidden > 0 ? `, ${live.counts.hidden} hidden` : ""}</Trans>
         </p>
       </div>
 
       <form className="mt-4 flex flex-wrap items-end gap-2" onSubmit={add}>
         <label className="min-w-0 flex-1">
-          <span className={LABEL_CAPS}>Add a task</span>
+          <span className={LABEL_CAPS}><Trans context="YourListCard, span">Add a task</Trans></span>
           <input
             className="mt-1 block min-h-11 w-full rounded-xl border border-border bg-background px-3 text-foreground"
             value={title}
             maxLength={200}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="What needs doing?"
+            placeholder={t({ message: "What needs doing?", context: "YourListCard, placeholder" })}
           />
         </label>
         <label>
-          <span className={LABEL_CAPS}>Tier</span>
+          <span className={LABEL_CAPS}><Trans context="YourListCard, span">Tier</Trans></span>
           <select className="mt-1 block min-h-11 rounded-xl border border-border bg-background px-3 text-foreground" value={tier} onChange={(e) => setTier(e.target.value as Tier)}>
             {TIERS.map((t) => <option key={t} value={t}>{TIER_WORDS[t]}</option>)}
           </select>
         </label>
-        <button type="submit" className={BTN_PRIMARY} disabled={busy || !title.trim()}>Add</button>
+        <button type="submit" className={BTN_PRIMARY} disabled={busy || !title.trim()}><Trans context="YourListCard, button">Add</Trans></button>
       </form>
 
       <RoleHandoffs refresh={listTick} />
@@ -230,17 +232,17 @@ export default function YourListCard() {
       {undo && (
         <p className="mt-2 flex items-center gap-2 text-sm text-foreground" role="status">
           Moved "{undo.title}" off your list.
-          <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => act(() => undoTask(undo), () => setUndo(null))}>Undo</button>
+          <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => act(() => undoTask(undo), () => setUndo(null))}><Trans context="YourListCard, button">Undo</Trans></button>
         </p>
       )}
 
       {chosen.length > 0 && (
         <div className="mt-4 rounded-xl border border-border bg-background p-3">
-          <p className="text-sm text-foreground">{chosen.length} selected. The reason you pick applies to every task you selected.</p>
+          <p className="text-sm text-foreground"><Trans context="YourListCard, p">{chosen.length} selected. The reason you pick applies to every task you selected.</Trans></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk("done"); })}>Done</button>
-            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "remove" ? null : "remove")}>Remove</button>
-            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "redirect" ? null : "redirect")}>Redirect</button>
+            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk("done"); })}><Trans context="YourListCard, button">Done</Trans></button>
+            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "remove" ? null : "remove")}><Trans context="YourListCard, button">Remove</Trans></button>
+            <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "redirect" ? null : "redirect")}><Trans context="YourListCard, button">Redirect</Trans></button>
           </div>
           {bulk && (
             <ReasonSheet
@@ -260,7 +262,7 @@ export default function YourListCard() {
           <div key={h} className="mt-5">
             <h3 className={LABEL_CAPS}>{HORIZON_WORDS[h]}</h3>
             {tasks.length === 0 ? (
-              <p className={`${HINT} mt-1`}>Nothing here.</p>
+              <p className={`${HINT} mt-1`}><Trans context="YourListCard, p">Nothing here.</Trans></p>
             ) : (
               TIERS.map((tr) => {
                 const inTier = tasks.filter((t) => t.tier === tr);
@@ -300,17 +302,17 @@ export default function YourListCard() {
         )}
         {live.removed.length > 0 && (
           <button type="button" className={BTN_QUIET} aria-expanded={showRemoved} onClick={() => setShowRemoved((s) => !s)}>
-            Removed ({live.removed.length})
-          </button>
+            <Trans context="YourListCard, button">Removed ({live.removed.length})
+          </Trans></button>
         )}
       </div>
       {sharing !== null && (
         <label className="mt-4 flex min-h-11 cursor-pointer items-start gap-3 text-sm text-foreground">
           <input type="checkbox" className="mt-0.5 size-5 shrink-0" checked={sharing} onChange={flipSharing} />
           <span>
-            Help Organisational Memory learn from my choices. When this is on, the reason you pick for a task it sent you goes back to it.
+            <Trans context="YourListCard, span">Help Organisational Memory learn from my choices. When this is on, the reason you pick for a task it sent you goes back to it.
             Your journal words never do.
-          </span>
+          </Trans></span>
         </label>
       )}
       {showRemoved && (
@@ -318,7 +320,7 @@ export default function YourListCard() {
           {live.removed.map((t) => (
             <li key={t.id} className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span className="min-w-0 flex-1">{t.title}</span>
-              <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => act(() => undoTask(t))}>Bring it back</button>
+              <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => act(() => undoTask(t))}><Trans context="YourListCard, button">Bring it back</Trans></button>
             </li>
           ))}
         </ul>

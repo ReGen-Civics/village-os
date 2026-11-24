@@ -11,6 +11,7 @@
  */
 import { useState } from "react";
 import SeatTermField, { carriesStewardVeto, type SeatTermLook } from "@/components/power/SeatTermField";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const LOOK: SeatTermLook = {
   label: "block text-xs text-gray-500",
@@ -30,6 +31,7 @@ export function AppointToRole({
   /** Resolves true only when the server said the appointment landed. */
   onAppoint: (userId: string, termEndsOn: string) => Promise<boolean>;
 }) {
+  const { t } = useLingui();
   const [who, setWho] = useState("");
   const [termEndsOn, setTermEndsOn] = useState("");
 
@@ -46,7 +48,7 @@ export function AppointToRole({
       <select
         value={who}
         onChange={(e) => setWho(e.target.value)}
-        aria-label="Appoint a member"
+        aria-label={t({ message: "Appoint a member", context: "AppointToRole, aria-label" })}
         className="min-h-11 max-w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
       >
         <option value="">Appoint a member…</option>
@@ -64,15 +66,15 @@ export function AppointToRole({
         onChange={setTermEndsOn}
         capAtSeasonEnd={carriesStewardVeto(role.capabilities)}
         look={LOOK}
-        label="Ends on (optional)"
+        label={t({ message: "Ends on (optional)", context: "AppointToRole, label" })}
       />
       <button
         onClick={() => void appoint()}
         disabled={!who}
         className="min-h-11 text-xs bg-teal-deep text-white rounded-lg px-4 py-1.5 font-medium disabled:opacity-40"
       >
-        Appoint
-      </button>
+        <Trans context="AppointToRole, button">Appoint
+      </Trans></button>
     </div>
   );
 }

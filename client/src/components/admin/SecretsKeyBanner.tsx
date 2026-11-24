@@ -1,4 +1,5 @@
-/**
+
+import { Trans } from "@lingui/react/macro";/**
  * THE SEALING KEY, SAID BEFORE ANYBODY TYPES A KEY.
  *
  * Every key saved under Admin, Integrations is sealed with VILLAGE_SECRETS_KEY,
@@ -49,37 +50,37 @@ export default function SecretsKeyBanner({ status }: { status?: VillageSecretsKe
       className="mb-6 max-w-2xl bg-amber-50 border border-amber-200 rounded-xl p-5"
     >
       <h3 id={`${SECRETS_KEY_BANNER_ID}-title`} className="text-sm font-semibold text-amber-900">
-        This deployment cannot save integration keys yet
-      </h3>
+        <Trans context="SecretsKeyBanner, h3">This deployment cannot save integration keys yet
+      </Trans></h3>
       <p className="text-sm text-amber-900 mt-1">{status?.problem}</p>
       <p className="text-xs text-amber-800 mt-2">
-        Every Save on this page is refused until that is fixed. Keys set in the hosting environment
+        <Trans context="SecretsKeyBanner, p">Every Save on this page is refused until that is fixed. Keys set in the hosting environment
         keep working meanwhile.
-      </p>
+      </Trans></p>
       <ol className="list-decimal pl-5 mt-3 space-y-2 text-xs text-gray-700">
         <li>
-          <span className="font-semibold text-gray-900">Generate the key.</span> On Mac or Linux:{" "}
+          <span className="font-semibold text-gray-900"><Trans context="SecretsKeyBanner, span">Generate the key.</Trans></span> On Mac or Linux:{" "}
           <code className={code}>openssl rand -hex 32</code>. On Windows PowerShell, which has no
           openssl: <code className={code}>{NODE_ONE_LINER}</code>
         </li>
         <li>
-          <span className="font-semibold text-gray-900">Save it in a password manager first.</span>{" "}
+          <Trans context="SecretsKeyBanner, li"><span className="font-semibold text-gray-900">Save it in a password manager first.</span>{" "}
           Losing or changing it makes every key saved in Integrations unreadable, so each would have
           to be typed again.
-        </li>
+        </Trans></li>
         <li>
-          <span className="font-semibold text-gray-900">On Railway:</span> open the project, then the
+          <span className="font-semibold text-gray-900"><Trans context="SecretsKeyBanner, span">On Railway:</Trans></span> open the project, then the
           web service (the one serving the village's address, never the database), then Variables,
           then New Variable. The name is <code className={code}>VILLAGE_SECRETS_KEY</code> and the
           value is ONLY the 64 characters: no quotes, no spaces, no name. Then Deploy if Railway
           shows staged changes, and wait for the deploy to read Active.
         </li>
         <li>
-          <span className="font-semibold text-gray-900">On any other host:</span> set the same
+          <Trans context="SecretsKeyBanner, li"><span className="font-semibold text-gray-900">On any other host:</span> set the same
           environment variable and restart.
-        </li>
+        </Trans></li>
         <li>
-          <span className="font-semibold text-gray-900">Come back here and save your keys.</span>
+          <span className="font-semibold text-gray-900"><Trans context="SecretsKeyBanner, span">Come back here and save your keys.</Trans></span>
         </li>
       </ol>
     </section>
@@ -112,8 +113,8 @@ export function SealedSaveButton({
         aria-describedby={SECRETS_KEY_BANNER_ID}
         className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 font-medium cursor-not-allowed"
       >
-        Save needs VILLAGE_SECRETS_KEY: see the steps above
-      </button>
+        <Trans context="SecretsKeyBanner, button">Save needs VILLAGE_SECRETS_KEY: see the steps above
+      </Trans></button>
     );
   }
   return (
@@ -123,7 +124,7 @@ export function SealedSaveButton({
       disabled={busy || empty}
       className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
     >
-      Save
-    </button>
+      <Trans context="SecretsKeyBanner, button">Save
+    </Trans></button>
   );
 }

@@ -20,6 +20,7 @@ import { ExampleChip } from "@/components/ExamplesBanner";
 import { initialsFrom } from "./holderFace";
 import { circleCounts, countable } from "./villageCounts";
 import type { PowerCircle, PowerData } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export type WallSort = "openings" | "working" | "all";
 
@@ -67,12 +68,13 @@ export default function CircleWall({
   onOpen: (circleId: string) => void;
   className?: string;
 }) {
+  const { t } = useLingui();
   const [sort, setSort] = useState<WallSort>("openings");
   const cards = useMemo(() => wallOrder(data, sort), [data, sort]);
 
   return (
-    <section aria-label="Every circle, as cards" data-power-wall className={className}>
-      <div role="group" aria-label="Order the circles" className="flex flex-wrap gap-1.5 mb-3">
+    <section aria-label={t({ message: "Every circle, as cards", context: "CircleWall, aria-label" })} data-power-wall className={className}>
+      <div role="group" aria-label={t({ message: "Order the circles", context: "CircleWall, aria-label" })} className="flex flex-wrap gap-1.5 mb-3">
         {SORTS.map((s) => (
           <button
             key={s.id}
@@ -88,7 +90,7 @@ export default function CircleWall({
         ))}
       </div>
       {cards.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No circles at work yet.</p>
+        <p className="text-sm text-muted-foreground"><Trans context="CircleWall, p">No circles at work yet.</Trans></p>
       ) : (
         <ul className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map((c) => (
@@ -148,7 +150,7 @@ function WallCard({ circle, data, onOpen }: { circle: PowerCircle; data: PowerDa
           <span className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-foreground leading-snug">{circle.name}</span>
             {forming && (
-              <span className="text-[11px] px-1.5 py-0.5 rounded-full border border-dashed border-border text-muted-foreground">forming</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full border border-dashed border-border text-muted-foreground"><Trans context="CircleWall, span">forming</Trans></span>
             )}
             {circle.isExample && <ExampleChip />}
           </span>

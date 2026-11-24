@@ -18,6 +18,7 @@
 import { useState } from "react";
 import { usePayOptions } from "@/components/WorkValueEditor";
 import { ExampleChip } from "@/components/ExamplesBanner";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The most one badge may multiply a token by: `MAX_BADGE_MULTIPLIER`, server/lib/badges.ts. */
 const MAX_FACTOR = 3;
@@ -44,6 +45,7 @@ export default function BadgeMultipliersEditor({
   call: (path: string, body?: unknown, method?: string) => Promise<any>;
   onSaved: () => void;
 }) {
+  const { t } = useLingui();
   const options = usePayOptions();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Record<string, string> | null>(null);
@@ -86,17 +88,17 @@ export default function BadgeMultipliersEditor({
       {open && (
         <div className="mt-1 space-y-1.5 rounded-lg border border-gray-100 px-3 py-2">
           <p className="text-xs text-gray-500">
-            A holder is paid this many times the usual amount of each token, for quests, roles and accepted
+            <Trans context="BadgeMultipliersEditor, p">A holder is paid this many times the usual amount of each token, for quests, roles and accepted
             proposals. Blank is no multiplier.
-          </p>
+          </Trans></p>
           {badge.multiplier != null && Object.keys(stored).length === 0 && (
             <p className="text-xs text-amber-800">
-              This badge carries an older multiplier of ×{badge.multiplier} that names no token, so it multiplies
+              <Trans context="BadgeMultipliersEditor, p">This badge carries an older multiplier of ×{badge.multiplier} that names no token, so it multiplies
               nothing. Set it on a token below.
-            </p>
+            </Trans></p>
           )}
           {offered.size === 0 ? (
-            <p className="text-xs text-gray-500">This village pays work in no tokens yet, so there is nothing to multiply.</p>
+            <p className="text-xs text-gray-500"><Trans context="BadgeMultipliersEditor, p">This village pays work in no tokens yet, so there is nothing to multiply.</Trans></p>
           ) : (
             Array.from(offered.entries()).map(([token, name]) => (
               <label key={token} className="flex items-center gap-2 text-xs text-gray-700">
@@ -105,7 +107,7 @@ export default function BadgeMultipliersEditor({
                   value={shown[token] ?? ""}
                   onChange={(e) => setDraft({ ...shown, [token]: e.target.value })}
                   placeholder="1"
-                  aria-label={`Multiplier on ${name}`}
+                  aria-label={t({ message: `Multiplier on ${name}`, context: "BadgeMultipliersEditor, aria-label" })}
                   className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm"
                 />
                 <span>× {name}</span>
@@ -114,8 +116,8 @@ export default function BadgeMultipliersEditor({
           )}
           {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
           <button type="button" onClick={save} disabled={!draft} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 disabled:opacity-40">
-            Save multipliers
-          </button>
+            <Trans context="BadgeMultipliersEditor, button">Save multipliers
+          </Trans></button>
         </div>
       )}
     </div>

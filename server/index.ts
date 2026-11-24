@@ -106,7 +106,6 @@ import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
-import { register as registerMapView } from "./routes/mapView";
 import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, portalGoogleVisitor, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
@@ -9763,7 +9762,6 @@ async function startServer() {
 
   // â”€â”€ S19-S23: the village map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€─
   app.use("/api/map", requireModule("map"));
-  registerMapView(app, { guardCapability });
   app.use("/api/saberra", requireModule("saberra"));
   app.use("/api/circles", requireModule("map"));
   /*
@@ -17882,6 +17880,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     getPool,
     overLimit,
     contentSection: (section) => (contentRepo.get() ?? {})[section],
+    villageDoc: (ref) => (ref === "brand" ? { project: mergedConfig().project } : ref === "visit-config" ? visitConfigRepo.get() : null), // shared/villageDocTranslation.ts
     machineDraft: async ({ locale, items, userId, req }) => {
       const call = await callAssistant({
         mode: "translate",

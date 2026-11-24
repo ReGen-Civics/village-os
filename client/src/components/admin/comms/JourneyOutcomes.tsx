@@ -13,8 +13,10 @@
 import { useEffect, useState } from "react";
 import { STOP_LABELS } from "@shared/comms/journeySteps";
 import { fetchOutcomes, type OutcomesAnswer } from "./lettersApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function JourneyOutcomes({ password, journeyKey, labels = {} }: { password: string; journeyKey: string; labels?: Record<string, string> }) {
+  const { t } = useLingui();
   const [data, setData] = useState<OutcomesAnswer | null>(null);
   const [error, setError] = useState("");
 
@@ -41,24 +43,24 @@ export default function JourneyOutcomes({ password, journeyKey, labels = {} }: {
   const showGoal = data.goals.length > 0;
 
   return (
-    <section aria-label="What each email did">
-      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">What each email did</h4>
+    <section aria-label={t({ message: "What each email did", context: "JourneyOutcomes, aria-label" })}>
+      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="JourneyOutcomes, h4">What each email did</Trans></h4>
       {!any ? (
-        <p className="text-sm text-gray-500">Nothing from this journey has been sent yet.</p>
+        <p className="text-sm text-gray-500"><Trans context="JourneyOutcomes, p">Nothing from this journey has been sent yet.</Trans></p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full min-w-[36rem] text-left text-sm text-gray-700">
             <thead className="bg-gray-50 text-xs text-gray-500">
               <tr>
-                <th className="px-3 py-2 font-medium">Email</th>
-                <th className="px-3 py-2 font-medium">Sent</th>
-                <th className="px-3 py-2 font-medium">Delivered</th>
-                <th className="px-3 py-2 font-medium">Bounced</th>
-                <th className="px-3 py-2 font-medium">Said no after</th>
-                <th className="px-3 py-2 font-medium">Said yes to a gathering</th>
-                <th className="px-3 py-2 font-medium">Came</th>
-                {showNext && <th className="px-3 py-2 font-medium">Took the first step</th>}
-                {showGoal && <th className="px-3 py-2 font-medium">Reached the goal</th>}
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Email</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Sent</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Delivered</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Bounced</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Said no after</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Said yes to a gathering</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Came</Trans></th>
+                {showNext && <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Took the first step</Trans></th>}
+                {showGoal && <th className="px-3 py-2 font-medium"><Trans context="JourneyOutcomes, th">Reached the goal</Trans></th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

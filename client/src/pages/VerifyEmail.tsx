@@ -5,6 +5,7 @@ import { m } from "framer-motion";
 import { CheckCircle2, MailCheck } from "lucide-react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { authToken, gameFetch } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Confirm the address an account was made with (R104). Reached only from the
@@ -26,6 +27,7 @@ type Stage =
   | { kind: "failed"; error: string };
 
 export default function VerifyEmail() {
+  const { t } = useLingui();
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
   const signedIn = !!authToken();
   const [stage, setStage] = useState<Stage>(token ? { kind: "working" } : { kind: "failed", error: "This link is incomplete. Open the link from your email again." });
@@ -90,21 +92,21 @@ export default function VerifyEmail() {
                 <div className={`${RING} mx-auto mb-4 size-14`}>
                   <CheckCircle2 className="size-7" aria-hidden="true" />
                 </div>
-                <h1 className={`${H2} mb-2`}>Address confirmed</h1>
+                <h1 className={`${H2} mb-2`}><Trans context="VerifyEmail, h1">Address confirmed</Trans></h1>
                 <p className="text-muted-foreground mb-6">
                   {stage.kind === "done" ? "Thank you. This address is now confirmed as yours." : "This address was already confirmed. There is nothing more to do."}
                 </p>
                 <a href="/profile" className={BTN_PRIMARY}>
-                  Go to your profile
-                </a>
+                  <Trans context="VerifyEmail, a">Go to your profile
+                </Trans></a>
               </div>
             ) : (
               <>
                 <div className={`${RING} mx-auto mb-6`}>
                   <MailCheck className="size-5" aria-hidden="true" />
                 </div>
-                <h1 className={`${H2} mb-2 text-center`}>Confirm your address</h1>
-                {stage.kind === "working" && <p className="text-sm text-muted-foreground text-center">Confirming…</p>}
+                <h1 className={`${H2} mb-2 text-center`}><Trans context="VerifyEmail, h1">Confirm your address</Trans></h1>
+                {stage.kind === "working" && <p className="text-sm text-muted-foreground text-center"><Trans context="VerifyEmail, p">Confirming…</Trans></p>}
                 {stage.kind === "ask_password" && (
                   <form
                     onSubmit={(e) => {
@@ -114,9 +116,9 @@ export default function VerifyEmail() {
                     className="space-y-4"
                   >
                     <p className="text-sm text-muted-foreground text-center mb-4">
-                      Enter the password for this account. If you did not make an account here, close this page: nothing has changed.
-                    </p>
-                    <label htmlFor="verify-email-password" className="sr-only">Password</label>
+                      <Trans context="VerifyEmail, p">Enter the password for this account. If you did not make an account here, close this page: nothing has changed.
+                    </Trans></p>
+                    <label htmlFor="verify-email-password" className="sr-only"><Trans context="VerifyEmail, label">Password</Trans></label>
                     <div className="relative">
                       <input
                         id="verify-email-password"
@@ -124,7 +126,7 @@ export default function VerifyEmail() {
                         autoComplete="current-password"
                         value={pw}
                         onChange={(e) => setPw(e.target.value)}
-                        placeholder="Password"
+                        placeholder={t({ message: "Password", context: "VerifyEmail, placeholder" })}
                         autoFocus
                         className={`${FIELD} min-h-11 py-3 pl-4 pr-12`}
                       />
@@ -150,8 +152,8 @@ export default function VerifyEmail() {
                         disabled={busy}
                         className={BTN_PRIMARY}
                       >
-                        Send me a new link
-                      </button>
+                        <Trans context="VerifyEmail, button">Send me a new link
+                      </Trans></button>
                     )}
                     {resent && <p className="text-sm text-muted-foreground">{resent}</p>}
                   </div>

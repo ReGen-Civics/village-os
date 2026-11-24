@@ -21,6 +21,7 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import type { ModuleLifecycle, ModuleReadiness } from "@shared/modules";
 import SetupNeeded from "@/components/modules/SetupNeeded";
 import { useCatalyst } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface AdminModule {
   id: string;
@@ -68,6 +69,7 @@ export function GoLiveCard({
   token: string;
   onChanged?: () => void;
 }) {
+  const { t } = useLingui();
   // Above the three early returns below, as a hook has to be.
   const catalyst = useCatalyst();
   const [busy, setBusy] = useState(false);
@@ -104,7 +106,7 @@ export function GoLiveCard({
         onChanged?.();
       }
     } catch {
-      toast.error("That change did not go through");
+      toast.error(t({ message: "That change did not go through", context: "GoLiveCard, toast" }));
     }
     setBusy(false);
   };
@@ -116,14 +118,14 @@ export function GoLiveCard({
 
   return (
     <div className="mb-5 rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-4 sm:p-5">
-      <p className="font-semibold text-gray-900">{m.name} is set up. Go live?</p>
+      <p className="font-semibold text-gray-900"><Trans context="GoLiveCard, p">{m.name} is set up. Go live?</Trans></p>
       <p className="text-sm text-gray-600 mt-1">
-        Right now only {catalyst.plural} can see it. Choose who it opens to.
-      </p>
+        <Trans context="GoLiveCard, p">Right now only {catalyst.plural} can see it. Choose who it opens to.
+      </Trans></p>
       {m.showingExamples && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 inline-block">
-          Examples are showing here. Replace or remove them before going live, or they go live too.
-        </p>
+          <Trans context="GoLiveCard, p">Examples are showing here. Replace or remove them before going live, or they go live too.
+        </Trans></p>
       )}
       <div className="flex flex-wrap items-center gap-2 mt-3">
         <button
@@ -131,16 +133,16 @@ export function GoLiveCard({
           onClick={() => choose("members")}
           className={preferMembers ? primary : secondary}
         >
-          Members only
-        </button>
+          <Trans context="GoLiveCard, button">Members only
+        </Trans></button>
         <button
           disabled={busy || !everyoneAllowed}
           onClick={() => choose("public")}
           title={everyoneAllowed ? undefined : `${narrowDeps.join(" and ")} would need to reach everyone first`}
           className={`${preferMembers ? secondary : primary} ${everyoneAllowed ? "" : "cursor-not-allowed"}`}
         >
-          Everyone
-        </button>
+          <Trans context="GoLiveCard, button">Everyone
+        </Trans></button>
         <button
           disabled={busy}
           onClick={() => {
@@ -149,14 +151,14 @@ export function GoLiveCard({
           }}
           className="min-h-[44px] px-3 text-sm font-medium text-gray-500 underline"
         >
-          Not yet
-        </button>
+          <Trans context="GoLiveCard, button">Not yet
+        </Trans></button>
       </div>
       {!everyoneAllowed && narrowDeps.length > 0 && (
         <p className="text-xs text-gray-600 mt-2">
-          Everyone is out of reach for now: {narrowDeps.join(" and ")} opens narrower than that.
+          <Trans context="GoLiveCard, p">Everyone is out of reach for now: {narrowDeps.join(" and ")} opens narrower than that.
           Widen {narrowDeps.length === 1 ? "it" : "them"} first.
-        </p>
+        </Trans></p>
       )}
     </div>
   );

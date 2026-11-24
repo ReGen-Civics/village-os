@@ -35,6 +35,7 @@ import { useAppWords } from "@/hooks/useAppWords";
 import { useTokenInUse } from "@/hooks/useTokenNameFor";
 import { ContributionWord, CreditsWord, useShareNames } from "@/components/ContributionWord";
 import { CREDITS_TOKEN_SLUG } from "@shared/contributionToken";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Coin = "cash" | "gold" | "voice" | "thanks";
 const COIN: Record<Coin, string> = {
@@ -125,6 +126,7 @@ export default function TreasuryPanel({
   redeemOn: boolean;
   seasonName: string | null;
 }) {
+  const { t } = useLingui();
   const rates = useDisplayRates();
   // The village's own headings, where it set them (gap G7); names only, never what a token does.
   const word = useAppWords();
@@ -211,8 +213,8 @@ export default function TreasuryPanel({
           </h2>
         </div>
         <a href="#ledger" className={`${LINK} hidden text-sm sm:inline`}>
-          Where it came from: the full ledger
-        </a>
+          <Trans context="TreasuryPanel, a">Where it came from: the full ledger
+        </Trans></a>
       </div>
 
       <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
@@ -233,14 +235,14 @@ export default function TreasuryPanel({
                 ) : null}
                 {cash.owed + cash.claimed + cash.paid > 0 ? (
                   <a href="#cash-owed" className={BTN_QUIET}>
-                    Payment history
-                  </a>
+                    <Trans context="TreasuryPanel, a">Payment history
+                  </Trans></a>
                 ) : null}
               </>
             }
           >
             {cash.owed + cash.claimed + cash.paid > 0 ? (
-              <ol aria-label="Cash status" className="m-0 mt-1 hidden list-none grid-cols-3 gap-1.5 p-0 sm:grid">
+              <ol aria-label={t({ message: "Cash status", context: "TreasuryPanel, aria-label" })} className="m-0 mt-1 hidden list-none grid-cols-3 gap-1.5 p-0 sm:grid">
                 {[
                   { n: cash.owed, label: "Owed", cls: "text-dash-gold-lit" },
                   { n: cash.claimed, label: "Claimed", cls: "text-foreground" },
@@ -271,12 +273,12 @@ export default function TreasuryPanel({
               <>
                 {redeemOn ? (
                   <a href="#redeem" className={`${BTN} ${BTN_FILL.gold}`}>
-                    Redeem
-                  </a>
+                    <Trans context="TreasuryPanel, a">Redeem
+                  </Trans></a>
                 ) : null}
                 <Link href="/pay" className={BTN_QUIET}>
-                  Send
-                </Link>
+                  <Trans context="TreasuryPanel, Link">Send
+                </Trans></Link>
               </>
             }
           />
@@ -304,8 +306,8 @@ export default function TreasuryPanel({
             what={null}
             actions={
               <Link href="/governance" className={`${BTN} ${BTN_FILL.voice}`}>
-                Open ballots
-              </Link>
+                <Trans context="TreasuryPanel, Link">Open ballots
+              </Trans></Link>
             }
           />
         ) : null}
@@ -320,7 +322,7 @@ export default function TreasuryPanel({
             what={null}
             actions={
               <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
-                Send {thanksName.toLowerCase()}
+                <Trans context="TreasuryPanel, Link">Send {thanksName.toLowerCase()}</Trans>
               </Link>
             }
           >
@@ -333,8 +335,8 @@ export default function TreasuryPanel({
                   />
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
-                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}
+                  <Trans context="TreasuryPanel, span">{whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
+                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}</Trans>
                 </span>
               </div>
             ) : null}
@@ -388,15 +390,15 @@ export default function TreasuryPanel({
           </h3>
           {coming.length === 0 ? (
             <p className="m-0 text-[13px] text-muted-foreground">
-              Nothing in hand pays out yet.{" "}
+              <Trans context="TreasuryPanel, p">Nothing in hand pays out yet.{" "}
               <Link href="/quests" className={LINK}>
                 Find a quest
-              </Link>
+              </Link></Trans>
             </p>
           ) : (
             coming.map((c) => (
               <div key={c.key} className="border-b border-dash-edge pb-2.5 last:border-b-0">
-                <p className="m-0 text-sm font-medium">{c.title} (quest)</p>
+                <p className="m-0 text-sm font-medium"><Trans context="TreasuryPanel, p">{c.title} (quest)</Trans></p>
                 <p className="m-0 mt-0.5 text-[13px] text-dash-gold-lit">{c.pay}</p>
               </div>
             ))
@@ -434,8 +436,8 @@ export default function TreasuryPanel({
       ) : null}
 
       <a href="#ledger" className="flex min-h-11 items-center justify-center rounded-xl border border-border text-sm text-foreground no-underline sm:hidden">
-        Where it came from: the full ledger
-      </a>
+        <Trans context="TreasuryPanel, a">Where it came from: the full ledger
+      </Trans></a>
     </section>
   );
 }

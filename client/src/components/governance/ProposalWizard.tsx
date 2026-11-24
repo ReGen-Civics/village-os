@@ -49,6 +49,7 @@ import { isSearchSource, labelFor, loadOrg, loadPickOptions, type PickOption } f
 import { pickedSeats } from "./SeatPicksField";
 import { offerPrefill, renewalPrefill } from "./roleApplicationType";
 import { authToken } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const AUTOSAVE_PAUSE_MS = 1500;
 
@@ -86,6 +87,7 @@ export interface WizardStart {
 }
 
 export default function ProposalWizard({ start = null, leaveTo = "/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
+  const { t } = useLingui();
   const [, navigate] = useLocation();
 
   const [type, setType] = useState<WizardType | null>(start?.type ?? null);
@@ -437,7 +439,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <BreathingLoader label="Opening the wizard" />
+        <BreathingLoader label={t({ message: "Opening the wizard", context: "ProposalWizard, label" })} />
       </div>
     );
   }
@@ -446,15 +448,15 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
     return (
       <div className="rounded-xl border-2 border-open bg-open/10 p-6">
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-foreground">
-          <Check className="w-6 h-6 text-open" aria-hidden="true" />
+          <Trans context="ProposalWizard, h2"><Check className="w-6 h-6 text-open" aria-hidden="true" />
           It is in front of the village
-        </h2>
+        </Trans></h2>
         <p className="mt-2 text-foreground leading-relaxed">{cfg?.consequence}</p>
         {supportThreshold > 0 && !cfg?.opensVote && (
           <p className="mt-2 text-sm text-foreground leading-relaxed">
-            It needs {supportThreshold} {supportThreshold === 1 ? "supporter" : "supporters"} before it can go to a
+            <Trans context="ProposalWizard, p">It needs {supportThreshold} {supportThreshold === 1 ? "supporter" : "supporters"} before it can go to a
             vote. Sensing happens where the proposal lives, and anyone can add theirs.
-          </p>
+          </Trans></p>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           {/* An application has a page of its own, where the holder adopts it
@@ -464,16 +466,16 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
               href={`/role-applications/${encodeURIComponent(published.id)}`}
               className="inline-flex min-h-[44px] items-center rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              Open the application
-            </Link>
+              <Trans context="ProposalWizard, Link">Open the application
+            </Trans></Link>
           )}
           <button
             type="button"
             onClick={() => navigate("/decisions")}
             className="min-h-[44px] rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            See what the village is deciding
-          </button>
+            <Trans context="ProposalWizard, button">See what the village is deciding
+          </Trans></button>
           <button
             type="button"
             onClick={() => {
@@ -486,8 +488,8 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             }}
             className="min-h-[44px] rounded-lg border border-border px-5 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Write another
-          </button>
+            <Trans context="ProposalWizard, button">Write another
+          </Trans></button>
         </div>
       </div>
     );
@@ -529,12 +531,12 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
                 <DraftCards drafts={drafts} busyId={busyDraft} onContinue={continueDraft} onDiscard={discardDraft} />
                 <div>
                   <h2 ref={stepHeadingRef} tabIndex={-1} className="text-base font-bold text-foreground focus:outline-none">
-                    What kind of decision is this?
-                  </h2>
+                    <Trans context="ProposalWizard, h2">What kind of decision is this?
+                  </Trans></h2>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    Each kind asks different questions and travels a different road. Pick the one that fits and the
+                    <Trans context="ProposalWizard, p">Each kind asks different questions and travels a different road. Pick the one that fits and the
                     rest follows.
-                  </p>
+                  </Trans></p>
                   <div className="mt-4">
                     <TypeCards
                       chosen={type}
@@ -579,11 +581,11 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
           <div className="space-y-6">
             <div>
               <h2 ref={stepHeadingRef} tabIndex={-1} className="text-base font-bold text-foreground focus:outline-none">
-                Read it back
-              </h2>
+                <Trans context="ProposalWizard, h2">Read it back
+              </Trans></h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                This is what the village will see. Everything here is still yours to change.
-              </p>
+                <Trans context="ProposalWizard, p">This is what the village will see. Everything here is still yours to change.
+              </Trans></p>
             </div>
 
             {(seatPreview || rolePreview) && <div className="lg:hidden">{preview("inline")}</div>}
@@ -624,15 +626,15 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
                     <div key={field.key} className="flex flex-wrap gap-x-4 gap-y-1 p-3">
                       <dt className="w-40 shrink-0 text-sm font-medium text-muted-foreground">{field.label}</dt>
                       <dd className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground">
-                        {shown || <span className="text-muted-foreground">Left blank</span>}
+                        {shown || <span className="text-muted-foreground"><Trans context="ProposalWizard, span">Left blank</Trans></span>}
                       </dd>
                       <button
                         type="button"
                         onClick={() => void goTo(from)}
                         className="min-h-[44px] shrink-0 rounded-lg px-3 text-sm font-medium text-notice hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        Change
-                        <span className="sr-only"> {field.label}</span>
+                        <Trans context="ProposalWizard, button">Change
+                        <span className="sr-only"> {field.label}</span></Trans>
                       </button>
                     </div>
                   );
@@ -653,7 +655,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
                         className="min-h-[44px] w-full rounded-lg px-2 text-left text-sm text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <strong>{p.label}:</strong> {p.message}
-                        <span className="sr-only">. Go to this step</span>
+                        <span className="sr-only"><Trans context="ProposalWizard, span">. Go to this step</Trans></span>
                       </button>
                     </li>
                   ))}
@@ -664,14 +666,14 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             {cfg.aligns && <AlignmentReview body={cfg.publish.body(answers)} onState={setReview} />}
 
             <div className="rounded-xl border border-border bg-muted p-4">
-              <p className="text-sm font-semibold text-foreground">What publishing does</p>
+              <p className="text-sm font-semibold text-foreground"><Trans context="ProposalWizard, p">What publishing does</Trans></p>
               <p className="mt-1 text-sm text-foreground leading-relaxed">{cfg.consequence}</p>
               {/* A type whose route opens the ballot itself says so in its
                   consequence, and this sentence would contradict it. */}
               {!cfg.opensVote && (
                 <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                  Publishing does not start a vote. The village senses it first, and someone has to take it to a ballot.
-                </p>
+                  <Trans context="ProposalWizard, p">Publishing does not start a vote. The village senses it first, and someone has to take it to a ballot.
+                </Trans></p>
               )}
             </div>
           </div>
@@ -694,18 +696,18 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
               onClick={() => void goTo(prevStep(type, step, answers)!)}
               className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <Trans context="ProposalWizard, button"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
               Back
-            </button>
+            </Trans></button>
           ) : (
             <button
               type="button"
               onClick={() => (dirty ? setLeaving(true) : navigate(leaveTo))}
               className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <Trans context="ProposalWizard, button"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
               Leave
-            </button>
+            </Trans></button>
           )}
 
           {step === "review" ? (
@@ -726,8 +728,8 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
                 onClick={() => void goTo(nextStep(type, step, answers)!)}
                 className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
               >
-                Next
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                <Trans context="ProposalWizard, button">Next
+                <ArrowRight className="w-4 h-4" aria-hidden="true" /></Trans>
               </button>
             )
           )}
@@ -738,9 +740,9 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
               onClick={() => setLeaving(true)}
               className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Save className="w-4 h-4" aria-hidden="true" />
+              <Trans context="ProposalWizard, button"><Save className="w-4 h-4" aria-hidden="true" />
               Save and leave
-            </button>
+            </Trans></button>
           )}
         </div>
       </div>
@@ -756,9 +758,9 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
         <div className="sticky top-24 -mx-1 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain p-1">
           <WizardStepper typeId={type} answers={answers} current={step} onGoBack={(s) => void goTo(s)} />
           {dirty && (
-            <p className="mt-4 px-2 text-xs text-muted-foreground">Unsaved changes. They save on their own in a moment.</p>
+            <p className="mt-4 px-2 text-xs text-muted-foreground"><Trans context="ProposalWizard, p">Unsaved changes. They save on their own in a moment.</Trans></p>
           )}
-          {!dirty && draftId && <p className="mt-4 px-2 text-xs text-muted-foreground">Saved. You can close this and come back.</p>}
+          {!dirty && draftId && <p className="mt-4 px-2 text-xs text-muted-foreground"><Trans context="ProposalWizard, p">Saved. You can close this and come back.</Trans></p>}
           {preview("rail")}
         </div>
       </aside>
@@ -772,33 +774,33 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
         >
           <div className="w-full max-w-sm rounded-xl bg-card p-5 shadow-sm">
             <h2 id="leave-title" className="text-lg font-bold text-foreground">
-              Keep this for later?
-            </h2>
+              <Trans context="ProposalWizard, h2">Keep this for later?
+            </Trans></h2>
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-              A saved draft waits for you on any device you sign in from. Nobody else can see it.
-            </p>
+              <Trans context="ProposalWizard, p">A saved draft waits for you on any device you sign in from. Nobody else can see it.
+            </Trans></p>
             <div className="mt-4 space-y-2">
               <button
                 type="button"
                 onClick={() => void leave(true)}
                 className="min-h-[44px] w-full rounded-lg bg-notice px-4 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                Save draft and leave
-              </button>
+                <Trans context="ProposalWizard, button">Save draft and leave
+              </Trans></button>
               <button
                 type="button"
                 onClick={() => void leave(false)}
                 className="min-h-[44px] w-full rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Leave without saving
-              </button>
+                <Trans context="ProposalWizard, button">Leave without saving
+              </Trans></button>
               <button
                 type="button"
                 onClick={() => setLeaving(false)}
                 className="min-h-[44px] w-full rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Stay here
-              </button>
+                <Trans context="ProposalWizard, button">Stay here
+              </Trans></button>
             </div>
           </div>
         </div>

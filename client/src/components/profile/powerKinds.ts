@@ -53,7 +53,6 @@ export const POWER_KIND_OF: Record<Capability, PowerKind> = {
   "records.confidential": "people",
   "intake.moderate": "people",
   "map.viewPeople": "people",
-  "map.view": "place",
   "map.contact": "people",
   "map.edit": "place",
   "map.publish": "place",

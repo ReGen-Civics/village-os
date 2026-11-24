@@ -8,6 +8,7 @@
  * takes a translation and has English to translate, with how it is protected.
  * Binding pages, links and empty fields are not on it.
  */
+import { isVillageDocRef, villageDocFields } from "../../shared/villageDocTranslation";
 import type { Pool } from "mysql2/promise";
 import { PROTECTED_PAGES, ROLE_CARD_LIST_FIELDS, ROLE_CARD_TEXT_FIELDS, translationTarget, type ContentKind, type Protection } from "../../shared/contentTranslation";
 import { PAGE_SECTION_PREFIX, pageSpecForSection } from "../../shared/pageContent";
@@ -46,6 +47,8 @@ export interface SourceReaders {
   pool: Pool;
   /** The `content` document's section, for a page. */
   contentSection: (section: string) => unknown;
+  /** One of the village's own documents outside its pages, by name ("brand", "visit-config"). Absent: none is read. */
+  villageDoc?: (ref: string) => unknown;
 }
 
 /**
@@ -74,6 +77,11 @@ export async function translatableFields(r: SourceReaders, kind: ContentKind, re
     sections.idealBackground.forEach((l, i) => keep(out, kind, refKey, `idealBackground.${i}`, l));
     sections.qualities.forEach((l, i) => keep(out, kind, refKey, `qualities.${i}`, l));
     sections.payShape.forEach((s, i) => keep(out, kind, refKey, `payShape.${i}.label`, s.label));
+    return out;
+  }
+  if (kind === "village_doc") {
+    if (!isVillageDocRef(refKey) || !r.villageDoc) return null;
+    for (const f of villageDocFields(refKey, r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
     return out;
   }
   // page_section

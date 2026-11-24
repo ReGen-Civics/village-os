@@ -14,6 +14,7 @@ import { useSeason } from "@/lib/gameApi";
 import { problemText, sentFeedback, withdrawFeedback } from "@/lib/journalApi";
 import { villageClock, villageDay, viewerZone } from "@/components/calendar/calendarTime";
 import { BTN_SECONDARY, CARD, HINT, dayLabel, timeLabel } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 const STATUS_TEXT: Record<FeedbackStatus, string> = {
   draft: "Not queued",
@@ -88,20 +89,20 @@ export default function FeedbackSentList({ refreshKey = 0 }: { refreshKey?: numb
   return (
     <section aria-labelledby="fb-sent" className="space-y-3">
       <h2 id="fb-sent" className="font-display text-xl font-bold text-foreground">
-        Sent
-      </h2>
+        <Trans context="FeedbackSentList, h2">Sent
+      </Trans></h2>
       {problem && (
         <p role="alert" className="text-sm text-destructive">
           {problem}
         </p>
       )}
-      {sent !== null && sent.length === 0 && !problem && <p className={HINT}>Nothing sent yet.</p>}
+      {sent !== null && sent.length === 0 && !problem && <p className={HINT}><Trans context="FeedbackSentList, p">Nothing sent yet.</Trans></p>}
       <ul className="space-y-3">
         {(sent ?? []).map((s) => {
           const status = statusLine(s, zone);
           return (
             <li key={s.id} className={CARD}>
-              <p className="text-sm font-semibold text-foreground">To {s.recipientName}</p>
+              <p className="text-sm font-semibold text-foreground"><Trans context="FeedbackSentList, p">To {s.recipientName}</Trans></p>
               <p className="mt-1 whitespace-pre-wrap text-foreground">{s.message}</p>
               <p className="mt-2 text-xs text-muted-foreground">{status.main}</p>
               {status.local && <p className="text-xs text-muted-foreground">{status.local}</p>}

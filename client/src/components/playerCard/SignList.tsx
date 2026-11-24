@@ -16,6 +16,7 @@ import { CARD_WORDS as W, type SignOut } from "@shared/playerCard";
 import { formatDay } from "@shared/roleSheet";
 import type { SignSheetOut } from "@shared/playerCardPayload";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Trans } from "@lingui/react/macro";
 
 /** How full the sign's meter is, 0 to 100. */
 export function meterOf(sign: SignOut): number {
@@ -95,7 +96,7 @@ export function SignList({ signs, sheets, timeZone }: { signs: SignOut[]; sheets
                 ))}
               </ul>
             ) : (
-              <p className="pc-dim pc-f14">Nothing to show in this window yet</p>
+              <p className="pc-dim pc-f14"><Trans context="SignList, p">Nothing to show in this window yet</Trans></p>
             )}
           </DialogContent>
         ) : null}

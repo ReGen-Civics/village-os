@@ -57,7 +57,7 @@ import {
 import { quorumPctOf } from "@shared/governanceEngine";
 import { BTN_NOTICE, BTN_SECONDARY, EYEBROW, H1, LEDE, WORLD } from "@/components/journey/look";
 import YourTurn from "@/components/governance/YourTurn";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { byArrival } from "@/components/governance/deciderOrder";
 
 /**
@@ -166,27 +166,27 @@ export default function Decisions() {
       <header className="container max-w-6xl px-4 pt-8 sm:pt-12">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className={EYEBROW}>The village decides</p>
-            <h1 className={`${H1} mt-1`}>Decisions</h1>
+            <p className={EYEBROW}><Trans context="Decisions, p">The village decides</Trans></p>
+            <h1 className={`${H1} mt-1`}><Trans context="Decisions, h1">Decisions</Trans></h1>
             <p className={`${LEDE} mt-2`}>
-              Every vote this village is holding, and every one it has held. Votes stay changeable until they close,
+              <Trans context="Decisions, p">Every vote this village is holding, and every one it has held. Votes stay changeable until they close,
               and nothing closes on a timer.
-            </p>
+            </Trans></p>
           </div>
           <Link href="/propose" className={BTN_SECONDARY}>
-            <PenLine className="w-4 h-4" aria-hidden="true" />
+            <Trans context="Decisions, Link"><PenLine className="w-4 h-4" aria-hidden="true" />
             Start a proposal
-          </Link>
+          </Trans></Link>
         </div>
       </header>
 
       <div className="container max-w-6xl px-4 py-8">
         {!user ? (
           <div className="rounded-xl border border-border bg-card p-8 text-center text-card-foreground">
-            <h2 className="font-display text-2xl font-bold text-foreground">Sign in to see what is being decided</h2>
+            <h2 className="font-display text-2xl font-bold text-foreground"><Trans context="Decisions, h2">Sign in to see what is being decided</Trans></h2>
             <p className="mx-auto mt-2 max-w-md text-muted-foreground leading-relaxed">
-              Votes here carry names, so the page opens for members.
-            </p>
+              <Trans context="Decisions, p">Votes here carry names, so the page opens for members.
+            </Trans></p>
             {/* This card is deliberate and stays: the hero above it is this
                 page's own, and SignInToSee would replace the whole thing with
                 a bare column. What was missing is the second door, for the
@@ -197,7 +197,7 @@ export default function Decisions() {
           </div>
         ) : ballots === null ? (
           <div className="flex justify-center py-16">
-            <BreathingLoader label="Reading the village's decisions" />
+            <BreathingLoader label={t({ message: "Reading the village's decisions", context: "Decisions, label" })} />
           </div>
         ) : (
           <div className="lg:grid lg:grid-cols-[1fr_20rem] lg:gap-8">
@@ -210,20 +210,20 @@ export default function Decisions() {
 
               {ballots.length === 0 && (
                 <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-                  <h2 className="text-lg font-bold text-foreground">Nothing is being decided right now</h2>
+                  <h2 className="text-lg font-bold text-foreground"><Trans context="Decisions, h2">Nothing is being decided right now</Trans></h2>
                   <p className="mx-auto mt-2 max-w-md text-muted-foreground leading-relaxed">
-                    That is a real state, not an empty page. When somebody takes a proposal to a vote, it appears here
+                    <Trans context="Decisions, p">That is a real state, not an empty page. When somebody takes a proposal to a vote, it appears here
                     with a clock on it.
-                  </p>
+                  </Trans></p>
                   <Link href="/propose" className={`${BTN_NOTICE} mt-5`}>
-                    <PenLine className="w-4 h-4" aria-hidden="true" />
+                    <Trans context="Decisions, Link"><PenLine className="w-4 h-4" aria-hidden="true" />
                     Start one
-                  </Link>
+                  </Trans></Link>
                 </div>
               )}
 
               <Group
-                title="Waiting on you"
+                title={t({ message: "Waiting on you", context: "Decisions, title" })}
                 blurb="You are on the roll for these and have not voted yet."
                 ballots={groups.mine}
                 emptyNote={ballots.length > 0 ? "You have voted in everything that is open to you." : null}
@@ -234,11 +234,11 @@ export default function Decisions() {
                 }
               />
               <Group
-                title="Waiting to be closed"
+                title={t({ message: "Waiting to be closed", context: "Decisions, title" })}
                 blurb="The voting period ended. Nothing here closes itself: a person has to close it and say what the village decided."
                 ballots={groups.awaitingClose}
               />
-              <Group title="Being decided" blurb="Open, and still taking votes." ballots={groups.running} />
+              <Group title={t({ message: "Being decided", context: "Decisions, title" })} blurb="Open, and still taking votes." ballots={groups.running} />
               <Chronicle ballots={groups.decided} />
               {/* One copy of the whole database, by the village's vote (Rye, 2026-11-06). */}
               <AskForExport />
@@ -257,8 +257,8 @@ export default function Decisions() {
                     {readingMore ? "Reading earlier decisions…" : "Show earlier decisions"}
                   </button>
                   <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                    The record goes back as far as the village does.
-                  </p>
+                    <Trans context="Decisions, p">The record goes back as far as the village does.
+                  </Trans></p>
                 </div>
               )}
             </div>
@@ -272,23 +272,23 @@ export default function Decisions() {
               <TurnoutCard ballots={ballots} />
               <div className="rounded-xl border border-border bg-card p-4">
                 <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-                  <Scale className="w-4 h-4 text-notice" aria-hidden="true" />
+                  <Trans context="Decisions, h3"><Scale className="w-4 h-4 text-notice" aria-hidden="true" />
                   How this works
                   <InfoTip
                     tip="A proposal gathers support first. Once it has enough, someone opens a ballot, which freezes who may vote and how much each vote weighs."
                     label="How a decision travels"
-                  />
+                  /></Trans>
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Thresholds and weights freeze the moment a ballot opens, so nothing anyone changes later can rewrite a
+                  <Trans context="Decisions, p">Thresholds and weights freeze the moment a ballot opens, so nothing anyone changes later can rewrite a
                   vote in flight.
-                </p>
+                </Trans></p>
                 <Link
                   href="/governance"
                   className="mt-3 inline-flex min-h-[44px] items-center text-sm font-semibold text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Read how the village governs
-                </Link>
+                  <Trans context="Decisions, Link">Read how the village governs
+                </Trans></Link>
               </div>
             </aside>
           </div>
@@ -373,10 +373,10 @@ function Chronicle({ ballots }: { ballots: BallotCard[] }) {
 
   return (
     <section>
-      <h2 className="font-display text-xl font-bold text-foreground">What the village has decided</h2>
+      <h2 className="font-display text-xl font-bold text-foreground"><Trans context="Decisions, h2">What the village has decided</Trans></h2>
       <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
-        The record, by the year the village settled each one. Each carries the sentence it closed with.
-      </p>
+        <Trans context="Decisions, p">The record, by the year the village settled each one. Each carries the sentence it closed with.
+      </Trans></p>
       {years.map(([year, list]) => (
         <div key={year} className="mt-5">
           <h3 className="border-b border-border pb-1 font-display text-lg font-bold text-foreground">{year}</h3>
@@ -406,6 +406,7 @@ function Chronicle({ ballots }: { ballots: BallotCard[] }) {
  * exactly this case.
  */
 function TurnoutCard({ ballots }: { ballots: BallotCard[] }) {
+  const { t } = useLingui();
   /*
    * A VOTE THE VILLAGE CALLED OFF IS NOT A TURNOUT OF ZERO.
    *
@@ -430,19 +431,19 @@ function TurnoutCard({ ballots }: { ballots: BallotCard[] }) {
   const votes = `${decided.length} closed ${decided.length === 1 ? "vote" : "votes"}`;
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <h3 className="text-base font-bold text-foreground">How much the village turns out</h3>
+      <h3 className="text-base font-bold text-foreground"><Trans context="Decisions, h3">How much the village turns out</Trans></h3>
       <div className="mt-3">
         <QuorumField
           valuePct={average}
           thresholdPct={null}
-          title="Average turnout across closed votes"
+          title={t({ message: "Average turnout across closed votes", context: "Decisions, title" })}
           reading={`Across ${votes}, this much of the village's weight has spoken`}
           detail="Each silhouette is a twentieth of the weight on the roll."
         />
       </div>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-        Across {votes}, an average of {Math.round(average)}% of the village's weight has spoken.
-      </p>
+        <Trans context="Decisions, p">Across {votes}, an average of {Math.round(average)}% of the village's weight has spoken.
+      </Trans></p>
     </div>
   );
 }

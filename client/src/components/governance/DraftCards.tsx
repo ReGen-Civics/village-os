@@ -16,6 +16,7 @@ import { FileEdit, Trash2 } from "lucide-react";
 import { typeConfig, type WizardType } from "./wizardConfig";
 import { walkFor } from "./wizardWalk";
 import type { ProposalDraft } from "./governanceApi";
+import { Trans } from "@lingui/react/macro";
 
 /** The best name this draft has, from whichever field carries one. */
 export function draftTitle(draft: ProposalDraft): string {
@@ -45,11 +46,11 @@ export default function DraftCards({
 
   return (
     <section>
-      <h2 className="text-base font-bold text-foreground">Pick up where you left off</h2>
+      <h2 className="text-base font-bold text-foreground"><Trans context="DraftCards, h2">Pick up where you left off</Trans></h2>
       <p className="mt-0.5 text-sm text-muted-foreground">
-        {drafts.length === 1 ? "One proposal is" : `${drafts.length} proposals are`} half written. They are yours alone
+        <Trans context="DraftCards, p">{drafts.length === 1 ? "One proposal is" : `${drafts.length} proposals are`} half written. They are yours alone
         until you publish.
-      </p>
+      </Trans></p>
       <ul className="mt-3 space-y-2">
         {drafts.map((d) => {
           const cfg = typeConfig(d.wizardType);
@@ -65,19 +66,19 @@ export default function DraftCards({
                   {cfg?.title ?? d.wizardType}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Last edited{" "}
+                  <Trans context="DraftCards, span">Last edited{" "}
                   {new Date(d.updatedAt).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
                     hour: "numeric",
                     minute: "2-digit",
-                  })}
+                  })}</Trans>
                 </span>
               </div>
               <p className="mt-1.5 text-sm font-semibold text-foreground">{draftTitle(d)}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                You stopped at {walk[at]?.label ?? "the beginning"}, step {at + 1} of {walk.length}.
-              </p>
+                <Trans context="DraftCards, p">You stopped at {walk[at]?.label ?? "the beginning"}, step {at + 1} of {walk.length}.
+              </Trans></p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -85,18 +86,18 @@ export default function DraftCards({
                   onClick={() => onContinue(d)}
                   className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-notice px-4 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
                 >
-                  <FileEdit className="w-4 h-4" aria-hidden="true" />
+                  <Trans context="DraftCards, button"><FileEdit className="w-4 h-4" aria-hidden="true" />
                   Continue
-                </button>
+                </Trans></button>
                 <button
                   type="button"
                   disabled={busyId === d.id}
                   onClick={() => onDiscard(d)}
                   className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                 >
-                  <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  <Trans context="DraftCards, button"><Trash2 className="w-4 h-4" aria-hidden="true" />
                   Discard
-                </button>
+                </Trans></button>
               </div>
             </li>
           );

@@ -39,6 +39,7 @@ import { publishCards, useSharedCards } from "./sharedCards";
 import { readCards } from "@/lib/sessionCardApi";
 import { useGuideName } from "@/hooks/useGuideName";
 import { fillGuideName } from "@shared/guideName";
+import { Trans } from "@lingui/react/macro";
 
 export const INVITE_WORDS = {
   title: "A card is on the table",
@@ -150,8 +151,8 @@ export default function CardInvite({ view }: { view: SessionView }) {
             </DialogDescription>
             <div className="mt-2 flex flex-wrap gap-2">
               <button type="button" className={BTN_PRIMARY} onClick={close}>
-                Back to the room
-              </button>
+                <Trans context="CardInvite, button">Back to the room
+              </Trans></button>
             </div>
           </>
         ) : noLines ? (

@@ -1,4 +1,5 @@
-/**
+
+import { Trans } from "@lingui/react/macro";/**
  * THE END DATE A RAISED HAND ASKED FOR, IN THE SUBMISSIONS INBOX.
  *
  * `POST /api/map/roles/:id/raise-hand` stores `termEndsOn`, `followsSeason`
@@ -31,7 +32,7 @@ export function RaisedHandTerm({ data }: { data: Record<string, unknown> }) {
   const caution = typeof data.caution === "string" && data.caution.trim() ? data.caution : null;
   return (
     <div className="mb-4 rounded-lg border border-gray-200 bg-white px-3 py-2" data-raised-hand-term>
-      <p className="text-xs font-medium text-gray-500">How long</p>
+      <p className="text-xs font-medium text-gray-500"><Trans context="RaisedHandTerm, p">How long</Trans></p>
       <p className="text-sm text-gray-800">{raisedHandTermSentence(data)}</p>
       {caution && <p className="mt-1 text-sm text-amber-800">{caution}</p>}
     </div>

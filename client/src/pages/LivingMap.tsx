@@ -62,6 +62,7 @@ import { pushChips, useChipsCadence } from "@/components/map/statChips";
 import { useOrgFollow } from "@/components/map/orgFollow";
 import BlankSlate, { useMapSlate } from "@/components/map/MapSlate";
 import { configScene, readLand, seedGroundOf, type LandAnswer } from "@/components/map/configPush";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** Where the staged artifact is served from, and its presence probe. */
 const GROUNDS = "/grounds/index.html";
@@ -126,6 +127,7 @@ function pocketProfile(hint: string): boolean {
 }
 
 export default function LivingMap() {
+  const { t } = useLingui();
   const modules = useModules();
   const mapModule = useModule("map");
   const [, navigate] = useLocation();
@@ -790,16 +792,16 @@ export default function LivingMap() {
         <button
           type="button"
           onClick={exitApp}
-          aria-label="Leave the map"
+          aria-label={t({ message: "Leave the map", context: "LivingMap, aria-label" })}
           className="fixed z-10 inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-4 py-2 text-sm rounded-lg border border-border bg-background/95 text-foreground shadow-sm backdrop-blur-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           style={{
             bottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
             left: "max(env(safe-area-inset-left, 0px), 12px)",
           }}
         >
-          <DoorOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <Trans context="LivingMap, button"><DoorOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
           Leave the map
-        </button>
+        </Trans></button>
       )}
 
       {/*
@@ -824,7 +826,7 @@ export default function LivingMap() {
         <button
           type="button"
           onClick={resetZoom}
-          aria-label={zoomStuck ? "Pinch the page to put it back" : "Reset view"}
+          aria-label={zoomStuck ? t({ message: "Pinch the page to put it back", context: "LivingMap, aria-label" }) : t({ message: "Reset view", context: "LivingMap, aria-label" })}
           className="fixed z-20 inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm rounded-full border border-border bg-background/95 text-foreground shadow-md backdrop-blur-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{
             left: `${zoom.left + 12}px`,
@@ -843,30 +845,30 @@ export default function LivingMap() {
       )}
 
       {(presence === "checking" || (presence === "present" && !known)) && (
-        <p className="text-center text-muted-foreground py-24">Opening the map...</p>
+        <p className="text-center text-muted-foreground py-24"><Trans context="LivingMap, p">Opening the map...</Trans></p>
       )}
 
       {presence === "absent" && (
         <div className="mx-auto max-w-xl py-24 px-6 text-center">
           <h1 className="font-display text-2xl font-bold text-foreground mb-3">
-            The Living Map is not installed
-          </h1>
+            <Trans context="LivingMap, h1">The Living Map is not installed
+          </Trans></h1>
           <p className="text-muted-foreground mb-4">
             This deployment has no map artifact. The server serves it from{" "}
             <code>docs/prototypes/grounds-v0.html</code>, and that file is not
             present here.
           </p>
           <p className="text-muted-foreground">
-            The village's circles and roles are on the{" "}
+            <Trans context="LivingMap, p">The village's circles and roles are on the{" "}
             <a href="/map/circles" className="underline underline-offset-2 hover:text-foreground">
               org view
             </a>
             , which needs no artifact.
-          </p>
+          </Trans></p>
           <button type="button" onClick={exitApp}
             className="mt-6 px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted">
-            Leave the map
-          </button>
+            <Trans context="LivingMap, button">Leave the map
+          </Trans></button>
         </div>
       )}
 
@@ -877,7 +879,7 @@ export default function LivingMap() {
           ref={frame}
           src={`${groundsUrl}${withSkipIntro(startHash)}`}
           onLoad={onLoad}
-          title="Living map of the village"
+          title={t({ message: "Living map of the village", context: "LivingMap, title" })}
           className="block h-full w-full border-0"
           /* Same-origin: the shell reads `contentWindow` for the skin and
              the nav shim, so this frame is not sandboxed away from us. */

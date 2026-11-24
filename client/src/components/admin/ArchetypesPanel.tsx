@@ -247,10 +247,10 @@ function ExampleBoxes({
 }) {
   return (
     <fieldset className="border-0 p-0 m-0">
-      <legend className="text-xs font-medium text-gray-700">What this looks like</legend>
+      <legend className="text-xs font-medium text-gray-700"><Trans context="ArchetypesPanel, legend">What this looks like</Trans></legend>
       <p className="text-[11px] text-gray-400 mb-1">
-        Four short lines a member reads while choosing. A blank line is dropped when you save.
-      </p>
+        <Trans context="ArchetypesPanel, p">Four short lines a member reads while choosing. A blank line is dropped when you save.
+      </Trans></p>
       <div className="grid sm:grid-cols-2 gap-2">
         {examples.map((value, i) => (
           <Field
@@ -267,6 +267,7 @@ function ExampleBoxes({
 }
 
 export default function ArchetypesPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [rows, setRows] = useState<ArchetypeRow[] | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Words>>({});
   const [loadError, setLoadError] = useState("");
@@ -341,9 +342,9 @@ export default function ArchetypesPanel({ password }: { password: string }) {
         ),
       );
       if (saved) setDrafts((prev) => ({ ...prev, [key]: wordsOf(saved) }));
-      toast.success("Saved. This class now carries the village's own words");
+      toast.success(t({ message: "Saved. This class now carries the village's own words", context: "ArchetypesPanel, toast" }));
     } catch {
-      toast.error("That did not save. The server did not answer.");
+      toast.error(t({ message: "That did not save. The server did not answer.", context: "ArchetypesPanel, toast" }));
     } finally {
       setSavingKey(null);
     }
@@ -390,7 +391,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
       setMoveNote(`${moved.name || moved.key} is now number ${target + 1} of ${next.length}`);
     } catch {
       setRows(before);
-      toast.error("The order did not save. The server did not answer.");
+      toast.error(t({ message: "The order did not save. The server did not answer.", context: "ArchetypesPanel, toast" }));
     } finally {
       orderBusy.current = false;
       setReordering(false);
@@ -436,7 +437,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
       setAdding(false);
       toast.success(`"${newClass.name.trim()}" added. Its key is fixed from now on`);
     } catch {
-      toast.error("The class was not added. The server did not answer.");
+      toast.error(t({ message: "The class was not added. The server did not answer.", context: "ArchetypesPanel, toast" }));
     } finally {
       setAddingNow(false);
     }
@@ -447,20 +448,20 @@ export default function ArchetypesPanel({ password }: { password: string }) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5 mt-4">
-      <h3 className="font-semibold text-gray-900 mb-1">Character classes</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="ArchetypesPanel, h3">Character classes</Trans></h3>
       <p className="text-xs text-gray-500 mb-2">
-        A member picks one of these when they make their character, and these are the words they
+        <Trans context="ArchetypesPanel, p">A member picks one of these when they make their character, and these are the words they
         read while choosing. The platform ships five. Rewrite any of them in your village's own
         language, reorder them, or add one of your own.
-      </p>
+      </Trans></p>
       <p className="text-[11px] text-gray-400 mb-4">
-        The name you give a class is <span className="font-medium text-gray-500">always</span>{" "}
+        <Trans context="ArchetypesPanel, p">The name you give a class is <span className="font-medium text-gray-500">always</span>{" "}
         yours: it is never replaced, marked or not. A class marked{" "}
         <span className="font-medium text-gray-500">Your words</span> keeps everything else you
         wrote here too, through every deploy. On a class with no mark, the subtitle, description,
         examples and sigil are still refreshed from the platform when this village is redeployed,
         so an improvement to the shipped wording reaches you.
-      </p>
+      </Trans></p>
 
       {loadError ? (
         <p role="alert" className="text-sm text-red-600 border border-red-200 rounded-lg p-3 mb-4">
@@ -479,7 +480,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
       </datalist>
 
       {reordering ? (
-        <p className="text-[11px] text-gray-500 mb-2">Saving the order…</p>
+        <p className="text-[11px] text-gray-500 mb-2"><Trans context="ArchetypesPanel, p">Saving the order…</Trans></p>
       ) : null}
 
       <ol className="space-y-4">
@@ -517,8 +518,8 @@ export default function ArchetypesPanel({ password }: { password: string }) {
                 <div className="flex items-center gap-1.5 shrink-0">
                   {row.customized ? (
                     <span className="text-[11px] font-medium text-teal-deep border border-gray-200 rounded-full px-2 py-0.5">
-                      Your words
-                    </span>
+                      <Trans context="ArchetypesPanel, span">Your words
+                    </Trans></span>
                   ) : null}
                   <button
                     type="button"
@@ -527,8 +528,8 @@ export default function ArchetypesPanel({ password }: { password: string }) {
                     disabled={i === 0}
                     onClick={() => void move(i, -1)}
                   >
-                    Up
-                  </button>
+                    <Trans context="ArchetypesPanel, button">Up
+                  </Trans></button>
                   <button
                     type="button"
                     className={moveCls}
@@ -536,22 +537,22 @@ export default function ArchetypesPanel({ password }: { password: string }) {
                     disabled={i === list.length - 1}
                     onClick={() => void move(i, 1)}
                   >
-                    Down
-                  </button>
+                    <Trans context="ArchetypesPanel, button">Down
+                  </Trans></button>
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <Field
                   id={`${base}-name`}
-                  label="Name"
+                  label={t({ message: "Name", context: "ArchetypesPanel, label" })}
                   value={words.name}
                   onChange={(v) => setWords({ name: v })}
                   hint="What this class is called, for example The Builder."
                 />
                 <Field
                   id={`${base}-subtitle`}
-                  label="Subtitle"
+                  label={t({ message: "Subtitle", context: "ArchetypesPanel, label" })}
                   value={words.subtitle}
                   onChange={(v) => setWords({ subtitle: v })}
                   hint="The kind of contribution, in a few words."
@@ -561,7 +562,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
               <div className="mt-3">
                 <Field
                   id={`${base}-blurb`}
-                  label="Description"
+                  label={t({ message: "Description", context: "ArchetypesPanel, label" })}
                   rows={3}
                   value={words.blurb}
                   onChange={(v) => setWords({ blurb: v })}
@@ -580,7 +581,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
               <div className="mt-3 sm:max-w-xs">
                 <Field
                   id={`${base}-sigil`}
-                  label="Sigil"
+                  label={t({ message: "Sigil", context: "ArchetypesPanel, label" })}
                   value={words.sigil}
                   list="arch-sigil-options"
                   onChange={(v) => setWords({ sigil: v })}
@@ -599,8 +600,8 @@ export default function ArchetypesPanel({ password }: { password: string }) {
                 </button>
                 {dirty ? (
                   <span className="text-[11px] text-gray-500">
-                    Unsaved changes on this class.
-                  </span>
+                    <Trans context="ArchetypesPanel, span">Unsaved changes on this class.
+                  </Trans></span>
                 ) : null}
               </div>
             </li>
@@ -622,34 +623,34 @@ export default function ArchetypesPanel({ password }: { password: string }) {
           <div className="mt-3 space-y-3">
             <Field
               id="arch-new-key"
-              label="Identifier"
+              label={t({ message: "Identifier", context: "ArchetypesPanel, label" })}
               value={newClass.key}
               onChange={(v) => setNewClass({ ...newClass, key: v })}
               hint="One lowercase word, no spaces, for example gardening. This is the only moment it can be set. From the first member who picks this class, their character is stored against this word and it can never be changed."
             />
             {keyTaken ? (
               <p role="alert" className="text-[11px] text-red-600">
-                This village already has a class with the identifier {trimmedNewKey}.
-              </p>
+                <Trans context="ArchetypesPanel, p">This village already has a class with the identifier {trimmedNewKey}.
+              </Trans></p>
             ) : null}
             <div className="grid sm:grid-cols-2 gap-3">
               <Field
                 id="arch-new-name"
-                label="Name"
+                label={t({ message: "Name", context: "ArchetypesPanel, label" })}
                 value={newClass.name}
                 onChange={(v) => setNewClass({ ...newClass, name: v })}
                 hint="What members see. This one you can change later."
               />
               <Field
                 id="arch-new-subtitle"
-                label="Subtitle"
+                label={t({ message: "Subtitle", context: "ArchetypesPanel, label" })}
                 value={newClass.subtitle}
                 onChange={(v) => setNewClass({ ...newClass, subtitle: v })}
               />
             </div>
             <Field
               id="arch-new-blurb"
-              label="Description"
+              label={t({ message: "Description", context: "ArchetypesPanel, label" })}
               rows={3}
               value={newClass.blurb}
               onChange={(v) => setNewClass({ ...newClass, blurb: v })}
@@ -662,7 +663,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
             <div className="sm:max-w-xs">
               <Field
                 id="arch-new-sigil"
-                label="Sigil"
+                label={t({ message: "Sigil", context: "ArchetypesPanel, label" })}
                 value={newClass.sigil}
                 list="arch-sigil-options"
                 onChange={(v) => setNewClass({ ...newClass, sigil: v })}

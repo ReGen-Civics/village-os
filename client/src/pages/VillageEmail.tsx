@@ -35,6 +35,7 @@ import {
   type MemberEmailView,
   type ProposeTarget,
 } from "@shared/comms/memberView";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -84,8 +85,8 @@ function ProposeDoor({ door }: { door: Door }) {
     <div className="mt-2">
       {!open && (
         <button type="button" onClick={() => setOpen(true)} className="text-sm text-primary underline underline-offset-2">
-          Propose a change
-        </button>
+          <Trans context="VillageEmail, button">Propose a change
+        </Trans></button>
       )}
       {open && (
         <div className="space-y-2">
@@ -106,11 +107,11 @@ function ProposeDoor({ door }: { door: Door }) {
               disabled={busy || change.trim().length < PROPOSAL_LIMITS.min}
               className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
             >
-              Send the proposal
-            </button>
+              <Trans context="VillageEmail, button">Send the proposal
+            </Trans></button>
             <button type="button" onClick={() => setOpen(false)} className="text-sm text-muted-foreground underline underline-offset-2">
-              Cancel
-            </button>
+              <Trans context="VillageEmail, button">Cancel
+            </Trans></button>
           </div>
         </div>
       )}
@@ -130,7 +131,7 @@ function EmailWords({ email }: { email: MemberEmailView }) {
       <summary className="cursor-pointer text-sm font-medium text-card-foreground">
         {email.label}: {email.subject}
       </summary>
-      <p className="text-xs text-muted-foreground mt-2">Preview line: {email.preheader}</p>
+      <p className="text-xs text-muted-foreground mt-2"><Trans context="VillageEmail, p">Preview line: {email.preheader}</Trans></p>
       <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm text-card-foreground">{email.text}</pre>
       <ProposeDoor door={{ target: "words", key: email.templateKey, about: `the email "${email.subject}"` }} />
     </details>
@@ -145,14 +146,14 @@ function DialRow({ dial }: { dial: MemberDialView }) {
         <span className="text-sm font-medium text-card-foreground">{dial.label}</span>
         <span className="text-sm text-card-foreground">
           {shown(dial.value)}
-          {!dial.isDefault && <span className="ml-2 text-xs text-muted-foreground">default {shown(dial.defaultValue)}</span>}
+          {!dial.isDefault && <span className="ml-2 text-xs text-muted-foreground"><Trans context="VillageEmail, span">default {shown(dial.defaultValue)}</Trans></span>}
         </span>
       </div>
       <p className="text-xs text-muted-foreground mt-1">{dial.description}</p>
       {dial.door === "mechanics" ? (
         <Link href={dialLink(dial.key)} className="mt-2 inline-block text-sm text-primary underline underline-offset-2">
-          Propose a change
-        </Link>
+          <Trans context="VillageEmail, Link">Propose a change
+        </Trans></Link>
       ) : (
         <ProposeDoor door={{ target: "dial", key: dial.key, about: dial.label.toLowerCase() }} />
       )}
@@ -192,35 +193,35 @@ export default function VillageEmail() {
     <Layout>
       <section className="py-12 sm:py-16 bg-background min-h-[60vh]">
         <div className="container px-4 max-w-3xl mx-auto">
-          <h1 className="font-display text-2xl font-bold text-card-foreground mb-2">How the village emails</h1>
+          <h1 className="font-display text-2xl font-bold text-card-foreground mb-2"><Trans context="VillageEmail, h1">How the village emails</Trans></h1>
           {off ? (
             <div className="bg-card border border-border rounded-2xl p-5">
-              <h2 className="font-display text-lg font-semibold text-card-foreground">Village email isn't switched on yet</h2>
+              <h2 className="font-display text-lg font-semibold text-card-foreground"><Trans context="VillageEmail, h2">Village email isn't switched on yet</Trans></h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Until it is, the village sends no journey emails and no letters. Account emails and your notices
+                <Trans context="VillageEmail, p">Until it is, the village sends no journey emails and no letters. Account emails and your notices
                 still arrive.
-              </p>
+              </Trans></p>
               <p className="text-sm text-muted-foreground mt-2">
-                Only an admin can switch it on, from{" "}
+                <Trans context="VillageEmail, p">Only an admin can switch it on, from{" "}
                 <Link href="/modules/comms" className="text-primary underline underline-offset-2">
                   Village Comms in the Module Library
                 </Link>
                 , once the village's sending is set up.
-              </p>
+              </Trans></p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground mb-6">
-              Every email the village sends, and when. Open any of them to read its words, and propose a change.
-            </p>
+              <Trans context="VillageEmail, p">Every email the village sends, and when. Open any of them to read its words, and propose a change.
+            </Trans></p>
           )}
           {failed && <p className="text-sm text-destructive">{failed}</p>}
-          {!view && !failed && !off && <p className="text-sm text-muted-foreground">Loading.</p>}
+          {!view && !failed && !off && <p className="text-sm text-muted-foreground"><Trans context="VillageEmail, p">Loading.</Trans></p>}
           {view && (
             <div className="space-y-10">
               <section aria-labelledby="journeys-heading">
                 <h2 id="journeys-heading" className="font-display text-xl font-semibold text-card-foreground mb-3">
-                  Journeys
-                </h2>
+                  <Trans context="VillageEmail, h2">Journeys
+                </Trans></h2>
                 <div className="space-y-4">
                   {view.journeys.map((j) => (
                     <article key={j.key} className="bg-card border border-border rounded-2xl p-4">
@@ -234,19 +235,19 @@ export default function VillageEmail() {
                             <p className="text-sm text-card-foreground">
                               <span className="font-medium">{s.timing}</span>: {s.label}
                             </p>
-                            {s.skipIf.length > 0 && <p className="text-xs text-muted-foreground">Waits or skips when: {s.skipIf.join("; ")}</p>}
+                            {s.skipIf.length > 0 && <p className="text-xs text-muted-foreground"><Trans context="VillageEmail, p">Waits or skips when: {s.skipIf.join("; ")}</Trans></p>}
                             {s.email ? (
                               <div className="mt-1">
                                 <EmailWords email={s.email} />
                               </div>
                             ) : (
-                              <p className="text-xs text-muted-foreground">This email's words didn't load.</p>
+                              <p className="text-xs text-muted-foreground"><Trans context="VillageEmail, p">This email's words didn't load.</Trans></p>
                             )}
                             <ProposeDoor door={{ target: "step", key: j.key, step: s.key, about: `when "${s.label}" goes` }} />
                           </li>
                         ))}
                       </ol>
-                      {j.stops.length > 0 && <p className="text-xs text-muted-foreground mt-3">Ends when: {j.stops.join("; ")}</p>}
+                      {j.stops.length > 0 && <p className="text-xs text-muted-foreground mt-3"><Trans context="VillageEmail, p">Ends when: {j.stops.join("; ")}</Trans></p>}
                       <ProposeDoor door={{ target: "journey", key: j.key, about: `the ${j.title} journey` }} />
                     </article>
                   ))}
@@ -255,8 +256,8 @@ export default function VillageEmail() {
 
               <section aria-labelledby="others-heading">
                 <h2 id="others-heading" className="font-display text-xl font-semibold text-card-foreground mb-3">
-                  Other emails
-                </h2>
+                  <Trans context="VillageEmail, h2">Other emails
+                </Trans></h2>
                 <div className="space-y-4">
                   {view.others.map((g) => (
                     <div key={g.title}>
@@ -273,9 +274,9 @@ export default function VillageEmail() {
 
               <section aria-labelledby="dials-heading">
                 <h2 id="dials-heading" className="font-display text-xl font-semibold text-card-foreground mb-1">
-                  Dials
-                </h2>
-                <p className="text-sm text-muted-foreground mb-2">The village votes on most of these on the Game Mechanics page.</p>
+                  <Trans context="VillageEmail, h2">Dials
+                </Trans></h2>
+                <p className="text-sm text-muted-foreground mb-2"><Trans context="VillageEmail, p">The village votes on most of these on the Game Mechanics page.</Trans></p>
                 <ul className="divide-y divide-border">
                   {view.dials.map((d) => (
                     <DialRow key={d.key} dial={d} />

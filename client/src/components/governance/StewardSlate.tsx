@@ -34,6 +34,7 @@
 import { CircleCheck, CircleSlash, Clock } from "lucide-react";
 import type { StewardSlate as StewardSlateData } from "./governanceApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { Trans } from "@lingui/react/macro";
 
 const ANSWER_STYLE: Record<StewardSlateData["members"][number]["answer"], string> = {
   accepted: "border-open bg-open/10 text-open",
@@ -77,26 +78,26 @@ export default function StewardSlate({
   if (slate.members.length === 0) {
     return (
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-base font-bold text-foreground">The steward role</h2>
+        <h2 className="text-base font-bold text-foreground"><Trans context="StewardSlate, h2">The steward role</Trans></h2>
         <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-          This proposal names nobody for the steward role, so the village starts with it empty. That stops nothing:
+          <Trans context="StewardSlate, p">This proposal names nobody for the steward role, so the village starts with it empty. That stops nothing:
           decisions land at their landing time either way, and the village can vote anybody into the role whenever it
           likes.
-        </p>
+        </Trans></p>
       </section>
     );
   }
 
   return (
     <section className="rounded-xl border border-border bg-card p-5">
-      <h2 className="text-base font-bold text-foreground">Who carries the steward role</h2>
+      <h2 className="text-base font-bold text-foreground"><Trans context="StewardSlate, h2">Who carries the steward role</Trans></h2>
       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-        {slate.proposedBy
+        <Trans context="StewardSlate, p">{slate.proposedBy
           ? `${slate.proposedBy} opened this vote and chose this list. Voting yes is voting for it as well as for starting the Game.`
           : "This list was chosen when the vote opened. Voting yes is voting for it as well as for starting the Game."}{" "}
         Each person answers for themselves, and carrying the role for this first season means holding all{" "}
         {slate.powerCount} of the powers this village has to give.
-      </p>
+      </Trans></p>
 
       <ul className="mt-4 space-y-2">
         {slate.members.map((m) => {
@@ -108,7 +109,7 @@ export default function StewardSlate({
             >
               <span className="text-sm font-semibold text-foreground">
                 {m.name}
-                {m.mine && <span className="ml-1 text-xs font-normal text-muted-foreground">(you)</span>}
+                {m.mine && <span className="ml-1 text-xs font-normal text-muted-foreground"><Trans context="StewardSlate, span">(you)</Trans></span>}
               </span>
               <span className="flex items-center gap-1.5 text-sm">
                 <Icon className="h-4 w-4" aria-hidden="true" />
@@ -135,9 +136,9 @@ export default function StewardSlate({
           {mine.answer === "declined" ? (
             <>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                You declined the steward role, and the village can see that. You can change your mind until this vote
+                <Trans context="StewardSlate, p">You declined the steward role, and the village can see that. You can change your mind until this vote
                 closes.
-              </p>
+              </Trans></p>
               <button
                 type="button"
                 disabled={busy}
@@ -145,15 +146,15 @@ export default function StewardSlate({
                 className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-lg border-2 border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground hover:border-border hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
               >
                 {busy && <BreathingLoader decorative size={16} />}
-                <span>I have changed my mind</span>
+                <span><Trans context="StewardSlate, span">I have changed my mind</Trans></span>
               </button>
             </>
           ) : (
             <>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                This proposal names you. Accepting happens with your vote, above. If you do not want the role, say so
+                <Trans context="StewardSlate, p">This proposal names you. Accepting happens with your vote, above. If you do not want the role, say so
                 here and the village sees your answer.
-              </p>
+              </Trans></p>
               <button
                 type="button"
                 disabled={busy}
@@ -161,7 +162,7 @@ export default function StewardSlate({
                 className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-lg border-2 border-destructive bg-card px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
               >
                 {busy && <BreathingLoader decorative size={16} />}
-                <span>Decline the steward role</span>
+                <span><Trans context="StewardSlate, span">Decline the steward role</Trans></span>
               </button>
             </>
           )}

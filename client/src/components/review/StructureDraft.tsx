@@ -34,6 +34,7 @@ import { RoleFieldChanges } from "@/components/review/RoleFieldChanges";
 import { structureMapModel, type MapView } from "@/lib/structureMapModel";
 import { decideStructure, type PlanSeat, type StructureDecisions, type StructurePlan } from "@shared/structurePlan";
 import { stayedBehind, type DraftCounts } from "@shared/structureDraft";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface DraftAnswer {
   id: string;
@@ -107,6 +108,7 @@ export default function StructureDraft({
   /** Offered when proposals in the batch still wait for a decision. */
   onReviewRest?: () => void;
 }) {
+  const { t } = useLingui();
   const [view, setView] = useState<MapView>("after");
   const [asList, setAsList] = useState(false);
   const [highlight, setHighlight] = useState<string | null>(null);
@@ -180,29 +182,29 @@ export default function StructureDraft({
           {carrySummary(carry)}{" "}
           {!carryDone(carry) && (
             <a href="#carry" className="underline">
-              Go to the list
-            </a>
+              <Trans context="StructureDraft, a">Go to the list
+            </Trans></a>
           )}
         </p>
       )}
       <div className="flex flex-wrap gap-2.5">
-        <Link href="/map" className={primary + " inline-flex items-center"}>See the living map</Link>
-        <Link href="/roles" className={secondary + " inline-flex items-center"}>See every role</Link>
+        <Link href="/map" className={primary + " inline-flex items-center"}><Trans context="StructureDraft, Link">See the living map</Trans></Link>
+        <Link href="/roles" className={secondary + " inline-flex items-center"}><Trans context="StructureDraft, Link">See every role</Trans></Link>
       </div>
     </>
   ) : confirming ? (
     <div className={`${card} p-3.5 grid gap-2.5 border-notice/60`} role="group" aria-labelledby="h-confirm" data-testid="publish-confirm">
-      <p id="h-confirm" className="font-semibold">Publish this draft to the live chart?</p>
+      <p id="h-confirm" className="font-semibold"><Trans context="StructureDraft, p">Publish this draft to the live chart?</Trans></p>
       <p className="text-sm text-muted-foreground">
-        This puts {what} on the live chart at once, as one change. People keep their roles, and nobody is unseated.
-      </p>
+        <Trans context="StructureDraft, p">This puts {what} on the live chart at once, as one change. People keep their roles, and nobody is unseated.
+      </Trans></p>
       <div className="flex flex-wrap gap-2.5">
         <button type="button" className={primary} disabled={busy !== null} onClick={() => void publish()}>
           {busy === "publish" ? "Publishing" : "Yes, publish it now"}
         </button>
         <button type="button" className={secondary} disabled={busy !== null} onClick={() => setConfirming(false)}>
-          Not yet
-        </button>
+          <Trans context="StructureDraft, button">Not yet
+        </Trans></button>
       </div>
     </div>
   ) : (
@@ -210,8 +212,8 @@ export default function StructureDraft({
       <div className="flex flex-wrap gap-2.5">
         {mayPublish && (
           <button type="button" className={primary} disabled={busy !== null || blocked > 0} onClick={() => setConfirming(true)}>
-            Publish to the live chart
-          </button>
+            <Trans context="StructureDraft, button">Publish to the live chart
+          </Trans></button>
         )}
         {mayModerate && (
           <button type="button" className={secondary} disabled={busy !== null} onClick={() => void withdraw()}>
@@ -220,12 +222,12 @@ export default function StructureDraft({
         )}
       </div>
       {mayPublish && blocked > 0 && (
-        <p className="text-[13px] text-muted-foreground">Publishing waits until no line is blocked. Withdraw it to change what it holds.</p>
+        <p className="text-[13px] text-muted-foreground"><Trans context="StructureDraft, p">Publishing waits until no line is blocked. Withdraw it to change what it holds.</Trans></p>
       )}
       {!mayPublish && (
         <p className="text-[13px] text-muted-foreground" data-testid="who-publishes">
-          Publishing changes the live chart, so whoever holds the power to change the village's structure does it. Ask one of them to open this page and publish it.
-        </p>
+          <Trans context="StructureDraft, p">Publishing changes the live chart, so whoever holds the power to change the village's structure does it. Ask one of them to open this page and publish it.
+        </Trans></p>
       )}
     </>
   );
@@ -278,19 +280,19 @@ export default function StructureDraft({
                 const d = document.getElementById("draft-archived") as HTMLDetailsElement | null;
                 if (d) d.open = true;
               }}>
-                See the list
-              </a>
+                <Trans context="StructureDraft, a">See the list
+              </Trans></a>
             )}
           </p>
         )}
         {onReviewRest && (
           <button type="button" className={`${secondary} justify-self-start`} onClick={onReviewRest}>
-            Review what is still waiting
-          </button>
+            <Trans context="StructureDraft, button">Review what is still waiting
+          </Trans></button>
         )}
       </header>
 
-      <div className={`${card} flex flex-wrap`} role="list" aria-label="What this draft holds">
+      <div className={`${card} flex flex-wrap`} role="list" aria-label={t({ message: "What this draft holds", context: "StructureDraft, aria-label" })}>
         {[
           { n: counts.circles, label: "New circles", tone: "text-open" },
           { n: counts.seats, label: "New roles", tone: "text-open" },
@@ -318,7 +320,7 @@ export default function StructureDraft({
 
       {!live && draft.preview && draft.preview.blockedLines.length > 0 && (
         <section className={`${card} p-4 grid gap-2`} aria-labelledby="h-blocked">
-          <h2 id="h-blocked" className="font-display text-[22px]">What blocks it</h2>
+          <h2 id="h-blocked" className="font-display text-[22px]"><Trans context="StructureDraft, h2">What blocks it</Trans></h2>
           <ul className="text-sm grid gap-1">
             {draft.preview.blockedLines.map((l, i) => (
               <li key={i}>
@@ -333,8 +335,8 @@ export default function StructureDraft({
       {!live && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
           <section className={`${card} p-4 grid gap-3 lg:sticky lg:top-3`} aria-labelledby="h-draft-map">
-            <h2 id="h-draft-map" className="sr-only">The draft on the circle map</h2>
-            <div className="inline-flex flex-wrap gap-0.5 rounded-full border border-border p-[3px] justify-self-start" role="group" aria-label="Map view">
+            <h2 id="h-draft-map" className="sr-only"><Trans context="StructureDraft, h2">The draft on the circle map</Trans></h2>
+            <div className="inline-flex flex-wrap gap-0.5 rounded-full border border-border p-[3px] justify-self-start" role="group" aria-label={t({ message: "Map view", context: "StructureDraft, aria-label" })}>
               {VIEWS.map((v) => (
                 <button
                   key={v.id}
@@ -371,7 +373,7 @@ export default function StructureDraft({
           </section>
 
           <section className="grid gap-2.5" aria-labelledby="h-draft-list">
-            <h2 id="h-draft-list" className="font-display text-[22px]">Everything in this draft</h2>
+            <h2 id="h-draft-list" className="font-display text-[22px]"><Trans context="StructureDraft, h2">Everything in this draft</Trans></h2>
             <div className={card}>
               {groups.map((g) => (
                 <div key={g.key} className="pt-1.5">
@@ -393,16 +395,16 @@ export default function StructureDraft({
                         {s.aim && <p className="text-[13px] text-muted-foreground">{s.aim}</p>}
                         {s.match && (
                           <p className="text-[13px] text-muted-foreground">
-                            Our existing role moves here from {circleName(s.match.circleId)}.{" "}
-                            {s.match.holders ? `${plural(s.match.holders, "person keeps it", "people keep it")}.` : "Nobody holds it yet."}
+                            <Trans context="StructureDraft, p">Our existing role moves here from {circleName(s.match.circleId)}.{" "}
+                            {s.match.holders ? `${plural(s.match.holders, "person keeps it", "people keep it")}.` : "Nobody holds it yet."}</Trans>
                           </p>
                         )}
                         <RoleFieldChanges payload={s.payload} match={s.match} liveSeats={draft.plan.live.seats} />
                       </div>
                       {s.match ? (
-                        <span className={`${pillBase} text-notice border-current`}>Moves here</span>
+                        <span className={`${pillBase} text-notice border-current`}><Trans context="StructureDraft, span">Moves here</Trans></span>
                       ) : (
-                        <span className={`${pillBase} text-open border-current`}>New role</span>
+                        <span className={`${pillBase} text-open border-current`}><Trans context="StructureDraft, span">New role</Trans></span>
                       )}
                     </div>
                   ))}
@@ -416,8 +418,8 @@ export default function StructureDraft({
       {(plan?.archived ?? []).length > 0 && (
         <details id="draft-archived" className={`${card} px-4 py-3`} data-testid="draft-archived">
           <summary className="cursor-pointer min-h-[24px] text-sm text-muted-foreground">
-            Archived in {source}, still in the queue · {plural(plan!.archived.length, "item", "items")}. None of it is in the draft.
-          </summary>
+            <Trans context="StructureDraft, summary">Archived in {source}, still in the queue · {plural(plan!.archived.length, "item", "items")}. None of it is in the draft.
+          </Trans></summary>
           <ul className="grid gap-2 mt-2">
             {plan!.archived.map((a) => (
               <li key={a.key} className="text-[13px]">
@@ -432,7 +434,7 @@ export default function StructureDraft({
         </details>
       )}
 
-      <Link href="/review" className="underline justify-self-start">Back to the review queue</Link>
+      <Link href="/review" className="underline justify-self-start"><Trans context="StructureDraft, Link">Back to the review queue</Trans></Link>
     </div>
   );
 }

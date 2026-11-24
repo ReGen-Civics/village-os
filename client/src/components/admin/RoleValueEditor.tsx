@@ -79,8 +79,8 @@ export default function RoleValueEditor({
               }
             }}
           >
-            Save what it pays
-          </button>
+            <Trans context="RoleValueEditor, button">Save what it pays
+          </Trans></button>
         </div>
       )}
     </div>

@@ -20,6 +20,7 @@ import { authToken, useGameConfig } from "@/lib/gameApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The sentence a refused sign-in shows, from what `login()` threw.
@@ -48,6 +49,7 @@ export function signInFailure(err: unknown): string {
 }
 
 export default function AdminGate({ onAuth }: { onAuth: (token: string) => void }) {
+  const { t } = useLingui();
   const { user, loading, login, logout } = useAuth();
   // Same config the rest of the app reads its identity from (Layout.tsx and
   // every public page use this hook). Null until the fetch resolves, so
@@ -101,7 +103,7 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
   if (!giveUp && (loading || isAdmin) && !waited) {
     return (
       <div className="min-h-screen bg-teal-deep flex items-center justify-center">
-        <BreathingLoader label="Opening the admin" size={56} />
+        <BreathingLoader label={t({ message: "Opening the admin", context: "AdminGate, label" })} size={56} />
       </div>
     );
   }
@@ -110,10 +112,10 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
     return (
       <div className="min-h-screen bg-teal-deep flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center">
-          <p className="text-sm text-gray-700">Still checking your account.</p>
+          <p className="text-sm text-gray-700"><Trans context="AdminGate, p">Still checking your account.</Trans></p>
           <button type="button" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-teal-deep px-4 text-sm text-white" onClick={() => setGiveUp(true)}>
-            Sign in anyway
-          </button>
+            <Trans context="AdminGate, button">Sign in anyway
+          </Trans></button>
         </div>
       </div>
     );
@@ -139,8 +141,8 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
           {villageName ? `${villageName} Admin` : "Admin"}
         </h1>
         <p className="text-sm text-gray-500 text-center mb-8">
-          Sign in with your admin account
-        </p>
+          <Trans context="AdminGate, p">Sign in with your admin account
+        </Trans></p>
         <form onSubmit={submit} className="space-y-4">
           {/*
             * `username`, not `email`, even though the field takes an address:
@@ -153,8 +155,8 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
             type="email"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(""); }}
-            placeholder="Email"
-            aria-label="Email"
+            placeholder={t({ message: "Email", context: "AdminGate, placeholder" })}
+            aria-label={t({ message: "Email", context: "AdminGate, aria-label" })}
             autoComplete="username"
             autoFocus
             className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
@@ -164,8 +166,8 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
               type={show ? "text" : "password"}
               value={pw}
               onChange={(e) => { setPw(e.target.value); setError(""); }}
-              placeholder="Password"
-              aria-label="Password"
+              placeholder={t({ message: "Password", context: "AdminGate, placeholder" })}
+              aria-label={t({ message: "Password", context: "AdminGate, aria-label" })}
               autoComplete="current-password"
               className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
             />
@@ -178,7 +180,7 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
             <button
               type="button"
               onClick={() => setShow(!show)}
-              aria-label={show ? "Hide password" : "Show password"}
+              aria-label={show ? t({ message: "Hide password", context: "AdminGate, aria-label" }) : t({ message: "Show password", context: "AdminGate, aria-label" })}
               className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-600 hover:text-gray-900"
             >
               {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -210,8 +212,8 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
               href="/forgot-password?from=admin"
               className="text-sm text-teal-deep hover:underline"
             >
-              Forgot your password?
-            </a>
+              <Trans context="AdminGate, a">Forgot your password?
+            </Trans></a>
           </p>
           <GoogleSignInButton next={here} />
         </div>

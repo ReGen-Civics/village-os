@@ -36,6 +36,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Unanswered is a real state and stays distinct from "no" all the way to the
@@ -124,6 +125,7 @@ export default function InvoluntaryExitDialog({
   onCancel: () => void;
   onConfirm: (note: string) => void;
 }) {
+  const { t } = useLingui();
   const [reason, setReason] = useState("");
   const [answers, setAnswers] = useState<GroundAnswer[]>([]);
 
@@ -158,39 +160,39 @@ export default function InvoluntaryExitDialog({
     >
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Ask {memberName || "this member"} to leave</DialogTitle>
+          <DialogTitle><Trans context="InvoluntaryExitDialog, DialogTitle">Ask {memberName || "this member"} to leave</Trans></DialogTitle>
           <DialogDescription>
-            This opens a departure against a person and notifies them. It follows the
+            <Trans context="InvoluntaryExitDialog, DialogDescription">This opens a departure against a person and notifies them. It follows the
             exit process your village has published, and everything recorded here goes
             on the record for whoever reviews it later.
-          </DialogDescription>
+          </Trans></DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
           <div>
             <label htmlFor="involuntary-exit-reason" className="text-sm font-medium text-foreground block mb-1">
-              What is the reason for requesting the removal of this member?
-            </label>
+              <Trans context="InvoluntaryExitDialog, label">What is the reason for requesting the removal of this member?
+            </Trans></label>
             <textarea
               id="involuntary-exit-reason"
               rows={4}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="In your own words, for the record."
+              placeholder={t({ message: "In your own words, for the record.", context: "InvoluntaryExitDialog, placeholder" })}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-y bg-background"
             />
             {!reasonGiven && (
               <p className="text-xs text-muted-foreground mt-1">
-                A reason is required. The person being asked to leave is entitled to one.
-              </p>
+                <Trans context="InvoluntaryExitDialog, p">A reason is required. The person being asked to leave is entitled to one.
+              </Trans></p>
             )}
           </div>
 
           {grounds.length > 0 && (
             <div>
               <p className="text-sm font-medium text-foreground mb-2">
-                About this departure
-              </p>
+                <Trans context="InvoluntaryExitDialog, p">About this departure
+              </Trans></p>
               <div className="space-y-3">
                 {grounds.map((q, i) => (
                   <div key={q} className="flex flex-wrap items-center justify-between gap-2">
@@ -220,9 +222,9 @@ export default function InvoluntaryExitDialog({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Leave a question unanswered and it stays off the record. An answer of no is
+                <Trans context="InvoluntaryExitDialog, p">Leave a question unanswered and it stays off the record. An answer of no is
                 a different thing from a question nobody answered, so neither is assumed.
-              </p>
+              </Trans></p>
             </div>
           )}
         </div>
@@ -233,8 +235,8 @@ export default function InvoluntaryExitDialog({
             onClick={onCancel}
             className="text-sm rounded-lg px-4 py-2 border border-border text-muted-foreground"
           >
-            Cancel
-          </button>
+            <Trans context="InvoluntaryExitDialog, button">Cancel
+          </Trans></button>
           <button
             type="button"
             disabled={!reasonGiven || busy}

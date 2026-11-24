@@ -2538,6 +2538,71 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * ROOT (lib/routeGrowth.ts): page to page. A fine root grows across the top of
+ * the screen from where the reader tapped (.m-root-line, one element on <body>,
+ * flipped between "a" and "b" so each navigation restarts it), and the new
+ * page's <main id="main"> fades up from 55% once <html> carries
+ * data-m-arrived, which is never on the page a visit opens on; the page being
+ * left is marked data-m-stay so it never dims. Opacity only on the
+ * page: a translate or scale on <main> would re-anchor every fixed bar inside
+ * it for the length of the animation. `backwards`, so nothing is held once it
+ * ends. In the tab bar, the active tab's gold line grows from its middle like
+ * a shoot (.m-shoot) and a bud opens on its pill (.m-bud).
+ */
+.m-root-line {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: 80;
+  height: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: var(--m-ox, 0%) 50%;
+  background: linear-gradient(90deg, var(--sheet-open, var(--ring)), var(--sheet-notice, var(--ring)));
+}
+@keyframes m-root {
+  0% { opacity: 1; scale: 0 1; }
+  70% { opacity: 1; scale: 1 1; }
+  100% { opacity: 0; scale: 1 1; }
+}
+@keyframes m-reroot {
+  0% { opacity: 1; scale: 0 1; }
+  70% { opacity: 1; scale: 1 1; }
+  100% { opacity: 0; scale: 1 1; }
+}
+@keyframes m-page-in {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+.m-bud {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 0;
+  rotate: -45deg;
+  pointer-events: none;
+}
+.m-bud[data-on="false"] {
+  opacity: 0;
+  scale: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .m-root-line[data-grow="a"] { animation: m-root 620ms var(--m-ease); }
+  .m-root-line[data-grow="b"] { animation: m-reroot 620ms var(--m-ease); }
+  :root[data-m-arrived] #main:not([data-m-stay]) { animation: m-page-in var(--m-settle) var(--m-ease) backwards; }
+  .m-shoot {
+    transition: opacity 300ms ease, scale var(--m-settle) var(--m-ease-sprout);
+  }
+  .m-shoot[data-on="false"] { scale: 0.2 1; }
+  .m-bud {
+    transition: opacity 200ms ease 120ms, scale var(--m-settle) var(--m-ease-sprout) 120ms;
+  }
+}
+
+/*
  * The role selection journey (/roles/select): lift on hover, a pop when a card
  * is chosen, a rise between steps, and a small burst of sparks. Only transform
  * and opacity move, all of it sits inside no-preference, and the global

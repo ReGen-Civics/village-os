@@ -30,6 +30,7 @@ import {
   type LetterView,
   type PreviewAnswer,
 } from "./lettersApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const field = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900";
 const button = "rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-60";
@@ -67,6 +68,7 @@ export default function LetterComposer({
   /** Called after a save, a send or a schedule, so History reads again. */
   onDone: (note: string, keepOpen: boolean) => void;
 }) {
+  const { t } = useLingui();
   const [id, setId] = useState<string | null>(letter?.id ?? null);
   const [subject, setSubject] = useState(letter?.subject ?? "");
   const [preheader, setPreheader] = useState(letter?.preheader ?? "");
@@ -171,20 +173,20 @@ export default function LetterComposer({
           <input value={subject} maxLength={LETTER_LIMITS.subject} onChange={(e) => edit(setSubject)(e.target.value)} className={`${field} mt-1`} />
         </label>
         <label className="text-sm font-medium text-gray-900">
-          Preview line <span className="font-normal text-gray-500">(optional, shown beside the subject in an inbox)</span>
+          Preview line <span className="font-normal text-gray-500"><Trans context="LetterComposer, span">(optional, shown beside the subject in an inbox)</Trans></span>
           <input value={preheader} maxLength={LETTER_LIMITS.preheader} onChange={(e) => edit(setPreheader)(e.target.value)} className={`${field} mt-1`} />
         </label>
         <fieldset className="text-sm text-gray-900">
-          <legend className="font-medium">Who it is for</legend>
+          <legend className="font-medium"><Trans context="LetterComposer, legend">Who it is for</Trans></legend>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <select aria-label="Audience" value={kind} onChange={(e) => edit(setKind)(e.target.value as LetterAudienceKind)} className={field + " sm:w-auto"}>
+            <select aria-label={t({ message: "Audience", context: "LetterComposer, aria-label" })} value={kind} onChange={(e) => edit(setKind)(e.target.value as LetterAudienceKind)} className={field + " sm:w-auto"}>
               <option value="members">Members who said yes to letters</option>
               <option value="everyone">Everyone who said yes to letters</option>
               <option value="path">People on a path</option>
               <option value="gathering">People who came to a gathering</option>
             </select>
             {kind === "path" && (
-              <select aria-label="Path" value={pathId} onChange={(e) => edit(setPathId)(e.target.value)} className={field + " sm:w-auto"}>
+              <select aria-label={t({ message: "Path", context: "LetterComposer, aria-label" })} value={pathId} onChange={(e) => edit(setPathId)(e.target.value)} className={field + " sm:w-auto"}>
                 {choices.paths.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.label}
@@ -194,7 +196,7 @@ export default function LetterComposer({
             )}
             {kind === "gathering" &&
               (choices.gatherings.length ? (
-                <select aria-label="Gathering" value={eventId} onChange={(e) => edit(setEventId)(e.target.value)} className={field + " sm:w-auto"}>
+                <select aria-label={t({ message: "Gathering", context: "LetterComposer, aria-label" })} value={eventId} onChange={(e) => edit(setEventId)(e.target.value)} className={field + " sm:w-auto"}>
                   {choices.gatherings.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.title}, {g.startsAt.slice(0, 10)}
@@ -202,18 +204,18 @@ export default function LetterComposer({
                   ))}
                 </select>
               ) : (
-                <span className="text-gray-500">There are no recent gatherings to choose from.</span>
+                <span className="text-gray-500"><Trans context="LetterComposer, span">There are no recent gatherings to choose from.</Trans></span>
               ))}
           </div>
-          <p className="mt-1 text-xs text-gray-500">Letters reach only people who said yes to them. The preview says how many that is.</p>
+          <p className="mt-1 text-xs text-gray-500"><Trans context="LetterComposer, p">Letters reach only people who said yes to them. The preview says how many that is.</Trans></p>
         </fieldset>
         <label className="text-sm font-medium text-gray-900">
           The letter
           <textarea value={bodyMd} rows={12} onChange={(e) => edit(setBodyMd)(e.target.value)} className={`${field} mt-1 font-mono`} />
           <span className="mt-1 block text-xs font-normal text-gray-500">
-            Markdown: **bold**, _italic_, [a link](https://example.org), and a blank line between paragraphs. It is set inside the
+            <Trans context="LetterComposer, span">Markdown: **bold**, _italic_, [a link](https://example.org), and a blank line between paragraphs. It is set inside the
             "Every letter" words, which Words edits.
-          </span>
+          </Trans></span>
         </label>
       </div>
 
@@ -228,24 +230,24 @@ export default function LetterComposer({
 
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={busy} onClick={onPreview} className={primary}>
-          Preview and choose when
-        </button>
+          <Trans context="LetterComposer, button">Preview and choose when
+        </Trans></button>
         <button type="button" disabled={busy} onClick={onTest} className={secondary}>
-          Send me a test
-        </button>
+          <Trans context="LetterComposer, button">Send me a test
+        </Trans></button>
         <button type="button" disabled={busy} onClick={onSave} className={secondary}>
-          Save the draft
-        </button>
+          <Trans context="LetterComposer, button">Save the draft
+        </Trans></button>
       </div>
 
       {preview && (
-        <section aria-label="Preview" className="space-y-3 border-t border-gray-200 pt-4">
+        <section aria-label={t({ message: "Preview", context: "LetterComposer, aria-label" })} className="space-y-3 border-t border-gray-200 pt-4">
           <p className="text-sm font-medium text-gray-900">{namesLine(preview)}</p>
           {preview.leftOut > 0 && (
             <p className="text-sm text-gray-600">
-              {preview.leftOut} more in this group {preview.leftOut === 1 ? "is" : "are"} left out: no yes to letters, a pause, or an
+              <Trans context="LetterComposer, p">{preview.leftOut} more in this group {preview.leftOut === 1 ? "is" : "are"} left out: no yes to letters, a pause, or an
               address that stopped taking email.
-            </p>
+            </Trans></p>
           )}
           {preview.note && <p className="text-sm text-gray-600">{preview.note}</p>}
           {preview.voice.length > 0 && (
@@ -258,26 +260,26 @@ export default function LetterComposer({
             </ul>
           )}
           <p className="text-sm text-gray-700">
-            Subject: {preview.subject}. Shown as {preview.sampleFor} will see it.
-          </p>
-          <iframe title="The letter as it arrives" sandbox="" srcDoc={preview.html} className="h-96 w-full rounded-lg border border-gray-200 bg-white" />
+            <Trans context="LetterComposer, p">Subject: {preview.subject}. Shown as {preview.sampleFor} will see it.
+          </Trans></p>
+          <iframe title={t({ message: "The letter as it arrives", context: "LetterComposer, title" })} sandbox="" srcDoc={preview.html} className="h-96 w-full rounded-lg border border-gray-200 bg-white" />
           {preview.confirmToken && (
             <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
               <p className="text-sm text-gray-700">
-                This confirmation lasts {CONFIRM_MINUTES} minutes. Change anything and preview again.
-              </p>
+                <Trans context="LetterComposer, p">This confirmation lasts {CONFIRM_MINUTES} minutes. Change anything and preview again.
+              </Trans></p>
               <div className="flex flex-wrap items-center gap-2">
                 <button type="button" disabled={busy} onClick={() => onSend(false)} className={primary}>
-                  Send it now to {preview.count}
+                  <Trans context="LetterComposer, button">Send it now to {preview.count}</Trans>
                 </button>
-                <span className="text-sm text-gray-500">or</span>
+                <span className="text-sm text-gray-500"><Trans context="LetterComposer, span">or</Trans></span>
                 <label className="sr-only" htmlFor="letter-when">
-                  Send at
-                </label>
+                  <Trans context="LetterComposer, label">Send at
+                </Trans></label>
                 <input id="letter-when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={`${field} sm:w-auto`} />
                 <button type="button" disabled={busy || !when} onClick={() => onSend(true)} className={secondary}>
-                  Schedule it
-                </button>
+                  <Trans context="LetterComposer, button">Schedule it
+                </Trans></button>
               </div>
             </div>
           )}

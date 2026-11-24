@@ -11,6 +11,7 @@
  */
 import type { OwnGeneKeysView } from "@shared/geneKeys";
 import { fillGuideName } from "@shared/guideName";
+import { Trans } from "@lingui/react/macro";
 
 export interface Choices {
   visibility: "show" | "hide";
@@ -54,7 +55,7 @@ export default function ShareChoices({ fromCard, choices, onChange, guide }: { f
   return (
     <>
       <fieldset className="flex flex-col gap-2">
-        <legend className="sr-only">Who sees your lines</legend>
+        <legend className="sr-only"><Trans context="ShareChoices, legend">Who sees your lines</Trans></legend>
         {(
           [
             ["show", "Show them on my profile", "Your seal sits by your portrait. Your circle sees your lines."],

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { Trans } from "@lingui/react/macro";
+import { useVillageDoc } from "@/hooks/useVillageDocTranslation";
 
 interface VisitType {
   id: string;
@@ -43,7 +44,9 @@ export default function Visit() {
   // The hero subtitle is village-set; this is only the sentence shown
   // before one is set, so it names the village rather than a village.
   const villageName = useVillageName("this village");
-  const [cfg, setCfg] = useState<VisitConfig | null>(null);
+  const [storedCfg, setCfg] = useState<VisitConfig | null>(null);
+  // The visit page's words, in the reader's language where the village has translated them.
+  const cfg = useVillageDoc("visit-config", storedCfg);
   const [form, setForm] = useState({ name: "", email: "", visitType: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
