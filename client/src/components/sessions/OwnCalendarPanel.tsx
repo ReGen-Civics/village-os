@@ -272,7 +272,7 @@ export default function OwnCalendarPanel({
               className={`mt-1 ${INPUT}`}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+              placeholder={t({ message: "https://calendar.google.com/calendar/ical/.../basic.ics", context: "OwnCalendarPanel, placeholder" })}
             />
             <p className={`${HINT} mt-1`}>{OWN_CALENDAR_COPY.findIt}</p>
           </div>

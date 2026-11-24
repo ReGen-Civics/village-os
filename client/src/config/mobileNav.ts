@@ -25,7 +25,7 @@ import {
   SquarePen,
   MapPin,
 } from "lucide-react";
-import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
+import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
 import { Cell, CellRing, SteppingStones } from "@/components/sacred/living";
 
@@ -136,7 +136,7 @@ export const FAB_ACTIONS: FabAction[] = [
     // bringing the board into view. The count lives in the drawer's account
     // block (ACCOUNT_MENU in config/nav.ts), so this row stays a plain door.
     key: "tasks",
-    label: TASK_COPY.menu.label,
+    label: TASK_MENU.label,
     href: TASK_BOARD_PATH,
     Icon: ListChecks,
     requiresAuth: true,

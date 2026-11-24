@@ -18,6 +18,7 @@
  */
 import { useState } from "react";
 import { toast } from "sonner";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** `subscriptions` on `GET /api/review/erasure`. */
 export interface OwedCancelsSummary {
@@ -59,6 +60,7 @@ export default function OwedCancels({
   headers: () => Record<string, string>;
   onChanged: () => void;
 }) {
+  const { t } = useLingui();
   const [confirming, setConfirming] = useState(false);
   if (!summary || summary.count <= 0) return null;
 
@@ -71,11 +73,11 @@ export default function OwedCancels({
         body: JSON.stringify({ asOf: summary.asOf }),
       });
       const d = (await r.json().catch(() => ({}))) as { cleared?: number; error?: string };
-      if (r.status === 409) toast.error("More arrived since this card was read. Check the new count and confirm again.");
+      if (r.status === 409) toast.error(t({ message: "More arrived since this card was read. Check the new count and confirm again.", context: "OwedCancels, toast" }));
       else if (!r.ok) toast.error(d?.error ?? "That did not go through");
       else toast.success(d.cleared === 1 ? "Recorded as cancelled by hand." : `${d.cleared ?? 0} recorded as cancelled by hand.`);
     } catch {
-      toast.error("Could not reach the server");
+      toast.error(t({ message: "Could not reach the server", context: "OwedCancels, toast" }));
     } finally {
       setConfirming(false);
       onChanged();
@@ -90,10 +92,10 @@ export default function OwedCancels({
           : `${summary.count} departed members' recurring payments still need cancelling in Stripe`}
       </h2>
       <p className="text-sm text-muted-foreground mt-2">
-        Their erasure, or their exit as a former member, could not cancel it, because Stripe was not connected or did not answer{aged}. The admins'
+        <Trans context="OwedCancels, p">Their erasure, or their exit as a former member, could not cancel it, because Stripe was not connected or did not answer{aged}. The admins'
         notices list each subscription id. With Stripe connected, Finish them cancels each one here. If you
         cancelled them in the Stripe dashboard yourself, say so and the village stops asking.
-      </p>
+      </Trans></p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           className="text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium disabled:opacity-40"

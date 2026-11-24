@@ -20,6 +20,7 @@
  * on "live", where step four reads as next.
  */
 import type { ReactNode } from "react";
+import { Trans } from "@lingui/react/macro";
 
 export type StructureStage = "review" | "draft" | "live" | "carry";
 
@@ -68,7 +69,7 @@ export default function StructureSteps({
 
   return (
     <section className="grid gap-2.5" aria-labelledby="h-steps">
-      <h2 id="h-steps" className="font-display text-[22px]">Where this change is</h2>
+      <h2 id="h-steps" className="font-display text-[22px]"><Trans context="StructureSteps, h2">Where this change is</Trans></h2>
       <ol className={`${card} grid`}>
         {steps.map((s, i) => {
           const state = stateOf(i);
@@ -110,9 +111,9 @@ export default function StructureSteps({
                     className="mt-2 rounded-xl border border-dashed border-border px-3 py-2 text-[13px] text-muted-foreground"
                     data-testid="put-to-village-slot"
                   >
-                    <b className="text-foreground font-semibold">Put it to the village.</b> A village vote on a draft is on its way.
+                    <Trans context="StructureSteps, p"><b className="text-foreground font-semibold">Put it to the village.</b> A village vote on a draft is on its way.
                     Until it lands, an admin publishes the draft.
-                  </p>
+                  </Trans></p>
                 )}
               </div>
             </li>

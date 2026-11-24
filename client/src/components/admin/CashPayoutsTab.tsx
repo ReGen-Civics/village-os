@@ -34,6 +34,7 @@ import {
   cashTotalsByCurrency,
   type CashQueueEntry,
 } from "@shared/cashOwed";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The moon-review Invoices view (decision 16), its own chunk. It draws a refusal's sentence when the module is off. */
 const InvoicesDesk = lazy(() => import("@/components/myMoon/InvoicesDesk"));
@@ -96,6 +97,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
   /** On its own page the title is the page's h1; inside the admin panel, which owns the h1, it is an h2. */
   asPage?: boolean;
 }) {
+  const { t } = useLingui();
   const Heading = asPage ? "h1" : "h2";
   const [data, setData] = useState<{ unpaid: CashQueueEntry[]; paid: CashQueueEntry[] } | null>(null);
   const [refused, setRefused] = useState<Refused | null>(null);
@@ -246,22 +248,22 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
     const link = "inline-flex min-h-[44px] items-center font-medium text-teal-deep underline";
     return (
       <div className="rounded-xl border border-border bg-white p-6">
-        <Heading className="text-xl font-semibold text-foreground">Cash to pay out</Heading>
+        <Heading className="text-xl font-semibold text-foreground"><Trans context="CashPayoutsTab, Heading">Cash to pay out</Trans></Heading>
         {refused.kind === "signed-out" ? (
           <>
             <p className="mt-2 text-sm text-muted-foreground">{SIGN_IN_WORDS}</p>
-            <a href={signInHref()} className={`${link} text-sm`}>Sign in</a>
+            <a href={signInHref()} className={`${link} text-sm`}><Trans context="CashPayoutsTab, a">Sign in</Trans></a>
           </>
         ) : (
           <>
             <p role="alert" className="mt-2 text-sm text-muted-foreground">{refused.text}</p>
-            {refused.kind === "no-key" && <a href="/messages?new=1" className={`${link} text-sm`}>Write a message</a>}
+            {refused.kind === "no-key" && <a href="/messages?new=1" className={`${link} text-sm`}><Trans context="CashPayoutsTab, a">Write a message</Trans></a>}
           </>
         )}
       </div>
     );
   }
-  if (!data) return <p className="text-sm text-muted-foreground">Loading the cash the village owes.</p>;
+  if (!data) return <p className="text-sm text-muted-foreground"><Trans context="CashPayoutsTab, p">Loading the cash the village owes.</Trans></p>;
 
   const pickedRows = (g: Group) => g.rows.filter((r) => picked.has(r.id));
 
@@ -270,21 +272,21 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <Heading className="flex items-center gap-2 text-xl font-semibold text-foreground">
-            <HandCoins className="h-5 w-5" aria-hidden="true" />
+            <Trans context="CashPayoutsTab, Heading"><HandCoins className="h-5 w-5" aria-hidden="true" />
             Cash to pay out
-          </Heading>
+          </Trans></Heading>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            What the village owes each member in cash, for their roles, quests and accepted proposals. The village pays
+            <Trans context="CashPayoutsTab, p">What the village owes each member in cash, for their roles, quests and accepted proposals. The village pays
             by bank transfer itself. Record each transfer here and its lines become paid.
-          </p>
+          </Trans></p>
         </div>
         <button
           type="button"
           onClick={exportCsv}
           className="min-h-9 rounded-lg border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground"
         >
-          Export CSV
-        </button>
+          <Trans context="CashPayoutsTab, button">Export CSV
+        </Trans></button>
       </div>
 
       <Suspense fallback={null}>
@@ -297,7 +299,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
         </Suspense>
       )}
 
-      <section aria-label="Totals" className="rounded-xl border border-border bg-white p-4">
+      <section aria-label={t({ message: "Totals", context: "CashPayoutsTab, aria-label" })} className="rounded-xl border border-border bg-white p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {view === "unpaid" ? "Still to pay" : "Paid"}
         </p>
@@ -307,12 +309,12 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
               {formatMoney(t.minor, t.currency)}
             </li>
           ))}
-          {shown.length === 0 && <li className="text-lg font-semibold text-foreground">Nothing</li>}
+          {shown.length === 0 && <li className="text-lg font-semibold text-foreground"><Trans context="CashPayoutsTab, li">Nothing</Trans></li>}
         </ul>
       </section>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div role="tablist" aria-label="Which lines" className="flex rounded-lg border border-border bg-white p-0.5">
+        <div role="tablist" aria-label={t({ message: "Which lines", context: "CashPayoutsTab, aria-label" })} className="flex rounded-lg border border-border bg-white p-0.5">
           {(["unpaid", "paid"] as const).map((v) => (
             <button
               key={v}
@@ -357,7 +359,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
-          {sessionEnded && <> <a href={signInHref()} className="font-medium underline">Sign in again</a></>}
+          {sessionEnded && <> <a href={signInHref()} className="font-medium underline"><Trans context="CashPayoutsTab, a">Sign in again</Trans></a></>}
         </p>
       )}
 
@@ -395,10 +397,10 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           {CASH_WORK_WORDS[r.workKind]}: {r.workTitle}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Owed {day(r.owedAt)}
+                          <Trans context="CashPayoutsTab, p">Owed {day(r.owedAt)}
                           {view === "unpaid"
                             ? r.state === "claimed" ? `. Claimed ${day(r.claimedAt)}` : ". Not claimed yet"
-                            : `. Recorded paid ${day(r.paidAt)}${r.paidByName ? ` by ${r.paidByName}` : ""}`}
+                            : `. Recorded paid ${day(r.paidAt)}${r.paidByName ? ` by ${r.paidByName}` : ""}`}</Trans>
                         </p>
                         {view === "paid" && r.paidNote && <p className="text-xs text-muted-foreground">{r.paidNote}</p>}
                       </div>
@@ -413,19 +415,19 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                     onClick={() => startTransfer(g)}
                     className="mt-3 min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white"
                   >
-                    Record a bank transfer
-                  </button>
+                    <Trans context="CashPayoutsTab, button">Record a bank transfer
+                  </Trans></button>
                 )}
 
                 {paying && (
                   <div className="mt-3 space-y-3 rounded-lg bg-gray-50 p-3">
                     <div className="flex flex-wrap gap-3 text-xs">
                       <button type="button" onClick={() => setPicked(new Set(g.rows.map((r) => r.id)))} className="underline text-foreground">
-                        Pick every line
-                      </button>
+                        <Trans context="CashPayoutsTab, button">Pick every line
+                      </Trans></button>
                       <button type="button" onClick={() => setPicked(new Set())} className="underline text-foreground">
-                        Clear
-                      </button>
+                        <Trans context="CashPayoutsTab, button">Clear
+                      </Trans></button>
                     </div>
                     <div className="flex flex-wrap gap-3">
                       <label className="text-xs font-medium text-muted-foreground">
@@ -444,7 +446,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           value={reference}
                           maxLength={CASH_REFERENCE_MAX}
                           onChange={(e) => { setReference(e.target.value); setConfirming(false); }}
-                          placeholder="The reference on the bank transfer"
+                          placeholder={t({ message: "The reference on the bank transfer", context: "CashPayoutsTab, placeholder" })}
                           className="mt-1 block w-full rounded-lg border border-border bg-white px-2 py-1.5 text-sm text-foreground"
                         />
                       </label>
@@ -452,9 +454,9 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                     {confirming ? (
                       <div className="space-y-2">
                         <p className="text-sm text-foreground">
-                          Record {chosen.length} {chosen.length === 1 ? "line" : "lines"}, {totalsText(chosen)}, paid to {g.name} by
+                          <Trans context="CashPayoutsTab, p">Record {chosen.length} {chosen.length === 1 ? "line" : "lines"}, {totalsText(chosen)}, paid to {g.name} by
                           bank transfer on {transferDate}? This cannot be undone.
-                        </p>
+                        </Trans></p>
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -462,11 +464,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                             onClick={() => submit(g)}
                             className="min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
                           >
-                            Yes, record it
-                          </button>
+                            <Trans context="CashPayoutsTab, button">Yes, record it
+                          </Trans></button>
                           <button type="button" onClick={() => setConfirming(false)} className="min-h-9 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground">
-                            Back
-                          </button>
+                            <Trans context="CashPayoutsTab, button">Back
+                          </Trans></button>
                         </div>
                       </div>
                     ) : (
@@ -477,11 +479,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           onClick={() => setConfirming(true)}
                           className="min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
                         >
-                          Review the transfer
-                        </button>
+                          <Trans context="CashPayoutsTab, button">Review the transfer
+                        </Trans></button>
                         <button type="button" onClick={cancelTransfer} className="min-h-9 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground">
-                          Cancel
-                        </button>
+                          <Trans context="CashPayoutsTab, button">Cancel
+                        </Trans></button>
                       </div>
                     )}
                   </div>

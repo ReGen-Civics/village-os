@@ -50,7 +50,7 @@
  */
 import { Check, Minus, X } from "lucide-react";
 import type { BallotMethod, BallotTallies } from "@shared/governanceEngine";
-import { MoonProgress } from "@/components/natural";
+import MoonProgress from "@/components/natural/MoonProgress"; // by path, not the barrel: the barrel rides the first page, the moon does not (vite.config.ts)
 import InfoTip from "@/components/InfoTip";
 import QuorumField from "./QuorumField";
 import {

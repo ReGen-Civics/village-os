@@ -23,6 +23,7 @@ import type { VoteChoice } from "@shared/governanceEngine";
 import InfoTip from "@/components/InfoTip";
 import { weightText } from "./voteBars";
 import type { BallotSilent, BallotVote } from "./governanceApi";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * What each vote reads as. The authority is `VOTE_CHOICES` in
@@ -79,16 +80,16 @@ export default function VoterRoll({
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-        <Users className="w-4 h-4 text-notice" aria-hidden="true" />
+        <Trans context="VoterRoll, h3"><Users className="w-4 h-4 text-notice" aria-hidden="true" />
         Who may vote
         <InfoTip
           tip="This roll froze when the ballot opened. Members who joined since are not on it, and members who left still are."
           label="How the roll is decided"
-        />
+        /></Trans>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">
-        {total} {total === 1 ? "member" : "members"}, {votes.length} spoken, {silent.length} yet to.
-      </p>
+        <Trans context="VoterRoll, p">{total} {total === 1 ? "member" : "members"}, {votes.length} spoken, {silent.length} yet to.
+      </Trans></p>
 
       {votes.length > 0 && (
         <ul className="mt-3 divide-y divide-border">
@@ -102,9 +103,9 @@ export default function VoterRoll({
                   <span className="truncate text-sm text-foreground">{v.name}</span>
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{mark.label}</span>
+                  <Trans context="VoterRoll, span"><span className="font-medium text-foreground">{mark.label}</span>
                   <span className="text-muted-foreground"> · </span>
-                  weighs {weightText(v.weight)}
+                  weighs {weightText(v.weight)}</Trans>
                 </span>
               </li>
             );
@@ -127,7 +128,7 @@ export default function VoterRoll({
                   />
                   <span className="truncate text-sm text-muted-foreground">{s.name}</span>
                 </span>
-                <span className="shrink-0 text-xs text-muted-foreground">weighs {weightText(s.weight)}</span>
+                <span className="shrink-0 text-xs text-muted-foreground"><Trans context="VoterRoll, span">weighs {weightText(s.weight)}</Trans></span>
               </li>
             ))}
           </ul>
@@ -140,13 +141,13 @@ export default function VoterRoll({
           onClick={() => setExpanded(true)}
           className="mt-3 min-h-[44px] w-full rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Show the other {hidden}
+          <Trans context="VoterRoll, button">Show the other {hidden}</Trans>
         </button>
       )}
 
       <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground leading-relaxed">
-        Votes here are on the record with a name against them. This village does not run secret ballots.
-      </p>
+        <Trans context="VoterRoll, p">Votes here are on the record with a name against them. This village does not run secret ballots.
+      </Trans></p>
     </section>
   );
 }

@@ -12,6 +12,7 @@
 import { SECTION_KIND_DEFS, TEMPLATE_COPY, flowMinutes, groupByCategory, type SessionTemplate } from "@shared/sessionTemplates";
 import { CHIP, HINT, LABEL } from "./roomUi";
 import { LIST_UI } from "./SessionList";
+import { Trans } from "@lingui/react/macro";
 
 export default function MeetingTypePicker({
   templates,
@@ -58,8 +59,8 @@ export default function MeetingTypePicker({
                 <span className="min-w-0 flex-1">
                   <span className="text-foreground">{s.title}</span>{" "}
                   <span className={CHIP}>
-                    {SECTION_KIND_DEFS[s.kind].label} · {s.minutes} min
-                  </span>
+                    <Trans context="MeetingTypePicker, span">{SECTION_KIND_DEFS[s.kind].label} · {s.minutes} min
+                  </Trans></span>
                 </span>
               </li>
             ))}

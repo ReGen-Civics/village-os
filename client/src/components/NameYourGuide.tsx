@@ -34,15 +34,15 @@ export default function NameYourGuide({
   return (
     <aside
       aria-labelledby="name-your-guide-h"
-      className="mb-6 flex flex-col gap-3 rounded-2xl border border-amber/30 bg-amber/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+      className="mb-6 flex flex-col gap-3 rounded-2xl border border-notice/40 bg-notice/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-3">
-        <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-teal-deep" aria-hidden="true" />
+        <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
         <div>
-          <p id="name-your-guide-h" className="font-semibold text-teal-deep">
+          <p id="name-your-guide-h" className="font-semibold text-foreground">
             <Trans context="name your guide note, founders only: the heading">Your village guide has no name yet</Trans>
           </p>
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-muted-foreground">
             <Trans context="name your guide note, founders only: what others read until the guide is named">
               Visitors and members see “{shared}” until you name it. Only founders see this note.
             </Trans>
@@ -51,7 +51,7 @@ export default function NameYourGuide({
       </div>
       <Link
         href={NAME_YOUR_GUIDE_HREF}
-        className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-teal-deep px-4 py-2 text-sm font-semibold text-white hover:bg-teal-deep-dark sm:self-center"
+        className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-notice px-4 py-2 text-sm font-semibold text-background hover:bg-notice/90 sm:self-center"
       >
         <Trans context="name your guide note, founders only: the link to the setting">Name your guide</Trans> <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </Link>

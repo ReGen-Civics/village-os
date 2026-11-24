@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { EMAIL_KINDS, MESSAGE_STATUSES, type EmailKind, type MessageStatus } from "@shared/comms/kinds";
 import { refusal } from "@/components/admin/adminApi";
 import { commsCall, whenOf, type OverviewPayload } from "./commsSettingsApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const KIND_LABEL: Record<EmailKind, string> = {
   essential: "Asked for (password links, confirmations)",
@@ -74,6 +75,7 @@ function Tile({ label, value }: { label: string; value: number }) {
 }
 
 export default function CommsOverview({ password }: { password: string }) {
+  const { t } = useLingui();
   const [data, setData] = useState<OverviewPayload | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [running, setRunning] = useState<string | null>(null);
@@ -112,13 +114,13 @@ export default function CommsOverview({ password }: { password: string }) {
   if (!data) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsOverview, h2">Overview</Trans></h2>
         {failed ? (
           <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4" role="alert">
             {failed}
           </p>
         ) : (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
+          <div className="text-center py-12 text-gray-400"><Trans context="CommsOverview, div">Loading...</Trans></div>
         )}
       </div>
     );
@@ -130,15 +132,15 @@ export default function CommsOverview({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Overview</h2>
-        <p className="text-sm text-gray-500 mt-1">The village's email: what went out, what is waiting, and anything that needs a person.</p>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsOverview, h2">Overview</Trans></h2>
+        <p className="text-sm text-gray-500 mt-1"><Trans context="CommsOverview, p">The village's email: what went out, what is waiting, and anything that needs a person.</Trans></p>
       </div>
 
       {!setup.ready && (
         <div className="border border-amber-300 bg-amber-50 rounded-xl p-4" role="status">
           <p className="text-sm font-semibold text-amber-900">
-            Setup is not finished: {setup.done} of {setup.total} required steps done.
-          </p>
+            <Trans context="CommsOverview, p">Setup is not finished: {setup.done} of {setup.total} required steps done.
+          </Trans></p>
           <ul className="list-disc pl-5 text-sm text-amber-900 mt-2 space-y-1">
             {setup.open.map((o) => (
               <li key={o.key}>
@@ -147,27 +149,27 @@ export default function CommsOverview({ password }: { password: string }) {
             ))}
           </ul>
           <a href="/admin?tab=comms-settings" className="inline-block mt-3 text-sm font-medium text-teal-deep underline">
-            Open Comms Settings
-          </a>
+            <Trans context="CommsOverview, a">Open Comms Settings
+          </Trans></a>
         </div>
       )}
       {data.paused && (
         <p className="text-sm border border-amber-300 bg-amber-50 text-amber-900 rounded-xl px-4 py-3" role="status">
-          Pause all is on. Gathering emails, path emails and letters wait in the queue until it is lifted in Comms Settings.
-        </p>
+          <Trans context="CommsOverview, p">Pause all is on. Gathering emails, path emails and letters wait in the queue until it is lifted in Comms Settings.
+        </Trans></p>
       )}
       {data.lifecycle === "preview" && (
         <p className="text-sm border border-gray-200 bg-white text-gray-700 rounded-xl px-4 py-3">
-          Comms is rehearsing: every gathering, path and letter email goes to the rehearsal inbox.
-        </p>
+          <Trans context="CommsOverview, p">Comms is rehearsing: every gathering, path and letter email goes to the rehearsal inbox.
+        </Trans></p>
       )}
 
       <section aria-labelledby="comms-numbers">
         <h3 id="comms-numbers" className="text-base font-semibold text-gray-900 mb-2">
-          The last {numbers.days} days
-        </h3>
+          <Trans context="CommsOverview, h3">The last {numbers.days} days
+        </Trans></h3>
         <div className="flex flex-wrap gap-2">
-          <Tile label="Written" value={written} />
+          <Tile label={t({ message: "Written", context: "CommsOverview, label" })} value={written} />
           {MESSAGE_STATUSES.filter((s) => numbers.byStatus[s]).map((s) => (
             <Tile key={s} label={STATUS_LABEL[s]} value={numbers.byStatus[s]} />
           ))}
@@ -185,24 +187,24 @@ export default function CommsOverview({ password }: { password: string }) {
 
       <section aria-labelledby="comms-upcoming">
         <h3 id="comms-upcoming" className="text-base font-semibold text-gray-900 mb-2">
-          The next {upcoming.days} days
-        </h3>
+          <Trans context="CommsOverview, h3">The next {upcoming.days} days
+        </Trans></h3>
         {upcoming.total === 0 && upcoming.letters.length === 0 ? (
-          <p className="text-sm text-gray-600">Nothing is waiting to go.</p>
+          <p className="text-sm text-gray-600"><Trans context="CommsOverview, p">Nothing is waiting to go.</Trans></p>
         ) : (
           <>
             {upcoming.total > 0 && (
               <p className="text-sm text-gray-600 mb-2">
-                {upcoming.total} email{upcoming.total === 1 ? "" : "s"} waiting
+                <Trans context="CommsOverview, p">{upcoming.total} email{upcoming.total === 1 ? "" : "s"} waiting
                 {upcoming.total > upcoming.next.length ? `, the first ${upcoming.next.length} below` : ""}.
-              </p>
+              </Trans></p>
             )}
             <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl bg-white">
               {upcoming.letters.map((l) => (
                 <li key={l.id} className="px-4 py-2 text-sm">
                   <span className="text-gray-500">{whenOf(l.scheduledFor)}</span>{" "}
-                  <span className="text-gray-900">Letter: {l.subject}</span>{" "}
-                  <span className="text-gray-500">to {l.recipientCount}</span>
+                  <span className="text-gray-900"><Trans context="CommsOverview, span">Letter: {l.subject}</Trans></span>{" "}
+                  <span className="text-gray-500"><Trans context="CommsOverview, span">to {l.recipientCount}</Trans></span>
                 </li>
               ))}
               {upcoming.next.map((m) => (
@@ -221,16 +223,16 @@ export default function CommsOverview({ password }: { password: string }) {
 
       <section aria-labelledby="comms-journeys">
         <h3 id="comms-journeys" className="text-base font-semibold text-gray-900 mb-2">
-          Journeys
-        </h3>
+          <Trans context="CommsOverview, h3">Journeys
+        </Trans></h3>
         <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl bg-white">
           {data.journeys.map((j) => (
             <li key={j.key} className="px-4 py-2 text-sm flex flex-wrap items-center justify-between gap-2">
               <span className="text-gray-900">{journeyName(j.key)}</span>
               <span className="text-gray-600">
-                {j.state === "on" ? "On" : "Off"}
+                <Trans context="CommsOverview, span">{j.state === "on" ? "On" : "Off"}
                 {j.edited ? ", edited here" : ""}, {j.active} walking it now
-              </span>
+              </Trans></span>
             </li>
           ))}
         </ul>
@@ -238,16 +240,16 @@ export default function CommsOverview({ password }: { password: string }) {
 
       <section aria-labelledby="comms-failures">
         <h3 id="comms-failures" className="text-base font-semibold text-gray-900 mb-2">
-          Emails that did not arrive
-        </h3>
+          <Trans context="CommsOverview, h3">Emails that did not arrive
+        </Trans></h3>
         {data.failures.length === 0 ? (
-          <p className="text-sm text-gray-600">None in the last {numbers.days} days.</p>
+          <p className="text-sm text-gray-600"><Trans context="CommsOverview, p">None in the last {numbers.days} days.</Trans></p>
         ) : (
           <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl bg-white">
             {data.failures.map((f) => (
               <li key={f.id} className="px-4 py-2 text-sm">
                 <div className="text-gray-900">
-                  {f.subject} <span className="text-gray-500">to {f.toEmail}</span>
+                  {f.subject} <span className="text-gray-500"><Trans context="CommsOverview, span">to {f.toEmail}</Trans></span>
                 </div>
                 <div className="text-xs text-gray-600">
                   {STATUS_LABEL[f.status as MessageStatus] ?? f.status}, {whenOf(f.at)}
@@ -258,17 +260,17 @@ export default function CommsOverview({ password }: { password: string }) {
           </ul>
         )}
         <a href="/admin?tab=comms-sent" className="inline-block mt-2 text-sm text-teal-deep underline">
-          Every email is in Sent mail
-        </a>
+          <Trans context="CommsOverview, a">Every email is in Sent mail
+        </Trans></a>
       </section>
 
       <section aria-labelledby="comms-run-now" className="border-t border-gray-100 pt-5">
         <h3 id="comms-run-now" className="text-base font-semibold text-gray-900">
-          Run now
-        </h3>
+          <Trans context="CommsOverview, h3">Run now
+        </Trans></h3>
         <p className="text-sm text-gray-600 mt-1">
-          The post office and the journeys run by themselves every few minutes. Press one to move it along now.
-        </p>
+          <Trans context="CommsOverview, p">The post office and the journeys run by themselves every few minutes. Press one to move it along now.
+        </Trans></p>
         <div className="flex flex-wrap gap-2 mt-3">
           {data.jobs.map((job) => (
             <button

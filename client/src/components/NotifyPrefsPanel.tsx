@@ -5,7 +5,7 @@
  */
 import GuideDataSection from "@/components/guide/GuideDataSection";
 import { useEffect, useRef, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { Bell, Download, ShieldOff } from "lucide-react";
 import { formatMoney } from "@shared/money";
@@ -261,7 +261,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
     <div className="bg-card rounded-2xl shadow-lg p-8">
       <div className="flex items-center gap-2 mb-4">
         <Bell className="w-5 h-5 text-notice" />
-        <h2 className="font-display text-xl font-bold text-card-foreground">Notifications &amp; your data</h2>
+        <h2 className="font-display text-xl font-bold text-card-foreground"><Trans context="NotifyPrefsPanel, h2">Notifications &amp; your data</Trans></h2>
       </div>
 
       {/* min-h-11 is the TAP TARGET, not decoration: the label is what a finger
@@ -358,15 +358,15 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
           className="mt-1 h-4 w-4 shrink-0"
           checked={prefs.celebrations !== "off"}
           disabled={saving}
-          aria-label="Mark the rare moments on screen"
+          aria-label={t({ message: "Mark the rare moments on screen", context: "NotifyPrefsPanel, aria-label" })}
           aria-describedby="celebrations-hint"
           onChange={(e) => save({ celebrations: e.target.checked ? "on" : "off" })}
         />
         <span>
-          Mark the rare moments on screen
+          <Trans context="NotifyPrefsPanel, span">Mark the rare moments on screen
           <span id="celebrations-hint" className="block text-xs text-muted-foreground">
             A stage crossed, a vote carried, a cycle settled, a quest consented. Four things, no sound.
-          </span>
+          </span></Trans>
         </span>
       </label>
 
@@ -381,15 +381,15 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
           className="mt-1 h-4 w-4 shrink-0"
           checked={prefs.gratitudeNudge !== "off"}
           disabled={saving}
-          aria-label="Remind me before the cycle closes"
+          aria-label={t({ message: "Remind me before the cycle closes", context: "NotifyPrefsPanel, aria-label" })}
           aria-describedby="gratitude-nudge-hint"
           onChange={(e) => save({ gratitudeNudge: e.target.checked ? "on" : "off" })}
         />
         <span>
-          Remind me before the cycle closes
+          <Trans context="NotifyPrefsPanel, span">Remind me before the cycle closes
           <span id="gratitude-nudge-hint" className="block text-xs text-muted-foreground">
             One note a few days before, if you still have some left to send, with the people you worked with a tap away.
-          </span>
+          </span></Trans>
         </span>
       </label>
 
@@ -405,10 +405,10 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
             {/* The setting names the control. The parenthetical says who can
                 reach you and how, which is a description, not a name. */}
             <input type="checkbox" className="h-4 w-4 shrink-0" checked={contactable} onChange={(e) => saveContactable(e.target.checked)}
-              aria-label="Contactable through the Village Map"
+              aria-label={t({ message: "Contactable through the Village Map", context: "NotifyPrefsPanel, aria-label" })}
               aria-describedby="contactable-hint" />
             Contactable through the Village Map
-            <span id="contactable-hint" className="text-xs text-muted-foreground">(role holders only; senders see a relay, never your email)</span>
+            <span id="contactable-hint" className="text-xs text-muted-foreground"><Trans context="NotifyPrefsPanel, span">(role holders only; senders see a relay, never your email)</Trans></span>
           </label>
           {contactNote && <p role="alert" className="text-xs text-destructive mt-1">{contactNote}</p>}
         </div>
@@ -447,9 +447,9 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
               .catch(() => setError("Could not build your export. Please sign in again and retry."));
           }}
         >
-          <Download className="w-4 h-4" />
+          <Trans context="NotifyPrefsPanel, a"><Download className="w-4 h-4" />
           Download everything the village holds about me
-        </a>
+        </Trans></a>
         {/* Rendered OUTSIDE the delete-confirmation branch: `error` is shared
             with that flow, and its only renderer used to live in there, so an
             export failure was written to state nothing displayed. */}
@@ -462,8 +462,8 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
               onClick={() => { window.location.href = "/"; }}
               className="text-sm text-notice underline mt-2"
             >
-              I have read this
-            </button>
+              <Trans context="NotifyPrefsPanel, button">I have read this
+            </Trans></button>
           </div>
         ) : !confirming ? (
           <button
@@ -472,37 +472,37 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
             onClick={() => { setError(""); setConfirming(true); }}
             className="inline-flex items-center gap-2 text-sm text-destructive hover:text-destructive/80"
           >
-            <ShieldOff className="w-4 h-4" />
+            <Trans context="NotifyPrefsPanel, button"><ShieldOff className="w-4 h-4" />
             Delete my account
-          </button>
+          </Trans></button>
         ) : (
           <div ref={deletePanel} className="rounded-xl border border-destructive/70 bg-destructive/10 p-4">
             <p className="text-xs text-destructive mb-2">
-              This anonymizes you permanently: your name, contact details and profile are
+              <Trans context="NotifyPrefsPanel, p">This anonymizes you permanently: your name, contact details and profile are
               scrubbed everywhere. The village's shared history (settlements, quest
               records) keeps its numbers, without your name on them. This cannot be undone.
-            </p>
+            </Trans></p>
             {holdings && (holdings.held.length > 0 || holdings.cash.length > 0) && (
-              <div className="mb-3 rounded-lg border border-destructive/40 bg-card p-3" aria-label="What you still hold here" role="group">
-                <p className="text-xs font-semibold text-card-foreground mb-1">What you still hold here</p>
+              <div className="mb-3 rounded-lg border border-destructive/40 bg-card p-3" aria-label={t({ message: "What you still hold here", context: "NotifyPrefsPanel, aria-label" })} role="group">
+                <p className="text-xs font-semibold text-card-foreground mb-1"><Trans context="NotifyPrefsPanel, p">What you still hold here</Trans></p>
                 <ul className="text-xs text-card-foreground list-disc pl-5 space-y-0.5">
                   {holdings.held.map((h) => (
                     <li key={h.token}>{h.amount} {h.name}</li>
                   ))}
                   {holdings.cash.map((c) => (
-                    <li key={c.currency}>{formatMoney(c.amountMinor, c.currency)} in cash the village still owes you</li>
+                    <li key={c.currency}><Trans context="NotifyPrefsPanel, li">{formatMoney(c.amountMinor, c.currency)} in cash the village still owes you</Trans></li>
                   ))}
                 </ul>
                 <p className="text-xs text-destructive mt-2">
-                  Deleting your account leaves all of this behind, and none of it can be recovered.
+                  <Trans context="NotifyPrefsPanel, p">Deleting your account leaves all of this behind, and none of it can be recovered.
                   Nobody can sign in to this account again.
-                </p>
+                </Trans></p>
                 <p className="text-xs text-card-foreground mt-2">
-                  <Link href="/exit-policy?focus=begin-departure" className="font-medium underline">
+                  <Trans context="NotifyPrefsPanel, p"><Link href="/exit-policy?focus=begin-departure" className="font-medium underline">
                     Leave the village instead
                   </Link>
                   . Leaving keeps your account, your tokens and any cash owed to you, and you stay on as a former member.
-                </p>
+                </Trans></p>
               </div>
             )}
             <LeavingEnds titles={endingTerms} />
@@ -515,17 +515,17 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
                 action="delete-account"
                 password={password}
                 onPassword={setPassword}
-                placeholder="Confirm your password"
+                placeholder={t({ message: "Confirm your password", context: "NotifyPrefsPanel, placeholder" })}
                 inputClassName="text-sm border border-destructive/70 rounded-lg px-3 py-1.5"
               />
               <button onClick={deleteAccount} disabled={!identityReady(identity, password) || (!!cashOwed && !giveUpCash)}
                 className="text-sm bg-destructive text-destructive-foreground rounded-lg px-3 py-1.5 font-medium disabled:opacity-40">
-                Delete forever
-              </button>
+                <Trans context="NotifyPrefsPanel, button">Delete forever
+              </Trans></button>
               <button onClick={() => { setConfirming(false); setPassword(""); setError(""); setGiveUpCash(false); }}
                 className="text-sm text-muted-foreground">
-                Cancel
-              </button>
+                <Trans context="NotifyPrefsPanel, button">Cancel
+              </Trans></button>
             </div>
             {error && <p role="alert" className="text-xs text-destructive mt-2">{error}</p>}
           </div>

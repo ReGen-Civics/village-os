@@ -42,6 +42,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Hand } from "lucide-react";
 import { authToken, type ProgressionCapability } from "@/lib/gameApi";
 import { NOTE_IS_PUBLIC } from "@shared/powerHands";
+import { Trans } from "@lingui/react/macro";
 
 export type RowHand = NonNullable<ProgressionCapability["hand"]>;
 
@@ -128,8 +129,8 @@ export default function PowerHand({ row }: { row: ProgressionCapability }) {
       ) : !row.recommended ? null : raising ? (
         <span className="mt-2 flex flex-col gap-2">
           <label htmlFor={noteId} className="text-xs text-muted-foreground">
-            Why this power calls to you (optional)
-          </label>
+            <Trans context="PowerHand, label">Why this power calls to you (optional)
+          </Trans></label>
           {/*
             Rye, 2026-09-23: a note on a raised hand is public, and existing
             notes went public with it. Said HERE, above the empty box, because
@@ -154,8 +155,8 @@ export default function PowerHand({ row }: { row: ProgressionCapability }) {
               aria-label={`Raise my hand for ${row.label}`}
               className="min-h-11 rounded-lg border border-notice/40 bg-notice/15 px-4 text-sm font-semibold text-notice aria-disabled:opacity-60"
             >
-              Raise my hand
-            </button>
+              <Trans context="PowerHand, button">Raise my hand
+            </Trans></button>
             <button
               type="button"
               onClick={() => {
@@ -164,8 +165,8 @@ export default function PowerHand({ row }: { row: ProgressionCapability }) {
               }}
               className="min-h-11 px-2 text-sm text-muted-foreground hover:text-foreground"
             >
-              Cancel
-            </button>
+              <Trans context="PowerHand, button">Cancel
+            </Trans></button>
           </span>
         </span>
       ) : (
@@ -179,9 +180,9 @@ export default function PowerHand({ row }: { row: ProgressionCapability }) {
           aria-label={`Raise my hand for ${row.label}`}
           className="mt-1 inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted"
         >
-          <Hand className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <Trans context="PowerHand, button"><Hand className="h-4 w-4 shrink-0" aria-hidden="true" />
           Raise my hand
-        </button>
+        </Trans></button>
       )}
       <span aria-live="polite" className="block text-xs text-muted-foreground">
         {said}

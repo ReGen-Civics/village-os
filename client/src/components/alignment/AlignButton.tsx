@@ -22,6 +22,7 @@ import { ALIGN_WORDS, alignedOnWords } from "@shared/alignments";
 import { useSeason } from "@/lib/gameApi";
 import { IdentityConfirmField, identityBody, identityReady, useIdentityConfirm } from "@/components/auth/ConfirmWithGoogle";
 import { asksReconfirm, confirmIdentity, type Answer } from "./alignmentsApi";
+import { useLingui } from "@lingui/react/macro";
 
 /**
  * The sheet's look (components/journey/look.ts), copied here rather than
@@ -50,6 +51,7 @@ const { BTN_PRIMARY, BTN_SECONDARY, FIELD, TILE } = ALIGN_LOOK;
  * time by a Review step whose terms carry money.
  */
 export function ReconfirmPanel({ onConfirmed, reason = ALIGN_WORDS.reconfirmLine }: { onConfirmed: () => void; reason?: string }) {
+  const { t } = useLingui();
   const state = useIdentityConfirm("align");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -93,8 +95,8 @@ export function ReconfirmPanel({ onConfirmed, reason = ALIGN_WORDS.reconfirmLine
           action="align"
           password={password}
           onPassword={setPassword}
-          label="Your password"
-          placeholder="Your password"
+          label={t({ message: "Your password", context: "AlignButton, label" })}
+          placeholder={t({ message: "Your password", context: "AlignButton, placeholder" })}
           inputClassName={`${FIELD} min-h-11 max-w-xs`}
         />
         {/* Unknown yet draws the password box, as exit and delete do. */}

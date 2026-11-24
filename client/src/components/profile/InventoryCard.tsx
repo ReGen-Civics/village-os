@@ -23,6 +23,7 @@ import {
   isEmptyInventory,
   type Inventory,
 } from "@shared/profileInventory";
+import { Trans } from "@lingui/react/macro";
 
 const card = "rounded-3xl border border-border bg-card p-5 sm:p-6";
 const row = "rounded-2xl border border-border bg-muted px-4 py-3 text-foreground";
@@ -35,7 +36,7 @@ export function InventoryList({ inventory, lotsOnPath = false }: { inventory: In
     <div className="space-y-4">
       {inventory.loans.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-foreground">Borrowed from the library</h4>
+          <h4 className="text-sm font-semibold text-foreground"><Trans context="InventoryCard, h4">Borrowed from the library</Trans></h4>
           <ul className="mt-2 space-y-2">
             {inventory.loans.map((l) => (
               <li key={l.id} className={row} data-inventory-loan={l.id}>
@@ -48,7 +49,7 @@ export function InventoryList({ inventory, lotsOnPath = false }: { inventory: In
       )}
       {inventory.stays.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-foreground">Stays</h4>
+          <h4 className="text-sm font-semibold text-foreground"><Trans context="InventoryCard, h4">Stays</Trans></h4>
           <ul className="mt-2 space-y-2">
             {inventory.stays.map((s) => (
               <li key={s.id} className={row} data-inventory-stay={s.id}>
@@ -62,11 +63,11 @@ export function InventoryList({ inventory, lotsOnPath = false }: { inventory: In
       {inventory.lots.length > 0 &&
         (lotsOnPath ? (
           <p className={hint} data-inventory-lots-on-path="">
-            The homes you asked about are on your Resident path card.
-          </p>
+            <Trans context="InventoryCard, p">The homes you asked about are on your Resident path card.
+          </Trans></p>
         ) : (
           <div>
-            <h4 className="text-sm font-semibold text-foreground">Homes you asked about</h4>
+            <h4 className="text-sm font-semibold text-foreground"><Trans context="InventoryCard, h4">Homes you asked about</Trans></h4>
             <ul className="mt-2 space-y-2">
               {inventory.lots.map((h) => (
                 <li key={h.id} className={row} data-inventory-lot={h.id}>
@@ -122,8 +123,8 @@ export default function InventoryCard({ lotsOnPath = false }: { lotsOnPath?: boo
   return (
     <section aria-labelledby="inventory-h" className={card} data-inventory="">
       <h3 id="inventory-h" className="font-display text-xl font-bold text-card-foreground">
-        Borrowed and booked
-      </h3>
+        <Trans context="InventoryCard, h3">Borrowed and booked
+      </Trans></h3>
       <div className="mt-4">
         <InventoryList inventory={inventory as Inventory} lotsOnPath={lotsOnPath} />
       </div>

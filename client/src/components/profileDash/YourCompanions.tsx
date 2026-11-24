@@ -28,6 +28,7 @@ import {
 import CompanionPet, { PetDrawing } from "./CompanionPet";
 import { NATURE_ART, natureArtUrl } from "@shared/natureArt";
 import { BTN_GOLD, BTN_LINE, H2, KICKER, LINK, PANEL, RAISED } from "./dashUi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const API = "/api/me/companions";
 
@@ -65,6 +66,7 @@ function dueWords(day: string): string {
 const INPUT = "min-h-11 w-full rounded-xl border border-dash-edge bg-background px-3 text-[15px] text-foreground";
 
 export default function YourCompanions() {
+  const { t } = useLingui();
   const [data, setData] = useState<CompanionsPayload | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -97,10 +99,10 @@ export default function YourCompanions() {
   if (failed) {
     return (
       <section aria-labelledby="comp-h" className={`${PANEL} p-5 sm:p-7`}>
-        <p className={KICKER}>Your companions</p>
+        <p className={KICKER}><Trans context="YourCompanions, p">Your companions</Trans></p>
         <h2 id="comp-h" className={H2}>
-          Companions
-        </h2>
+          <Trans context="YourCompanions, h2">Companions
+        </Trans></h2>
         <p className="m-0 mt-2 text-sm text-muted-foreground">{failed}</p>
       </section>
     );
@@ -108,10 +110,10 @@ export default function YourCompanions() {
   if (!data) {
     return (
       <section aria-labelledby="comp-h" aria-busy="true" className={`${PANEL} p-5 sm:p-7`}>
-        <p className={KICKER}>Your companions</p>
+        <p className={KICKER}><Trans context="YourCompanions, p">Your companions</Trans></p>
         <h2 id="comp-h" className={H2}>
-          Your companions are waking up
-        </h2>
+          <Trans context="YourCompanions, h2">Your companions are waking up
+        </Trans></h2>
       </section>
     );
   }
@@ -120,32 +122,32 @@ export default function YourCompanions() {
     <section id="companions" aria-labelledby="comp-h" className={`${PANEL} flex scroll-mt-28 flex-col gap-4 p-4 sm:gap-[22px] sm:p-7`}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1.5">
-          <p id={openQ + openD > 0 ? undefined : "comp-h"} className={KICKER}>Your companions · {army.length}</p>
+          <p id={openQ + openD > 0 ? undefined : "comp-h"} className={KICKER}><Trans context="YourCompanions, p">Your companions · {army.length}</Trans></p>
           {/* D-09: a heading that reads "0 questions and 0 drafts" shouts a zero. At zero the kicker names the section. */}
           {openQ + openD > 0 ? (
             <h2 id="comp-h" data-companions-waiting="" className={H2}>
-              {plural(openQ, "question", "questions")} and {plural(openD, "draft", "drafts")} wait for you
-            </h2>
+              <Trans context="YourCompanions, h2">{plural(openQ, "question", "questions")} and {plural(openD, "draft", "drafts")} wait for you
+            </Trans></h2>
           ) : null}
           <p className="m-0 text-sm text-muted-foreground">
-            Nothing moves until you say yes.<span className="max-sm:hidden"> Each companion asks at most {data.ceiling} questions a day.</span>
+            <Trans context="YourCompanions, p">Nothing moves until you say yes.<span className="max-sm:hidden"> Each companion asks at most {data.ceiling} questions a day.</span></Trans>
           </p>
         </div>
         <div className="flex gap-2.5 max-sm:hidden">
           {current ? (
             <button type="button" className={BTN_LINE} onClick={() => setLookFor(current)}>
-              Change a look
-            </button>
+              <Trans context="YourCompanions, button">Change a look
+            </Trans></button>
           ) : null}
           <button type="button" className={BTN_LINE} aria-expanded={customizing} onClick={() => setCustomizing((v) => !v)}>
-            Customize this section
-          </button>
+            <Trans context="YourCompanions, button">Customize this section
+          </Trans></button>
         </div>
       </div>
 
       {customizing ? <Customize data={data} onSaved={load} onClose={() => setCustomizing(false)} /> : null}
 
-      <div role="list" aria-label="Your companions" className="flex gap-2.5 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-3.5 sm:overflow-visible lg:grid-cols-4">
+      <div role="list" aria-label={t({ message: "Your companions", context: "YourCompanions, aria-label" })} className="flex gap-2.5 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-3.5 sm:overflow-visible lg:grid-cols-4">
         {army.map((c) => {
           const on = c.id === current?.id;
           const q = c.questions.filter((i) => i.status === "open").length;
@@ -193,7 +195,7 @@ export default function YourCompanions() {
           <ChatPanel key={`chat-${current.id}`} c={current} consent={data.consent} onChanged={load} />
         </div>
       ) : (
-        <p className="m-0 text-sm text-muted-foreground">Every companion is resting. Wake one in Customize this section.</p>
+        <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">Every companion is resting. Wake one in Customize this section.</Trans></p>
       )}
 
       {lookFor ? <LookEditor c={lookFor} onClose={() => setLookFor(null)} onSaved={load} /> : null}
@@ -222,21 +224,21 @@ function CompanionCard({ c, ceiling, onChanged, onLook }: { c: CompanionView; ce
             {c.scopeLine} · {c.engineConnected ? c.engine : `${c.engine}, not connected yet`}
           </p>
           <button type="button" onClick={onLook} className={`${LINK} self-start bg-transparent p-0 text-[13px] sm:hidden`}>
-            Rename or restyle
-          </button>
+            <Trans context="YourCompanions, button">Rename or restyle
+          </Trans></button>
         </div>
         <button type="button" onClick={onLook} className={`${BTN_LINE} max-sm:hidden`}>
-          Rename or restyle
-        </button>
+          <Trans context="YourCompanions, button">Rename or restyle
+        </Trans></button>
       </div>
 
       <div className="flex items-baseline justify-between gap-3">
         <h4 className="m-0 font-body text-xs uppercase tracking-[0.14em] text-dash-gold-lit sm:text-[13px]">
-          Today's questions · {shownToday} of {Math.min(c.dailyCap, ceiling)}
+          <Trans context="YourCompanions, h4">Today's questions · {shownToday} of {Math.min(c.dailyCap, ceiling)}</Trans>
         </h4>
-        {c.heldCount > 0 ? <span className="text-xs text-muted-foreground sm:text-[13px]">{plural(c.heldCount, "more waits", "more wait")} for tomorrow</span> : null}
+        {c.heldCount > 0 ? <span className="text-xs text-muted-foreground sm:text-[13px]"><Trans context="YourCompanions, span">{plural(c.heldCount, "more waits", "more wait")} for tomorrow</Trans></span> : null}
       </div>
-      {c.questions.length === 0 ? <p className="m-0 text-sm text-muted-foreground">No questions today.</p> : null}
+      {c.questions.length === 0 ? <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">No questions today.</Trans></p> : null}
       {c.questions.map((it, i) => (
         <QuestionRow key={it.id} it={it} n={i + 1} of={Math.min(c.dailyCap, ceiling)} name={c.name} onChanged={onChanged} />
       ))}
@@ -244,7 +246,7 @@ function CompanionCard({ c, ceiling, onChanged, onLook }: { c: CompanionView; ce
       <h4 className="m-0 mt-1.5 font-body text-xs uppercase tracking-[0.14em] text-dash-gold-lit sm:text-[13px]">
         Drafts waiting for your yes · {c.drafts.filter((d) => d.status === "open").length}
       </h4>
-      {c.drafts.length === 0 ? <p className="m-0 text-sm text-muted-foreground">No drafts waiting.</p> : null}
+      {c.drafts.length === 0 ? <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">No drafts waiting.</Trans></p> : null}
       {c.drafts.map((it) => (
         <DraftRow key={it.id} it={it} name={c.name} onChanged={onChanged} />
       ))}
@@ -277,8 +279,8 @@ function QuestionRow({ it, n, of, name, onChanged }: { it: CompanionItemView; n:
   return (
     <article className={cardClass(it)}>
       <p className={`m-0 text-[11px] uppercase tracking-[0.12em] sm:text-xs ${it.blocking ? "text-dash-gold-lit" : "text-foreground/80"}`}>
-        Question {n} of {of}
-        {it.blocking ? " · someone is waiting on this" : ""}
+        <Trans context="YourCompanions, p">Question {n} of {of}
+        {it.blocking ? " · someone is waiting on this" : ""}</Trans>
       </p>
       <p className="m-0 text-base leading-snug text-foreground sm:text-[17px]">{it.title}</p>
       {it.body ? <p className="m-0 text-sm text-foreground/80">{it.body}</p> : null}
@@ -287,16 +289,16 @@ function QuestionRow({ it, n, of, name, onChanged }: { it: CompanionItemView; n:
         <div className="flex flex-wrap items-end gap-2.5">
           <div className="flex flex-[1_1_280px] flex-col gap-1.5">
             <label htmlFor={inputId} className="text-[13px] text-foreground/80">
-              Your answer
-            </label>
+              <Trans context="YourCompanions, label">Your answer
+            </Trans></label>
             <input id={inputId} type="text" value={answer} onChange={(e) => setAnswer(e.target.value)} maxLength={1000} className={INPUT} />
           </div>
           <button type="button" disabled={busy || !answer.trim()} onClick={() => act("answer", { answer })} className={`${BTN_GOLD} max-sm:flex-1`}>
-            Answer
-          </button>
+            <Trans context="YourCompanions, button">Answer
+          </Trans></button>
           <button type="button" disabled={busy} onClick={() => act("decline")} className={BTN_LINE}>
-            Not mine
-          </button>
+            <Trans context="YourCompanions, button">Not mine
+          </Trans></button>
         </div>
       ) : (
         <p className="m-0 text-sm text-dash-cash">
@@ -365,7 +367,7 @@ function DraftRow({ it, name, onChanged }: { it: CompanionItemView; name: string
       {it.detail ? <p className="m-0 whitespace-pre-line text-sm leading-normal text-foreground/80">{it.detail}</p> : null}
       {it.onYes ? (
         <p className="m-0 rounded-xl bg-dash-chip px-3 py-2.5 text-[13px] leading-normal text-foreground/80">
-          <strong className="font-semibold text-foreground">On yes: </strong>
+          <strong className="font-semibold text-foreground"><Trans context="YourCompanions, strong">On yes: </Trans></strong>
           {it.onYes}
         </p>
       ) : null}
@@ -387,11 +389,11 @@ function DraftRow({ it, name, onChanged }: { it: CompanionItemView; name: string
           ))}
           <div className="flex flex-wrap gap-2.5">
             <button type="button" disabled={busy} onClick={() => yes(true)} className={`${BTN_GOLD} max-sm:basis-full`}>
-              Yes, with my changes
-            </button>
+              <Trans context="YourCompanions, button">Yes, with my changes
+            </Trans></button>
             <button type="button" disabled={busy} onClick={() => setEditing(false)} className={`${BTN_LINE} max-sm:flex-1`}>
-              Keep it as it was
-            </button>
+              <Trans context="YourCompanions, button">Keep it as it was
+            </Trans></button>
           </div>
         </div>
       ) : it.status === "open" ? (
@@ -401,12 +403,12 @@ function DraftRow({ it, name, onChanged }: { it: CompanionItemView; name: string
           </button>
           {it.editable.length > 0 ? (
             <button type="button" disabled={busy} onClick={startEdit} className={`${BTN_LINE} max-sm:flex-1`}>
-              Edit first
-            </button>
+              <Trans context="YourCompanions, button">Edit first
+            </Trans></button>
           ) : null}
           <button type="button" disabled={busy} onClick={no} className={`${BTN_LINE} max-sm:flex-1`}>
-            No
-          </button>
+            <Trans context="YourCompanions, button">No
+          </Trans></button>
         </div>
       ) : (
         <p className="m-0 text-sm text-dash-cash">
@@ -425,6 +427,7 @@ function DraftRow({ it, name, onChanged }: { it: CompanionItemView; name: string
 // ── The chat ─────────────────────────────────────────────────────────────
 
 function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: CompanionsPayload["consent"]; onChanged: () => Promise<void> }) {
+  const { t } = useLingui();
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [text, setText] = useState("");
   const [note, setNote] = useState("");
@@ -476,26 +479,26 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
       <div className="flex items-center gap-2.5">
         <CompanionPet look={c.look} url={c.lookUrl} size={40} />
         <h3 id={`chat-h-${c.id}`} className="m-0 font-display text-[22px] font-semibold text-foreground sm:text-2xl">
-          Talk to {c.name}
+          <Trans context="YourCompanions, h3">Talk to {c.name}</Trans>
         </h3>
       </div>
       <p className="m-0 rounded-xl border border-dash-edge px-3 py-2.5 text-[13px] leading-normal text-foreground/80">
-        {c.name} speaks through {c.chatEngine}, the village guide.
+        <Trans context="YourCompanions, p">{c.name} speaks through {c.chatEngine}, the village guide.
         {c.engineConnected ? "" : ` ${c.engine} is not connected yet, so ${c.chatEngine} answers for now.`}
-        {consent && agreed ? ` ${consent.disclosure.sentence}` : ""}
+        {consent && agreed ? ` ${consent.disclosure.sentence}` : ""}</Trans>
       </p>
       {!consent ? (
-        <p className="m-0 text-sm text-muted-foreground">{c.chatEngine} has no key in this village yet, so companions cannot talk in their own words.</p>
+        <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">{c.chatEngine} has no key in this village yet, so companions cannot talk in their own words.</Trans></p>
       ) : !agreed ? (
         <div className="flex flex-col gap-2 rounded-xl bg-dash-chip p-3">
           <p className="m-0 text-[13px] leading-normal text-foreground">{consent.disclosure.sentence}</p>
           <button type="button" onClick={agree} className={`${BTN_GOLD} self-start`}>
-            Yes, that is fine
-          </button>
+            <Trans context="YourCompanions, button">Yes, that is fine
+          </Trans></button>
         </div>
       ) : null}
       <div className="flex flex-col gap-2.5" aria-live="polite">
-        {lines.length === 0 ? <p className="m-0 text-sm text-muted-foreground">Nothing said yet.</p> : null}
+        {lines.length === 0 ? <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">Nothing said yet.</Trans></p> : null}
         {lines.map((m) => (
           <p
             key={m.id}
@@ -508,7 +511,7 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={inputId} className="text-[13px] text-foreground/80">
-          Message {c.name}
+          <Trans context="YourCompanions, label">Message {c.name}</Trans>
         </label>
         <div className="flex gap-2">
           <input
@@ -521,12 +524,12 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
             onKeyDown={(e) => {
               if (e.key === "Enter") void say();
             }}
-            placeholder="Ask, or tell it what to draft"
+            placeholder={t({ message: "Ask, or tell it what to draft", context: "YourCompanions, placeholder" })}
             className={`${INPUT} min-w-0 flex-1`}
           />
           <button type="button" disabled={busy || !consent || !agreed || !text.trim()} onClick={say} className={BTN_GOLD}>
-            Send
-          </button>
+            <Trans context="YourCompanions, button">Send
+          </Trans></button>
         </div>
       </div>
       {note ? (
@@ -534,7 +537,7 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
           {note}
         </p>
       ) : null}
-      <p className="m-0 text-xs leading-normal text-muted-foreground">Anything {c.name} drafts in chat lands in its card and waits for your yes.</p>
+      <p className="m-0 text-xs leading-normal text-muted-foreground"><Trans context="YourCompanions, p">Anything {c.name} drafts in chat lands in its card and waits for your yes.</Trans></p>
     </aside>
   );
 }
@@ -547,6 +550,7 @@ interface StudioPortrait {
 }
 
 function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => void; onSaved: () => Promise<void> }) {
+  const { t } = useLingui();
   const [name, setName] = useState(c.name);
   const [look, setLook] = useState<CompanionLook>(c.look);
   const [tab, setTab] = useState<"choose" | "forge" | "upload" | "nature">(c.look.source);
@@ -577,8 +581,8 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
       <div role="dialog" aria-modal="true" aria-labelledby="look-h" className={`${PANEL} flex w-full max-w-[460px] flex-col gap-4 p-5`}>
         <div className="flex items-center justify-between">
           <button type="button" onClick={onClose} className={`${LINK} min-h-11 bg-transparent p-0 text-sm`}>
-            Back
-          </button>
+            <Trans context="YourCompanions, button">Back
+          </Trans></button>
           <p id="look-h" className={KICKER}>
             {c.scopeLine}
           </p>
@@ -588,8 +592,8 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
             <CompanionPet look={look} url={chosenUrl} size={120} />
           </span>
           <label htmlFor={`look-name-${c.id}`} className="text-[13px] text-foreground/80">
-            Name
-          </label>
+            <Trans context="YourCompanions, label">Name
+          </Trans></label>
           <input
             id={`look-name-${c.id}`}
             type="text"
@@ -599,7 +603,7 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
             className="min-h-11 w-[220px] rounded-xl border border-dash-edge bg-card px-3 text-center font-display text-[22px] font-semibold text-foreground"
           />
         </div>
-        <div role="tablist" aria-label="How to get a look" className="grid grid-cols-4 gap-1.5 rounded-[14px] border border-dash-edge bg-card p-1">
+        <div role="tablist" aria-label={t({ message: "How to get a look", context: "YourCompanions, aria-label" })} className="grid grid-cols-4 gap-1.5 rounded-[14px] border border-dash-edge bg-card p-1">
           {(["choose", "nature", "forge", "upload"] as const).map((t) => (
             <button
               key={t}
@@ -654,8 +658,8 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {portraits === null ? <p className="m-0 text-sm text-muted-foreground">Reading your portraits.</p> : null}
-            {portraits && portraits.length === 0 ? <p className="m-0 text-sm text-muted-foreground">You have no portraits yet.</p> : null}
+            {portraits === null ? <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">Reading your portraits.</Trans></p> : null}
+            {portraits && portraits.length === 0 ? <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">You have no portraits yet.</Trans></p> : null}
             <div className="grid grid-cols-4 gap-2">
               {(portraits ?? []).map((p) => {
                 const on = look.source === tab && look.portraitKey === p.archetypeKey;
@@ -674,23 +678,23 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
               })}
             </div>
             <p className="m-0 text-[13px] text-foreground/80">
-              {tab === "forge" ? "Forging spends one of your portrait grants." : "An upload costs nothing."} Make one in{" "}
+              <Trans context="YourCompanions, p">{tab === "forge" ? "Forging spends one of your portrait grants." : "An upload costs nothing."} Make one in{" "}
               <Link href="/profile/characters" className={LINK}>
                 the portrait studio
               </Link>
               , the same one your characters use, then choose it here.
-            </p>
+            </Trans></p>
           </div>
         )}
-        {c.scope === "role" ? <p className="m-0 text-[13px] text-muted-foreground">The look is yours. When the role passes on, the next holder picks their own.</p> : null}
+        {c.scope === "role" ? <p className="m-0 text-[13px] text-muted-foreground"><Trans context="YourCompanions, p">The look is yours. When the role passes on, the next holder picks their own.</Trans></p> : null}
         {error ? (
           <p role="alert" className="m-0 text-sm text-notice">
             {error}
           </p>
         ) : null}
         <button type="button" onClick={save} className={`${BTN_GOLD} min-h-12 text-base`}>
-          Keep this look
-        </button>
+          <Trans context="YourCompanions, button">Keep this look
+        </Trans></button>
       </div>
     </div>
   );
@@ -721,10 +725,10 @@ function Customize({ data, onSaved, onClose }: { data: CompanionsPayload; onSave
   return (
     <div className={`${RAISED} flex flex-col gap-3 p-4`}>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="m-0 font-display text-xl font-semibold text-foreground">Customize this section</h3>
+        <h3 className="m-0 font-display text-xl font-semibold text-foreground"><Trans context="YourCompanions, h3">Customize this section</Trans></h3>
         <button type="button" onClick={onClose} className={BTN_LINE}>
-          Done
-        </button>
+          <Trans context="YourCompanions, button">Done
+        </Trans></button>
       </div>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {all.map((c, i) => (
@@ -760,7 +764,7 @@ function Customize({ data, onSaved, onClose }: { data: CompanionsPayload; onSave
                 </select>
               </label>
             ) : (
-              <span className="text-[13px] text-foreground/80">Speaks through the guide you chose: {c.engine}</span>
+              <span className="text-[13px] text-foreground/80"><Trans context="YourCompanions, span">Speaks through the guide you chose: {c.engine}</Trans></span>
             )}
             <label className="flex min-h-11 items-center gap-2 text-[13px] text-foreground/80">
               <input type="checkbox" checked={c.status === "resting"} onChange={(e) => patch(c, { status: e.target.checked ? "resting" : "active" })} />

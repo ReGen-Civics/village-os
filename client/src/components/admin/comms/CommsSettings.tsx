@@ -56,6 +56,7 @@ import {
   ReplyToEditor,
   WhoRunsCommsEditor,
 } from "./CommsSetupWords";
+import { Trans } from "@lingui/react/macro";
 
 // The investor packet card in Admin edits two of the same inboxes with the
 // same field, and imports it from here through the comms barrel.
@@ -124,8 +125,8 @@ function ChecklistRow({
             <span className="sr-only">{item.done ? " (done)" : " (not done yet)"}</span>
             {item.required && (
               <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded align-middle">
-                required
-              </span>
+                <Trans context="CommsSettings, span">required
+              </Trans></span>
             )}
           </h3>
           <p className="text-sm text-gray-700 mt-1">{item.detail}</p>
@@ -172,7 +173,7 @@ function PauseAll({ data, password, apply }: { data: SettingsPayload; password: 
       className={`border rounded-xl p-4 ${paused ? "border-amber-300 bg-amber-50" : "border-gray-200 bg-white"}`}
     >
       <h3 id="comms-pause-all" className="text-sm font-semibold text-gray-900">
-        Pause all {paused ? "(paused now)" : ""}
+        <Trans context="CommsSettings, h3">Pause all {paused ? "(paused now)" : ""}</Trans>
       </h3>
       <p className="text-sm text-gray-700 mt-1">
         {paused
@@ -209,13 +210,13 @@ export default function CommsSettings({ password, openIntegrations }: { password
   if (!data) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Comms Settings</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsSettings, h2">Comms Settings</Trans></h2>
         {failed ? (
           <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4" role="alert">
             {failed}
           </p>
         ) : (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
+          <div className="text-center py-12 text-gray-400"><Trans context="CommsSettings, div">Loading...</Trans></div>
         )}
       </div>
     );
@@ -228,12 +229,12 @@ export default function CommsSettings({ password, openIntegrations }: { password
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Comms Settings</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsSettings, h2">Comms Settings</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Everything the village's email needs from you, in one place. Every item can be changed again later.{" "}
+          <Trans context="CommsSettings, p">Everything the village's email needs from you, in one place. Every item can be changed again later.{" "}
           <a href="/setup-game" className="text-teal-deep underline">
             Or plant it step by step in the setup game.
-          </a>
+          </a></Trans>
         </p>
         <p
           className={`text-sm mt-3 rounded-lg px-3 py-2 border ${
@@ -246,16 +247,16 @@ export default function CommsSettings({ password, openIntegrations }: { password
         >
           {note.text}{" "}
           <a href="/admin?tab=modules" className="text-teal-deep underline">
-            Module Library
-          </a>
+            <Trans context="CommsSettings, a">Module Library
+          </Trans></a>
         </p>
       </div>
 
       <section aria-labelledby="comms-setup-checklist">
         <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
           <h3 id="comms-setup-checklist" className="text-base font-semibold text-gray-900">
-            Setup checklist
-          </h3>
+            <Trans context="CommsSettings, h3">Setup checklist
+          </Trans></h3>
           <p className="text-sm text-gray-600" role="status">
             {data.ready
               ? "Every required step is done. Comms is ready to turn on."
@@ -282,12 +283,12 @@ export default function CommsSettings({ password, openIntegrations }: { password
 
       <section aria-labelledby="comms-dials">
         <h3 id="comms-dials" className="text-base font-semibold text-gray-900">
-          Dials
-        </h3>
+          <Trans context="CommsSettings, h3">Dials
+        </Trans></h3>
         <p className="text-sm text-gray-600 mt-1">
-          How the post office and the journeys behave: quiet hours, caps, reminder times, the recap window, guests, time votes, letters,
+          <Trans context="CommsSettings, p">How the post office and the journeys behave: quiet hours, caps, reminder times, the recap window, guests, time votes, letters,
           how long records are kept, and the send rate. Open and click tracking stay off unless you turn them on, and each says why.
-        </p>
+        </Trans></p>
         <ModuleSettingsSection moduleId="comms" moduleName="Village Comms" lifecycle={data.lifecycle} moduleNames={{}} password={password} />
       </section>
 
@@ -296,8 +297,8 @@ export default function CommsSettings({ password, openIntegrations }: { password
       <p className="text-sm text-gray-600 border-t border-gray-100 pt-5">
         Other keys, such as Stripe and the AI guide, are in{" "}
         <button type="button" onClick={openIntegrations} className="text-teal-deep font-medium hover:underline">
-          Integrations
-        </button>
+          <Trans context="CommsSettings, button">Integrations
+        </Trans></button>
         . A key never travels back to a browser once saved.
       </p>
     </div>

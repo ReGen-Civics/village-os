@@ -97,9 +97,9 @@ export default function CircleCard({
         onClick={onOut}
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3"
       >
-        <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+        <Trans context="CircleCard, button"><ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
         Step back out
-      </button>
+      </Trans></button>
 
       <div className="rounded-lg overflow-hidden mb-3">
         <CircleScene circle={{ id: circle.id, name: circle.name }} />
@@ -110,28 +110,28 @@ export default function CircleCard({
         {circle.isExample && <ExampleChip className="ml-2 align-middle" />}
       </h3>
       {circle.status === "forming" && (
-        <p className="text-xs text-muted-foreground mb-2">Still forming. Be one of the first to hold a role here.</p>
+        <p className="text-xs text-muted-foreground mb-2"><Trans context="CircleCard, p">Still forming. Be one of the first to hold a role here.</Trans></p>
       )}
       {/* The circle's own card: its words, its roles and who agreed to them. */}
       <Link
         href={`/circles/${encodeURIComponent(circle.id)}`}
         className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline underline-offset-2"
       >
-        Open this circle's card
-      </Link>
+        <Trans context="CircleCard, Link">Open this circle's card
+      </Trans></Link>
 
       <dl className="space-y-2.5 my-3">
         {circle.purpose && (
           <div>
-            <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Works toward</dt>
+            <dt className="text-[10px] uppercase tracking-wider text-muted-foreground"><Trans context="CircleCard, dt">Works toward</Trans></dt>
             <dd className="text-sm text-foreground">{circle.purpose}</dd>
           </div>
         )}
         {domains.length > 0 && (
           <div>
             <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Decides on
-            </dt>
+              <Trans context="CircleCard, dt">Decides on
+            </Trans></dt>
             <dd className="text-sm text-foreground">
               <ul className="list-disc pl-4 space-y-0.5">
                 {domains.slice(0, DOMAIN_CAP).map((d, i) => (
@@ -140,15 +140,15 @@ export default function CircleCard({
               </ul>
               {domains.length > DOMAIN_CAP && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  and {domains.length - DOMAIN_CAP} more, on the roles below.
-                </p>
+                  <Trans context="CircleCard, p">and {domains.length - DOMAIN_CAP} more, on the roles below.
+                </Trans></p>
               )}
             </dd>
           </div>
         )}
         {method && (
           <div>
-            <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">How it decides</dt>
+            <dt className="text-[10px] uppercase tracking-wider text-muted-foreground"><Trans context="CircleCard, dt">How it decides</Trans></dt>
             <dd className="text-sm text-foreground">
               {method.label}
               {circle.decidesByGloss ? `. ${circle.decidesByGloss}` : ""}
@@ -158,14 +158,14 @@ export default function CircleCard({
       </dl>
 
       <p className="text-xs text-muted-foreground mb-1">
-        {seats.length} role{seats.length === 1 ? "" : "s"}, {held} of {places} held
-        {children.length > 0 && `, ${children.length} circle${children.length === 1 ? "" : "s"} inside`}
+        <Trans context="CircleCard, p">{seats.length} role{seats.length === 1 ? "" : "s"}, {held} of {places} held
+        {children.length > 0 && `, ${children.length} circle${children.length === 1 ? "" : "s"} inside`}</Trans>
       </p>
       {open > 0 && (
         <p className="text-xs text-amber-700 mb-3 flex items-center gap-1.5">
-          <Hand className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <Trans context="CircleCard, p"><Hand className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           {open} opening{open === 1 ? "" : "s"}. Tap a dashed one to apply for it.
-        </p>
+        </Trans></p>
       )}
 
       {speaksFor.length > 0 && (
@@ -202,7 +202,7 @@ export default function CircleCard({
                 ) : s.comingSoon ? (
                   <span className="text-[11px] text-muted-foreground shrink-0"><Trans context="map circle card, a role applied for early, after the lead hires">coming soon</Trans></span>
                 ) : (
-                  s.vacant && <span className="text-[11px] text-amber-700 shrink-0">open</span>
+                  s.vacant && <span className="text-[11px] text-amber-700 shrink-0"><Trans context="CircleCard, span">open</Trans></span>
                 )}
               </button>
             </li>

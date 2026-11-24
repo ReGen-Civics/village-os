@@ -15,6 +15,7 @@ import UnifiedInbox from "./UnifiedInbox";
 import RoleApplicationsList from "./RoleApplicationsList";
 import { fetchWaitingRoleApplications, type RoleApplicationRow } from "./roleApplicationsWaiting";
 import { AllClear, FeelSettings, GentleQuests, WeekRecap } from "./AdminFeel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface Needs {
   sentence: string;
@@ -59,6 +60,7 @@ export default function HomeBase({
   groups: NavGroup[];
   role?: string;
 }) {
+  const { t } = useLingui();
   const [needs, setNeeds] = useState<Needs | null>(null);
   const [glance, setGlance] = useState<string | null>(null);
   const [since, setSince] = useState<string | null>(null);
@@ -102,25 +104,25 @@ export default function HomeBase({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-xl font-semibold text-gray-900">Today</h2>
+        <h2 className="text-xl font-semibold text-gray-900"><Trans context="HomeBase, h2">Today</Trans></h2>
         {glance && <p className="w-full text-base text-gray-900">{glance}</p>}
         <AllClear show={glance === "Nothing is waiting, and every connection is fine."} />
         <WeekRecap />
         {since && <p className="w-full text-sm text-gray-700">{since}</p>}
-        {updated && <p className="text-sm text-gray-600">Updated {updated}</p>}
+        {updated && <p className="text-sm text-gray-600"><Trans context="HomeBase, p">Updated {updated}</Trans></p>}
       </div>
       {problem ? (
         <div role="alert" className="rounded-xl border border-gray-200 bg-white p-4">
           <p className="text-base text-gray-900">{problem}</p>
-          <button type="button" onClick={load} className="mt-3 inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-white">Try again</button>
+          <button type="button" onClick={load} className="mt-3 inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-white"><Trans context="HomeBase, button">Try again</Trans></button>
         </div>
       ) : needs ? (
-        <section className="rounded-xl border border-gray-200 bg-white p-4" aria-label="What needs you now">
+        <section className="rounded-xl border border-gray-200 bg-white p-4" aria-label={t({ message: "What needs you now", context: "HomeBase, aria-label" })}>
           <p className="flex items-center gap-2 text-sm font-medium text-gray-900"><Mark shape={needs.shape} />{needs.word}</p>
           <p className="mt-1 text-lg text-gray-900">{needs.sentence}</p>
         </section>
       ) : (
-        <p className="text-base text-gray-600">Reading what is waiting...</p>
+        <p className="text-base text-gray-600"><Trans context="HomeBase, p">Reading what is waiting...</Trans></p>
       )}
       {!problem && needs && <RoleApplicationsList rows={roleApps} heading="Role applications waiting" />}
       <div className="grid gap-2 sm:grid-cols-2">

@@ -22,6 +22,7 @@ import type { JournalEntry } from "@shared/journal";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { listEntries } from "@/lib/journalApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, HINT, dayLabel } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 export default function ProfileJournalCard() {
   const on = useModuleOn("journal");
@@ -44,13 +45,13 @@ export default function ProfileJournalCard() {
   return (
     <section id="journal" aria-labelledby="journal-card-h" className={CARD}>
       <h2 id="journal-card-h" className="flex items-center gap-2 font-display text-lg font-bold text-card-foreground">
-        <NotebookPen className="h-5 w-5 text-notice" aria-hidden="true" />
+        <Trans context="ProfileJournalCard, h2"><NotebookPen className="h-5 w-5 text-notice" aria-hidden="true" />
         Your journal
-      </h2>
+      </Trans></h2>
       <p className="mt-1 text-sm text-foreground">
-        A morning and evening practice, a weekly pulse, a debrief after calls, and a guide that asks one question at a
+        <Trans context="ProfileJournalCard, p">A morning and evening practice, a weekly pulse, a debrief after calls, and a guide that asks one question at a
         time. Talk or type.
-      </p>
+      </Trans></p>
       <p className={`${HINT} mt-2`}>
         {latest === undefined
           ? "Reading your journal..."
@@ -60,19 +61,19 @@ export default function ProfileJournalCard() {
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <Link href="/journal" className={BTN_PRIMARY}>
-          Write today
-        </Link>
+          <Trans context="ProfileJournalCard, Link">Write today
+        </Trans></Link>
         <Link href="/journal#pulse" className={BTN_SECONDARY}>
-          Weekly pulse
-        </Link>
+          <Trans context="ProfileJournalCard, Link">Weekly pulse
+        </Trans></Link>
         <Link href="/journal#feedback" className={BTN_SECONDARY}>
-          Feedback
-        </Link>
+          <Trans context="ProfileJournalCard, Link">Feedback
+        </Trans></Link>
       </div>
       <p className={`${HINT} mt-3`}>
-        Inside the village your entries are yours alone. Unless you keep one private, it is shared with the village's
+        <Trans context="ProfileJournalCard, p">Inside the village your entries are yours alone. Unless you keep one private, it is shared with the village's
         organisational memory when that is connected, with member names replaced by code-names.
-      </p>
+      </Trans></p>
     </section>
   );
 }

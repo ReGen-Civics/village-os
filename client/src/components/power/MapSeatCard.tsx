@@ -31,6 +31,7 @@ import SeatTradingCard from "./SeatTradingCard";
 import { applyHrefFor, guardedAction, termsSlotFor } from "./SeatTermsSlot";
 import type { PowerCircle, PowerData, PowerSeat } from "./types";
 import { useClassNames } from "./useClassNames";
+import { Trans } from "@lingui/react/macro";
 
 export default function MapSeatCard({
   seat,
@@ -77,7 +78,7 @@ export default function MapSeatCard({
             rel="noreferrer"
             className="inline-flex items-center gap-1 rounded-full bg-teal-deep/10 px-2 py-0.5 text-xs font-medium text-teal-deep hover:bg-teal-deep/20"
           >
-            Binding record: Hypha DHO <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            <Trans context="MapSeatCard, a">Binding record: Hypha DHO <ExternalLink className="h-3 w-3" aria-hidden="true" /></Trans>
           </a>
         </p>
       )}

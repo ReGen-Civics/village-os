@@ -35,6 +35,7 @@ import { authToken, gameFetch } from "@/lib/gameApi";
 import { useVillageName } from "@/hooks/useVillageName";
 import { sceneSummary } from "@shared/mapScene";
 import { MASTERPLAN_ACCEPT, MASTERPLAN_TYPES, type MasterplanRecord } from "@shared/mapFromMasterplan";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** What is waiting for review, counted the way the map's own offer counts it. */
 export interface WaitingDraft {
@@ -167,7 +168,7 @@ export function MasterplanCard() {
 
   return (
     <div className="space-y-3">
-      {plan === undefined && <p className="text-sm text-muted-foreground">Looking for your masterplan...</p>}
+      {plan === undefined && <p className="text-sm text-muted-foreground"><Trans context="MapSlate, p">Looking for your masterplan...</Trans></p>}
       {plan && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
           <a href={plan.url} target="_blank" rel="noreferrer" className="font-medium text-foreground underline underline-offset-2 break-all">
@@ -196,12 +197,12 @@ export function MasterplanCard() {
         </label>
         {plan && (
           <button type="button" className={BUTTON} disabled={busy} onClick={() => void removePlan()}>
-            <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <Trans context="MapSlate, button"><Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
             Remove it
-          </button>
+          </Trans></button>
         )}
       </div>
-      <p className="text-xs text-muted-foreground">{MASTERPLAN_TYPES}, up to 25 MB. Kept for the people who draw the map.</p>
+      <p className="text-xs text-muted-foreground"><Trans context="MapSlate, p">{MASTERPLAN_TYPES}, up to 25 MB. Kept for the people who draw the map.</Trans></p>
       {note && <p role="status" className="text-sm text-foreground">{note}</p>}
     </div>
   );
@@ -230,25 +231,26 @@ export default function BlankSlate({ slate, onOpenBoard, onLeave }: {
   onOpenBoard: () => void;
   onLeave: () => void;
 }) {
+  const { t } = useLingui();
   const villageName = useVillageName();
   const leave = (
     <button type="button" onClick={onLeave} className={BUTTON}>
-      <DoorOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
+      <Trans context="MapSlate, button"><DoorOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
       Leave the map
-    </button>
+    </Trans></button>
   );
 
   if (!slate.canEdit) {
     return (
       <div className="h-full overflow-y-auto">
         <main className="mx-auto max-w-xl px-4 py-20 text-center">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-3">{villageName} has not drawn its map yet</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-3"><Trans context="MapSlate, h1">{villageName} has not drawn its map yet</Trans></h1>
           <p className="text-muted-foreground mb-6">
-            The map shows the village's real land once the people who look after it publish the first version.
+            <Trans context="MapSlate, p">The map shows the village's real land once the people who look after it publish the first version.
             Until then, the circles and roles are on the org view.
-          </p>
+          </Trans></p>
           <div className="flex flex-wrap justify-center gap-2">
-            <Link href="/map/circles" className={BUTTON}>See the circles and roles</Link>
+            <Link href="/map/circles" className={BUTTON}><Trans context="MapSlate, Link">See the circles and roles</Trans></Link>
             {leave}
           </div>
         </main>
@@ -260,38 +262,38 @@ export default function BlankSlate({ slate, onOpenBoard, onLeave }: {
   return (
     <div className="h-full overflow-y-auto">
       <main className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
-        <h1 className="font-display text-3xl font-bold text-foreground mb-2">Make your map</h1>
+        <h1 className="font-display text-3xl font-bold text-foreground mb-2"><Trans context="MapSlate, h1">Make your map</Trans></h1>
         <p className="text-muted-foreground mb-6">
-          Nothing is published yet, so visitors see a page saying the map is coming. The first version is drawn
+          <Trans context="MapSlate, p">Nothing is published yet, so visitors see a page saying the map is coming. The first version is drawn
           from your masterplan, by your own agent or by hand, and goes live only when you publish it.
-        </p>
+        </Trans></p>
         <ol className="space-y-4 mb-6">
-          <Step n={1} title="Upload your masterplan" icon={<FileUp className="w-5 h-5 shrink-0" aria-hidden="true" />}>
+          <Step n={1} title={t({ message: "Upload your masterplan", context: "MapSlate, title" })} icon={<FileUp className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             <MasterplanCard />
           </Step>
-          <Step n={2} title="Ask your agent to draw version 1.0" icon={<Bot className="w-5 h-5 shrink-0" aria-hidden="true" />}>
+          <Step n={2} title={t({ message: "Ask your agent to draw version 1.0", context: "MapSlate, title" })} icon={<Bot className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             <p className="text-sm text-muted-foreground mb-3">
-              In your profile, under Your agent, make a token with the scope to draft the village map, and give it
+              <Trans context="MapSlate, p">In your profile, under Your agent, make a token with the scope to draft the village map, and give it
               to your agent with the village map skill. It reads your masterplan and the method this map was first
               made by, and sends a draft. It cannot publish anything.
-            </p>
-            <Link href="/profile#your-agent" className={BUTTON}>Set up your agent</Link>
+            </Trans></p>
+            <Link href="/profile#your-agent" className={BUTTON}><Trans context="MapSlate, Link">Set up your agent</Trans></Link>
           </Step>
-          <Step n={3} title="Review it on the map, then publish" icon={<MapIcon className="w-5 h-5 shrink-0" aria-hidden="true" />}>
+          <Step n={3} title={t({ message: "Review it on the map, then publish", context: "MapSlate, title" })} icon={<MapIcon className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             {d ? (
               <p className="text-sm text-foreground mb-3">
-                A draft is waiting for you: {plural(d.buildings, "building")}, {plural(d.features, "feature")} and{" "}
+                <Trans context="MapSlate, p">A draft is waiting for you: {plural(d.buildings, "building")}, {plural(d.features, "feature")} and{" "}
                 {plural(d.flows, "flow")}, in {plural(d.changes, "change")}.
-              </p>
+              </Trans></p>
             ) : (
               <p className="text-sm text-muted-foreground mb-3">
-                A draft from your agent waits here for you. You can also draw the land yourself in build mode.
-              </p>
+                <Trans context="MapSlate, p">A draft from your agent waits here for you. You can also draw the land yourself in build mode.
+              </Trans></p>
             )}
             {!slate.canPublish && (
               <p className="text-sm text-muted-foreground mb-3">
-                Publishing it takes someone who may publish the map. Your draft is kept for them to see.
-              </p>
+                <Trans context="MapSlate, p">Publishing it takes someone who may publish the map. Your draft is kept for them to see.
+              </Trans></p>
             )}
             <button type="button" onClick={onOpenBoard} className={PRIMARY}>
               <MapIcon className="w-4 h-4 shrink-0" aria-hidden="true" />

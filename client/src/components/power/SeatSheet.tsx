@@ -25,6 +25,7 @@
  */
 import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { useLingui } from "@lingui/react/macro";
 
 export default function SeatSheet({
   children,
@@ -39,6 +40,7 @@ export default function SeatSheet({
   /** Merged onto the panel. Its own `px-*` replaces the default `px-6`. */
   className?: string;
 }) {
+  const { t } = useLingui();
   const padX = /(^|\s)px-/.test(className) ? "" : "px-6";
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function SeatSheet({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t({ message: "Close", context: "SeatSheet, aria-label" })}
             className="w-11 h-11 grid place-items-center rounded-full text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="w-5 h-5" aria-hidden="true" />

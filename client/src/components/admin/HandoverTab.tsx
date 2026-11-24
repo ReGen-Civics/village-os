@@ -31,6 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * NOBODY HOLDS THIS ROLE YET.
@@ -71,6 +72,7 @@ const emptyRoleWarning = (roleName: string) =>
  * to nobody. The server refuses it; this panel makes it hard to try.
  */
 export default function HandoverTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const [data, setData] = useState<any>(null);
   const [picking, setPicking] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
@@ -154,7 +156,7 @@ export default function HandoverTab({ password }: { password: string }) {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(refusal(d, "The handover did not go through"));
-      toast.success("The village holds it now");
+      toast.success(t({ message: "The village holds it now", context: "HandoverTab, toast" }));
       load();
     } catch (e: any) { toast.error(e?.message || "The handover did not go through"); }
     setBusy("");
@@ -191,7 +193,7 @@ export default function HandoverTab({ password }: { password: string }) {
         }
         throw new Error(refusal(d, "That did not go through"));
       }
-      toast.success("Back with the admin panel");
+      toast.success(t({ message: "Back with the admin panel", context: "HandoverTab, toast" }));
       setGlassFor("");
       load();
     } catch (e: any) { toast.error(e?.message || "That did not go through"); }
@@ -201,18 +203,18 @@ export default function HandoverTab({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-border bg-card p-5">
-        <h2 className="font-display text-xl font-semibold">The handover</h2>
+        <h2 className="font-display text-xl font-semibold"><Trans context="HandoverTab, h2">The handover</Trans></h2>
         <p className="text-sm text-muted-foreground mt-2">
-          Every power below has somebody behind it. A power the village holds is one
+          <Trans context="HandoverTab, p">Every power below has somebody behind it. A power the village holds is one
           you stop passing by being an admin: whoever is in the holding group acts on
           their own account, and you can still reach past it on a day something has
           gone wrong. Reaching past writes a line on the village feed naming the power
           and your name, and tells whoever holds it.
-        </p>
+        </Trans></p>
         <p className="text-sm text-muted-foreground mt-2">
-          Members read the same list, in their own words, at{" "}
+          <Trans context="HandoverTab, p">Members read the same list, in their own words, at{" "}
           <Link href="/powers" className="underline">What this village looks after</Link>.
-        </p>
+        </Trans></p>
       </div>
 
       {(data?.powers ?? []).map((p: any) => {
@@ -226,7 +228,7 @@ export default function HandoverTab({ password }: { password: string }) {
               <div>
                 <h3 className="font-semibold">{p.title}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{p.surface}.</p>
-                <p className="text-sm mt-2">Whoever holds this can {p.consequence}.</p>
+                <p className="text-sm mt-2"><Trans context="HandoverTab, p">Whoever holds this can {p.consequence}.</Trans></p>
               </div>
               <code className="text-xs text-muted-foreground shrink-0">{p.capability}</code>
             </div>
@@ -234,8 +236,8 @@ export default function HandoverTab({ password }: { password: string }) {
             {p.heldBy ? (
               <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
                 <p className="text-sm">
-                  {holdingRole?.name ?? p.heldBy.roleName ?? p.heldBy.roleId} holds this.{" "}
-                  {p.heldBy.byBallot ? "The village voted it across." : "An admin handed it over."}
+                  <Trans context="HandoverTab, p">{holdingRole?.name ?? p.heldBy.roleName ?? p.heldBy.roleId} holds this.{" "}
+                  {p.heldBy.byBallot ? "The village voted it across." : "An admin handed it over."}</Trans>
                 </p>
                 <button
                   className="text-sm underline text-muted-foreground"
@@ -247,15 +249,15 @@ export default function HandoverTab({ password }: { password: string }) {
               </div>
             ) : !p.movable ? (
               <p className="text-sm text-muted-foreground mt-3">
-                This one stays with the admin panel for now. Its gate has no way back
+                <Trans context="HandoverTab, p">This one stays with the admin panel for now. Its gate has no way back
                 through the product yet, and a power an operator cannot reach past is
                 an outage waiting for a bad day.
-              </p>
+              </Trans></p>
             ) : (
               <div className="mt-3 space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  The admin panel looks after this one.
-                </p>
+                  <Trans context="HandoverTab, p">The admin panel looks after this one.
+                </Trans></p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <select
                     className="border border-border rounded px-2 py-1 text-sm bg-background"
@@ -273,8 +275,8 @@ export default function HandoverTab({ password }: { password: string }) {
                       disabled={busy === p.capability}
                       onClick={() => grant(chosen, p.capability)}
                     >
-                      Give this group the power
-                    </button>
+                      <Trans context="HandoverTab, button">Give this group the power
+                    </Trans></button>
                   )}
                   {chosen && canHold.some((r) => r.id === chosen) && (
                     <button
@@ -282,8 +284,8 @@ export default function HandoverTab({ password }: { password: string }) {
                       disabled={busy === p.capability}
                       onClick={() => setConfirming({ capability: p.capability, roleId: chosen })}
                     >
-                      Hand it to the village
-                    </button>
+                      <Trans context="HandoverTab, button">Hand it to the village
+                    </Trans></button>
                   )}
                 </div>
                 {chosenRole && nobodyHolds(chosenRole) && (
@@ -373,39 +375,39 @@ function HandOverDialog({
     <Dialog open={open} onOpenChange={(next) => { if (!next) onCancel(); }}>
       <DialogContent className="max-w-lg bg-white text-gray-900 border-gray-200">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Is the village ready to hold this power?</DialogTitle>
+          <DialogTitle className="text-gray-900"><Trans context="HandoverTab, DialogTitle">Is the village ready to hold this power?</Trans></DialogTitle>
           <DialogDescription className="text-gray-600">
-            {power?.title}. Whoever holds it can {power?.consequence}.
-          </DialogDescription>
+            <Trans context="HandoverTab, DialogDescription">{power?.title}. Whoever holds it can {power?.consequence}.
+          </Trans></DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm text-gray-700">
           <p>
-            {roleName} will hold it. From then on, being an admin no longer passes for
+            <Trans context="HandoverTab, p">{roleName} will hold it. From then on, being an admin no longer passes for
             this power. Whoever sits in {roleName} acts on their own account.
-          </p>
+          </Trans></p>
           <p>
-            If an admin reaches past it afterwards, that is a break-glass: the village
+            <Trans context="HandoverTab, p">If an admin reaches past it afterwards, that is a break-glass: the village
             feed carries a line naming that admin and this power, and whoever holds it
             is told.
-          </p>
+          </Trans></p>
           {isLastPower && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
-              This is the last of the {handover?.total} powers. Once it crosses, this village
+              <Trans context="HandoverTab, p">This is the last of the {handover?.total} powers. Once it crosses, this village
               looks after all of them, and the governing purpose statement becomes the
               village's to change by a vote. You will not be able to rewrite it from here
               afterwards.
-            </p>
+            </Trans></p>
           )}
           {nobodyHolds(role) && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
-              Nobody holds {roleName} yet. Until someone is appointed, the only way
+              <Trans context="HandoverTab, p">Nobody holds {roleName} yet. Until someone is appointed, the only way
               anyone can use this power is a break-glass.
-            </p>
+            </Trans></p>
           )}
           <p className="text-gray-500">
-            You can bring it back to the admin panel from this tab later, and the
+            <Trans context="HandoverTab, p">You can bring it back to the admin panel from this tab later, and the
             village sees that on its feed too.
-          </p>
+          </Trans></p>
         </div>
         <DialogFooter>
           <button
@@ -413,16 +415,16 @@ function HandOverDialog({
             onClick={onCancel}
             className="text-sm rounded-lg px-4 py-2 border border-gray-300 text-gray-700"
           >
-            Cancel
-          </button>
+            <Trans context="HandoverTab, button">Cancel
+          </Trans></button>
           <button
             type="button"
             disabled={busy}
             onClick={onConfirm}
             className="text-sm rounded-lg px-4 py-2 font-medium bg-teal-deep text-white disabled:opacity-40"
           >
-            Yes, hand it over
-          </button>
+            <Trans context="HandoverTab, button">Yes, hand it over
+          </Trans></button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

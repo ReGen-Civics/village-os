@@ -27,6 +27,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { OutboxKind, OutboxStatus, OutboxView } from "@shared/saberraBridge";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const KIND_WORDS: Record<OutboxKind, string> = {
   journal_entry: "Journal entry",
@@ -65,6 +66,7 @@ function readable(d: unknown): d is OutboxView {
 }
 
 export default function SaberraOutboxPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [view, setView] = useState<OutboxView | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -97,69 +99,69 @@ export default function SaberraOutboxPanel({ password }: { password: string }) {
   return (
     <section className="border-t border-gray-100 pt-4" aria-labelledby="saberra-outbox-heading">
       <h3 id="saberra-outbox-heading" className="font-semibold text-gray-900 mb-1">
-        What Saberra would receive
-      </h3>
+        <Trans context="SaberraOutboxPanel, h3">What Saberra would receive
+      </Trans></h3>
       <p className="text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-3">
-        Nothing is sent until Saberra names where journal entries land. Until then this is a record of
+        <Trans context="SaberraOutboxPanel, p">Nothing is sent until Saberra names where journal entries land. Until then this is a record of
         what would cross.
-      </p>
+      </Trans></p>
       <p className="text-xs text-gray-500 mb-3">
-        Journal entries cross under code-names, with every member name swapped for that member's
+        <Trans context="SaberraOutboxPanel, p">Journal entries cross under code-names, with every member name swapped for that member's
         code-name. Private entries and feedback never cross. A team signal crosses only when at least
         two members answered. You see the kind, the date, the code-name, the length and the status of
         each item, and never the words: an entry stays its author's alone.
-      </p>
+      </Trans></p>
 
       {problem && <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">{problem}</p>}
-      {!view && !problem && <p className="text-sm text-gray-500">Reading what would be sent…</p>}
+      {!view && !problem && <p className="text-sm text-gray-500"><Trans context="SaberraOutboxPanel, p">Reading what would be sent…</Trans></p>}
 
       {view && (
         <>
           {!view.journalOn && (
-            <p className="text-sm text-amber-800 mb-3">The journal module is off, so nothing is being queued.</p>
+            <p className="text-sm text-amber-800 mb-3"><Trans context="SaberraOutboxPanel, p">The journal module is off, so nothing is being queued.</Trans></p>
           )}
-          <ul className="text-sm text-gray-700 space-y-1 mb-3" aria-label="Counts">
+          <ul className="text-sm text-gray-700 space-y-1 mb-3" aria-label={t({ message: "Counts", context: "SaberraOutboxPanel, aria-label" })}>
             <li>
-              <span className="font-medium text-gray-900">Waiting: </span>
+              <span className="font-medium text-gray-900"><Trans context="SaberraOutboxPanel, span">Waiting: </Trans></span>
               {count(view.counts.queued, "item")}
               {view.counts.failed > 0 ? `, and ${count(view.counts.failed, "item")} to try again` : ""}.
             </li>
             <li>
-              <span className="font-medium text-gray-900">Sent: </span>
+              <span className="font-medium text-gray-900"><Trans context="SaberraOutboxPanel, span">Sent: </Trans></span>
               {count(view.counts.sent, "item")}.
             </li>
             <li>
-              <span className="font-medium text-gray-900">Withdrawn: </span>
+              <Trans context="SaberraOutboxPanel, li"><span className="font-medium text-gray-900">Withdrawn: </span>
               {count(view.counts.held, "item")}, made private, deleted, or written by a member who left.
-            </li>
+            </Trans></li>
             <li>
-              <span className="font-medium text-gray-900">By kind: </span>
+              <Trans context="SaberraOutboxPanel, li"><span className="font-medium text-gray-900">By kind: </span>
               {count(view.byKind.journal_entry, "journal entry", "journal entries")} and{" "}
               {count(view.byKind.team_signal, "team signal")}.
-            </li>
+            </Trans></li>
             <li>
-              <span className="font-medium text-gray-900">Members who left: </span>
+              <Trans context="SaberraOutboxPanel, li"><span className="font-medium text-gray-900">Members who left: </span>
               {view.pendingVendorDelete === 0
                 ? "none waiting."
                 : `${count(view.pendingVendorDelete, "code-name")} kept, marked pending.`}{" "}
               When a member leaves, their items here are cleared and their code-name waits for Saberra
               to confirm a delete. Saberra has no delete endpoint yet, so it stays pending.
-            </li>
+            </Trans></li>
           </ul>
 
           {view.items.length === 0 ? (
-            <p className="text-sm text-gray-500">Nothing would cross yet.</p>
+            <p className="text-sm text-gray-500"><Trans context="SaberraOutboxPanel, p">Nothing would cross yet.</Trans></p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <caption className="sr-only">The newest items, without their words</caption>
+                <caption className="sr-only"><Trans context="SaberraOutboxPanel, caption">The newest items, without their words</Trans></caption>
                 <thead>
                   <tr className="text-xs text-gray-500 border-b border-gray-100">
-                    <th scope="col" className="py-2 pr-3 font-medium">Kind</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Date</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Code-name</th>
-                    <th scope="col" className="py-2 pr-3 font-medium">Length</th>
-                    <th scope="col" className="py-2 font-medium">Status</th>
+                    <th scope="col" className="py-2 pr-3 font-medium"><Trans context="SaberraOutboxPanel, th">Kind</Trans></th>
+                    <th scope="col" className="py-2 pr-3 font-medium"><Trans context="SaberraOutboxPanel, th">Date</Trans></th>
+                    <th scope="col" className="py-2 pr-3 font-medium"><Trans context="SaberraOutboxPanel, th">Code-name</Trans></th>
+                    <th scope="col" className="py-2 pr-3 font-medium"><Trans context="SaberraOutboxPanel, th">Length</Trans></th>
+                    <th scope="col" className="py-2 font-medium"><Trans context="SaberraOutboxPanel, th">Status</Trans></th>
                   </tr>
                 </thead>
                 <tbody>

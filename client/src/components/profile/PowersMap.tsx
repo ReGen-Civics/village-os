@@ -92,6 +92,7 @@ import { UserCheck } from "lucide-react";
 import type { GameStagePublic, ProgressionCapability } from "@/lib/gameApi";
 import type { StageRule } from "@shared/gameConfig";
 import PowerHand from "./PowerHand";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * How each rung is reached, in the words a member would use.
@@ -230,7 +231,7 @@ function PowerRow({ row, reached }: { row: ProgressionCapability; reached: boole
       {row.recommended && yours.length ? (
         <span className="basis-full">
           <span className="rounded-full bg-notice/15 px-2 py-0.5 text-xs font-semibold text-notice">
-            Suits your {namesOf(yours)}
+            <Trans context="PowersMap, span">Suits your {namesOf(yours)}</Trans>
           </span>
         </span>
       ) : suits.length ? (
@@ -299,12 +300,12 @@ export default function PowersMap({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 id="powers-h" className="font-display text-2xl font-bold text-card-foreground">
-            Powers
-          </h2>
+            <Trans context="PowersMap, h2">Powers
+          </Trans></h2>
           {/* No tally (the prune): what is open is drawn on the thread below, never counted. */}
           <p className="mt-1 text-sm text-muted-foreground">
-            Doors open as you walk, and the village entrusts the rest through its roles.
-          </p>
+            <Trans context="PowersMap, p">Doors open as you walk, and the village entrusts the rest through its roles.
+          </Trans></p>
         </div>
         {/* No `aria-pressed`. This button's NAME changes to describe what the
             next press does, and a toggle that does that must not also carry a
@@ -329,10 +330,10 @@ export default function PowersMap({
           : "Showing the powers open to you."}
       </p>
 
-      <h3 className="mt-8 font-semibold text-card-foreground">The climb</h3>
+      <h3 className="mt-8 font-semibold text-card-foreground"><Trans context="PowersMap, h3">The climb</Trans></h3>
       <p className="mt-0.5 text-sm text-muted-foreground">
-        One thread through the village, and the doors each node opens.
-      </p>
+        <Trans context="PowersMap, p">One thread through the village, and the doors each node opens.
+      </Trans></p>
 
       {/* An ordered list because the order IS the information: these rungs are
           climbed in sequence and a screen reader should hear that. */}
@@ -375,8 +376,8 @@ export default function PowersMap({
                 </span>
                 {rung.state === "here" ? (
                   <span className="rounded-full bg-notice/15 px-2 py-0.5 text-xs font-semibold text-notice">
-                    You are here
-                  </span>
+                    <Trans context="PowersMap, span">You are here
+                  </Trans></span>
                 ) : null}
                 <span className="text-sm text-muted-foreground">{rung.requirement}</span>
               </div>
@@ -409,11 +410,11 @@ export default function PowersMap({
         <>
           <div className="mt-8 flex items-center gap-2">
             <UserCheck className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <h3 className="font-semibold text-card-foreground">Entrusted by the village</h3>
+            <h3 className="font-semibold text-card-foreground"><Trans context="PowersMap, h3">Entrusted by the village</Trans></h3>
           </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            A role or a badge opens these. No amount of climbing reaches them.
-          </p>
+            <Trans context="PowersMap, p">A role or a badge opens these. No amount of climbing reaches them.
+          </Trans></p>
           {suitsYou > 0 ? (
             <p className="mt-1 text-sm font-medium text-notice">
               {suitsYou === 1

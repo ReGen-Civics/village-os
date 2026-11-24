@@ -14,6 +14,7 @@
  */
 import { m } from "framer-motion";
 import { Sparkles, ArrowDown } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 
 export default function SurfacedBanner({
   title,
@@ -47,7 +48,7 @@ export default function SurfacedBanner({
     >
       <Sparkles className="h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-widest text-notice">Newly open to you</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="SurfacedBanner, p">Newly open to you</Trans></p>
         <p className="font-display text-lg font-semibold leading-snug text-card-foreground">{title}</p>
         {because ? <p className="mt-0.5 text-sm text-muted-foreground">{because}</p> : null}
       </div>
@@ -56,8 +57,8 @@ export default function SurfacedBanner({
         onClick={onGo}
         className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-notice px-4 py-2 font-medium text-background"
       >
-        Take a look
-        <ArrowDown className="h-4 w-4" aria-hidden="true" />
+        <Trans context="SurfacedBanner, button">Take a look
+        <ArrowDown className="h-4 w-4" aria-hidden="true" /></Trans>
       </button>
     </m.aside>
   );

@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { ExternalLink, Link2, ShieldCheck } from "lucide-react";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -48,18 +49,19 @@ function VillageFigure({ label, figure }: { label: string; figure: any }) {
           <p className="text-lg font-semibold text-card-foreground">{figure.formatted}</p>
           {figure.stale && (
             <p className="text-xs text-notice">
-              as of {new Date(figure.fetchedAt).toLocaleString()}. Base didn't answer just now, so this is the last true figure
-            </p>
+              <Trans context="OnchainCard, p">as of {new Date(figure.fetchedAt).toLocaleString()}. Base didn't answer just now, so this is the last true figure
+            </Trans></p>
           )}
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">not readable right now. Nothing is shown instead of a wrong number</p>
+        <p className="text-sm text-muted-foreground"><Trans context="OnchainCard, p">not readable right now. Nothing is shown instead of a wrong number</Trans></p>
       )}
     </div>
   );
 }
 
 export default function OnchainCard() {
+  const { t } = useLingui();
   // Asked only once the catalog has loaded and says the module is on: before it
   // loads, and for a module listed as off, the read would answer 404 (verify item 7).
   const hyphaOn = moduleIsOn(useModules(), "hypha");
@@ -153,12 +155,12 @@ export default function OnchainCard() {
   return (
     <div className="bg-card rounded-2xl shadow-lg p-8">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-2xl font-display font-bold text-card-foreground">On-chain holdings</h2>
+        <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="OnchainCard, h2">On-chain holdings</Trans></h2>
         {verified ? (
           <span className="inline-flex items-center gap-1.5 text-xs bg-open/10 text-open px-2 py-1 rounded-full">
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <Trans context="OnchainCard, span"><ShieldCheck className="w-3.5 h-3.5" />
             {String(data.wallet.address).slice(0, 6)}…{String(data.wallet.address).slice(-4)} verified
-          </span>
+          </Trans></span>
         ) : (
           <button onClick={verify} disabled={busy}
             className="inline-flex items-center gap-1.5 text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-50">
@@ -170,10 +172,10 @@ export default function OnchainCard() {
 
       {!verified ? (
         <p className="text-sm text-muted-foreground">
-          <ContributionWord /> and governance tokens live on Base and are shown here only
+          <Trans context="OnchainCard, p"><ContributionWord /> and governance tokens live on Base and are shown here only
           against a wallet you have PROVEN you control: one free signature,
           no transaction, no cost.
-        </p>
+        </Trans></p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {["equity", "voice"].map((slug) => {
@@ -190,9 +192,9 @@ export default function OnchainCard() {
                     <p className="text-2xl font-bold text-card-foreground">{b.formatted}</p>
                     {b.stale && (
                       <p className="text-xs text-notice mt-1">
-                        as of {new Date(b.fetchedAt).toLocaleString()}. The chain
+                        <Trans context="OnchainCard, p">as of {new Date(b.fetchedAt).toLocaleString()}. The chain
                         didn't answer just now, so this is the last true value
-                      </p>
+                      </Trans></p>
                     )}
                   </>
                 ) : (
@@ -219,15 +221,15 @@ export default function OnchainCard() {
       */}
       {(village?.tokens ?? []).length > 0 && (
         <div className="mt-6 pt-5 border-t border-border">
-          <h3 className="text-sm font-semibold text-card-foreground">The village on Base</h3>
+          <h3 className="text-sm font-semibold text-card-foreground"><Trans context="OnchainCard, h3">The village on Base</Trans></h3>
           <div className="grid sm:grid-cols-2 gap-4 mt-3">
             {village.tokens.map((t: any) => (
               <div key={t.slug} className="border border-border rounded-xl p-4">
                 <p className="text-xs text-muted-foreground mb-1">
                   {t.name} ({t.symbol})
                 </p>
-                <VillageFigure label="Total supply" figure={t.totalSupply} />
-                {village.treasuryConfigured && <VillageFigure label="Treasury holds" figure={t.treasuryBalance} />}
+                <VillageFigure label={t({ message: "Total supply", context: "OnchainCard, label" })} figure={t.totalSupply} />
+                {village.treasuryConfigured && <VillageFigure label={t({ message: "Treasury holds", context: "OnchainCard, label" })} figure={t.treasuryBalance} />}
               </div>
             ))}
           </div>
@@ -237,7 +239,7 @@ export default function OnchainCard() {
       {data?.hypha?.configured && (
         <a href={data.hypha.links?.treasury} target="_blank" rel="noreferrer"
           className="inline-flex items-center gap-1.5 text-sm text-foreground font-medium hover:underline mt-4">
-          Govern and move these on Hypha <ExternalLink className="w-3.5 h-3.5" />
+          <Trans context="OnchainCard, a">Govern and move these on Hypha <ExternalLink className="w-3.5 h-3.5" /></Trans>
         </a>
       )}
     </div>

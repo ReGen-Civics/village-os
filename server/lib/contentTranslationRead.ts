@@ -19,6 +19,7 @@
  * visitor sees (the role card, a page's words). An editor's read never sends
  * it, so the English an editor loads, and saves back, is always the English.
  */
+import { villageDocEnglishAt } from "../../shared/villageDocTranslation";
 import type { Pool } from "mysql2/promise";
 import { PROTECTED_PAGES, ROLE_CARD_LIST_FIELDS, translatableLocales, translationTarget } from "../../shared/contentTranslation";
 import { PAGE_SECTION_PREFIX, pageSpecForSection } from "../../shared/pageContent";
@@ -192,6 +193,19 @@ export async function pageTranslation(pool: Pool, section: string, stored: unkno
   for (const row of rows) {
     if (!translationTarget(row.kind, row.refKey, row.field).ok) continue;
     if (!fresh(row, pageEnglishAt(section, stored, row.field))) continue;
+    out.fields[row.field] = row.text;
+    if (machineWritten(row)) out.machine.push(row.field);
+  }
+  return Object.keys(out.fields).length ? out : null;
+}
+
+/** The village's words outside its pages in the reader's language (shared/villageDocTranslation.ts). Null when there are none. */
+export async function villageDocTranslation(pool: Pool, ref: string, doc: unknown, locale: string): Promise<PageTranslation | null> {
+  const rows = await translationsFor(pool, "village_doc", [ref], locale);
+  const out: PageTranslation = { fields: {}, machine: [], locale };
+  for (const row of rows) {
+    if (!translationTarget(row.kind, row.refKey, row.field).ok) continue;
+    if (!fresh(row, villageDocEnglishAt(ref, doc, row.field))) continue;
     out.fields[row.field] = row.text;
     if (machineWritten(row)) out.machine.push(row.field);
   }

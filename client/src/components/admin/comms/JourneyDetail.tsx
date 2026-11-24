@@ -21,6 +21,7 @@ import {
   type JourneyStepView,
   type StepEdit,
 } from "./journeysApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Unit = "minutes" | "hours" | "days";
 const UNIT_MINUTES: Record<Unit, number> = { minutes: 1, hours: 60, days: 1440 };
@@ -44,6 +45,7 @@ function StepEditor({
   onSaved: (version: number) => void;
   onCancel: () => void;
 }) {
+  const { t } = useLingui();
   const start = splitOffset(step.offsetMinutes);
   const [amount, setAmount] = useState(String(start.amount));
   const [unit, setUnit] = useState<Unit>(start.unit);
@@ -81,24 +83,24 @@ function StepEditor({
     <div className="mt-3 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
       <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
         <label className="sr-only" htmlFor={`amount-${step.key}`}>
-          How long
-        </label>
+          <Trans context="JourneyDetail, label">How long
+        </Trans></label>
         <input id={`amount-${step.key}`} type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} className={`${field} w-20`} />
-        <select aria-label="Unit" value={unit} onChange={(e) => setUnit(e.target.value as Unit)} className={field}>
+        <select aria-label={t({ message: "Unit", context: "JourneyDetail, aria-label" })} value={unit} onChange={(e) => setUnit(e.target.value as Unit)} className={field}>
           <option value="minutes">minutes</option>
           <option value="hours">hours</option>
           <option value="days">days</option>
         </select>
         {event ? (
           <>
-            <select aria-label="Before or after" value={before ? "before" : "after"} onChange={(e) => setBefore(e.target.value === "before")} className={field}>
+            <select aria-label={t({ message: "Before or after", context: "JourneyDetail, aria-label" })} value={before ? "before" : "after"} onChange={(e) => setBefore(e.target.value === "before")} className={field}>
               <option value="before">before</option>
               <option value="after">after</option>
             </select>
             <span>{step.anchor === "event_start" ? "it starts" : "it ends"}</span>
           </>
         ) : (
-          <span>after they start</span>
+          <span><Trans context="JourneyDetail, span">after they start</Trans></span>
         )}
       </div>
       <div className="flex flex-wrap gap-4 text-sm text-gray-700">
@@ -132,7 +134,7 @@ function StepEditor({
       </div>
       {detail.conditions.length > 0 && (
         <fieldset className="text-sm text-gray-700">
-          <legend className="font-medium text-gray-900">Skip this email when</legend>
+          <legend className="font-medium text-gray-900"><Trans context="JourneyDetail, legend">Skip this email when</Trans></legend>
           {detail.conditions.map((c) => (
             <label key={c.key} className="mt-1 flex items-center gap-2">
               <input
@@ -157,15 +159,16 @@ function StepEditor({
           {saving ? "Saving..." : "Save as a new version"}
         </button>
         <button type="button" onClick={onCancel} className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700">
-          Cancel
-        </button>
+          <Trans context="JourneyDetail, button">Cancel
+        </Trans></button>
       </div>
-      <p className="text-xs text-gray-500">People already on this journey keep the version they started on.</p>
+      <p className="text-xs text-gray-500"><Trans context="JourneyDetail, p">People already on this journey keep the version they started on.</Trans></p>
     </div>
   );
 }
 
 export default function JourneyDetail({ password, journeyKey, onChanged }: { password: string; journeyKey: string; onChanged: () => void }) {
+  const { t } = useLingui();
   const [detail, setDetail] = useState<Detail | null>(null);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
@@ -186,7 +189,7 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
   }, [load]);
 
   if (error) return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  if (!detail) return <p className="py-12 text-center text-sm text-gray-400">Loading...</p>;
+  if (!detail) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="JourneyDetail, p">Loading...</Trans></p>;
 
   const toggle = async () => {
     setBusy(true);
@@ -225,9 +228,9 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
         <div>
           <h3 className="text-lg font-bold text-gray-900">{detail.title}</h3>
           <p className="text-sm text-gray-500">
-            {detail.state === "on" ? "On" : "Off"}, version {detail.version}
+            <Trans context="JourneyDetail, p">{detail.state === "on" ? "On" : "Off"}, version {detail.version}
             {detail.own ? ", your own steps" : ", the platform's steps"}. {detail.active} on it now.
-          </p>
+          </Trans></p>
         </div>
         <button
           type="button"
@@ -241,18 +244,18 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
       {note && <p className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700">{note}</p>}
       {detail.state === "off" && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Off. Nobody gets these emails. People who join it wait, and turning it on sends what is still worth sending.
-        </p>
+          <Trans context="JourneyDetail, p">Off. Nobody gets these emails. People who join it wait, and turning it on sends what is still worth sending.
+        </Trans></p>
       )}
       {detail.followsDials && (
         <p className="text-sm text-gray-600">
-          The reminder times follow the dials in Comms Settings until you change a step here.
-        </p>
+          <Trans context="JourneyDetail, p">The reminder times follow the dials in Comms Settings until you change a step here.
+        </Trans></p>
       )}
       <PathJourneyOptions password={password} journeyKey={detail.key} onChanged={load} />
 
-      <section aria-label="Timeline">
-        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">Timeline</h4>
+      <section aria-label={t({ message: "Timeline", context: "JourneyDetail, aria-label" })}>
+        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="JourneyDetail, h4">Timeline</Trans></h4>
         <ol className="space-y-3">
           {detail.steps.map((s, i) => (
             <li key={s.key} className="rounded-lg border border-gray-200 bg-white p-3">
@@ -265,7 +268,7 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
                   {s.window === "daytime" ? ", daytime only" : ""}
                 </p>
               </div>
-              {s.subject && <p className="mt-1 truncate text-sm text-gray-700" title={s.subject}>Subject: {s.subject}</p>}
+              {s.subject && <p className="mt-1 truncate text-sm text-gray-700" title={s.subject}><Trans context="JourneyDetail, p">Subject: {s.subject}</Trans></p>}
               {s.skipIf.length > 0 && (
                 <p className="mt-1 text-xs text-gray-500">
                   Skipped when: {s.skipIf.map((k) => detail.conditions.find((c) => c.key === k)?.label ?? k).join("; ")}
@@ -273,14 +276,14 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
               )}
               <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
                 <button type="button" onClick={() => setEditing(editing === s.key ? null : s.key)} className="text-gray-900 underline">
-                  Edit this step
-                </button>
+                  <Trans context="JourneyDetail, button">Edit this step
+                </Trans></button>
                 <button type="button" onClick={() => sendTest(s.key)} className="text-gray-900 underline">
-                  Send me a test
-                </button>
+                  <Trans context="JourneyDetail, button">Send me a test
+                </Trans></button>
                 <a href="/admin?tab=comms-words" className="text-gray-900 underline">
-                  Edit the words
-                </a>
+                  <Trans context="JourneyDetail, a">Edit the words
+                </Trans></a>
                 <span className="text-xs text-gray-500">{s.words === "village" ? "Your words" : s.words === "platform" ? "Platform words" : "No words yet"}</span>
               </div>
               {tests[s.key] && <p className="mt-1 text-xs text-gray-600">{tests[s.key]}</p>}
@@ -309,10 +312,10 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
       <JourneyOutcomes password={password} journeyKey={detail.key} labels={Object.fromEntries(detail.steps.map((s) => [s.key, s.label]))} />
       <JourneyWalk key={walkFor ?? "none"} password={password} detail={detail} enrollmentId={walkFor} />
 
-      <section aria-label="People on it">
-        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">People on it ({detail.active})</h4>
+      <section aria-label={t({ message: "People on it", context: "JourneyDetail, aria-label" })}>
+        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="JourneyDetail, h4">People on it ({detail.active})</Trans></h4>
         {detail.enrollments.length === 0 ? (
-          <p className="text-sm text-gray-500">Nobody is on this journey now.</p>
+          <p className="text-sm text-gray-500"><Trans context="JourneyDetail, p">Nobody is on this journey now.</Trans></p>
         ) : (
           <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
             {detail.enrollments.map((e) => (
@@ -320,17 +323,17 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
                 <div className="min-w-0">
                   <p className="truncate font-medium text-gray-900">{e.name || e.email || "Somebody"}</p>
                   <p className="truncate text-xs text-gray-500">
-                    {e.email}
-                    {e.nextCheckAt ? `, next look ${whenLabel(e.nextCheckAt)}` : ""}, version {e.version}
+                    <Trans context="JourneyDetail, p">{e.email}
+                    {e.nextCheckAt ? `, next look ${whenLabel(e.nextCheckAt)}` : ""}, version {e.version}</Trans>
                   </p>
                 </div>
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setWalkFor(e.id)} className="text-gray-900 underline">
-                    Walk through
-                  </button>
+                    <Trans context="JourneyDetail, button">Walk through
+                  </Trans></button>
                   <button type="button" onClick={() => stop(e.id)} className="text-red-700 underline">
-                    Stop
-                  </button>
+                    <Trans context="JourneyDetail, button">Stop
+                  </Trans></button>
                 </div>
               </li>
             ))}
@@ -340,12 +343,12 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
 
       {detail.versions.length > 0 && (
         <details className="text-sm text-gray-700">
-          <summary className="cursor-pointer font-medium text-gray-900">Versions</summary>
+          <summary className="cursor-pointer font-medium text-gray-900"><Trans context="JourneyDetail, summary">Versions</Trans></summary>
           <ul className="mt-2 space-y-1">
             {detail.versions.map((v) => (
               <li key={v.version}>
-                Version {v.version}, saved {whenLabel(v.createdAt)}. {v.active} on it now.
-              </li>
+                <Trans context="JourneyDetail, li">Version {v.version}, saved {whenLabel(v.createdAt)}. {v.active} on it now.
+              </Trans></li>
             ))}
           </ul>
         </details>

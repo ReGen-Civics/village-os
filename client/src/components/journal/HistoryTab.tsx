@@ -12,10 +12,12 @@ import BreathingLoader from "@/components/natural/BreathingLoader";
 import EntryCard, { type HistoryItem } from "./EntryCard";
 import { usePendingEntries } from "./hooks";
 import { BTN_SECONDARY, HINT, dayKey, dayLabel } from "./ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const PAGE = 30;
 
 export default function HistoryTab({ owner, refreshKey = 0 }: { owner: string; refreshKey?: number }) {
+  const { t } = useLingui();
   const pending = usePendingEntries(owner);
   const [entries, setEntries] = useState<JournalEntry[] | null>(null);
   const [more, setMore] = useState(false);
@@ -140,10 +142,10 @@ export default function HistoryTab({ owner, refreshKey = 0 }: { owner: string; r
 
       {entries === null && pending.length === 0 ? (
         <div className="flex justify-center py-10">
-          <BreathingLoader label="Reading your journal" />
+          <BreathingLoader label={t({ message: "Reading your journal", context: "HistoryTab, label" })} />
         </div>
       ) : groups.length === 0 ? (
-        <p className={HINT}>Nothing here yet. What you save from Today appears here, newest first.</p>
+        <p className={HINT}><Trans context="HistoryTab, p">Nothing here yet. What you save from Today appears here, newest first.</Trans></p>
       ) : (
         groups.map((g) => (
           <section key={g.key} aria-label={g.label}>

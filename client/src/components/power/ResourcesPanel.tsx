@@ -17,6 +17,7 @@ import { crossRate, exponentOf, formatMoney } from "@shared/money";
 import { storedDisplayCurrency, type FxTable } from "./CurrencyPicker";
 import type { PowerCircle } from "./types";
 import type { ResourcesData, ResourcesRule } from "./ResourcesLens";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -105,6 +106,7 @@ export default function ResourcesPanel({
   resources: ResourcesData | null;
   circles: PowerCircle[];
 }) {
+  const { t } = useLingui();
   const forumOn = !!useModule("forum");
   const burn = useCircleBurn(!!resources);
   const [me, setMe] = useState<MePayload | null>(null);
@@ -200,8 +202,8 @@ export default function ResourcesPanel({
   if (signedOut) {
     return (
       <div className="bg-card border border-border rounded-2xl p-5" data-resources-panel>
-        <h2 className="font-display text-lg font-bold text-foreground mb-1">What can I spend?</h2>
-        <p className="text-sm text-muted-foreground mb-3">Sign in to see which rules name you.</p>
+        <h2 className="font-display text-lg font-bold text-foreground mb-1"><Trans context="ResourcesPanel, h2">What can I spend?</Trans></h2>
+        <p className="text-sm text-muted-foreground mb-3"><Trans context="ResourcesPanel, p">Sign in to see which rules name you.</Trans></p>
         {/* This one had no link at all, so the sentence was the whole offer.
             It stays a panel: it sits inside the map beside the lens controls,
             and SignInToSee carries a Layout that would nest a second site
@@ -214,26 +216,26 @@ export default function ResourcesPanel({
   return (
     <div className="bg-card border border-border rounded-2xl p-5 space-y-4" data-resources-panel>
       <div>
-        <h2 className="font-display text-lg font-bold text-foreground mb-1">What can I spend?</h2>
+        <h2 className="font-display text-lg font-bold text-foreground mb-1"><Trans context="ResourcesPanel, h2">What can I spend?</Trans></h2>
         <p className="text-xs text-muted-foreground">
-          Declared rules, read for you. Nothing here moves money; it says who may, and with whose yes.
-        </p>
+          <Trans context="ResourcesPanel, p">Declared rules, read for you. Nothing here moves money; it says who may, and with whose yes.
+        </Trans></p>
       </div>
 
-      {!me && <p className="text-sm text-muted-foreground">Reading the rules…</p>}
+      {!me && <p className="text-sm text-muted-foreground"><Trans context="ResourcesPanel, p">Reading the rules…</Trans></p>}
 
       {me && (
         <>
-          <section aria-label="Alone">
-            <h3 className="text-sm font-semibold text-foreground mb-1">Without asking</h3>
+          <section aria-label={t({ message: "Alone", context: "ResourcesPanel, aria-label" })}>
+            <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ResourcesPanel, h3">Without asking</Trans></h3>
             {me.answers.alone.map((s) => (
               <p key={s} className="text-sm text-foreground/90">{s}</p>
             ))}
           </section>
 
           {me.answers.withApproval.length > 0 && (
-            <section aria-label="With approval">
-              <h3 className="text-sm font-semibold text-foreground mb-1">With a yes</h3>
+            <section aria-label={t({ message: "With approval", context: "ResourcesPanel, aria-label" })}>
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ResourcesPanel, h3">With a yes</Trans></h3>
               {me.answers.withApproval.map((s) => (
                 <p key={s} className="text-sm text-foreground/90">{s}</p>
               ))}
@@ -241,28 +243,28 @@ export default function ResourcesPanel({
           )}
 
           {me.answers.paidFrom.length > 0 && (
-            <section aria-label="The pots">
-              <h3 className="text-sm font-semibold text-foreground mb-1">The pots</h3>
+            <section aria-label={t({ message: "The pots", context: "ResourcesPanel, aria-label" })}>
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ResourcesPanel, h3">The pots</Trans></h3>
               {me.answers.paidFrom.map((s) => (
                 <p key={s} className="text-sm text-foreground/90">{s}</p>
               ))}
             </section>
           )}
 
-          <section aria-label="Where the money comes from">
-            <h3 className="text-sm font-semibold text-foreground mb-1">Where the money comes from</h3>
+          <section aria-label={t({ message: "Where the money comes from", context: "ResourcesPanel, aria-label" })}>
+            <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ResourcesPanel, h3">Where the money comes from</Trans></h3>
             {me.answers.comesFrom.map((s) => (
               <p key={s} className="text-sm text-foreground/90">{s}</p>
             ))}
           </section>
 
           {forumOn && askable.length > 0 && (
-            <section aria-label="Request approval" className="border-t border-border pt-3 space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">Request approval</h3>
+            <section aria-label={t({ message: "Request approval", context: "ResourcesPanel, aria-label" })} className="border-t border-border pt-3 space-y-2">
+              <h3 className="text-sm font-semibold text-foreground"><Trans context="ResourcesPanel, h3">Request approval</Trans></h3>
               {!me.viewer.canRequest && (
                 <p className="text-xs text-muted-foreground">
-                  Opening a decision requires the co-creator stage or a role that grants it.
-                </p>
+                  <Trans context="ResourcesPanel, p">Opening a decision requires the co-creator stage or a role that grants it.
+                </Trans></p>
               )}
               {me.viewer.canRequest && (
                 <>
@@ -292,12 +294,12 @@ export default function ResourcesPanel({
                     />
                   </label>
                   {converted?.words && (
-                    <p className="text-xs text-muted-foreground">About {converted.words} in your display currency.</p>
+                    <p className="text-xs text-muted-foreground"><Trans context="ResourcesPanel, p">About {converted.words} in your display currency.</Trans></p>
                   )}
                   {converted?.unconverted && askRule && (
                     <p className="text-xs text-muted-foreground" data-resources-unconverted>
-                      This stays in {askRule.unit}: no exchange rate is on file for it yet.
-                    </p>
+                      <Trans context="ResourcesPanel, p">This stays in {askRule.unit}: no exchange rate is on file for it yet.
+                    </Trans></p>
                   )}
                   <label className="block text-xs text-muted-foreground">
                     What for
@@ -321,18 +323,18 @@ export default function ResourcesPanel({
               )}
               {openedThread && (
                 <p className="text-xs text-foreground">
-                  The decision is open.{" "}
+                  <Trans context="ResourcesPanel, p">The decision is open.{" "}
                   <a href={`/forum/${openedThread}`} className="text-teal-deep font-medium underline underline-offset-2">
                     Read the proposal
-                  </a>
+                  </a></Trans>
                 </p>
               )}
             </section>
           )}
 
           {resources && resources.budgets.length + resources.rules.length > 0 && (
-            <section aria-label="By circle" className="border-t border-border pt-3">
-              <h3 className="text-sm font-semibold text-foreground mb-1">By circle, in words</h3>
+            <section aria-label={t({ message: "By circle", context: "ResourcesPanel, aria-label" })} className="border-t border-border pt-3">
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ResourcesPanel, h3">By circle, in words</Trans></h3>
               <div className="space-y-2" data-resources-circle-words>
                 {circles
                   .filter(

@@ -52,6 +52,7 @@ import CommonsPanel from "@/components/commons/CommonsPanel";
 import { useSeason } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, FIELD, HINT, TILE, WORLD } from "@/components/journey/look";
 import type { SeasonGoalView } from "@shared/seasonGoalsView";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export const MY_SEASON_WORDS = {
   title: "Your season",
@@ -238,6 +239,7 @@ export function commonsFor(
 }
 
 export default function MySeason() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const live = useSeason();
   const modules = useModules();
@@ -389,7 +391,7 @@ export default function MySeason() {
 
         {state === "loading" && (
           <div className="flex justify-center py-16">
-            <BreathingLoader label="Reading your season" />
+            <BreathingLoader label={t({ message: "Reading your season", context: "MySeason, label" })} />
           </div>
         )}
         {state === "error" && (
@@ -443,7 +445,7 @@ export default function MySeason() {
                       >
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                           <p className="font-display text-lg font-bold text-foreground">{seat.name}</p>
-                          {seat.termEndsOn && <p className="text-sm text-muted-foreground">Term until {civilDayWords(seat.termEndsOn)}</p>}
+                          {seat.termEndsOn && <p className="text-sm text-muted-foreground"><Trans context="MySeason, p">Term until {civilDayWords(seat.termEndsOn)}</Trans></p>}
                         </div>
                         {app ? (
                           <div className="mt-2 flex flex-wrap items-center gap-2">

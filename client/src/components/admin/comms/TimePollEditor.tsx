@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { PollView } from "@shared/comms/timePoll";
 import { authHeaders, refusal } from "../adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -67,6 +68,7 @@ export default function TimePollEditor({
   password: string;
   onChanged?: () => void;
 }) {
+  const { t } = useLingui();
   const [poll, setPoll] = useState<PollView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -122,7 +124,7 @@ export default function TimePollEditor({
       setBusy(false);
       return res.ok ? d : null;
     } catch {
-      toast.error("That did not work");
+      toast.error(t({ message: "That did not work", context: "TimePollEditor, toast" }));
       setBusy(false);
       return null;
     }
@@ -220,17 +222,17 @@ export default function TimePollEditor({
     </div>
   );
 
-  if (!loaded) return <p className="text-xs text-gray-400 mt-3">Loading...</p>;
+  if (!loaded) return <p className="text-xs text-gray-400 mt-3"><Trans context="TimePollEditor, p">Loading...</Trans></p>;
 
   if (!poll) {
     return (
       <div className="mt-3 border-t border-gray-100 pt-3">
         <p className="text-xs text-gray-500 mb-2">
-          {weekly
+          <Trans context="TimePollEditor, p">{weekly
             ? "Let people vote on the series' weekday and time. The series follows the leading time, and an evening inside the freeze never moves."
             : "Let people vote on this gathering's time. The gathering follows the leading time until the vote closes."}{" "}
           The first time listed leads until somebody votes.
-        </p>
+        </Trans></p>
         <div className="space-y-2">
           {drafts.map((d, i) =>
             optionRow(d, (next) => setDrafts((all) => all.map((x, j) => (j === i ? next : x))), `draft-${i}`),
@@ -239,13 +241,13 @@ export default function TimePollEditor({
         <div className="flex items-center gap-2 mt-2">
           {drafts.length < 8 && (
             <button type="button" className={button} onClick={() => setDrafts((all) => [...all, { ...EMPTY_OPTION }])}>
-              Add a time
-            </button>
+              <Trans context="TimePollEditor, button">Add a time
+            </Trans></button>
           )}
           {drafts.length > 2 && (
             <button type="button" className={button} onClick={() => setDrafts((all) => all.slice(0, -1))}>
-              Remove the last time
-            </button>
+              <Trans context="TimePollEditor, button">Remove the last time
+            </Trans></button>
           )}
         </div>
         {dials}
@@ -259,8 +261,8 @@ export default function TimePollEditor({
             Notify every member
           </label>
           <button type="button" className={primary} disabled={busy} onClick={() => void create()}>
-            Start the vote
-          </button>
+            <Trans context="TimePollEditor, button">Start the vote
+          </Trans></button>
         </div>
       </div>
     );
@@ -292,8 +294,8 @@ export default function TimePollEditor({
                 {o.pinned ? "Unpin" : "Pin"}
               </button>
               <button type="button" className={button} disabled={busy || poll.options.length <= 2} onClick={() => void act("DELETE", `/options/${encodeURIComponent(o.id)}`, undefined, "Time removed")}>
-                Remove
-              </button>
+                <Trans context="TimePollEditor, button">Remove
+              </Trans></button>
             </span>
           </li>
         ))}
@@ -309,23 +311,23 @@ export default function TimePollEditor({
               if (await act("POST", "/options", { options: [optionBody(poll.mode === "weekly", extra)] }, "Time added")) setExtra({ ...EMPTY_OPTION });
             }}
           >
-            Add this time
-          </button>
+            <Trans context="TimePollEditor, button">Add this time
+          </Trans></button>
         </div>
       )}
       {dials}
       <div className="flex items-center gap-2 flex-wrap mt-3">
         <button type="button" className={button} disabled={busy} onClick={() => void saveSettings()}>
-          Save settings
-        </button>
+          <Trans context="TimePollEditor, button">Save settings
+        </Trans></button>
         {open ? (
           <button type="button" className={primary} disabled={busy} onClick={() => void act("POST", "/lock", {}, "Time set")}>
-            Lock now
-          </button>
+            <Trans context="TimePollEditor, button">Lock now
+          </Trans></button>
         ) : (
           <button type="button" className={button} disabled={busy} onClick={() => void act("POST", "/reopen", { closesAt: closesAt ? new Date(closesAt).toISOString() : null }, "Vote reopened")}>
-            Reopen
-          </button>
+            <Trans context="TimePollEditor, button">Reopen
+          </Trans></button>
         )}
         {open && (
           <>
@@ -338,8 +340,8 @@ export default function TimePollEditor({
               Every member
             </label>
             <button type="button" className={button} disabled={busy || (!inviteAnswered && !inviteMembers)} onClick={() => void sendInvites()}>
-              Invite to vote
-            </button>
+              <Trans context="TimePollEditor, button">Invite to vote
+            </Trans></button>
           </>
         )}
         <button
@@ -354,12 +356,12 @@ export default function TimePollEditor({
             if (window.confirm(words)) void act("DELETE", "", undefined, "Vote ended");
           }}
         >
-          End the vote
-        </button>
+          <Trans context="TimePollEditor, button">End the vote
+        </Trans></button>
       </div>
       <p className="text-[11px] text-gray-400 mt-2">
-        Each person is invited once per vote. Members follow their own email settings.
-      </p>
+        <Trans context="TimePollEditor, p">Each person is invited once per vote. Members follow their own email settings.
+      </Trans></p>
     </div>
   );
 }

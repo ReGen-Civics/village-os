@@ -3,6 +3,7 @@ import { KeyRound, ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { claimLinkHere } from "@/lib/claimLink";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The founder's way in on day one, and the way back in after a lockout.
@@ -31,6 +32,7 @@ import { claimLinkHere } from "@/lib/claimLink";
  * with "something went wrong" is how the last two lockouts lasted days.
  */
 export default function Bootstrap() {
+  const { t } = useLingui();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -119,11 +121,11 @@ export default function Bootstrap() {
               <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-deep/10">
                 <KeyRound className="h-6 w-6 text-teal-deep" aria-hidden="true" />
               </span>
-              <h1 className="text-2xl font-bold text-amber-ink">Claim this village</h1>
+              <h1 className="text-2xl font-bold text-amber-ink"><Trans context="Bootstrap, h1">Claim this village</Trans></h1>
               <p className="mt-2 text-sm text-amber-ink">
-                For the first founder of a new village, and for a founder who has lost their way
+                <Trans context="Bootstrap, p">For the first founder of a new village, and for a founder who has lost their way
                 back in.
-              </p>
+              </Trans></p>
             </div>
 
             {done ? (
@@ -131,15 +133,15 @@ export default function Bootstrap() {
                 <div className="rounded-lg bg-teal-deep/5 p-4">
                   <p className="flex items-start gap-2 text-sm font-medium text-teal-deep">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>You are this village&rsquo;s founder. One step left: set a password.</span>
+                    <span><Trans context="Bootstrap, span">You are this village&rsquo;s founder. One step left: set a password.</Trans></span>
                   </p>
                 </div>
 
                 {emailed && (
                   <p className="text-sm text-amber-ink">
-                    A link is on its way to <strong>{email}</strong>. It expires in an hour and
+                    <Trans context="Bootstrap, p">A link is on its way to <strong>{email}</strong>. It expires in an hour and
                     works once.
-                  </p>
+                  </Trans></p>
                 )}
 
                 {note && (
@@ -151,8 +153,8 @@ export default function Bootstrap() {
                 {claimUrl && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-amber-ink">
-                      Open this now, on this device:
-                    </p>
+                      <Trans context="Bootstrap, p">Open this now, on this device:
+                    </Trans></p>
                     {/* On THIS address: the server builds the link from FRONTEND_URL,
                         which may not answer yet (lib/claimLink.ts). */}
                     <a
@@ -162,9 +164,9 @@ export default function Bootstrap() {
                       {claimLinkHere(claimUrl, window.location.origin)}
                     </a>
                     <p className="text-xs text-amber-ink">
-                      It expires in an hour and works once. If it expires, come back to this page
+                      <Trans context="Bootstrap, p">It expires in an hour and works once. If it expires, come back to this page
                       and run it again.
-                    </p>
+                    </Trans></p>
                   </div>
                 )}
               </div>
@@ -175,8 +177,8 @@ export default function Bootstrap() {
                     htmlFor="bootstrap-email"
                     className="mb-1.5 block text-sm font-medium text-amber-ink"
                   >
-                    Your email
-                  </label>
+                    <Trans context="Bootstrap, label">Your email
+                  </Trans></label>
                   <div className="relative">
                     <Mail
                       className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-ink/40"
@@ -190,13 +192,13 @@ export default function Bootstrap() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-lg border border-amber-ink/15 py-2.5 pl-9 pr-3 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
-                      placeholder="you@example.com"
+                      placeholder={t({ message: "you@example.com", context: "Bootstrap, placeholder" })}
                     />
                   </div>
                   <p className="mt-1 text-xs text-amber-ink">
-                    The address that becomes this village&rsquo;s founder. If you already have an
+                    <Trans context="Bootstrap, p">The address that becomes this village&rsquo;s founder. If you already have an
                     account here, use that address. The existing account is promoted in place.
-                  </p>
+                  </Trans></p>
                 </div>
 
                 <div>
@@ -204,7 +206,7 @@ export default function Bootstrap() {
                     htmlFor="bootstrap-name"
                     className="mb-1.5 block text-sm font-medium text-amber-ink"
                   >
-                    Your name <span className="font-normal text-amber-ink">(optional)</span>
+                    <Trans context="Bootstrap, label">Your name <span className="font-normal text-amber-ink">(optional)</span></Trans>
                   </label>
                   <input
                     id="bootstrap-name"
@@ -213,7 +215,7 @@ export default function Bootstrap() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full rounded-lg border border-amber-ink/15 px-3 py-2.5 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
-                    placeholder="How the village should greet you"
+                    placeholder={t({ message: "How the village should greet you", context: "Bootstrap, placeholder" })}
                   />
                 </div>
 
@@ -222,8 +224,8 @@ export default function Bootstrap() {
                     htmlFor="bootstrap-password"
                     className="mb-1.5 block text-sm font-medium text-amber-ink"
                   >
-                    This village&rsquo;s bootstrap password
-                  </label>
+                    <Trans context="Bootstrap, label">This village&rsquo;s bootstrap password
+                  </Trans></label>
                   <div className="relative">
                     <KeyRound
                       className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-ink/40"
@@ -237,7 +239,7 @@ export default function Bootstrap() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full rounded-lg border border-amber-ink/15 py-2.5 pl-9 pr-12 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
-                      placeholder="From your hosting environment"
+                      placeholder={t({ message: "From your hosting environment", context: "Bootstrap, placeholder" })}
                     />
                     <ShowPasswordButton shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
                   </div>
@@ -268,10 +270,10 @@ export default function Bootstrap() {
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            This page only ever creates the first founder, or recovers the account named in
+            <Trans context="Bootstrap, p">This page only ever creates the first founder, or recovers the account named in
             BREAK_GLASS_ADMIN_EMAIL. Once a village has a founder, the shared password stops
             authenticating anyone.
-          </p>
+          </Trans></p>
         </div>
       </div>
     </Layout>

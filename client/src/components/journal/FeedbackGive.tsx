@@ -25,6 +25,7 @@ import {
 } from "@/lib/journalApi";
 import GrowingTextarea from "./GrowingTextarea";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, HINT, LABEL } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The longest message the server queues. It is FEEDBACK_MESSAGE_MAX in
@@ -117,8 +118,8 @@ export default function FeedbackGive({ onSent }: { onSent: () => void }) {
   return (
     <section aria-labelledby="fb-give" className="space-y-4">
       <h2 id="fb-give" className="font-display text-xl font-bold text-foreground">
-        Give feedback
-      </h2>
+        <Trans context="FeedbackGive, h2">Give feedback
+      </Trans></h2>
 
       {done && (
         <p role="status" className="rounded-xl bg-sage-light px-4 py-3 text-sm font-medium text-sage">
@@ -127,13 +128,13 @@ export default function FeedbackGive({ onSent }: { onSent: () => void }) {
       )}
 
       {people === null ? (
-        <p className={HINT}>Reading who is open to feedback...</p>
+        <p className={HINT}><Trans context="FeedbackGive, p">Reading who is open to feedback...</Trans></p>
       ) : people.length === 0 ? (
-        <p className={HINT}>Nobody has said yes to feedback yet. When someone does, they appear here.</p>
+        <p className={HINT}><Trans context="FeedbackGive, p">Nobody has said yes to feedback yet. When someone does, they appear here.</Trans></p>
       ) : (
         <fieldset>
-          <legend className={LABEL}>Who is it for?</legend>
-          <p className={HINT}>Only people who said yes to feedback are listed.</p>
+          <legend className={LABEL}><Trans context="FeedbackGive, legend">Who is it for?</Trans></legend>
+          <p className={HINT}><Trans context="FeedbackGive, p">Only people who said yes to feedback are listed.</Trans></p>
           <ul className="mt-2 grid gap-2 sm:grid-cols-2">
             {people.map((p) => (
               <li key={p.id}>
@@ -191,17 +192,17 @@ export default function FeedbackGive({ onSent }: { onSent: () => void }) {
           <button type="button" className={BTN_SECONDARY} onClick={() => void shape()} disabled={!ready || busy !== null}>
             {busy === "shape" ? "Shaping..." : "Shape it"}
           </button>
-          {!ready && <p className={HINT}>Fill in all four parts to shape the message.</p>}
+          {!ready && <p className={HINT}><Trans context="FeedbackGive, p">Fill in all four parts to shape the message.</Trans></p>}
         </div>
       )}
 
       {message !== null && (
         <div className={`${CARD} space-y-3 border-teal-deep/40`}>
           <label htmlFor="fb-message" className={LABEL}>
-            Exactly what {person?.name ?? "they"} will read
-          </label>
+            <Trans context="FeedbackGive, label">Exactly what {person?.name ?? "they"} will read
+          </Trans></label>
           {shapedByHand && (
-            <p className={HINT}>The guide could not shape this one, so here are your own four parts. Shape them by hand.</p>
+            <p className={HINT}><Trans context="FeedbackGive, p">The guide could not shape this one, so here are your own four parts. Shape them by hand.</Trans></p>
           )}
           <GrowingTextarea
             id="fb-message"
@@ -211,9 +212,9 @@ export default function FeedbackGive({ onSent }: { onSent: () => void }) {
             maxLength={FEEDBACK_MESSAGE_MAX}
           />
           <p className="rounded-xl bg-amber-light px-3 py-2 text-sm text-foreground">
-            In a small team, people may still guess who wrote this. It arrives without your name, in the next Monday batch
+            <Trans context="FeedbackGive, p">In a small team, people may still guess who wrote this. It arrives without your name, in the next Monday batch
             (village time), and you can withdraw it until then.
-          </p>
+          </Trans></p>
           <button type="button" className={BTN_PRIMARY} onClick={() => void send()} disabled={!message.trim() || busy !== null}>
             {busy === "send" ? "Queueing..." : "Send in the next batch"}
           </button>

@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { History } from "lucide-react";
 import { lifecycleWords } from "@shared/moduleSwitch";
 import type { HistoryEvent } from "./catalog";
+import { Trans } from "@lingui/react/macro";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en", { year: "numeric", month: "long", day: "numeric" });
 
@@ -23,9 +24,9 @@ export default function ModuleHistoryStrip({ events }: { events: HistoryEvent[] 
   return (
     <section aria-labelledby="module-history" className="mt-8">
       <h2 id="module-history" className="flex items-center gap-2 font-semibold text-foreground mb-2">
-        <History className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+        <Trans context="ModuleHistoryStrip, h2"><History className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         Its history here
-      </h2>
+      </Trans></h2>
       <ol className="space-y-1.5 text-sm">
         {events.slice(0, 8).map((e, i) => (
           <li key={`${e.at}-${i}`} className="flex flex-wrap gap-x-2 text-muted-foreground">
@@ -33,8 +34,8 @@ export default function ModuleHistoryStrip({ events }: { events: HistoryEvent[] 
             <span>{historySentence(e)}</span>
             {e.ballot && (
               <Link href={`/decisions/${e.ballot.id}`} className="text-teal-deep underline">
-                Read the vote
-              </Link>
+                <Trans context="ModuleHistoryStrip, Link">Read the vote
+              </Trans></Link>
             )}
           </li>
         ))}

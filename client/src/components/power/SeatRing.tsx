@@ -22,6 +22,7 @@ import SeatGlyph, { HitArea, seatStateWords } from "./SeatGlyph";
 import { TermArc } from "./TermMarkers";
 import CapacityArc, { arcFor } from "./CapacityArc";
 import type { PowerSeat, Selection } from "./types";
+import { Trans } from "@lingui/react/macro";
 
 export default function SeatRing({
   pos,
@@ -182,8 +183,8 @@ export default function SeatRing({
       ))}
       {pos.questOverflow > 0 && showQuestOverflow && (
         <text x={pos.x} y={pos.y + pos.r - 10} textAnchor="middle" className="fill-muted-foreground pointer-events-none" style={{ fontSize: 10 }}>
-          +{pos.questOverflow} more quests
-        </text>
+          <Trans context="SeatRing, text">+{pos.questOverflow} more quests
+        </Trans></text>
       )}
     </>
   );

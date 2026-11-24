@@ -18,6 +18,7 @@ import { subjectNoun } from "./wizardConfig";
 import { VoteResultMini } from "./VoteResult";
 import VoteClock from "./VoteClock";
 import type { BallotCard as BallotCardData } from "./governanceApi";
+import { Trans } from "@lingui/react/macro";
 
 const MINE: Record<VoteChoice, { label: string; icon: typeof CircleCheck; tone: string }> = {
   yes: { label: "You voted yes", icon: CircleCheck, tone: "text-open" },
@@ -55,10 +56,10 @@ export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
         {open ? (
           expired ? (
             <span className="rounded-full bg-notice/10 px-2.5 py-0.5 text-xs font-semibold text-notice">
-              Waiting to be closed
-            </span>
+              <Trans context="DecisionCard, span">Waiting to be closed
+            </Trans></span>
           ) : (
-            <span className="rounded-full bg-open/10 px-2.5 py-0.5 text-xs font-semibold text-open">Voting now</span>
+            <span className="rounded-full bg-open/10 px-2.5 py-0.5 text-xs font-semibold text-open"><Trans context="DecisionCard, span">Voting now</Trans></span>
           )
         ) : (
           <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
@@ -120,8 +121,8 @@ export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
             </span>
           ) : open && inRoll && !expired ? (
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-notice">
-              Waiting on you
-            </span>
+              <Trans context="DecisionCard, span">Waiting on you
+            </Trans></span>
           ) : null}
         </span>
 

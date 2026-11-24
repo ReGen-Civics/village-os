@@ -13,6 +13,7 @@ import { useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { GLOSS_MAX, shapeProblem } from "@shared/power";
 import type { PowerBlock } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -31,6 +32,7 @@ export default function ShapePicker({
   onPreview: (shape: string | null) => void;
   onSaved: (power: { shape: string; shapeGloss?: string | null; decidesBy: string; decidesByGloss?: string | null }) => void;
 }) {
+  const { t } = useLingui();
   const saved = power.shape;
   const current = preview ?? saved ?? "circle";
   const [gloss, setGloss] = useState(power.shapeGloss ?? "");
@@ -70,8 +72,8 @@ export default function ShapePicker({
 
   return (
     <div data-power-shape-picker className="bg-card border border-border rounded-xl p-3 text-left">
-      <p className="text-xs font-semibold text-foreground mb-2">The village's shape</p>
-      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Pick a shape">
+      <p className="text-xs font-semibold text-foreground mb-2"><Trans context="ShapePicker, p">The village's shape</Trans></p>
+      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label={t({ message: "Pick a shape", context: "ShapePicker, aria-label" })}>
         {power.glossary.shapes.map((s) => (
           <button
             key={s.id}
@@ -93,8 +95,8 @@ export default function ShapePicker({
         <input
           value={gloss}
           onChange={(e) => setGloss(e.target.value.slice(0, GLOSS_MAX))}
-          aria-label="Say your shape in one line"
-          placeholder="Say your shape in one line"
+          aria-label={t({ message: "Say your shape in one line", context: "ShapePicker, aria-label" })}
+          placeholder={t({ message: "Say your shape in one line", context: "ShapePicker, placeholder" })}
           className="w-full text-xs border border-border rounded-lg px-2.5 py-1.5 bg-background mb-2"
         />
       )}
@@ -109,7 +111,7 @@ export default function ShapePicker({
             {busy ? "…" : "Declare this shape"}
           </button>
           <button type="button" onClick={() => onPreview(null)} className="text-xs text-muted-foreground">
-            Back to {saved ? "the declared shape" : "circles"}
+            <Trans context="ShapePicker, button">Back to {saved ? "the declared shape" : "circles"}</Trans>
           </button>
         </div>
       )}
