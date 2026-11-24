@@ -3,7 +3,8 @@ import { m, AnimatePresence } from "framer-motion";
 import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ModeAndLanguage, useLogoMask } from "@/components/ThemeSwitch";
+import { LanguagePicker } from "@/i18n/LanguagePicker";
+import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import NotificationBell from "@/components/NotificationBell";
@@ -292,7 +293,7 @@ export default function Layout({ children }: LayoutProps) {
             )}
 
             {/* The language selector (spec i18n US2; mock approved by Rye 2026-11-06). */}
-            <ModeAndLanguage villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -391,7 +392,7 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <ModeAndLanguage villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
             {user && <NotificationBell memberId={user.id} />}
             {/* Icon-only, so it needs a spoken name and a state a screen
                 reader can hear — otherwise it announces as bare "button". */}

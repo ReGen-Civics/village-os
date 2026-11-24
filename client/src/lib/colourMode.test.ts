@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_MODE, FOLLOW_DEVICE, MODES_LIVE, MODE_KEY, applyMode, resolveMode } from "./colourMode";
 
@@ -19,8 +20,8 @@ function prefers(scheme: "dark" | "light" | null) {
 
 function runShellScript(live: boolean, device: boolean) {
   const src = firstPaint.replace(/var live = (true|false)/, `var live = ${live}`).replace(/device = (true|false)/, `device = ${device}`);
-  // eslint-disable-next-line no-new-func
-  new Function(src)();
+  // The shell's own script, run in a sandbox that holds only what it reads.
+  vm.runInNewContext(src, { localStorage: window.localStorage, matchMedia: window.matchMedia, document });
 }
 
 beforeEach(() => {

@@ -13,7 +13,6 @@
  */
 import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { LanguagePicker } from "@/i18n/LanguagePicker";
 import { DaySun, NightMoon } from "@/components/sacred/glyphs";
 import { MODES_LIVE, applyMode, currentMode, storedMode, type Mode } from "@/lib/colourMode";
 
@@ -59,15 +58,6 @@ export default function ThemeSwitch({ live = MODES_LIVE }: { live?: boolean }) {
   );
 }
 
-/** The header's two settings, side by side on every width: the mode, then the language. */
-export function ModeAndLanguage({ villageDefault }: { villageDefault: string | null }) {
-  return (
-    <>
-      <ThemeSwitch />
-      <LanguagePicker villageDefault={villageDefault} />
-    </>
-  );
-}
 
 /**
  * The header logo's mask, for light mode's repaint (index.css, `.village-logo`).
