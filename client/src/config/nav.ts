@@ -157,8 +157,9 @@ export const NAV: readonly NavEntry[] = [
    * ungated for the reason it always was (L1): public and read-only, the
    * platform's own page, so a visitor sees it too.
    */
-  // A member's bar only (design pass D-27): a visitor finds it under About.
-  { href: "/modules", label: "Module Library", signedIn: true },
+  // A member's bar only (design pass D-27): a visitor finds it under About. An applicant signed in but not
+  // yet admitted is a newcomer (lib/newcomer.ts), and "what the platform can switch on" is not their next step.
+  { href: "/modules", label: "Module Library", signedIn: true, newcomers: "never" },
   {
     label: "Community",
     items: [

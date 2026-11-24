@@ -122,6 +122,8 @@ type LoadState =
   | { kind: "loading" }
   | { kind: "ready"; data: ListPayload }
   | { kind: "failed"; text: string }
+  // A 403: signed in, and the village has not opened sessions to this account yet. Not a failure, so no retry.
+  | { kind: "membersOnly"; text: string }
   | { kind: "signedOut" };
 
 const inRange = (n: number) =>
@@ -223,6 +225,11 @@ export default function Sessions() {
     if (!alive.current) return;
     if (res.status === 401) {
       setLoad({ kind: "signedOut" });
+      return;
+    }
+    if (res.status === 403) {
+      const text = await refusal(res, SESSION_REFUSALS.membersOnly);
+      if (alive.current) setLoad({ kind: "membersOnly", text });
       return;
     }
     if (!res.ok) {
@@ -424,6 +431,8 @@ export default function Sessions() {
   if (!user) return <SignInToSee moduleId="sessions" name={SESSION_LIST_COPY.moduleName} />;
 
   const circles = load.kind === "ready" ? load.data.circles : [];
+  // Opening a room asks the same door the list does: when that door said no, the start card would only be refused too.
+  const mayStart = load.kind !== "membersOnly" && load.kind !== "signedOut";
   // The length the checklist weighs its minutes against: what the field shows, or the village's usual one.
   const typed = duration.trim() === "" ? null : Number(duration);
   const plannedLength = typed != null && inRange(typed) ? typed : villageMinutes;
@@ -439,7 +448,7 @@ export default function Sessions() {
       </section>
 
       <div className="container max-w-6xl pb-16">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start">
+        <div className={mayStart ? "grid gap-6 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start" : "max-w-2xl"}>
           <div className="space-y-6">
             {gone && (
               <p role="status" className={`${LIST_UI.card} text-foreground`}>
@@ -450,6 +459,11 @@ export default function Sessions() {
               <div className={`${LIST_UI.card} flex justify-center py-10`}>
                 <BreathingLoader label={SESSION_LIST_COPY.loading} showLabel />
               </div>
+            )}
+            {load.kind === "membersOnly" && (
+              <p role="status" className={`${LIST_UI.card} text-foreground`}>
+                {load.text}
+              </p>
             )}
             {load.kind === "signedOut" && (
               <p role="status" className={`${LIST_UI.card} text-foreground`}>
@@ -491,6 +505,7 @@ export default function Sessions() {
             )}
           </div>
 
+          {mayStart && (
           <section
             aria-labelledby="sessions-start-heading"
             /* Sticky, and never taller than the window, so "Open the room" is always one scroll inside the card away. */
@@ -575,6 +590,7 @@ export default function Sessions() {
               </button>
             </form>
           </section>
+          )}
         </div>
       </div>
       </div>

@@ -18,6 +18,7 @@ import { CrowdpoolStyles, MiniRing, phaseLabel, pledgedIsFloor, pooledLine, time
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { useLingui } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
+import { H1, LEDE, NOTE, WORLD } from "@/components/journey/look";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -77,22 +78,24 @@ export default function Crowdpool() {
   return (
     <Layout>
       <CrowdpoolStyles />
-      <section className="py-8 md:py-12 bg-gradient-to-b from-teal-deep/5 to-background">
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. The rings were already night boards. */}
+      <div className={WORLD}>
+      <section className="py-8 md:py-12">
         <div className="container max-w-3xl text-center">
-          <h1 className="font-display text-4xl font-bold mb-3">Pooling Resources</h1>
+          <h1 className={`${H1} mb-3`}>Pooling Resources</h1>
           {/* R47: the Trail line leads and the tooltip defines the word. The
               ring line is the Lore, last and quiet. */}
-          <p className="text-muted-foreground">
+          <p className={`${LEDE} mx-auto`}>
             Open a ring to see what its{" "}
             <InfoTip tip="A crowdpool gathers pledges of money, goods, tools and hands for one build. Nothing moves through this page; every claim finishes on the hub's own page.">crowdpool</InfoTip>{" "}
             still needs.
           </p>
-          <p className="mt-2 text-sm italic text-muted-foreground">
+          <p className={`${NOTE} mt-2 text-sm italic`}>
             Each ring fills as the pool does, and the pool becomes walls.
           </p>
         </div>
       </section>
-      <section className="py-6 bg-background">
+      <section className="pb-16 pt-2">
         <div className="container max-w-3xl space-y-4">
           {cards === null && (
             <div className="cp-board p-8 flex flex-col items-center gap-2">
@@ -101,7 +104,7 @@ export default function Crowdpool() {
             </div>
           )}
           {cards !== null && cards.length === 0 && (
-            <div className="sheet-night text-left">
+            <div className="text-left">
               <ComingSoonPanel
                 title={t({ message: "Pooling resources", context: "coming soon: the crowdpool page" })}
                 body={t({ message: "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it.", context: "coming soon: the crowdpool page" })}
@@ -150,6 +153,7 @@ export default function Crowdpool() {
           )}
         </div>
       </section>
+      </div>
     </Layout>
   );
 }

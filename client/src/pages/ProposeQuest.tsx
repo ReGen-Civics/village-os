@@ -1,3 +1,4 @@
+import { useThanksInView } from "@/lib/thanksInView";
 import Layout from "@/components/Layout";
 import { useShareNames } from "@/components/ContributionWord";
 import { Link } from "wouter";
@@ -107,6 +108,8 @@ export default function ProposeQuest() {
   const [hp, setHp] = useState(""); // honeypot: real people never fill this
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // On a phone the thank-you would open scrolled past its own end (lib/thanksInView.ts).
+  const thanks = useThanksInView(submitted);
   // Where the idea went, as the server said. Null reads as queued: an older server says nothing.
   const [idea, setIdea] = useState<IdeaReceipt | null>(null);
   const [error, setError] = useState("");
@@ -158,7 +161,7 @@ export default function ProposeQuest() {
               <div className="w-16 h-16 rounded-full bg-amber/15 flex items-center justify-center mx-auto mb-6">
                 <Inbox className="w-8 h-8 text-amber-600" aria-hidden="true" />
               </div>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+              <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
                 Your Quest idea is saved, and held back from review.
               </h1>
               <p className="text-muted-foreground mb-3">
@@ -203,7 +206,7 @@ export default function ProposeQuest() {
               <div className="w-16 h-16 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-8 h-8 text-teal-700" />
               </div>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+              <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
                 Your Quest idea is in.
               </h1>
               <p className="text-muted-foreground mb-8">

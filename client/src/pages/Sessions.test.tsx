@@ -161,6 +161,14 @@ describe("the sessions list", () => {
     fireEvent.click(screen.getByRole("button", { name: SESSION_LIST_COPY.retry }));
     expect(await screen.findByRole("link", { name: "Garden circle" })).toBeTruthy();
   });
+  it("tells a signed-in applicant the room opens at membership, with no retry and no start card to be refused", async () => {
+    answers["GET /api/sessions"] = () => json({ error: SESSION_REFUSALS.membersOnly }, 403);
+    renderPage();
+    expect(await screen.findByText(SESSION_REFUSALS.membersOnly)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: SESSION_LIST_COPY.retry })).toBeNull();
+    expect(screen.queryByRole("heading", { name: SESSION_COPY.startTitle })).toBeNull();
+    expect(screen.queryByRole("button", { name: SESSION_COPY.startButton })).toBeNull();
+  });
 });
 
 describe("opening a room", () => {
