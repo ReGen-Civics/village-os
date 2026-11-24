@@ -28734,6 +28734,211 @@ msgctxt "proposed changes"
 msgid "A batch"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the page heading"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: under the heading"
+msgid "Members sign in here."
+msgstr "Aquí inician sesión los miembros."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: while a Google sign-in finishes"
+msgid "Finishing your Google sign-in."
+msgstr "Terminando tu inicio de sesión con Google."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: when it fails"
+msgid "Sign-in didn't work. Check your email and password."
+msgstr "No se pudo iniciar sesión. Revisa tu correo y tu contraseña."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Email"
+msgstr "Correo electrónico"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Password"
+msgstr "Contraseña"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button while it works"
+msgid "Signing in…"
+msgstr "Iniciando sesión…"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: link"
+msgid "Forgot your password?"
+msgstr "¿Olvidaste tu contraseña?"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "New here?"
+msgstr "¿Primera vez aquí?"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "Create an account"
+msgstr "Crea una cuenta"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "No invitation yet?"
+msgstr "¿Aún no tienes invitación?"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "Ask to join"
+msgstr "Pide unirte"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: when it fails"
+msgid "That didn't go through. Try again."
+msgstr "No se pudo enviar. Inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "Check your email"
+msgstr "Revisa tu correo"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once."
+msgstr "Si existe una cuenta con esa dirección, ya va en camino un enlace para crear una contraseña nueva. Vence en una hora y sirve una sola vez."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: link back"
+msgid "Back to sign in"
+msgstr "Volver a iniciar sesión"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the heading"
+msgid "Set a new password"
+msgstr "Crea una contraseña nueva"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: under the heading"
+msgid "Tell us the address you signed up with and we'll send you a link."
+msgstr "Dinos la dirección con la que te registraste y te enviaremos un enlace."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button while it works"
+msgid "Sending…"
+msgstr "Enviando…"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button"
+msgid "Send the link"
+msgstr "Enviar el enlace"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Hide password"
+msgstr "Ocultar contraseña"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Show password"
+msgstr "Mostrar contraseña"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: the button"
+msgid "Continue with Google"
+msgstr "Continuar con Google"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: between the two ways in"
+msgid "or"
+msgstr "o"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: the page heading"
+msgid "Join {villageName}"
+msgstr "Únete a {villageName}"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: while it checks the invitation"
+msgid "Checking how to join..."
+msgstr "Revisando cómo unirte..."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Already have an account?"
+msgstr "¿Ya tienes una cuenta?"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the heading"
+msgid "You need an invitation to join {villageName}"
+msgstr "Necesitas una invitación para unirte a {villageName}"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "Got an invitation link? Open it to create your account."
+msgstr "¿Tienes un enlace de invitación? Ábrelo para crear tu cuenta."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."
+msgstr "¿Aún no tienes enlace? Pide unirte y alguien de la aldea se pondrá en contacto. Una llamada comunitaria es un buen primer paso."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the button"
+msgid "Ask to join"
+msgstr "Pide unirte"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the second button"
+msgid "See calls and events"
+msgstr "Ver llamadas y eventos"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
 #~ msgid "1 goal for your first moon"
