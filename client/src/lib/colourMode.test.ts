@@ -5,9 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_MODE, FOLLOW_DEVICE, MODES_LIVE, MODE_KEY, applyMode, resolveMode } from "./colourMode";
 
 const shell = readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
+/** The shell parsed as a document, so the script is found as an element and never by matching HTML text. */
 const firstPaint = (() => {
-  const scripts = [...shell.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-  const s = scripts.find((x) => x.includes(MODE_KEY));
+  const doc = new DOMParser().parseFromString(shell, "text/html");
+  const s = Array.from(doc.querySelectorAll("script:not([src])"), (el) => el.textContent ?? "").find((x) => x.includes(MODE_KEY));
   if (!s) throw new Error("client/index.html has no first-paint mode script");
   return s;
 })();
