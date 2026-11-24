@@ -8,7 +8,9 @@
  *   2. A real card carries no stamp.
  *   3. The banner shows only while the board has quests and none of them is
  *      real open work; one real open quest takes it away; a real CLOSED quest
- *      does not count; an empty board keeps its own meadow.
+ *      does not count; an empty board keeps its own meadow. While it shows,
+ *      the "Don't see your gift here?" panel is hidden, and it returns with
+ *      the first real open quest (the lead: "hide the second panel").
  *   4. The quest page's act is a disabled "Example quest" on an example, for a
  *      member and a visitor alike, and the claim route is never called.
  */
@@ -94,8 +96,9 @@ describe("Quests coming soon, at the top of /quests", () => {
     expect(screen.getByText("These are examples of the quests to come. Have one in mind?")).toBeTruthy();
     expect(screen.getByRole("link", { name: /^Propose a quest$/ }).getAttribute("href")).toBe("/propose-quest");
     expect(container.querySelectorAll("[data-circle-group] [data-example-stamp]")).toHaveLength(2);
-    // The standing invitation further down stays.
-    expect(screen.getByText("Don't see your gift here?")).toBeTruthy();
+    // The coming-soon panel is the one door: the second invitation steps aside.
+    expect(screen.queryByText("Don't see your gift here?")).toBeNull();
+    expect(screen.queryByRole("link", { name: /^Propose a Quest$/ })).toBeNull();
   });
 
   it("is gone once one real quest is open, and a real closed quest does not count", async () => {
@@ -103,6 +106,9 @@ describe("Quests coming soon, at the top of /quests", () => {
     const { container, unmount } = render(<Quests />);
     await waitFor(() => expect(container.querySelectorAll("[data-circle-group] article")).toHaveLength(2));
     expect(container.querySelector("[data-quests-coming-soon]")).toBeNull();
+    // ...and "Don't see your gift here?" is back, as before.
+    expect(screen.getByText("Don't see your gift here?")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /^Propose a Quest$/ }).getAttribute("href")).toBe("/propose-quest");
     unmount();
 
     board = [quest({ id: "q-a", circle: "Land", isExample: true }), quest({ id: "q-b", circle: "Land", status: "Closed" })];

@@ -530,7 +530,8 @@ asking for the other state beside words is refused. `POST /api/admin/quests/mark
 Both are `quest.approve` in `server/lib/operatorRoutes.ts`, and an agent proposes the switch as a
 `setting` against the PUT. A marked quest is stamped on the board and on its page, its take button
 is a disabled "Example quest", and the claim route refuses it as it refuses every example. While no
-real quest is open, `/quests` opens on "Quests coming soon" with a door to `/propose-quest`.
+real quest is open, `/quests` opens on "Quests coming soon" with a door to `/propose-quest`, and the
+"Don't see your gift here?" panel is hidden until a real open quest brings it back.
 
 A marked quest is never a starter. Starters are the `ex-quest-` ids (`STARTER_QUEST_IDS`,
 `server/repos/questExamples.ts`), and retirement, a refresh, the banner's row count, the Journey

@@ -484,7 +484,11 @@ export default function Quests() {
        * your gift here" reads better anyway: after the board's filters rather
        * than before anyone has seen the board.
        */}
-      <section className="pb-2 bg-background">
+      {/* While "Quests coming soon" leads the page, it is the one door to
+          propose a quest, so this panel steps aside (the lead, 24 Nov 2026:
+          "hide the second panel"). It returns with the first real open quest. */}
+      {!comingSoon && (
+      <section className="pb-2 bg-background" data-gift-panel>
         <div className="container">
           <div className="max-w-2xl mx-auto bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center gap-4 text-left mt-6">
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
@@ -508,6 +512,7 @@ export default function Quests() {
           </div>
         </div>
       </section>
+      )}
 
       {/* "Show only what matches my roots", outside the sticky bar so a phone keeps its slim filter row. */}
       {rootsOffered && (
