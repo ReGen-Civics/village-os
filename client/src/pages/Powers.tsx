@@ -69,10 +69,11 @@ export default function Powers() {
       .catch(() => setHands([]));
   }, []);
 
+  // A visitor reads the list too (the lead, 24 Nov 2026): the powers, the roles that hold them and first names
+  // only, which is all the server sends. The raised hands and the suggestion doors stay with members.
   useEffect(() => {
     const token = authToken();
-    if (!token) return;
-    fetch("/api/village/powers", { headers: { Authorization: `Bearer ${token}` } })
+    fetch("/api/village/powers", token ? { headers: { Authorization: `Bearer ${token}` } } : undefined)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         setPowers(d?.powers ?? []);
@@ -100,17 +101,11 @@ export default function Powers() {
 
       <section className="py-10">
         <div className="container max-w-3xl">
-          {!user && (
-            <p className="text-muted-foreground">
-              Sign in to see who looks after what here.
-            </p>
-          )}
-
-          {user && powers === null && (
+          {powers === null && (
             <p className="text-muted-foreground">Reading the village's own record.</p>
           )}
 
-          {user && powers !== null && (
+          {powers !== null && (
             <ul className="space-y-4" data-testid="powers-list">
               {inFamilies(powers, families).map((f) => [
                 <li key={`family-${f.id}`} className="pt-4">
@@ -134,11 +129,11 @@ export default function Powers() {
                       {p.heldBy?.byBallot && (
                         <p className="text-sm text-teal-deep mt-1">The village voted this one across.</p>
                       )}
-                      <p className="text-sm text-muted-foreground mt-1">{suggestionSentence(p)}</p>
+                      {user && <p className="text-sm text-muted-foreground mt-1">{suggestionSentence(p)}</p>}
                       {p.guidance && guidance[p.guidance] && (
                         <p className="text-xs text-muted-foreground mt-1">{guidance[p.guidance]}</p>
                       )}
-                      <HandsForPower capability={p.capability} hands={hands} onOpened={readHands} />
+                      {user && <HandsForPower capability={p.capability} hands={hands} onOpened={readHands} />}
                     </div>
                   </div>
                 </li>
@@ -147,7 +142,7 @@ export default function Powers() {
             </ul>
           )}
 
-          {user && powers !== null && (
+          {powers !== null && (
             <div className="mt-10 rounded-xl border border-border bg-muted/30 p-5">
               <h2 className="font-display text-lg font-semibold text-foreground">How a power moves</h2>
               <p className="text-sm text-muted-foreground mt-2">

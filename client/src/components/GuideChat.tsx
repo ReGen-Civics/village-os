@@ -44,10 +44,19 @@ export default function GuideChat({
   venture?: boolean;
 }) {
   const { t } = useLingui();
+  const thinkingName = guideNameAtSentenceStart(assistantName);
+  // The guide's name arrives already in the reader's language (client/src/lib/guideNameWords.ts), so a greeting
+  // that is translated reads whole: "Hola, soy la guía de la aldea", never "Hola, soy the village guide".
   const defaultGreeting =
     kind === "quest-proposal"
-      ? `Hi, I'm ${assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring.`
-      : `Hi, I'm ${assistantName}, and I help people shape their offering to ${projectName}. What are you dreaming of bringing? There's no wrong way to start.`;
+      ? t({
+          message: `Hi, I'm ${assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring.`,
+          context: "guide chat, proposing a quest: the guide's first message",
+        })
+      : t({
+          message: `Hi, I'm ${assistantName}, and I help people shape their offering to ${projectName}. What are you dreaming of bringing? There's no wrong way to start.`,
+          context: "guide chat, work with us: the guide's first message when the village wrote no greeting of its own",
+        });
   const ventureGreeting = t({
     message: `Hi, I'm ${assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?`,
     context: "guide chat, set up for a venture: the guide's first message",
@@ -150,7 +159,7 @@ export default function GuideChat({
         {thinking && (
           <div className="flex justify-start">
             <div className="bg-stone-100 text-stone-600 rounded-2xl px-4 py-2.5 text-sm flex items-center gap-2">
-              <BreathingLoader decorative size={16} /> {guideNameAtSentenceStart(assistantName)} is thinking…
+              <BreathingLoader decorative size={16} /> {t({ message: `${thinkingName} is thinking…`, context: "guide chat: while the guide writes its reply" })}
             </div>
           </div>
         )}

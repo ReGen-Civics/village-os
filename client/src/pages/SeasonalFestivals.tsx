@@ -11,9 +11,16 @@ import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
 import { CalendarDays, Sparkles } from "lucide-react";
 import { useStoryPageShown } from "@/lib/brochure";
+import { Trans } from "@lingui/react/macro";
 
 export default function SeasonalFestivals() {
-  const workWithUsOn = useStoryPageShown()("/work-with-us");
+  const storyShown = useStoryPageShown();
+  const workWithUsOn = storyShown("/work-with-us");
+  /*
+   * The lead, 24 Nov 2026: the season's goals stay public, with "If you can help us meet these, consider the
+   * Village Steward path." Shown only where the village keeps its /steward page.
+   */
+  const stewardOn = storyShown("/steward");
   const [season, setSeason] = useState<any>(null);
   /**
    * The calendar is the other half of this page: seasons say WHEN the year
@@ -99,6 +106,14 @@ export default function SeasonalFestivals() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {currentGoals.length > 0 && stewardOn && (
+                <p className="text-sm text-foreground mt-3">
+                  <Trans context="seasonal festivals: under this season's goals, the invitation to the steward path">
+                    If you can help us meet these, consider the{" "}
+                    <Link href="/steward" className="text-teal-deep font-medium hover:underline">Village Steward path</Link>.
+                  </Trans>
+                </p>
               )}
               <p className="text-xs text-muted-foreground mt-2">{span(season.current)}</p>
             </div>

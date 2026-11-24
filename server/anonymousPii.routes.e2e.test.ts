@@ -292,7 +292,8 @@ function voterLevelHits(json: any): string[] {
 const isBallotRoute = (r: string) => r.startsWith("/api/governance/ballots") || r.startsWith("/api/governance/objections");
 
 /** The prefixes the brief names. A route under one of these must be reached, never skipped. */
-const REQUIRED = ["/api/governance", "/api/game/mechanics", "/api/org", "/api/map", "/api/game/pulse", "/api/people/"];
+// `/api/village/powers` answers strangers since the lead's yes of 24 Nov 2026 (first names only).
+const REQUIRED = ["/api/governance", "/api/game/mechanics", "/api/org", "/api/map", "/api/game/pulse", "/api/people/", "/api/village/powers"];
 
 async function walk(routes: DerivedRoute[], strict: boolean): Promise<Visit[]> {
   const visits: Visit[] = [];
