@@ -4,7 +4,7 @@ import path from "node:path";
 import { compileMessage } from "@lingui/message-utils/compileMessage";
 import { describe, expect, it } from "vitest";
 import { precompileMessages } from "./precompileEnglish";
-import { bootChunks, CopyCollector, copyPartRead, LONG_MESSAGE_CHARS, partsBesideFiles, renderChunkCopy, wrapPreloadHelper, writeCopyParts } from "./copySplit";
+import { bootChunks, CopyCollector, copyPartRead, LONG_MESSAGE_CHARS, partsBesideFiles, renderChunkCopy, SHORT_LITERAL_CHARS, wrapPreloadHelper, writeCopyParts } from "./copySplit";
 
 /**
  * Long English leaves the lazy chunks for a per-chunk part in dist/i18n
@@ -196,6 +196,42 @@ describe("long string literals in a lazy chunk", () => {
 
   it("leaves a chunk with nothing long in it untouched", () => {
     expect(renderChunkCopy(`globalThis.__out="Short.";`, lazy(), graph(), new CopyCollector())).toBeNull();
+  });
+
+  /*
+   * Shorter literals ride a part the chunk already reads (dist room pass): the
+   * read costs the same however much the part holds, and a chunk with nothing
+   * long gets no part, so no page waits on a read it did not wait on before.
+   */
+  const MID = "Hold the door open";
+  it("moves a literal of SHORT_LITERAL_CHARS or more once the chunk reads a part", async () => {
+    expect(SHORT_LITERAL_CHARS).toBeLessThan(LONG_MESSAGE_CHARS);
+    const mid = "m".repeat(SHORT_LITERAL_CHARS - MID.length - 1) + " " + MID;
+    expect(mid.length).toBe(SHORT_LITERAL_CHARS);
+    const code = `globalThis.__out=["${PROSE}","${mid}","Short words."];`;
+    const c = new CopyCollector();
+    const out = renderChunkCopy(code, lazy(), graph(), c)!;
+    expect(out).not.toContain(mid);
+    expect(out).toContain("Short words.");
+    expect([...c.parts.values()][0].texts).toEqual([PROSE, mid]);
+    expect(await run(out, c)).toEqual([PROSE, mid, "Short words."]);
+  });
+
+  it("moves shorter literals beside the chunk's long messages too", () => {
+    const c = collector();
+    const mid = `${MID} for the next one`;
+    const out = renderChunkCopy(`export const x="${mid}";`, graph()["assets/Page.js"], graph(), c)!;
+    expect(out).not.toContain(mid);
+    expect([...c.parts.values()][0].texts).toEqual([mid]);
+  });
+
+  it("gives no part to a chunk whose longest literal is under LONG_MESSAGE_CHARS", () => {
+    const mid = `${MID} for the next one`;
+    expect(mid.length).toBeLessThan(LONG_MESSAGE_CHARS);
+    expect(mid.length).toBeGreaterThanOrEqual(SHORT_LITERAL_CHARS);
+    const c = new CopyCollector();
+    expect(renderChunkCopy(`globalThis.__out="${mid}";`, lazy(), graph(), c)).toBeNull();
+    expect(c.parts.size).toBe(0);
   });
 });
 
