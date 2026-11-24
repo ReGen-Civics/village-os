@@ -77,6 +77,7 @@ const PAGES = [
   "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
+  "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
   "client/src/pages/Approvals.tsx",
@@ -86,7 +87,7 @@ const PAGES = [
   "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
-  "client/src/pages/SeasonalFestivals.tsx",
+  "client/src/pages/Powers.tsx",
   "client/src/pages/Team.tsx",
   "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",

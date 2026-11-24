@@ -18,7 +18,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { holderSentence, inFamilies, namesSentence, suggestionSentence, type PowerRow } from "./powersCopy";
+import { holderSentence, inFamilies, namesSentence, suggestionSentence, visitorHolderSentence, type PowerRow } from "./powersCopy";
 
 const PAGE = fs.readFileSync(
   path.join(process.cwd(), "client", "src", "pages", "Powers.tsx"),
@@ -167,5 +167,34 @@ describe("role powers (2026-11-05): a power a role carries is never the panel's"
     ]);
     const unheld = inFamilies([a, { ...b, heldToday: [] }, { ...c, heldBy: null }], fams);
     expect(unheld.map((f) => f.powers.map((p) => p.capability))).toEqual(grouped.map((f) => f.powers.map((p) => p.capability)));
+  });
+});
+
+describe("the visitor's sentence (public launch, 24 Nov 2026)", () => {
+  it("never says 'admin panel' to a stranger, in any branch", () => {
+    const all = [
+      visitorHolderSentence(power()),
+      visitorHolderSentence(power({ movable: false })),
+      visitorHolderSentence(power({ heldBy: { roleName: "Library Keepers", byBallot: true, people: [] } })),
+      visitorHolderSentence(power({ heldBy: { roleName: "Library Keepers", byBallot: true, people: ["Ana"] } })),
+      visitorHolderSentence(power({ heldToday: ["Ana", "Bea"] })),
+      visitorHolderSentence(power({ stage: "Resident" })),
+    ];
+    for (const line of all) {
+      expect(line).not.toMatch(/admin panel/i);
+      expect(line).not.toMatch(/\d/);
+    }
+  });
+
+  it("names the role and first names the same way members read them", () => {
+    expect(visitorHolderSentence(power({ heldBy: { roleName: "Library Keepers", byBallot: false, people: ["Ana", "Bea"] } }))).toBe(
+      "Library Keepers (Ana and Bea) looks after this.",
+    );
+    expect(visitorHolderSentence(power({ heldToday: ["Ana"] }))).toBe("Ana looks after this today.");
+  });
+
+  it("stays true to the row: a movable power says the village can take it on, a fixed one does not", () => {
+    expect(visitorHolderSentence(power())).toContain("can take it on");
+    expect(visitorHolderSentence(power({ movable: false }))).not.toContain("take it on");
   });
 });
