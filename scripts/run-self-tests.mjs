@@ -24,7 +24,15 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-const DIR = path.resolve(import.meta.dirname, ".");
+/*
+ * `--dir <path>` points the runner at another directory. Only its own
+ * self-test (`run-self-tests.test.mjs`) uses it, to run this exact file
+ * against fixtures that pass and fail on purpose; CI runs it with no argument.
+ */
+const dirArg = process.argv.indexOf("--dir");
+const DIR = dirArg !== -1 && process.argv[dirArg + 1]
+  ? path.resolve(process.argv[dirArg + 1])
+  : path.resolve(import.meta.dirname, ".");
 const files = fs
   .readdirSync(DIR)
   .filter((f) => f.endsWith(".test.mjs"))
@@ -89,4 +97,13 @@ for (const r of results) {
   }
 }
 
-
+/*
+ * THE EXIT CODE IS THE RESULT. 0e40a18 (2026-11-09, running these four at a
+ * time) dropped the two lines below, and for fifteen days the
+ * CI step stayed green while it printed FAIL: two self-tests were red on main
+ * by 2026-11-24 and nothing said so. A step that reports a failure and exits 0
+ * is a false green. `run-self-tests.test.mjs` now runs this file against a
+ * fixture with one failing self-test and fails unless the exit code is 1.
+ */
+console.log(`\n${files.length} guard self-test(s) run, ${failed} failed.`);
+process.exit(failed === 0 ? 0 : 1);

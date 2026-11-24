@@ -53,7 +53,7 @@
 import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Bell, ChevronDown, Settings2 } from "lucide-react";
 import { Link } from "wouter";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { buildFeed, unreadIdsOf, type FeedRow } from "@/lib/notificationFeed";
 import { loadNoticeKindWords, useNoticeKindWords } from "@/lib/noticeKindWords";
 import { useGameConfig } from "@/lib/gameApi";
@@ -113,7 +113,7 @@ function NewMark() {
   return (
     <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold uppercase tracking-wide text-teal-deep">
       <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-teal-deep" />
-      New
+      <Trans context="notification bell: an unread row">New</Trans>
     </span>
   );
 }
@@ -124,6 +124,7 @@ export interface NotificationBellProps {
 }
 
 export default function NotificationBell({ memberId = null }: NotificationBellProps = {}) {
+  const { t } = useLingui();
   const state = useSyncExternalStore(subscribeNotifications, getNotifyState, getNotifyState);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string[]>([]);
@@ -278,18 +279,18 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
           ref={panelRef}
           tabIndex={-1}
           role="group"
-          aria-label="Notifications"
+          aria-label={t({ message: "Notifications", context: "NotificationBell, aria-label" })}
           className="absolute right-0 mt-2 w-[21rem] max-w-[calc(100vw-1.5rem)] max-h-[26rem] overflow-y-auto bg-white text-foreground rounded-xl shadow-xl border border-gray-200 z-50 focus:outline-none"
         >
           <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-2.5 flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notifications</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><Trans context="NotificationBell, span">Notifications</Trans></span>
             {unread > 0 && (
               <button
                 type="button"
                 onClick={markAll}
                 className="text-xs font-medium text-teal-deep hover:underline inline-flex items-center min-h-11 px-1"
               >
-                Mark all read
+                <Trans context="NotificationBell, button">Mark all read</Trans>
               </button>
             )}
           </div>
@@ -302,9 +303,9 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
           </p>
 
           {!state.loaded ? (
-            <p className="px-4 py-6 text-sm text-muted-foreground text-center">Reading the village.</p>
+            <p className="px-4 py-6 text-sm text-muted-foreground text-center"><Trans context="NotificationBell, p">Reading the village.</Trans></p>
           ) : groups.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-muted-foreground text-center">Nothing yet. Go be seen.</p>
+            <p className="px-4 py-6 text-sm text-muted-foreground text-center"><Trans context="NotificationBell, p">Nothing yet. Go be seen.</Trans></p>
           ) : (
             groups.map((g) => (
               <section key={g.id} aria-labelledby={`${uid}-${g.id}`}>
@@ -313,7 +314,7 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
                   className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
                 >
                   {g.title}
-                  {g.unread > 0 && <span className="ml-1.5 font-semibold normal-case tracking-normal text-teal-deep">{g.unread} unread</span>}
+                  {g.unread > 0 && <span className="ml-1.5 font-semibold normal-case tracking-normal text-teal-deep"><Trans context="NotificationBell, span">{g.unread} unread</Trans></span>}
                 </h3>
                 <ul>
                   {g.rows.map((row) =>
@@ -333,7 +334,7 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
                             </span>
                             <span className="block text-xs text-muted-foreground mt-0.5">{row.detail}</span>
                             {row.unread > 0 && waitsOnYou(row.type) && <WaitsMark />}
-                            <span className="block text-[10px] text-muted-foreground mt-1">Newest {timeAgo(row.at)}</span>
+                            <span className="block text-[10px] text-muted-foreground mt-1"><Trans context="NotificationBell, span">Newest {timeAgo(row.at)}</Trans></span>
                           </span>
                           {row.unread > 0 && <NewMark />}
                           <ChevronDown
@@ -433,9 +434,9 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 px-4 py-3 min-h-11 border-t border-gray-100 text-xs font-medium text-muted-foreground hover:bg-gray-50"
           >
-            <Settings2 aria-hidden="true" className="w-3.5 h-3.5" />
+            <Trans context="NotificationBell, Link"><Settings2 aria-hidden="true" className="w-3.5 h-3.5" />
             Choose what reaches you, and how
-          </Link>
+          </Trans></Link>
         </div>
       )}
     </div>

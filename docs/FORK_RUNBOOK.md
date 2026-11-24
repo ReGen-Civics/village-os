@@ -2258,6 +2258,7 @@ Admin, Integrations has two new cards, `railway_project_token` (one Railway proj
 - `ledger.org_redemption_moon_cap` (100): whole credits all ventures together may redeem per cycle, waiting plus confirmed. 0 means zero.
 - `ledger.org_redemption_rate` (1): what one credit is worth in the first listed currency. 0 means no venture can redeem.
 - `ledger.org_redemption_currencies` (USD): the currencies a venture may be paid in, first one is the rate's. A village paying in its local currency too lists it second (for example `USD,CRC`); the daily rate table converts it and the rate used is written on each redemption. To rehearse: `node scripts/rehearse-credits-loop.mjs ... --redeem N --pay-to "<where>"`, with `VILLAGE_TREASURER_TOKEN` and `--paid-ref` to confirm.
+- `village.offer_locale.<tag>` (on): one switch per language in `shared/i18nLocales.ts`, Admin, Settings, Language. Off takes that language out of the picker for this village; English is always offered. Adding a language to the platform is a registry entry plus a PO file (`docs/I18N.md`).
 
 ## The portal entrance (migration 0425, 2026-11-24)
 

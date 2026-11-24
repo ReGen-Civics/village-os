@@ -78,3 +78,29 @@ export function overlayPageRaw(raw: ResolvedPage, fields: Readonly<Record<string
   }
   return out;
 }
+
+/**
+ * THE LANGUAGE A BLOCK OF VILLAGE WORDS IS ACTUALLY IN (the lead, 24 Nov 2026).
+ * A reader in Spanish sees the English wherever the village has not translated
+ * a field yet, and a screen reader told the page is Spanish reads that English
+ * with Spanish sounds. A block that falls back carries `lang` of the source.
+ *
+ * `address` is a section ("hero"), a field ("hero.title") or a list row's field
+ * ("steps.items.2.title"). A section counts as translated when any of its
+ * fields is, so a half-translated section is read in the page's language;
+ * mark the fields themselves where that matters. Undefined means "the page's
+ * own language": nothing to add.
+ */
+export function fallbackLangOf(
+  t: PageTranslationWire | null,
+  readerLocale: string,
+  address: string,
+  sourceLocale = "en",
+): string | undefined {
+  if (readerLocale === sourceLocale || readerLocale.split("-")[0] === sourceLocale) return undefined;
+  const fields = t && t.locale === readerLocale ? t.fields : {};
+  if (address in fields) return undefined;
+  const prefix = `${address}.`;
+  for (const k of Object.keys(fields)) if (k.startsWith(prefix)) return undefined;
+  return sourceLocale;
+}

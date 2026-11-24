@@ -1,8 +1,9 @@
 /**
  * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts): the dial, its grammar, and
- * the choice of recipients. Empty is every admin and founder; a list is only
- * those it names; a member who is neither never hears one; and a list that
- * names nobody on the panel falls back to everyone, so the alarm still rings.
+ * the choice of recipients. Empty is every admin and founder; a list is the
+ * admins and founders it names, plus the addresses with no account, which get
+ * the email alone; a member who is neither never hears one; and a list that
+ * names no usable address falls back to everyone, so the alarm still rings.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -49,10 +50,37 @@ describe("crashAlertRecipients", () => {
     expect(ids(crashAlertRecipients(village, "").recipients)).not.toContain("m1");
   });
 
-  it("falls back to every admin and founder when the list names none of them, and says so", () => {
-    const out = crashAlertRecipients(village, "left-the-village@example.org, member@example.org");
-    expect(ids(out.recipients)).toEqual(["f1", "a1", "a2"]);
-    expect(out.listMatchedNobody).toBe(true);
+  it("an address with no account is an email-only recipient, and the panel is not told", () => {
+    const out = crashAlertRecipients(village, "Ops@Inbox.example");
+    expect(ids(out.recipients)).toEqual([]);
+    expect(out.addresses).toEqual(["ops@inbox.example"]);
+    expect(out.narrowed).toBe(true);
+    expect(out.listMatchedNobody).toBe(false);
+  });
+
+  it("a mixed list tells the named accounts in the app and emails the plain addresses", () => {
+    const out = crashAlertRecipients(village, "jess@example.org, inbox@ops.example, member@example.org, ops@example.org");
+    expect(ids(out.recipients)).toEqual(["a1", "a2"]);
+    expect(out.addresses).toEqual(["inbox@ops.example"]);
+    expect(out.listMatchedNobody).toBe(false);
+  });
+
+  it("an account's address never becomes a plain address, whatever its case or role", () => {
+    const out = crashAlertRecipients(village, "FOUNDER@example.org, member@example.org, steward@example.org");
+    expect(ids(out.recipients)).toEqual(["f1"]);
+    expect(out.addresses).toEqual([]);
+  });
+
+  it("falls back to every admin and founder when the list names no usable address, and says so", () => {
+    for (const raw of ["member@example.org", "member@example.org, steward@example.org", "not-an-email, ;;, @x"]) {
+      const out = crashAlertRecipients(village, raw);
+      expect(ids(out.recipients), raw).toEqual(["f1", "a1", "a2"]);
+      expect(out.addresses, raw).toEqual([]);
+      expect(out.narrowed, raw).toBe(false);
+    }
+    expect(crashAlertRecipients(village, "member@example.org").listMatchedNobody).toBe(true);
+    // Only junk parses to an empty list, which is blank: everyone, with nothing to log.
+    expect(crashAlertRecipients(village, "not-an-email").listMatchedNobody).toBe(false);
   });
 });
 
@@ -82,6 +110,14 @@ describe("the dial", () => {
     expect(validateVariable(def, "ops@example.org, OPS@example.org")).toMatch(/only be listed once/);
     const many = Array.from({ length: CRASH_ALERT_MAX_RECIPIENTS + 1 }, (_, i) => `p${i}@x.io`).join(",");
     expect(crashAlertRecipientsProblem(many)).toMatch(/At most/);
+  });
+
+  it("says in its words that a plain address gets the email only", () => {
+    expect(def.label).toBe("Addresses that hear about crashes");
+    expect(def.description).toContain("An admin or founder's address also gets the notice in the app");
+    expect(def.description).toContain("gets the email only");
+    expect(def.description).toContain("Blank tells every admin and founder.");
+    expect(def.description).not.toMatch(/[\u2013\u2014]/);
   });
 
   it("can be proposed: the ring is open and the approval inbox does not refuse its key or label", () => {

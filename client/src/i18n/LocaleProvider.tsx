@@ -1,6 +1,6 @@
 import { I18nProvider } from "@lingui/react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { offeredLocaleTags } from "@shared/i18nLocales";
+import { LOCALES, offeredLocaleTags } from "@shared/i18nLocales";
 import { removeStored, storedText, writeStored } from "@/lib/safeStorage";
 import { fetchCatalog as fetchCatalogFromServer, type CatalogResponse } from "./catalog";
 import { activateLocale, i18n } from "./i18n";
@@ -28,6 +28,8 @@ export type LocaleSources = {
   browser?: readonly string[];
   /** The village's default language. */
   villageDefault?: string | null;
+  /** The languages this village offers (null or absent: every language Village OS offers). */
+  offered?: readonly string[] | null;
 };
 
 type LocaleContextValue = {
@@ -89,7 +91,15 @@ export function LocaleProvider({
   /** Called when someone picks a language (null: follow the browser), e.g. to save it to a member's profile. */
   onChoose?: (tag: string | null) => void;
 }) {
-  const supported = useMemo(() => offeredLocaleTags(import.meta.env.DEV), []);
+  // The platform's languages, narrowed to the ones this village offers. The
+  // source language always stays: it is what every untranslated word falls back to.
+  const offeredKey = sources.offered ? sources.offered.join(",") : "";
+  const supported = useMemo(() => {
+    const all = offeredLocaleTags(import.meta.env.DEV);
+    if (!offeredKey) return all;
+    const on = new Set(offeredKey.split(","));
+    return all.filter((tag) => tag === SOURCE_LOCALE || on.has(tag) || !LOCALES.some((l) => l.tag === tag));
+  }, [offeredKey]);
   const browser = useMemo(() => sources.browser ?? browserLanguages(), [sources.browser]);
   const [locale, setActive] = useState(SOURCE_LOCALE);
   const [ready, setReady] = useState(false);
