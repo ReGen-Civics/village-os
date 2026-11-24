@@ -15,6 +15,19 @@ import { pageSectionKey } from "../../shared/pageContent/types";
 import { withPathNames, type PathWordsShown } from "../../shared/pageContent/pathNames";
 import { villagePaths } from "./villagePaths";
 
+/*
+ * The village's share card (server/lib/shareCard.ts makes it). Declared here,
+ * beside the tags that name it, so this file stays free of the file system:
+ * a client test reads siteWords from it.
+ */
+/** The card's address, a path on this village's own origin. */
+export const SHARE_CARD_PATH = "/api/share-card.jpg";
+/** 1.91:1, the shape every major previewer draws a large card at. */
+export const SHARE_CARD_WIDTH = 1200;
+export const SHARE_CARD_HEIGHT = 630;
+/** Answers "is there a card for this picture, and which version". Null keeps the picture's own address. */
+export type ShareCardLookup = (picture: string, origin: string) => string | null;
+
 export interface PageMeta {
   title: string;
   description: string;
@@ -25,6 +38,8 @@ export interface PageMeta {
   siteName: string;
   type: "website" | "article";
   imageSize?: { width: number; height: number };
+  /** The picture's media type, when the server knows it for certain (the share card is always JPEG). */
+  imageType?: string;
   /** Ask search engines to leave this address out: a page this village does not serve. */
   noindex?: boolean;
 }
@@ -48,6 +63,7 @@ export function metaTags(m: PageMeta): string {
     m.image ? `<meta property="og:image" content="${escapeAttr(m.image)}" />` : "",
     m.image && m.imageSize ? `<meta property="og:image:width" content="${m.imageSize.width}" />` : "",
     m.image && m.imageSize ? `<meta property="og:image:height" content="${m.imageSize.height}" />` : "",
+    m.image && m.imageType ? `<meta property="og:image:type" content="${escapeAttr(m.imageType)}" />` : "",
     `<meta name="twitter:card" content="${m.image ? "summary_large_image" : "summary"}" />`,
     m.url ? `<link rel="canonical" href="${escapeAttr(m.url)}" />` : "",
     m.noindex ? `<meta name="robots" content="noindex" />` : "",
@@ -81,6 +97,21 @@ const absolute = (src: string, origin: string): string => {
   return origin && s.startsWith("/") ? origin + s : "";
 };
 
+/** The picture a share card names: the Whole site share picture, or else the homepage picture. */
+function sharePicture(shareImage: string, config: SiteConfig): string {
+  return (shareImage || config.images?.hero || "").trim();
+}
+
+/** The same choice, from the stored words, for the card route (server/routes/shareCard.ts). */
+export function chosenSharePicture(config: SiteConfig, content: Record<string, unknown> | null): string {
+  const site = resolvePage(SITE_PAGE, content?.[pageSectionKey(SITE_PAGE)], {
+    village: config.project.name,
+    tagline: config.project.tagline ?? "",
+    location: config.project.location ?? "",
+  }).share.fields;
+  return sharePicture(site.image, config);
+}
+
 /**
  * The share card for an ordinary page: the page's own name, the village's
  * share sentence (Admin, Pages, Whole site) or its Tagline, and its share
@@ -90,6 +121,12 @@ const absolute = (src: string, origin: string): string => {
  * its route is the not-found page, so its card must not advertise it. It reads
  * as the village alone, names no address of its own, and asks search engines
  * to leave it out.
+ *
+ * `shareCard` turns the picture into the village's own share card
+ * (server/lib/shareCard.ts): when the picture is one of this village's uploads,
+ * the card names /api/share-card.jpg, a 1200x630 JPEG made from it, with a
+ * `?v=` that changes when the picture does. A picture on another host, a
+ * missing file, or no lookup at all keeps the picture's own address.
  */
 export function sitePageMeta(
   path: string,
@@ -97,6 +134,7 @@ export function sitePageMeta(
   config: SiteConfig,
   content: Record<string, unknown> | null,
   hidden = false,
+  shareCard?: ShareCardLookup,
 ): PageMeta {
   const village = config.project.name;
   const site = resolvePage(SITE_PAGE, content?.[pageSectionKey(SITE_PAGE)], {
@@ -104,10 +142,13 @@ export function sitePageMeta(
     tagline: config.project.tagline ?? "",
     location: config.project.location ?? "",
   }).share.fields;
+  const picture = sharePicture(site.image, config);
+  const version = origin && shareCard ? shareCard(picture, origin) : null;
   return {
     title: hidden ? village : documentTitle(path, village, { commitment: config.project.commitmentName }),
     description: trimTo((site.description || config.project.tagline || "").trim()),
-    image: absolute(site.image || config.images?.hero || "", origin),
+    image: version ? `${origin}${SHARE_CARD_PATH}?v=${encodeURIComponent(version)}` : absolute(picture, origin),
+    ...(version ? { imageSize: { width: SHARE_CARD_WIDTH, height: SHARE_CARD_HEIGHT }, imageType: "image/jpeg" } : {}),
     url: origin && !hidden ? origin + path : "",
     siteName: village,
     type: "website",
