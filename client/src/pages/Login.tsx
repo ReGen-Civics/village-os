@@ -9,6 +9,7 @@ import { useState } from "react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { useLocation } from "wouter";
 import { failureWords } from "@/lib/failureWords";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, FIELD, H1, LABEL, LINK, RING, WORLD } from "@/components/journey/look";
 
 export default function Login() {
   const [, navigate] = useLocation();
@@ -42,7 +43,7 @@ export default function Login() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-teal-deep/5 to-amber/5 py-16">
+      <div className={`${WORLD} py-16`}>
         <div className="container">
           <m.div
             initial={{ opacity: 0, y: 20 }}
@@ -51,9 +52,9 @@ export default function Login() {
           >
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 rounded-full bg-teal-deep/10 flex items-center justify-center">
-                  <Heart className="w-8 h-8 text-teal-deep" />
-                </div>
+                <span className={`${RING} size-16`} aria-hidden="true">
+                  <Heart className="w-8 h-8" />
+                </span>
               </div>
               {/*
                 It used to say "Welcome Back" to everybody, and `/profile` is
@@ -69,13 +70,13 @@ export default function Login() {
                 fact here to build a greeting on, so the heading says what
                 the page is, which is also what the tab already says.
               */}
-              <h1 className="text-4xl font-display font-bold text-teal-deep mb-2">Sign in</h1>
-              <p className="text-gray-600">
+              <h1 className={`${H1} mb-2`}>Sign in</h1>
+              <p className="text-muted-foreground">
                 Members sign in here.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+            <form onSubmit={handleSubmit} className={`${CARD} space-y-6`}>
               {/*
                 A Google round trip that failed says so here, in the same
                 spoken box a failed password gets. Silence would leave a
@@ -83,7 +84,7 @@ export default function Login() {
                 went anywhere.
               */}
               {googleReturn.status === "failed" && (
-                <div role="alert" className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div role="alert" className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm">
                   {googleReturn.message}
                 </div>
               )}
@@ -102,7 +103,7 @@ export default function Login() {
                   role="alert"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+                  className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm"
                 >
                   {error}
                 </m.div>
@@ -116,9 +117,9 @@ export default function Login() {
                 every single member has to get through.
               */}
               <div>
-                <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <label htmlFor="login-email" className={`${LABEL} mb-2 block`}>Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" aria-hidden="true" />
+                  <Mail className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" aria-hidden="true" />
                   <input
                     id="login-email"
                     name="email"
@@ -127,16 +128,16 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                    className={`${FIELD} w-full pl-12 pr-4 py-3`}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                <label htmlFor="login-password" className={`${LABEL} mb-2 block`}>Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" aria-hidden="true" />
+                  <Lock className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" aria-hidden="true" />
                   <input
                     id="login-password"
                     name="password"
@@ -145,26 +146,20 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                    className={`${FIELD} w-full pl-12 pr-12 py-3`}
                     required
                   />
                   <ShowPasswordButton shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
                 </div>
               </div>
 
-              <m.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={loading}
-                type="submit"
-                className="w-full bg-teal-deep text-white font-semibold py-3 rounded-lg hover:bg-teal-deep-dark hover:shadow-lg transition-[background-color,box-shadow] disabled:opacity-50 flex items-center justify-center gap-2"
-              >
+              <button disabled={loading} type="submit" className={`${BTN_PRIMARY} w-full py-3`}>
                 {loading ? "Signing in…" : "Sign in"}
                 {!loading && <ArrowRight className="w-5 h-5" />}
-              </m.button>
+              </button>
 
               <p className="text-center">
-                <a href="/forgot-password" className="inline-flex min-h-11 items-center text-sm text-teal-deep hover:underline">
+                <a href="/forgot-password" className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
                   Forgot your password?
                 </a>
               </p>
@@ -179,21 +174,17 @@ export default function Login() {
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-gray-600 mb-4">New here?</p>
-              <m.a
-                whileHover={{ scale: 1.05 }}
-                href="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-amber-ink text-amber-ink font-semibold rounded-lg hover:bg-amber-ink/5 transition-colors"
-              >
+              <p className="text-muted-foreground mb-4">New here?</p>
+              <a href="/register" className={BTN_SECONDARY}>
                 Create an account
                 <ArrowRight className="w-5 h-5" />
-              </m.a>
+              </a>
               {/* The second way to ask to join (Rye, 2026-09-09): in a village
                   that joins by invitation, somebody here with no account and
                   no link is exactly who needs it. */}
-              <p className="mt-4 text-sm text-stone-600">
+              <p className="mt-4 text-sm text-muted-foreground">
                 No invitation yet?{" "}
-                <a href="/request-membership" className="font-semibold text-teal-deep underline underline-offset-2">
+                <a href="/request-membership" className={LINK}>
                   Ask to join
                 </a>
               </p>
