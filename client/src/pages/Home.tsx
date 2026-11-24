@@ -299,7 +299,7 @@ export default function Home() {
               // button opens the founding team on /roles. Off, it is the steward path as before.
               const coreTeam = founding && card.id === "steward";
               return (
-                <li key={card.id} className="min-w-0">
+                <li key={card.id} className="m-germ min-w-0">
                   <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
                     {/* The village's own art for this way in, when it has added
                         some; a card without art is a quiet card, never a frame. */}
@@ -583,7 +583,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
           {heading}
         </h2>
         <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <li className="min-w-0" data-route="team">
+          <li className="m-germ min-w-0" data-route="team">
             <Link href={`/roles#${ROLES_SECTIONS.team}`} className={`${WAY_CARD} ${founding ? "border-2 border-notice/60" : "border border-border"}`} data-way={founding ? "founding" : "team"} data-route-door="team">
               <span className={JOURNEY_FRAME}>
                 <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
@@ -611,7 +611,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
             </Link>
           </li>
           {others.map((o) => (
-            <li key={o.key} className="min-w-0" data-route={o.key}>
+            <li key={o.key} className="m-germ min-w-0" data-route={o.key}>
               <Link href={o.href} className={`${WAY_CARD} border border-border`} data-route-door={o.key}>
                 <span className={JOURNEY_FRAME}>
                   <JourneyArt src={o.art.src} srcSet={o.art.srcSet} alt="" focus={o.art.focus} />
@@ -635,7 +635,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
 
 /** A way-in card: the whole card is the door, every one the same height, the door's words at the foot. */
 const WAY_CARD =
-  "group flex h-full flex-col rounded-2xl bg-card p-5 shadow-sm transition-colors hover:border-notice/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "m-touch group flex h-full flex-col rounded-2xl bg-card p-5 shadow-sm transition-colors hover:border-notice/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 const WAY_BODY = "text-sm leading-relaxed text-muted-foreground sm:text-base";
 
 /** How long the landing page waits on the founding switch before it draws without it. */

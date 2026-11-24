@@ -27,6 +27,7 @@ import { useLingui, Trans } from "@lingui/react/macro";
 import { useReplyPromise } from "@/components/ContributorRoutes";
 import { useSearch } from "wouter";
 import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
+import Sprout from "@/components/motion/Sprout";
 
 // ── Shared proposal shape ────────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ export default function WorkWithUs() {
       <Layout>
         <section className="bg-teal-band text-white py-24">
           <div className="container max-w-2xl mx-auto px-4 text-center">
-            <CheckCircle2 className="w-14 h-14 text-amber-on-band mx-auto mb-6" />
+            <Sprout size={72} className="mx-auto mb-6 text-amber-on-band" />
             {/* A longer heading the village wrote steps down a size on a
                 phone: at its 48-character limit it ran five lines at 320px. */}
             <h1 ref={thanks} tabIndex={-1} className={`focus:outline-none font-display ${Array.from(page?.thanks.fields.heading ?? "").length > 32 ? "text-3xl md:text-4xl" : "text-4xl"} font-bold mb-4 break-words${page ? "" : " invisible"}`}>

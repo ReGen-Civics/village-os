@@ -104,6 +104,8 @@ listenForThemeChanges();
 // The village's own sounds, if it loaded any (lib/sound.ts, gap G8). Silent otherwise.
 // Imported lazily so the first page's scripts do not grow by the audio layer.
 void import("./lib/sound").then((m) => m.loadVillageSounds()).catch(() => undefined);
+// The light a press spreads on a card (lib/touchLight.ts). Lazily too: the press works and reads without it.
+void import("./lib/touchLight").then((m) => m.installTouchLight()).catch(() => undefined);
 
 // A page that outlived a deploy reloads itself once for the new build (lib/staleChunk.ts).
 installStaleChunkRecovery();
