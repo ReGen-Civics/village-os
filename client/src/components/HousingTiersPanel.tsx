@@ -12,6 +12,7 @@ import {
   type HomeTypeFounderRow,
   type HomeTypePatchBody,
 } from "@/lib/housingForm";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The homes this village offers (0131): the other half of the housing tab.
@@ -162,19 +163,19 @@ export default function HousingTiersPanel({ password }: { password: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-stone-800">The homes you offer</h2>
+        <h2 className="text-xl font-semibold text-stone-800"><Trans context="HousingTiersPanel, h2">The homes you offer</Trans></h2>
         <p className="text-sm text-stone-500 mt-1">
-          What you call each home, how big it is and what it costs. Every box is your own
+          <Trans context="HousingTiersPanel, p">What you call each home, how big it is and what it costs. Every box is your own
           words: write the units and the currency you use, and the site prints them exactly
           as you typed them. A home appears on the housing page once it has a name and
           either a size or a price. Empty a box to clear it.
-        </p>
+        </Trans></p>
       </div>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
       {showsPlaceholder(phase) ? (
-        <p className="text-sm text-stone-500">Loading.</p>
+        <p className="text-sm text-stone-500"><Trans context="HousingTiersPanel, p">Loading.</Trans></p>
       ) : (
         <div className="space-y-3">
           {rows.map((r) => (
@@ -219,8 +220,8 @@ export default function HousingTiersPanel({ password }: { password: string }) {
                 ))}
               </div>
               <div className="mt-2 h-4 text-xs text-stone-500">
-                {busy === r.homeType ? <span>Saving.</span> : null}
-                {busy !== r.homeType && saved === r.homeType ? <span>Saved.</span> : null}
+                {busy === r.homeType ? <span><Trans context="HousingTiersPanel, span">Saving.</Trans></span> : null}
+                {busy !== r.homeType && saved === r.homeType ? <span><Trans context="HousingTiersPanel, span">Saved.</Trans></span> : null}
               </div>
             </div>
           ))}

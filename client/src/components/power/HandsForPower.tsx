@@ -29,6 +29,7 @@ import { useState } from "react";
 import { Hand } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
 import { asOffer } from "@shared/powerHands";
+import { Trans } from "@lingui/react/macro";
 
 export interface HandRow {
   id: string;
@@ -102,15 +103,15 @@ export default function HandsForPower({
   return (
     <div className="mt-4 border-t border-border pt-3" data-testid={`hands-${capability}`}>
       <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-        <Hand className="h-4 w-4 shrink-0 text-notice" aria-hidden="true" />
+        <Trans context="HandsForPower, h3"><Hand className="h-4 w-4 shrink-0 text-notice" aria-hidden="true" />
         Hands raised for this
-      </h3>
+      </Trans></h3>
       <ul className="mt-2 space-y-4">
         {here.map((hand) => (
           <li key={hand.id} className="rounded-lg bg-muted/40 p-3">
             <p className="text-sm text-foreground">
-              {hand.userName || "A member"} offered {hand.powerLabel ? `to ${asOffer(hand.powerLabel)}` : "to take this on"}.
-            </p>
+              <Trans context="HandsForPower, p">{hand.userName || "A member"} offered {hand.powerLabel ? `to ${asOffer(hand.powerLabel)}` : "to take this on"}.
+            </Trans></p>
             {hand.note.trim() !== "" && (
               <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{hand.note}</p>
             )}
@@ -119,9 +120,9 @@ export default function HandsForPower({
               <p className="mt-2 text-xs text-muted-foreground">{WATCHING[hand.whoMay]}</p>
             ) : hand.rolesCarrying.length === 0 ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                No role here carries this power yet, so there is no role to vote anybody into. The
+                <Trans context="HandsForPower, p">No role here carries this power yet, so there is no role to vote anybody into. The
                 village votes a power onto a role first.
-              </p>
+              </Trans></p>
             ) : asking === hand.id ? (
               <div className="mt-3 flex flex-col gap-2">
                 {hand.rolesCarrying.length > 1 && (
@@ -158,15 +159,15 @@ export default function HandsForPower({
                     aria-disabled={busy}
                     className="min-h-11 rounded-lg border border-notice/40 bg-notice/15 px-4 text-sm font-semibold text-notice aria-disabled:opacity-60"
                   >
-                    Open the vote
-                  </button>
+                    <Trans context="HandsForPower, button">Open the vote
+                  </Trans></button>
                   <button
                     type="button"
                     onClick={() => setAsking(null)}
                     className="min-h-11 px-2 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Cancel
-                  </button>
+                    <Trans context="HandsForPower, button">Cancel
+                  </Trans></button>
                 </span>
               </div>
             ) : (
@@ -181,8 +182,8 @@ export default function HandsForPower({
                 aria-label={`Put ${hand.userName || "this hand"} to the village for ${hand.powerLabel || capability}`}
                 className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Put this to the village
-              </button>
+                <Trans context="HandsForPower, button">Put this to the village
+              </Trans></button>
             )}
           </li>
         ))}

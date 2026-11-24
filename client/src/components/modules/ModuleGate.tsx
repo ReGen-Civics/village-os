@@ -67,6 +67,7 @@ import BreathingLoader from "@/components/natural/BreathingLoader";
 import { gateLine, nameList } from "./gateCopy";
 import { internalPath } from "@/lib/internalPath";
 import { BTN_PRIMARY, BTN_SECONDARY, WORLD } from "@/components/journey/look";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 
 const DOOR_PRIMARY = BTN_PRIMARY;
@@ -111,11 +112,11 @@ export function SignInDoors({
       className={`flex flex-col sm:flex-row gap-3 ${align === "start" ? "sm:justify-start" : "justify-center"}`}
     >
       <Link href={`/login?next=${encodeURIComponent(target)}`} className={DOOR_PRIMARY}>
-        Sign in
-      </Link>
+        <Trans context="ModuleGate, Link">Sign in
+      </Trans></Link>
       <Link href="/register" className={DOOR_SECOND}>
-        Create an account
-      </Link>
+        <Trans context="ModuleGate, Link">Create an account
+      </Trans></Link>
     </div>
   );
 }
@@ -174,6 +175,7 @@ export function SignInToSee({
   next?: string;
   behind?: string;
 }) {
+  const { t } = useLingui();
   const [location] = useLocation();
   const { user, loading } = useAuth();
   const target = internalPath(next ?? location) ?? "/";
@@ -185,7 +187,7 @@ export function SignInToSee({
     return (
       <GateShell name={name}>
         <div className="flex justify-center py-4">
-          <BreathingLoader label="Reading your account" />
+          <BreathingLoader label={t({ message: "Reading your account", context: "ModuleGate, label" })} />
         </div>
       </GateShell>
     );
@@ -198,7 +200,7 @@ export function SignInToSee({
   return (
     <GateShell name={name}>
       {line && <p className="text-foreground leading-relaxed mb-2">{line}</p>}
-      <p className="text-muted-foreground mb-6">This part of the village opens when you sign in.</p>
+      <p className="text-muted-foreground mb-6"><Trans context="ModuleGate, p">This part of the village opens when you sign in.</Trans></p>
       <div className="mb-6">
         <SignInDoors next={target} />
       </div>
@@ -243,12 +245,12 @@ export function ModuleOff({ name }: { name: string }) {
   return (
     <GateShell name={name}>
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        {project} hasn't opened this room yet. Only the team running the village can
+        <Trans context="ModuleGate, p">{project} hasn't opened this room yet. Only the team running the village can
         open it, so ask them if you'd like it open.
-      </p>
+      </Trans></p>
       <Link href="/" className={`${DOOR_PRIMARY} mb-6`}>
-        Back to the village
-      </Link>
+        <Trans context="ModuleGate, Link">Back to the village
+      </Trans></Link>
       <StillOpen signedIn={!!user} />
     </GateShell>
   );
@@ -270,15 +272,15 @@ function CatalogUnread({ name }: { name: string }) {
   return (
     <GateShell name={name}>
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        {name} didn't load. Try again in a moment.
-      </p>
+        <Trans context="ModuleGate, p">{name} didn't load. Try again in a moment.
+      </Trans></p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button type="button" onClick={refresh} className={DOOR_PRIMARY}>
-          Try again
-        </button>
+          <Trans context="ModuleGate, button">Try again
+        </Trans></button>
         <Link href="/" className={DOOR_SECOND}>
-          Back to the village
-        </Link>
+          <Trans context="ModuleGate, Link">Back to the village
+        </Trans></Link>
       </div>
     </GateShell>
   );

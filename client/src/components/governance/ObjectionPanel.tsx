@@ -37,7 +37,7 @@ import { CheckCircle2, CircleMinus, GitBranch, Hand, MessageSquareWarning } from
 import InfoTip from "@/components/InfoTip";
 import { fetchObjectionLineage, type BallotObjection, type ObjectionLineage } from "./governanceApi";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 
 /**
  * What each state of an objection means, and its authority is the server's
@@ -188,12 +188,12 @@ export default function ObjectionPanel({
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-        <Hand className="w-4 h-4 text-notice" aria-hidden="true" />
+        <Trans context="ObjectionPanel, h3"><Hand className="w-4 h-4 text-notice" aria-hidden="true" />
         Objections
         <InfoTip
           tip="An objection names a consequence the village should avoid. Only an objection blocks a consent decision. A worry without reasoning behind it is recorded as a concern instead."
           label="What an objection is"
-        />
+        /></Trans>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
         {standing === 0
@@ -223,7 +223,7 @@ export default function ObjectionPanel({
 
                 {o.rulingNote && (
                   <div className="mt-2 border-l-2 border-border pl-3">
-                    <p className="text-xs font-semibold text-muted-foreground">Why it was ruled that way</p>
+                    <p className="text-xs font-semibold text-muted-foreground"><Trans context="ObjectionPanel, p">Why it was ruled that way</Trans></p>
                     <p className="text-sm text-muted-foreground leading-relaxed">{o.rulingNote}</p>
                   </div>
                 )}
@@ -235,7 +235,7 @@ export default function ObjectionPanel({
                 {lineage[o.id] && (
                   <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-notice">
                     <GitBranch className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                    <span className="text-muted-foreground">The proposal changed after this. The version that came next:</span>
+                    <span className="text-muted-foreground"><Trans context="ObjectionPanel, span">The proposal changed after this. The version that came next:</Trans></span>
                     <Link
                       href={`/decisions/${lineage[o.id].ballotId}`}
                       className="rounded font-semibold underline underline-offset-2 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -254,7 +254,7 @@ export default function ObjectionPanel({
                     {rulingFor === o.id ? (
                       <div className="space-y-2">
                         <fieldset>
-                          <legend className="text-sm font-medium text-foreground">How does this land?</legend>
+                          <legend className="text-sm font-medium text-foreground"><Trans context="ObjectionPanel, legend">How does this land?</Trans></legend>
                           <div className="mt-1.5 space-y-1.5">
                             {(canRule ? RULINGS : RULINGS.filter((r) => r.id === "withdrawn")).map((r) => (
                               <label key={r.id} className="flex min-h-[44px] items-start gap-2 rounded-lg border border-border p-2 has-[:checked]:border-notice">
@@ -282,8 +282,8 @@ export default function ObjectionPanel({
                           </div>
                         </fieldset>
                         <label htmlFor={`note-${o.id}`} className="block text-sm font-medium text-foreground">
-                          Your reasoning, for the record
-                        </label>
+                          <Trans context="ObjectionPanel, label">Your reasoning, for the record
+                        </Trans></label>
                         <VoiceArea value={note} onValue={setNote}
                           talk={{
                             label: t({ message: "Your reasoning", context: "voice field label: objection ruling note" }),
@@ -306,15 +306,15 @@ export default function ObjectionPanel({
                             onClick={() => rule(o.id)}
                             className="min-h-[44px] rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                           >
-                            Record the ruling
-                          </button>
+                            <Trans context="ObjectionPanel, button">Record the ruling
+                          </Trans></button>
                           <button
                             type="button"
                             onClick={() => setRulingFor(null)}
                             className="min-h-[44px] rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
-                            Not now
-                          </button>
+                            <Trans context="ObjectionPanel, button">Not now
+                          </Trans></button>
                         </div>
                       </div>
                     ) : (
@@ -341,12 +341,12 @@ export default function ObjectionPanel({
       {canFile && (
         <div className="mt-4 border-t border-border pt-4">
           <label htmlFor="new-objection" className="block text-sm font-semibold text-foreground">
-            Say what you see
-          </label>
+            <Trans context="ObjectionPanel, label">Say what you see
+          </Trans></label>
           <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-            Naming a risk early is one of the more useful things anyone does here. You do not have to vote no to raise
+            <Trans context="ObjectionPanel, p">Naming a risk early is one of the more useful things anyone does here. You do not have to vote no to raise
             one, and raising one is not a vote.
-          </p>
+          </Trans></p>
           <VoiceArea value={text} onValue={setText}
             talk={{
               label: t({ message: "Your objection", context: "voice field label: raise an objection" }),
@@ -359,7 +359,7 @@ export default function ObjectionPanel({
             value={text}
             maxLength={2000}
             onChange={(e) => setText(e.target.value)}
-            placeholder="If we do this in the wet season the track will not carry the load, and we lose the deliveries."
+            placeholder={t({ message: "If we do this in the wet season the track will not carry the load, and we lose the deliveries.", context: "ObjectionPanel, placeholder" })}
             className="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           </VoiceArea>
@@ -369,8 +369,8 @@ export default function ObjectionPanel({
             onClick={file}
             className="mt-2 min-h-[44px] rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
           >
-            Raise it
-          </button>
+            <Trans context="ObjectionPanel, button">Raise it
+          </Trans></button>
         </div>
       )}
 

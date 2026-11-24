@@ -9,6 +9,7 @@ import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import type { PowerBlock, PowerSeat, SeatStateWord } from "./types";
 import { seatWord } from "./villageCounts";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * THE BUCKETS THE SEAT TALLY COUNTS INTO.
@@ -148,7 +149,7 @@ export default function Legend({
               className="w-3 h-3 shrink-0 rounded-full border border-dashed border-muted-foreground"
               aria-hidden="true"
             />
-            <span>in a state this page has not been taught</span>
+            <span><Trans context="Legend, span">in a state this page has not been taught</Trans></span>
             <span className="ml-auto text-muted-foreground tabular-nums">{counts.other}</span>
           </li>
         )}
@@ -162,7 +163,7 @@ export default function Legend({
             <circle cx="9" cy="8" r="3" fill="var(--color-teal-deep)" />
             <circle cx="9" cy="8" r="5.4" fill="none" stroke="var(--color-teal-deep)" strokeWidth={1} />
           </svg>
-          <span>speaks for this circle where it links out</span>
+          <span><Trans context="Legend, span">speaks for this circle where it links out</Trans></span>
           <span className="ml-auto text-muted-foreground tabular-nums">{counts.represents}</span>
         </li>
       </ul>
@@ -172,8 +173,8 @@ export default function Legend({
           village; that is the line from pyramid to circle made honest. */}
       <div>
         <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-          <span>one holds it</span>
-          <span>all hold it</span>
+          <span><Trans context="Legend, span">one holds it</Trans></span>
+          <span><Trans context="Legend, span">all hold it</Trans></span>
         </div>
         <div className="relative h-2 rounded-full bg-gradient-to-r from-amber/60 via-sage/50 to-teal-deep/60">
           {shape && typeof shape.spectrum === "number" && (
@@ -204,7 +205,7 @@ export default function Legend({
             aria-expanded={glossOpen}
             className="text-xs bg-teal-deep/10 text-teal-deep px-2.5 py-1 rounded-full font-medium hover:bg-teal-deep/20"
           >
-            Decides by {decides.label.toLowerCase()}
+            <Trans context="Legend, button">Decides by {decides.label.toLowerCase()}</Trans>
           </button>
           {glossOpen && decideGloss && <p className="text-[11px] text-muted-foreground mt-1.5">{decideGloss}</p>}
         </div>
@@ -222,8 +223,8 @@ export default function Legend({
         onClick={() => setOpenOnMobile((v) => !v)}
         aria-expanded={openOnMobile}
       >
-        Legend
-        <ChevronDown className={`w-4 h-4 transition-transform ${openOnMobile ? "rotate-180" : ""}`} aria-hidden="true" />
+        <Trans context="Legend, button">Legend
+        <ChevronDown className={`w-4 h-4 transition-transform ${openOnMobile ? "rotate-180" : ""}`} aria-hidden="true" /></Trans>
       </button>
       <div className={`${openOnMobile ? "mt-2" : "hidden"} md:block`}>{body}</div>
     </div>

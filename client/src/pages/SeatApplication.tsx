@@ -77,6 +77,7 @@ import CircleConsent from "@/components/roleProposal/CircleConsent";
 import { CONSENT_WORDS } from "@shared/roleProposalConsent";
 import YourTurn from "@/components/governance/YourTurn";
 import ConsentSeal from "@/components/governance/ConsentSeal";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /*
  * REFERENCES FOR A FIRST LONG-TERM ROLE (the lead, 19 Nov 2026; shared/applicantOnboarding.ts `asksReferences`): the
@@ -245,6 +246,7 @@ function SeatCards({ app }: { app: ServedApplication }) {
 }
 
 export default function SeatApplication() {
+  const { t } = useLingui();
   const params = useParams<{ id: string }>();
   const id = String(params.id ?? "");
   const { user } = useAuth();
@@ -320,9 +322,9 @@ export default function SeatApplication() {
       href="/decisions"
       className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+      <Trans context="SeatApplication, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
       Every decision
-    </Link>
+    </Trans></Link>
   );
 
   if (!user || state === "members") {
@@ -356,10 +358,10 @@ export default function SeatApplication() {
         {back}
         {state === "loading" && (
           <div className="flex justify-center py-16">
-            <BreathingLoader label="Reading the proposal" />
+            <BreathingLoader label={t({ message: "Reading the proposal", context: "SeatApplication, label" })} />
           </div>
         )}
-        {state === "missing" && <p className="mt-6 text-foreground">There is no application at this address.</p>}
+        {state === "missing" && <p className="mt-6 text-foreground"><Trans context="SeatApplication, p">There is no application at this address.</Trans></p>}
         {state === "error" && (
           <p role="alert" className="mt-6 text-destructive">
             {error}

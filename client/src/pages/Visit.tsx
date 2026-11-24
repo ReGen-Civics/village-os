@@ -14,6 +14,7 @@ import {
   Backpack,
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { Trans } from "@lingui/react/macro";
 
 interface VisitType {
   id: string;
@@ -120,8 +121,8 @@ export default function Visit() {
           <div className="flex items-center gap-3 mb-3">
             <MapPin className="w-6 h-6 text-amber-on-band" />
             <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase">
-              Plan a visit
-            </span>
+              <Trans context="Visit, span">Plan a visit
+            </Trans></span>
           </div>
           {/* A village's own longer headline steps down a size on a phone:
               at its 48-character limit it ran five lines deep at 320px. */}
@@ -141,15 +142,15 @@ export default function Visit() {
         <div className="container max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep">
-              Pick a way to visit
-            </h2>
+              <Trans context="Visit, h2">Pick a way to visit
+            </Trans></h2>
           </div>
           {!cfg && cfgFailed ? (
             <div className="text-center text-stone-600">
-              The ways to visit didn't load. Reload to try again, or use the form below.
-            </div>
+              <Trans context="Visit, div">The ways to visit didn't load. Reload to try again, or use the form below.
+            </Trans></div>
           ) : !cfg ? (
-            <div className="text-center text-stone-500">Opening the ways to visit…</div>
+            <div className="text-center text-stone-500"><Trans context="Visit, div">Opening the ways to visit…</Trans></div>
           ) : (
             // Fewer than three cards sit centred at their own width, so the
             // starter programme's two do not leave a hole on the right.
@@ -207,7 +208,7 @@ export default function Visit() {
       <section className="bg-white py-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep">Logistics</h2>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep"><Trans context="Visit, h2">Logistics</Trans></h2>
           </div>
             <div className={`grid gap-4 ${logistics.length >= 3 ? "md:grid-cols-3" : logistics.length === 2 ? "md:grid-cols-2 max-w-3xl mx-auto" : "max-w-md mx-auto"}`}>
               {logistics.map((l) => {
@@ -231,12 +232,12 @@ export default function Visit() {
         <div className="container max-w-2xl mx-auto px-4">
           <div className="text-center mb-8">
             <Calendar className="w-8 h-8 text-teal-deep mx-auto mb-3" />
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep mb-3">Tell us you're coming</h2>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep mb-3"><Trans context="Visit, h2">Tell us you're coming</Trans></h2>
             {contactNote && <p className="text-stone-600">{contactNote}</p>}
           </div>
           {submitted ? (
             <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center">
-              <p className="text-teal-deep font-display text-xl mb-2">Thank you.</p>
+              <p className="text-teal-deep font-display text-xl mb-2"><Trans context="Visit, p">Thank you.</Trans></p>
               {thanks.trim() && <p className="text-stone-600 break-words">{thanks}</p>}
             </div>
           ) : (
@@ -246,7 +247,7 @@ export default function Visit() {
                   {/* htmlFor on all four. These fields carry no placeholder
                       either, so an unlinked label left them with nothing at
                       all to announce. */}
-                  <label htmlFor="visit-name" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Name</label>
+                  <label htmlFor="visit-name" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5"><Trans context="Visit, label">Name</Trans></label>
                   <input
                     id="visit-name"
                     type="text"
@@ -258,7 +259,7 @@ export default function Visit() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="visit-email" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Email</label>
+                  <label htmlFor="visit-email" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5"><Trans context="Visit, label">Email</Trans></label>
                   <input
                     id="visit-email"
                     type="email"
@@ -272,7 +273,7 @@ export default function Visit() {
               </div>
               {visitTypes.length > 0 && (
               <div>
-                <label htmlFor="visit-type" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Visit type</label>
+                <label htmlFor="visit-type" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5"><Trans context="Visit, label">Visit type</Trans></label>
                 <select
                   id="visit-type"
                   value={form.visitType}
@@ -287,7 +288,7 @@ export default function Visit() {
               </div>
               )}
               <div>
-                <label htmlFor="visit-message" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Anything we should know?</label>
+                <label htmlFor="visit-message" className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5"><Trans context="Visit, label">Anything we should know?</Trans></label>
                 <VoiceArea value={form.message} onValue={(v) => setForm((f) => ({ ...f, message: v }))}>
                 <textarea
                   id="visit-message"

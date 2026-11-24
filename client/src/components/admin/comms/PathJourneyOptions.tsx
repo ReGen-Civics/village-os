@@ -16,6 +16,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface PathView {
   key: string;
@@ -29,6 +30,7 @@ interface PathView {
 }
 
 export default function PathJourneyOptions({ password, journeyKey, onChanged }: { password: string; journeyKey: string; onChanged?: () => void }) {
+  const { t } = useLingui();
   const isPath = journeyKey.startsWith("path.");
   const [view, setView] = useState<PathView | null>(null);
   const [error, setError] = useState("");
@@ -71,12 +73,12 @@ export default function PathJourneyOptions({ password, journeyKey, onChanged }: 
 
   const box = "rounded-lg border border-gray-200 bg-white p-3";
   return (
-    <section aria-label="This path" className="space-y-3">
-      <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">This path</h4>
+    <section aria-label={t({ message: "This path", context: "PathJourneyOptions, aria-label" })} className="space-y-3">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="PathJourneyOptions, h4">This path</Trans></h4>
       {view.held && <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">{view.held}</p>}
       <p className="text-sm text-gray-600">
-        {view.people.active} on this path now. {view.people.backfilled} of them were on it before email arrived.
-      </p>
+        <Trans context="PathJourneyOptions, p">{view.people.active} on this path now. {view.people.backfilled} of them were on it before email arrived.
+      </Trans></p>
       <div className={box}>
         <label className="flex items-start gap-3 text-sm text-gray-900">
           <input
@@ -87,11 +89,11 @@ export default function PathJourneyOptions({ password, journeyKey, onChanged }: 
             onChange={(e) => change({ includeExisting: e.target.checked }, e.target.checked ? "Included." : "Saved.")}
           />
           <span>
-            Include people already on this path
+            <Trans context="PathJourneyOptions, span">Include people already on this path
             <span className="block text-xs text-gray-500">
               Off: only people who join from now get these emails. On: the {view.people.backfilled} already on it start from the welcome. Turning it
               off later stops nobody who has started.
-            </span>
+            </span></Trans>
           </span>
         </label>
       </div>
@@ -106,11 +108,11 @@ export default function PathJourneyOptions({ password, journeyKey, onChanged }: 
               onChange={(e) => change({ rungEmails: e.target.checked }, "Saved.")}
             />
             <span>
-              Rung emails
+              <Trans context="PathJourneyOptions, span">Rung emails
               <span className="block text-xs text-gray-500">
                 When a member moves up this path's ladder, one short email names the step they reached and the next one. Checked hourly, sent in daytime
                 where they are.
-              </span>
+              </span></Trans>
             </span>
           </label>
         </div>

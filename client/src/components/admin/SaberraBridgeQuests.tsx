@@ -8,6 +8,7 @@
 import type { ReactNode } from "react";
 import { Check, Lock, Sparkles } from "lucide-react";
 import type { SeraTool } from "@shared/seraBridgeBoard";
+import { useLingui } from "@lingui/react/macro";
 
 export type QuestState = "done" | "active" | "building" | "waiting";
 
@@ -54,6 +55,7 @@ export function QuestCard({
   steps?: { done: number; of: number };
   children: ReactNode;
 }) {
+  const { t } = useLingui();
   return (
     <li
       className={`relative rounded-xl border p-4 space-y-2 bg-white ${state === "done" ? "border-emerald-200" : "border-gray-100"}`}
@@ -67,18 +69,19 @@ export function QuestCard({
         </span>
       </div>
       <div className="text-xs text-gray-600 space-y-1">{children}</div>
-      {steps && <Meter done={steps.done} of={steps.of} label={`${title} steps done`} />}
+      {steps && <Meter done={steps.done} of={steps.of} label={t({ message: `${title} steps done`, context: "SaberraBridgeQuests, label" })} />}
     </li>
   );
 }
 
 /** The level ring: completed checks of all checks, drawn as a circle. */
 export function LevelRing({ done, of }: { done: number; of: number }) {
+  const { t } = useLingui();
   const r = 26;
   const c = 2 * Math.PI * r;
   const frac = of > 0 ? Math.min(done, of) / of : 0;
   return (
-    <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${done} of ${of} bridge checks done`}>
+    <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={t({ message: `${done} of ${of} bridge checks done`, context: "SaberraBridgeQuests, aria-label" })}>
       <circle cx="32" cy="32" r={r} fill="none" strokeWidth="6" className="stroke-gray-100" />
       <circle
         cx="32"
@@ -100,8 +103,9 @@ export function LevelRing({ done, of }: { done: number; of: number }) {
 }
 
 export function ToolBadges({ tools }: { tools: readonly SeraTool[] }) {
+  const { t } = useLingui();
   return (
-    <ul className="flex flex-wrap gap-2" aria-label="Sera tools">
+    <ul className="flex flex-wrap gap-2" aria-label={t({ message: "Sera tools", context: "SaberraBridgeQuests, aria-label" })}>
       {tools.map((t) => (
         <li
           key={t.name}

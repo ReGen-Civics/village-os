@@ -21,7 +21,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
+import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 
 export type NavLink = {
   href: string;
@@ -367,7 +367,7 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // The live-session task board on the profile, with the member's own count
   // of what waits on them beside it. The shortcuts button carries the other
   // door (config/mobileNav.ts).
-  { href: TASK_BOARD_PATH, label: TASK_COPY.menu.label, module: "sessions", count: "tasks" },
+  { href: TASK_BOARD_PATH, label: TASK_MENU.label, module: "sessions", count: "tasks" },
   { href: "/badges", label: "Badges", module: "badges" },
   // The cash budget every member reads (budgets spec R23); its holder changes it on the same page.
   { href: "/budget", label: "Cash Budget" },

@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { usePayOptions } from "@/components/WorkValueEditor";
 import { currencyExponent } from "@/lib/workPay";
 import { putSubmissionStatus } from "./submissionStatus";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function ProposalAcceptCash({
   password,
@@ -27,6 +28,7 @@ export default function ProposalAcceptCash({
   submission: { id: string; type?: string; status?: string };
   onDone: () => void;
 }) {
+  const { t } = useLingui();
   const options = usePayOptions();
   const currency = options?.currency || "";
   const [cash, setCash] = useState("");
@@ -37,7 +39,7 @@ export default function ProposalAcceptCash({
     const raw = cash.replace(/,/g, "").trim();
     const major = raw === "" ? 0 : Number(raw);
     if (!Number.isFinite(major) || major < 0) {
-      toast.error("Cash is a number, zero or more.");
+      toast.error(t({ message: "Cash is a number, zero or more.", context: "ProposalAcceptCash, toast" }));
       return;
     }
     setBusy(true);
@@ -54,7 +56,7 @@ export default function ProposalAcceptCash({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <label className="text-xs font-medium text-gray-500" htmlFor={`proposal-cash-${submission.id}`}>
-        Cash it pays{currency ? `, in ${currency}` : ""}
+        <Trans context="ProposalAcceptCash, label">Cash it pays{currency ? `, in ${currency}` : ""}</Trans>
       </label>
       <input
         id={`proposal-cash-${submission.id}`}
@@ -70,8 +72,8 @@ export default function ProposalAcceptCash({
         disabled={busy || cash.trim() === ""}
         className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white disabled:opacity-40"
       >
-        Accept with this cash
-      </button>
+        <Trans context="ProposalAcceptCash, button">Accept with this cash
+      </Trans></button>
     </div>
   );
 }

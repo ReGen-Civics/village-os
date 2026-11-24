@@ -9,6 +9,7 @@ import { useState } from "react";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { BTN_PRIMARY, BTN_SECONDARY, HINT, LABEL_CAPS } from "@/components/sessions/roomUi";
 import type { PanelPerson } from "./PersonalListsPanel";
+import { Trans } from "@lingui/react/macro";
 
 const FIELD = "mt-1 block min-h-11 w-full rounded-xl border border-border bg-background px-3 text-foreground";
 
@@ -70,32 +71,32 @@ export default function ErasePrepPanel({ password, players, initialUserId = "", 
 
   return (
     <div className="mt-5 border-t border-border pt-4">
-      <h4 className="font-semibold text-foreground">Before you erase a member</h4>
-      <p className={`${HINT} mt-1`}>Do these first: erasing a member forgets their link to Sera.</p>
+      <h4 className="font-semibold text-foreground"><Trans context="ErasePrepPanel, h4">Before you erase a member</Trans></h4>
+      <p className={`${HINT} mt-1`}><Trans context="ErasePrepPanel, p">Do these first: erasing a member forgets their link to Sera.</Trans></p>
       <label className="mt-2 block">
-        <span className={LABEL_CAPS}>Member</span>
+        <span className={LABEL_CAPS}><Trans context="ErasePrepPanel, span">Member</Trans></span>
         <select className={FIELD} value={userId} onChange={(e) => { setUserId(e.target.value); setDry(null); setMsg(null); }}>
           <option value="">Choose a member</option>
           {players.map((p) => <option key={p.id} value={p.id}>{p.name || p.email || p.id}</option>)}
         </select>
       </label>
       <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId} onClick={exportTasks}>Export their tasks</button>
-        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId} onClick={() => hardDelete(false)}>Also remove their tasks in Sera (dry run)</button>
+        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId} onClick={exportTasks}><Trans context="ErasePrepPanel, button">Export their tasks</Trans></button>
+        <button type="button" className={BTN_SECONDARY} disabled={busy || !userId} onClick={() => hardDelete(false)}><Trans context="ErasePrepPanel, button">Also remove their tasks in Sera (dry run)</Trans></button>
       </div>
       {dry && dry.userId === userId && (
         <div className="mt-2 text-sm text-foreground" role="status">
-          <p>Sera holds {dry.count} task(s) for this member. Nothing has changed yet.</p>
+          <p><Trans context="ErasePrepPanel, p">Sera holds {dry.count} task(s) for this member. Nothing has changed yet.</Trans></p>
           <button type="button" className={`${BTN_PRIMARY} mt-1`} disabled={busy || dry.count === 0} onClick={() => hardDelete(true)}>
-            Yes, archive these {dry.count} in Sera
-          </button>
+            <Trans context="ErasePrepPanel, button">Yes, archive these {dry.count} in Sera
+          </Trans></button>
         </div>
       )}
       {msg && <p role="alert" className="mt-2 text-sm text-foreground">{msg}</p>}
       {(onContinue || onCancel) && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {onContinue && <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={onContinue}>Go on to delete the account</button>}
-          {onCancel && <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={onCancel}>Not now</button>}
+          {onContinue && <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={onContinue}><Trans context="ErasePrepPanel, button">Go on to delete the account</Trans></button>}
+          {onCancel && <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={onCancel}><Trans context="ErasePrepPanel, button">Not now</Trans></button>}
         </div>
       )}
     </div>

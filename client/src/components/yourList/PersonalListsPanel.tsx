@@ -13,6 +13,7 @@ import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import LibraryImportPanel from "./LibraryImportPanel";
 import BridgePanel from "./BridgePanel";
 import { BTN_SECONDARY, HINT, LABEL_CAPS, PANEL } from "@/components/sessions/roomUi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface PanelPerson {
   id: string;
@@ -21,6 +22,7 @@ export interface PanelPerson {
 }
 
 export default function PersonalListsPanel({ password, players }: { password: string; players: PanelPerson[] }) {
+  const { t } = useLingui();
   const [on, setOn] = useState<string[] | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -63,18 +65,18 @@ export default function PersonalListsPanel({ password, players }: { password: st
 
   return (
     <section className={`${PANEL} mb-4`} aria-labelledby="personal-lists-h">
-      <h3 id="personal-lists-h" className="text-lg font-semibold text-foreground">Personal task lists</h3>
+      <h3 id="personal-lists-h" className="text-lg font-semibold text-foreground"><Trans context="PersonalListsPanel, h3">Personal task lists</Trans></h3>
       <p className={`${HINT} mt-1`}>
-        Turn on Your list for a member. It shows on their profile under their task board. You never see their tasks here.
-      </p>
+        <Trans context="PersonalListsPanel, p">Turn on Your list for a member. It shows on their profile under their task board. You never see their tasks here.
+      </Trans></p>
       <p className={`${HINT} mt-1`}>{on === null ? "Reading..." : `${onSet.size} on`}</p>
       <label className="mt-3 block">
-        <span className={LABEL_CAPS}>Find a member</span>
+        <span className={LABEL_CAPS}><Trans context="PersonalListsPanel, span">Find a member</Trans></span>
         <input
           className="mt-1 block min-h-11 w-full rounded-xl border border-border bg-background px-3 text-foreground"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Name or email"
+          placeholder={t({ message: "Name or email", context: "PersonalListsPanel, placeholder" })}
         />
       </label>
       {problem && <p role="alert" className="mt-2 text-sm text-foreground">{problem}</p>}

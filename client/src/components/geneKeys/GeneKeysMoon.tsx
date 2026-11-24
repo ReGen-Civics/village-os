@@ -18,6 +18,7 @@ import {
   FREQUENCIES, FREQUENCY_PROMPT, contemplationEntry, ladderFrom, moonLabel, moonNow, promptFor, type Frequency, type Rung,
 } from "./moon";
 import { BTN_GOLD, BTN_LINK, EYEBROW, HINT, INPUT, NIGHT_CARD } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 const ROW: Record<Frequency, number> = { siddhi: 0, gift: 1, shadow: 2 };
 
@@ -26,12 +27,12 @@ export function MoonLadder({ rungs }: { rungs: readonly Rung[] }) {
   if (!rungs.length) return null;
   return (
     <figure className="flex flex-col gap-2">
-      <figcaption className={EYEBROW}>Your ladder this season</figcaption>
+      <figcaption className={EYEBROW}><Trans context="GeneKeysMoon, figcaption">Your ladder this season</Trans></figcaption>
       <div className="flex gap-3">
         <div aria-hidden="true" className="flex flex-col justify-between py-0.5 text-xs text-muted-foreground">
-          <span>Siddhi</span>
-          <span>Gift</span>
-          <span>Shadow</span>
+          <span><Trans context="GeneKeysMoon, span">Siddhi</Trans></span>
+          <span><Trans context="GeneKeysMoon, span">Gift</Trans></span>
+          <span><Trans context="GeneKeysMoon, span">Shadow</Trans></span>
         </div>
         <ol className="flex flex-1 items-stretch gap-1.5 overflow-x-auto">
           {rungs.map((r) => (
@@ -107,7 +108,7 @@ export default function GeneKeysMoon({ owner, bare = false, className = "" }: { 
 
   return (
     <section aria-labelledby="gk-moon-h" className={`${bare ? "border-t border-border pt-4" : NIGHT_CARD} ${className}`}>
-      <p className={EYEBROW}>From {guide.name} · this moon</p>
+      <p className={EYEBROW}><Trans context="GeneKeysMoon, p">From {guide.name} · this moon</Trans></p>
       <h2 id="gk-moon-h" className={`font-display text-card-foreground ${bare ? "text-xl" : "text-2xl"}`}>
         {done ? "This moon's contemplation is written" : "A contemplation for this moon"}
       </h2>
@@ -143,8 +144,8 @@ export default function GeneKeysMoon({ owner, bare = false, className = "" }: { 
               {busy ? "Keeping it" : "Keep it in my Journal"}
             </button>
             <a className={BTN_LINK} href={GENE_KEYS_SITE} target="_blank" rel="noopener noreferrer">
-              Read this key on genekeys.com
-            </a>
+              <Trans context="GeneKeysMoon, a">Read this key on genekeys.com
+            </Trans></a>
           </div>
         </div>
       )}

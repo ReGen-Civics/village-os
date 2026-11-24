@@ -1,4 +1,5 @@
-/**
+
+import { Trans } from "@lingui/react/macro";/**
  * A module screen's door to the one page where its token is named.
  *
  * THE RULE THIS ENFORCES: one name, one editor. A module that grew its own
@@ -29,8 +30,8 @@ export default function TokenNamingLink({
       {what} are named on the Tokens page, with every other token this village
       runs.{" "}
       <button type="button" onClick={() => onOpenTab("tokens")} className="font-medium text-teal-deep underline">
-        Open Tokens →
-      </button>
+        <Trans context="TokenNamingLink, button">Open Tokens →
+      </Trans></button>
     </p>
   );
 }

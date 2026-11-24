@@ -138,14 +138,14 @@ export default function InvitePanel() {
         <Link2 className="mt-0.5 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <h2 id="invite-heading" className="font-display text-lg font-semibold text-card-foreground">
-            Invite somebody
-          </h2>
+            <Trans context="InvitePanel, h2">Invite somebody
+          </Trans></h2>
           {list.mayInvite ? (
             <>
               <p className="mt-1 text-sm text-muted-foreground">
-                Everybody here arrives by invitation. A link lets one person make an account within {days} days, and
+                <Trans context="InvitePanel, p">Everybody here arrives by invitation. A link lets one person make an account within {days} days, and
                 it counts as your vouch for them.
-              </p>
+              </Trans></p>
               <button
                 type="button"
                 onClick={make}
@@ -167,8 +167,8 @@ export default function InvitePanel() {
           {link && (
             <div className="mt-4 space-y-2">
               <label htmlFor="invite-link" className="block text-sm font-medium text-card-foreground">
-                Your invitation link
-              </label>
+                <Trans context="InvitePanel, label">Your invitation link
+              </Trans></label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   id="invite-link"
@@ -187,8 +187,8 @@ export default function InvitePanel() {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                This is the only time this link is shown. Send it to one person.
-              </p>
+                <Trans context="InvitePanel, p">This is the only time this link is shown. Send it to one person.
+              </Trans></p>
             </div>
           )}
 
@@ -200,7 +200,7 @@ export default function InvitePanel() {
 
           {list.invites.length > 0 && (
             <div className="mt-5">
-              <h3 className="text-sm font-semibold text-card-foreground">Your invitations</h3>
+              <h3 className="text-sm font-semibold text-card-foreground"><Trans context="InvitePanel, h3">Your invitations</Trans></h3>
               <ul className="mt-2 divide-y divide-border">
                 {list.invites.map((inv) => (
                   <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
@@ -208,7 +208,7 @@ export default function InvitePanel() {
                       {inv.standing === "used" && inv.usedBy ? (
                         inv.usedBy.handle ? (
                           <a href={`/profile/${encodeURIComponent(inv.usedBy.handle)}`} className="underline underline-offset-2">
-                            Used by {inv.usedBy.name}
+                            <Trans context="InvitePanel, a">Used by {inv.usedBy.name}</Trans>
                           </a>
                         ) : (
                           `Used by ${inv.usedBy.name}`
@@ -218,9 +218,9 @@ export default function InvitePanel() {
                       )}
                       {inv.standing === "open" && (
                         <span className="text-muted-foreground">
-                          {" "}
+                          <Trans context="InvitePanel, span">{" "}
                           · {inv.daysLeft} {inv.daysLeft === 1 ? "day" : "days"} left
-                        </span>
+                        </Trans></span>
                       )}
                     </span>
                     {inv.standing === "open" && (
@@ -230,8 +230,8 @@ export default function InvitePanel() {
                         disabled={busy}
                         className="inline-flex min-h-11 items-center rounded-lg px-3 py-1 text-sm font-medium text-card-foreground underline underline-offset-2 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                       >
-                        Withdraw
-                      </button>
+                        <Trans context="InvitePanel, button">Withdraw
+                      </Trans></button>
                     )}
                   </li>
                 ))}

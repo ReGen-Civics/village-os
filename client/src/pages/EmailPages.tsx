@@ -35,6 +35,7 @@ import {
   type PreferencesView,
   type UnsubscribeView,
 } from "@shared/comms/preferences";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The signed link from the address bar, or "". */
 const tokenFromUrl = (): string => new URLSearchParams(window.location.search).get("t") ?? "";
@@ -139,6 +140,7 @@ function KindSwitch({ k, busy, onChange }: { k: KindView; busy: boolean; onChang
  * page, which opens it for a link signed for preferences.
  */
 export function PreferencesPanel({ token, onVillage }: { token: string; onVillage?: (name: string) => void }) {
+  const { t } = useLingui();
   const [view, setView] = useState<PreferencesView | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -175,12 +177,12 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
   );
 
   if (!token) return <p className="text-sm text-muted-foreground">{NO_LINK}</p>;
-  if (!view) return error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground">Loading your choices...</p>;
+  if (!view) return error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground"><Trans context="EmailPages, p">Loading your choices...</Trans></p>;
 
   const paused = view.pausedUntil && Date.parse(view.pausedUntil) > Date.now();
   return (
     <div>
-      {view.addressHint && <p className="text-sm text-muted-foreground mb-4">For {view.addressHint}</p>}
+      {view.addressHint && <p className="text-sm text-muted-foreground mb-4"><Trans context="EmailPages, p">For {view.addressHint}</Trans></p>}
       {notice && <Notice text={notice} />}
       {error && <Problem text={error} />}
 
@@ -189,21 +191,21 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
       ) : view.stopped ? (
         <div className="space-y-3 mb-4">
           <p className="text-sm text-card-foreground">
-            You get no email from {view.village}, except the kind you ask for, like a password link.
-          </p>
+            <Trans context="EmailPages, p">You get no email from {view.village}, except the kind you ask for, like a password link.
+          </Trans></p>
           <button type="button" className={primaryButton} disabled={busy} onClick={() => void change({ startAgain: true })}>
-            Start again
-          </button>
+            <Trans context="EmailPages, button">Start again
+          </Trans></button>
         </div>
       ) : (
         <>
           {paused && (
             <div className="rounded-xl border border-border bg-muted p-3 mb-4">
-              <p className="text-sm font-medium text-card-foreground">Paused until {dateWords(view.pausedUntil!)}.</p>
-              <p className="text-xs text-muted-foreground mt-1">It starts again by itself on that day.</p>
+              <p className="text-sm font-medium text-card-foreground"><Trans context="EmailPages, p">Paused until {dateWords(view.pausedUntil!)}.</Trans></p>
+              <p className="text-xs text-muted-foreground mt-1"><Trans context="EmailPages, p">It starts again by itself on that day.</Trans></p>
             </div>
           )}
-          <ul className="space-y-2 mb-6" aria-label="Kinds of email">
+          <ul className="space-y-2 mb-6" aria-label={t({ message: "Kinds of email", context: "EmailPages, aria-label" })}>
             {view.kinds.map((k) => (
               <KindSwitch key={k.kind} k={k} busy={busy} onChange={(on) => void change({ kind: k.kind, on })} />
             ))}
@@ -211,9 +213,9 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
 
           <div className="space-y-2 border-t border-border pt-4 mb-4">
             <p className="text-xs text-muted-foreground">
-              Pause gathering reminders, path emails and letters for {PAUSE_DAYS} days. After that they start again by
+              <Trans context="EmailPages, p">Pause gathering reminders, path emails and letters for {PAUSE_DAYS} days. After that they start again by
               themselves.
-            </p>
+            </Trans></p>
             <button type="button" className={quietButton} disabled={busy} onClick={() => void change({ pause: !paused })}>
               {paused ? "Start again now" : `Pause for ${PAUSE_DAYS} days`}
             </button>
@@ -221,22 +223,22 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
 
           <div className="space-y-2 border-t border-border pt-4 mb-4">
             <p className="text-xs text-muted-foreground">
-              Stop every email from {view.village} to this address, except the kind you ask for.
-            </p>
+              <Trans context="EmailPages, p">Stop every email from {view.village} to this address, except the kind you ask for.
+            </Trans></p>
             {confirmStop ? (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-card-foreground">Stop everything for this address?</p>
+                <p className="text-sm font-medium text-card-foreground"><Trans context="EmailPages, p">Stop everything for this address?</Trans></p>
                 <button
                   type="button"
                   className={`${quietButton} border-destructive text-destructive`}
                   disabled={busy}
                   onClick={() => void change({ stopEverything: true })}
                 >
-                  Yes, stop everything
-                </button>
+                  <Trans context="EmailPages, button">Yes, stop everything
+                </Trans></button>
                 <button type="button" className={quietButton} disabled={busy} onClick={() => setConfirmStop(false)}>
-                  Keep my choices
-                </button>
+                  <Trans context="EmailPages, button">Keep my choices
+                </Trans></button>
               </div>
             ) : (
               <button
@@ -245,8 +247,8 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
                 disabled={busy}
                 onClick={() => setConfirmStop(true)}
               >
-                Stop everything
-              </button>
+                <Trans context="EmailPages, button">Stop everything
+              </Trans></button>
             )}
           </div>
         </>
@@ -258,10 +260,11 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
 
 /** `/email/preferences?t=`: every kind of email with its switch, a pause, and "stop everything". */
 export function EmailPreferences() {
+  const { t } = useLingui();
   const token = useMemo(tokenFromUrl, []);
   const [village, setVillage] = useState("");
   return (
-    <Shell title={village ? `Your email from ${village}` : "Your email"}>
+    <Shell title={village ? t({ message: `Your email from ${village}`, context: "EmailPages, title" }) : t({ message: "Your email", context: "EmailPages, title" })}>
       <PreferencesPanel token={token} onVillage={setVillage} />
     </Shell>
   );
@@ -271,6 +274,7 @@ export function EmailPreferences() {
 
 /** `/email/unsubscribe?t=`: says what will stop, and stops it on a confirmed press. */
 export function EmailUnsubscribe() {
+  const { t } = useLingui();
   const token = useMemo(tokenFromUrl, []);
   const [view, setView] = useState<UnsubscribeView | null>(null);
   const [error, setError] = useState("");
@@ -297,18 +301,18 @@ export function EmailUnsubscribe() {
   const what = view ? (view.kind === "all" ? "every email" : view.label.toLowerCase()) : "";
   const choices = view?.preferencesToken ? `/email/preferences?t=${encodeURIComponent(view.preferencesToken)}` : null;
   return (
-    <Shell title={view ? (view.kind === "all" ? "Stop every email?" : `Stop ${what}?`) : "Unsubscribe"}>
+    <Shell title={view ? (view.kind === "all" ? t({ message: "Stop every email?", context: "EmailPages, title" }) : t({ message: `Stop ${what}?`, context: "EmailPages, title" })) : t({ message: "Unsubscribe", context: "EmailPages, title" })}>
       {!token ? (
         <p className="text-sm text-muted-foreground">{NO_LINK}</p>
       ) : !view ? (
-        error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground">Loading...</p>
+        error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground"><Trans context="EmailPages, p">Loading...</Trans></p>
       ) : (
         <div className="space-y-4">
           {error && <Problem text={error} />}
           {done ? (
             <Notice text={done} />
           ) : view.done ? (
-            <p className="text-sm text-card-foreground">This is already stopped. Nothing more to do here.</p>
+            <p className="text-sm text-card-foreground"><Trans context="EmailPages, p">This is already stopped. Nothing more to do here.</Trans></p>
           ) : (
             <>
               <p className="text-sm text-card-foreground">
@@ -323,8 +327,8 @@ export function EmailUnsubscribe() {
           )}
           {choices && (
             <a href={choices} className={`block text-sm ${LINK}`}>
-              Choose which emails you get
-            </a>
+              <Trans context="EmailPages, a">Choose which emails you get
+            </Trans></a>
           )}
         </div>
       )}
@@ -398,13 +402,13 @@ function ActionPanel({ token, description, onAnswered }: {
       ))}
       {input && description.choices.length === 0 && (
         <button type="button" className={primaryButton} disabled={busy || !text.trim()} onClick={() => void answer(null)}>
-          Send
-        </button>
+          <Trans context="EmailPages, button">Send
+        </Trans></button>
       )}
       {preferences && (
         <a href={`/email/preferences?t=${encodeURIComponent(preferences)}`} className={`block text-sm ${LINK}`}>
-          Your email choices
-        </a>
+          <Trans context="EmailPages, a">Your email choices
+        </Trans></a>
       )}
     </div>
   );
@@ -412,6 +416,7 @@ function ActionPanel({ token, description, onAnswered }: {
 
 /** `/email/a?t=`: the answer a one-click link carries, shown, and changeable. */
 export function EmailAction() {
+  const { t } = useLingui();
   const token = useMemo(tokenFromUrl, []);
   const [purpose, setPurpose] = useState("");
   const [description, setDescription] = useState<ActionDescription | null>(null);
@@ -430,23 +435,23 @@ export function EmailAction() {
 
   if (purpose === "preferences") {
     return (
-      <Shell title={description?.title ?? "Your email"}>
+      <Shell title={description?.title ?? t({ message: "Your email", context: "EmailPages, title" })}>
         <PreferencesPanel token={token} />
       </Shell>
     );
   }
   const shown = result?.description ?? description;
   return (
-    <Shell title={result?.title ?? description?.title ?? "Your answer"}>
+    <Shell title={result?.title ?? description?.title ?? t({ message: "Your answer", context: "EmailPages, title" })}>
       {!token ? (
         <p className="text-sm text-muted-foreground">{NO_LINK}</p>
       ) : !shown ? (
-        error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground">Loading...</p>
+        error ? <Problem text={error} /> : <p className="text-sm text-muted-foreground"><Trans context="EmailPages, p">Loading...</Trans></p>
       ) : (
         <div className="space-y-4">
           {result && result.paragraphs.length > 0 && <Notice text={result.paragraphs.join(" ")} />}
           {result && shown.choices.length > 0 && (
-            <p className="text-xs text-muted-foreground">You can change your answer below.</p>
+            <p className="text-xs text-muted-foreground"><Trans context="EmailPages, p">You can change your answer below.</Trans></p>
           )}
           <ActionPanel token={token} description={shown} onAnswered={setResult} />
         </div>

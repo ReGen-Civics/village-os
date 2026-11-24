@@ -20,6 +20,7 @@
 import LadderChip from "@/components/sheet/LadderChip";
 import type { GameStagePublic } from "@/lib/gameApi";
 import { DEFAULT_LADDER_TITLE } from "@shared/villagePaths";
+import { Trans } from "@lingui/react/macro";
 
 export default function MaturityLadder({
   title,
@@ -40,7 +41,7 @@ export default function MaturityLadder({
       <h2 id="maturity-h" className="font-display text-2xl font-bold text-card-foreground">
         {title?.trim() || DEFAULT_LADDER_TITLE}
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">Your walk so far, in the village's own words.</p>
+      <p className="mt-1 text-sm text-muted-foreground"><Trans context="MaturityLadder, p">Your walk so far, in the village's own words.</Trans></p>
 
       {here ? (
         <div className="mt-5">

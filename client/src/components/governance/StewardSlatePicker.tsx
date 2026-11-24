@@ -1,4 +1,5 @@
-export interface StewardCandidate {
+
+import { Trans } from "@lingui/react/macro";export interface StewardCandidate {
   id: string;
   name: string;
 }
@@ -53,13 +54,13 @@ export default function StewardSlatePicker({
   if (candidates.length === 0) return null;
   return (
     <div className="mt-4 border-t border-stone-900/10 pt-4">
-      <p className="text-sm font-semibold text-stone-900">Who carries the steward role</p>
+      <p className="text-sm font-semibold text-stone-900"><Trans context="StewardSlatePicker, p">Who carries the steward role</Trans></p>
       <p className="mt-1 text-xs text-stone-600 max-w-lg leading-relaxed">
-        You are choosing this list, and the proposal says so. Everyone you pick answers for themselves, and carrying the
+        <Trans context="StewardSlatePicker, p">You are choosing this list, and the proposal says so. Everyone you pick answers for themselves, and carrying the
         role for this first season means holding all {powerCount} of the powers this village has to give. Founding
         members only for this first season. After it, anybody can raise their hand for the role and the village votes
         them in.
-      </p>
+      </Trans></p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {candidates.map((c) => (
           <label

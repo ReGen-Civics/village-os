@@ -19,6 +19,7 @@ import { COMMITMENT_LABELS, SHEET_WORDS, type SeatSheetView } from "@shared/role
 import LadderChip from "@/components/sheet/LadderChip";
 import { Eyebrow, SeatFigures, StateBadge } from "./SeatCardFront";
 import { SHEET_HEADING } from "./SeatRoster";
+import { Trans } from "@lingui/react/macro";
 
 const BODY = "text-[13.5px] leading-relaxed text-foreground";
 
@@ -91,8 +92,8 @@ export default function SeatCharter({
               {SHEET_WORDS.commitmentsHeading}
             </h4>
             <p className="whitespace-nowrap text-xs text-muted-foreground">
-              <span className="font-body text-base font-semibold text-notice">{view.tally.written}</span> of {view.tally.of} written down
-            </p>
+              <Trans context="SeatCharter, p"><span className="font-body text-base font-semibold text-notice">{view.tally.written}</span> of {view.tally.of} written down
+            </Trans></p>
           </div>
           <ol className="mt-2 flex flex-wrap gap-1.5">
             {view.commitments.map((c) => (

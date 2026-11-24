@@ -43,6 +43,7 @@ import StartTheGame, { type LaunchVote } from "@/components/launch/StartTheGame"
 import HandOverPowers from "@/components/governance/HandOverPowers";
 import { useBrochurePages } from "@/lib/brochure";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * THE SECTION EACH REQUIREMENT SITS IN.
@@ -310,7 +311,7 @@ export default function JourneyToLaunch() {
    *
    * An admin walks into the whole page, as before.
    */
-  if (loading) return <Layout><div className="py-24 text-center text-muted-foreground">Checking your access…</div></Layout>;
+  if (loading) return <Layout><div className="py-24 text-center text-muted-foreground"><Trans context="JourneyToLaunch, div">Checking your access…</Trans></div></Layout>;
   if (!user) {
     return (
       <Layout>
@@ -319,14 +320,14 @@ export default function JourneyToLaunch() {
             <div className="w-12 h-12 bg-teal-deep/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-6 h-6 text-teal-deep" />
             </div>
-            <h1 className="font-display text-xl font-bold text-foreground mb-1">Journey to Launch</h1>
+            <h1 className="font-display text-xl font-bold text-foreground mb-1"><Trans context="JourneyToLaunch, h1">Journey to Launch</Trans></h1>
             <p className="text-sm text-muted-foreground mb-5">
-              Sign in to see how far this village is from opening its doors. Members can run the
+              <Trans context="JourneyToLaunch, p">Sign in to see how far this village is from opening its doors. Members can run the
               test over its settings; the checklist itself belongs to the team running the village.
-            </p>
+            </Trans></p>
             <a href="/admin" className="block w-full bg-teal-deep text-white py-3 rounded-xl font-semibold text-sm">
-              Sign in
-            </a>
+              <Trans context="JourneyToLaunch, a">Sign in
+            </Trans></a>
           </div>
         </div>
       </Layout>
@@ -345,15 +346,15 @@ export default function JourneyToLaunch() {
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">{onCanvas ? "How this village governs itself" : "See what these settings would do"}</h1>
             <p className={`text-white text-sm max-w-2xl ${onCanvas ? "hidden" : ""}`}>
-              Turn this village's moons over quickly and read what its rules would pay, who a
+              <Trans context="JourneyToLaunch, p">Turn this village's moons over quickly and read what its rules would pay, who a
               settlement would thank, when Claims Week opens, and what you could give each moon.
               It writes nothing. The launch checklist and the ballot belong to the team running
               the village, so they are not on your copy of this page.
-            </p>
+            </Trans></p>
             {memberCanvas && (
               <div className="flex flex-wrap gap-2 mt-5">
-                <ViewTab active={!onCanvas} onClick={() => setView("launch")}>Test run</ViewTab>
-                <ViewTab active={onCanvas} onClick={() => setView("canvas")}>Canvas</ViewTab>
+                <ViewTab active={!onCanvas} onClick={() => setView("launch")}><Trans context="JourneyToLaunch, ViewTab">Test run</Trans></ViewTab>
+                <ViewTab active={onCanvas} onClick={() => setView("canvas")}><Trans context="JourneyToLaunch, ViewTab">Canvas</Trans></ViewTab>
               </div>
             )}
           </div>
@@ -400,8 +401,8 @@ export default function JourneyToLaunch() {
           </p>
           <p className="text-sm mb-6">
             <a href="/setup-game" className="text-amber-on-band underline font-medium">
-              Play it as the setup game
-            </a>
+              <Trans context="JourneyToLaunch, a">Play it as the setup game
+            </Trans></a>
           </p>
 
           {/*
@@ -413,8 +414,8 @@ export default function JourneyToLaunch() {
             */}
           {status && !launched && (
             <p data-testid="journey-remaining" className={`text-white text-xs ${shownView === "canvas" ? "hidden" : ""}`}>
-              {status.blockingOpen} blocking · {status.recommendedOpen} recommended remaining
-            </p>
+              <Trans context="JourneyToLaunch, p">{status.blockingOpen} blocking · {status.recommendedOpen} recommended remaining
+            </Trans></p>
           )}
 
           <div className="flex flex-wrap gap-2 mt-5">
@@ -422,30 +423,30 @@ export default function JourneyToLaunch() {
               onClick={() => setView("launch")}
               className={`text-sm rounded-lg px-3 py-1.5 font-medium ${shownView === "launch" ? "bg-amber text-foreground" : "bg-white/10 text-white"}`}
             >
-              Launch readiness
-            </button>
+              <Trans context="JourneyToLaunch, button">Launch readiness
+            </Trans></button>
             <button
               onClick={() => setView("economics")}
               className={`text-sm rounded-lg px-3 py-1.5 font-medium ${view === "economics" ? "bg-amber text-foreground" : "bg-white/10 text-white"}`}
             >
-              Village economics
-            </button>
-            {canvasOn && <ViewTab active={shownView === "canvas"} onClick={() => setView("canvas")}>Canvas</ViewTab>}
+              <Trans context="JourneyToLaunch, button">Village economics
+            </Trans></button>
+            {canvasOn && <ViewTab active={shownView === "canvas"} onClick={() => setView("canvas")}><Trans context="JourneyToLaunch, ViewTab">Canvas</Trans></ViewTab>}
             {brochureOn && (
               <Link
                 href="/project-history"
                 className="inline-flex items-center gap-1.5 text-sm rounded-lg px-3 py-1.5 font-medium bg-white/10 text-white hover:bg-white/20"
               >
-                <History className="w-3.5 h-3.5" /> Command Centre
-              </Link>
+                <Trans context="JourneyToLaunch, Link"><History className="w-3.5 h-3.5" /> Command Centre
+              </Trans></Link>
             )}
             {/* Stays after launch (Wave 4, defect 10): the organizing counsel is for running a village, and it opens on that. */}
             <button
               onClick={() => setGuideOpen(true)}
               className="inline-flex items-center gap-1.5 text-sm rounded-lg px-3 py-1.5 font-medium bg-white/10 text-white hover:bg-white/20"
             >
-              <MessageCircle className="w-3.5 h-3.5" /> Ask the guide
-            </button>
+              <Trans context="JourneyToLaunch, button"><MessageCircle className="w-3.5 h-3.5" /> Ask the guide
+            </Trans></button>
           </div>
         </div>
       </div>
@@ -454,12 +455,12 @@ export default function JourneyToLaunch() {
         <div className="container max-w-3xl space-y-6">
           {modules.loaded && !modules.failed && !canvasOn && shownView === "launch" && (
             <p data-testid="journey-canvas-off" className="text-sm text-stone-700 bg-white border border-stone-200 rounded-xl px-4 py-3">
-              Governance Canvas is off.{" "}
+              <Trans context="JourneyToLaunch, p">Governance Canvas is off.{" "}
               <Link href="/admin?tab=modules&module=canvas" className="font-medium text-teal-deep underline">
                 Turn it on in Modules
               </Link>{" "}
               to start your canvas.
-            </p>
+            </Trans></p>
           )}
           {shownView === "canvas" ? (
             // The guide and the companion share one corner, so opening either closes the other.
@@ -468,10 +469,10 @@ export default function JourneyToLaunch() {
             <EconomicsView headers={(extra) => ({ ...headers(), ...(extra ?? {}) })} />
           ) : failed ? (
             <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-3">
-              Could not load launch status. Sign in again, or check the server.
-            </p>
+              <Trans context="JourneyToLaunch, p">Could not load launch status. Sign in again, or check the server.
+            </Trans></p>
           ) : !status ? (
-            <p className="text-sm text-muted-foreground py-12 text-center">Reading the village's pulse…</p>
+            <p className="text-sm text-muted-foreground py-12 text-center"><Trans context="JourneyToLaunch, p">Reading the village's pulse…</Trans></p>
           ) : (
             <>
               {[...GROUP_ORDER, ...leftoverGroups(items)].map((g) => {
@@ -493,8 +494,8 @@ export default function JourneyToLaunch() {
                               <p className="text-sm font-medium text-stone-900">{i.title}</p>
                               {i.severity === "blocking" && i.state !== "ok" && (
                                 <span className="text-[10px] font-semibold uppercase tracking-wide text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                                  blocks launch
-                                </span>
+                                  <Trans context="JourneyToLaunch, span">blocks launch
+                                </Trans></span>
                               )}
                             </div>
                             <p className="text-xs text-stone-500 mt-0.5">{i.why}</p>

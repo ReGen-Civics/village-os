@@ -31,6 +31,7 @@ import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { authToken } from "@/lib/gameApi";
 import { readStoredJson, writeStoredJson } from "@/lib/safeStorage";
+import { Trans } from "@lingui/react/macro";
 
 interface Unclaimed {
   assignmentId: string;
@@ -98,17 +99,17 @@ export default function SeatClaimCard() {
         {seats.length === 1 ? "A role is recorded under your name" : "Some roles are recorded under your name"}
       </p>
       <p className="text-xs text-muted-foreground mb-3">
-        The village wrote these down before you had an account here. Say which
+        <Trans context="SeatClaimCard, p">The village wrote these down before you had an account here. Say which
         one is yours and a steward confirms it, and the role keeps everything it
         already knew.
-      </p>
+      </Trans></p>
       <div className="space-y-2">
         {seats.map((s) => (
           <div key={s.assignmentId} className="flex flex-wrap items-center gap-2 justify-between">
             <p className="text-sm text-foreground">
               <span className="font-medium">{s.roleName}</span>
               {s.focus && <span className="text-muted-foreground"> · {s.focus}</span>}
-              <span className="text-muted-foreground"> · recorded as “{s.recordedName}”</span>
+              <span className="text-muted-foreground"> <Trans context="SeatClaimCard, span">· recorded as “{s.recordedName}”</Trans></span>
             </p>
             <div className="flex gap-2">
               <button
@@ -116,8 +117,8 @@ export default function SeatClaimCard() {
                 disabled={busy === s.assignmentId}
                 className="inline-flex items-center gap-1 text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
               >
-                <Check className="w-4 h-4" /> That is me
-              </button>
+                <Trans context="SeatClaimCard, button"><Check className="w-4 h-4" /> That is me
+              </Trans></button>
               <button
                 onClick={() => {
                   remember(s.assignmentId);
@@ -125,8 +126,8 @@ export default function SeatClaimCard() {
                 }}
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground px-2 py-1.5"
               >
-                <X className="w-4 h-4" /> Not me
-              </button>
+                <Trans context="SeatClaimCard, button"><X className="w-4 h-4" /> Not me
+              </Trans></button>
             </div>
           </div>
         ))}

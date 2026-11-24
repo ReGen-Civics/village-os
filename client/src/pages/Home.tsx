@@ -26,11 +26,11 @@ import {
   Globe
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
 import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import { Image } from "@/components/Image";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { HOME_PAGE } from "@shared/pageContent/home";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
@@ -169,6 +169,7 @@ export default function Home() {
   // (shared/pageContent/home.ts). Null until the saved words have arrived:
   // the hero keeps its space and stays invisible meanwhile, so a visitor never
   // reads the platform's defaults and then watches them change.
+  const langOf = usePageLang(HOME_PAGE);
   const page = usePageContent(HOME_PAGE);
   const heroFields = page?.hero.fields;
   /*
@@ -302,8 +303,8 @@ export default function Home() {
         <div className="container -mt-24 sm:-mt-28 lg:-mt-32">
           {paths && pathsShown ? (
             <div className="relative mb-5 max-w-2xl">
-              <p className={EYEBROW}>{paths.fields.eyebrow}</p>
-              <h2 id="choose-path-h" className="mt-2 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+              <p lang={langOf("paths.eyebrow")} className={EYEBROW}>{paths.fields.eyebrow}</p>
+              <h2 lang={langOf("paths.heading")} id="choose-path-h" className="mt-2 font-display text-2xl leading-tight text-foreground sm:text-3xl">
                 {paths.fields.heading}
               </h2>
             </div>
@@ -349,7 +350,7 @@ export default function Home() {
                     ) : null}
                     <span className={`mt-2 block ${WAY_BODY}`}>{card.description}</span>
                     <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
-                      <span>Choose {card.title}</span>
+                      <span><Trans context="Home, span">Choose {card.title}</Trans></span>
                       <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </span>
                   </Link>
@@ -359,7 +360,7 @@ export default function Home() {
           </ul>
           </Mycelium>
           {paths && pathsShown && paths.fields.intro ? (
-            <p className={`mt-6 max-w-2xl ${NOTE}`}>
+            <p lang={langOf("paths.intro")} className={`mt-6 max-w-2xl ${NOTE}`}>
               <Emphasized text={paths.fields.intro} />
             </p>
           ) : null}
@@ -374,10 +375,10 @@ export default function Home() {
       <section className="border-y border-border/60 bg-card/40 py-16">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4">
+            <h2 lang={langOf("journey.heading")} className="font-display text-3xl md:text-4xl text-foreground mb-4">
               {journey.fields.heading}
             </h2>
-            <p className={`mx-auto ${NOTE} max-w-2xl`}>
+            <p lang={langOf("journey.intro")} className={`mx-auto ${NOTE} max-w-2xl`}>
               <Emphasized text={journey.fields.intro} />
             </p>
           </div>
@@ -425,7 +426,7 @@ export default function Home() {
       <section className="py-24">
         <div className="container">
           <div className="text-center mb-16">
-            <m.span
+            <m.span lang={langOf("personas.eyebrow")}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -433,7 +434,7 @@ export default function Home() {
             >
               {personas.fields.eyebrow}
             </m.span>
-            <m.h2
+            <m.h2 lang={langOf("personas.heading")}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -441,7 +442,7 @@ export default function Home() {
             >
               {personas.fields.heading}
             </m.h2>
-            <m.p
+            <m.p lang={langOf("personas.intro")}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -484,7 +485,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-muted-foreground mb-4">
+            <p lang={langOf("personas.footer")} className="text-muted-foreground mb-4">
               {personas.fields.footer}
             </p>
             <a
@@ -497,7 +498,7 @@ export default function Home() {
                   ?.scrollIntoView({ behavior: scrollBehavior() });
               }}
             >
-              Pick your path <ArrowRight className="w-4 h-4" />
+              <Trans context="Home, a">Pick your path <ArrowRight className="w-4 h-4" /></Trans>
             </a>
           </div>
         </div>
@@ -509,7 +510,7 @@ export default function Home() {
       <section className="border-t border-border/60 bg-card/40 py-24">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
-            <m.h2
+            <m.h2 lang={langOf("cta.heading")}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -517,7 +518,7 @@ export default function Home() {
             >
               {cta.fields.heading}
             </m.h2>
-            <m.p
+            <m.p lang={langOf("cta.body")}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -545,7 +546,7 @@ export default function Home() {
                 </a>
               )}
               {eventsUrl && cta.fields.secondaryLabel && (
-                <a
+                <a lang={langOf("cta.secondaryLabel")}
                   href={eventsUrl}
                   target="_blank"
                   rel="noopener noreferrer"

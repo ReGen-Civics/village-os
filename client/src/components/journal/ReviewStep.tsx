@@ -12,6 +12,7 @@ import { JOURNAL_ANSWER_MAX, JOURNAL_REFLECTION_MAX } from "@shared/journal";
 import GrowingTextarea from "./GrowingTextarea";
 import type { Sitting, Step } from "./sitting";
 import { BTN_PRIMARY, BTN_QUIET, CARD, HINT, signed } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 export default function ReviewStep({
   sitting,
@@ -36,8 +37,8 @@ export default function ReviewStep({
 }) {
   return (
     <div className="space-y-5">
-      <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Read it back</h2>
-      <p className={HINT}>Change anything you like before it is saved. Empty answers are left out.</p>
+      <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl"><Trans context="ReviewStep, h2">Read it back</Trans></h2>
+      <p className={HINT}><Trans context="ReviewStep, p">Change anything you like before it is saved. Empty answers are left out.</Trans></p>
 
       <ol className="space-y-4">
         {steps.map((step, i) => {
@@ -50,11 +51,11 @@ export default function ReviewStep({
                   {typeof v === "number" ? (
                     <span className="text-lg font-bold">{signed(v, step.min < 0)}</span>
                   ) : (
-                    <span className="text-muted-foreground">Not answered</span>
+                    <span className="text-muted-foreground"><Trans context="ReviewStep, span">Not answered</Trans></span>
                   )}
                   <button type="button" className={BTN_QUIET} onClick={() => onGoTo(i)}>
-                    Change
-                  </button>
+                    <Trans context="ReviewStep, button">Change
+                  </Trans></button>
                 </p>
               </li>
             );
@@ -83,8 +84,8 @@ export default function ReviewStep({
       {sitting.reflection && (
         <div className={`${CARD} border-sage/40`}>
           <label htmlFor="review-reflection" className="block font-semibold text-foreground">
-            Your reflection, confirmed as your own words
-          </label>
+            <Trans context="ReviewStep, label">Your reflection, confirmed as your own words
+          </Trans></label>
           <div className="mt-2">
             <GrowingTextarea
               id="review-reflection"
@@ -96,8 +97,8 @@ export default function ReviewStep({
             />
           </div>
           <button type="button" className={`${BTN_QUIET} mt-1`} onClick={() => onReflection("")}>
-            Leave the reflection out
-          </button>
+            <Trans context="ReviewStep, button">Leave the reflection out
+          </Trans></button>
         </div>
       )}
 
@@ -123,7 +124,7 @@ export default function ReviewStep({
         <button type="button" className={BTN_PRIMARY} onClick={onSave} disabled={saving || !canSave}>
           {saving ? "Saving..." : "Save to my journal"}
         </button>
-        {!canSave && <p className={HINT}>Write or choose something first, then save.</p>}
+        {!canSave && <p className={HINT}><Trans context="ReviewStep, p">Write or choose something first, then save.</Trans></p>}
       </div>
     </div>
   );

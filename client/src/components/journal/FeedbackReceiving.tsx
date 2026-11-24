@@ -17,6 +17,7 @@ import {
 import { getPrefs, problemText, putPrefs, receivedFeedback, respondFeedback } from "@/lib/journalApi";
 import GrowingTextarea from "./GrowingTextarea";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, HINT, LABEL, dayLabel } from "./ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const RESPONSE_TEXT: Record<Exclude<FeedbackResponse, "none">, string> = {
   thanks: "Thanks",
@@ -24,6 +25,7 @@ const RESPONSE_TEXT: Record<Exclude<FeedbackResponse, "none">, string> = {
 };
 
 export default function FeedbackReceiving() {
+  const { t } = useLingui();
   const [prefs, setPrefs] = useState<FeedbackPrefs>({ open: false, style: "gentle", note: "" });
   // True only once the member's own settings were READ. A failed read leaves
   // it false, so the defaults above can never be saved over the real row: a
@@ -99,8 +101,8 @@ export default function FeedbackReceiving() {
   return (
     <section aria-labelledby="fb-receiving" className="space-y-4">
       <h2 id="fb-receiving" className="font-display text-xl font-bold text-foreground">
-        Receiving
-      </h2>
+        <Trans context="FeedbackReceiving, h2">Receiving
+      </Trans></h2>
 
       <form onSubmit={save} className={`${CARD} space-y-4`} aria-busy={!loaded && !prefsProblem}>
         {prefsProblem ? (
@@ -109,14 +111,14 @@ export default function FeedbackReceiving() {
               {prefsProblem}
             </p>
             <button type="button" className={BTN_SECONDARY} onClick={() => setPrefsTry((n) => n + 1)}>
-              Retry
-            </button>
+              <Trans context="FeedbackReceiving, button">Retry
+            </Trans></button>
           </div>
         ) : (
           // Locked until the member's own settings have been read.
           <fieldset disabled={!loaded} className="space-y-4">
             <fieldset>
-              <legend className={LABEL}>Do you want to receive feedback?</legend>
+              <legend className={LABEL}><Trans context="FeedbackReceiving, legend">Do you want to receive feedback?</Trans></legend>
               <div className="mt-2 flex gap-2">
                 {([
                   [true, "Yes"],
@@ -143,8 +145,8 @@ export default function FeedbackReceiving() {
 
             <div>
               <label htmlFor="fb-style" className={LABEL}>
-                How should it be written?
-              </label>
+                <Trans context="FeedbackReceiving, label">How should it be written?
+              </Trans></label>
               <select
                 id="fb-style"
                 value={prefs.style}
@@ -161,11 +163,11 @@ export default function FeedbackReceiving() {
 
             <div>
               <label htmlFor="fb-note" className={LABEL}>
-                How I like to receive feedback
-              </label>
+                <Trans context="FeedbackReceiving, label">How I like to receive feedback
+              </Trans></label>
               <p id="fb-note-hint" className={HINT}>
-                Shown to the people who can write to you.
-              </p>
+                <Trans context="FeedbackReceiving, p">Shown to the people who can write to you.
+              </Trans></p>
               <div className="mt-1">
                 <GrowingTextarea
                   id="fb-note"
@@ -196,21 +198,21 @@ export default function FeedbackReceiving() {
       </form>
 
       <div>
-        <h3 className="font-semibold text-foreground">What has arrived</h3>
+        <h3 className="font-semibold text-foreground"><Trans context="FeedbackReceiving, h3">What has arrived</Trans></h3>
         {problem && (
           <p role="alert" className="mt-2 text-sm text-destructive">
             {problem}
           </p>
         )}
         {received !== null && received.length === 0 && !problem && (
-          <p className={`${HINT} mt-2`}>Nothing yet. Feedback arrives unsigned on Monday mornings, village time.</p>
+          <p className={`${HINT} mt-2`}><Trans context="FeedbackReceiving, p">Nothing yet. Feedback arrives unsigned on Monday mornings, village time.</Trans></p>
         )}
         <ul className="mt-2 space-y-3">
           {(received ?? []).map((r) => (
             <li key={r.id} className={CARD}>
               <p className="whitespace-pre-wrap text-foreground">{r.message}</p>
-              <p className="mt-2 text-xs text-muted-foreground">Arrived {dayLabel(r.deliveredAt)}</p>
-              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Your answer to this feedback">
+              <p className="mt-2 text-xs text-muted-foreground"><Trans context="FeedbackReceiving, p">Arrived {dayLabel(r.deliveredAt)}</Trans></p>
+              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t({ message: "Your answer to this feedback", context: "FeedbackReceiving, aria-label" })}>
                 {(Object.keys(RESPONSE_TEXT) as Exclude<FeedbackResponse, "none">[]).map((resp) => (
                   <button
                     key={resp}

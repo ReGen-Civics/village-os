@@ -32,6 +32,7 @@ import PulseTab from "@/components/journal/PulseTab";
 import FeedbackTab from "@/components/journal/FeedbackTab";
 import { usePendingEntries, useRememberedChoice, useSignOutForgetsDraft } from "@/components/journal/hooks";
 import { BTN_QUIET, BTN_SECONDARY, dayLabel, timeLabel } from "@/components/journal/ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const TABS = ["today", "history", "pulse", "feedback"] as const;
 type Tab = (typeof TABS)[number];
@@ -50,6 +51,7 @@ const TAB_LABEL: Record<Tab, string> = {
  * journal and nothing else holds it.
  */
 function RefusedPage({ owner, item }: { owner: string; item: OutboxItem }) {
+  const { t } = useLingui();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const e = item.entry;
@@ -69,17 +71,17 @@ function RefusedPage({ owner, item }: { owner: string; item: OutboxItem }) {
       <p className="text-sm font-semibold text-foreground">{label}</p>
       <p className="mt-1 text-sm text-foreground">{item.lastError ?? "The journal did not take this page."}</p>
       {confirming ? (
-        <div role="group" aria-label="Confirm removing this page" className="mt-2">
+        <div role="group" aria-label={t({ message: "Confirm removing this page", context: "Journal, aria-label" })} className="mt-2">
           <p className="text-sm font-semibold text-destructive">
-            Remove this page from this device? It is not in your journal, so it cannot be brought back.
-          </p>
+            <Trans context="Journal, p">Remove this page from this device? It is not in your journal, so it cannot be brought back.
+          </Trans></p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" className={BTN_SECONDARY} onClick={() => removeFromOutbox(e.clientId)}>
-              Yes, remove it
-            </button>
+              <Trans context="Journal, button">Yes, remove it
+            </Trans></button>
             <button type="button" className={BTN_QUIET} onClick={() => setConfirming(false)}>
-              Keep it
-            </button>
+              <Trans context="Journal, button">Keep it
+            </Trans></button>
           </div>
         </div>
       ) : (
@@ -88,8 +90,8 @@ function RefusedPage({ owner, item }: { owner: string; item: OutboxItem }) {
             {busy ? "Sending..." : "Try again"}
           </button>
           <button type="button" className={BTN_QUIET} onClick={() => setConfirming(true)} disabled={busy}>
-            Remove from this device
-          </button>
+            <Trans context="Journal, button">Remove from this device
+          </Trans></button>
         </div>
       )}
     </li>
@@ -97,6 +99,7 @@ function RefusedPage({ owner, item }: { owner: string; item: OutboxItem }) {
 }
 
 export default function Journal() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const modules = useModules();
   const village = useVillageName();
@@ -156,7 +159,7 @@ export default function Journal() {
     return (
       <Layout>
         <div className="flex min-h-[50vh] items-center justify-center">
-          <BreathingLoader label="Opening your journal" />
+          <BreathingLoader label={t({ message: "Opening your journal", context: "Journal, label" })} />
         </div>
       </Layout>
     );
@@ -181,23 +184,23 @@ export default function Journal() {
     <Layout>
       <section className="bg-gradient-to-b from-teal-deep/5 to-background py-8 md:py-12">
         <div className="container max-w-3xl">
-          <h1 className="font-display text-4xl font-bold text-foreground">Journal</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground"><Trans context="Journal, h1">Journal</Trans></h1>
           <p className="mt-2 text-muted-foreground">
-            A few good questions, answered in your own words. Only you read what you write here.
-          </p>
+            <Trans context="Journal, p">A few good questions, answered in your own words. Only you read what you write here.
+          </Trans></p>
         </div>
       </section>
 
       <div className="container max-w-3xl pb-16">
         {refused.length > 0 && (
           <section
-            aria-label="Pages the journal did not take"
+            aria-label={t({ message: "Pages the journal did not take", context: "Journal, aria-label" })}
             className="mb-5 rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3"
           >
             <p className="text-sm font-medium text-foreground">
-              The journal did not take {refused.length === 1 ? "1 page" : `${refused.length} pages`}. Each is still on this
+              <Trans context="Journal, p">The journal did not take {refused.length === 1 ? "1 page" : `${refused.length} pages`}. Each is still on this
               device.
-            </p>
+            </Trans></p>
             <ul className="mt-3 space-y-2">
               {refused.map((item) => (
                 <RefusedPage key={item.entry.clientId} owner={user.id} item={item} />
@@ -208,9 +211,9 @@ export default function Journal() {
         {waiting.length > 0 && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber/60 bg-amber-light px-4 py-3">
             <p className="text-sm font-medium text-foreground">
-              {waiting.length === 1 ? "1 page is" : `${waiting.length} pages are`} saved on this device and not yet in your
+              <Trans context="Journal, p">{waiting.length === 1 ? "1 page is" : `${waiting.length} pages are`} saved on this device and not yet in your
               journal.
-            </p>
+            </Trans></p>
             <button type="button" className={BTN_SECONDARY} onClick={() => void sync(true)} disabled={syncing}>
               {syncing ? "Syncing..." : "Sync now"}
             </button>
@@ -226,11 +229,11 @@ export default function Journal() {
           // Another tab signed out or signed in as somebody else. The open page
           // closes here, so it cannot write itself back to the device.
           <p role="status" className="rounded-xl bg-muted px-4 py-3 text-sm text-foreground">
-            The account on this device changed in another tab, so this page has closed. Reload it to carry on.
-          </p>
+            <Trans context="Journal, p">The account on this device changed in another tab, so this page has closed. Reload it to carry on.
+          </Trans></p>
         ) : (
           <>
-            <div role="tablist" aria-label="Journal" className="mb-6 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
+            <div role="tablist" aria-label={t({ message: "Journal", context: "Journal, aria-label" })} className="mb-6 grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1">
               {TABS.map((t) => (
                 <button
                   key={t}

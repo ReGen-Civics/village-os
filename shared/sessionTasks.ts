@@ -89,9 +89,9 @@ export function taskAcceptUrl(entryId: number): string {
   return `${TASKS_API}/${entryId}/accept`;
 }
 
-/** The board's anchor on the profile, so an email and a notice can land on it. */
-export const TASK_BOARD_ANCHOR = "my-tasks";
-export const TASK_BOARD_PATH = `/profile#${TASK_BOARD_ANCHOR}`;
+/** The board's anchor and address, and its menu words, live in ./taskMenu so the site's menus can name them without this module. */
+import { TASK_MENU } from "./taskMenu";
+export { TASK_BOARD_ANCHOR, TASK_BOARD_PATH } from "./taskMenu";
 
 /** One card's anchor on the board is `task-<entryId>`. */
 export const TASK_CARD_ANCHOR_PREFIX = "task-";
@@ -1134,11 +1134,7 @@ export const TASK_COPY = {
     triedAtClose: "Tried when the session closed. No email went out.",
   },
   /** The avatar menu and the mobile menu: the board's entry, with the member's own count beside it. */
-  menu: {
-    label: "My tasks",
-    /** The count's name for a screen reader. The count is hidden when nothing waits. */
-    waiting: (n: number): string => (n === 1 ? "1 task waits on you" : `${n} tasks wait on you`),
-  },
+  menu: TASK_MENU,
   /** The small card near the top of the member's own profile. Nothing shows when nothing waits. */
   waitingCard: {
     heading: "Your tasks",

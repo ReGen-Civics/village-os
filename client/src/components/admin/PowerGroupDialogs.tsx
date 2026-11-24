@@ -37,6 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Trans } from "@lingui/react/macro";
 
 const CONTENT = "max-w-lg max-h-[90vh] overflow-y-auto bg-white text-gray-900 border-gray-200";
 const QUIET = "min-h-11 text-sm rounded-lg px-4 py-2 border border-gray-300 text-gray-700 bg-white";
@@ -77,8 +78,8 @@ export function RemoveHolderDialog({
       <DialogContent className={CONTENT}>
         <DialogHeader>
           <DialogTitle className="text-gray-900 leading-snug">
-            Remove {memberName} from {groupName}?
-          </DialogTitle>
+            <Trans context="PowerGroupDialogs, DialogTitle">Remove {memberName} from {groupName}?
+          </Trans></DialogTitle>
           <DialogDescription className="text-gray-600">
             {powers.length > 0
               ? `${isSelf ? "You lose" : "They lose"} the power to:`
@@ -91,35 +92,35 @@ export function RemoveHolderDialog({
               <ul className="list-disc pl-5 space-y-1">
                 {powers.map((p) => <li key={p}>{p}</li>)}
               </ul>
-              <p>{isSelf ? "You stop" : "They stop"} being able to do it straight away.</p>
+              <p><Trans context="PowerGroupDialogs, p">{isSelf ? "You stop" : "They stop"} being able to do it straight away.</Trans></p>
             </>
           )}
           {isSelf && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-800 font-medium">
-              You are removing yourself. If nobody else in the village holds these powers, only an
+              <Trans context="PowerGroupDialogs, p">You are removing yourself. If nobody else in the village holds these powers, only an
               admin can give them back.
-            </p>
+            </Trans></p>
           )}
           {leftEmpty.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900 space-y-1">
-              <p>Nobody else holds {one ? "this power" : "these powers"}, and the village has taken {one ? "it" : "them"} on:</p>
+              <p><Trans context="PowerGroupDialogs, p">Nobody else holds {one ? "this power" : "these powers"}, and the village has taken {one ? "it" : "them"} on:</Trans></p>
               <ul className="list-disc pl-5">
                 {leftEmpty.map((t) => <li key={t}>{t}</li>)}
               </ul>
               <p>
-                Once {who} out, nobody can use {one ? "it" : "them"} until someone is appointed to a
+                <Trans context="PowerGroupDialogs, p">Once {who} out, nobody can use {one ? "it" : "them"} until someone is appointed to a
                 group that carries {one ? "it" : "them"}.
-              </p>
+              </Trans></p>
             </div>
           )}
         </div>
         <DialogFooter>
           <button type="button" onClick={onKeep} className={QUIET}>
-            Keep them
-          </button>
+            <Trans context="PowerGroupDialogs, button">Keep them
+          </Trans></button>
           <button type="button" disabled={busy} onClick={onRemove} className={`${LOUD} bg-red-600`}>
-            Remove
-          </button>
+            <Trans context="PowerGroupDialogs, button">Remove
+          </Trans></button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -199,39 +200,39 @@ export function BelowFloorDialog({
           <>
             <DialogHeader>
               <DialogTitle className="text-gray-900 leading-snug">
-                {memberName} has not reached the {stageName} stage
-              </DialogTitle>
+                <Trans context="PowerGroupDialogs, DialogTitle">{memberName} has not reached the {stageName} stage
+              </Trans></DialogTitle>
               <DialogDescription className="text-gray-600">
-                {groupName} asks for {stageName} or above.
-                {currentStageName ? ` ${memberName} is at ${currentStageName} today.` : ""}
+                <Trans context="PowerGroupDialogs, DialogDescription">{groupName} asks for {stageName} or above.
+                {currentStageName ? ` ${memberName} is at ${currentStageName} today.` : ""}</Trans>
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm text-gray-700">
               <p>
-                Are you sure you want to promote them? This raises {memberName} to {stageName} and
+                <Trans context="PowerGroupDialogs, p">Are you sure you want to promote them? This raises {memberName} to {stageName} and
                 then appoints them, and each step is recorded the way a stage grant and an
                 appointment always are.
-              </p>
+              </Trans></p>
               {admits && (
                 <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
-                  A stage granted at {stageName} also lets them into the village as a member.
-                </p>
+                  <Trans context="PowerGroupDialogs, p">A stage granted at {stageName} also lets them into the village as a member.
+                </Trans></p>
               )}
-              <p className="text-gray-500">Or help them reach {stageName} first, and appoint them after.</p>
+              <p className="text-gray-500"><Trans context="PowerGroupDialogs, p">Or help them reach {stageName} first, and appoint them after.</Trans></p>
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setHelping(true)} className={QUIET}>
-                Help them reach {stageName} first
-              </button>
+                <Trans context="PowerGroupDialogs, button">Help them reach {stageName} first
+              </Trans></button>
               <button type="button" disabled={busy} onClick={onPromote} className={`${LOUD} bg-teal-deep`}>
-                Promote to {stageName} and appoint
-              </button>
+                <Trans context="PowerGroupDialogs, button">Promote to {stageName} and appoint
+              </Trans></button>
             </DialogFooter>
           </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-gray-900 leading-snug">What {stageName} needs</DialogTitle>
+              <DialogTitle className="text-gray-900 leading-snug"><Trans context="PowerGroupDialogs, DialogTitle">What {stageName} needs</Trans></DialogTitle>
               <DialogDescription className="text-gray-600">
                 {stage?.description ? `${stage.description} ` : ""}{needs}
               </DialogDescription>
@@ -239,23 +240,23 @@ export function BelowFloorDialog({
             <div className="space-y-3 text-sm text-gray-700">
               {page && (
                 <p>
-                  <a href={page.href} className="text-teal-deep underline">{page.label}</a> is where they do it.
-                </p>
+                  <Trans context="PowerGroupDialogs, p"><a href={page.href} className="text-teal-deep underline">{page.label}</a> is where they do it.
+                </Trans></p>
               )}
               <p>
-                {memberName} sees the same ladder, with what opens each stage, on their own profile.
+                <Trans context="PowerGroupDialogs, p">{memberName} sees the same ladder, with what opens each stage, on their own profile.
                 Their stage today shows on the{" "}
                 <a href="/admin?tab=players" className="text-teal-deep underline">Players tab</a>, and
                 nobody was appointed.
-              </p>
+              </Trans></p>
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setHelping(false)} className={QUIET}>
-                Back
-              </button>
+                <Trans context="PowerGroupDialogs, button">Back
+              </Trans></button>
               <button type="button" onClick={onClose} className={`${LOUD} bg-teal-deep`}>
-                Done
-              </button>
+                <Trans context="PowerGroupDialogs, button">Done
+              </Trans></button>
             </DialogFooter>
           </>
         )}

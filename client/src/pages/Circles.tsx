@@ -28,6 +28,7 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { fillVars } from "@shared/pageContent/resolve";
 import { CIRCLES_PAGE, COORDINATOR_WORD } from "@shared/pageContent/circles";
+import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
 const LivingNetwork = lazy(() => import("@/components/motion/LivingNetwork"));
@@ -200,13 +201,13 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
               <div className="grid md:grid-cols-2 gap-6">
                 {circle.domain && (
                   <div>
-                    <h4 className="font-semibold text-foreground mb-2">Domain</h4>
+                    <h4 className="font-semibold text-foreground mb-2"><Trans context="Circles, h4">Domain</Trans></h4>
                     <p className="text-sm text-muted-foreground">{circle.domain}</p>
                   </div>
                 )}
                 {circle.members && (
                   <div>
-                    <h4 className="font-semibold text-foreground mb-2">Who's In It</h4>
+                    <h4 className="font-semibold text-foreground mb-2"><Trans context="Circles, h4">Who's In It</Trans></h4>
                     <p className="text-sm text-muted-foreground">{circle.members}</p>
                   </div>
                 )}
@@ -216,7 +217,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
 
               {circle.seats.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-foreground mb-3">Key Focus Areas</h4>
+                  <h4 className="font-semibold text-foreground mb-3"><Trans context="Circles, h4">Key Focus Areas</Trans></h4>
                   {/* Each seat opens its role card. These sit in the panel,
                       outside the header button, so no button nests in another. */}
                   <div className="flex flex-wrap gap-2">
@@ -484,12 +485,12 @@ export default function Circles() {
                   the box starts below the fold, so the list arrives out of
                   sight of anything a visitor is reading. */}
               {circles === null && !failed && (
-                <div className="text-center text-muted-foreground py-16 min-h-[60vh]">Loading circles…</div>
+                <div className="text-center text-muted-foreground py-16 min-h-[60vh]"><Trans context="Circles, div">Loading circles…</Trans></div>
               )}
               {failed && (
                 <div className="text-center text-muted-foreground py-16">
-                  The circles are catching their breath. Please refresh in a moment.
-                </div>
+                  <Trans context="Circles, div">The circles are catching their breath. Please refresh in a moment.
+                </Trans></div>
               )}
             </div>
 

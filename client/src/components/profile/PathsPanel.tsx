@@ -50,6 +50,7 @@ import { Link } from "wouter";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import type { PathLadder as PathLadderPayload } from "@shared/pathLadders";
 import PathLadder from "./PathLadder";
+import { Trans } from "@lingui/react/macro";
 
 export interface PathTile {
   id: string;
@@ -92,20 +93,20 @@ export default function PathsPanel({
   return (
     <section aria-labelledby="paths-h" className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
       <h2 id="paths-h" className="font-display text-2xl font-bold text-card-foreground">
-        Paths
-      </h2>
+        <Trans context="PathsPanel, h2">Paths
+      </Trans></h2>
       {/* The count comes off the list, never off a literal. A fork that offers
           three paths or seven gets a sentence that is true for it. */}
       <p className="mt-1 text-sm text-muted-foreground">
-        {tiles.length} ways to walk with this village. Take as many as are true of you, and put one
+        <Trans context="PathsPanel, p">{tiles.length} ways to walk with this village. Take as many as are true of you, and put one
         down whenever it changes.
-      </p>
+      </Trans></p>
 
       {walked === 0 ? (
         <p className="mt-4 text-sm text-muted-foreground">
-          You walk none of them yet. A path says which part of village life you are here for.
+          <Trans context="PathsPanel, p">You walk none of them yet. A path says which part of village life you are here for.
           Claim one below.
-        </p>
+        </Trans></p>
       ) : null}
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -148,7 +149,7 @@ export default function PathsPanel({
                   unguarded line here told a steward their own path was gone for
                   as long as the fetch took. */}
               {offerKnown && !tile.offered ? (
-                <p className="mt-1 text-sm text-muted-foreground">No longer offered here.</p>
+                <p className="mt-1 text-sm text-muted-foreground"><Trans context="PathsPanel, p">No longer offered here.</Trans></p>
               ) : null}
 
               {/* THIS PATH'S OWN LADDER, in the room that was left for one:
@@ -181,8 +182,8 @@ export default function PathsPanel({
                     href={tile.route}
                     className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline underline-offset-2"
                   >
-                    What this path asks
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <Trans context="PathsPanel, Link">What this path asks
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" /></Trans>
                   </Link>
                 ) : null}
               </div>

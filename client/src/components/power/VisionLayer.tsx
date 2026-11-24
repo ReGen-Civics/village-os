@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import type { NestedLayout } from "@shared/mapLayout";
 import { authToken, useCatalyst } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -109,8 +110,8 @@ export function VisionPanel({ drafts, isAdmin }: { drafts: VisionDraft[]; isAdmi
   if (!drafts.length) {
     return (
       <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground" data-power-vision-panel>
-        No vision is drawn yet. A structural draft with objectives becomes the ghost layer here.
-      </div>
+        <Trans context="VisionLayer, div">No vision is drawn yet. A structural draft with objectives becomes the ghost layer here.
+      </Trans></div>
     );
   }
   return (
@@ -124,7 +125,7 @@ export function VisionPanel({ drafts, isAdmin }: { drafts: VisionDraft[]; isAdmi
             </div>
             {d.progress && (
               <span className="text-xs text-muted-foreground tabular-nums shrink-0">
-                {d.progress.done} of {d.progress.total}
+                <Trans context="VisionLayer, span">{d.progress.done} of {d.progress.total}</Trans>
               </span>
             )}
           </div>
@@ -144,9 +145,9 @@ export function VisionPanel({ drafts, isAdmin }: { drafts: VisionDraft[]; isAdmi
                   <span className={o.done ? "text-foreground" : "text-muted-foreground"}>
                     {o.text}
                     {o.source === "measured" && o.target !== null && (
-                      <span className="text-muted-foreground"> · {o.current ?? 0} of {o.target}</span>
+                      <span className="text-muted-foreground"> <Trans context="VisionLayer, span">· {o.current ?? 0} of {o.target}</Trans></span>
                     )}
-                    {o.source === "declared" && <span className="text-muted-foreground"> · a human ticks this</span>}
+                    {o.source === "declared" && <span className="text-muted-foreground"> <Trans context="VisionLayer, span">· a human ticks this</Trans></span>}
                   </span>
                 </li>
               ))}
@@ -155,19 +156,19 @@ export function VisionPanel({ drafts, isAdmin }: { drafts: VisionDraft[]; isAdmi
 
           {!d.vision && (
             <p className="text-xs text-muted-foreground mt-2">
-              This draft has no objectives yet, so nothing can say when it is ready.
-            </p>
+              <Trans context="VisionLayer, p">This draft has no objectives yet, so nothing can say when it is ready.
+            </Trans></p>
           )}
 
           {d.progress?.allDone && (
             <div className="mt-3 bg-sage/10 border border-sage/40 rounded-lg px-3 py-2 text-xs" data-power-vision-met>
-              <p className="font-medium text-foreground">Vision conditions met: apply this structure?</p>
+              <p className="font-medium text-foreground"><Trans context="VisionLayer, p">Vision conditions met: apply this structure?</Trans></p>
               {isAdmin ? (
                 <a href="/admin" className="inline-flex items-center gap-1 text-teal-deep font-medium mt-1">
-                  Open the draft's publish button <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                  <Trans context="VisionLayer, a">Open the draft's publish button <ExternalLink className="w-3 h-3" aria-hidden="true" /></Trans>
                 </a>
               ) : (
-                <p className="text-muted-foreground mt-1">{catalyst.aNameCap} applies it from the drafts panel. Nothing applies itself.</p>
+                <p className="text-muted-foreground mt-1"><Trans context="VisionLayer, p">{catalyst.aNameCap} applies it from the drafts panel. Nothing applies itself.</Trans></p>
               )}
             </div>
           )}

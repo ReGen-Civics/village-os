@@ -7,6 +7,7 @@
 import type { SettingsPayload } from "@/components/admin/comms/commsSettingsApi";
 import type { LaunchItem, SeedState, SetupGameMap } from "./setupGameApi";
 import { LAYER_WORD, orderedLayers, seedLight } from "./journeyModel";
+import { Trans } from "@lingui/react/macro";
 
 const SAID = { alive: "Alive", planted: "Planted, not proven", open: "Not planted", unknown: "Not knowable here" } as const;
 
@@ -36,11 +37,11 @@ export default function FieldNotes({ map, launch, comms }: { map: SetupGameMap; 
       <table>
         <thead>
           <tr>
-            <th scope="col">Planting</th>
-            <th scope="col">Where</th>
-            <th scope="col">Status</th>
-            <th scope="col">What it grants</th>
-            <th scope="col">Plant it</th>
+            <th scope="col"><Trans context="FieldNotes, th">Planting</Trans></th>
+            <th scope="col"><Trans context="FieldNotes, th">Where</Trans></th>
+            <th scope="col"><Trans context="FieldNotes, th">Status</Trans></th>
+            <th scope="col"><Trans context="FieldNotes, th">What it grants</Trans></th>
+            <th scope="col"><Trans context="FieldNotes, th">Plant it</Trans></th>
           </tr>
         </thead>
         <tbody>

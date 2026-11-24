@@ -26,6 +26,7 @@
  */
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The field's state and its request body, so a page that opens ballots on
@@ -57,6 +58,7 @@ export default function PurposeAlignmentField({
   value: string;
   onChange: (next: string) => void;
 }) {
+  const { t } = useLingui();
   const [hasStatement, setHasStatement] = useState(false);
 
   useEffect(() => {
@@ -78,16 +80,16 @@ export default function PurposeAlignmentField({
   return (
     <label className="flex flex-col gap-1 basis-full text-xs text-muted-foreground">
       <span>
-        How does this serve the village's governing purpose? The whole roll reads this
+        <Trans context="PurposeAlignmentField, span">How does this serve the village's governing purpose? The whole roll reads this
         beside your proposal.
-      </span>
+      </Trans></span>
       <textarea
         rows={3}
         maxLength={2000}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="max-w-full rounded-lg border border-border px-2 py-1.5 text-sm text-foreground"
-        placeholder="This raises the quorum on rule changes, which serves the part of the purpose about agreements the members write and can change themselves."
+        placeholder={t({ message: "This raises the quorum on rule changes, which serves the part of the purpose about agreements the members write and can change themselves.", context: "PurposeAlignmentField, placeholder" })}
       />
     </label>
   );

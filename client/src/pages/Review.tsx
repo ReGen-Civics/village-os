@@ -64,7 +64,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { toast } from "sonner";
 import { Inbox } from "lucide-react";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
 import AgentProposalsCard from "@/components/review/AgentProposalsCard";
 import QuestProposalCard, { type QuestCard, type QuestTyped } from "@/components/review/QuestProposalCard";
@@ -152,6 +152,7 @@ function agedFor(oldestSince: string | null): string {
 }
 
 export default function Review() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [queue, setQueue] = useState<Queue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -223,7 +224,7 @@ export default function Review() {
       announceErasureRetry(d);
       await load();
     } catch {
-      toast.error("Could not reach the server");
+      toast.error(t({ message: "Could not reach the server", context: "Review, toast" }));
     } finally {
       setAsking(false);
     }
@@ -350,9 +351,9 @@ export default function Review() {
         const blocked = Number(d.blocked ?? 0);
         if (blocked > 0 && draftId) {
           setStuck((s) => ({ ...s, [draftId]: { blocked, lines: blockedReasons(d.blockedLines) } }));
-          toast.error("Accepted, and this role cannot apply yet. The reason is on this page, beside a way to withdraw it.");
+          toast.error(t({ message: "Accepted, and this role cannot apply yet. The reason is on this page, beside a way to withdraw it.", context: "Review, toast" }));
         } else {
-          toast.success("Accepted");
+          toast.success(t({ message: "Accepted", context: "Review, toast" }));
         }
         await load();
       }
@@ -365,7 +366,7 @@ export default function Review() {
     setBusy(card.id);
     try {
       if (await post(`/api/review/proposals/${card.id}/reject`, { note: "" })) {
-        toast.success("Rejected");
+        toast.success(t({ message: "Rejected", context: "Review, toast" }));
         await load();
       }
     } finally {
@@ -516,7 +517,7 @@ export default function Review() {
       if (ok) {
         // A quest leaves no field out, so "the last accept" is no longer the one the card named.
         setNotRead(NOTHING_LEFT_OUT);
-        toast.success("On the board");
+        toast.success(t({ message: "On the board", context: "Review, toast" }));
         await load();
       }
     } finally {
@@ -528,7 +529,7 @@ export default function Review() {
     setBusy(q.id);
     try {
       if (await post(`/api/review/quests/${q.id}/reject`, { note: reason })) {
-        toast.success("Rejected");
+        toast.success(t({ message: "Rejected", context: "Review, toast" }));
         await load();
       }
     } finally {
@@ -546,7 +547,7 @@ export default function Review() {
       <Layout>
         <div className={WORLD}>
         <div className="max-w-4xl mx-auto px-4 py-10">
-          <p className="text-sm text-muted-foreground">Reading what is waiting.</p>
+          <p className="text-sm text-muted-foreground"><Trans context="Review, p">Reading what is waiting.</Trans></p>
         </div>
         </div>
       </Layout>
@@ -562,11 +563,11 @@ export default function Review() {
         <div className={WORLD}>
         <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
           {sera.read.phase === "member" ? <SeraMemberPage sera={sera} /> : <div className={card}>
-            <h1 className="font-display text-2xl text-foreground">This queue is not open to you yet</h1>
+            <h1 className="font-display text-2xl text-foreground"><Trans context="Review, h1">This queue is not open to you yet</Trans></h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Reviewing what an outside service proposes, and witnessing finished quests, are jobs this
+              <Trans context="Review, p">Reviewing what an outside service proposes, and witnessing finished quests, are jobs this
               village hands to somebody. Ask whoever looks after the village queues, and they can pass one on.
-            </p>
+            </Trans></p>
           </div>}
         </div>
         </div>
@@ -589,13 +590,13 @@ export default function Review() {
             <Inbox className="size-4" aria-hidden="true" />
             <Trans context="review: eyebrow">Waiting on the village</Trans>
           </p>
-          <h1 className={`${H1} mt-1`}>Review</h1>
+          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Review</Trans></h1>
           {!forbidden && (
             <p className={`${LEDE} mt-2`}>
-              What an outside service has proposed about this village. Nothing here is true yet. Read it,
+              <Trans context="Review, p">What an outside service has proposed about this village. Nothing here is true yet. Read it,
               change anything you want, and accept what the village agrees with. What you accept goes into
               a draft you preview before it goes live.
-            </p>
+            </Trans></p>
           )}
         </div>
 
@@ -621,16 +622,16 @@ export default function Review() {
             whole page, which was right while the queue was all the page held. */}
         {loadError && (
           <div className={card}>
-            <h2 className="font-display text-xl text-foreground">The queue did not load</h2>
+            <h2 className="font-display text-xl text-foreground"><Trans context="Review, h2">The queue did not load</Trans></h2>
             <p className="text-sm text-muted-foreground mt-2">
-              {loadError}. There may be proposals waiting; this is not an empty queue.
-            </p>
+              <Trans context="Review, p">{loadError}. There may be proposals waiting; this is not an empty queue.
+            </Trans></p>
             <button
               onClick={() => void load()}
               className={`${BTN_SECONDARY} mt-4`}
             >
-              Try again
-            </button>
+              <Trans context="Review, button">Try again
+            </Trans></button>
           </div>
         )}
 
@@ -641,13 +642,13 @@ export default function Review() {
         {owed?.local && owed.local.count > 0 && (
           <div className={card}>
             <h2 className="text-sm font-semibold text-foreground">
-              {owed.local.count === 1 ? "One erasure" : `${owed.local.count} erasures`} started here and did not finish
-            </h2>
+              <Trans context="Review, h2">{owed.local.count === 1 ? "One erasure" : `${owed.local.count} erasures`} started here and did not finish
+            </Trans></h2>
             <p className="text-sm text-muted-foreground mt-2">
-              {stoppedSentence(owed.local.stoppedAt)}
+              <Trans context="Review, p">{stoppedSentence(owed.local.stoppedAt)}
               {agedFor(owed.local.oldestSince)}. Finishing runs the same steps again, and every step
               is safe to repeat, so pressing this twice costs nothing.
-            </p>
+            </Trans></p>
             <button
               className={`${BTN_PRIMARY} mt-3`}
               disabled={asking}
@@ -668,13 +669,13 @@ export default function Review() {
         {owed && owed.count > 0 && (
           <div className={card}>
             <h2 className="text-sm font-semibold text-foreground">
-              {owed.count === 1 ? "One member" : `${owed.count} members`} left, and this village is not finished on their behalf
-            </h2>
+              <Trans context="Review, h2">{owed.count === 1 ? "One member" : `${owed.count} members`} left, and this village is not finished on their behalf
+            </Trans></h2>
             <p className="text-sm text-muted-foreground mt-2">
-              Their data is gone from here. {waitingSentence(owed.waitingOn)} has not confirmed deleting
+              <Trans context="Review, p">Their data is gone from here. {waitingSentence(owed.waitingOn)} has not confirmed deleting
               its own copy{agedFor(owed.oldestSince)}. Nothing asks again on its own, because the people
               this concerns have already left.
-            </p>
+            </Trans></p>
             <button
               className={`${BTN_PRIMARY} mt-3`}
               disabled={asking}
@@ -690,8 +691,8 @@ export default function Review() {
         {totalDropped > 0 && (
           <div className={card}>
             <h2 className="text-sm font-semibold text-foreground">
-              {totalDropped} record(s) were refused on arrival in the last 30 days
-            </h2>
+              <Trans context="Review, h2">{totalDropped} record(s) were refused on arrival in the last 30 days
+            </Trans></h2>
             <ul className="text-sm text-muted-foreground mt-2 space-y-1">
               {drops.map((d) => (
                 <li key={`${d.moduleId}:${d.reason}`}>
@@ -715,7 +716,7 @@ export default function Review() {
             leaves the queue, and this card used to leave with it. */}
         {Object.entries(stuck).map(([draftId, s]) => (
           <div key={draftId} className={card}>
-            <h2 className="text-sm font-semibold text-foreground">A draft from this queue cannot publish</h2>
+            <h2 className="text-sm font-semibold text-foreground"><Trans context="Review, h2">A draft from this queue cannot publish</Trans></h2>
             <p className="text-sm text-muted-foreground mt-2">
               {s.unpreviewable
                 ? "This draft could not be checked. Withdrawing puts its proposals back in the queue, so you can accept them again."
@@ -733,8 +734,8 @@ export default function Review() {
               onClick={() => void withdraw(draftId)}
               className={`${BTN_SECONDARY} mt-3`}
             >
-              Withdraw that draft
-            </button>
+              <Trans context="Review, button">Withdraw that draft
+            </Trans></button>
           </div>
         ))}
 
@@ -745,24 +746,24 @@ export default function Review() {
           .filter((d) => d.batchId && !stuck[d.draftId])
           .map((d) => (
             <div key={d.draftId} className={card} data-testid={`open-draft-${d.draftId}`}>
-              <h2 className="text-sm font-semibold text-foreground">A draft from this queue is waiting to publish</h2>
+              <h2 className="text-sm font-semibold text-foreground"><Trans context="Review, h2">A draft from this queue is waiting to publish</Trans></h2>
               <p className="text-sm text-muted-foreground mt-2">
-                {d.title}. {d.changes === 1 ? "1 change" : `${d.changes} changes`}. Nothing is live yet.
-              </p>
+                <Trans context="Review, p">{d.title}. {d.changes === 1 ? "1 change" : `${d.changes} changes`}. Nothing is live yet.
+              </Trans></p>
               <Link
                 href={`/review/structure/${encodeURIComponent(String(d.batchId))}`}
                 className={`${BTN_PRIMARY} mt-3`}
               >
-                Open the draft
-              </Link>
+                <Trans context="Review, Link">Open the draft
+              </Trans></Link>
             </div>
           ))}
 
         {notRead.lines.length > 0 && (
           <div className={card}>
             <h2 className="text-sm font-semibold text-foreground">
-              The last accept left some fields out of the draft
-            </h2>
+              <Trans context="Review, h2">The last accept left some fields out of the draft
+            </Trans></h2>
             <p className="text-sm text-muted-foreground mt-2">
               {notRead.published
                 ? `That draft is live now, so these fields cannot ride in on a withdraw. If one belongs on a role, ${
@@ -774,7 +775,7 @@ export default function Review() {
             <ul className="text-sm text-muted-foreground mt-2 space-y-1">
               {notRead.lines.map((n, i) => (
                 <li key={`${i}:${n.label}`}>
-                  Not read from &ldquo;{n.label}&rdquo;: {n.keys.join(", ")}
+                  <Trans context="Review, li">Not read from &ldquo;{n.label}&rdquo;: {n.keys.join(", ")}</Trans>
                 </li>
               ))}
             </ul>
@@ -784,15 +785,15 @@ export default function Review() {
                 onClick={() => void withdraw(String(notRead.draftId))}
                 className={`${BTN_SECONDARY} mt-3`}
               >
-                Withdraw that draft
-              </button>
+                <Trans context="Review, button">Withdraw that draft
+              </Trans></button>
             )}
           </div>
         )}
 
         {nothingWaiting && (
           <div className={card}>
-            <h2 className="font-semibold text-foreground">Nothing waiting</h2>
+            <h2 className="font-semibold text-foreground"><Trans context="Review, h2">Nothing waiting</Trans></h2>
             <p className="text-sm text-muted-foreground mt-1">
               {readsProposals
                 ? "Roles, circles and quests an outside service proposes land here for you to read before they exist. Nothing creates itself."
@@ -806,9 +807,9 @@ export default function Review() {
           <div key={batch.batchId} className={card}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-display text-xl text-foreground">
-                {batch.items.length} proposal(s) from {batch.moduleId ?? "an integration"}
+                <Trans context="Review, h2">{batch.items.length} proposal(s) from {batch.moduleId ?? "an integration"}</Trans>
               </h2>
-              <p className="text-xs text-muted-foreground">Arrived {when(batch.receivedAt)}</p>
+              <p className="text-xs text-muted-foreground"><Trans context="Review, p">Arrived {when(batch.receivedAt)}</Trans></p>
             </div>
 
             {/* A batch that changes the chart opens whole, as one change, on its
@@ -818,8 +819,8 @@ export default function Review() {
                 href={`/review/structure/${encodeURIComponent(batch.batchId)}`}
                 className={`${BTN_PRIMARY} mt-3`}
               >
-                Review it as one structure change
-              </Link>
+                <Trans context="Review, Link">Review it as one structure change
+              </Trans></Link>
             )}
 
             {typeof batch.proposedChanges === "number" && typeof queue?.proposalChangeLimit === "number" && (
@@ -836,8 +837,8 @@ export default function Review() {
                     href={CHANGE_LIMIT_HREF}
                     className={`${BTN_SECONDARY} mt-3`}
                   >
-                    Change the limit
-                  </Link>
+                    <Trans context="Review, Link">Change the limit
+                  </Trans></Link>
                 )}
               </div>
             )}
@@ -848,8 +849,8 @@ export default function Review() {
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="text-sm font-medium text-foreground">{item.kind}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.trustTier}, confidence{" "}
-                      {item.confidence === null ? "not stated" : item.confidence.toFixed(2)}
+                      <Trans context="Review, p">{item.trustTier}, confidence{" "}
+                      {item.confidence === null ? "not stated" : item.confidence.toFixed(2)}</Trans>
                     </p>
                   </div>
 
@@ -857,13 +858,13 @@ export default function Review() {
                       verbatim, in quotation marks, with a formatted time. */}
                   {item.quote ? (
                     <p className="text-xs text-muted-foreground mt-2 italic">
-                      &ldquo;{item.quote}&rdquo;, {when(item.sourceOccurredAt)}
+                      <Trans context="Review, p">&ldquo;{item.quote}&rdquo;, {when(item.sourceOccurredAt)}</Trans>
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground mt-2">{EVIDENCE_WORDS[item.evidence]}</p>
                   )}
                   {item.sourceRef && (
-                    <p className="text-xs text-muted-foreground mt-1">Source: {item.sourceRef}</p>
+                    <p className="text-xs text-muted-foreground mt-1"><Trans context="Review, p">Source: {item.sourceRef}</Trans></p>
                   )}
                   {item.kind === "role.proposed" && (
                     <ProposedSeatPreview text={edits[item.id] ?? JSON.stringify(item.payload, null, 2)} />
@@ -872,8 +873,8 @@ export default function Review() {
                   {/* The textarea. This is the redaction path and the reason
                       the page exists. */}
                   <label className={`${LABEL} mt-3 block`} htmlFor={`edit-${item.id}`}>
-                    What it proposes. Change anything before you accept it.
-                  </label>
+                    <Trans context="Review, label">What it proposes. Change anything before you accept it.
+                  </Trans></label>
                   <textarea
                     id={`edit-${item.id}`}
                     value={edits[item.id] ?? JSON.stringify(item.payload, null, 2)}
@@ -889,15 +890,15 @@ export default function Review() {
                       onClick={() => void acceptOne(item)}
                       className={BTN_NOTICE}
                     >
-                      Accept this one
-                    </button>
+                      <Trans context="Review, button">Accept this one
+                    </Trans></button>
                     <button
                       disabled={busy === item.id}
                       onClick={() => void rejectOne(item)}
                       className={BTN_SECONDARY}
                     >
-                      Reject
-                    </button>
+                      <Trans context="Review, button">Reject
+                    </Trans></button>
                   </div>
                 </div>
               ))}
@@ -908,8 +909,8 @@ export default function Review() {
               onClick={() => void acceptBatch(batch)}
               className={`${BTN_PRIMARY} mt-4`}
             >
-              Accept all {batch.items.length}, with my edits
-            </button>
+              <Trans context="Review, button">Accept all {batch.items.length}, with my edits
+            </Trans></button>
           </div>
         ))}
 

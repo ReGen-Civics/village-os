@@ -15,6 +15,7 @@ import { claimMoment } from "@/lib/celebrated";
 import { playMoment } from "@/lib/sound";
 import { onProfileRefresh } from "@/lib/profileRefresh";
 import { formatTokenGrouped } from "@/lib/tokenAmount";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * S4: the member's journey in numbers, over three live endpoints that had no
@@ -171,11 +172,11 @@ function TheSigning({ signing }: { signing?: MembershipSigning | null }) {
   const day = dayOf(signing.at);
   return (
     <div className="mb-5 border-b border-border pb-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Your signing</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2"><Trans context="ProfileJourney, p">Your signing</Trans></p>
       <div className="flex items-start gap-3 text-sm">
         <ScrollText className="mt-0.5 w-4 h-4 text-notice shrink-0" aria-hidden="true" />
         <span>
-          <span className="text-card-foreground">You signed the {commitment}</span>
+          <span className="text-card-foreground"><Trans context="ProfileJourney, span">You signed the {commitment}</Trans></span>
           <span className="block text-muted-foreground mt-0.5">{SIGNING_WORDS[signing.answer]}</span>
           {day && <span className="block text-xs text-muted-foreground mt-0.5">{day}</span>}
         </span>
@@ -193,7 +194,7 @@ function FirstTimes({ firsts }: { firsts?: { vote?: string | null; objection?: s
   if (rows.length === 0) return null;
   return (
     <div className="mb-5 border-b border-border pb-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">The first time</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2"><Trans context="ProfileJourney, p">The first time</Trans></p>
       <ul className="space-y-1.5">
         {rows.map((r) => (
           <li key={r.key} className="flex items-start gap-3 text-sm">
@@ -219,6 +220,7 @@ const SECTIONS = [
 ] as const;
 
 export default function ProfileJourney() {
+  const { t } = useLingui();
   const [prog, setProg] = useState<any | null>(null);
   const [flows, setFlows] = useState<any | null>(null);
   const [ledger, setLedger] = useState<any | null>(null);
@@ -272,7 +274,7 @@ export default function ProfileJourney() {
   if (!settled) {
     return (
       <div className="flex justify-center py-12">
-        <BreathingLoader label="Reading your journey" size={44} showLabel />
+        <BreathingLoader label={t({ message: "Reading your journey", context: "ProfileJourney, label" })} size={44} showLabel />
       </div>
     );
   }
@@ -304,8 +306,8 @@ export default function ProfileJourney() {
               onClick={() => load()}
               className="min-h-11 font-medium text-foreground underline underline-offset-2"
             >
-              Retry
-            </button>
+              <Trans context="ProfileJourney, button">Retry
+            </Trans></button>
           </p>
         </div>
       )}
@@ -318,7 +320,7 @@ export default function ProfileJourney() {
         >
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-notice" />
-            <h2 className="text-2xl font-display font-bold text-card-foreground">Your Progression</h2>
+            <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="ProfileJourney, h2">Your Progression</Trans></h2>
           </div>
 
           {/* Groups, then the top powers as tiles and "Show me everything" grouped by kind (Rye, 14 Nov 2026).
@@ -336,8 +338,8 @@ export default function ProfileJourney() {
 
           {(prog.history ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Your stage turns will be recorded here. Each one names what it unlocked.
-            </p>
+              <Trans context="ProfileJourney, p">Your stage turns will be recorded here. Each one names what it unlocked.
+            </Trans></p>
           ) : (
             <ol className="space-y-3">
               {prog.history.map((h: any, i: number) => (
@@ -353,7 +355,7 @@ export default function ProfileJourney() {
                         celebration reads turn it back into language. */}
                     {Array.isArray(h.unlocked) && h.unlocked.length > 0 && (
                       <span className="block text-xs text-foreground mt-0.5">
-                        Unlocked: {h.unlocked.map(capabilityLabel).join(", ")}
+                        <Trans context="ProfileJourney, span">Unlocked: {h.unlocked.map(capabilityLabel).join(", ")}</Trans>
                       </span>
                     )}
                     <span className="block text-xs text-muted-foreground mt-0.5">
@@ -377,7 +379,7 @@ export default function ProfileJourney() {
         >
           <div className="flex items-center gap-2 mb-4">
             <Heart className="w-5 h-5 text-destructive" />
-            <h2 className="text-2xl font-display font-bold text-card-foreground">Recognition Flows</h2>
+            <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="ProfileJourney, h2">Recognition Flows</Trans></h2>
             {blooming && bloom && (
               <span className="ml-auto shrink-0">
                 <Celebration
@@ -391,27 +393,27 @@ export default function ProfileJourney() {
           </div>
           {bloom && (
             <div className="mb-5 rounded-xl border border-destructive/70/30 bg-destructive/5 px-4 py-3">
-              <p className="text-sm font-semibold text-card-foreground">{bloom.name} thanked you</p>
+              <p className="text-sm font-semibold text-card-foreground"><Trans context="ProfileJourney, p">{bloom.name} thanked you</Trans></p>
               {bloom.message && <p className="text-sm text-muted-foreground mt-0.5">{bloom.message}</p>}
             </div>
           )}
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div className="text-center bg-teal-deep/5 rounded-xl py-4">
               <p className="text-2xl font-display font-bold text-card-foreground">{flows.totals?.received ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">received</p>
+              <p className="text-xs text-muted-foreground mt-1"><Trans context="ProfileJourney, p">received</Trans></p>
             </div>
             <div className="text-center bg-teal-deep/5 rounded-xl py-4">
               <p className="text-2xl font-display font-bold text-card-foreground">{flows.totals?.sent ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">sent</p>
+              <p className="text-xs text-muted-foreground mt-1"><Trans context="ProfileJourney, p">sent</Trans></p>
             </div>
-            <div className="text-center bg-muted rounded-xl py-4" title="How many different people have thanked you. Breadth is the real signal of community health">
+            <div className="text-center bg-muted rounded-xl py-4" title={t({ message: "How many different people have thanked you. Breadth is the real signal of community health", context: "ProfileJourney, title" })}>
               <p className="text-2xl font-display font-bold text-notice">{flows.totals?.distinctAcknowledgers ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1">people thanked you</p>
+              <p className="text-xs text-muted-foreground mt-1"><Trans context="ProfileJourney, p">people thanked you</Trans></p>
             </div>
           </div>
           {(flows.byCycle ?? []).length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">By moon</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2"><Trans context="ProfileJourney, p">By moon</Trans></p>
               <div className="space-y-1.5">
                 {/*
                   The row is keyed by the stored cycle id and LABELLED by the
@@ -428,7 +430,7 @@ export default function ProfileJourney() {
                     */}
                     <span className="text-muted-foreground text-xs">{villageMoonLabel(c.moon) || "Moon not known"}</span>
                     <span className="text-card-foreground">
-                      {c.received} received · {c.distinctSenders} sender{c.distinctSenders === 1 ? "" : "s"}
+                      <Trans context="ProfileJourney, span">{c.received} received · {c.distinctSenders} sender{c.distinctSenders === 1 ? "" : "s"}</Trans>
                     </span>
                   </div>
                 ))}
@@ -448,7 +450,7 @@ export default function ProfileJourney() {
         >
           <div className="flex items-center gap-2 mb-1">
             <ScrollText className="w-5 h-5 text-notice" />
-            <h2 className="text-2xl font-display font-bold text-card-foreground">Where It Came From</h2>
+            <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="ProfileJourney, h2">Where It Came From</Trans></h2>
           </div>
           <p className="text-sm text-muted-foreground mb-5">
             {/* Every token, not only recognition: End of Moon equity lands here too (launch rehearsal F10). */}
@@ -456,8 +458,8 @@ export default function ProfileJourney() {
           </p>
           {(ledger.entries ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nothing yet. Consented quests and received {tokenNameLower} will appear here.
-            </p>
+              <Trans context="ProfileJourney, p">Nothing yet. Consented quests and received {tokenNameLower} will appear here.
+            </Trans></p>
           ) : (
             <div className="space-y-1.5">
               {ledger.entries.slice(0, 12).map((e: any, i: number) => (

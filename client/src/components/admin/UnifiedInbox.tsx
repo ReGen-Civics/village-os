@@ -11,6 +11,7 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import { requestRow } from "./waitingWork";
 import RoleApplicationsList from "./RoleApplicationsList";
 import { fetchWaitingRoleApplications, type RoleApplicationRow } from "./roleApplicationsWaiting";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export type InboxKind = "all" | "requests" | "feedback" | "sera";
 
@@ -54,6 +55,7 @@ export function rememberInboxView(kind: InboxKind): void {
 }
 
 export default function UnifiedInbox({ password, onOpen }: { password: string; onOpen: (tab: string) => void }) {
+  const { t } = useLingui();
   const [items, setItems] = useState<InboxItem[]>([]);
   const [kind, setKind] = useState<InboxKind>(() => inboxViewFrom(window.location.search));
   const [problem, setProblem] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
   };
 
   return (
-    <section aria-label="Inbox" className="mt-4">
+    <section aria-label={t({ message: "Inbox", context: "UnifiedInbox, aria-label" })} className="mt-4">
       <div className="mb-4"><RoleApplicationsList rows={roleApps} /></div>
       <div className="flex flex-wrap gap-2">
         {(["all", "requests", "feedback", "sera"] as InboxKind[]).map((value) => (
@@ -104,7 +106,7 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
       </div>
       {problem && <p role="alert" className="mt-2 text-sm text-gray-900">{problem}</p>}
       <ul className="mt-3 space-y-2">
-        {shown.length === 0 && !problem ? <li className="text-sm text-gray-700">Nothing in this view.</li> : shown.map((item) => (
+        {shown.length === 0 && !problem ? <li className="text-sm text-gray-700"><Trans context="UnifiedInbox, li">Nothing in this view.</Trans></li> : shown.map((item) => (
           <li key={item.id}>
             <button type="button" onClick={() => item.kind === "sera" ? window.location.assign("/modules/saberra") : onOpen(item.tab)} className="flex min-h-[44px] w-full flex-col items-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-left">
               <span className="text-base font-medium text-gray-900">{item.title}</span>

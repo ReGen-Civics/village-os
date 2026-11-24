@@ -18,7 +18,7 @@ import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { toast } from "sonner";
 import { REPORT_FAILED, reportFeedback } from "@/lib/reportFeedback";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
@@ -95,17 +95,17 @@ function ThreadList() {
     <Layout>
       <section className="py-6 md:py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Village Forum</h1>
-          <p className="text-muted-foreground">Conversations, questions, and the decisions we make together.</p>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Forum, h1">Village Forum</Trans></h1>
+          <p className="text-muted-foreground"><Trans context="Forum, p">Conversations, questions, and the decisions we make together.</Trans></p>
           {/* The feed is the other lens over this same table (RETIRES_WITH in
               ExamplesBanner says so), and it had one door in the whole client.
               Gated: the feed module ships off and its page 404s until a village
               turns it on. */}
           {feedModule && (
             <p className="text-sm text-muted-foreground mt-2">
-              For the day to day of it, open the{" "}
+              <Trans context="Forum, p">For the day to day of it, open the{" "}
               <Link href="/feed" className="text-teal-deep font-medium hover:underline">Village Feed</Link>.
-            </p>
+            </Trans></p>
           )}
           <ExamplesBanner moduleId="forum" noun="thread" />
         </div>
@@ -115,8 +115,8 @@ function ThreadList() {
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setCategory("")}
               className={`text-xs px-3 py-1.5 rounded-full ${!category ? "bg-teal-deep text-white" : "bg-muted text-muted-foreground"}`}>
-              All
-            </button>
+              <Trans context="Forum, button">All
+            </Trans></button>
             {categories.map((c) => (
               <button key={c.id} onClick={() => setCategory(c.id)}
                 className={`text-xs px-3 py-1.5 rounded-full ${category === c.id ? "bg-teal-deep text-white" : "bg-muted text-muted-foreground"}`}>
@@ -126,8 +126,8 @@ function ThreadList() {
             {user && (
               <button onClick={() => setComposing(!composing)}
                 className="ml-auto inline-flex items-center gap-1.5 text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium">
-                <Plus className="w-4 h-4" /> New thread
-              </button>
+                <Trans context="Forum, button"><Plus className="w-4 h-4" /> New thread
+              </Trans></button>
             )}
           </div>
 
@@ -148,7 +148,7 @@ function ThreadList() {
                 </select>
               </div>
               <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                placeholder="Title" className="w-full text-sm border border-border rounded-lg px-3 py-2" />
+                placeholder={t({ message: "Title", context: "Forum, placeholder" })} className="w-full text-sm border border-border rounded-lg px-3 py-2" />
               <VoiceArea value={draft.body} onValue={(v) => setDraft((d) => ({ ...d, body: v }))}
                 talk={{
                   label: t({ message: "Your post", context: "voice field label: new forum post" }),
@@ -156,7 +156,7 @@ function ThreadList() {
                 }}
               >
               <textarea value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} rows={4}
-                placeholder="Say it. Mention people with @handle."
+                placeholder={t({ message: "Say it. Mention people with @handle.", context: "Forum, placeholder" })}
                 className="w-full text-sm border border-border rounded-lg px-3 py-2" />
               </VoiceArea>
               {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
@@ -215,6 +215,7 @@ function ThreadList() {
 }
 
 function ThreadView({ id }: { id: string }) {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [thread, setThread] = useState<any>(null);
   const [gone, setGone] = useState(false);
@@ -372,7 +373,7 @@ function ThreadView({ id }: { id: string }) {
       <Layout>
         <div className="container max-w-2xl py-24 text-center text-muted-foreground">
           This thread was hidden by moderation.
-          <div className="mt-4"><Link href="/forum" className="text-teal-deep font-medium">← Back to the forum</Link></div>
+          <div className="mt-4"><Link href="/forum" className="text-teal-deep font-medium"><Trans context="Forum, Link">← Back to the forum</Trans></Link></div>
         </div>
       </Layout>
     );
@@ -391,12 +392,12 @@ function ThreadView({ id }: { id: string }) {
               ? "Reload to try again."
               : "It may have been removed, or the link may be old."}
           </p>
-          <Link href="/forum" className="text-teal-deep font-medium">← Back to the forum</Link>
+          <Link href="/forum" className="text-teal-deep font-medium"><Trans context="Forum, Link">← Back to the forum</Trans></Link>
         </div>
       </Layout>
     );
   }
-  if (!thread) return <Layout><div className="container py-24 text-center text-muted-foreground">Loading…</div></Layout>;
+  if (!thread) return <Layout><div className="container py-24 text-center text-muted-foreground"><Trans context="Forum, div">Loading…</Trans></div></Layout>;
 
   const decided = thread.kind === "decision" && thread.meta?.status === "decided";
   // A thread opened by link or from the feed carried no label at all: the
@@ -426,7 +427,7 @@ function ThreadView({ id }: { id: string }) {
     <Layout>
       <section className="py-10 bg-background">
         <div className="container max-w-3xl space-y-5">
-          <Link href="/forum" className="text-xs text-muted-foreground hover:text-foreground">← All threads</Link>
+          <Link href="/forum" className="text-xs text-muted-foreground hover:text-foreground"><Trans context="Forum, Link">← All threads</Trans></Link>
           {isExample && <ExamplesBanner moduleId={exampleModule} noun={exampleNoun} row />}
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-1">
@@ -461,9 +462,9 @@ function ThreadView({ id }: { id: string }) {
                     disabled={!draft.trim()}
                     className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
                   >
-                    Save edit
-                  </button>
-                  <button onClick={() => setEditing(null)} className="text-sm text-muted-foreground px-3">Cancel</button>
+                    <Trans context="Forum, button">Save edit
+                  </Trans></button>
+                  <button onClick={() => setEditing(null)} className="text-sm text-muted-foreground px-3"><Trans context="Forum, button">Cancel</Trans></button>
                 </div>
               </div>
             ) : (
@@ -471,7 +472,7 @@ function ThreadView({ id }: { id: string }) {
             )}
             {thread.editedAt && !editing && (
               <p className="text-[11px] text-muted-foreground mt-1.5 italic">
-                edited {new Date(thread.editedAt).toLocaleString()}
+                <Trans context="Forum, p">edited {new Date(thread.editedAt).toLocaleString()}</Trans>
               </p>
             )}
             {user?.id === thread.author.id && !thread.lockedAt && editing !== "thread" && (
@@ -479,8 +480,8 @@ function ThreadView({ id }: { id: string }) {
                 onClick={() => { setEditing("thread"); setDraft(thread.body); }}
                 className="text-xs text-muted-foreground hover:text-teal-deep mt-2"
               >
-                Edit
-              </button>
+                <Trans context="Forum, button">Edit
+              </Trans></button>
             )}
             {(thread.tags ?? []).length > 0 && (
               <div className="flex gap-1.5 mt-3">
@@ -491,7 +492,7 @@ function ThreadView({ id }: { id: string }) {
             )}
             {decided && (
               <div className="mt-4 rounded-xl border border-purple-200 bg-purple-50 p-4">
-                <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-1">Decided</p>
+                <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-1"><Trans context="Forum, p">Decided</Trans></p>
                 <p className="text-sm text-purple-900 whitespace-pre-wrap">{thread.meta.outcome}</p>
               </div>
             )}
@@ -526,11 +527,11 @@ function ThreadView({ id }: { id: string }) {
             {user && !isExample && (
               <div className="flex gap-3 mt-4 text-xs">
                 <button onClick={() => act(`/api/forum/threads/${id}/subscribe`, {})} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-                  <Bell className="w-3.5 h-3.5" /> Follow
-                </button>
+                  <Trans context="Forum, button"><Bell className="w-3.5 h-3.5" /> Follow
+                </Trans></button>
                 <button onClick={() => void report()} className="inline-flex items-center gap-1 text-muted-foreground hover:text-red-500">
-                  <Flag className="w-3.5 h-3.5" /> Report
-                </button>
+                  <Trans context="Forum, button"><Flag className="w-3.5 h-3.5" /> Report
+                </Trans></button>
               </div>
             )}
             {refusal?.where === "actions" && <ExampleRefusal message={refusal.message} className="mt-3" />}
@@ -564,9 +565,9 @@ function ThreadView({ id }: { id: string }) {
                         disabled={!draft.trim()}
                         className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
                       >
-                        Save edit
-                      </button>
-                      <button onClick={() => setEditing(null)} className="text-sm text-muted-foreground px-2">Cancel</button>
+                        <Trans context="Forum, button">Save edit
+                      </Trans></button>
+                      <button onClick={() => setEditing(null)} className="text-sm text-muted-foreground px-2"><Trans context="Forum, button">Cancel</Trans></button>
                     </div>
                   </div>
                 ) : (
@@ -575,7 +576,7 @@ function ThreadView({ id }: { id: string }) {
                 <div className="flex items-center gap-3 mt-1">
                   {r.editedAt && (
                     <span className="text-[11px] text-muted-foreground italic">
-                      edited {new Date(r.editedAt).toLocaleString()}
+                      <Trans context="Forum, span">edited {new Date(r.editedAt).toLocaleString()}</Trans>
                     </span>
                   )}
                   {user?.id === r.author.id && !r.hidden && !thread.lockedAt && editing !== r.id && (
@@ -583,8 +584,8 @@ function ThreadView({ id }: { id: string }) {
                       onClick={() => { setEditing(r.id); setDraft(r.body); }}
                       className="text-xs text-muted-foreground hover:text-teal-deep"
                     >
-                      Edit
-                    </button>
+                      <Trans context="Forum, button">Edit
+                    </Trans></button>
                   )}
                   {user && !r.hidden && !thread.lockedAt && !isExample && (
                     <button
@@ -607,8 +608,8 @@ function ThreadView({ id }: { id: string }) {
                       disabled={busy || !reply.trim()}
                       className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
                     >
-                      Reply
-                    </button>
+                      <Trans context="Forum, button">Reply
+                    </Trans></button>
                     {refusal?.where === "reply" && <ExampleRefusal message={refusal.message} />}
                   </div>
                 )}
@@ -622,32 +623,32 @@ function ThreadView({ id }: { id: string }) {
             <div className="bg-card border border-border rounded-xl p-4 space-y-2">
               <VoiceArea value={reply} onValue={setReply}>
               <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={3}
-                placeholder="Reply… mention people with @handle."
+                placeholder={t({ message: "Reply… mention people with @handle.", context: "Forum, placeholder" })}
                 className="w-full text-sm border border-border rounded-lg px-3 py-2" />
               </VoiceArea>
               <button onClick={() => act(`/api/forum/threads/${id}/replies`, { body: reply }, "reply")} disabled={busy || !reply.trim()}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-                Reply
-              </button>
+                <Trans context="Forum, button">Reply
+              </Trans></button>
               {refusal?.where === "reply" && <ExampleRefusal message={refusal.message} />}
             </div>
           )}
           {thread.lockedAt && !decided && (
-            <p className="text-center text-xs text-muted-foreground">This thread is locked.</p>
+            <p className="text-center text-xs text-muted-foreground"><Trans context="Forum, p">This thread is locked.</Trans></p>
           )}
 
           {user && thread.kind === "decision" && !decided && !isExample && (
             <div className="bg-card border border-purple-200 rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5"><Gavel className="w-3.5 h-3.5" /> Record the outcome</p>
+              <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5"><Trans context="Forum, p"><Gavel className="w-3.5 h-3.5" /> Record the outcome</Trans></p>
               <VoiceArea value={outcome} onValue={setOutcome}>
               <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={2}
-                placeholder="What was decided, and by what process?"
+                placeholder={t({ message: "What was decided, and by what process?", context: "Forum, placeholder" })}
                 className="w-full text-sm border border-border rounded-lg px-3 py-2" />
               </VoiceArea>
               <button onClick={() => act(`/api/forum/threads/${id}/decide`, { outcome }, "decide")} disabled={busy || !outcome.trim()}
                 className="text-sm bg-purple-700 text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-                Record decision
-              </button>
+                <Trans context="Forum, button">Record decision
+              </Trans></button>
               {refusal?.where === "decide" && <ExampleRefusal message={refusal.message} />}
             </div>
           )}

@@ -29,6 +29,7 @@ import {
   setStepDone,
   walkProgress,
 } from "@/lib/firstWalk";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function FirstWalk() {
   const { modules, loaded } = useExampleModules();
@@ -43,7 +44,7 @@ export default function FirstWalk() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Your First Walk</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="FirstWalk, h1">Your First Walk</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
             {/* Counted, never hard-coded: stops drop off as modules publish
                 real content, and a village that seeds its own circles never
@@ -56,21 +57,21 @@ export default function FirstWalk() {
 
       <section className="py-8 bg-background">
         <div className="container max-w-2xl space-y-4">
-          {!loaded && <p className="text-sm text-muted-foreground">Looking at what your village is showing…</p>}
+          {!loaded && <p className="text-sm text-muted-foreground"><Trans context="FirstWalk, p">Looking at what your village is showing…</Trans></p>}
 
           {loaded && steps.length === 0 && (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Compass className="w-6 h-6 text-teal-deep mx-auto mb-3" />
-              <p className="text-sm text-foreground font-medium mb-1">No practice examples are showing.</p>
+              <p className="text-sm text-foreground font-medium mb-1"><Trans context="FirstWalk, p">No practice examples are showing.</Trans></p>
               <p className="text-sm text-muted-foreground">
-                They come with the modules that carry them, so a new village with
+                <Trans context="FirstWalk, p">They come with the modules that carry them, so a new village with
                 its modules off has none to walk yet.{" "}
                 <Link href="/modules" className="text-teal-deep underline">
                   Switch a module on
                 </Link>{" "}
                 and its examples join this walk. A village that published its own
                 content has retired them, and everything here is its own.
-              </p>
+              </Trans></p>
             </div>
           )}
 
@@ -79,10 +80,10 @@ export default function FirstWalk() {
               <div className="bg-card border border-border rounded-xl px-5 py-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium text-foreground">
-                    {progress.done}/{progress.total} stops
-                  </p>
+                    <Trans context="FirstWalk, p">{progress.done}/{progress.total} stops
+                  </Trans></p>
                   {progress.done === progress.total && (
-                    <p className="text-xs text-teal-deep font-medium">Walk complete</p>
+                    <p className="text-xs text-teal-deep font-medium"><Trans context="FirstWalk, p">Walk complete</Trans></p>
                   )}
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -137,18 +138,18 @@ export default function FirstWalk() {
                   disappears. Say so where the founder has just finished. */}
               {progress.done === progress.total && (
                 <div className="rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-5">
-                  <p className="font-semibold text-sm text-foreground">Now plant your own</p>
+                  <p className="font-semibold text-sm text-foreground"><Trans context="FirstWalk, p">Now plant your own</Trans></p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Publish your first real post, event or item. That room's
+                    <Trans context="FirstWalk, p">Publish your first real post, event or item. That room's
                     examples clear on their own, and this walk retires when the
                     last one goes.
-                  </p>
+                  </Trans></p>
                   <Link
                     href="/admin"
                     className="inline-block mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium hover:bg-teal-deep-dark"
                   >
-                    Open Village Settings
-                  </Link>
+                    <Trans context="FirstWalk, Link">Open Village Settings
+                  </Trans></Link>
                 </div>
               )}
 
@@ -168,6 +169,7 @@ export default function FirstWalk() {
  * closes it. A prompt that survives being answered is a nag.
  */
 export function FirstWalkInvite() {
+  const { t } = useLingui();
   const { modules, loaded } = useExampleModules();
   // The walk is the team's tour (R47), so the invitation is too.
   const { user } = useAuth();
@@ -187,7 +189,7 @@ export function FirstWalkInvite() {
       <Compass className="w-4 h-4 text-teal-deep mt-0.5 shrink-0" />
       <div className="flex-1 text-sm">
         <p className="text-foreground">
-          Your village still shows practice examples.{" "}
+          <Trans context="FirstWalk, p">Your village still shows practice examples.{" "}
           <Link href="/first-walk" className="text-teal-deep font-medium hover:underline">
             Take Your First Walk
           </Link>
@@ -195,11 +197,11 @@ export function FirstWalkInvite() {
           {progress.total - progress.done === 1
             ? "one stop left"
             : `${progress.total - progress.done} stops, a minute each`}.
-        </p>
+        </Trans></p>
       </div>
       <button
         onClick={() => { dismissWalk(); setDismissed(true); }}
-        aria-label="Hide the walk invitation"
+        aria-label={t({ message: "Hide the walk invitation", context: "FirstWalk, aria-label" })}
         className="text-muted-foreground hover:text-foreground shrink-0"
       >
         <X className="w-4 h-4" />

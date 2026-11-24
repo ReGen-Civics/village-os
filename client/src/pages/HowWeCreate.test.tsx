@@ -21,7 +21,7 @@ class NoopIntersectionObserver {
 }
 vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver);
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 import { HOW_WE_CREATE_PAGE } from "@shared/pageContent/howWeCreate";
@@ -213,6 +213,8 @@ describe("the Hypha section follows the village's Hypha space", () => {
     await headline();
     expect(screen.queryByText(/Only admins see this note/)).toBeNull();
 
+    // A fresh tree: the first one re-renders when the admin flag flips, and would show the note twice.
+    cleanup();
     isAdmin = true;
     renderPage();
     expect(await screen.findByText(/Only admins see this note/)).toHaveTextContent("Admin, Variables");

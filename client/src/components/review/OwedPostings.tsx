@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameMap } from "@/hooks/useTokenNameFor";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** One row of `GET /api/admin/quest-claims/owed`. */
 export interface OwedPostingView {
@@ -129,6 +130,7 @@ export function useOwedPostings(headers: () => Record<string, string>) {
 }
 
 export default function OwedPostings({ headers }: { headers: () => Record<string, string> }) {
+  const { t } = useLingui();
   const { rows, refused, error, load } = useOwedPostings(headers);
   const [busy, setBusy] = useState<string | null>(null);
   const names = useTokenNameMap();
@@ -143,13 +145,13 @@ export default function OwedPostings({ headers }: { headers: () => Record<string
   if (error) {
     return (
       <div className={card}>
-        <h2 className="font-semibold text-foreground">What consents still owe did not load</h2>
+        <h2 className="font-semibold text-foreground"><Trans context="OwedPostings, h2">What consents still owe did not load</Trans></h2>
         <p className="text-sm text-muted-foreground mt-2">
-          {error}. A member may be waiting for a payment, and this page cannot see it right now.
-        </p>
+          <Trans context="OwedPostings, p">{error}. A member may be waiting for a payment, and this page cannot see it right now.
+        </Trans></p>
         <button onClick={() => void load()} className="text-xs border border-border rounded-lg px-3 py-2 mt-4 min-h-[44px]">
-          Try again
-        </button>
+          <Trans context="OwedPostings, button">Try again
+        </Trans></button>
       </div>
     );
   }
@@ -180,9 +182,9 @@ export default function OwedPostings({ headers }: { headers: () => Record<string
       }
       const outcomes = ((d as { outcomes?: Array<{ outcome: string }> }).outcomes ?? []).map((o) => o.outcome);
       const unpaid = outcomes.filter((o) => o === "still_owed" || o === "refused").length;
-      if (unpaid > 0) toast.error("Some of it could not be paid. The list says why.");
-      else if (outcomes.some((o) => o === "posted" || o === "duplicate")) toast.success("Paid.");
-      else toast.success("Nothing is owed on this claim any more.");
+      if (unpaid > 0) toast.error(t({ message: "Some of it could not be paid. The list says why.", context: "OwedPostings, toast" }));
+      else if (outcomes.some((o) => o === "posted" || o === "duplicate")) toast.success(t({ message: "Paid.", context: "OwedPostings, toast" }));
+      else toast.success(t({ message: "Nothing is owed on this claim any more.", context: "OwedPostings, toast" }));
       await load();
     } finally {
       setBusy(null);
@@ -193,12 +195,12 @@ export default function OwedPostings({ headers }: { headers: () => Record<string
     <section className="space-y-4" aria-labelledby="owed-heading">
       <div>
         <h2 id="owed-heading" className="text-lg font-semibold text-foreground">
-          Consented work still owed a payment
-        </h2>
+          <Trans context="OwedPostings, h2">Consented work still owed a payment
+        </Trans></h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-          A consent pays these straight after it lands, and these have not gone through yet. Paying again cannot pay
+          <Trans context="OwedPostings, p">A consent pays these straight after it lands, and these have not gone through yet. Paying again cannot pay
           anything twice.
-        </p>
+        </Trans></p>
       </div>
 
       {groups.map((g) => (
@@ -216,8 +218,8 @@ export default function OwedPostings({ headers }: { headers: () => Record<string
               onClick={() => void pay(g.claimId)}
               className="text-sm bg-teal-deep text-white rounded-lg px-3 py-2 min-h-[44px] font-medium disabled:opacity-40 mt-4"
             >
-              Pay what is owed
-            </button>
+              <Trans context="OwedPostings, button">Pay what is owed
+            </Trans></button>
           )}
         </div>
       ))}

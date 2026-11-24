@@ -40,6 +40,7 @@ import { useTokenName } from "@/hooks/useTokenNames";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { gameFetch, type GameMe, type GameStagePublic } from "@/lib/gameApi";
 import { announceProfileChange } from "@/lib/profileRefresh";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** "2 times" / "1 time", so a multiplier of one does not read as "1 times". */
 const times = (n: number): string => `${n} time${n === 1 ? "" : "s"}`;
@@ -57,6 +58,7 @@ export default function TheVessel({
   /** Told after a successful give, so whatever else prints a balance re-reads. */
   onGiven?: () => void;
 }) {
+  const { t } = useLingui();
   const tokenName = useTokenName();
   const [handle, setHandle] = useState("");
   const [amount, setAmount] = useState("");
@@ -118,8 +120,8 @@ export default function TheVessel({
     return failed ? (
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
         <p role="status" className="text-sm text-muted-foreground">
-          Could not read your {tokenName} just now. Reload the page to try again.
-        </p>
+          <Trans context="TheVessel, p">Could not read your {tokenName} just now. Reload the page to try again.
+        </Trans></p>
       </section>
     ) : null;
   }
@@ -193,20 +195,20 @@ export default function TheVessel({
       </div>
 
       <p className="mt-4 font-display text-5xl font-bold text-notice tabular-nums">
-        <span className="sr-only">{tokenName} held: </span>
+        <span className="sr-only"><Trans context="TheVessel, span">{tokenName} held: </Trans></span>
         {held}
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Held in all. Yours to keep, never spent.
-      </p>
+        <Trans context="TheVessel, p">Held in all. Yours to keep, never spent.
+      </Trans></p>
 
 
       {total > 0 ? (
         <div className="mt-6">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-sm text-card-foreground">Left to give this moon</span>
+            <span className="text-sm text-card-foreground"><Trans context="TheVessel, span">Left to give this moon</Trans></span>
             <span className="text-sm tabular-nums text-muted-foreground">
-              <span className="font-semibold text-card-foreground">{remaining}</span> of {total}
+              <Trans context="TheVessel, span"><span className="font-semibold text-card-foreground">{remaining}</span> of {total}</Trans>
             </span>
           </div>
           {/*
@@ -223,7 +225,7 @@ export default function TheVessel({
             aria-valuenow={Math.min(remaining, total)}
             aria-valuemin={0}
             aria-valuemax={total}
-            aria-label={`${remaining} of ${total} left to give this moon`}
+            aria-label={t({ message: `${remaining} of ${total} left to give this moon`, context: "TheVessel, aria-label" })}
             className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted"
           >
             <div
@@ -235,14 +237,14 @@ export default function TheVessel({
             />
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            The allowance resets with the new moon. Nothing you were given is ever taken back.
-          </p>
+            <Trans context="TheVessel, p">The allowance resets with the new moon. Nothing you were given is ever taken back.
+          </Trans></p>
           {/* The allowance as a fact, said once (the prune, C14). The next rung's multiplier is no longer put
               as a reason to climb; the numbers themselves are the lead's to decide and stay exactly as served. */}
           {here && here.gratitudeMultiplier > 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              Your sending allowance is {times(here.gratitudeMultiplier)} the base.
-            </p>
+              <Trans context="TheVessel, p">Your sending allowance is {times(here.gratitudeMultiplier)} the base.
+            </Trans></p>
           ) : null}
         </div>
       ) : null}
@@ -258,17 +260,17 @@ export default function TheVessel({
       <form onSubmit={give} className="mt-6 border-t border-border pt-6">
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="flex-1">
-            <span className="mb-1 block text-sm font-medium text-card-foreground">Who to thank</span>
+            <span className="mb-1 block text-sm font-medium text-card-foreground"><Trans context="TheVessel, span">Who to thank</Trans></span>
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               required
-              placeholder="Their @handle"
+              placeholder={t({ message: "Their @handle", context: "TheVessel, placeholder" })}
               className="min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-card-foreground placeholder:text-muted-foreground"
             />
           </label>
           <label className="sm:w-32">
-            <span className="mb-1 block text-sm font-medium text-card-foreground">How much</span>
+            <span className="mb-1 block text-sm font-medium text-card-foreground"><Trans context="TheVessel, span">How much</Trans></span>
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -290,7 +292,7 @@ export default function TheVessel({
         </div>
         <label className="mt-3 block">
           <span className="mb-1 block text-sm font-medium text-card-foreground">
-            What for{requireMessage === false ? " (optional)" : ""}
+            <Trans context="TheVessel, span">What for{requireMessage === false ? " (optional)" : ""}</Trans>
           </span>
           <VoiceArea value={message} onValue={setMessage}>
             <textarea
@@ -299,7 +301,7 @@ export default function TheVessel({
               /* The village's own setting, never a hardcoded true. */
               required={requireMessage === true}
               rows={2}
-              placeholder="What are you thanking them for?"
+              placeholder={t({ message: "What are you thanking them for?", context: "TheVessel, placeholder" })}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-card-foreground placeholder:text-muted-foreground"
             />
           </VoiceArea>

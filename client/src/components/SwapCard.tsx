@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { ArrowDown, History, Loader2, Repeat, ShieldAlert } from "lucide-react";
 import { failureWords } from "@/lib/failureWords";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -163,12 +164,12 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center gap-2 mb-1">
         <Repeat className="w-4 h-4 text-teal-deep" />
-        <p className="font-semibold text-foreground text-sm">Swap tokens</p>
+        <p className="font-semibold text-foreground text-sm"><Trans context="SwapCard, p">Swap tokens</Trans></p>
       </div>
       <p className="text-xs text-muted-foreground mb-4">
-        Trade one village token for another at the posted prices. The village
+        <Trans context="SwapCard, p">Trade one village token for another at the posted prices. The village
         treasury is the only other side, and swaps are final.
-      </p>
+      </Trans></p>
 
       {receipt && (
         <p role="status" className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-4 py-2.5 mb-4">
@@ -184,7 +185,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
 
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1.5">You hand over</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5"><Trans context="SwapCard, label">You hand over</Trans></label>
           <select
             value={payToken}
             onChange={(e) => setPayToken(e.target.value)}
@@ -204,7 +205,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
 
         <div className="grid grid-cols-[1fr_5rem] gap-2">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">You receive</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5"><Trans context="SwapCard, label">You receive</Trans></label>
             <select
               value={receiveToken}
               onChange={(e) => setReceiveToken(e.target.value)}
@@ -216,7 +217,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">How many</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5"><Trans context="SwapCard, label">How many</Trans></label>
             <input
               type="number" min={1} inputMode="numeric" value={want}
               onChange={(e) => setWant(Math.max(1, Math.floor(Number(e.target.value) || 1)))}
@@ -241,17 +242,17 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
             {quote.disclosure && <p className="text-xs text-muted-foreground">{quote.disclosure}</p>}
             <dl className="text-xs text-muted-foreground space-y-1">
               <div className="flex justify-between gap-3">
-                <dt>Posted prices</dt>
+                <dt><Trans context="SwapCard, dt">Posted prices</Trans></dt>
                 <dd>
-                  {usd(quote.payPriceMinor)} each for {usd(quote.receivePriceMinor)} each
-                </dd>
+                  <Trans context="SwapCard, dd">{usd(quote.payPriceMinor)} each for {usd(quote.receivePriceMinor)} each
+                </Trans></dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt>The village keeps</dt>
+                <dt><Trans context="SwapCard, dt">The village keeps</Trans></dt>
                 <dd>{quote.takeMinor > 0 ? usd(quote.takeMinor) : "nothing"}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt>You can swap</dt>
+                <dt><Trans context="SwapCard, dt">You can swap</Trans></dt>
                 <dd>
                   {quote.swappableBalance ?? balance} {payName}
                   {quote.heldFromRecentPurchase > 0 && ` (${quote.heldFromRecentPurchase} still settling)`}
@@ -296,8 +297,8 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
                 onClick={() => setQuote(null)}
                 className="text-sm border border-border rounded-lg px-4 py-3 font-medium text-muted-foreground"
               >
-                Not now
-              </button>
+                <Trans context="SwapCard, button">Not now
+              </Trans></button>
             </div>
           </div>
         )}
@@ -306,14 +307,14 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
           onClick={() => setShowHistory(!showHistory)}
           className="inline-flex items-center gap-1.5 text-xs text-teal-deep font-medium"
         >
-          <History className="w-3.5 h-3.5" /> {showHistory ? "Hide" : "See"} how this rate has moved
-        </button>
+          <Trans context="SwapCard, button"><History className="w-3.5 h-3.5" /> {showHistory ? "Hide" : "See"} how this rate has moved
+        </Trans></button>
 
         {showHistory && (
           <div className="border border-border rounded-lg p-3">
-            {!history && <p className="text-xs text-muted-foreground">Loading…</p>}
+            {!history && <p className="text-xs text-muted-foreground"><Trans context="SwapCard, p">Loading…</Trans></p>}
             {history && history.points.length === 0 && (
-              <p className="text-xs text-muted-foreground">No rate history for this pair yet.</p>
+              <p className="text-xs text-muted-foreground"><Trans context="SwapCard, p">No rate history for this pair yet.</Trans></p>
             )}
             {history && history.points.length > 0 && (
               <div className="space-y-2">
@@ -327,7 +328,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
                     </div>
                     <p className="text-muted-foreground mt-0.5">
                       {usd(p.payPriceMinor)} / {usd(p.receivePriceMinor)}, {p.receiveNote}
-                      {p.receiveDecisionRef && <span className="text-teal-deep"> · decided in the forum</span>}
+                      {p.receiveDecisionRef && <span className="text-teal-deep"> <Trans context="SwapCard, span">· decided in the forum</Trans></span>}
                     </p>
                   </div>
                 ))}

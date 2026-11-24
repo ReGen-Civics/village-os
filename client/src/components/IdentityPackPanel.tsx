@@ -82,6 +82,7 @@ function extLabel(r: Reference): string {
  * phone and 45 extra network requests per five keystrokes.
  */
 function ReferenceTile({ reference, onRemove }: { reference: Reference; onRemove: () => void }) {
+  const { t } = useLingui();
   return (
     <div className="relative">
       {isPicture(reference) ? (
@@ -99,7 +100,7 @@ function ReferenceTile({ reference, onRemove }: { reference: Reference; onRemove
       )}
       <button
         type="button"
-        aria-label="Remove reference"
+        aria-label={t({ message: "Remove reference", context: "IdentityPackPanel, aria-label" })}
         onClick={onRemove}
         className="absolute top-1 right-1 bg-white/90 rounded-full w-5 h-5 text-xs leading-5 text-gray-600"
       >
@@ -124,7 +125,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       const res = await fetch("/api/admin/brand", { headers: { Authorization: `Bearer ${password}` } });
       const data = await res.json();
       setPack(data.brand?.identityPack ?? { description: "", never: "", references: [] });
-    } catch { toast.error("Could not load the identity pack"); }
+    } catch { toast.error(t({ message: "Could not load the identity pack", context: "IdentityPackPanel, toast" })); }
   }, [password]);
   useEffect(() => { load(); }, [load]);
 
@@ -135,7 +136,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
 
   const save = async () => {
     if ((pack.references?.length ?? 0) > 0 && !pack.rightsAck && !rights) {
-      return toast.error("Please confirm your project holds rights to the reference files first");
+      return toast.error(t({ message: "Please confirm your project holds rights to the reference files first", context: "IdentityPackPanel, toast" }));
     }
     setSaving(true);
     try {
@@ -153,14 +154,14 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       const data = await res.json();
       setPack(data.brand?.identityPack ?? next);
       announceThemeChange();
-      toast.success("Identity pack saved");
-    } catch { toast.error("Save failed"); }
+      toast.success(t({ message: "Identity pack saved", context: "IdentityPackPanel, toast" }));
+    } catch { toast.error(t({ message: "Save failed", context: "IdentityPackPanel, toast" })); }
     setSaving(false);
   };
 
   const upload = async () => {
     const file = chosen;
-    if (!file) return toast.error("Choose a file first");
+    if (!file) return toast.error(t({ message: "Choose a file first", context: "IdentityPackPanel, toast" }));
     setUploading(true);
     try {
       // Shrink before the wire, not after. The server re-encodes photographs
@@ -192,7 +193,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       };
       setPack({ ...pack, references: [...(pack.references ?? []), reference] });
       clearChoice();
-      toast.success("Reference added. Remember to save");
+      toast.success(t({ message: "Reference added. Remember to save", context: "IdentityPackPanel, toast" }));
     } catch (e: any) { toast.error(e.message || "Upload failed"); }
     setUploading(false);
   };
@@ -200,18 +201,18 @@ export default function IdentityPackPanel({ password }: { password: string }) {
   if (!pack) return null;
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
-      <h3 className="font-semibold text-gray-900 mb-1">Identity pack</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="IdentityPackPanel, h3">Identity pack</Trans></h3>
       <p className="text-xs text-gray-500 mb-4">
-        What your village looks and feels like, for the design agency to stay true to. Base art is
+        <Trans context="IdentityPackPanel, p">What your village looks and feels like, for the design agency to stay true to. Base art is
         generated once by the foundation; you regenerate it only with your own image API key.
-      </p>
-      <label className="block text-sm font-medium text-gray-900 mb-1">Who you are, visually</label>
+      </Trans></p>
+      <label className="block text-sm font-medium text-gray-900 mb-1"><Trans context="IdentityPackPanel, label">Who you are, visually</Trans></label>
       <textarea value={pack.description ?? ""} onChange={(e) => setPack({ ...pack, description: e.target.value.slice(0, 2000) })}
-        rows={3} placeholder="e.g. hand-built timber and lime plaster, tropical understory, morning mist…"
+        rows={3} placeholder={t({ message: "e.g. hand-built timber and lime plaster, tropical understory, morning mist…", context: "IdentityPackPanel, placeholder" })}
         className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mb-3" />
-      <label className="block text-sm font-medium text-gray-900 mb-1">What you are NOT (never show)</label>
+      <label className="block text-sm font-medium text-gray-900 mb-1"><Trans context="IdentityPackPanel, label">What you are NOT (never show)</Trans></label>
       <textarea value={pack.never ?? ""} onChange={(e) => setPack({ ...pack, never: e.target.value.slice(0, 1000) })}
-        rows={2} placeholder="e.g. no glass towers, no manicured lawns, no stock-photo smiles…"
+        rows={2} placeholder={t({ message: "e.g. no glass towers, no manicured lawns, no stock-photo smiles…", context: "IdentityPackPanel, placeholder" })}
         className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mb-4" />
 
       {/* THE ART DIRECTION (gap G9): what every made picture is drawn in. Read
@@ -237,10 +238,10 @@ export default function IdentityPackPanel({ password }: { password: string }) {
         depend on which one the browser picked. The Choose file label below is
         the input's one name.
       */}
-      <label className="block text-sm font-medium text-gray-900 mb-1">Reference files</label>
+      <label className="block text-sm font-medium text-gray-900 mb-1"><Trans context="IdentityPackPanel, label">Reference files</Trans></label>
       <p className="text-xs text-muted-foreground mb-1.5">
-        Photographs, a logo, a colour swatch, or a whole style guide as HTML, CSS, SVG, PDF or markdown. Up to 25 MB each.
-      </p>
+        <Trans context="IdentityPackPanel, p">Photographs, a logo, a colour swatch, or a whole style guide as HTML, CSS, SVG, PDF or markdown. Up to 25 MB each.
+      </Trans></p>
       {(pack.references?.length ?? 0) > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-2">
           {pack.references.map((r: Reference, i: number) => (
@@ -287,13 +288,13 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       {!pack.rightsAck && (
         <label className="flex items-start gap-2 text-xs text-gray-600 mb-3">
           <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-0.5" />
-          <span>Our project holds the rights to these reference files (a designer's logo, a
+          <span><Trans context="IdentityPackPanel, span">Our project holds the rights to these reference files (a designer's logo, a
           photographer's photo or a style guide someone else wrote is often not yours to reuse, so
-          check before you feed it forward).</span>
+          check before you feed it forward).</Trans></span>
         </label>
       )}
       {pack.rightsAck?.at && (
-        <p className="text-xs text-gray-400 mb-3">Rights confirmed {String(pack.rightsAck.at).slice(0, 10)}.</p>
+        <p className="text-xs text-gray-400 mb-3"><Trans context="IdentityPackPanel, p">Rights confirmed {String(pack.rightsAck.at).slice(0, 10)}.</Trans></p>
       )}
       <button onClick={save} disabled={saving}
         className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50">

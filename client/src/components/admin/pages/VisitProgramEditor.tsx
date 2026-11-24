@@ -31,6 +31,7 @@ import {
   type VisitProgram,
   type VisitType,
 } from "@shared/visitProgram";
+import { Trans } from "@lingui/react/macro";
 
 const chars = (s: string) => Array.from(s).length;
 
@@ -44,7 +45,7 @@ function Box({ id, field, value, onChange }: { id: string; field: VisitField<str
       <div className="flex items-baseline justify-between gap-2 mb-1">
         <label htmlFor={id} className="text-xs font-medium text-foreground">
           {field.label}
-          {!field.required && <span className="ml-1 font-normal text-muted-foreground">(optional)</span>}
+          {!field.required && <span className="ml-1 font-normal text-muted-foreground"><Trans context="VisitProgramEditor, span">(optional)</Trans></span>}
         </label>
         <span className={`text-[11px] tabular-nums ${full ? "text-amber-800 font-semibold" : "text-muted-foreground"}`} aria-live="polite">
           {n} / {field.max}
@@ -116,12 +117,12 @@ export default function VisitProgramEditor({
   if (loadError) {
     return (
       <section className="border border-border rounded-xl p-4 bg-card">
-        <h3 className="text-sm font-bold text-foreground">Visit Program</h3>
-        <p role="alert" className="text-sm text-red-700 mt-1">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</p>
+        <h3 className="text-sm font-bold text-foreground"><Trans context="VisitProgramEditor, h3">Visit Program</Trans></h3>
+        <p role="alert" className="text-sm text-red-700 mt-1"><Trans context="VisitProgramEditor, p">{loadError} Saving is off until it reads, so nothing you have written gets overwritten.</Trans></p>
       </section>
     );
   }
-  if (!draft) return <p className="text-sm text-muted-foreground">Loading the visit program...</p>;
+  if (!draft) return <p className="text-sm text-muted-foreground"><Trans context="VisitProgramEditor, p">Loading the visit program...</Trans></p>;
 
   const types = draft.visit_types;
   const setTypes = (next: VisitType[]) => setDraft({ ...draft, visit_types: renumberVisitTypes(next) });
@@ -158,10 +159,10 @@ export default function VisitProgramEditor({
     <section className="border border-border rounded-xl p-4 bg-card space-y-4" aria-labelledby="visit-program-h">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 basis-64">
-          <h3 id="visit-program-h" className="text-sm font-bold text-foreground">Visit Program</h3>
+          <h3 id="visit-program-h" className="text-sm font-bold text-foreground"><Trans context="VisitProgramEditor, h3">Visit Program</Trans></h3>
           <p className="text-[11px] text-muted-foreground">
-            The rest of the Visit page: the sentence under the headline, the ways to visit and the logistics. Changes save from the bar at the bottom.
-          </p>
+            <Trans context="VisitProgramEditor, p">The rest of the Visit page: the sentence under the headline, the ways to visit and the logistics. Changes save from the bar at the bottom.
+          </Trans></p>
         </div>
       </header>
 
@@ -175,16 +176,16 @@ export default function VisitProgramEditor({
       <Box id="visit-program-subtitle" field={VISIT_SUBTITLE_FIELD} value={draft.hero_subtitle} onChange={(v) => setDraft({ ...draft, hero_subtitle: v })} />
 
       <fieldset className="border border-border rounded-lg p-3">
-        <legend className="px-1 text-xs font-semibold text-foreground">Ways to visit</legend>
-        <p className="text-[11px] text-muted-foreground mb-2">One card each under "Pick a way to visit", in this order. Each one is also a choice in the visit form.</p>
-        {types.length === 0 && <p className="text-[11px] text-muted-foreground mb-2">No ways to visit yet. The page keeps its visit form, so people can still write.</p>}
+        <legend className="px-1 text-xs font-semibold text-foreground"><Trans context="VisitProgramEditor, legend">Ways to visit</Trans></legend>
+        <p className="text-[11px] text-muted-foreground mb-2"><Trans context="VisitProgramEditor, p">One card each under "Pick a way to visit", in this order. Each one is also a choice in the visit form.</Trans></p>
+        {types.length === 0 && <p className="text-[11px] text-muted-foreground mb-2"><Trans context="VisitProgramEditor, p">No ways to visit yet. The page keeps its visit form, so people can still write.</Trans></p>}
         <div className="space-y-3">
           {types.map((t, i) => (
             <div key={t.id} className="rounded-lg bg-muted/30 p-3 space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-foreground">
-                  Way to visit {i + 1}
-                  {t.title ? `: ${t.title}` : ""}
+                  <Trans context="VisitProgramEditor, span">Way to visit {i + 1}
+                  {t.title ? `: ${t.title}` : ""}</Trans>
                 </span>
                 <span className="flex items-center gap-1">
                   <button type="button" aria-label={`Move way to visit ${i + 1} up`} onClick={() => move(i, -1)} disabled={i === 0} className="p-1 rounded hover:bg-muted disabled:opacity-30">
@@ -210,12 +211,12 @@ export default function VisitProgramEditor({
           disabled={types.length >= MAX_VISIT_TYPES}
           className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-teal-deep disabled:opacity-40"
         >
-          <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add a way to visit ({types.length} of {MAX_VISIT_TYPES})
-        </button>
+          <Trans context="VisitProgramEditor, button"><Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add a way to visit ({types.length} of {MAX_VISIT_TYPES})
+        </Trans></button>
       </fieldset>
 
       <fieldset className="border border-border rounded-lg p-3 space-y-3">
-        <legend className="px-1 text-xs font-semibold text-foreground">Logistics</legend>
+        <legend className="px-1 text-xs font-semibold text-foreground"><Trans context="VisitProgramEditor, legend">Logistics</Trans></legend>
         {VISIT_LOGISTICS_FIELDS.map((field) => (
           <Box
             key={field.key}

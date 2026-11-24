@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { gameFetch } from "@/lib/gameApi";
 import { CIRCLE_LAYERS, parentChoicesFor, type CircleLayer } from "@shared/circleView";
 import { describeMove, middleMoves, nudgeMoves, publishOrder, settleAgainst, withMoves, type PendingMove } from "./arrange";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Circle = { id: string; name: string; parentCircleId?: string | null; isExample?: boolean; order?: number; layer?: string | null };
 
@@ -120,6 +121,7 @@ export default function ArrangeBar({
   onSettled(moves: PendingMove[]): void;
   onDiscard(): void;
 }) {
+  const { t } = useLingui();
   const [said, setSaid] = useState("");
   const [pickId, setPickId] = useState("");
   const [toId, setToId] = useState("");
@@ -165,7 +167,7 @@ export default function ArrangeBar({
     if (!kept.length) {
       onSettled(batch);
       onBusy(false);
-      toast.success("The village already sits this way, so there was nothing to publish.");
+      toast.success(t({ message: "The village already sits this way, so there was nothing to publish.", context: "ArrangeBar, toast" }));
       return;
     }
 
@@ -237,14 +239,14 @@ export default function ArrangeBar({
   return (
     <section aria-labelledby="arrange-bar-title" className="mb-4 pb-4 border-b border-border text-sm" data-arrange-bar>
       <h3 id="arrange-bar-title" className="font-semibold text-sm text-foreground">
-        Arranging circles
-      </h3>
+        <Trans context="ArrangeBar, h3">Arranging circles
+      </Trans></h3>
       <p className="mt-1 text-muted-foreground">
-        Drag a circle onto the circle it belongs inside, or onto a marked place: the middle makes it the lead, and a
+        <Trans context="ArrangeBar, p">Drag a circle onto the circle it belongs inside, or onto a marked place: the middle makes it the lead, and a
         place between two circles puts it there in the ring. Ground outside every circle is the top of the village.
         With a keyboard, press M on a circle to pick it up, then M on the circle it belongs inside, or use the
         controls below.
-      </p>
+      </Trans></p>
       {count > 0 ? (
         <ul className="mt-2 space-y-0.5 text-foreground" data-arrange-moves>
           {moves.map((m) => (
@@ -252,7 +254,7 @@ export default function ArrangeBar({
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-foreground">Nothing has moved yet.</p>
+        <p className="mt-2 text-foreground"><Trans context="ArrangeBar, p">Nothing has moved yet.</Trans></p>
       )}
       <p className="mt-2 min-h-[1.25rem] text-foreground" aria-live="polite" data-arrange-status>
         {status}
@@ -280,14 +282,14 @@ export default function ArrangeBar({
           disabled={!count || busy}
           className="text-xs px-3 py-1.5 rounded-full border border-border bg-card text-muted-foreground disabled:opacity-40"
         >
-          Discard
-        </button>
+          <Trans context="ArrangeBar, button">Discard
+        </Trans></button>
       </div>
 
       <div className="mt-4" role="group" aria-labelledby="arrange-picker-title" data-arrange-picker>
         <p id="arrange-picker-title" className="text-xs font-semibold text-foreground">
-          Move a circle without dragging
-        </p>
+          <Trans context="ArrangeBar, p">Move a circle without dragging
+        </Trans></p>
         <label className="mt-2 block text-xs text-muted-foreground">
           Circle
           <select
@@ -329,12 +331,12 @@ export default function ArrangeBar({
           }}
           className="mt-2 text-xs px-3 py-1.5 rounded-full border border-border bg-card text-foreground disabled:opacity-40"
         >
-          Add move
-        </button>
+          <Trans context="ArrangeBar, button">Add move
+        </Trans></button>
         {/* WHERE IT SITS IN ITS RING, AND ITS LAYER (0286): the keyboard path for
             what the map's drop targets do, for the circle chosen above. */}
         {onApply && (
-          <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Its place in the ring">
+          <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t({ message: "Its place in the ring", context: "ArrangeBar, aria-label" })}>
             {(
               [
                 ["Earlier in the ring", () => onApply(nudgeMoves(picture, pickId, -1), `${nameIn(pickId)} moves earlier in the ring.`)],

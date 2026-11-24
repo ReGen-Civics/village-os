@@ -20,6 +20,7 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { MASTER_PLAN_PAGE, zoneTags } from "@shared/pageContent/masterPlan";
 import type { ResolvedPage } from "@shared/pageContent/types";
+import { Trans } from "@lingui/react/macro";
 
 
 /*
@@ -166,8 +167,8 @@ export default function MasterPlan() {
             >
               <Map className="w-16 h-16 text-white mb-6 opacity-80" />
               <h1 className="font-display text-4xl md:text-6xl font-bold text-white mb-6 break-words">
-                The {villageName} Master Plan
-              </h1>
+                <Trans context="MasterPlan, h1">The {villageName} Master Plan
+              </Trans></h1>
               <p className={`text-xl text-white leading-relaxed break-words${page ? "" : " invisible"}`}>
                 <Emphasized text={page?.hero.fields.subline || "\u00a0"} />
               </p>
@@ -283,9 +284,9 @@ export default function MasterPlan() {
             {!loaded ? null : appraisal ? (
               <>
                 <p className="text-muted-foreground mb-6">
-                  {appraisal.note ? `${appraisal.note}: an appraisal ` : "An appraisal "}
+                  <Trans context="MasterPlan, p">{appraisal.note ? `${appraisal.note}: an appraisal ` : "An appraisal "}
                   valued the property at <strong>{appraisal.value}</strong>.
-                </p>
+                </Trans></p>
                 {valuation.fields.support && (
                 <p className="text-muted-foreground break-words">
                   <Emphasized text={valuation.fields.support} />
@@ -294,8 +295,8 @@ export default function MasterPlan() {
               </>
             ) : (
               <p className="text-muted-foreground">
-                This village has not published a land valuation yet.
-              </p>
+                <Trans context="MasterPlan, p">This village has not published a land valuation yet.
+              </Trans></p>
             )}
             {/* The village's own document, or no button. This was a disabled
                 "Coming Soon" on every village, including ones with no plan

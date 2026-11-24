@@ -8,10 +8,11 @@ import { useEffect, useState } from "react";
 import { gameFetch, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { PeopleLockNote, type PeopleTier } from "@/components/PeopleLock";
 import { readVillageSection } from "@/hooks/useVillageContent";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { TEAM_PAGE } from "@shared/pageContent/team";
 import { orgRowIsAgent } from "@shared/roleSheetInputs";
+import { Trans } from "@lingui/react/macro";
 
 interface TeamMember {
   name: string;
@@ -40,6 +41,7 @@ export default function Team() {
   // Every word on this page that is not a person's is the village's own, from
   // Admin, Pages, Team (shared/pageContent/team.ts). Null until the saved
   // words have arrived, so the defaults never flash first.
+  const langOf = usePageLang(TEAM_PAGE);
   const page = usePageContent(TEAM_PAGE);
   // Blank hides the button rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
@@ -172,9 +174,9 @@ export default function Team() {
                 {page?.leadership.fields.heading || "\u00a0"}
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                The full circle of roles, filled and open, lives on the{" "}
+                <Trans context="Team, p">The full circle of roles, filled and open, lives on the{" "}
                 <Link href="/roles" className="text-open font-medium hover:underline">Roles &amp; Circles page</Link>.
-              </p>
+              </Trans></p>
             </m.div>
 
             {/* Members-only people: say so, with the counts that stay public.
@@ -190,9 +192,9 @@ export default function Team() {
                 on a fork's very first day. */}
             {team !== null && team.length === 0 && people?.visible ? (
               <p className="text-center text-muted-foreground max-w-xl mx-auto">
-                No one has joined the team yet. Team members appear on this
+                <Trans context="Team, p">No one has joined the team yet. Team members appear on this
                 page as roles are filled.
-              </p>
+              </Trans></p>
             ) : null}
 
             <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -248,7 +250,7 @@ export default function Team() {
               className="text-center mt-10"
             >
               {page.leadership.fields.openNote && (
-              <p className="text-muted-foreground text-sm max-w-xl mx-auto mb-4 break-words">
+              <p lang={langOf("leadership.openNote")} className="text-muted-foreground text-sm max-w-xl mx-auto mb-4 break-words">
                 <Emphasized text={page.leadership.fields.openNote} />
               </p>
               )}
@@ -271,10 +273,10 @@ export default function Team() {
             className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center mb-10">
-              <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
+              <h2 lang={langOf("advisory.heading")} className="font-display text-3xl font-bold text-foreground mb-4 break-words">
                 {page.advisory.fields.heading}
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto break-words">
+              <p lang={langOf("advisory.intro")} className="text-muted-foreground max-w-2xl mx-auto break-words">
                 <Emphasized text={page.advisory.fields.intro} />
               </p>
             </div>
@@ -294,7 +296,7 @@ export default function Team() {
               ))}
             </div>
             {page.advisory.fields.terms && (
-            <p className="text-center text-sm text-muted-foreground break-words">
+            <p lang={langOf("advisory.terms")} className="text-center text-sm text-muted-foreground break-words">
               <Emphasized text={page.advisory.fields.terms} />
             </p>
             )}
@@ -310,10 +312,10 @@ export default function Team() {
             className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center">
-              <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
+              <h2 lang={langOf("board.heading")} className="font-display text-3xl font-bold text-foreground mb-4 break-words">
                 {page.board.fields.heading}
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto mb-8 break-words">
+              <p lang={langOf("board.intro")} className="text-muted-foreground max-w-2xl mx-auto mb-8 break-words">
                 <Emphasized text={page.board.fields.intro} />
               </p>
               <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -340,10 +342,10 @@ export default function Team() {
             viewport={{ once: true }}
             className="text-center mt-16 bg-card p-6 sm:p-8 rounded-2xl border border-border"
           >
-            <h2 className="font-display text-2xl font-bold text-foreground mb-4 break-words">
+            <h2 lang={langOf("cta.heading")} className="font-display text-2xl font-bold text-foreground mb-4 break-words">
               {page.cta.fields.heading}
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-6 break-words">
+            <p lang={langOf("cta.body")} className="text-muted-foreground max-w-2xl mx-auto mb-6 break-words">
               <Emphasized text={page.cta.fields.body} />
             </p>
             <div className="flex flex-wrap justify-center gap-4">

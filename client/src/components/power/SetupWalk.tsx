@@ -21,6 +21,7 @@ import { authToken } from "@/lib/gameApi";
 import { GLOSS_MAX } from "@shared/power";
 import SeatTermField from "./SeatTermField";
 import type { PowerCircle, PowerData, PowerSeat } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -64,6 +65,7 @@ export default function SetupWalk({
   /** Something was written: the page refetches the map. */
   onChanged: () => void;
 }) {
+  const { t } = useLingui();
   const steps = useMemo(() => walkSteps(data), [data]);
   const [at, setAt] = useState(0);
   const [tray, setTray] = useState<TrayMember[]>([]);
@@ -194,16 +196,16 @@ export default function SetupWalk({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Set up the chart"
+        aria-label={t({ message: "Set up the chart", context: "SetupWalk, aria-label" })}
         tabIndex={-1}
         className="bg-card w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl border border-border p-5 max-h-[85vh] overflow-y-auto focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-muted-foreground tabular-nums">
-            {Math.min(at + 1, steps.length)} of {steps.length}
+            <Trans context="SetupWalk, p">{Math.min(at + 1, steps.length)} of {steps.length}</Trans>
           </p>
-          <button type="button" onClick={onClose} aria-label="Close the walk" className="text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={onClose} aria-label={t({ message: "Close the walk", context: "SetupWalk, aria-label" })} className="text-muted-foreground hover:text-foreground">
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
@@ -217,18 +219,18 @@ export default function SetupWalk({
         {step.kind === "shape" && <ShapeStep data={data} busy={busy} onDeclare={declareShape} onSkip={advance} />}
         {step.kind === "publish" && (
           <div>
-            <h3 className="font-display text-lg font-bold text-foreground mb-2">Publish structure to the network?</h3>
+            <h3 className="font-display text-lg font-bold text-foreground mb-2"><Trans context="SetupWalk, h3">Publish structure to the network?</Trans></h3>
             <p className="text-sm text-muted-foreground mb-3">
-              The published chart carries circle names, role names and counts, never people: it is nameless
+              <Trans context="SetupWalk, p">The published chart carries circle names, role names and counts, never people: it is nameless
               by construction. Visitors and peer villages read the same tier.
-            </p>
+            </Trans></p>
             <div className="flex gap-2">
               <a href="/admin" className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">
-                Open the setting in Admin
-              </a>
+                <Trans context="SetupWalk, a">Open the setting in Admin
+              </Trans></a>
               <button type="button" onClick={onClose} className="text-sm text-muted-foreground px-2">
-                Done for now
-              </button>
+                <Trans context="SetupWalk, button">Done for now
+              </Trans></button>
             </div>
           </div>
         )}
@@ -279,7 +281,7 @@ function SeatStep({
           <div className="mb-3">
             <SeatTermField value={termEndsOn} onChange={setTermEndsOn} />
           </div>
-          <p className="text-xs font-semibold text-foreground mb-1.5">Who takes it up?</p>
+          <p className="text-xs font-semibold text-foreground mb-1.5"><Trans context="SetupWalk, p">Who takes it up?</Trans></p>
           <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto" data-power-member-tray>
             {tray.map((m) => (
               <button
@@ -299,22 +301,22 @@ function SeatStep({
                 {m.name}
               </button>
             ))}
-            {!tray.length && <p className="text-xs text-muted-foreground">No members to seat yet.</p>}
+            {!tray.length && <p className="text-xs text-muted-foreground"><Trans context="SetupWalk, p">No members to seat yet.</Trans></p>}
           </div>
           <button type="button" onClick={() => setPicking(false)} className="text-xs text-muted-foreground mt-2">
-            Back
-          </button>
+            <Trans context="SetupWalk, button">Back
+          </Trans></button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={busy} onClick={() => setPicking(true)} className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-            Assign somebody
-          </button>
+            <Trans context="SetupWalk, button">Assign somebody
+          </Trans></button>
           <button type="button" disabled={busy} onClick={() => onOpenCall(seat.id)} className="text-sm bg-amber/90 text-primary-foreground rounded-lg px-4 py-2 font-semibold disabled:opacity-40">
-            Leave it as an open call
-          </button>
+            <Trans context="SetupWalk, button">Leave it as an open call
+          </Trans></button>
           <button type="button" onClick={onSkip} className="text-sm text-muted-foreground px-2 inline-flex items-center gap-1">
-            Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            <Trans context="SetupWalk, button">Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" /></Trans>
           </button>
         </div>
       )}
@@ -335,13 +337,14 @@ function CircleStep({
   onDeclare: (circleId: string, method: string, gloss: string) => void;
   onSkip: () => void;
 }) {
+  const { t } = useLingui();
   const [method, setMethod] = useState<string>("");
   const [gloss, setGloss] = useState("");
   return (
     <div>
-      <h3 className="font-display text-lg font-bold text-foreground mb-1">How does {circle.name} decide?</h3>
+      <h3 className="font-display text-lg font-bold text-foreground mb-1"><Trans context="SetupWalk, h3">How does {circle.name} decide?</Trans></h3>
       {circle.purpose && <p className="text-xs text-muted-foreground mb-2">{circle.purpose}</p>}
-      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Pick a way of deciding">
+      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label={t({ message: "Pick a way of deciding", context: "SetupWalk, aria-label" })}>
         {data.power.glossary.decidesBy.map((d) => (
           <button
             key={d.id}
@@ -366,8 +369,8 @@ function CircleStep({
         <input
           value={gloss}
           onChange={(e) => setGloss(e.target.value.slice(0, GLOSS_MAX))}
-          aria-label="Say your way of deciding in one line"
-          placeholder="Say it in one line"
+          aria-label={t({ message: "Say your way of deciding in one line", context: "SetupWalk, aria-label" })}
+          placeholder={t({ message: "Say it in one line", context: "SetupWalk, placeholder" })}
           className="w-full text-xs border border-border rounded-lg px-2.5 py-1.5 bg-background mb-2"
         />
       )}
@@ -378,10 +381,10 @@ function CircleStep({
           onClick={() => onDeclare(circle.id, method, gloss)}
           className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
         >
-          Declare it
-        </button>
+          <Trans context="SetupWalk, button">Declare it
+        </Trans></button>
         <button type="button" onClick={onSkip} className="text-sm text-muted-foreground px-2 inline-flex items-center gap-1">
-          Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+          <Trans context="SetupWalk, button">Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" /></Trans>
         </button>
       </div>
     </div>
@@ -399,13 +402,14 @@ function ShapeStep({
   onDeclare: (shape: string, gloss: string) => void;
   onSkip: () => void;
 }) {
+  const { t } = useLingui();
   const [shape, setShape] = useState<string>("");
   const [gloss, setGloss] = useState("");
   return (
     <div>
-      <h3 className="font-display text-lg font-bold text-foreground mb-1">What shape is this village?</h3>
-      <p className="text-xs text-muted-foreground mb-2">The picture morphs to match, and the legend places you on the strip from one person holding it to everyone holding it.</p>
-      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Pick a shape">
+      <h3 className="font-display text-lg font-bold text-foreground mb-1"><Trans context="SetupWalk, h3">What shape is this village?</Trans></h3>
+      <p className="text-xs text-muted-foreground mb-2"><Trans context="SetupWalk, p">The picture morphs to match, and the legend places you on the strip from one person holding it to everyone holding it.</Trans></p>
+      <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label={t({ message: "Pick a shape", context: "SetupWalk, aria-label" })}>
         {data.power.glossary.shapes.map((s) => (
           <button
             key={s.id}
@@ -426,8 +430,8 @@ function ShapeStep({
         <input
           value={gloss}
           onChange={(e) => setGloss(e.target.value.slice(0, GLOSS_MAX))}
-          aria-label="Say your shape in one line"
-          placeholder="Say it in one line"
+          aria-label={t({ message: "Say your shape in one line", context: "SetupWalk, aria-label" })}
+          placeholder={t({ message: "Say it in one line", context: "SetupWalk, placeholder" })}
           className="w-full text-xs border border-border rounded-lg px-2.5 py-1.5 bg-background mb-2"
         />
       )}
@@ -438,10 +442,10 @@ function ShapeStep({
           onClick={() => onDeclare(shape, gloss)}
           className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
         >
-          Declare it
-        </button>
+          <Trans context="SetupWalk, button">Declare it
+        </Trans></button>
         <button type="button" onClick={onSkip} className="text-sm text-muted-foreground px-2 inline-flex items-center gap-1">
-          Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+          <Trans context="SetupWalk, button">Skip <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" /></Trans>
         </button>
       </div>
     </div>

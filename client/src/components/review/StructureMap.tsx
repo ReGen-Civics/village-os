@@ -15,6 +15,7 @@
 import { useMemo, type ReactNode } from "react";
 import { layoutNestedMap, wrapLabel, type NestedInput } from "@shared/mapLayout";
 import type { MapModel, MapStatus } from "@/lib/structureMapModel";
+import { Trans } from "@lingui/react/macro";
 
 const STROKE: Record<MapStatus, string> = {
   new: "var(--color-open)",
@@ -209,7 +210,7 @@ export function StructureMapList({ model, onSeat }: { model: MapModel; onSeat: (
       {branch(null, 0)}
       {loose.length > 0 && (
         <div className="mt-3">
-          <p className="font-semibold">In no circle</p>
+          <p className="font-semibold"><Trans context="StructureMap, p">In no circle</Trans></p>
           <ul className="pl-4 mt-1 space-y-1">{loose.map(seatItem)}</ul>
         </div>
       )}

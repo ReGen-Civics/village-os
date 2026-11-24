@@ -17,6 +17,7 @@
  */
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
+import { useLingui } from "@lingui/react/macro";
 
 export default function CuratorImage({
   src,
@@ -29,6 +30,7 @@ export default function CuratorImage({
   ratio?: number;
   className?: string;
 }) {
+  const { t } = useLingui();
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -67,7 +69,7 @@ export default function CuratorImage({
       ) : (
         <p
           role="img"
-          aria-label={failed ? `${alt} (this photograph is no longer here)` : alt}
+          aria-label={failed ? t({ message: `${alt} (this photograph is no longer here)`, context: "CuratorImage, aria-label" }) : alt}
           className="absolute inset-0 flex items-center justify-center p-3 text-xs text-center text-muted-foreground"
         >
           {failed ? "This photograph is no longer here." : "Hidden. Opening it for review."}

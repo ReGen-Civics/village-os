@@ -22,6 +22,7 @@ import { authToken } from "@/lib/gameApi";
 import { Globe2, HandHeart, HelpingHand, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -43,6 +44,7 @@ function TypeBadge({ type }: { type: string }) {
 }
 
 export default function Network() {
+  const { t } = useLingui();
   const modules = useModules();
   const networkModule = useModule("network");
   const { user } = useAuth();
@@ -108,11 +110,11 @@ export default function Network() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Village Network</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Network, h1">Village Network</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Villages running this platform can hear each other: what one needs,
+            <Trans context="Network, p">Villages running this platform can hear each other: what one needs,
             another may have. Each village chooses whom it listens to.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="network" noun="need or offer" />
         </div>
       </section>
@@ -126,11 +128,11 @@ export default function Network() {
             <div className="flex items-center gap-2 mb-3">
               <Globe2 className="w-4 h-4 text-teal-deep" />
               <p className="font-semibold text-foreground text-sm">
-                What {data?.village ?? "this village"} shares with the network
-              </p>
+                <Trans context="Network, p">What {data?.village ?? "this village"} shares with the network
+              </Trans></p>
             </div>
             {(data?.mine ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground">Nothing published yet.</p>
+              <p className="text-sm text-muted-foreground"><Trans context="Network, p">Nothing published yet.</Trans></p>
             )}
             <div className="space-y-2.5">
               {(data?.mine ?? []).map((m: any) => (
@@ -144,12 +146,12 @@ export default function Network() {
                         the banner above is dropped optimistically, and this is
                         what still tells the truth in that window. */}
                     {!!m.is_example && <ExampleChip />}
-                    {m.status === "closed" && <span className="text-[10px] text-muted-foreground uppercase">closed</span>}
+                    {m.status === "closed" && <span className="text-[10px] text-muted-foreground uppercase"><Trans context="Network, span">closed</Trans></span>}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{m.detail}</p>
                   <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
                     <span>{day(m.created_at)}</span>
-                    {m.contact && <span>reach us: {m.contact}</span>}
+                    {m.contact && <span><Trans context="Network, span">reach us: {m.contact}</Trans></span>}
                     {canManage && !m.is_example && (
                       <button
                         onClick={async () => {
@@ -168,7 +170,7 @@ export default function Network() {
 
             {canManage && (
               <div className="border-t border-border mt-4 pt-4 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Publish to the network (visible to every peer village)</p>
+                <p className="text-xs font-medium text-muted-foreground"><Trans context="Network, p">Publish to the network (visible to every peer village)</Trans></p>
                 <div className="flex gap-2">
                   {(data?.types ?? ["need", "offer"]).map((t: string) => (
                     <button key={t} onClick={() => setForm({ ...form, type: t })}
@@ -178,13 +180,13 @@ export default function Network() {
                   ))}
                 </div>
                 <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder={form.type === "need" ? "We're looking for…" : "We can offer…"}
+                  placeholder={form.type === "need" ? t({ message: "We're looking for…", context: "Network, placeholder" }) : t({ message: "We can offer…", context: "Network, placeholder" })}
                   className="w-full text-sm border border-border rounded-lg px-3 py-2" />
                 <textarea value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} rows={3}
-                  placeholder="Enough detail for another village to act on."
+                  placeholder={t({ message: "Enough detail for another village to act on.", context: "Network, placeholder" })}
                   className="w-full text-sm border border-border rounded-lg px-3 py-2" />
                 <input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })}
-                  placeholder="How the network reaches your village about this (a shared inbox, not a personal one)"
+                  placeholder={t({ message: "How the network reaches your village about this (a shared inbox, not a personal one)", context: "Network, placeholder" })}
                   className="w-full text-sm border border-border rounded-lg px-3 py-2" />
                 <button onClick={publish} disabled={busy === "publish" || form.title.trim().length < 4 || form.detail.trim().length < 10}
                   className="inline-flex items-center gap-1.5 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
@@ -197,7 +199,7 @@ export default function Network() {
           {/* ── What peers share ── */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-              <p className="font-semibold text-foreground text-sm">From other villages</p>
+              <p className="font-semibold text-foreground text-sm"><Trans context="Network, p">From other villages</Trans></p>
               {canManage && (
                 <button
                   onClick={async () => {
@@ -216,8 +218,8 @@ export default function Network() {
                   disabled={busy === "sync"}
                   className="inline-flex items-center gap-1.5 text-xs text-teal-deep font-medium"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${busy === "sync" ? "animate-spin" : ""}`} /> Sync now
-                </button>
+                  <Trans context="Network, button"><RefreshCw className={`w-3.5 h-3.5 ${busy === "sync" ? "animate-spin" : ""}`} /> Sync now
+                </Trans></button>
               )}
             </div>
             {syncNote && (
@@ -225,7 +227,7 @@ export default function Network() {
             )}
             {(data?.peers ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Not listening to any villages yet{canManage ? ". Add one below." : "."}
+                <Trans context="Network, p">Not listening to any villages yet{canManage ? ". Add one below." : "."}</Trans>
               </p>
             )}
             <div className="space-y-4">
@@ -248,7 +250,7 @@ export default function Network() {
                     <p className="text-[11px] text-amber-700 bg-amber-50 rounded px-2 py-1 mb-1.5">{p.lastError}</p>
                   )}
                   {(p.items ?? []).length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Nothing shared right now.</p>
+                    <p className="text-xs text-muted-foreground"><Trans context="Network, p">Nothing shared right now.</Trans></p>
                   ) : (
                     <div className="space-y-2">
                       {p.items.map((it: any) => (
@@ -272,11 +274,11 @@ export default function Network() {
             {canManage && (
               <div className="border-t border-border mt-4 pt-4 space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">
-                  Listen to a village (its address, the handshake does the rest)
-                </p>
+                  <Trans context="Network, p">Listen to a village (its address, the handshake does the rest)
+                </Trans></p>
                 <div className="flex gap-2 flex-wrap">
                   <input value={peerUrl} onChange={(e) => setPeerUrl(e.target.value)}
-                    placeholder="https://their-village.example"
+                    placeholder={t({ message: "https://their-village.example", context: "Network, placeholder" })}
                     className="flex-1 min-w-[220px] text-sm border border-border rounded-lg px-3 py-2" />
                   <button onClick={addPeerUrl} disabled={busy === "peer" || !peerUrl.trim()}
                     className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
@@ -293,8 +295,8 @@ export default function Network() {
                             onClick={async () => { const d = await call(`/api/admin/network/peers/${p.id}/resume`, { method: "POST" }, p.id); if (d) { loadPeers(); load(); } }}
                             className="text-teal-deep font-medium hover:underline"
                           >
-                            accept & resume
-                          </button>
+                            <Trans context="Network, button">accept & resume
+                          </Trans></button>
                         )}
                         <button
                           onClick={async () => {

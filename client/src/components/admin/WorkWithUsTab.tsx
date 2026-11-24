@@ -28,14 +28,19 @@ import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE, authHeaders } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
+
+/** The token the guide's words use for its name, shown literally inside a translated sentence. */
+const nameToken = "{name}";
 
 export default function WorkWithUsTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const [cfg, setCfg] = useState<any>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/admin/work-with-us-config`, { headers: authHeaders(password) })
-      .then((r) => r.json()).then(setCfg).catch(() => toast.error("Failed to load"));
+      .then((r) => r.json()).then(setCfg).catch(() => toast.error(t({ message: "Failed to load", context: "WorkWithUsTab, toast" })));
   }, [password]);
 
   const save = async () => {
@@ -47,12 +52,12 @@ export default function WorkWithUsTab({ password }: { password: string }) {
         body: JSON.stringify(cfg),
       });
       if (!res.ok) throw new Error();
-      toast.success("Saved");
-    } catch { toast.error("Save failed"); }
+      toast.success(t({ message: "Saved", context: "WorkWithUsTab, toast" }));
+    } catch { toast.error(t({ message: "Save failed", context: "WorkWithUsTab, toast" })); }
     setSaving(false);
   };
 
-  if (!cfg) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (!cfg) return <div className="text-center py-12 text-gray-400"><Trans context="WorkWithUsTab, div">Loading...</Trans></div>;
 
   const opts = cfg.reciprocityOptions ?? [];
   const setOpt = (i: number, patch: any) =>
@@ -64,8 +69,8 @@ export default function WorkWithUsTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Work With Us</h2>
-          <p className="text-sm text-gray-500 mt-1">The intro, the reciprocity (exchange) options, and your AI guide's name and greeting.</p>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="WorkWithUsTab, h2">Work With Us</Trans></h2>
+          <p className="text-sm text-gray-500 mt-1"><Trans context="WorkWithUsTab, p">The intro, the reciprocity (exchange) options, and your AI guide's name and greeting.</Trans></p>
         </div>
         <button onClick={save} disabled={saving} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50">
           {saving ? "Saving..." : "Save"}
@@ -74,43 +79,43 @@ export default function WorkWithUsTab({ password }: { password: string }) {
 
       <div className="space-y-5 max-w-2xl">
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Intro paragraph</label>
+          <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="WorkWithUsTab, label">Intro paragraph</Trans></label>
           <textarea value={cfg.intro ?? ""} onChange={(e) => setCfg({ ...cfg, intro: e.target.value })} rows={3} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">AI guide's name</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="WorkWithUsTab, label">AI guide's name</Trans></label>
             <input type="text" value={cfg.assistantName ?? ""} onChange={(e) => setCfg({ ...cfg, assistantName: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1">What an accepted proposal pays</p>
+            <p className="text-sm font-medium text-gray-700 mb-1"><Trans context="WorkWithUsTab, p">What an accepted proposal pays</Trans></p>
             <p className="text-xs text-gray-500">
-              The village&apos;s work tokens, set on the Mint panel under &quot;The village accepts a member&apos;s proposal to work with it&quot;.
-            </p>
+              <Trans context="WorkWithUsTab, p">The village&apos;s work tokens, set on the Mint panel under &quot;The village accepts a member&apos;s proposal to work with it&quot;.
+            </Trans></p>
           </div>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Guide's opening greeting</label>
+          <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="WorkWithUsTab, label">Guide's opening greeting</Trans></label>
           <textarea value={cfg.assistantGreeting ?? ""} onChange={(e) => setCfg({ ...cfg, assistantGreeting: e.target.value })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
-          <p className="text-[11px] text-gray-400 mt-0.5">Use {"{name}"} where the guide's name should appear.</p>
+          <p className="text-[11px] text-gray-400 mt-0.5"><Trans context="WorkWithUsTab, p">Use {nameToken} where the guide's name should appear.</Trans></p>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">Reciprocity (exchange) options</label>
-            <button onClick={addOpt} className="text-xs text-teal-deep font-medium hover:underline">+ Add option</button>
+            <label className="text-sm font-medium text-gray-700"><Trans context="WorkWithUsTab, label">Reciprocity (exchange) options</Trans></label>
+            <button onClick={addOpt} className="text-xs text-teal-deep font-medium hover:underline"><Trans context="WorkWithUsTab, button">+ Add option</Trans></button>
           </div>
           <div className="space-y-3">
             {opts.map((o: any, i: number) => (
               <div key={i} className="border border-gray-200 rounded-xl p-3 space-y-2">
                 <div className="flex gap-2">
-                  <input type="text" value={o.title} onChange={(e) => setOpt(i, { title: e.target.value })} placeholder="Title (shown)" className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  <input type="text" value={o.value} onChange={(e) => setOpt(i, { value: e.target.value })} placeholder="Value (stored)" className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                  <input type="text" value={o.title} onChange={(e) => setOpt(i, { title: e.target.value })} placeholder={t({ message: "Title (shown)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                  <input type="text" value={o.value} onChange={(e) => setOpt(i, { value: e.target.value })} placeholder={t({ message: "Value (stored)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   <button onClick={() => removeOpt(i)} className="p-2 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
-                <textarea value={o.desc} onChange={(e) => setOpt(i, { desc: e.target.value })} rows={2} placeholder="Description" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
+                <textarea value={o.desc} onChange={(e) => setOpt(i, { desc: e.target.value })} rows={2} placeholder={t({ message: "Description", context: "WorkWithUsTab, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
               </div>
             ))}
           </div>
