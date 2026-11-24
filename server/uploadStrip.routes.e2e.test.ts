@@ -28,6 +28,7 @@ import { provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from 
 import { waitForHealth } from "./db/e2eBoot";
 import { FIXTURE_CAMERA, buildGeotaggedJpeg, buildPdfEmbedding } from "./lib/exifFixture";
 import { exifBlockHasGps, pdfLocationMarkers } from "./lib/uploads";
+import { putADocumentInThePack } from "./testkit/investorPack";
 
 const DB_CONFIGURED = testDbConfigured();
 if (!DB_CONFIGURED) {
@@ -411,6 +412,8 @@ describe.skipIf(!DB_CONFIGURED)("the investor vault door", () => {
  */
 describe.skipIf(!DB_CONFIGURED)("the investor packet request", () => {
   it("captures the lead, and the stewards' inbox has it", async () => {
+    // An empty pack is refused (server/index.ts, 24 Nov 2026): put one document in it first.
+    await putADocumentInThePack(BASE, founderToken);
     const res = await fetch(`${BASE}/api/investor-docs/request`, { // module-review-ok: the test client dialling the built server on localhost
       method: "POST",
       headers: { "Content-Type": "application/json" },

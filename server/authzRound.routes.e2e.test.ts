@@ -31,6 +31,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { TIER_FLOORS } from "../shared/governanceEngine";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
+import { putADocumentInThePack } from "./testkit/investorPack";
 
 const DB_CONFIGURED = testDbConfigured();
 if (!DB_CONFIGURED) {
@@ -177,6 +178,8 @@ describe.skipIf(!DB_CONFIGURED)("one public request, one recipient", () => {
   });
 
   it("the investor door still answers one real address, with exactly one email", async () => {
+    // An empty pack is refused (server/index.ts, 24 Nov 2026): put one document in it first.
+    await putADocumentInThePack(BASE, founderToken);
     const one = await call("POST", "/api/investor-docs/request", {
       name: "An Investor", email: "investor@example.test", accredited: true,
     }, "");
@@ -685,6 +688,8 @@ describe.skipIf(!DB_CONFIGURED)("a stranger cannot make the village mail one add
 
   it("sends the investor packet to one address three times a day", async () => {
     expect((await call("PUT", "/api/admin/variables/abuse.investor_docs_per_ip_hourly", { value: "50" })).status).toBe(200);
+    // An empty pack is refused (server/index.ts, 24 Nov 2026): put one document in it first.
+    await putADocumentInThePack(BASE, founderToken);
     for (let i = 0; i < 4; i++) {
       const asked = await call("POST", "/api/investor-docs/request", { name: "Repeat Asker", email: "packet@example.test", accredited: true }, "");
       expect(asked.status, asked.text).toBe(200);
