@@ -24,7 +24,7 @@ describe("Sprout", () => {
     for (const part of ["m-soil", "m-root", "m-seed", "m-stem", "m-leaf-l", "m-leaf-r"]) {
       expect(container.querySelector(`.${part}`), part).not.toBeNull();
     }
-    for (const el of container.querySelectorAll("svg *")) {
+    for (const el of Array.from(container.querySelectorAll("svg *"))) {
       expect(el.getAttribute("style")).toBeNull();
       for (const attr of ["stroke-dasharray", "stroke-dashoffset", "transform", "opacity"]) {
         expect(el.hasAttribute(attr), `${el.getAttribute("class")} ${attr}`).toBe(false);
