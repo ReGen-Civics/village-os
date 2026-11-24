@@ -40,6 +40,29 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.61 (2026-11-24)
+
+### What changed for your village
+
+- **A new landing page.** The hero headline and the sentence under it are two new fields in Admin, Make this site yours, Identity ("Homepage headline" and "Homepage sentence under the headline"). Blank keeps the words from Admin, Pages, Home. The two hero buttons are gone, since the path cards sit right below.
+- **Eight ways in.** The top row keeps the four paths. "Four ways to build" now shows once, at the bottom of the page: the Founding team card, then Start a venture, Become a partner and Propose a quest, each redrawn in the founding card's style with its own painting.
+- **No reply promise before anyone sends.** After sending, every application and proposal says "You'll hear from us within one moon cycle". The new setting `org.reply_window_moons` (1 to 6, default 1) sets that window.
+- **A quieter front door for visitors.** Areas still being built are hidden from people who are not yet members and show "Coming soon" to members. The Prosperity packet comes through a form.
+- **A friendlier refresh screen.** When a page needs a refresh after a new version goes out, it says nothing is broken, offers one big Refresh button, and shows a public-domain quote that changes each time.
+- **Pages redrawn in the house look:** the Prosperity path, What We Look After (/powers, calmer for visitors), How We Create, Good Neighbor and Team. No night page scrolls sideways on a phone or tablet any more.
+- **A home-screen icon for iPhones,** made from the village's own favicon.
+- **A lighter build:** long copy in lazily loaded pages moved out of the code, so the site's total size dropped by about 380 KB with no page slower to open.
+
+### What you must do
+
+Nothing. To set your homepage words, fill the two new Identity fields in Admin.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.60 (2026-11-24)
 
 ### What changed for your village
