@@ -58,6 +58,11 @@ export interface BrandImages {
   masterPlanHeroAlt?: string;
   logoAlt?: string;
   heartLogoAlt?: string;
+  /* Where each path card's picture is cut, "x% y%" (shared/pathCardArt.ts). Absent means the card's default. */
+  investorHeroFocus?: string;
+  stewardHeroFocus?: string;
+  residentHeroFocus?: string;
+  prosperityHeroFocus?: string;
 }
 
 /**
