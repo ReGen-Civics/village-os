@@ -40,6 +40,12 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { heroVoices, wallEntries, type WallLogRow } from "../lib/gratitudeVoices";
 import { firstNameOf } from "../lib/peopleLock";
+import type { WallPerson } from "../../shared/gratitudeVoices";
+
+/** One side of a thanks as a visitor reads it: the first name, with no portrait and no profile address. */
+export function strangerSees(who: WallPerson): WallPerson {
+  return { name: firstNameOf(who.name), handle: null, avatar: null };
+}
 
 /**
  * The log arrives as a FUNCTION rather than as the repo.
@@ -67,14 +73,15 @@ export function register(app: Express, deps: Deps): void {
   });
 
   /*
-   * A STRANGER READS FIRST NAMES (R097). The wall answers a signed-out
-   * visitor, and the public tier never carries a full display name. While the
-   * village keeps its people for members the lock in front of every route
-   * (server/lib/peopleLock.ts) takes the first names too.
+   * A STRANGER READS FIRST NAMES ONLY (R097, and the lead, 24 Nov 2026: "yes public and first names too - this
+   * shows how we create and will keep it public"). The wall answers a signed-out visitor with each person's first
+   * name and nothing else: no full name, no portrait and no handle, since a handle is the address of a profile.
+   * While the village keeps its people for members the lock in front of every route (server/lib/peopleLock.ts)
+   * takes the first names too. A signed-in member reads the wall as before.
    */
   app.get("/api/game/gratitude/wall", async (req, res) => {
     const entries = await wallEntries(getPool(), await gratitudeLog());
     if (await authedUser(req)) return res.json(entries);
-    res.json(entries.map((e) => ({ ...e, from: { ...e.from, name: firstNameOf(e.from.name) }, to: { ...e.to, name: firstNameOf(e.to.name) } })));
+    res.json(entries.map((e) => ({ ...e, from: strangerSees(e.from), to: strangerSees(e.to) })));
   });
 }

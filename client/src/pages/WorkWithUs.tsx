@@ -5,7 +5,8 @@ import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage
 import { useAuth } from "@/contexts/AuthContext";
 import GuideChat from "@/components/GuideChat";
 import NameYourGuide from "@/components/NameYourGuide";
-import { guideAudience, guideName } from "@shared/guideName";
+import { guideAudience } from "@shared/guideName";
+import { guideNameIn } from "@/lib/guideNameWords";
 import { submitProposal } from "@/lib/proposals";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -126,7 +127,7 @@ const RECIPROCITY_FALLBACK: ReciprocityOption[] = [
 
 export default function WorkWithUs() {
   const { user } = useAuth();
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   // Arrived from Start a venture: the page opens set up for a venture. Without the query it is the page it always was.
   const venture = isVentureQuery(useSearch());
   /*
@@ -178,10 +179,11 @@ export default function WorkWithUs() {
   const reciprocityOptions: ReciprocityOption[] = wwu
     ? Array.isArray(wwu.reciprocityOptions) ? wwu.reciprocityOptions : RECIPROCITY_FALLBACK
     : wwuFailed ? RECIPROCITY_FALLBACK : [];
-  // The village's own name for its guide, or "the village guide" (shared/guideName.ts).
+  // The village's own name for its guide, or "the village guide" (shared/guideName.ts), the neutral label
+  // in the reader's language (client/src/lib/guideNameWords.ts). A typed name is never translated.
   // Ready once the document answers, so a named guide is never shown as the neutral label first.
   const audience = guideAudience(user);
-  const guide = guideName(wwu?.assistantName, audience);
+  const guide = guideNameIn(wwu?.assistantName, audience, i18n);
   const assistantName = guide.name;
   const guideReady = wwu !== null || wwuFailed;
 
@@ -249,7 +251,7 @@ export default function WorkWithUs() {
                 mode === "ai" ? "bg-teal-deep text-white" : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-100"
               }`}
             >
-              <MessageCircle className="w-4 h-4" /> Talk it through with {assistantName}
+              <MessageCircle className="w-4 h-4" /> {t({ message: `Talk it through with ${assistantName}`, context: "work with us: the button that opens a conversation with the village guide" })}
             </button>
           )}
           <button

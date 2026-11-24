@@ -1259,6 +1259,11 @@ msgctxt "rites"
 msgid "underway"
 msgstr "underway"
 
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by members and the public, mid-sentence"
+msgid "the village guide"
+msgstr "the village guide"
+
 #: client/src/components/sessions/HarvestPlant.tsx
 msgctxt "friday harvest, the line under the read back"
 msgid "Nothing is marked as failed. What did not grow goes back to Monday's soil."
@@ -13170,6 +13175,11 @@ msgctxt "rites"
 msgid "Copy the link"
 msgstr "Copy the link"
 
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat: while the guide writes its reply"
+msgid "{thinkingName} is thinking…"
+msgstr "{thinkingName} is thinking…"
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Always the village's to edit. Choosing the default fills this with its words: keep its first sentence, which is the default itself, and change or add anything else."
 msgstr "Always the village's to edit. Choosing the default fills this with its words: keep its first sentence, which is the default itself, and change or add anything else."
@@ -17476,6 +17486,11 @@ msgctxt "talk it out: quick start with words in the box"
 msgid "Help me make what I've written clearer."
 msgstr "Help me make what I've written clearer."
 
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: under this season's goals, the invitation to the steward path"
+msgid "If you can help us meet these, consider the <0>Village Steward path</0>."
+msgstr "If you can help us meet these, consider the <0>Village Steward path</0>."
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you reference"
 msgid "Name"
@@ -18375,9 +18390,9 @@ msgid "{0}, amount in {currency}"
 msgstr "{0}, amount in {currency}"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
-msgctxt "admin helper, unnamed guide"
-msgid "your village guide"
-msgstr "your village guide"
+#~ msgctxt "admin helper, unnamed guide"
+#~ msgid "your village guide"
+#~ msgstr "your village guide"
 
 #. placeholder {0}: items.length - took
 #: client/src/components/proposals/BatchCard.tsx
@@ -20538,6 +20553,11 @@ msgstr "That did not save. Try again."
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Terms we offer"
 msgstr "Terms we offer"
+
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, proposing a quest: the guide's first message"
+msgid "Hi, I'm {assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring."
+msgstr "Hi, I'm {assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring."
 
 #: client/src/components/pay/PaySteps.tsx
 msgctxt "pay page"
@@ -25259,6 +25279,11 @@ msgctxt "role editor"
 msgid "The pay group of the terms"
 msgstr "The pay group of the terms"
 
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by a founder or admin, mid-sentence"
+msgid "your village guide"
+msgstr "your village guide"
+
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgid "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
 msgstr "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
@@ -26050,6 +26075,11 @@ msgstr "After a no, or a yes with no account made, your name and email go after 
 msgctxt "shape the role heading"
 msgid "Shape the role (optional)"
 msgstr "Shape the role (optional)"
+
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, work with us: the guide's first message when the village wrote no greeting of its own"
+msgid "Hi, I'm {assistantName}, and I help people shape their offering to {projectName}. What are you dreaming of bringing? There's no wrong way to start."
+msgstr "Hi, I'm {assistantName}, and I help people shape their offering to {projectName}. What are you dreaming of bringing? There's no wrong way to start."
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload button"
@@ -27112,6 +27142,11 @@ msgstr "Start as {0}"
 msgctxt "thanks thread: the vesica, read aloud"
 msgid "They thanked each other both ways"
 msgstr "They thanked each other both ways"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us: the button that opens a conversation with the village guide"
+msgid "Talk it through with {assistantName}"
+msgstr "Talk it through with {assistantName}"
 
 #: client/src/pages/Quests.tsx
 msgid "The Quest Board didn't load. Reload to try again."
