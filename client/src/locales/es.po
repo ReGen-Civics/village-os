@@ -7,6 +7,12 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ProsperityJourney.tsx
+msgctxt "prosperity path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
