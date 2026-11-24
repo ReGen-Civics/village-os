@@ -81,13 +81,14 @@ async function menuHrefs(): Promise<string[]> {
   return Array.from(hrefs);
 }
 
-const UNFINISHED = ["/feed", "/forum", "/messages", "/introductions", "/events", "/sessions", "/gratitude", "/places", "/photographs", "/tools", "/decisions", "/propose", "/powers", "/campaigns", "/network"];
+const UNFINISHED = ["/feed", "/forum", "/messages", "/introductions", "/events", "/sessions", "/gratitude", "/places", "/photographs", "/tools", "/decisions", "/propose", "/campaigns", "/network"];
 
 describe("a visitor's menu", () => {
   it("offers none of the unfinished areas, and keeps the ways in, the map and the quests", async () => {
     const hrefs = await menuHrefs();
     for (const h of UNFINISHED) expect(hrefs, h).not.toContain(h);
-    for (const h of ["/map", "/quests", "/seasonal-festivals", "/feedback"]) expect(hrefs, h).toContain(h);
+    // What We Look After is public since #1529, so a visitor is offered it.
+    for (const h of ["/map", "/quests", "/seasonal-festivals", "/feedback", "/powers"]) expect(hrefs, h).toContain(h);
   });
 
   it("gets an area back once it is in real use: the feed with its examples retired, places with a photograph, an event ahead", async () => {
