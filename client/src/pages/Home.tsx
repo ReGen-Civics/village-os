@@ -28,6 +28,7 @@ import {
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
+import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import { Image } from "@/components/Image";
 import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized, Highlighted } from "@/components/PageText";
@@ -203,6 +204,7 @@ export default function Home() {
   const ready = !!page && foundingRead !== null;
   const pathsShown = !!paths && !paths.hidden && pathCards.length > 0;
   const waysShown = pathsShown || founding;
+  const stewardShown = pathsShown && pathCards.some((card) => card.id === "steward");
   const foundingLink = (
       <Link href="/roles" className={`${BTN_PRIMARY} min-h-12 px-6 text-base`} data-hero-act="founding">
         {t({ message: "Join the founding team", context: "landing hero main act" })}
@@ -323,8 +325,10 @@ export default function Home() {
 
       {/* THE WAYS IN, overlapping the hero's foot (D-01, D-16). One row on a
           desktop, every card the same height with its door at the bottom; a
-          column on a phone. The founding team leads with the gold edge while
-          the village has the section on. The section keeps its id when it is
+          column on a phone. While the village has its founding team on, the
+          Village Steward card is that team's door (option B, the lead, 24 Nov
+          2026); the gold founding card returns only when the steward path is
+          hidden, so the door never disappears. The section keeps its id when it is
           empty so the hero's "Pick your path" never points at nothing. */}
       {ready ? (
       <>
@@ -344,7 +348,8 @@ export default function Home() {
             </h2>
           )}
           <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
-            {founding && (
+            {/* With no steward card on the page (its path hidden), the founding team keeps a card of its own. */}
+            {founding && !stewardShown && (
               <li className="min-w-0">
                 <Link href="/roles" className={`${WAY_CARD} border-2 border-notice/60`} data-way="founding">
                   {/* The same frame as the path cards, with a painting from the
@@ -370,9 +375,14 @@ export default function Home() {
               const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
               if (!look) return null;
               const art = brand[look.imageKey];
+              // Option B (the lead, 24 Nov 2026): "the Village Steward IS the core team and we
+              // should make this clearer". While the village has its founding team on, the
+              // steward card is that team's door: a Paid role label, one plain line, and the
+              // button opens the founding team on /roles. Off, it is the steward path as before.
+              const coreTeam = founding && card.id === "steward";
               return (
                 <li key={card.id} className="min-w-0">
-                  <Link href={look.href} className={`${WAY_CARD} border border-border`}>
+                  <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
                     {/* The village's own art for this way in, when it has added
                         some; a card without art is a quiet card, never a frame. */}
                     {art ? (
@@ -380,10 +390,20 @@ export default function Home() {
                         <JourneyArt src={art} alt={altOr(brand[look.altKey], card.title)} focus={artFocusOr(brand[look.focusKey])} />
                       </span>
                     ) : null}
+                    {coreTeam ? (
+                      <span className="mb-2 inline-flex items-center self-start rounded-full border border-notice/60 bg-muted px-2.5 py-0.5 text-xs font-semibold text-notice" data-paid-role="">
+                        {t({ message: "Paid role", context: "landing, the steward card's label while the founding team is on" })}
+                      </span>
+                    ) : null}
                     <span className="flex flex-wrap items-baseline gap-x-2">
                       <h3 className="font-display text-2xl leading-tight text-foreground">{card.title}</h3>
                       <span className="text-sm text-muted-foreground">{card.subtitle}</span>
                     </span>
+                    {coreTeam ? (
+                      <span className="mt-2 block text-sm font-semibold leading-relaxed text-foreground sm:text-base">
+                        {t({ message: "The founding team who hold the village's core domains.", context: "landing, the steward card's line while the founding team is on" })}
+                      </span>
+                    ) : null}
                     <span className={`mt-2 block ${WAY_BODY}`}>{card.description}</span>
                     <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
                       <span>Choose {card.title}</span>
