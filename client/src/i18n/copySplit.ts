@@ -140,6 +140,21 @@ function partName(body: PartBody): string {
  */
 const VITE_MARKER = /__vite/i;
 
+/*
+ * SHORTER LITERALS RIDE A PART THE CHUNK ALREADY HAS (dist room pass, 24 Nov
+ * 2026). The total-dist budget stood at 7572 KB of 7600 with the next releases
+ * about 60 KB over it. A chunk that already reads a part (it holds a long
+ * message or a long literal) pays that one read whatever the part holds, so
+ * from then on any literal of this many characters with a space in it moves
+ * too: a label, a sentence fragment, a class list. Each one leaves `<alias>[i]`
+ * behind, about eight bytes, so twenty characters is where moving starts to
+ * pay. A chunk with nothing that long keeps all its strings and gets no part,
+ * so no page waits on a read it did not wait on before, and route-preload.js
+ * names the same parts. Measured on f398ed5f6: 7572 KB to 7180 KB, with
+ * dist/i18n/parts/en 1600 KB to 1984 KB; main JS and first-page JS unchanged.
+ */
+export const SHORT_LITERAL_CHARS = 20;
+
 interface Found {
   start: number;
   end: number;
@@ -148,10 +163,10 @@ interface Found {
 
 type Node = { type: string; start: number; end: number; [k: string]: unknown };
 
-function movableLiterals(code: string): Found[] {
+function movableLiterals(code: string, minChars: number): Found[] {
   const found: Found[] = [];
   const ast = parseAst(code) as unknown as Node;
-  const long = (v: string) => v.length >= LONG_MESSAGE_CHARS && v.includes(" ") && !VITE_MARKER.test(v);
+  const long = (v: string) => v.length >= minChars && v.includes(" ") && !VITE_MARKER.test(v);
   const visit = (node: Node, parent: Node | null, key: string) => {
     if (node.type === "Literal" && typeof node.value === "string") {
       if (!long(node.value) || !parent) return;
@@ -189,9 +204,15 @@ function aliasFor(code: string): string {
   return alias;
 }
 
-/** The chunk with each movable literal read from `alias`, and the texts in index order. */
-export function extractLongLiterals(code: string): { code: string; texts: string[]; alias: string } {
-  const found = movableLiterals(code);
+/**
+ * The chunk with each movable literal read from `alias`, and the texts in index
+ * order. Literals of LONG_MESSAGE_CHARS or more always move; once one does (or
+ * `hasPart` says the chunk reads a part for its messages anyway), so does every
+ * literal of SHORT_LITERAL_CHARS or more.
+ */
+export function extractLongLiterals(code: string, hasPart = false): { code: string; texts: string[]; alias: string } {
+  const candidates = movableLiterals(code, SHORT_LITERAL_CHARS);
+  const found = hasPart || candidates.some((f) => f.value.length >= LONG_MESSAGE_CHARS) ? candidates : [];
   if (found.length === 0) return { code, texts: [], alias: "" };
   const alias = aliasFor(code);
   const index = new Map<string, number>();
@@ -227,7 +248,7 @@ export function renderChunkCopy(
     if (!messages) return null;
     return `(globalThis.__villageCopyInline=globalThis.__villageCopyInline||[]).push(${JSON.stringify(messages)});\n${code}`;
   }
-  const literals = extractLongLiterals(code);
+  const literals = extractLongLiterals(code, !!messages);
   if (!messages && literals.texts.length === 0) return null;
   const body: PartBody = { messages: messages ?? {}, texts: literals.texts };
   const part = partName(body);

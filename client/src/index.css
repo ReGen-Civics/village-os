@@ -1088,6 +1088,19 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * NOTHING ON A NIGHT PAGE SCROLLS IT SIDEWAYS (public launch QA, 24 Nov 2026).
+ * Fireflies reach past their host by design (components/journey/nature), so a
+ * host near the screen's right edge pushed /quests 9px wider than a 768px
+ * tablet. The page root clips its own width instead. `clip`, never `hidden`:
+ * it makes no scroll container, so a sticky header inside still sticks, and
+ * the vertical axis is untouched. A wide table keeps its own overflow-x-auto
+ * wrapper. A browser without `clip` ignores the line, as before.
+ */
+.sheet-night.min-h-screen {
+  overflow-x: clip;
+}
+
+/*
  * The circle peek on the living map (`CirclePeek`, phones only) docks above
  * the tab bar while a circle is open, and the shortcuts button's corner is that
  * bar's right-hand end: left where it was, the button sat on the peek's
