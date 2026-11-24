@@ -46,7 +46,9 @@ describe("what stands behind the entrance", () => {
 describe("the form", () => {
   it("takes a name and an email and nothing else required, with updates unticked unless sent true", () => {
     const r = parseEntrance({ name: "  Ana   María ", email: " ana@example.org " });
-    expect(r).toEqual({ ok: true, value: { name: "Ana María", email: "ana@example.org", whatsapp: null, link: null, updates: false } });
+    expect(r).toEqual({ ok: true, value: { name: "Ana María", email: "ana@example.org", whatsapp: null, link: null, updates: false, interest: null } });
+    expect(parseEntrance({ name: "Ana", email: "ana@example.org", interest: "seeder" })).toMatchObject({ ok: true, value: { interest: "seeder" } });
+    expect(parseEntrance({ name: "Ana", email: "ana@example.org", interest: "investor" })).toMatchObject({ ok: true, value: { interest: null } });
     expect(parseEntrance({ name: "Ana", email: "ana@example.org", updates: "yes" })).toMatchObject({ ok: true, value: { updates: false } });
     expect(parseEntrance({ name: "Ana", email: "ana@example.org", updates: true })).toMatchObject({ ok: true, value: { updates: true } });
   });

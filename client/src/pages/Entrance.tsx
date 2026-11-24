@@ -10,6 +10,9 @@
  * up, and otherwise a field no person sees plus the time the form was on screen. After entry the
  * page reloads onto where the visitor was going, so every read on it starts again with the entry.
  *
+ * "What draws you here?" is optional and offers five plain answers (shared/entrance.ts, `INTERESTS`);
+ * nothing ranks or sorts a visitor by it.
+ *
  * THE PRIVACY LINE IS FOR LEGAL REVIEW (Costa Rica, Law 8968: informed consent, a stated purpose, a
  * way to ask for deletion). The words the visitor saw are posted with the form and kept beside the
  * entry, so the record shows what each person agreed to.
@@ -21,7 +24,7 @@ import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, TICK, WORLD } from "@/components/journey/look";
-import { safeNext, type EntranceProblem } from "@shared/entrance";
+import { INTERESTS, safeNext, type EntranceProblem, type Interest } from "@shared/entrance";
 
 declare global {
   interface Window {
@@ -98,6 +101,7 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
   const [whatsapp, setWhatsapp] = useState("");
   const [link, setLink] = useState("");
   const [updates, setUpdates] = useState(false);
+  const [interest, setInterest] = useState<Interest | null>(null);
   const [website, setWebsite] = useState("");
   const [token, setToken] = useState("");
   const [sending, setSending] = useState(false);
@@ -131,6 +135,7 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
           whatsapp,
           link,
           updates,
+          interest,
           next,
           locale: i18n.locale,
           turnstileToken: token,
@@ -153,6 +158,14 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
     } finally {
       setSending(false);
     }
+  };
+
+  const interestWords: Record<Interest, string> = {
+    seeder: t({ message: "Becoming a founding seeder", context: "portal entrance: what draws you, a founding seeder" }),
+    home: t({ message: "A home here", context: "portal entrance: what draws you, a home" }),
+    visit: t({ message: "Visiting", context: "portal entrance: what draws you, a visit" }),
+    role: t({ message: "A role on the team", context: "portal entrance: what draws you, a role" }),
+    curious: t({ message: "Just curious", context: "portal entrance: what draws you, curiosity" }),
   };
 
   const invalid = (f: EntranceProblem) => (error?.field === f ? { "aria-invalid": true, "aria-describedby": `${ids}-error` } : {});
@@ -217,6 +230,24 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
               </div>
             </div>
 
+            <fieldset className="flex flex-col gap-3">
+              <legend className={`${LABEL} mb-3`}>
+                {t({ message: "What draws you here?", context: "portal entrance: the optional interest question" })}{" "}
+                <span className="font-normal text-muted-foreground">{t({ message: "(optional)", context: "portal entrance: marks a field as optional" })}</span>
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {INTERESTS.map((k) => (
+                  <label
+                    key={k}
+                    className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring ${interest === k ? "border-notice bg-notice text-background" : "border-border bg-muted text-foreground hover:border-notice"}`}
+                  >
+                    <input type="radio" name="interest" value={k} checked={interest === k} onChange={() => setInterest(k)} className="sr-only" />
+                    {interestWords[k]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             {/* A field no person sees or fills: the fallback check's half (shared/entrance.ts). */}
             <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
               <label htmlFor={fieldId("website")}>{t({ message: "Leave this empty", context: "portal entrance: a hidden field only bots fill" })}</label>
@@ -235,12 +266,12 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
             <p ref={privacy} className={HINT}>
               {contactEmail
                 ? t({
-                    message: `We keep what you type here so we know who is exploring ${village}, and to send you updates only if you tick the box. We never sell it or share it. To see it or have it deleted, write to ${contactEmail}.`,
-                    context: "portal entrance: the privacy line, with the village's contact address",
+                    message: `We keep what you type here so we know who is exploring ${village} and can follow up about what draws you here. If you tick the box, we also add you to our email list, kept with an email service, for occasional updates. We never sell it. To see it or have it deleted, write to ${contactEmail}.`,
+                    context: "portal entrance: the privacy line, with the village's contact address, naming the follow-up and the email list",
                   })
                 : t({
-                    message: `We keep what you type here so we know who is exploring ${village}, and to send you updates only if you tick the box. We never sell it or share it. To see it or have it deleted, ask anyone at the village.`,
-                    context: "portal entrance: the privacy line, when the village has no contact address",
+                    message: `We keep what you type here so we know who is exploring ${village} and can follow up about what draws you here. If you tick the box, we also add you to our email list, kept with an email service, for occasional updates. We never sell it. To see it or have it deleted, ask anyone at the village.`,
+                    context: "portal entrance: the privacy line, when the village has no contact address, naming the follow-up and the email list",
                   })}
             </p>
 

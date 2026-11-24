@@ -2880,6 +2880,18 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    key: "entrance.brevo_list_id",
+    category: "The village's people",
+    label: "Portal entrance: Brevo list",
+    description:
+      "The number of the Brevo list that portal visitors join when they tick \"send me updates\". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
+    type: "integer",
+    default: "0",
+    min: 0,
+    max: 100000000,
+    ring: "founder",
+  },
+  {
     key: "org.consent_after_interviews",
     category: "The village's people",
     label: "Ask the circle to consent after the conversations",

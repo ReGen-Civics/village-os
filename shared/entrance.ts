@@ -155,9 +155,22 @@ export function safeNext(v: unknown): string | null {
 
 // ── What the visitor sends, and what the server reads back ─────────────────
 
+/**
+ * "What draws you here?" (ops, 24 Nov 2026: "so that we can build our CRM"). One optional answer,
+ * so the village can follow up with a founding seeder differently from a future neighbour. Nobody
+ * is ranked, scored or sorted by it; it is a label a person chose for themselves.
+ */
+export const INTERESTS = ["seeder", "home", "visit", "role", "curious"] as const;
+export type Interest = (typeof INTERESTS)[number];
+
+export function isInterest(v: unknown): v is Interest {
+  return typeof v === "string" && (INTERESTS as readonly string[]).includes(v);
+}
+
 export interface EntranceForm {
   name: string;
   email: string;
+  interest?: Interest;
   whatsapp?: string;
   link?: string;
   updates?: boolean;
@@ -192,6 +205,19 @@ export interface PortalEntry {
   locale: string | null;
   human: string;
   at: string;
+  interest: Interest | null;
+  /** When the entry reached the village's email list, or null while it has not (or was never meant to). */
+  syncedAt: string | null;
+  syncError: string | null;
+  /** What this person has done since, matched by their address (Admin only). */
+  journey?: VisitorJourney;
+}
+
+/** A visitor's later steps, matched by email: what they applied for, whether they hold an account, what they sent. */
+export interface VisitorJourney {
+  applications: Array<{ status: string; at: string }>;
+  account: { joined: string } | null;
+  forms: Array<{ type: string; at: string }>;
 }
 
 export type EntranceProblem = "name" | "email" | "whatsapp" | "link";
@@ -225,7 +251,7 @@ export function cleanLink(v: unknown): string | null | false {
 }
 
 /** The form, checked. Answers the clean fields or the first field that is wrong. */
-export function parseEntrance(body: unknown): { ok: true; value: { name: string; email: string; whatsapp: string | null; link: string | null; updates: boolean } } | { ok: false; problem: EntranceProblem } {
+export function parseEntrance(body: unknown): { ok: true; value: { name: string; email: string; whatsapp: string | null; link: string | null; updates: boolean; interest: Interest | null } } | { ok: false; problem: EntranceProblem } {
   const b = (body ?? {}) as Record<string, unknown>;
   const name = typeof b.name === "string" ? b.name.trim().replace(/\s+/g, " ") : "";
   if (!name || name.length > NAME_MAX) return { ok: false, problem: "name" };
@@ -235,5 +261,6 @@ export function parseEntrance(body: unknown): { ok: true; value: { name: string;
   if (whatsapp === false) return { ok: false, problem: "whatsapp" };
   const link = cleanLink(b.link);
   if (link === false) return { ok: false, problem: "link" };
-  return { ok: true, value: { name, email, whatsapp, link, updates: b.updates === true } };
+  // An answer the form does not offer is no answer, never a refusal: the question is optional.
+  return { ok: true, value: { name, email, whatsapp, link, updates: b.updates === true, interest: isInterest(b.interest) ? b.interest : null } };
 }

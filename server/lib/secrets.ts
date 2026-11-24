@@ -148,6 +148,9 @@ const BASE_SECRET_KEYS = [
   // typed under Admin, Integrations. Its site key is public by design and lives in the dial
   // `entrance.turnstile_site_key`. No host variable: an admin sets it, sealed.
   "turnstile_secret_key",
+  // The village's email list (ops, 24 Nov 2026: portal visitors who ask for updates join one Brevo
+  // list, server/lib/portalSync.ts). Typed under Admin, Integrations; no host variable.
+  "brevo_api_key",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -204,6 +207,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   voice_transcription_key: null,
   voice_transcription_groq_key: null,
   turnstile_secret_key: null,
+  brevo_api_key: null,
 };
 
 /**
