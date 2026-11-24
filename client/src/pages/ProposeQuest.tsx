@@ -1,3 +1,4 @@
+import { BTN_PRIMARY, BTN_SECONDARY, WORLD } from "@/components/journey/look";
 import Layout from "@/components/Layout";
 import { useShareNames } from "@/components/ContributionWord";
 import { Link } from "wouter";
@@ -148,15 +149,16 @@ export default function ProposeQuest() {
   if (submitted && idea && !idea.queued) {
     return (
       <Layout>
-        <section className="py-24 bg-gradient-to-b from-teal/10 to-background min-h-[60vh]">
+      <div className={WORLD}>
+        <section className="py-24 min-h-[60vh]">
           <div className="container">
             <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm"
             >
-              <div className="w-16 h-16 rounded-full bg-amber/15 flex items-center justify-center mx-auto mb-6">
-                <Inbox className="w-8 h-8 text-amber-600" aria-hidden="true" />
+              <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
+                <Inbox className="w-8 h-8 text-notice" aria-hidden="true" />
               </div>
               <h1 className="font-display text-3xl font-bold text-foreground mb-3">
                 Your Quest idea is saved, and held back from review.
@@ -173,12 +175,12 @@ export default function ProposeQuest() {
                     setSubmitted(false);
                     setMode("form");
                   }}
-                  className="px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition"
+                  className={BTN_PRIMARY}
                 >
                   Change it and send again
                 </button>
                 <Link href="/quests">
-                  <a className="px-5 py-3 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors">
+                  <a className={BTN_SECONDARY}>
                     Back to the Quest Board
                   </a>
                 </Link>
@@ -186,6 +188,7 @@ export default function ProposeQuest() {
             </m.div>
           </div>
         </section>
+      </div>
       </Layout>
     );
   }
@@ -193,15 +196,16 @@ export default function ProposeQuest() {
   if (submitted) {
     return (
       <Layout>
-        <section className="py-24 bg-gradient-to-b from-teal/10 to-background min-h-[60vh]">
+      <div className={WORLD}>
+        <section className="py-24 min-h-[60vh]">
           <div className="container">
             <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-xl mx-auto text-center bg-card border border-teal/20 rounded-2xl p-10 shadow-sm"
+              className="max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm"
             >
-              <div className="w-16 h-16 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-8 h-8 text-teal-700" />
+              <div className="w-16 h-16 rounded-full bg-open/10 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-8 h-8 text-open" />
               </div>
               <h1 className="font-display text-3xl font-bold text-foreground mb-3">
                 Your Quest idea is in.
@@ -214,7 +218,7 @@ export default function ProposeQuest() {
               <p className="-mt-5 mb-8 font-semibold text-foreground" data-route-promise="">{replyPromise}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link href="/quests">
-                  <a className="px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition">
+                  <a className={BTN_PRIMARY}>
                     Back to the Quest Board
                   </a>
                 </Link>
@@ -231,7 +235,7 @@ export default function ProposeQuest() {
                     }));
                     setSubmitted(false);
                   }}
-                  className="px-5 py-3 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors"
+                  className={BTN_SECONDARY}
                 >
                   Propose another
                 </button>
@@ -239,17 +243,19 @@ export default function ProposeQuest() {
             </m.div>
           </div>
         </section>
+      </div>
       </Layout>
     );
   }
 
   const field =
-    "w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary";
+    "w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <Layout>
+    <div className={WORLD}>
       {/* Hero */}
-      <section className="py-16 bg-gradient-to-b from-teal/10 to-background">
+      <section className="py-16">
         <div className="container">
           <m.div
             initial={{ opacity: 0, y: 20 }}
@@ -262,10 +268,10 @@ export default function ProposeQuest() {
                 Back to the Quest Board
               </a>
             </Link>
-            <div className="w-16 h-16 rounded-full bg-amber/15 flex items-center justify-center mx-auto mb-6">
-              <Lightbulb className="w-8 h-8 text-amber-600" />
+            <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
+              <Lightbulb className="w-8 h-8 text-notice" />
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl mb-4">
               Propose a Quest
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -278,12 +284,12 @@ export default function ProposeQuest() {
 
       {/* Talk it through, or fill it in yourself */}
       {aiAvailable && guide.loaded && (
-        <div className="bg-background">
+        <div>
           <div className="container max-w-2xl mx-auto flex flex-wrap gap-2 pb-6">
             <button
               onClick={() => setMode("ai")}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                mode === "ai" ? "bg-teal-deep text-white" : "bg-card border border-border text-muted-foreground hover:bg-muted"
+                mode === "ai" ? "bg-notice text-background" : "bg-card border border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               <MessageCircle className="w-4 h-4" /> Talk it through with {assistantName}
@@ -291,7 +297,7 @@ export default function ProposeQuest() {
             <button
               onClick={() => setMode("form")}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                mode === "form" ? "bg-teal-deep text-white" : "bg-card border border-border text-muted-foreground hover:bg-muted"
+                mode === "form" ? "bg-notice text-background" : "bg-card border border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               <ClipboardList className="w-4 h-4" /> Fill the form yourself
@@ -301,7 +307,7 @@ export default function ProposeQuest() {
       )}
 
       {mode === "ai" && aiAvailable && guide.loaded && (
-        <section className="pb-24 bg-background">
+        <section className="pb-24">
           <div className="container max-w-2xl mx-auto">
             <GuideChat
               kind="quest-proposal"
@@ -322,7 +328,7 @@ export default function ProposeQuest() {
       )}
 
       {/* Form */}
-      <section className={`pb-24 bg-background ${mode === "ai" && aiAvailable ? "hidden" : ""}`}>
+      <section className={`pb-24 ${mode === "ai" && aiAvailable ? "hidden" : ""}`}>
         <div className="container">
           <m.form
             onSubmit={submit}
@@ -487,7 +493,7 @@ export default function ProposeQuest() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition disabled:opacity-50"
+              className={`${BTN_PRIMARY} w-full`}
             >
               <Sparkles className="w-5 h-5" />
               {submitting ? "Sending…" : "Send your Quest proposal"}
@@ -499,6 +505,7 @@ export default function ProposeQuest() {
           </m.form>
         </div>
       </section>
+    </div>
     </Layout>
   );
 }
