@@ -40,7 +40,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
-## 1.3.59 (2026-11-24)
+## 1.3.60 (2026-11-24)
 
 ### What changed for your village
 
