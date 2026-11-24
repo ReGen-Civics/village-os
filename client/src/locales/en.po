@@ -420,6 +420,11 @@ msgstr "Your project or business, and what you offer the village."
 msgid "Change yours on your profile"
 msgstr "Change yours on your profile"
 
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
+
 #: client/src/components/ContributionWord.tsx
 msgctxt "tooltip on the credits token's name"
 msgid "{credits} are usage tokens: you spend them on things in the village."
@@ -8141,6 +8146,11 @@ msgstr "1 value item. Aim: {0}"
 msgctxt "org chart section label"
 msgid "This circle"
 msgstr "This circle"
+
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile settings heading: what signed-out visitors see"
+msgid "Visitors"
+msgstr "Visitors"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
@@ -21224,6 +21234,11 @@ msgctxt "profile, door to the pay page"
 msgid "Your code"
 msgstr "Your code"
 
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+msgstr "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: an optional field"
 msgid "(optional)"
@@ -23302,6 +23317,11 @@ msgstr "{0, plural, one {# role} other {# roles}}"
 msgctxt "admin helper panel"
 msgid "Connect Claude to turn on your helper"
 msgstr "Connect Claude to turn on your helper"
+
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Show my first name to visitors"
+msgstr "Show my first name to visitors"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: what is on a day"

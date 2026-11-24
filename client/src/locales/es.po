@@ -7,30 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile settings heading: what signed-out visitors see"
-msgid "Visitors"
-msgstr "Visitantes"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile, show my first name to visitors"
-msgid "Show my first name to visitors"
-msgstr "Mostrar mi nombre a quienes visitan"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile, show my first name to visitors"
-msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
-msgstr "Quienes visitan las páginas públicas ven tu nombre junto a lo que sostienes y das. Si lo desactivas, verán \"A member\" en su lugar."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile, show my first name to visitors"
-msgid "That did not save. Try again."
-msgstr "No se guardó. Inténtalo de nuevo."
-
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
@@ -449,6 +425,12 @@ msgstr "Tu proyecto o negocio, y lo que ofreces a la aldea."
 #: client/src/components/priorities/TeamWeek.tsx
 msgid "Change yours on your profile"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
 
 #: client/src/components/ContributionWord.tsx
 msgctxt "tooltip on the credits token's name"
@@ -8349,6 +8331,12 @@ msgstr ""
 #~ msgctxt "upcoming role card: the role will be paid, no amount"
 #~ msgid "Paid role"
 #~ msgstr "Rol remunerado"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile settings heading: what signed-out visitors see"
+msgid "Visitors"
+msgstr "Visitantes"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
@@ -21813,6 +21801,12 @@ msgid "Your code"
 msgstr "Tu código"
 
 # needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+msgstr "Quienes visitan las páginas públicas ven tu nombre junto a lo que sostienes y das. Si lo desactivas, verán \"A member\" en su lugar."
+
+# needs-native-review: new words, 24 Nov 2026
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: an optional field"
 msgid "(optional)"
@@ -23938,6 +23932,12 @@ msgstr ""
 msgctxt "admin helper panel"
 msgid "Connect Claude to turn on your helper"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Show my first name to visitors"
+msgstr "Mostrar mi nombre a quienes visitan"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: what is on a day"
