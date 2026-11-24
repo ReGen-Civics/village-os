@@ -73,6 +73,18 @@ describe("a role's link preview", () => {
     for (const p of ["/roles/hidden", "/roles/demo", "/roles/nobody", "/roles/select"]) expect((await get(p)).body).toBe("fallthrough");
   });
 
+  it("takes the village's share card when the role has no art, and claims no card size for a role's own art", () => {
+    const card = () => "v1";
+    const plain = roleShareMeta(ROLES[1], ROLES, "https://willow.example", CONFIG as never, null, card);
+    expect(plain.image).toBe("https://willow.example/api/share-card.jpg?v=v1");
+    expect(plain.imageSize).toEqual({ width: 1200, height: 630 });
+    expect(plain.imageType).toBe("image/jpeg");
+    const drawn = roleShareMeta(ROLES[0], ROLES, "https://willow.example", CONFIG as never, null, card);
+    expect(drawn.image).not.toContain("share-card");
+    expect(drawn.imageSize).toBeUndefined();
+    expect(drawn.imageType).toBeUndefined();
+  });
+
   it("names no village of its own: the title is the role alone when the village has no name (control)", () => {
     const meta = roleShareMeta(ROLES[1], ROLES, "", { project: { name: "" } } as never, null);
     expect(meta.title).toBe("Garden Steward");
