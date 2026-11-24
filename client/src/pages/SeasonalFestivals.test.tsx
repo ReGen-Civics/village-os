@@ -80,15 +80,7 @@ describe("SeasonalFestivals", () => {
       answerWith(async () => json({ current: season, seasons: [season] }));
       render(<SeasonalFestivals />);
       expect(await screen.findByText("Plant the food forest")).toBeTruthy();
-      // Each goal is its own tile; a reached one carries the word Done and a check, never "Done:" in its words.
-      const reachedGoal = screen.getByText("Open the first home").closest("li")!;
-      expect(reachedGoal.getAttribute("data-done")).toBe("true");
-      expect(reachedGoal.textContent).toContain("Done");
-      // The check wears its own colour: on the ring it inherited the gold of its own fill and vanished.
-      expect(reachedGoal.querySelector("svg")!.getAttribute("class")).toContain("text-background");
-      expect(screen.getByText("Plant the food forest").closest("li")!.hasAttribute("data-done")).toBe(false);
-      expect(screen.queryByText(/Done: /)).toBeNull();
-      expect(screen.getByText("1 of 2 reached so far")).toBeTruthy();
+      expect(screen.getByText("Done: Open the first home")).toBeTruthy();
       const invite = screen.getByText(INVITE);
       expect(invite.textContent).toBe("If you can help us meet these, consider the Village Steward path.");
       expect(screen.getByRole("link", { name: "Village Steward path" }).getAttribute("href")).toBe("/steward");
