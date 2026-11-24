@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.64 (2026-11-24)
+
+### What changed for your village
+
+- **Crash alerts can go to a shared inbox.** An address on `ops.crash_alert_recipients` that is nobody's account gets the crash email; admins and founders on the list also see the notice in the app. A page that reloads itself after a deploy, or a fetch the network dropped, is no longer reported as a crash.
+- **A Nationality line on every open role**, set once by the village (`org.role_card_nationality`, blank shows nothing). The value splits on `|` into lines.
+- **Members choose whether visitors see their first name** (on by default). Turned off, every page a visitor reads shows "A member".
+- **The refresh screen wears the village's own logo** and says "We're growing".
+- **Link previews get a proper share card:** a 1200 by 630 picture made from whichever picture Admin, Pages, Whole site names.
+- **The investor pack button waits** until at least one document is in the pack.
+- **Spanish:** sign-in, register, forgot password and Feedback read in Spanish. One list of the platform's languages, and each village chooses which to offer (Admin, Settings, Language). Spanish stays on.
+- **More pages in the house look:** /propose-quest and the email preference pages. Applicant letters make every link tappable and the one main act a button.
+- **Fixed:** the member-task bridge job crashed whenever it gave up on a message.
+
+### What you must do
+
+Nothing. To send crash alerts to a shared inbox, put its address on `ops.crash_alert_recipients`.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.63 (2026-11-24)
 
 ### What changed for your village
