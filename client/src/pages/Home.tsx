@@ -37,6 +37,7 @@ import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
+import Mycelium from "@/components/motion/Mycelium";
 
 
 
@@ -288,6 +289,7 @@ export default function Home() {
               {t({ message: "Ways in", context: "landing, the ways in heading when the paths are hidden" })}
             </h2>
           )}
+          <Mycelium>
           <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
             {pathsShown && pathCards.map((card) => {
               const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
@@ -332,6 +334,7 @@ export default function Home() {
               );
             })}
           </ul>
+          </Mycelium>
           {paths && pathsShown && paths.fields.intro ? (
             <p lang={langOf("paths.intro")} className={`mt-6 max-w-2xl ${NOTE}`}>
               <Emphasized text={paths.fields.intro} />
@@ -582,6 +585,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
         <h2 id="four-ways-h" className="mb-5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
           {heading}
         </h2>
+        <Mycelium>
         <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <li className="m-germ min-w-0" data-route="team">
             <Link href={`/roles#${ROLES_SECTIONS.team}`} className={`${WAY_CARD} ${founding ? "border-2 border-notice/60" : "border border-border"}`} data-way={founding ? "founding" : "team"} data-route-door="team">
@@ -628,6 +632,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
             </li>
           ))}
         </ul>
+        </Mycelium>
       </div>
     </section>
   );
