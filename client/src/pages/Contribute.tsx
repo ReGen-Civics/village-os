@@ -19,6 +19,7 @@ import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -36,6 +37,7 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 export default function Contribute() {
+  const { t } = useLingui();
   const modules = useModules();
   const commerce = useModule("commerce");
   const { user } = useAuth();
@@ -92,11 +94,11 @@ export default function Contribute() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Contribute</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Contribute, h1">Contribute</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Fees, gifts, deposits and memberships: every way money supports
+            <Trans context="Contribute, p">Fees, gifts, deposits and memberships: every way money supports
             this village, in one honest list.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="commerce" noun="product" />
         </div>
       </section>
@@ -107,7 +109,7 @@ export default function Contribute() {
           {error && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">{error}</p>}
           {manual && (
             <div className="bg-card border border-teal-deep/30 rounded-xl p-5">
-              <p className="font-semibold text-foreground text-sm mb-1">{manual.name}, receipt #{manual.receiptNo}</p>
+              <p className="font-semibold text-foreground text-sm mb-1"><Trans context="Contribute, p">{manual.name}, receipt #{manual.receiptNo}</Trans></p>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{manual.text}</p>
               {manual.url && (
                 <a
@@ -116,15 +118,15 @@ export default function Contribute() {
                   rel="noreferrer noopener"
                   className="inline-flex items-center gap-1.5 mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" /> Continue to Zeffy
-                </a>
+                  <Trans context="Contribute, a"><ExternalLink className="w-3.5 h-3.5" /> Continue to Zeffy
+                </Trans></a>
               )}
-              <button onClick={() => setManual(null)} className="block text-xs text-teal-deep font-medium mt-3 hover:underline">Done</button>
+              <button onClick={() => setManual(null)} className="block text-xs text-teal-deep font-medium mt-3 hover:underline"><Trans context="Contribute, button">Done</Trans></button>
             </div>
           )}
 
           {(data?.products ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">Nothing is offered right now.</p>
+            <p className="text-sm text-muted-foreground text-center py-8"><Trans context="Contribute, p">Nothing is offered right now.</Trans></p>
           )}
 
           {(data?.products ?? []).map((p: any) => (
@@ -137,8 +139,8 @@ export default function Contribute() {
                     </span>
                     {p.recurring !== "none" && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
-                        <Repeat className="w-3 h-3" /> {p.recurring}ly
-                      </span>
+                        <Trans context="Contribute, span"><Repeat className="w-3 h-3" /> {p.recurring}ly
+                      </Trans></span>
                     )}
                   </div>
                   <p className="font-semibold text-foreground mt-1.5">{p.name}</p>
@@ -184,7 +186,7 @@ export default function Contribute() {
                     aria-label={`Your email address for ${p.name}`}
                     value={emails[p.id] ?? ""}
                     onChange={(e) => setEmails({ ...emails, [p.id]: e.target.value })}
-                    placeholder="you@example.org"
+                    placeholder={t({ message: "you@example.org", context: "Contribute, placeholder" })}
                     className="flex-1 min-w-[180px] text-sm border border-border rounded-lg px-3 py-2"
                   />
                 )}
@@ -200,7 +202,7 @@ export default function Contribute() {
                   {p.provider === "zeffy" ? "Give via Zeffy" : p.provider === "manual" ? "Arrange it" : p.recurring !== "none" ? "Subscribe" : "Pay"}
                 </button>
                 {p.provider === "stripe" && !data?.stripeConfigured && (
-                  <span className="text-xs text-amber-700">Card payments aren't connected yet</span>
+                  <span className="text-xs text-amber-700"><Trans context="Contribute, span">Card payments aren't connected yet</Trans></span>
                 )}
               </div>
               {refusedProduct && refusedProduct.id === p.id && (

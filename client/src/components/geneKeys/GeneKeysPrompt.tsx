@@ -22,6 +22,7 @@ import { useMyGeneKeys } from "./useMyGeneKeys";
 import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { BTN_GOLD, BTN_PLAIN, HINT, NIGHT_CARD } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 const SEEN_KEY = "gene-keys-prompt-seen";
 
@@ -75,15 +76,15 @@ export default function GeneKeysPrompt({ picked, characterName }: GeneKeysPrompt
     <>
       <section aria-labelledby="gene-keys-invite-h" className={NIGHT_CARD}>
         <h2 id="gene-keys-invite-h" className="flex items-center gap-2 font-display text-xl text-card-foreground">
-          <Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
+          <Trans context="GeneKeysPrompt, h2"><Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
           Get your Gene Keys
-        </h2>
+        </Trans></h2>
         <p className="mt-1 text-sm text-foreground">
-          See the two lines you carry and how you work best. Your lines help us find roles and teams that fit you.
-        </p>
+          <Trans context="GeneKeysPrompt, p">See the two lines you carry and how you work best. Your lines help us find roles and teams that fit you.
+        </Trans></p>
         <Link href="/profile/gene-keys" className={`${BTN_GOLD} mt-4`}>
-          Find my lines
-        </Link>
+          <Trans context="GeneKeysPrompt, Link">Find my lines
+        </Trans></Link>
       </section>
       {open ? (
         <Dialog open onOpenChange={setOpen}>
@@ -93,16 +94,16 @@ export default function GeneKeysPrompt({ picked, characterName }: GeneKeysPrompt
               {characterName ? `${characterName} is yours.` : "Your character is chosen."}
             </DialogTitle>
             <DialogDescription className="text-base text-foreground">
-              Want to see the lines you carry too? Your Gene Keys show how you work best, and which roles and teams might fit you.
-            </DialogDescription>
-            <p className={HINT}>Takes about a minute. You can always find it on this page.</p>
+              <Trans context="GeneKeysPrompt, DialogDescription">Want to see the lines you carry too? Your Gene Keys show how you work best, and which roles and teams might fit you.
+            </Trans></DialogDescription>
+            <p className={HINT}><Trans context="GeneKeysPrompt, p">Takes about a minute. You can always find it on this page.</Trans></p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Link href="/profile/gene-keys" className={BTN_GOLD} onClick={() => setOpen(false)}>
-                Get your Gene Keys
-              </Link>
+                <Trans context="GeneKeysPrompt, Link">Get your Gene Keys
+              </Trans></Link>
               <button type="button" className={BTN_PLAIN} onClick={() => setOpen(false)}>
-                Not now
-              </button>
+                <Trans context="GeneKeysPrompt, button">Not now
+              </Trans></button>
             </div>
           </DialogContent>
         </Dialog>

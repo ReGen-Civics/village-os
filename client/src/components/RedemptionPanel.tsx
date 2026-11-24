@@ -28,6 +28,7 @@ import LongText from "@/components/LongText";
 import { formatHumanAmount } from "@/lib/tokenAmount";
 import { formatMoney } from "@shared/money";
 import { HandCoins } from "lucide-react";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -121,6 +122,7 @@ const isEnding = (s: string): s is EndingState =>
   s === "confirmed" || s === "refused" || s === "withdrawn" || s === "expired";
 
 export default function RedemptionPanel() {
+  const { t } = useLingui();
   // "Loading", "loaded and genuinely empty" and "the request failed" are three
   // different facts, and collapsing them tells a member who has a redemption
   // open that they have none, in the one place they come to check.
@@ -210,7 +212,7 @@ export default function RedemptionPanel() {
   if (status === "loading") {
     return (
       <div className="bg-card border border-border rounded-xl p-5">
-        <p className="text-sm text-muted-foreground">Loading your redemptions...</p>
+        <p className="text-sm text-muted-foreground"><Trans context="RedemptionPanel, p">Loading your redemptions...</Trans></p>
       </div>
     );
   }
@@ -220,8 +222,8 @@ export default function RedemptionPanel() {
         <p className="text-sm text-muted-foreground">
           Couldn't load your redemptions.{" "}
           <button type="button" onClick={load} className="text-teal-deep font-medium hover:underline">
-            Retry
-          </button>
+            <Trans context="RedemptionPanel, button">Retry
+          </Trans></button>
         </p>
       </div>
     );
@@ -263,16 +265,16 @@ export default function RedemptionPanel() {
     <div className="bg-card border border-border rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
         <HandCoins className="w-4 h-4 text-teal-deep" />
-        <p className="font-semibold text-foreground text-sm">Redeem</p>
+        <p className="font-semibold text-foreground text-sm"><Trans context="RedemptionPanel, p">Redeem</Trans></p>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        A redemption is an agreement between you and your village. You say what you would
+        <Trans context="RedemptionPanel, p">A redemption is an agreement between you and your village. You say what you would
         like in return for your tokens, and a steward says yes or no. Tokens have no financial
         value of their own yet, so nothing is promised until a steward says yes. The agreement
         is the village's to keep, and nothing in this software can make anyone pay you. What happens here is the other half of it. When a steward
         confirms that you have been paid, your tokens are destroyed, and they do not come back.
-      </p>
+      </Trans></p>
 
       {/*
         * THE VILLAGE'S OWN PROCESS, OR THE FACT THAT IT HAS NONE.
@@ -298,8 +300,8 @@ export default function RedemptionPanel() {
         */}
       <div className="border border-border rounded-lg px-4 py-3">
         <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-          How redemption works here
-        </p>
+          <Trans context="RedemptionPanel, p">How redemption works here
+        </Trans></p>
         {data.money?.processText?.trim() ? (
           /* The village's own words, as TEXT. LongText escapes by
              construction and linkifies http(s) only, so nothing typed in
@@ -307,9 +309,9 @@ export default function RedemptionPanel() {
           <LongText text={data.money.processText} className="text-sm text-foreground" />
         ) : (
           <p className="text-sm text-muted-foreground">
-            This village has not written it down yet. You can still ask, and somebody will
+            <Trans context="RedemptionPanel, p">This village has not written it down yet. You can still ask, and somebody will
             answer, but nothing here can tell you what happens after that.
-          </p>
+          </Trans></p>
         )}
       </div>
 
@@ -344,19 +346,19 @@ export default function RedemptionPanel() {
           {data.open.map((r) => (
             <div key={r.id} className="border border-border rounded-lg px-4 py-3">
               <p className="text-sm text-foreground">
-                <span className="font-semibold">
+                <Trans context="RedemptionPanel, p"><span className="font-semibold">
                   {formatHumanAmount(r.amount, decimalsFor(r.token))} {r.tokenName}
                 </span>{" "}
                 for {r.askedFor}, opened {day(r.openedAt)}, waiting on a steward.
-                {r.expiresAt ? ` It runs out on ${day(r.expiresAt)}.` : ""}
+                {r.expiresAt ? ` It runs out on ${day(r.expiresAt)}.` : ""}</Trans>
               </p>
               {/* OFF THE ROW, never off today's dials: what this member agreed
                   to is what they were told when they asked. */}
               {r.money && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Agreed at {r.money.grossText}
+                  <Trans context="RedemptionPanel, p">Agreed at {r.money.grossText}
                   {r.money.feeMinor > 0 ? `, less a fee of ${r.money.feeText}, so you receive ${r.money.netText}` : ", with no fee"}.
-                </p>
+                </Trans></p>
               )}
               {r.processText?.trim() && (
                 <LongText text={r.processText} className="block text-xs text-muted-foreground mt-1" />
@@ -367,8 +369,8 @@ export default function RedemptionPanel() {
                 onClick={() => withdraw(r.id)}
                 className="mt-2 text-sm text-teal-deep font-medium hover:underline disabled:opacity-50"
               >
-                Take this one back
-              </button>
+                <Trans context="RedemptionPanel, button">Take this one back
+              </Trans></button>
             </div>
           ))}
         </div>
@@ -376,24 +378,24 @@ export default function RedemptionPanel() {
 
       {closed ? (
         <p className="text-sm text-muted-foreground">
-          This village is not taking redemptions just now. A steward can open them in the
+          <Trans context="RedemptionPanel, p">This village is not taking redemptions just now. A steward can open them in the
           village's dials.
-        </p>
+        </Trans></p>
       ) : data.tokens.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          This village has no token it redeems yet. A steward chooses which ones in the
+          <Trans context="RedemptionPanel, p">This village has no token it redeems yet. A steward chooses which ones in the
           village's dials.
-        </p>
+        </Trans></p>
       ) : atCap ? (
         <p className="text-sm text-muted-foreground">
-          You have opened {data.openedThisCycle} redemptions this moon, which is what this
+          <Trans context="RedemptionPanel, p">You have opened {data.openedThisCycle} redemptions this moon, which is what this
           village allows. The count starts again at the new moon.
-        </p>
+        </Trans></p>
       ) : (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-3">
             <label className="text-sm text-foreground">
-              <span className="block text-xs text-muted-foreground mb-1">Token</span>
+              <span className="block text-xs text-muted-foreground mb-1"><Trans context="RedemptionPanel, span">Token</Trans></span>
               <select
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
@@ -407,7 +409,7 @@ export default function RedemptionPanel() {
               </select>
             </label>
             <label className="text-sm text-foreground">
-              <span className="block text-xs text-muted-foreground mb-1">How much</span>
+              <span className="block text-xs text-muted-foreground mb-1"><Trans context="RedemptionPanel, span">How much</Trans></span>
               <input
                 type="number"
                 min="0"
@@ -420,7 +422,7 @@ export default function RedemptionPanel() {
                 common case and a select with one option is furniture. */}
             {(data.money?.currencies?.length ?? 0) > 1 && (
               <label className="text-sm text-foreground">
-                <span className="block text-xs text-muted-foreground mb-1">Paid in</span>
+                <span className="block text-xs text-muted-foreground mb-1"><Trans context="RedemptionPanel, span">Paid in</Trans></span>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
@@ -437,14 +439,14 @@ export default function RedemptionPanel() {
           </div>
           <label className="block text-sm text-foreground">
             <span className="block text-xs text-muted-foreground mb-1">
-              What you would like these turned into
-            </span>
+              <Trans context="RedemptionPanel, span">What you would like these turned into
+            </Trans></span>
             <input
               type="text"
               maxLength={500}
               value={askedFor}
               onChange={(e) => setAskedFor(e.target.value)}
-              placeholder="A bicycle"
+              placeholder={t({ message: "A bicycle", context: "RedemptionPanel, placeholder" })}
               className="border border-border rounded-lg px-3 py-2 bg-background text-foreground w-full"
             />
           </label>
@@ -454,9 +456,9 @@ export default function RedemptionPanel() {
               to whoever holds the redemption key, and kept after the request
               ends. */}
           <p className="text-xs text-muted-foreground">
-            Do not type bank account numbers, card numbers or passwords here. Say what you would
+            <Trans context="RedemptionPanel, p">Do not type bank account numbers, card numbers or passwords here. Say what you would
             like, and arrange how you are paid with a steward, the way this village's process says.
-          </p>
+          </Trans></p>
 
           {/*
             A PUBLIC BALLOT IS A DIFFERENT THING FROM A STEWARD READING YOUR
@@ -471,20 +473,20 @@ export default function RedemptionPanel() {
           */}
           {data.confirmedBy === "vote" && data.votePathBuilt && (
             <p role="note" className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
-              <span className="font-semibold">Nobody in this village holds the key that confirms a redemption,
+              <Trans context="RedemptionPanel, p"><span className="font-semibold">Nobody in this village holds the key that confirms a redemption,
               so this one goes to a village vote.</span>{" "}
               A vote is public and it stays public: what you are asking for, and what you are asking for it in
               return, become readable by anyone with the link, permanently, including if the village says no.
               If you would rather it stayed between you and a steward, ask the village to give the redemption
               key to a role first.
-            </p>
+            </Trans></p>
           )}
 
           {/* THE MATHS, BEFORE THE BUTTON. */}
           {quote ? (
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">
-                {amount} {tokenRow?.name ?? token} pays {formatMoney(quote.grossMinor, quote.currency)}
+                <Trans context="RedemptionPanel, span">{amount} {tokenRow?.name ?? token} pays {formatMoney(quote.grossMinor, quote.currency)}</Trans>
               </span>
               {quote.feeMinor > 0 ? (
                 <>
@@ -501,9 +503,9 @@ export default function RedemptionPanel() {
           ) : (
             Number(amount) > 0 && (
               <p className="text-sm text-muted-foreground">
-                This village has not put a price on {tokenRow?.name ?? token}, so your request
+                <Trans context="RedemptionPanel, p">This village has not put a price on {tokenRow?.name ?? token}, so your request
                 carries your own words and no figure. A steward agrees to what you asked for.
-              </p>
+              </Trans></p>
             )
           )}
           {data.holds && Number(amount) > 0 && (
@@ -528,28 +530,28 @@ export default function RedemptionPanel() {
             onClick={submit}
             className="bg-teal-deep text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
-            Ask to redeem
-          </button>
+            <Trans context="RedemptionPanel, button">Ask to redeem
+          </Trans></button>
         </div>
       )}
 
       {data.history.filter((r) => r.state !== "requested").length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Before now</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide"><Trans context="RedemptionPanel, p">Before now</Trans></p>
           {data.history
             .filter((r) => r.state !== "requested")
             .map((r) => (
               <div key={r.id} className="border border-border rounded-lg px-4 py-2">
                 <p className="text-sm text-foreground">
-                  {formatHumanAmount(r.amount, decimalsFor(r.token))} {r.tokenName} for{" "}
+                  <Trans context="RedemptionPanel, p">{formatHumanAmount(r.amount, decimalsFor(r.token))} {r.tokenName} for{" "}
                   {r.askedFor}. {isEnding(r.state) ? ENDING[r.state] : r.state}.
-                </p>
+                </Trans></p>
                 {r.state === "confirmed" && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    This says a steward agreed you were paid. It does not say the payment
+                    <Trans context="RedemptionPanel, p">This says a steward agreed you were paid. It does not say the payment
                     arrived. If it has not, tell a steward: the record of what was agreed is
                     still here.
-                  </p>
+                  </Trans></p>
                 )}
                 {r.decisionNote && r.state === "refused" && (
                   <p className="text-xs text-muted-foreground mt-1">{r.decisionNote}</p>

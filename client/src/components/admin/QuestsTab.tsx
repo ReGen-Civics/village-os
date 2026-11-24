@@ -100,18 +100,18 @@ export default function QuestsTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Quests</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="QuestsTab, h2">Quests</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          The board members see. Edits are live immediately, no deploy. A quest with claims in
+          <Trans context="QuestsTab, p">The board members see. Edits are live immediately, no deploy. A quest with claims in
           flight cannot be deleted until those claims are consented or declined.
-        </p>
+        </Trans></p>
         {/* The Treasurer prices quests beside the engine (quest re-price Q3). */}
         <a href="/pricing" className="inline-block mt-2 text-sm font-semibold text-emerald-800 underline"><Trans context="admin quests">Price the quests on the pricing desk</Trans></a>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
-        <h3 className="font-semibold text-gray-900 mb-3">Post a quest</h3>
-        {fromProfile && <p className="text-xs text-gray-600 mb-3">From your ReGen Civics profile{fromProfile.needLabel ? `, a quest that grows ${fromProfile.needLabel}` : ""}. Nothing is posted until you press Post quest. Add what it asks for, and a reward if you want one.</p>}
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="QuestsTab, h3">Post a quest</Trans></h3>
+        {fromProfile && <p className="text-xs text-gray-600 mb-3"><Trans context="QuestsTab, p">From your ReGen Civics profile{fromProfile.needLabel ? `, a quest that grows ${fromProfile.needLabel}` : ""}. Nothing is posted until you press Post quest. Add what it asks for, and a reward if you want one.</Trans></p>}
         <div className="grid sm:grid-cols-4 gap-2 items-end">
           <label className="text-xs text-gray-500">Title
             <input value={adding.title} onChange={(e) => setAdding({ ...adding, title: e.target.value })} className={`${inputCls} w-full mt-1`} />
@@ -125,7 +125,7 @@ export default function QuestsTab({ password }: { password: string }) {
               unplaceable on the map. */}
           <label className="text-xs text-gray-500">Circle
             <input value={adding.circle} onChange={(e) => setAdding({ ...adding, circle: e.target.value })}
-              list="quest-circles" placeholder="Which circle?" className={`${inputCls} w-full mt-1`} />
+              list="quest-circles" placeholder={t({ message: "Which circle?", context: "QuestsTab, placeholder" })} className={`${inputCls} w-full mt-1`} />
             <datalist id="quest-circles">
               {questCircles.map((c) => <option key={c} value={c} />)}
             </datalist>
@@ -155,8 +155,8 @@ export default function QuestsTab({ password }: { password: string }) {
             }}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
           >
-            Post quest
-          </button>
+            <Trans context="QuestsTab, button">Post quest
+          </Trans></button>
         </div>
         <div className="mt-3">
           <QuestEnginePrice offered={offered} currency={currency} onUse={(next, use) => { setAddingPay(next); setEngineUse(use); }} />
@@ -168,11 +168,11 @@ export default function QuestsTab({ password }: { password: string }) {
 
       {starters > 0 && (
         <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="font-medium">{starters === 1 ? "1 starter quest is" : `${starters} starter quests are`} waiting for you</p>
+          <p className="font-medium"><Trans context="QuestsTab, p">{starters === 1 ? "1 starter quest is" : `${starters} starter quests are`} waiting for you</Trans></p>
           <p className="mt-1">
-            Nobody can claim a starter. Keep the ones that fit as real quests, then clear the rest.
+            <Trans context="QuestsTab, p">Nobody can claim a starter. Keep the ones that fit as real quests, then clear the rest.
             Posting a quest of your own clears every starter you have not kept.
-          </p>
+          </Trans></p>
           <button
             type="button"
             onClick={async () => {
@@ -186,8 +186,8 @@ export default function QuestsTab({ password }: { password: string }) {
             }}
             className="mt-2 min-h-[44px] px-3 rounded-md border border-amber-400 bg-white font-medium"
           >
-            Clear the starters you have not kept
-          </button>
+            <Trans context="QuestsTab, button">Clear the starters you have not kept
+          </Trans></button>
         </div>
       )}
 
@@ -228,9 +228,9 @@ export default function QuestsTab({ password }: { password: string }) {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading…</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="QuestsTab, div">Loading…</Trans></div>
       ) : quests.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No quests on the board yet.</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="QuestsTab, div">No quests on the board yet.</Trans></div>
       ) : (
         <div className="space-y-3">
           {quests.map((q: any) => {
@@ -303,8 +303,8 @@ export default function QuestsTab({ password }: { password: string }) {
                     simply does not render. */}
                 <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2">
                   <summary className="text-xs font-semibold text-gray-600 cursor-pointer select-none">
-                    Story, effort, steps, and poster
-                  </summary>
+                    <Trans context="QuestsTab, summary">Story, effort, steps, and poster
+                  </Trans></summary>
                   <div className="grid sm:grid-cols-2 gap-2 mt-3">
                     {/* Difficulty, duration and impact were in the save payload
                         and in the dirty check from the day the story layer
@@ -337,7 +337,7 @@ export default function QuestsTab({ password }: { password: string }) {
                       </select>
                     </label>
                     <label className="text-xs text-gray-500">Time it takes
-                      <input value={d.duration ?? ""} onChange={(e) => setDraft({ ...draft, [q.id]: { ...d, duration: e.target.value } })} placeholder="90 minutes, Two mornings, Flexible" className={`${inputCls} w-full mt-1`} />
+                      <input value={d.duration ?? ""} onChange={(e) => setDraft({ ...draft, [q.id]: { ...d, duration: e.target.value } })} placeholder={t({ message: "90 minutes, Two mornings, Flexible", context: "QuestsTab, placeholder" })} className={`${inputCls} w-full mt-1`} />
                     </label>
                     {/* 0383: how much of a person it asks, 1 to 100. The Open work board sizes and orders by it. Nothing that pays reads it. */}
                     <label className="text-xs text-muted-foreground"><Trans context="admin quests: the percent of a person a quest asks">Commitment it asks (%)</Trans>
@@ -368,15 +368,15 @@ export default function QuestsTab({ password }: { password: string }) {
                       <input value={d.deliverable ?? ""} onChange={(e) => setDraft({ ...draft, [q.id]: { ...d, deliverable: e.target.value } })} className={`${inputCls} w-full mt-1`} />
                     </label>
                     <label className="text-xs text-gray-500">Poster path
-                      <input value={d.imageUrl ?? ""} onChange={(e) => setDraft({ ...draft, [q.id]: { ...d, imageUrl: e.target.value } })} placeholder="/api/uploads/quest-01.webp" className={`${inputCls} w-full mt-1`} />
+                      <input value={d.imageUrl ?? ""} onChange={(e) => setDraft({ ...draft, [q.id]: { ...d, imageUrl: e.target.value } })} placeholder={t({ message: "/api/uploads/quest-01.webp", context: "QuestsTab, placeholder" })} className={`${inputCls} w-full mt-1`} />
                     </label>
                   </div>
                   <p className="mt-2 text-sm text-gray-700">
-                    Beginner places this quest in the board's Start here ring. Any other setting, and an empty one, place it under The village. A stage floor or a role requirement moves it to Further in whatever you pick.
-                  </p>
+                    <Trans context="QuestsTab, p">Beginner places this quest in the board's Start here ring. Any other setting, and an empty one, place it under The village. A stage floor or a role requirement moves it to Further in whatever you pick.
+                  </Trans></p>
                   <p className="mt-2 text-sm text-gray-700">
-                    A poster comes through the village's own upload, so its path starts with /api/uploads/. Leave it empty and the card paints a scene from the quest's circle.
-                  </p>
+                    <Trans context="QuestsTab, p">A poster comes through the village's own upload, so its path starts with /api/uploads/. Leave it empty and the card paints a scene from the quest's circle.
+                  </Trans></p>
                 </details>
                 {/* The roots it grows from (the five archetypes as roots): its
                     own Save, like safety below. */}
@@ -434,9 +434,9 @@ export default function QuestsTab({ password }: { password: string }) {
                       }}
                       className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
                     >
-                      Keep as a real quest
-                    </button>
-                    <span className="text-xs text-gray-500">Change anything above first, and set its value.</span>
+                      <Trans context="QuestsTab, button">Keep as a real quest
+                    </Trans></button>
+                    <span className="text-xs text-gray-500"><Trans context="QuestsTab, span">Change anything above first, and set its value.</Trans></span>
                   </div>
                 ) : (
                 <div className="flex items-center gap-3 mt-3">
@@ -458,8 +458,8 @@ export default function QuestsTab({ password }: { password: string }) {
                     }}
                     className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
                   >
-                    Save
-                  </button>
+                    <Trans context="QuestsTab, button">Save
+                  </Trans></button>
                   <button
                     type="button"
                     data-mark-example={q.id}
@@ -479,8 +479,8 @@ export default function QuestsTab({ password }: { password: string }) {
                     }}
                     className="text-sm text-red-500 hover:text-red-600"
                   >
-                    Delete
-                  </button>
+                    <Trans context="QuestsTab, button">Delete
+                  </Trans></button>
                 </div>
                 )}
               </div>

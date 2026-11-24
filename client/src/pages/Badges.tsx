@@ -14,6 +14,7 @@ import { authToken } from "@/lib/gameApi";
 import { Award, CircleHelp, Hammer, Medal, Plus, ShieldAlert, Sparkles, X } from "lucide-react";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -100,6 +101,7 @@ export function badgeProvenanceLine(
 }
 
 export default function Badges() {
+  const { t } = useLingui();
   const modules = useModules();
   const badgesModule = useModule("badges");
   const { user } = useAuth();
@@ -134,11 +136,11 @@ export default function Badges() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Badges & Skills</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Badges, h1">Badges & Skills</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            What the village recognizes: skills you declare, badges earned from
+            <Trans context="Badges, p">What the village recognizes: skills you declare, badges earned from
             real contribution, honors granted by stewards.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="badges" noun="badge" />
           {/*
             0098. A badge is one of the ways a power reaches a person, so the
@@ -146,11 +148,11 @@ export default function Badges() {
             when they want to know who looks after what.
           */}
           <p className="text-sm text-muted-foreground mt-4">
-            <Link href="/powers" className="underline">
+            <Trans context="Badges, p"><Link href="/powers" className="underline">
               See what this village looks after
             </Link>
             , and who holds each one.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -162,29 +164,29 @@ export default function Badges() {
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Hammer className="w-4 h-4 text-teal-deep" />
-                <p className="font-semibold text-foreground text-sm">Your skills</p>
+                <p className="font-semibold text-foreground text-sm"><Trans context="Badges, p">Your skills</Trans></p>
               </div>
               <div className="flex flex-wrap gap-2 mb-3">
                 {(data?.mine?.skills ?? []).map((s: string) => (
                   <span key={s} className="inline-flex items-center gap-1 text-xs bg-teal-deep/10 text-teal-deep px-2 py-1 rounded-full">
                     {s}
-                    <button onClick={() => call(`/api/badges/skills/${s}`, "DELETE")} title="Remove">
+                    <button onClick={() => call(`/api/badges/skills/${s}`, "DELETE")} title={t({ message: "Remove", context: "Badges, title" })}>
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
                 {(data?.mine?.skills ?? []).length === 0 && (
-                  <p className="text-xs text-muted-foreground">Declare what you can do. It helps the village find you.</p>
+                  <p className="text-xs text-muted-foreground"><Trans context="Badges, p">Declare what you can do. It helps the village find you.</Trans></p>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                <input value={skill} onChange={(e) => setSkill(e.target.value)} placeholder="e.g. carpentry"
+                <input value={skill} onChange={(e) => setSkill(e.target.value)} placeholder={t({ message: "e.g. carpentry", context: "Badges, placeholder" })}
                   className="flex-1 text-sm border border-border rounded-lg px-3 py-2" />
                 <button
                   onClick={() => { if (skill.trim()) { call("/api/badges/skills", "POST", { tag: skill }); setSkill(""); } }}
                   className="inline-flex items-center gap-1.5 text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium">
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </button>
+                  <Trans context="Badges, button"><Plus className="w-3.5 h-3.5" /> Add
+                </Trans></button>
               </div>
             </div>
           )}
@@ -211,15 +213,15 @@ export default function Badges() {
                       {b.description && <p className="text-sm text-muted-foreground mt-1">{b.description}</p>}
                       {b.kind === "earned" && b.rule && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Earned at {b.rule.threshold} {String(b.rule.metric).replace(/_/g, " ")}
+                          <Trans context="Badges, p">Earned at {b.rule.threshold} {String(b.rule.metric).replace(/_/g, " ")}
                           {b.rule.stackable ? ", and it grows fuller as you keep going" : ""}.
-                        </p>
+                        </Trans></p>
                       )}
                       {(b.capabilities ?? []).length > 0 && (
-                        <p className="text-xs text-emerald-700 mt-1">Grants: {b.capabilities.join(", ")}</p>
+                        <p className="text-xs text-emerald-700 mt-1"><Trans context="Badges, p">Grants: {b.capabilities.join(", ")}</Trans></p>
                       )}
                       {(b.denies ?? []).length > 0 && (
-                        <p className="text-xs text-red-600 mt-1">Suspends: {b.denies.join(", ")}</p>
+                        <p className="text-xs text-red-600 mt-1"><Trans context="Badges, p">Suspends: {b.denies.join(", ")}</Trans></p>
                       )}
                       {mine?.note && <p className="text-xs text-muted-foreground italic mt-1">“{mine.note}”</p>}
                       {/* Where the sentence above came from. Only ever on the
@@ -237,8 +239,8 @@ export default function Badges() {
                           nothing about what she should do with it. */}
                       {mine && b.kind === "warning" && !mine.expiresAt && (
                         <p className="text-xs text-stone-600 mt-1">
-                          This warning stays until a steward lifts it.
-                        </p>
+                          <Trans context="Badges, p">This warning stays until a steward lifts it.
+                        </Trans></p>
                       )}
                       {/* Trust can be lent for a season. Until this shipped, a
                           member holding a badge that lapses next week saw
@@ -261,7 +263,7 @@ export default function Badges() {
                               {h.name}
                               {h.expiresAt && (
                                 <span className="text-amber-700">
-                                  {" "}until {new Date(h.expiresAt).toLocaleDateString()}
+                                  <Trans context="Badges, span">{" "}until {new Date(h.expiresAt).toLocaleDateString()}</Trans>
                                 </span>
                               )}
                             </span>
@@ -273,10 +275,10 @@ export default function Badges() {
                       {user && b.kind === "self" && (
                         mine ? (
                           <button onClick={() => call(`/api/badges/${b.id}/claim`, "DELETE")}
-                            className="text-xs text-muted-foreground hover:text-red-600">Remove</button>
+                            className="text-xs text-muted-foreground hover:text-red-600"><Trans context="Badges, button">Remove</Trans></button>
                         ) : (
                           <button onClick={() => call(`/api/badges/${b.id}/claim`, "POST")}
-                            className="text-xs text-teal-deep font-medium hover:underline">That's me</button>
+                            className="text-xs text-teal-deep font-medium hover:underline"><Trans context="Badges, button">That's me</Trans></button>
                         )
                       )}
                       {/* B10: pin up to badges.max_featured to your byline.
@@ -310,7 +312,7 @@ export default function Badges() {
               );
             })}
             {data && data.badges.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-12">No badges yet.</p>
+              <p className="text-center text-sm text-muted-foreground py-12"><Trans context="Badges, p">No badges yet.</Trans></p>
             )}
           </div>
         </div>

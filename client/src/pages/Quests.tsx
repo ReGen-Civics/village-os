@@ -41,7 +41,7 @@ import { memberDoorShown } from "@/lib/brochure";
 import MaiaTypeLine from "@/components/geneKeys/MaiaTypeLine";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
 import { useRootsFilter } from "@/components/roots/useRootsFilter";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { statusFor } from "@/lib/questStatus";
 import { goalOf, QUEST_PLACES } from "@shared/questThreads";
 import FitsYouCard from "@/components/openWork/FitsYouCard";
@@ -258,16 +258,16 @@ export default function Quests() {
             {/* R47: the Trail line leads, the reward word keeps its tooltip,
                 and the Lore line comes last, after the numbers. */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
-              Take a Quest, do the work, turn it in.
-            </p>
+              <Trans context="Quests, p">Take a Quest, do the work, turn it in.
+            </Trans></p>
             {comingSoon ? (
               <QuestsComingSoon className="mx-auto mb-4 mt-6 max-w-3xl" />
             ) : (
               <ExamplesBanner moduleId="quests" noun="quest" tone="night" />
             )}
             <p className="text-sm italic text-muted-foreground mt-2 mb-8">
-              Real work, on real land, beside people becoming your people.
-            </p>
+              <Trans context="Quests, p">Real work, on real land, beside people becoming your people.
+            </Trans></p>
 
           </m.div>
         </div>
@@ -280,9 +280,9 @@ export default function Quests() {
           <div className="container max-w-7xl">
             <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm">
               <h2 className="font-display text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                <Sprout className="w-5 h-5 text-notice" />
+                <Trans context="Quests, h2"><Sprout className="w-5 h-5 text-notice" />
                 Pick up where you left off
-              </h2>
+              </Trans></h2>
               <ul className="grid sm:grid-cols-2 gap-3">
                 {inFlight.map((c) => {
                   const q = questById.get(c.questId)!;
@@ -350,7 +350,7 @@ export default function Quests() {
               at. */}
           <div className="flex gap-2 items-center mb-1 overflow-x-auto flex-nowrap" data-scroll-contain>
             <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
-            <span className="text-sm text-muted-foreground flex-shrink-0">Circle:</span>
+            <span className="text-sm text-muted-foreground flex-shrink-0"><Trans context="Quests, span">Circle:</Trans></span>
             {circles.map((c) => (
               <button
                 key={c}
@@ -366,7 +366,7 @@ export default function Quests() {
             ))}
           </div>
           <div className="flex gap-2 items-center overflow-x-auto flex-nowrap" data-scroll-contain>
-            <span className="text-sm text-muted-foreground ml-5 flex-shrink-0">Difficulty:</span>
+            <span className="text-sm text-muted-foreground ml-5 flex-shrink-0"><Trans context="Quests, span">Difficulty:</Trans></span>
             {(["All", "Beginner", "Intermediate", "Advanced"] as const).map(
               (d) => (
                 <button
@@ -384,8 +384,8 @@ export default function Quests() {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {filtered.length} quest{filtered.length !== 1 ? "s" : ""} shown
-          </p>
+            <Trans context="Quests, p">{filtered.length} quest{filtered.length !== 1 ? "s" : ""} shown
+          </Trans></p>
         </div>
       </section>
 
@@ -496,17 +496,17 @@ export default function Quests() {
             </div>
             <div className="flex-1">
               <h2 className="font-display text-lg font-bold text-foreground">
-                Don't see your gift here?
-              </h2>
+                <Trans context="Quests, h2">Don't see your gift here?
+              </Trans></h2>
               <p className="text-sm text-muted-foreground">
-                Post your own Quest. Anyone can propose one.
+                <Trans context="Quests, p">Post your own Quest. Anyone can propose one.
                 Tell us what you want to bring and what you'd need to make it real.
-              </p>
+              </Trans></p>
             </div>
             <Link href="/propose-quest">
               <a className={`${BTN_PRIMARY} shrink-0`}>
-                Propose a Quest
-                <ArrowRight className="w-4 h-4" />
+                <Trans context="Quests, a">Propose a Quest
+                <ArrowRight className="w-4 h-4" /></Trans>
               </a>
             </Link>
           </div>
@@ -650,9 +650,9 @@ export default function Quests() {
           {signs && signs.recent.length > 0 && (
             <div className="max-w-3xl mx-auto mb-16">
               <h2 className="font-display text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-notice" />
+                <Trans context="Quests, h2"><Sparkles className="w-5 h-5 text-notice" />
                 Recently completed
-              </h2>
+              </Trans></h2>
               <ul className="space-y-2">
                 {signs.recent.map((r, i) => (
                   <li key={`${r.questId}-${i}`}>
@@ -661,8 +661,8 @@ export default function Quests() {
                       className="flex items-center justify-between gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-notice transition-colors"
                     >
                       <span className="text-sm text-foreground min-w-0 truncate">
-                        <span className="font-semibold">{r.name}</span> completed{" "}
-                        <span className="font-medium text-notice">{r.questTitle}</span>
+                        <Trans context="Quests, span"><span className="font-semibold">{r.name}</span> completed{" "}
+                        <span className="font-medium text-notice">{r.questTitle}</span></Trans>
                       </span>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {relativeWhen(r.when, now)}
@@ -678,12 +678,12 @@ export default function Quests() {
           <div className="max-w-3xl mx-auto text-center bg-card p-8 rounded-2xl border border-border shadow-sm">
             <Star className="mx-auto mb-4 size-12 text-notice" aria-hidden="true" />
             <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Find your first Quest
-            </h2>
+              <Trans context="Quests, h2">Find your first Quest
+            </Trans></h2>
             <p className="text-muted-foreground mb-6">
-              Meet the circles on a community call, then come back and take a
+              <Trans context="Quests, p">Meet the circles on a community call, then come back and take a
               Start here Quest.
-            </p>
+            </Trans></p>
             <div className="flex flex-wrap justify-center gap-4">
               {/* A fork with no events page shows no button rather than a dead
                   link, the same rule the footer follows. */}
@@ -694,15 +694,15 @@ export default function Quests() {
                   rel="noopener noreferrer"
                   className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition flex items-center gap-2"
                 >
-                  <Calendar className="w-5 h-5" />
+                  <Trans context="Quests, a"><Calendar className="w-5 h-5" />
                   Join a Community Call
-                </a>
+                </Trans></a>
               )}
               {letterOn && (
                 <Link href="/love-letter">
                   <a className="px-6 py-3 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors flex items-center gap-2">
-                    <Heart className="w-5 h-5" />
-                    Sign the {pageVarsFrom(cfg ?? {}).commitment}
+                    <Trans context="Quests, a"><Heart className="w-5 h-5" />
+                    Sign the {pageVarsFrom(cfg ?? {}).commitment}</Trans>
                   </a>
                 </Link>
               )}
@@ -722,15 +722,15 @@ export default function Quests() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-              About {tokensWord}
+              <Trans context="Quests, h2">About {tokensWord}</Trans>
             </h2>
             <p className="text-muted-foreground">
-              {villageName} sets its own rules for {currencyName}, {valueName} and its other tokens.
-              {conversionNote ? ` ${conversionNote}` : ""}
+              <Trans context="Quests, p">{villageName} sets its own rules for {currencyName}, {valueName} and its other tokens.
+              {conversionNote ? ` ${conversionNote}` : ""}</Trans>
             </p>
             <Link href="/game-mechanics" className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2">
-              See this village's rules
-            </Link>
+              <Trans context="Quests, Link">See this village's rules
+            </Trans></Link>
           </div>
         </div>
       </section>

@@ -30,6 +30,7 @@ import { BreathingLoader } from "@/components/natural";
 import PlanCard from "@/components/seasonPlans/PlanCard";
 import { fetchVillage, type VillagePayload } from "@/components/seasonPlans/seasonPlansApi";
 import { civilDayWords } from "@shared/seasonPlans";
+import { useLingui } from "@lingui/react/macro";
 
 export const SEASON_PLANS_WORDS = {
   title: "The village's season",
@@ -48,6 +49,7 @@ export const SEASON_PLANS_WORDS = {
 } as const;
 
 export default function SeasonPlans() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const modules = useModules();
   const governance = useModule("governance");
@@ -115,7 +117,7 @@ export default function SeasonPlans() {
       <div className="container max-w-5xl px-4 py-8">
         {state === "loading" && (
           <div className="flex justify-center py-16">
-            <BreathingLoader label="Reading the village's plans" />
+            <BreathingLoader label={t({ message: "Reading the village's plans", context: "SeasonPlans, label" })} />
           </div>
         )}
         {state === "error" && (
@@ -151,7 +153,7 @@ export default function SeasonPlans() {
               </Link>
             </header>
 
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Show">
+            <div className="flex flex-wrap gap-2" role="group" aria-label={t({ message: "Show", context: "SeasonPlans, aria-label" })}>
               {toggle(!onlyWaiting, SEASON_PLANS_WORDS.everyone, () => setOnlyWaiting(false))}
               {toggle(onlyWaiting, SEASON_PLANS_WORDS.waiting, () => setOnlyWaiting(true))}
             </div>

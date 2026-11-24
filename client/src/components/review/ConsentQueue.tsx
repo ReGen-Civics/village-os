@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { authToken } from "@/lib/gameApi";
 import type { WorkPay } from "@shared/workValue";
 import WorkPayBlock from "@/components/WorkPayBlock";
+import { Trans } from "@lingui/react/macro";
 
 /** One row of `GET /api/admin/quest-claims`: `ClaimRecord` in server/repos/quests.ts, plus `pay`. */
 export interface ConsentClaim {
@@ -87,13 +88,13 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
   if (error) {
     return (
       <div className={card}>
-        <h2 className="font-semibold text-foreground">The claims did not load</h2>
+        <h2 className="font-semibold text-foreground"><Trans context="ConsentQueue, h2">The claims did not load</Trans></h2>
         <p className="text-sm text-muted-foreground mt-2">
-          {error}. Finished work may be waiting for a witness, and this page cannot see it right now.
-        </p>
+          <Trans context="ConsentQueue, p">{error}. Finished work may be waiting for a witness, and this page cannot see it right now.
+        </Trans></p>
         <button onClick={onRetry} className="text-xs border border-border rounded-lg px-3 py-2 mt-4 min-h-[44px]">
-          Try again
-        </button>
+          <Trans context="ConsentQueue, button">Try again
+        </Trans></button>
       </div>
     );
   }
@@ -139,16 +140,16 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
     <section className="space-y-4" aria-labelledby="consent-heading">
       <div>
         <h2 id="consent-heading" className="text-lg font-semibold text-foreground">
-          Finished work waiting for a witness
-        </h2>
+          <Trans context="ConsentQueue, h2">Finished work waiting for a witness
+        </Trans></h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-          Consent is the one step that releases value. Read what they did. Saying yes pays what the quest says.
-        </p>
+          <Trans context="ConsentQueue, p">Consent is the one step that releases value. Read what they did. Saying yes pays what the quest says.
+        </Trans></p>
       </div>
 
       {waiting.length === 0 && (
         <div className={card}>
-          <p className="text-sm text-muted-foreground">No finished work is waiting for a witness.</p>
+          <p className="text-sm text-muted-foreground"><Trans context="ConsentQueue, p">No finished work is waiting for a witness.</Trans></p>
         </div>
       )}
 
@@ -160,10 +161,10 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
           <div key={c.id} className={card}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="font-semibold text-foreground">{c.questTitle}</h3>
-              {submitted && <p className="text-xs text-muted-foreground">Submitted {submitted}</p>}
+              {submitted && <p className="text-xs text-muted-foreground"><Trans context="ConsentQueue, p">Submitted {submitted}</Trans></p>}
             </div>
             <p className="text-sm text-foreground mt-1">{c.userName}</p>
-            {c.note && <p className="text-sm text-muted-foreground mt-2 italic">&ldquo;{c.note}&rdquo;</p>}
+            {c.note && <p className="text-sm text-muted-foreground mt-2 italic"><Trans context="ConsentQueue, p">&ldquo;{c.note}&rdquo;</Trans></p>}
             {c.artifactUrl &&
               (href ? (
                 <a
@@ -182,7 +183,7 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
               {c.pay ? (
                 <WorkPayBlock pay={c.pay} variant="full" />
               ) : (
-                <p className="text-xs text-muted-foreground">Its quest is gone from the board, so nothing is advertised. The server answers when you press.</p>
+                <p className="text-xs text-muted-foreground"><Trans context="ConsentQueue, p">Its quest is gone from the board, so nothing is advertised. The server answers when you press.</Trans></p>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -191,15 +192,15 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
                 onClick={() => void decide(c, true)}
                 className="text-sm bg-teal-deep text-white rounded-lg px-3 py-2 min-h-[44px] font-medium disabled:opacity-40"
               >
-                Consent
-              </button>
+                <Trans context="ConsentQueue, button">Consent
+              </Trans></button>
               <button
                 disabled={busy === c.id}
                 onClick={() => void decide(c, false)}
                 className="text-sm border border-border rounded-lg px-3 py-2 min-h-[44px]"
               >
-                Decline
-              </button>
+                <Trans context="ConsentQueue, button">Decline
+              </Trans></button>
             </div>
           </div>
         );
@@ -207,14 +208,14 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
 
       {underway.length > 0 && (
         <div className={card}>
-          <h3 className="text-sm font-semibold text-foreground">Claimed and still underway ({underway.length})</h3>
+          <h3 className="text-sm font-semibold text-foreground"><Trans context="ConsentQueue, h3">Claimed and still underway ({underway.length})</Trans></h3>
           <ul className="text-sm text-muted-foreground mt-2 space-y-2">
             {underway.map((c) => (
               <li key={c.id}>
                 {c.userName} on {c.questTitle}
                 {c.confidence ? `, ${CONFIDENCE_WORDS[c.confidence]}` : ""}
                 {c.confidenceNote && (c.confidence === "at_risk" || c.confidence === "stuck") && (
-                  <span className="block italic">&ldquo;{c.confidenceNote}&rdquo;</span>
+                  <span className="block italic"><Trans context="ConsentQueue, span">&ldquo;{c.confidenceNote}&rdquo;</Trans></span>
                 )}
               </li>
             ))}
@@ -224,11 +225,11 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
 
       {decided.length > 0 && (
         <div className={card}>
-          <h3 className="text-sm font-semibold text-foreground">Recently decided</h3>
+          <h3 className="text-sm font-semibold text-foreground"><Trans context="ConsentQueue, h3">Recently decided</Trans></h3>
           <ul className="text-sm text-muted-foreground mt-2 space-y-1">
             {decided.map((c) => (
               <li key={c.id}>
-                {c.userName} on {c.questTitle}: {c.status === "consented" ? (c.amount ? `consented at ${c.amount}` : "consented") : "declined"}
+                <Trans context="ConsentQueue, li">{c.userName} on {c.questTitle}: {c.status === "consented" ? (c.amount ? `consented at ${c.amount}` : "consented") : "declined"}</Trans>
               </li>
             ))}
           </ul>

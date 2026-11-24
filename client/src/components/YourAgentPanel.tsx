@@ -19,6 +19,7 @@ import { Bot, Copy, KeyRound, ShieldCheck, Trash2, Webhook } from "lucide-react"
 import { gameFetch } from "@/lib/gameApi";
 import { useIsAdmin } from "@/contexts/AuthContext";
 import ConnectorSetupPanel from "@/components/agent/ConnectorSetupPanel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Setup = {
   origin: string;
@@ -85,6 +86,7 @@ function Card({ title, icon, children }: { title: string; icon: React.ReactNode;
 }
 
 function CopyLine({ value }: { value: string }) {
+  const { t } = useLingui();
   const [done, setDone] = useState(false);
   return (
     <div className="flex items-start gap-2">
@@ -93,7 +95,7 @@ function CopyLine({ value }: { value: string }) {
         type="button"
         onClick={() => { navigator.clipboard?.writeText(value).then(() => { setDone(true); setTimeout(() => setDone(false), 1500); }).catch(() => {}); }}
         className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2 py-2 text-xs text-card-foreground hover:bg-muted"
-        aria-label="Copy"
+        aria-label={t({ message: "Copy", context: "YourAgentPanel, aria-label" })}
       >
         <Copy className="w-3.5 h-3.5" />{done ? "Copied" : "Copy"}
       </button>
@@ -102,6 +104,7 @@ function CopyLine({ value }: { value: string }) {
 }
 
 export default function YourAgentPanel({ person }: { person?: string } = {}) {
+  const { t } = useLingui();
   const isAdmin = useIsAdmin();
   const [setup, setSetup] = useState<Setup | null>(null);
   const [error, setError] = useState("");
@@ -329,7 +332,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 mb-1">
           <Bot className="w-5 h-5 text-notice" />
-          <h2 className="font-display text-xl font-bold text-card-foreground">Your agent</h2>
+          <h2 className="font-display text-xl font-bold text-card-foreground"><Trans context="YourAgentPanel, h2">Your agent</Trans></h2>
         </div>
         <button
           type="button"
@@ -343,8 +346,8 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </button>
       </div>
       <p className="text-sm text-muted-foreground mb-5">
-        Connect your own agent to this village, or run the village assistant on your own key. You hold the token; the village never writes anything until you say yes.
-      </p>
+        <Trans context="YourAgentPanel, p">Connect your own agent to this village, or run the village assistant on your own key. You hold the token; the village never writes anything until you say yes.
+      </Trans></p>
       {/* One sentence a screen reader hears when the button changes what is
           under it. Without it the longest section on the page opens and closes
           in silence. */}
@@ -356,10 +359,10 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
 
       <div className="space-y-5">
         {/* ── Bring your agent ── */}
-        <Card title="Bring your agent" icon={<KeyRound className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "Bring your agent", context: "YourAgentPanel, title" })} icon={<KeyRound className="w-4 h-4 text-notice" />}>
           <p className="text-xs text-muted-foreground mb-3">
-            A personal access token lets your agent read what you already see here and make two writes, each one shown to you first. Tokens expire in 90 days and you can revoke one any time. Changing or resetting your password, or an admin signing you out everywhere, ends every token you made, your agent inbox, your own model key and your private calendar address. Set up again the ones you still use.
-          </p>
+            <Trans context="YourAgentPanel, p">A personal access token lets your agent read what you already see here and make two writes, each one shown to you first. Tokens expire in 90 days and you can revoke one any time. Changing or resetting your password, or an admin signing you out everywhere, ends every token you made, your agent inbox, your own model key and your private calendar address. Set up again the ones you still use.
+          </Trans></p>
 
           {tokens.length > 0 && (
             <ul className="space-y-2 mb-4">
@@ -371,13 +374,13 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
                       {!t.live && <span className="ml-2 text-xs text-muted-foreground">({t.revokedAt ? "revoked" : "expired"})</span>}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t.scopes.join(", ")} · expires {when(t.expiresAt).slice(0, 10)}{t.lastUsedAt ? ` · last used ${when(t.lastUsedAt)}` : " · never used"}
+                      <Trans context="YourAgentPanel, div">{t.scopes.join(", ")} · expires {when(t.expiresAt).slice(0, 10)}{t.lastUsedAt ? ` · last used ${when(t.lastUsedAt)}` : " · never used"}</Trans>
                     </div>
                   </div>
                   {t.live && (
                     <button type="button" onClick={() => revoke(t.id)} className="inline-flex items-center gap-1 text-xs text-destructive hover:text-destructive/80">
-                      <Trash2 className="w-3.5 h-3.5" /> Revoke
-                    </button>
+                      <Trans context="YourAgentPanel, button"><Trash2 className="w-3.5 h-3.5" /> Revoke
+                    </Trans></button>
                   )}
                 </li>
               ))}
@@ -390,17 +393,17 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
                 Your token for <strong>{revealed.name}</strong>. This is the only time it is shown; copy it now and give it to your agent as <code>{envVar}</code>.
               </p>
               <CopyLine value={revealed.token} />
-              <button type="button" onClick={() => setRevealed(null)} className="mt-2 text-xs text-notice underline">I have copied it</button>
+              <button type="button" onClick={() => setRevealed(null)} className="mt-2 text-xs text-notice underline"><Trans context="YourAgentPanel, button">I have copied it</Trans></button>
             </div>
           )}
 
           <div className="rounded-lg bg-card border border-border p-3 mb-4">
-            <label htmlFor="agent-token-name" className="block text-xs font-medium text-card-foreground mb-1">Mint a token</label>
+            <label htmlFor="agent-token-name" className="block text-xs font-medium text-card-foreground mb-1"><Trans context="YourAgentPanel, label">Mint a token</Trans></label>
             <input
               id="agent-token-name"
               value={tokenName}
               onChange={(e) => setTokenName(e.target.value)}
-              placeholder="A name you will recognise, like laptop Claude Code"
+              placeholder={t({ message: "A name you will recognise, like laptop Claude Code", context: "YourAgentPanel, placeholder" })}
               className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2 mb-2"
               maxLength={80}
             />
@@ -447,39 +450,39 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
             </div>
             <pre className="overflow-x-auto rounded-lg bg-background text-foreground text-[11px] leading-relaxed p-3 whitespace-pre-wrap break-words">{cards[card].text}</pre>
             <p className="text-xs text-muted-foreground mt-2">
-              The skills your agent should read: <a className="text-foreground underline" href={setup?.skillsUrl ?? "#"} target="_blank" rel="noreferrer">skills index</a>, <a className="text-foreground underline" href={setup?.openapiUrl ?? "#"} target="_blank" rel="noreferrer">OpenAPI</a>. Two lines every skill carries: show the exact write and get a yes; a hidden field is hidden.
-            </p>
+              <Trans context="YourAgentPanel, p">The skills your agent should read: <a className="text-foreground underline" href={setup?.skillsUrl ?? "#"} target="_blank" rel="noreferrer">skills index</a>, <a className="text-foreground underline" href={setup?.openapiUrl ?? "#"} target="_blank" rel="noreferrer">OpenAPI</a>. Two lines every skill carries: show the exact write and get a yes; a hidden field is hidden.
+            </Trans></p>
           </div>
 
           <div className="rounded-lg bg-card border border-border p-3">
             <div className="flex items-center gap-2 mb-1">
               <Webhook className="w-4 h-4 text-notice" />
-              <span className="text-xs font-medium text-card-foreground">Agent inbox (optional)</span>
+              <span className="text-xs font-medium text-card-foreground"><Trans context="YourAgentPanel, span">Agent inbox (optional)</Trans></span>
             </div>
             <p className="text-xs text-muted-foreground mb-2">
-              An https URL your agent listens on. The village sends it the week ahead and, once introductions are on, your opportunities, signed with a secret shown once.
-            </p>
+              <Trans context="YourAgentPanel, p">An https URL your agent listens on. The village sends it the week ahead and, once introductions are on, your opportunities, signed with a secret shown once.
+            </Trans></p>
             {!setup?.memberSecrets ? (
               <p className="text-xs text-notice">{setup?.memberSecretsSentence ?? ""}</p>
             ) : (
               <>
                 <div className="flex flex-wrap gap-2 mb-2">
                   <input
-                    aria-label="Agent inbox URL"
+                    aria-label={t({ message: "Agent inbox URL", context: "YourAgentPanel, aria-label" })}
                     value={inboxUrl}
                     onChange={(e) => setInboxUrl(e.target.value)}
-                    placeholder="https://your-agent.example/village"
+                    placeholder={t({ message: "https://your-agent.example/village", context: "YourAgentPanel, placeholder" })}
                     className="flex-1 min-w-[12rem] text-sm border border-border rounded-lg px-3 py-2"
                   />
-                  <button type="button" onClick={saveInbox} disabled={inboxBusy || !inboxUrl.trim()} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40">Save</button>
-                  {inbox && <button type="button" onClick={testInbox} disabled={inboxBusy} className="text-sm border border-border rounded-lg px-3 py-1.5 disabled:opacity-40">Send a test</button>}
-                  {inbox && <button type="button" onClick={removeInboxNow} className="text-sm text-destructive px-2 py-1.5">Remove</button>}
+                  <button type="button" onClick={saveInbox} disabled={inboxBusy || !inboxUrl.trim()} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"><Trans context="YourAgentPanel, button">Save</Trans></button>
+                  {inbox && <button type="button" onClick={testInbox} disabled={inboxBusy} className="text-sm border border-border rounded-lg px-3 py-1.5 disabled:opacity-40"><Trans context="YourAgentPanel, button">Send a test</Trans></button>}
+                  {inbox && <button type="button" onClick={removeInboxNow} className="text-sm text-destructive px-2 py-1.5"><Trans context="YourAgentPanel, button">Remove</Trans></button>}
                 </div>
                 {inboxSecret && (
                   <div role="status" className="rounded-xl border border-notice/60 bg-muted p-3 mb-2">
                     <p className="text-xs text-notice mb-2">Your inbox secret. Shown once; the village does not keep it. Verify <code>{setup.signatureHeader}</code> with it.</p>
                     <CopyLine value={inboxSecret} />
-                    <button type="button" onClick={() => setInboxSecret("")} className="mt-2 text-xs text-notice underline">I have copied it</button>
+                    <button type="button" onClick={() => setInboxSecret("")} className="mt-2 text-xs text-notice underline"><Trans context="YourAgentPanel, button">I have copied it</Trans></button>
                   </div>
                 )}
                 {inbox && (
@@ -497,10 +500,10 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── Run the assistant on your key ── */}
-        <Card title="Run the assistant on your key" icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "Run the assistant on your key", context: "YourAgentPanel, title" })} icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
           <p className="text-xs text-muted-foreground mb-3">
-            Store your own LLM key and the in-app assistant answers your questions on it, on your budget. It is encrypted at rest and only the last four characters ever come back to this page.
-          </p>
+            <Trans context="YourAgentPanel, p">Store your own LLM key and the in-app assistant answers your questions on it, on your budget. It is encrypted at rest and only the last four characters ever come back to this page.
+          </Trans></p>
           {!setup?.memberSecrets ? (
             <p className="text-xs text-notice">{setup?.memberSecretsSentence ?? ""}</p>
           ) : (
@@ -508,23 +511,23 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
               {keyView && (
                 <p className="text-xs text-card-foreground mb-2">
                   Set: <strong>{keyView.provider}</strong> ending in <code>{keyView.last4}</code>{keyView.baseUrl ? ` at ${keyView.baseUrl}` : ""}{keyView.model ? ` (${keyView.model})` : ""}, {when(keyView.setAt)}.
-                  <button type="button" onClick={removeKey} className="ml-2 text-destructive underline">Remove</button>
+                  <button type="button" onClick={removeKey} className="ml-2 text-destructive underline"><Trans context="YourAgentPanel, button">Remove</Trans></button>
                 </p>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2 min-w-0">
-                <select aria-label="Provider" value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2 bg-card">
+                <select aria-label={t({ message: "Provider", context: "YourAgentPanel, aria-label" })} value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2 bg-card">
                   <option value="anthropic">Anthropic</option>
                   <option value="openai_compatible">OpenAI-compatible</option>
                 </select>
-                <input aria-label="API key" type="password" autoComplete="off" value={keyValue} onChange={(e) => setKeyValue(e.target.value)} placeholder="Your API key" className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
+                <input aria-label={t({ message: "API key", context: "YourAgentPanel, aria-label" })} type="password" autoComplete="off" value={keyValue} onChange={(e) => setKeyValue(e.target.value)} placeholder={t({ message: "Your API key", context: "YourAgentPanel, placeholder" })} className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
                 {provider === "openai_compatible" && (
                   <>
-                    <input aria-label="Base URL" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="Base URL, like https://openrouter.ai/api/v1" className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
-                    <input aria-label="Model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model name, as the provider names it" className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
+                    <input aria-label={t({ message: "Base URL", context: "YourAgentPanel, aria-label" })} value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder={t({ message: "Base URL, like https://openrouter.ai/api/v1", context: "YourAgentPanel, placeholder" })} className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
+                    <input aria-label={t({ message: "Model", context: "YourAgentPanel, aria-label" })} value={model} onChange={(e) => setModel(e.target.value)} placeholder={t({ message: "Model name, as the provider names it", context: "YourAgentPanel, placeholder" })} className="w-full min-w-0 text-sm border border-border rounded-lg px-3 py-2" />
                   </>
                 )}
               </div>
-              {provider === "openai_compatible" && <p className="text-xs text-muted-foreground mb-2">OpenAI-compatible covers OpenRouter, Ollama and most gateways: a base URL, a key and a model name.</p>}
+              {provider === "openai_compatible" && <p className="text-xs text-muted-foreground mb-2"><Trans context="YourAgentPanel, p">OpenAI-compatible covers OpenRouter, Ollama and most gateways: a base URL, a key and a model name.</Trans></p>}
               <button type="button" onClick={saveKey} disabled={keyBusy || keyValue.trim().length < 8} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40">
                 {keyBusy ? "Saving…" : keyView ? "Replace key" : "Save key"}
               </button>
@@ -535,9 +538,9 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── About me for my agent ── */}
-        <Card title="About me for my agent" icon={<Bot className="w-4 h-4 text-notice" />}>
-          <p className="text-xs text-muted-foreground mb-2">A note your agent reads to serve you. Yours to write, yours to clear. You choose who else may read it.</p>
-          <label htmlFor="agent-about" className="sr-only">About me for my agent</label>
+        <Card title={t({ message: "About me for my agent", context: "YourAgentPanel, title" })} icon={<Bot className="w-4 h-4 text-notice" />}>
+          <p className="text-xs text-muted-foreground mb-2"><Trans context="YourAgentPanel, p">A note your agent reads to serve you. Yours to write, yours to clear. You choose who else may read it.</Trans></p>
+          <label htmlFor="agent-about" className="sr-only"><Trans context="YourAgentPanel, label">About me for my agent</Trans></label>
           {/* The mic, for a box that saves on blur: spoken words save as they land. */}
           <VoiceArea
             value={profile.aboutMe}
@@ -553,7 +556,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
               onBlur={() => saveProfile({ aboutMe: profile.aboutMe })}
               rows={3}
               maxLength={2000}
-              placeholder="What you are here for, what you cook, when you are around, what to leave you out of."
+              placeholder={t({ message: "What you are here for, what you cook, when you are around, what to leave you out of.", context: "YourAgentPanel, placeholder" })}
               className="w-full text-sm border border-border rounded-lg px-3 py-2 mb-2"
             />
           </VoiceArea>
@@ -573,35 +576,35 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── What the assistant has said about you ── */}
-        <Card title="What the assistant has said about you" icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "What the assistant has said about you", context: "YourAgentPanel, title" })} icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
           {statements.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nothing yet. When the assistant says a sentence about you, it lands here with its source, and you can correct or withdraw it.</p>
+            <p className="text-xs text-muted-foreground"><Trans context="YourAgentPanel, p">Nothing yet. When the assistant says a sentence about you, it lands here with its source, and you can correct or withdraw it.</Trans></p>
           ) : (
             <ul className="space-y-2">
               {statements.map((s) => (
                 <li key={s.id} className="rounded-lg bg-card border border-border px-3 py-2">
                   <p className="text-sm text-card-foreground">{s.text}</p>
                   <p className="text-xs text-muted-foreground">
-                    {when(s.createdAt)} · source: {s.sources.length ? s.sources.join(", ") : "the conversation"} · {s.status}
-                    {s.correction ? ` · you said: ${s.correction}` : ""}
+                    <Trans context="YourAgentPanel, p">{when(s.createdAt)} · source: {s.sources.length ? s.sources.join(", ") : "the conversation"} · {s.status}
+                    {s.correction ? ` · you said: ${s.correction}` : ""}</Trans>
                   </p>
                   {s.status === "active" && (
                     <div className="mt-1 flex flex-wrap gap-3">
-                      <button type="button" onClick={() => setCorrecting({ id: s.id, text: "" })} className="text-xs text-foreground underline">Correct</button>
-                      <button type="button" onClick={() => decideStatement(s.id, "withdraw")} className="text-xs text-destructive underline">Withdraw</button>
+                      <button type="button" onClick={() => setCorrecting({ id: s.id, text: "" })} className="text-xs text-foreground underline"><Trans context="YourAgentPanel, button">Correct</Trans></button>
+                      <button type="button" onClick={() => decideStatement(s.id, "withdraw")} className="text-xs text-destructive underline"><Trans context="YourAgentPanel, button">Withdraw</Trans></button>
                     </div>
                   )}
                   {correcting?.id === s.id && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       <input
-                        aria-label="What is true instead"
+                        aria-label={t({ message: "What is true instead", context: "YourAgentPanel, aria-label" })}
                         value={correcting.text}
                         onChange={(e) => setCorrecting({ id: s.id, text: e.target.value })}
-                        placeholder="What is true instead"
+                        placeholder={t({ message: "What is true instead", context: "YourAgentPanel, placeholder" })}
                         className="flex-1 min-w-[10rem] text-sm border border-border rounded-lg px-3 py-1.5"
                       />
-                      <button type="button" onClick={() => decideStatement(s.id, "correct", correcting.text)} disabled={!correcting.text.trim()} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5 disabled:opacity-40">Save</button>
-                      <button type="button" onClick={() => setCorrecting(null)} className="text-sm text-muted-foreground px-2">Cancel</button>
+                      <button type="button" onClick={() => decideStatement(s.id, "correct", correcting.text)} disabled={!correcting.text.trim()} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5 disabled:opacity-40"><Trans context="YourAgentPanel, button">Save</Trans></button>
+                      <button type="button" onClick={() => setCorrecting(null)} className="text-sm text-muted-foreground px-2"><Trans context="YourAgentPanel, button">Cancel</Trans></button>
                     </div>
                   )}
                 </li>
@@ -611,9 +614,9 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── Drafts waiting for your yes ── */}
-        <Card title="Drafts waiting for your yes" icon={<KeyRound className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "Drafts waiting for your yes", context: "YourAgentPanel, title" })} icon={<KeyRound className="w-4 h-4 text-notice" />}>
           {drafts.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nothing waiting. When the assistant proposes an RSVP for you, it appears here and nothing happens until you confirm it.</p>
+            <p className="text-xs text-muted-foreground"><Trans context="YourAgentPanel, p">Nothing waiting. When the assistant proposes an RSVP for you, it appears here and nothing happens until you confirm it.</Trans></p>
           ) : (
             <ul className="space-y-2">
               {drafts.map((d) => (
@@ -621,11 +624,11 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
                   <div className="text-sm text-card-foreground">
                     Say <strong>{d.payload.status}</strong> to <strong>{d.event?.title ?? d.payload.eventId}</strong>
                     {d.event ? <span className="text-xs text-muted-foreground"> ({when(d.event.startsAt)})</span> : null}
-                    <span className="block text-xs text-muted-foreground">proposed by the {d.source === "token" ? "agent" : "assistant"} · {when(d.createdAt)}</span>
+                    <span className="block text-xs text-muted-foreground"><Trans context="YourAgentPanel, span">proposed by the {d.source === "token" ? "agent" : "assistant"} · {when(d.createdAt)}</Trans></span>
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => decideDraft(d.id, "confirm")} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5">Yes, send it</button>
-                    <button type="button" onClick={() => decideDraft(d.id, "reject")} className="text-sm border border-border rounded-lg px-3 py-1.5">No</button>
+                    <button type="button" onClick={() => decideDraft(d.id, "confirm")} className="text-sm border border-notice/70 bg-teal-deep text-white rounded-lg px-3 py-1.5"><Trans context="YourAgentPanel, button">Yes, send it</Trans></button>
+                    <button type="button" onClick={() => decideDraft(d.id, "reject")} className="text-sm border border-border rounded-lg px-3 py-1.5"><Trans context="YourAgentPanel, button">No</Trans></button>
                   </div>
                 </li>
               ))}

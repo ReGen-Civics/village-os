@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Coins, MessageSquare, Wrench } from "lucide-react";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const inputCls =
   "border border-gray-200 rounded-lg px-2 py-1.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-teal-deep";
@@ -99,9 +100,9 @@ export function useModuleConfig(moduleId: string, password: string) {
 function ModuleOff({ name }: { name: string }) {
   return (
     <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-4">
-      The {name} module is off. What you set here is saved now and takes effect
+      <Trans context="ModuleConfigPanels, p">The {name} module is off. What you set here is saved now and takes effect
       the moment you turn it on.
-    </p>
+    </Trans></p>
   );
 }
 
@@ -146,13 +147,14 @@ const toRefs = (rows: CampaignRow[]) =>
  * that the links moved.
  */
 export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: string; onSaved?: () => void }) {
+  const { t } = useLingui();
   const { config, lifecycle, loading, save } = useModuleConfig("crowdpool", password);
   const [rows, setRows] = useState<CampaignRow[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { setRows(toRows(config?.villageCampaigns)); }, [config]);
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
   const set = (i: number, patch: Partial<CampaignRow>) =>
     setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -162,12 +164,12 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
       {lifecycle === "off" && <ModuleOff name="Crowdpool" />}
 
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">Linked campaigns</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="ModuleConfigPanels, h3">Linked campaigns</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          A slug is the campaign's address on the hub and is what /campaign/:slug
+          <Trans context="ModuleConfigPanels, p">A slug is the campaign's address on the hub and is what /campaign/:slug
           uses. A numeric hub id works too and is what the hub itself calls the
           campaign. One of the two is enough; both together are the surest match.
-        </p>
+        </Trans></p>
 
         <div className="space-y-3">
           {rows.map((r, i) => (
@@ -175,7 +177,7 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
               <label className="text-xs text-gray-500 sm:col-span-4">
                 Slug
                 <input value={r.slug} onChange={(e) => set(i, { slug: e.target.value })}
-                  placeholder="second-raising" className={`${inputCls} w-full mt-1`} />
+                  placeholder={t({ message: "second-raising", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1`} />
               </label>
               <label className="text-xs text-gray-500 sm:col-span-2">
                 Hub id
@@ -185,31 +187,31 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
               <label className="text-xs text-gray-500 sm:col-span-4">
                 Hub address, if this one lives somewhere else
                 <input value={r.hubBaseUrl} onChange={(e) => set(i, { hubBaseUrl: e.target.value })}
-                  placeholder="https://hub.example" className={`${inputCls} w-full mt-1`} />
+                  placeholder={t({ message: "https://hub.example", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1`} />
               </label>
               <div className="sm:col-span-2">
                 <button type="button" className={`${btnCls} text-red-600 border-red-200 w-full`}
                   aria-label={`Unlink campaign ${r.slug || r.id || i + 1}`}
-                  onClick={() => setRows(rows.filter((_, j) => j !== i))}>Unlink</button>
+                  onClick={() => setRows(rows.filter((_, j) => j !== i))}><Trans context="ModuleConfigPanels, button">Unlink</Trans></button>
               </div>
             </div>
           ))}
           {rows.length === 0 && (
             <p className="text-sm text-gray-400">
-              No campaigns linked. /campaigns shows its empty board until one is.
-            </p>
+              <Trans context="ModuleConfigPanels, p">No campaigns linked. /campaigns shows its empty board until one is.
+            </Trans></p>
           )}
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4">
           <button type="button" className={btnCls}
-            onClick={() => setRows([...rows, { slug: "", id: "", hubBaseUrl: "" }])}>Link a campaign</button>
+            onClick={() => setRows([...rows, { slug: "", id: "", hubBaseUrl: "" }])}><Trans context="ModuleConfigPanels, button">Link a campaign</Trans></button>
           <button type="button" className={saveCls} disabled={saving}
             onClick={async () => {
               setSaving(true);
               const ok = await save({ villageCampaigns: toRefs(rows) });
               setSaving(false);
-              if (ok) { toast.success("Linked campaigns saved"); onSaved?.(); }
+              if (ok) { toast.success(t({ message: "Linked campaigns saved", context: "ModuleConfigPanels, toast" })); onSaved?.(); }
             }}>{saving ? "Saving…" : "Save links"}</button>
         </div>
       </div>
@@ -232,13 +234,13 @@ export function CrowdpoolAdminTab({ password }: { password: string }) {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <Coins className="w-5 h-5 text-teal-deep" /> Crowdpool
-        </h2>
+          <Trans context="ModuleConfigPanels, h2"><Coins className="w-5 h-5 text-teal-deep" /> Crowdpool
+        </Trans></h2>
         <p className="text-sm text-gray-500 mt-1 max-w-2xl">
-          Which raisings on the hub belong to this village. Each one linked here
+          <Trans context="ModuleConfigPanels, p">Which raisings on the hub belong to this village. Each one linked here
           gets a ring on /campaigns and a page at /campaign/its-slug. The numbers
           come from the hub every ten minutes; nothing is pledged or held here.
-        </p>
+        </Trans></p>
       </div>
 
       <CrowdpoolCampaignsEditor password={password} onSaved={loadStatus} />
@@ -249,10 +251,10 @@ export function CrowdpoolAdminTab({ password }: { password: string }) {
         named here rather than left to the empty ring on /campaigns.
       */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">What the hub answered</h3>
-        <p className="text-xs text-gray-500 mb-3">Hub: {status?.hubBaseUrl || "not set"}</p>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="ModuleConfigPanels, h3">What the hub answered</Trans></h3>
+        <p className="text-xs text-gray-500 mb-3"><Trans context="ModuleConfigPanels, p">Hub: {status?.hubBaseUrl || "not set"}</Trans></p>
         {(status?.campaigns ?? []).length === 0 && (
-          <p className="text-sm text-gray-400">Nothing synced yet. The sync runs every ten minutes.</p>
+          <p className="text-sm text-gray-400"><Trans context="ModuleConfigPanels, p">Nothing synced yet. The sync runs every ten minutes.</Trans></p>
         )}
         <ul className="space-y-1">
           {(status?.campaigns ?? []).map((c: any) => (
@@ -312,13 +314,14 @@ export function CategoryListEditor({
   blurb: string;
   icon: React.ReactNode;
 }) {
+  const { t } = useLingui();
   const { config, lifecycle, loading, save } = useModuleConfig(moduleId, password);
   const [rows, setRows] = useState<CategoryRow[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { setRows(toCategories(config?.categories)); }, [config]);
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
   const set = (i: number, patch: Partial<CategoryRow>) =>
     setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -341,11 +344,11 @@ export function CategoryListEditor({
                     where it appears, so the same field announced two
                     different names depending on the row. */}
                 <input value={r.id} disabled={locked}
-                  aria-label="Id"
+                  aria-label={t({ message: "Id", context: "ModuleConfigPanels, aria-label" })}
                   aria-describedby={locked ? `category-${i}-locked` : undefined}
                   onChange={(e) => set(i, { id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
-                  placeholder="village-life" className={`${inputCls} w-full mt-1 disabled:bg-gray-50 disabled:text-gray-500`} />
-                {locked && <span id={`category-${i}-locked`} className="block text-[11px] text-gray-400 mt-0.5">Fixed. Threads and tools already point at it.</span>}
+                  placeholder={t({ message: "village-life", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1 disabled:bg-gray-50 disabled:text-gray-500`} />
+                {locked && <span id={`category-${i}-locked`} className="block text-[11px] text-gray-400 mt-0.5"><Trans context="ModuleConfigPanels, span">Fixed. Threads and tools already point at it.</Trans></span>}
               </label>
               <label className="text-xs text-gray-500 sm:col-span-5">
                 What people read
@@ -360,7 +363,7 @@ export function CategoryListEditor({
               <div className="sm:col-span-2">
                 <button type="button" className={`${btnCls} text-red-600 border-red-200 w-full`}
                   aria-label={`Remove category ${r.label || r.id}`}
-                  onClick={() => setRows(rows.filter((_, j) => j !== i))}>Remove</button>
+                  onClick={() => setRows(rows.filter((_, j) => j !== i))}><Trans context="ModuleConfigPanels, button">Remove</Trans></button>
               </div>
             </div>
           );
@@ -369,7 +372,7 @@ export function CategoryListEditor({
 
       <div className="flex flex-wrap gap-2 mt-4">
         <button type="button" className={btnCls}
-          onClick={() => setRows([...rows, { id: "", label: "", sortOrder: rows.length + 1, locked: false }])}>Add a category</button>
+          onClick={() => setRows([...rows, { id: "", label: "", sortOrder: rows.length + 1, locked: false }])}><Trans context="ModuleConfigPanels, button">Add a category</Trans></button>
         <button type="button" className={saveCls} disabled={saving}
           onClick={async () => {
             setSaving(true);
@@ -379,14 +382,14 @@ export function CategoryListEditor({
                 .map((r) => ({ id: r.id.trim(), label: r.label.trim(), sortOrder: Number(r.sortOrder) || 0 })),
             });
             setSaving(false);
-            if (ok) toast.success("Categories saved");
+            if (ok) toast.success(t({ message: "Categories saved", context: "ModuleConfigPanels, toast" }));
           }}>{saving ? "Saving…" : "Save categories"}</button>
       </div>
       <p className="text-[11px] text-gray-400 mt-2">
-        Removing a category leaves anything already filed under it pointing at a
+        <Trans context="ModuleConfigPanels, p">Removing a category leaves anything already filed under it pointing at a
         name nobody can pick again. Rename the label instead when what you want
         is different words for the same shelf.
-      </p>
+      </Trans></p>
     </div>
   );
 }
@@ -409,6 +412,7 @@ export function CategoryListEditor({
  * to leave un-editable.
  */
 export function ResourcesRoutingEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   const { config, loading, save } = useModuleConfig("resources", password);
   const forum = useModuleConfig("forum", password);
   const [category, setCategory] = useState("");
@@ -420,18 +424,18 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
     setVisibleTo(config?.measuredVisibleTo === "admins" ? "admins" : "members");
   }, [config]);
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
   const categories = toCategories(forum.config?.categories);
   const known = categories.some((c) => c.id === category);
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5">
-      <h3 className="font-semibold text-gray-900 mb-1">Where requests go, and who sees the flows</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="ModuleConfigPanels, h3">Where requests go, and who sees the flows</Trans></h3>
       <p className="text-xs text-gray-500 mb-3">
-        Both of these are read every time somebody opens /resources. Neither had
+        <Trans context="ModuleConfigPanels, p">Both of these are read every time somebody opens /resources. Neither had
         a control until now.
-      </p>
+      </Trans></p>
 
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="text-xs text-gray-500">
@@ -441,7 +445,7 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
               had gone missing, which is the moment the name most needed to
               stay recognisable. */}
           <select value={category} onChange={(e) => setCategory(e.target.value)}
-            aria-label="Forum category a spending request is filed under"
+            aria-label={t({ message: "Forum category a spending request is filed under", context: "ModuleConfigPanels, aria-label" })}
             aria-describedby={known ? undefined : "spend-category-warning"}
             className={`${inputCls} w-full mt-1`}>
             {!known && <option value={category}>{category} (no forum category by that name)</option>}
@@ -449,14 +453,14 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
           </select>
           {!known && (
             <span id="spend-category-warning" className="block text-[11px] text-amber-800 mt-1">
-              Nothing on the forum answers to this name, so every approval request
+              <Trans context="ModuleConfigPanels, span">Nothing on the forum answers to this name, so every approval request
               lands in whichever category sorts first. Pick one from the list.
-            </span>
+            </Trans></span>
           )}
         </label>
 
         <fieldset className="text-xs text-gray-500 border-0 p-0 m-0">
-          <legend>Who sees the measured inflows</legend>
+          <legend><Trans context="ModuleConfigPanels, legend">Who sees the measured inflows</Trans></legend>
           <div className="mt-1 space-y-1">
             {[["members", "Everyone signed in"], ["admins", "Admins only"]].map(([value, label]) => (
               <label key={value} className="flex items-center gap-2 min-h-[44px] text-sm text-gray-700">
@@ -474,7 +478,7 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
           setSaving(true);
           const ok = await save({ requestCategory: category, measuredVisibleTo: visibleTo });
           setSaving(false);
-          if (ok) toast.success("Saved. /resources reads it on the next request");
+          if (ok) toast.success(t({ message: "Saved. /resources reads it on the next request", context: "ModuleConfigPanels, toast" }));
         }}>{saving ? "Saving…" : "Save routing"}</button>
     </div>
   );
@@ -495,6 +499,7 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
  * browser can say so early, and the server's refusal is what decides.
  */
 export function AutomationConfigEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   const { config, lifecycle, loading, save } = useModuleConfig("automation", password);
   const [channel, setChannel] = useState("");
   const [queue, setQueue] = useState("15");
@@ -507,23 +512,23 @@ export function AutomationConfigEditor({ password }: { password: string }) {
     setCategory(String(config?.forumCategory ?? ""));
   }, [config]);
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5">
       <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-        <Wrench className="w-4 h-4 text-teal-deep" /> Where recordings come from, and where syntheses go
-      </h3>
+        <Trans context="ModuleConfigPanels, h3"><Wrench className="w-4 h-4 text-teal-deep" /> Where recordings come from, and where syntheses go
+      </Trans></h3>
       <p className="text-xs text-gray-500 mb-3">
-        Read on every sync and every publish. Without a channel id nothing is ever pulled in.
-      </p>
+        <Trans context="ModuleConfigPanels, p">Read on every sync and every publish. Without a channel id nothing is ever pulled in.
+      </Trans></p>
       {lifecycle === "off" && <div className="mb-3"><ModuleOff name="Call Automation" /></div>}
 
       <div className="grid sm:grid-cols-3 gap-3">
         <label className="text-xs text-gray-600">
           Channel id the recordings are pulled from
           <input value={channel} onChange={(e) => setChannel(e.target.value)}
-            placeholder="UC..." className={`${inputCls} w-full mt-1`} />
+            placeholder={t({ message: "UC...", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1`} />
         </label>
         <label className="text-xs text-gray-600">
           Ready syntheses allowed to wait for a human
@@ -533,7 +538,7 @@ export function AutomationConfigEditor({ password }: { password: string }) {
         <label className="text-xs text-gray-600">
           Forum category a published synthesis is filed under
           <input value={category} onChange={(e) => setCategory(e.target.value)}
-            placeholder="village-life" className={`${inputCls} w-full mt-1`} />
+            placeholder={t({ message: "village-life", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1`} />
         </label>
       </div>
 
@@ -546,19 +551,20 @@ export function AutomationConfigEditor({ password }: { password: string }) {
             forumCategory: category.trim(),
           });
           setSaving(false);
-          if (ok) toast.success("Saved. The next sync reads it");
+          if (ok) toast.success(t({ message: "Saved. The next sync reads it", context: "ModuleConfigPanels, toast" }));
         }}>{saving ? "Saving…" : "Save"}</button>
     </div>
   );
 }
 
 export function ForumCategoriesEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   return (
     <CategoryListEditor
       moduleId="forum"
       moduleName="Forum"
       password={password}
-      title="Forum categories"
+      title={t({ message: "Forum categories", context: "ModuleConfigPanels, title" })}
       blurb="The shelves every thread is filed under. Read on every request, shown on /forum, and offered when somebody starts a thread."
       icon={<MessageSquare className="w-4 h-4 text-teal-deep" />}
     />
@@ -566,12 +572,13 @@ export function ForumCategoriesEditor({ password }: { password: string }) {
 }
 
 export function ToolsCategoriesEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   return (
     <CategoryListEditor
       moduleId="tools"
       moduleName="Tools"
       password={password}
-      title="Tool categories"
+      title={t({ message: "Tool categories", context: "ModuleConfigPanels, title" })}
       blurb="How the tools hub groups what the village uses. A tool can only be filed under a category listed here."
       icon={<Wrench className="w-4 h-4 text-teal-deep" />}
     />

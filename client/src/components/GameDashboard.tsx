@@ -2,7 +2,7 @@ import { authToken, gameFetch, GameMe } from "@/lib/gameApi";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { ArrowRight, Compass, Heart, Sparkles } from "lucide-react";
 import StageAdvanced from "@/components/StageAdvanced";
 import { claimMoment } from "@/lib/celebrated";
@@ -172,8 +172,8 @@ export default function GameDashboard({
   if (status === "loading") {
     return (
       <p role="status" className="text-sm text-muted-foreground">
-        Loading your next step…
-      </p>
+        <Trans context="GameDashboard, p">Loading your next step…
+      </Trans></p>
     );
   }
 
@@ -186,8 +186,8 @@ export default function GameDashboard({
           onClick={() => load()}
           className="min-h-11 font-medium text-foreground underline underline-offset-2"
         >
-          Retry
-        </button>
+          <Trans context="GameDashboard, button">Retry
+        </Trans></button>
       </p>
     );
   }
@@ -228,7 +228,7 @@ export default function GameDashboard({
         <div className="flex min-w-0 items-center gap-3">
           <Compass className="h-6 w-6 shrink-0 text-notice" aria-hidden="true" />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-widest text-notice">Your next step</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="GameDashboard, p">Your next step</Trans></p>
             {/* `truncate` cut this banner's own headline once: "Continue your
                 community training" needs 294px and the box is 241px at 393px,
                 so a member read "Continue your community tr...". It is the ONE
@@ -240,8 +240,8 @@ export default function GameDashboard({
           </div>
         </div>
         <span className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-notice px-4 py-2 font-medium text-background transition-transform group-hover:translate-x-0.5">
-          Go
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <Trans context="GameDashboard, span">Go
+          <ArrowRight className="h-4 w-4" aria-hidden="true" /></Trans>
         </span>
       </Link>
       )}
@@ -271,10 +271,10 @@ export default function GameDashboard({
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-lg font-bold text-card-foreground">Quests</h2>
+            <h2 className="font-display text-lg font-bold text-card-foreground"><Trans context="GameDashboard, h2">Quests</Trans></h2>
           </div>
           {me.quests.length === 0 ? (
-            <p className="text-sm text-muted-foreground mb-4">No quests yet. Quests are another way to take part, alone or with others: find one on the Quest Board.</p>
+            <p className="text-sm text-muted-foreground mb-4"><Trans context="GameDashboard, p">No quests yet. Quests are another way to take part, alone or with others: find one on the Quest Board.</Trans></p>
           ) : (
             <ul className="space-y-2 mb-4">
               {[...activeQuests, ...doneQuests].slice(0, 4).map((q) => (

@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, RefreshCw, Search } from "lucide-react";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { HYPHA_FIRST_STEPS } from "@shared/hypha";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const card = "border border-gray-200 rounded-xl px-4 py-4 bg-white";
 const btn =
@@ -109,6 +110,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
   /** Refresh that list. A write from here changes rows it also renders. */
   onVariableSaved: () => void;
 }) {
+  const { t } = useLingui();
   const [status, setStatus] = useState<any>(null);
   /** Per-key edits to the Hypha account fields, before they are saved. */
   const [accountDrafts, setAccountDrafts] = useState<Record<string, string>>({});
@@ -165,7 +167,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
       if (!res.ok) throw new Error(refusal(d, "The lookup failed"));
       setCandidates(d.candidates ?? []);
       if ((d.candidates ?? []).length === 0) {
-        toast.error("Nothing found on that account. Issue yourself some of the token on Hypha first");
+        toast.error(t({ message: "Nothing found on that account. Issue yourself some of the token on Hypha first", context: "HyphaModulePanel, toast" }));
       }
     } catch (e: any) {
       toast.error(e?.message || "The lookup failed");
@@ -281,7 +283,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-400">Loading the bridge…</p>;
+  if (loading) return <p className="text-sm text-gray-400"><Trans context="HyphaModulePanel, p">Loading the bridge…</Trans></p>;
   if (!status) return null;
   /*
    * MODULE OFF IS NO LONGER AN EARLY RETURN, and that is the point of the
@@ -329,12 +331,12 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="font-semibold text-gray-900 text-sm">Hypha Bridge</h3>
+        <h3 className="font-semibold text-gray-900 text-sm"><Trans context="HyphaModulePanel, h3">Hypha Bridge</Trans></h3>
         <p className="text-xs text-gray-500 mt-1 max-w-2xl">
-          What this village reads from Base, who reads it, and where an outcome
+          <Trans context="HyphaModulePanel, p">What this village reads from Base, who reads it, and where an outcome
           goes when it comes home. Everything here is read only. The platform
           displays what the chain says and links you out to Hypha to act.
-        </p>
+        </Trans></p>
       </div>
 
 
@@ -347,11 +349,11 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
         twenty, findable only by knowing to search for "hypha".
       */}
       <div className={card}>
-        <h4 className="font-medium text-foreground text-sm">Your Hypha account</h4>
+        <h4 className="font-medium text-foreground text-sm"><Trans context="HyphaModulePanel, h4">Your Hypha account</Trans></h4>
         <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-          What this village reads from, and where it reads it. These are ordinary
+          <Trans context="HyphaModulePanel, p">What this village reads from, and where it reads it. These are ordinary
           audited settings; saving one here is the same act as editing it below.
-        </p>
+        </Trans></p>
 
         <div className="mt-3 space-y-3">
           {HYPHA_KEYS.map((key) => {
@@ -377,7 +379,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                     id={`hypha-${key}`}
                     value={draft}
                     onChange={(e) => setAccountDrafts({ ...accountDrafts, [key]: e.target.value })}
-                    placeholder={key === FOUNDER_KEY ? "0x..." : ""}
+                    placeholder={key === FOUNDER_KEY ? t({ message: "0x...", context: "HyphaModulePanel, placeholder" }) : ""}
                     className={`${input} flex-1 min-w-[16rem]`}
                   />
                   <button
@@ -394,12 +396,12 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                 )}
                 {key === FOUNDER_KEY && (
                   <details className="mt-1.5">
-                    <summary className="text-[11px] text-teal-deep cursor-pointer">Where to find it in Hypha</summary>
+                    <summary className="text-[11px] text-teal-deep cursor-pointer"><Trans context="HyphaModulePanel, summary">Where to find it in Hypha</Trans></summary>
                     <div className="mt-2 text-[11px] text-muted-foreground max-w-md">
                       <ol className="list-decimal list-inside space-y-0.5 mb-2">
-                        <li>Open your DAO on Hypha and sign in.</li>
-                        <li>Click your avatar, top right.</li>
-                        <li>Use the copy button beside the address under your name.</li>
+                        <li><Trans context="HyphaModulePanel, li">Open your DAO on Hypha and sign in.</Trans></li>
+                        <li><Trans context="HyphaModulePanel, li">Click your avatar, top right.</Trans></li>
+                        <li><Trans context="HyphaModulePanel, li">Use the copy button beside the address under your name.</Trans></li>
                       </ol>
                       <HyphaCopyDiagram />
                     </div>
@@ -414,18 +416,18 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
       {moduleOff && (
         <div className={card}>
           <p className="text-xs text-muted-foreground max-w-2xl">
-            The Hypha Bridge module is off, so nothing below is running and no
+            <Trans context="HyphaModulePanel, p">The Hypha Bridge module is off, so nothing below is running and no
             contract can be confirmed yet. Your Hypha links and the proposal
             handoff work exactly as they always have. Set your account address
             above and find your contracts first; turn the module on when you
             are ready for this village to read its DAO's numbers from Base.
-          </p>
+          </Trans></p>
         </div>
       )}
 
       {/* 3. Discovery as a pick-list. It proposes; a human confirms. */}
       <div className={card}>
-        <h4 className="font-medium text-gray-900 text-sm">Find your contracts on Base</h4>
+        <h4 className="font-medium text-gray-900 text-sm"><Trans context="HyphaModulePanel, h4">Find your contracts on Base</Trans></h4>
         <ol className="text-xs text-gray-500 mt-1 space-y-0.5 list-decimal list-inside max-w-2xl">
           {(status.firstSteps ?? lookupSteps ?? HYPHA_FIRST_STEPS).map((s: string) => <li key={s}>{s}</li>)}
         </ol>
@@ -433,8 +435,8 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
           <input
             value={hint}
             onChange={(e) => setHint(e.target.value)}
-            placeholder="Token name, if you remember it"
-            aria-label="Filter the tokens this account holds"
+            placeholder={t({ message: "Token name, if you remember it", context: "HyphaModulePanel, placeholder" })}
+            aria-label={t({ message: "Filter the tokens this account holds", context: "HyphaModulePanel, aria-label" })}
             className={`${input} min-w-[220px]`}
           />
           <button type="button" onClick={lookup} disabled={busy === "lookup"} className={primary}>
@@ -451,9 +453,9 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
         */}
         {founderAddressUnsaved && (
           <p className="text-xs text-amber-700 mt-2 max-w-2xl">
-            The Base account address above has not been saved yet, and this looks up whatever is
+            <Trans context="HyphaModulePanel, p">The Base account address above has not been saved yet, and this looks up whatever is
             saved. Press Save on that field first.
-          </p>
+          </Trans></p>
         )}
         {candidates && (
           <div className="mt-3">
@@ -470,17 +472,17 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
               <p className="text-xs text-muted-foreground mb-1">
                 Showing {shown.length} of {candidates.length} token(s) this account holds.{" "}
                 <button type="button" onClick={() => setHint("")} className="text-teal-deep underline">
-                  Clear the filter
-                </button>
+                  <Trans context="HyphaModulePanel, button">Clear the filter
+                </Trans></button>
               </p>
             )}
             <p className="text-xs text-gray-500 max-w-2xl">
-              Every token the founder account holds. Airdropped tokens land in any
+              <Trans context="HyphaModulePanel, p">Every token the founder account holds. Airdropped tokens land in any
               account that has ever been used, and a token built to impersonate
               yours will carry your exact name, so read the address before you
               confirm one. Confirming reads the name and symbol off the contract
               itself.
-            </p>
+            </Trans></p>
             <ul className="mt-2 space-y-1.5">
               {shown.map((c) => (
                 <li key={c.contractAddress} className="border border-gray-100 rounded-lg px-3 py-2 text-sm">
@@ -488,7 +490,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                     <span>
                       <span className="font-medium text-gray-900">{c.tokenName}</span>{" "}
                       <span className="text-gray-500">({c.tokenSymbol})</span>
-                      {c.nameMatches && <span className="ml-2 text-xs text-emerald-700">name matches</span>}
+                      {c.nameMatches && <span className="ml-2 text-xs text-emerald-700"><Trans context="HyphaModulePanel, span">name matches</Trans></span>}
                     </span>
                     <code className="text-xs text-gray-500 select-all">{c.contractAddress}</code>
                   </div>
@@ -503,8 +505,8 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                     */}
                     {moduleOff ? (
                       <span className="text-xs text-muted-foreground">
-                        Turn the Hypha Bridge module on to confirm this contract against a token.
-                      </span>
+                        <Trans context="HyphaModulePanel, span">Turn the Hypha Bridge module on to confirm this contract against a token.
+                      </Trans></span>
                     ) : (
                       slots.map((s) => (
                         <button
@@ -514,7 +516,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                           disabled={busy === `bind:${c.contractAddress}:${s.slug}`}
                           className={btn}
                         >
-                          Confirm as {s.slug}
+                          <Trans context="HyphaModulePanel, button">Confirm as {s.slug}</Trans>
                         </button>
                       ))
                     )}
@@ -534,15 +536,15 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
         <p className="text-xs mt-1 opacity-90">{posture.cost}</p>
         {posture.todo && <p className="text-xs mt-1 opacity-90">{posture.todo}</p>}
         <p className="text-[11px] mt-2 opacity-75">
-          This follows who hosts this village and is not a setting. A village the
+          <Trans context="HyphaModulePanel, p">This follows who hosts this village and is not a setting. A village the
           hub carries uses the hub's listener; a village hosting itself runs its own.
-        </p>
+        </Trans></p>
       </div>
 
       {/* 2. The bindings: what the chain calls each contract, and who said yes. */}
       <div className={card}>
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h4 className="font-medium text-gray-900 text-sm">Token contracts</h4>
+          <h4 className="font-medium text-gray-900 text-sm"><Trans context="HyphaModulePanel, h4">Token contracts</Trans></h4>
           <button type="button" onClick={refresh} disabled={busy === "refresh"} className={btn}>
             <RefreshCw className="w-3.5 h-3.5 inline mr-1.5" />
             {busy === "refresh" ? "Reading Base…" : "Read Base again"}
@@ -555,19 +557,19 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                 <span className="font-medium text-gray-900">{s.slug}</span>
                 {s.binding ? (
                   <span className="text-xs text-emerald-700 inline-flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" />
-                    confirmed {new Date(s.binding.confirmedAt).toLocaleDateString()}
+                    <Trans context="HyphaModulePanel, span"><Check className="w-3.5 h-3.5" />
+                    confirmed {new Date(s.binding.confirmedAt).toLocaleDateString()}</Trans>
                   </span>
                 ) : (
-                  <span className="text-xs text-amber-700">nobody has confirmed a contract for this</span>
+                  <span className="text-xs text-amber-700"><Trans context="HyphaModulePanel, span">nobody has confirmed a contract for this</Trans></span>
                 )}
               </div>
               {s.binding ? (
                 <p className="text-xs text-gray-600 mt-1">
-                  The contract answers to{" "}
+                  <Trans context="HyphaModulePanel, p">The contract answers to{" "}
                   <span className="font-medium text-gray-900">{s.binding.chainName}</span> ({s.binding.chainSymbol}),
                   read from Base on {new Date(s.binding.readAt).toLocaleDateString()}. {s.binding.decimals} decimals.
-                </p>
+                </Trans></p>
               ) : null}
               <p className="text-xs text-gray-500 mt-1">
                 {s.pointerAddress ? (
@@ -578,9 +580,9 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
               </p>
               {s.binding && !s.agrees && (
                 <p className="text-xs text-red-700 mt-1 inline-flex items-start gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  <Trans context="HyphaModulePanel, p"><AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   The confirmed contract and the address the platform reads are different. One of the two is stale.
-                </p>
+                </Trans></p>
               )}
               <div className="flex flex-wrap gap-2 mt-2">
                 {s.binding && !s.agrees && (
@@ -590,13 +592,13 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                     disabled={busy === `point:${s.variableKey}`}
                     className={btn}
                   >
-                    Point {s.variableKey} at the confirmed contract
-                  </button>
+                    <Trans context="HyphaModulePanel, button">Point {s.variableKey} at the confirmed contract
+                  </Trans></button>
                 )}
                 {s.binding && (
                   <button type="button" onClick={() => unbind(s.slug)} disabled={busy === `unbind:${s.slug}`} className={btn}>
-                    Unbind
-                  </button>
+                    <Trans context="HyphaModulePanel, button">Unbind
+                  </Trans></button>
                 )}
               </div>
             </div>
@@ -607,26 +609,26 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
 
       {/* 4. The switchover. The rule was already true; nothing said it out loud. */}
       <div className={card}>
-        <h4 className="font-medium text-gray-900 text-sm">If this village changes how it decides</h4>
+        <h4 className="font-medium text-gray-900 text-sm"><Trans context="HyphaModulePanel, h4">If this village changes how it decides</Trans></h4>
         <p className="text-xs text-gray-600 mt-1 max-w-2xl">{sw.rule}</p>
         <p className="text-xs text-gray-900 mt-2 max-w-2xl">{sw.effect}</p>
       </div>
 
       {/* 5. The orphans. Recorded instead of dropped. */}
       <div className={card}>
-        <h4 className="font-medium text-gray-900 text-sm">Outcomes that landed nowhere</h4>
+        <h4 className="font-medium text-gray-900 text-sm"><Trans context="HyphaModulePanel, h4">Outcomes that landed nowhere</Trans></h4>
         {orphans.length === 0 ? (
           <p className="text-xs text-gray-500 mt-1">
-            None waiting. An outcome arrives here when its agreement id and its
+            <Trans context="HyphaModulePanel, p">None waiting. An outcome arrives here when its agreement id and its
             title marker both match no proposal in this village.
-          </p>
+          </Trans></p>
         ) : (
           <ul className="mt-2 space-y-1.5">
             {orphans.map((o) => (
               <li key={o.id} className="border border-amber-200 bg-amber-50 rounded-lg px-3 py-2 text-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-amber-900">
-                    {o.verdict} · agreement {o.agreementId || "none given"} · marker {o.marker || "none given"}
+                    <Trans context="HyphaModulePanel, span">{o.verdict} · agreement {o.agreementId || "none given"} · marker {o.marker || "none given"}</Trans>
                   </span>
                   <span className="text-xs text-amber-800">{new Date(o.receivedAt).toLocaleString()}</span>
                 </div>
@@ -636,8 +638,8 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
                   disabled={busy === `orphan:${o.id}`}
                   className={`${btn} mt-2`}
                 >
-                  Say what this was
-                </button>
+                  <Trans context="HyphaModulePanel, button">Say what this was
+                </Trans></button>
               </li>
             ))}
           </ul>

@@ -31,6 +31,7 @@ import {
   type AskView,
   type AsksPayload,
 } from "@shared/memberAsks";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const CARD = "rounded-2xl border border-border bg-muted px-4 py-3.5 text-foreground";
 const TIERS: AskTier[] = ["blocking", "this-week", "whenever"];
@@ -80,7 +81,7 @@ function AskedRow({ ask, onClosed }: { ask: AskView; onClosed: (id: string) => v
   return (
     <div className={CARD} data-ask={ask.id}>
       <p className="font-semibold leading-snug">
-        {ask.otherName} asks: {ask.why}
+        <Trans context="AsksPanel, p">{ask.otherName} asks: {ask.why}</Trans>
       </p>
       <p className={`${HINT} mt-0.5`}>{[`Asked ${ask.askedOn}`, dueWords(ask.dueOn)].filter(Boolean).join(" · ")}</p>
       <a
@@ -88,32 +89,32 @@ function AskedRow({ ask, onClosed }: { ask: AskView; onClosed: (id: string) => v
         {...(isOutside(ask.link) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         className="mt-2 inline-block text-sm font-semibold text-foreground underline decoration-notice/60 underline-offset-4"
       >
-        Open it
-        <ArrowRight className="ml-1.5 inline-block h-4 w-4 align-[-3px]" aria-hidden="true" />
+        <Trans context="AsksPanel, a">Open it
+        <ArrowRight className="ml-1.5 inline-block h-4 w-4 align-[-3px]" aria-hidden="true" /></Trans>
       </a>
       {handing ? (
         <div className="mt-3 space-y-2">
           <label htmlFor={noteId} className={LABEL}>
-            Anything {ask.otherName} should know? (optional)
-          </label>
+            <Trans context="AsksPanel, label">Anything {ask.otherName} should know? (optional)
+          </Trans></label>
           <input id={noteId} className={INPUT} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
           <div className="flex flex-wrap gap-2">
             <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act("not-mine")}>
-              Hand it back
-            </button>
+              <Trans context="AsksPanel, button">Hand it back
+            </Trans></button>
             <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setHanding(false)}>
-              Keep it
-            </button>
+              <Trans context="AsksPanel, button">Keep it
+            </Trans></button>
           </div>
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("done")}>
-            Done
-          </button>
+            <Trans context="AsksPanel, button">Done
+          </Trans></button>
           <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setHanding(true)}>
-            Not mine
-          </button>
+            <Trans context="AsksPanel, button">Not mine
+          </Trans></button>
         </div>
       )}
       {error && (
@@ -147,16 +148,16 @@ function YourAskRow({ ask, onClosed }: { ask: AskView; onClosed: (id: string) =>
   return (
     <div className={CARD} data-your-ask={ask.id}>
       <p className="font-semibold leading-snug">
-        You asked {ask.otherName}: {ask.why}
+        <Trans context="AsksPanel, p">You asked {ask.otherName}: {ask.why}</Trans>
       </p>
       <p className={`${HINT} mt-0.5`}>
         {[statusWords(ask.status), ask.blocking && ask.status === "open" ? "blocking you" : "", dueWords(ask.dueOn)].filter(Boolean).join(" · ")}
       </p>
-      {ask.status === "handed_back" && ask.handBackNote && <p className="mt-1 text-sm text-foreground">{ask.otherName} said: {ask.handBackNote}</p>}
+      {ask.status === "handed_back" && ask.handBackNote && <p className="mt-1 text-sm text-foreground"><Trans context="AsksPanel, p">{ask.otherName} said: {ask.handBackNote}</Trans></p>}
       {ask.status === "open" && (
         <button type="button" className={`${BTN_QUIET} mt-2`} disabled={busy} onClick={() => void withdraw()}>
-          Withdraw
-        </button>
+          <Trans context="AsksPanel, button">Withdraw
+        </Trans></button>
       )}
       {error && (
         <p role="alert" className="mt-2 text-sm text-foreground">
@@ -169,6 +170,7 @@ function YourAskRow({ ask, onClosed }: { ask: AskView; onClosed: (id: string) =>
 
 /** The form: who, the link, why, an optional day, and whether you are stuck. */
 function AskSomeone({ onSent }: { onSent: () => void }) {
+  const { t } = useLingui();
   const [query, setQuery] = useState("");
   const [people, setPeople] = useState<Array<{ userId: string; name: string; handle: string | null }>>([]);
   const [who, setWho] = useState<{ userId: string; name: string } | null>(null);
@@ -238,24 +240,24 @@ function AskSomeone({ onSent }: { onSent: () => void }) {
       aria-labelledby={`${ids}-h`}
     >
       <h3 id={`${ids}-h`} className={LABEL_CAPS}>
-        Ask someone
-      </h3>
+        <Trans context="AsksPanel, h3">Ask someone
+      </Trans></h3>
       <div>
         <label htmlFor={`${ids}-who`} className={LABEL}>
-          Who
-        </label>
+          <Trans context="AsksPanel, label">Who
+        </Trans></label>
         {who ? (
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <span className="font-semibold">{who.name}</span>
             <button type="button" className={BTN_QUIET} onClick={() => setWho(null)}>
-              Change
-            </button>
+              <Trans context="AsksPanel, button">Change
+            </Trans></button>
           </p>
         ) : (
           <>
-            <input id={`${ids}-who`} className={INPUT} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Type a name" autoComplete="off" />
+            <input id={`${ids}-who`} className={INPUT} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t({ message: "Type a name", context: "AsksPanel, placeholder" })} autoComplete="off" />
             {people.length > 0 && (
-              <ul className="mt-1 space-y-1" aria-label="Members">
+              <ul className="mt-1 space-y-1" aria-label={t({ message: "Members", context: "AsksPanel, aria-label" })}>
                 {people.map((p) => (
                   <li key={p.userId}>
                     <button type="button" className={BTN_QUIET} onClick={() => setWho({ userId: p.userId, name: p.name })}>
@@ -271,20 +273,20 @@ function AskSomeone({ onSent }: { onSent: () => void }) {
       </div>
       <div>
         <label htmlFor={`${ids}-link`} className={LABEL}>
-          Link to what you need
-        </label>
-        <input id={`${ids}-link`} className={INPUT} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" inputMode="url" />
+          <Trans context="AsksPanel, label">Link to what you need
+        </Trans></label>
+        <input id={`${ids}-link`} className={INPUT} value={link} onChange={(e) => setLink(e.target.value)} placeholder={t({ message: "https://", context: "AsksPanel, placeholder" })} inputMode="url" />
       </div>
       <div>
         <label htmlFor={`${ids}-why`} className={LABEL}>
-          What you need them to do
-        </label>
+          <Trans context="AsksPanel, label">What you need them to do
+        </Trans></label>
         <input id={`${ids}-why`} className={INPUT} maxLength={WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} />
       </div>
       <div>
         <label htmlFor={`${ids}-due`} className={LABEL}>
-          Due (optional)
-        </label>
+          <Trans context="AsksPanel, label">Due (optional)
+        </Trans></label>
         <input id={`${ids}-due`} type="date" className={INPUT} value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
@@ -297,8 +299,8 @@ function AskSomeone({ onSent }: { onSent: () => void }) {
         </p>
       )}
       <button type="submit" className={BTN_PRIMARY} disabled={busy || !who || !link.trim() || !why.trim()}>
-        Send the ask
-      </button>
+        <Trans context="AsksPanel, button">Send the ask
+      </Trans></button>
     </form>
   );
 }
@@ -338,10 +340,10 @@ export default function AsksPanel() {
   if (failed) {
     return (
       <div className="flex flex-wrap items-center gap-3" role="alert" data-asks-failed>
-        <p className="text-sm text-foreground">Your asks did not load.</p>
+        <p className="text-sm text-foreground"><Trans context="AsksPanel, p">Your asks did not load.</Trans></p>
         <button type="button" className={BTN_SECONDARY} onClick={() => void load()}>
-          Try again
-        </button>
+          <Trans context="AsksPanel, button">Try again
+        </Trans></button>
       </div>
     );
   }
@@ -352,10 +354,10 @@ export default function AsksPanel() {
   return (
     <section aria-labelledby="asks-h" className="space-y-5 rounded-3xl border border-border bg-card p-5 sm:p-6" data-asks>
       <h2 id="asks-h" className="font-display text-xl font-bold text-card-foreground">
-        Asked of you
-      </h2>
+        <Trans context="AsksPanel, h2">Asked of you
+      </Trans></h2>
       {data.waitingOnYou.length === 0 ? (
-        <p className={HINT}>Nobody is waiting on you for anything.</p>
+        <p className={HINT}><Trans context="AsksPanel, p">Nobody is waiting on you for anything.</Trans></p>
       ) : (
         TIERS.map((tier) => {
           const rows = data.waitingOnYou.filter((a) => a.tier === tier);
@@ -375,9 +377,9 @@ export default function AsksPanel() {
         })
       )}
       <div id="your-asks" className="scroll-mt-28 space-y-3">
-        <h3 className={LABEL_CAPS}>Your asks</h3>
+        <h3 className={LABEL_CAPS}><Trans context="AsksPanel, h3">Your asks</Trans></h3>
         {data.yourAsks.length === 0 ? (
-          <p className={HINT}>You have not asked anyone for anything yet.</p>
+          <p className={HINT}><Trans context="AsksPanel, p">You have not asked anyone for anything yet.</Trans></p>
         ) : (
           <ul className="space-y-3">
             {data.yourAsks.map((a) => (

@@ -193,7 +193,7 @@ export default function DecisionOutcome({
             {ballot.outcomeNote}
           </p>
         ) : (
-          <p className="mt-3 text-lg text-muted-foreground">This closed without a sentence on it.</p>
+          <p className="mt-3 text-lg text-muted-foreground"><Trans context="DecisionOutcome, p">This closed without a sentence on it.</Trans></p>
         )}
 
         {/* 0334: the two ballots of a quorum re-run point at each other. */}
@@ -225,27 +225,27 @@ export default function DecisionOutcome({
         {/* The numbers, once they have done their job. */}
         <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-3 text-sm">
           <div>
-            <dt className="text-xs text-muted-foreground">Yes</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="DecisionOutcome, dt">Yes</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.yesW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">No</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="DecisionOutcome, dt">No</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.noW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Abstain</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="DecisionOutcome, dt">Abstain</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.abstainW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Agreement</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="DecisionOutcome, dt">Agreement</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">
-              {pctText(ballot.unity)} <span className="font-normal text-muted-foreground">of {pctText(ballot.unityPct)}</span>
+              {pctText(ballot.unity)} <span className="font-normal text-muted-foreground"><Trans context="DecisionOutcome, span">of {pctText(ballot.unityPct)}</Trans></span>
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Participation</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="DecisionOutcome, dt">Participation</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">
-              {pctText(ballot.quorum)} <span className="font-normal text-muted-foreground">of {pctText(ballot.quorumPct)}</span>
+              {pctText(ballot.quorum)} <span className="font-normal text-muted-foreground"><Trans context="DecisionOutcome, span">of {pctText(ballot.quorumPct)}</Trans></span>
             </dd>
           </div>
         </dl>
@@ -253,7 +253,7 @@ export default function DecisionOutcome({
         {/* What changed in the world. */}
         {(applied?.length || held) && (
           <div className="mt-4 border-t border-border pt-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">What changed</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><Trans context="DecisionOutcome, p">What changed</Trans></p>
             {applied && applied.length > 0 && (
               <ul className="mt-1.5 space-y-1">
                 {applied.map((key) => (
@@ -266,8 +266,8 @@ export default function DecisionOutcome({
             )}
             {held && (
               <p className="mt-1.5 text-sm text-foreground">
-                Nothing has moved yet: {held}. The change is recorded and waiting.
-              </p>
+                <Trans context="DecisionOutcome, p">Nothing has moved yet: {held}. The change is recorded and waiting.
+              </Trans></p>
             )}
           </div>
         )}

@@ -17879,6 +17879,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     getPool,
     overLimit,
     contentSection: (section) => (contentRepo.get() ?? {})[section],
+    villageDoc: (ref) => (ref === "brand" ? { project: mergedConfig().project } : ref === "visit-config" ? visitConfigRepo.get() : null), // shared/villageDocTranslation.ts
     machineDraft: async ({ locale, items, userId, req }) => {
       const call = await callAssistant({
         mode: "translate",

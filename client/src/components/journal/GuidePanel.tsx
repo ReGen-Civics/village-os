@@ -25,7 +25,7 @@ import GuideTasks from "./GuideTasks";
 import MyGuide, { useGuideState } from "@/components/guide/MyGuide";
 import { JOURNAL_ON_SERA, journalGuide, type GuideState } from "@shared/guideChoice";
 import { saveGuide } from "@/lib/guideApi";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { guideLabelIn } from "@/lib/guideNameWords";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT } from "./ui";
 
@@ -70,6 +70,7 @@ export default function GuidePanel({
   onAddQuestion: (prompt: string) => void;
   onConfirmReflection: (text: string) => void;
 }) {
+  const { t } = useLingui();
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -136,7 +137,7 @@ export default function GuidePanel({
       <div
         ref={panelRef}
         role="dialog"
-        aria-label="The guide"
+        aria-label={t({ message: "The guide", context: "GuidePanel, aria-label" })}
         data-scroll-contain
         // It holds the bottom-right corner on every width, so the shortcuts
         // button steps out (index.css) instead of sitting reachable under it.
@@ -144,8 +145,8 @@ export default function GuidePanel({
         className="fixed inset-x-0 bottom-0 z-[70] flex max-h-[85vh] flex-col rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:border-l md:border-t-0"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
-          <h2 className="font-display text-lg font-bold text-foreground">The guide</h2>
-          <button type="button" onClick={onClose} className={BTN_QUIET} aria-label="Close the guide">
+          <h2 className="font-display text-lg font-bold text-foreground"><Trans context="GuidePanel, h2">The guide</Trans></h2>
+          <button type="button" onClick={onClose} className={BTN_QUIET} aria-label={t({ message: "Close the guide", context: "GuidePanel, aria-label" })}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
@@ -164,9 +165,9 @@ export default function GuidePanel({
           )}
           {messages.length === 0 && (
             <p className={HINT}>
-              Ask anything about what you have written, or let the guide reflect it back to you. It asks; it never
+              <Trans context="GuidePanel, p">Ask anything about what you have written, or let the guide reflect it back to you. It asks; it never
               answers for you.
-            </p>
+            </Trans></p>
           )}
           {messages.map((m, i) => (
             <p
@@ -189,31 +190,31 @@ export default function GuidePanel({
                 setLatest({ ...latest, nextQuestion: "" });
               }}
             >
-              Add this question to my page: {latest.nextQuestion}
+              <Trans context="GuidePanel, button">Add this question to my page: {latest.nextQuestion}</Trans>
             </button>
           )}
 
           {latest?.reflection && !kept && (
             <div className="rounded-xl border border-sage/40 bg-sage-light/40 p-3">
-              <p className="text-xs font-semibold text-sage">What I heard</p>
+              <p className="text-xs font-semibold text-sage"><Trans context="GuidePanel, p">What I heard</Trans></p>
               {editing === null ? (
                 <>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{latest.reflection}</p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">Did I get that right?</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground"><Trans context="GuidePanel, p">Did I get that right?</Trans></p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button type="button" className={BTN_PRIMARY} onClick={() => confirm(latest.reflection)}>
-                      Yes
-                    </button>
+                      <Trans context="GuidePanel, button">Yes
+                    </Trans></button>
                     <button type="button" className={BTN_SECONDARY} onClick={() => setEditing(latest.reflection)}>
-                      Not quite
-                    </button>
+                      <Trans context="GuidePanel, button">Not quite
+                    </Trans></button>
                   </div>
                 </>
               ) : (
                 <>
                   <label htmlFor="journal-guide-reflection" className="mt-1 block text-sm text-foreground">
-                    Say it your way
-                  </label>
+                    <Trans context="GuidePanel, label">Say it your way
+                  </Trans></label>
                   <div className="mt-1">
                     <GrowingTextarea
                       id="journal-guide-reflection"
@@ -224,8 +225,8 @@ export default function GuidePanel({
                     />
                   </div>
                   <button type="button" className={`${BTN_PRIMARY} mt-2`} onClick={() => confirm(editing)} disabled={!editing.trim()}>
-                    Keep this version
-                  </button>
+                    <Trans context="GuidePanel, button">Keep this version
+                  </Trans></button>
                 </>
               )}
             </div>
@@ -238,7 +239,7 @@ export default function GuidePanel({
               guideName={guideLabelIn(latest.guide?.name ?? guideState?.options.find((o) => o.id === guideState.answering)?.name ?? "The guide")}
             />
           )}
-          {kept && <p role="status" className="text-sm text-open">Kept as your reflection. You can change it when you read the page back.</p>}
+          {kept && <p role="status" className="text-sm text-open"><Trans context="GuidePanel, p">Kept as your reflection. You can change it when you read the page back.</Trans></p>}
 
           {problem && (
             <p role="status" className="rounded-xl bg-muted px-3 py-2 text-sm text-foreground">
@@ -255,8 +256,8 @@ export default function GuidePanel({
           }}
         >
           <label htmlFor={inputId} className="sr-only">
-            Your message to the guide
-          </label>
+            <Trans context="GuidePanel, label">Your message to the guide
+          </Trans></label>
           <GrowingTextarea id={inputId} value={draft} onValue={setDraft} minRows={2} maxLength={2000} />
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="submit" className={BTN_PRIMARY} disabled={busy || !draft.trim()}>
@@ -270,8 +271,8 @@ export default function GuidePanel({
                 disabled={busy}
                 onClick={() => void ask("Reflect back what I have written so far.")}
               >
-                Reflect this back to me
-              </button>
+                <Trans context="GuidePanel, button">Reflect this back to me
+              </Trans></button>
             )}
           </div>
         </form>

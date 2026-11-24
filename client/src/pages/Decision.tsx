@@ -312,14 +312,14 @@ export default function Decision() {
       <Layout>
         <div className={WORLD}>
         <div className="container max-w-2xl px-4 py-16 text-center">
-          <h1 className={H2}>No such decision</h1>
-          <p className="mt-2 text-muted-foreground">It may have been withdrawn, or the link may be wrong.</p>
+          <h1 className={H2}><Trans context="Decision, h1">No such decision</Trans></h1>
+          <p className="mt-2 text-muted-foreground"><Trans context="Decision, p">It may have been withdrawn, or the link may be wrong.</Trans></p>
           <Link
             href="/decisions"
             className={`${BTN_NOTICE} mt-6`}
           >
-            Everything the village is deciding
-          </Link>
+            <Trans context="Decision, Link">Everything the village is deciding
+          </Trans></Link>
         </div>
         </div>
       </Layout>
@@ -331,7 +331,7 @@ export default function Decision() {
       <Layout>
         <div className={WORLD}>
         <div className="flex justify-center py-24">
-          <BreathingLoader label="Opening the decision" />
+          <BreathingLoader label={t({ message: "Opening the decision", context: "Decision, label" })} />
         </div>
         </div>
       </Layout>
@@ -367,21 +367,21 @@ export default function Decision() {
           href="/decisions"
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          <Trans context="Decision, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
           Every decision
-        </Link>
+        </Trans></Link>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
             {subjectNoun(ballot.subjectType)}
           </span>
           <span className="text-xs text-muted-foreground">
-            Decided by {ballot.method}
-            <InfoTip tip={METHOD_TIP[ballot.method] ?? UNKNOWN_METHOD_TIP} label="What this method means" />
+            <Trans context="Decision, span">Decided by {ballot.method}
+            <InfoTip tip={METHOD_TIP[ballot.method] ?? UNKNOWN_METHOD_TIP} label="What this method means" /></Trans>
           </span>
           <span className="text-xs text-muted-foreground">
-            {ballot.electorateCount} on the roll, {weightText(ballot.totalWeight)} weight between them
-            <InfoTip tip={WEIGHT_MODE_TIP[ballot.weightMode] ?? UNKNOWN_WEIGHT_TIP} label="How weight was decided" />
+            <Trans context="Decision, span">{ballot.electorateCount} on the roll, {weightText(ballot.totalWeight)} weight between them
+            <InfoTip tip={WEIGHT_MODE_TIP[ballot.weightMode] ?? UNKNOWN_WEIGHT_TIP} label="How weight was decided" /></Trans>
           </span>
         </div>
 
@@ -573,20 +573,20 @@ export default function Decision() {
                 decision waiting forever. */}
             {open && user && !closing && (expired || !!standing?.mayDecide) && (
               <section className="rounded-xl border border-border bg-muted p-4">
-                <h2 className="text-base font-bold text-foreground">Closing this</h2>
+                <h2 className="text-base font-bold text-foreground"><Trans context="Decision, h2">Closing this</Trans></h2>
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                  {expired
+                  <Trans context="Decision, p">{expired
                     ? `The voting period has ended and this is waiting for a person. Its proposer, anyone who may decide proposals, or ${catalyst.aName} can close it.`
                     : "The period is still running, and closing it early is yours to do as someone who decides proposals."}{" "}
                   Closing always means writing what the village decided.
-                </p>
+                </Trans></p>
                 <button
                   type="button"
                   onClick={() => setClosing(true)}
                   className="mt-3 min-h-[44px] rounded-lg border border-notice px-5 text-sm font-semibold text-notice hover:bg-notice/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Close this decision
-                </button>
+                  <Trans context="Decision, button">Close this decision
+                </Trans></button>
               </section>
             )}
 
@@ -611,11 +611,11 @@ export default function Decision() {
                 for the first time as a refusal. */}
             {open && user && !closing && (!!standing?.mayDecide || ballot.votes.length === 0) && (
               <section className="rounded-xl border border-border bg-card p-4">
-                <h2 className="text-base font-bold text-foreground">Calling this off</h2>
+                <h2 className="text-base font-bold text-foreground"><Trans context="Decision, h2">Calling this off</Trans></h2>
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                  A vote opened by mistake can be called off. It decides nothing, records why, and leaves the subject
+                  <Trans context="Decision, p">A vote opened by mistake can be called off. It decides nothing, records why, and leaves the subject
                   free to go to a vote again straight away.
-                </p>
+                </Trans></p>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   {ballot.votes.length === 0
                     ? "Nobody has voted yet, so whoever opened this can call it off and no vote is thrown away."
@@ -627,23 +627,23 @@ export default function Decision() {
                     onClick={() => setWithdrawing(true)}
                     className="mt-3 min-h-[44px] rounded-lg border border-border px-5 text-sm font-semibold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    Call this vote off
-                  </button>
+                    <Trans context="Decision, button">Call this vote off
+                  </Trans></button>
                 ) : (
                   <div className="mt-3">
                     <label htmlFor="withdraw-reason" className="block text-sm font-semibold text-foreground">
-                      Why is it being called off?
-                    </label>
+                      <Trans context="Decision, label">Why is it being called off?
+                    </Trans></label>
                     <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
-                      The roll was told this vote was open and will be told it is not. This sentence is what they read.
-                    </p>
+                      <Trans context="Decision, p">The roll was told this vote was open and will be told it is not. This sentence is what they read.
+                    </Trans></p>
                     <textarea
                       id="withdraw-reason"
                       rows={3}
                       value={withdrawReason}
                       maxLength={4000}
                       onChange={(e) => setWithdrawReason(e.target.value)}
-                      placeholder="Opened against the wrong draft. The corrected one goes to a vote today."
+                      placeholder={t({ message: "Opened against the wrong draft. The corrected one goes to a vote today.", context: "Decision, placeholder" })}
                       className="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -653,15 +653,15 @@ export default function Decision() {
                         onClick={onWithdraw}
                         className="inline-flex min-h-[44px] items-center rounded-lg bg-destructive px-5 text-sm font-semibold text-destructive-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive disabled:opacity-60"
                       >
-                        Call it off
-                      </button>
+                        <Trans context="Decision, button">Call it off
+                      </Trans></button>
                       <button
                         type="button"
                         onClick={() => setWithdrawing(false)}
                         className="min-h-[44px] rounded-lg border border-border px-5 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        Leave it running
-                      </button>
+                        <Trans context="Decision, button">Leave it running
+                      </Trans></button>
                     </div>
                   </div>
                 )}
@@ -670,11 +670,11 @@ export default function Decision() {
 
             {stranger ? (
               <section className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-base font-bold text-foreground">Who may vote</h3>
+                <h3 className="text-base font-bold text-foreground"><Trans context="Decision, h3">Who may vote</Trans></h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {ballot.electorateCount} {ballot.electorateCount === 1 ? "member" : "members"} may vote, and {votedCount}{" "}
+                  <Trans context="Decision, p">{ballot.electorateCount} {ballot.electorateCount === 1 ? "member" : "members"} may vote, and {votedCount}{" "}
                   {votedCount === 1 ? "has" : "have"} spoken. Members who sign in read who they are and how each one voted.
-                </p>
+                </Trans></p>
               </section>
             ) : (
               <VoterRoll votes={ballot.votes} silent={ballot.silent} live={open} />
@@ -695,12 +695,12 @@ export default function Decision() {
             {ballot.purposeAlignment && (
               <section className="rounded-xl border border-border bg-card p-4">
                 <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
-                  <Compass className="w-4 h-4 text-notice" aria-hidden="true" />
+                  <Trans context="Decision, h2"><Compass className="w-4 h-4 text-notice" aria-hidden="true" />
                   How this serves the village's purpose
                   <InfoTip
                     tip="The person who opened this vote wrote one line on how it serves the governing purpose statement. It was written before the vote opened and stays on the record afterwards."
                     label="Why this is here"
-                  />
+                  /></Trans>
                 </h2>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                   {ballot.purposeAlignment}
@@ -711,15 +711,15 @@ export default function Decision() {
             {/* The document, exactly as it was when the ballot opened. */}
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
-                <FileText className="w-4 h-4 text-notice" aria-hidden="true" />
+                <Trans context="Decision, h2"><FileText className="w-4 h-4 text-notice" aria-hidden="true" />
                 What is being voted on
                 <InfoTip
                   tip="This document was snapshotted when the ballot opened and cannot change while it runs. What is voted on is what was checked."
                   label="Why the document is frozen"
-                />
+                /></Trans>
               </h2>
               {stranger ? (
-                <p className="mt-2 text-sm text-muted-foreground">Members read the document once they sign in.</p>
+                <p className="mt-2 text-sm text-muted-foreground"><Trans context="Decision, p">Members read the document once they sign in.</Trans></p>
               ) : (
               <button
                 type="button"
@@ -742,8 +742,8 @@ export default function Decision() {
                   href={`/role-applications/${encodeURIComponent(ballot.subjectRef)}`}
                   className="mt-3 flex min-h-[44px] items-center text-sm font-semibold text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Read the application
-                </Link>
+                  <Trans context="Decision, Link">Read the application
+                </Trans></Link>
               )}
             </section>
           </div>
@@ -760,37 +760,37 @@ export default function Decision() {
             {standing && <MyStanding standing={standing} />}
             <div className="rounded-xl border border-border bg-card p-4">
               <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Scale className="w-4 h-4 text-notice" aria-hidden="true" />
+                <Trans context="Decision, h3"><Scale className="w-4 h-4 text-notice" aria-hidden="true" />
                 This vote's own rules
-              </h3>
+              </Trans></h3>
               <dl className="mt-2 space-y-2 text-sm">
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Agreement needed</dt>
+                  <dt className="text-muted-foreground"><Trans context="Decision, dt">Agreement needed</Trans></dt>
                   <dd className="font-semibold tabular-nums text-foreground">
                     {ballot.method === "consent" ? "no objections" : `${ballot.unityPct}%`}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Turnout needed</dt>
+                  <dt className="text-muted-foreground"><Trans context="Decision, dt">Turnout needed</Trans></dt>
                   <dd className="font-semibold tabular-nums text-foreground">{ballot.quorumPct}%</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Opened</dt>
+                  <dt className="text-muted-foreground"><Trans context="Decision, dt">Opened</Trans></dt>
                   <dd className="text-foreground">
                     {new Date(ballot.opensAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Period ends</dt>
+                  <dt className="text-muted-foreground"><Trans context="Decision, dt">Period ends</Trans></dt>
                   <dd className="text-foreground">
                     {new Date(ballot.closesAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                   </dd>
                 </div>
               </dl>
               <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground leading-relaxed">
-                These numbers froze when this ballot opened. Changing the village's settings now does nothing to this
+                <Trans context="Decision, p">These numbers froze when this ballot opened. Changing the village's settings now does nothing to this
                 vote, open or closed.
-              </p>
+              </Trans></p>
             </div>
             {/* Last in the rail, because it is the widest thing here: this
                 vote's rules are about this vote, and the record is about every
@@ -830,10 +830,10 @@ function PriorAttempts({ attempts }: { attempts: PriorAttempt[] }) {
   if (attempts.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-muted p-4">
-      <h2 className="text-base font-bold text-foreground">The village has decided this before</h2>
+      <h2 className="text-base font-bold text-foreground"><Trans context="Decision, h2">The village has decided this before</Trans></h2>
       <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
-        Earlier votes on this same question, each with the sentence it closed with.
-      </p>
+        <Trans context="Decision, p">Earlier votes on this same question, each with the sentence it closed with.
+      </Trans></p>
       <ol className="mt-3 space-y-2">
         {attempts.map((p) => {
           const word = DECISION_OUTCOME_COPY[p.status]?.word ?? null;

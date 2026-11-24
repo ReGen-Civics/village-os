@@ -14,6 +14,7 @@ import {
   type WalkStep,
   type WalkWelcome,
 } from "@shared/mapAddress";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The village's own welcome, and the Welcome Walk a newcomer can take.
@@ -58,6 +59,7 @@ export default function WalkEditorPanel({ focus = false }: {
   /** Bring this panel into view once it renders: the door was opened for it. */
   focus?: boolean;
 } = {}) {
+  const { t } = useLingui();
   const mayAdminister = useIsAdmin();
   const [walk, setWalk] = useState<MapWalk>({});
   const [welcome, setWelcome] = useState<WalkWelcome>({});
@@ -86,7 +88,7 @@ export default function WalkEditorPanel({ focus = false }: {
         .then((r) => (r.ok ? r.json() : null))
         .then(setReport)
         .catch(() => { /* no numbers this time */ });
-    } catch { toast.error("Could not load the walk"); }
+    } catch { toast.error(t({ message: "Could not load the walk", context: "WalkEditorPanel, toast" })); }
   }, [mayAdminister]);
   useEffect(() => { load(); }, [load]);
 
@@ -125,8 +127,8 @@ export default function WalkEditorPanel({ focus = false }: {
       // event, any other open map by the storage write.
       window.dispatchEvent(new Event(MAP_SKIN_SAVED_EVENT));
       writeStored("local", MAP_SKIN_SAVED_KEY, String(Date.now()));
-      toast.success("Saved. New arrivals get it from here");
-    } catch { toast.error("Save failed"); }
+      toast.success(t({ message: "Saved. New arrivals get it from here", context: "WalkEditorPanel, toast" }));
+    } catch { toast.error(t({ message: "Save failed", context: "WalkEditorPanel, toast" })); }
     setSaving(false);
   };
 
@@ -176,14 +178,14 @@ export default function WalkEditorPanel({ focus = false }: {
 
   return (
     <div ref={root} id="welcome-walk" className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
-      <h3 className="font-semibold text-gray-900 mb-1">Welcome and walk</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="WalkEditorPanel, h3">Welcome and walk</Trans></h3>
       <p className="text-xs text-gray-500 mb-4">
-        The first words someone reads on the map, and the short walk the guide can take them on.
+        <Trans context="WalkEditorPanel, p">The first words someone reads on the map, and the short walk the guide can take them on.
         Until you write a walk, the map offers none.
-      </p>
+      </Trans></p>
 
       <div className="flex items-center gap-2 mb-4">
-        <label className="text-xs font-medium text-gray-500" htmlFor="walk-lang">Language</label>
+        <label className="text-xs font-medium text-gray-500" htmlFor="walk-lang"><Trans context="WalkEditorPanel, label">Language</Trans></label>
         <select id="walk-lang" value={lang} onChange={(e) => setLang(e.target.value)}
           className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
           {langs.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -195,7 +197,7 @@ export default function WalkEditorPanel({ focus = false }: {
             setWalk({ ...walk, [code]: walk[code] ?? [] });
             setLang(code);
           }}
-          className="text-xs text-gray-500 underline underline-offset-2">add a language</button>
+          className="text-xs text-gray-500 underline underline-offset-2"><Trans context="WalkEditorPanel, button">add a language</Trans></button>
       </div>
 
       {funnel && (
@@ -206,9 +208,9 @@ export default function WalkEditorPanel({ focus = false }: {
               : "Nobody has left the walk partway"}
           </div>
           <p className="text-xs text-gray-500 mb-3">
-            {funnel.runs} walk{funnel.runs === 1 ? "" : "s"} in the last {funnel.days} days.{" "}
+            <Trans context="WalkEditorPanel, p">{funnel.runs} walk{funnel.runs === 1 ? "" : "s"} in the last {funnel.days} days.{" "}
             {funnel.completed} finished, {funnel.abandoned} left partway, {funnel.unfinished} still going.
-          </p>
+          </Trans></p>
           <ul className="space-y-1">
             {funnel.steps.map((s: any) => (
               <li key={s.step} className="flex items-center gap-2 text-xs">
@@ -219,7 +221,7 @@ export default function WalkEditorPanel({ focus = false }: {
                     style={{ width: `${funnel.runs ? (s.reached / funnel.runs) * 100 : 0}%` }} />
                 </span>
                 <span className="w-28 text-right text-gray-500">
-                  {s.reached} reached{s.lost ? `, ${s.lost} left` : ""}
+                  <Trans context="WalkEditorPanel, span">{s.reached} reached{s.lost ? `, ${s.lost} left` : ""}</Trans>
                 </span>
               </li>
             ))}
@@ -228,19 +230,19 @@ export default function WalkEditorPanel({ focus = false }: {
       )}
 
       <div className="mb-5">
-        <label className="block text-xs font-medium text-muted-foreground mb-1" htmlFor="walk-welcome">Welcome</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1" htmlFor="walk-welcome"><Trans context="WalkEditorPanel, label">Welcome</Trans></label>
         <textarea id="walk-welcome" rows={3} maxLength={WALK_WELCOME_MAX} value={welcome[lang] ?? ""}
-          className={input} placeholder="What the guide says when someone opens the map"
+          className={input} placeholder={t({ message: "What the guide says when someone opens the map", context: "WalkEditorPanel, placeholder" })}
           onChange={(e) => setWelcome({ ...welcome, [lang]: e.target.value })} />
         <p className="text-xs text-muted-foreground mt-1">
-          Leave it empty and the guide greets people plainly, with the village's name and how to move the map.
-        </p>
+          <Trans context="WalkEditorPanel, p">Leave it empty and the guide greets people plainly, with the village's name and how to move the map.
+        </Trans></p>
       </div>
 
       {steps.length === 0 && (
         <p className="text-sm text-gray-400 border border-dashed border-gray-200 rounded-lg py-6 text-center mb-4">
-          No stops yet. The map offers no walk until you write one.
-        </p>
+          <Trans context="WalkEditorPanel, p">No stops yet. The map offers no walk until you write one.
+        </Trans></p>
       )}
 
       <ol className="space-y-3 mb-4">
@@ -254,7 +256,7 @@ export default function WalkEditorPanel({ focus = false }: {
             className="border border-gray-200 rounded-xl p-4"
           >
             <div className="flex items-start justify-between gap-3 mb-3">
-              <span className="text-xs font-medium text-gray-500 pt-2">Step {i + 1}</span>
+              <span className="text-xs font-medium text-gray-500 pt-2"><Trans context="WalkEditorPanel, span">Step {i + 1}</Trans></span>
               {/* Buttons as well as dragging: a drag handle alone is unusable
                   by keyboard and awkward on a phone. */}
               <div className="flex items-center gap-1">
@@ -266,40 +268,40 @@ export default function WalkEditorPanel({ focus = false }: {
                   className="px-2 py-1 text-xs border border-gray-200 rounded disabled:opacity-30">↓</button>
                 <button type="button" onClick={() => setSteps(steps.filter((_, n) => n !== i))}
                   aria-label={`Delete step ${i + 1}`}
-                  className="px-2 py-1 text-xs border border-red-200 text-red-700 rounded">Delete</button>
+                  className="px-2 py-1 text-xs border border-red-200 text-red-700 rounded"><Trans context="WalkEditorPanel, button">Delete</Trans></button>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-title-${i}`}>Title</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-title-${i}`}><Trans context="WalkEditorPanel, label">Title</Trans></label>
                 <input id={`w-title-${i}`} value={s.title} className={input}
                   onChange={(e) => patch(i, { title: e.target.value })} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-struct-${i}`}>Where on the map</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-struct-${i}`}><Trans context="WalkEditorPanel, label">Where on the map</Trans></label>
                 {/* A list plus a free-text fallback: the list comes from
                     structures the village has actually addressed, and a walk
                     written before the addressing is done still needs a home. */}
                 <input id={`w-struct-${i}`} list="walk-structures" value={s.structure_key} className={input}
-                  placeholder="greenhouse" onChange={(e) => patch(i, { structure_key: e.target.value })} />
+                  placeholder="greenhouse" /* i18n-ok: an example structure key, typed as written */ onChange={(e) => patch(i, { structure_key: e.target.value })} />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-body-${i}`}>What it says</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-body-${i}`}><Trans context="WalkEditorPanel, label">What it says</Trans></label>
                 <textarea id={`w-body-${i}`} rows={2} value={s.body} className={input}
                   onChange={(e) => patch(i, { body: e.target.value })} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-gest-${i}`}>Move on when they</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-gest-${i}`}><Trans context="WalkEditorPanel, label">Move on when they</Trans></label>
                 <select id={`w-gest-${i}`} value={s.gesture} className={`${input} bg-white`}
                   onChange={(e) => patch(i, { gesture: e.target.value as WalkGesture })}>
                   {WALK_GESTURES.map((g) => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-hint-${i}`}>Nudge, if they pause</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-hint-${i}`}><Trans context="WalkEditorPanel, label">Nudge, if they pause</Trans></label>
                 <input id={`w-hint-${i}`} value={s.gate_hint ?? ""} className={input}
-                  placeholder="drag the land to look around"
+                  placeholder={t({ message: "drag the land to look around", context: "WalkEditorPanel, placeholder" })}
                   onChange={(e) => patch(i, { gate_hint: e.target.value })} />
               </div>
             </div>
@@ -315,8 +317,8 @@ export default function WalkEditorPanel({ focus = false }: {
         <button type="button"
           onClick={() => setSteps([...steps, BLANK(steps.length + 1)])}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">
-          Add a step
-        </button>
+          <Trans context="WalkEditorPanel, button">Add a step
+        </Trans></button>
         <button type="button" onClick={() => { setPreviewing((p) => !p); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">
           {previewing ? "Close preview" : "Preview on the map"}
@@ -324,8 +326,8 @@ export default function WalkEditorPanel({ focus = false }: {
         {previewing && (
           <button type="button" onClick={pushPreview}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">
-            Push my edits
-          </button>
+            <Trans context="WalkEditorPanel, button">Push my edits
+          </Trans></button>
         )}
         <button onClick={save} disabled={saving}
           className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50">
@@ -336,14 +338,14 @@ export default function WalkEditorPanel({ focus = false }: {
       {previewing && (
         <div className="mt-4">
           <p className="text-xs text-gray-500 mb-2">
-            This is your draft running on the real map. Nothing is saved until you press Save welcome and walk.
-          </p>
+            <Trans context="WalkEditorPanel, p">This is your draft running on the real map. Nothing is saved until you press Save welcome and walk.
+          </Trans></p>
           {/* Mounted only while previewing: the map is four megabytes, and an
               admin page has no business loading it before it is asked to. */}
           <iframe
             ref={previewFrame}
             src="/grounds/index.html"
-            title="Walk preview"
+            title={t({ message: "Walk preview", context: "WalkEditorPanel, title" })}
             className="w-full h-[520px] rounded-xl border border-gray-200"
           />
         </div>

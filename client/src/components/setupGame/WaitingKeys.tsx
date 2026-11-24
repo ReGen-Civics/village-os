@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { commsCall } from "@/components/admin/comms/commsSettingsApi";
 import { authToken } from "@/lib/gameApi";
 import { said } from "./setupGameApi";
+import { Trans } from "@lingui/react/macro";
 
 interface Waiting {
   id: string;
@@ -52,7 +53,7 @@ export default function WaitingKeys() {
   if (waiting.length === 0) return null;
   return (
     <div className="sg-card" aria-live="polite">
-      <h3>Keys waiting for a second person</h3>
+      <h3><Trans context="WaitingKeys, h3">Keys waiting for a second person</Trans></h3>
       <ul className="sg-cellar">
         {waiting.map((w) => (
           <li key={w.id}>
@@ -65,8 +66,8 @@ export default function WaitingKeys() {
             <div className="sg-actions">
               {w.requestedBy !== me && w.mode === "cosign" && (
                 <button type="button" className="sg-primary" disabled={busy} onClick={() => void act(w.id, "cosign")}>
-                  Co-sign
-                </button>
+                  <Trans context="WaitingKeys, button">Co-sign
+                </Trans></button>
               )}
               <button type="button" className="sg-link" disabled={busy} onClick={() => void act(w.id, "decline")}>
                 {w.requestedBy === me ? "Withdraw" : "Decline"}

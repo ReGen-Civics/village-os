@@ -39,6 +39,7 @@ import type { VoteChoice } from "@shared/governanceEngine";
 import InfoTip from "@/components/InfoTip";
 import type { Ballot } from "./governanceApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const CHOICES: Array<{ id: VoteChoice; label: string; icon: typeof CircleCheck; meaning: string }> = [
   { id: "yes", label: "Yes", icon: CircleCheck, meaning: "I am for this" },
@@ -79,6 +80,7 @@ export default function VoteWidget({
    */
   nomination?: { answer: "accepted" | "declined" | "waiting"; powerCount: number };
 }) {
+  const { t } = useLingui();
   const [reason, setReason] = useState(ballot.myVote?.reason ?? "");
   const [reasonFor, setReasonFor] = useState<VoteChoice | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -101,7 +103,7 @@ export default function VoteWidget({
   if (outside) {
     return (
       <div className="rounded-xl border border-border bg-muted p-4">
-        <p className="text-sm font-semibold text-foreground">You are not on this ballot's roll</p>
+        <p className="text-sm font-semibold text-foreground"><Trans context="VoteWidget, p">You are not on this ballot's roll</Trans></p>
         {/* WHAT THIS CARD KNOWS, AND NOTHING MORE. It used to say the roll
             froze when the vote opened and leave the reader to read that as
             the reason. It is the reason for a member who joined afterwards
@@ -111,9 +113,9 @@ export default function VoteWidget({
             "Your weight", in the rail beside it, is where the reader's own
             standing is named. */}
         <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-          A roll is set when a vote opens, from everyone who could vote at that moment, and you were not on this one.
+          <Trans context="VoteWidget, p">A roll is set when a vote opens, from everyone who could vote at that moment, and you were not on this one.
           The roll is below, so you can see exactly who the village is waiting on.
-        </p>
+        </Trans></p>
       </div>
     );
   }
@@ -121,13 +123,13 @@ export default function VoteWidget({
   if (locked) {
     return (
       <div className="rounded-xl border border-border bg-muted p-4">
-        <p className="text-sm font-semibold text-foreground">The voting period has ended</p>
+        <p className="text-sm font-semibold text-foreground"><Trans context="VoteWidget, p">The voting period has ended</Trans></p>
         <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-          Votes are locked. Nothing happens on a timer here: this decision is waiting for a person to close it and say
+          <Trans context="VoteWidget, p">Votes are locked. Nothing happens on a timer here: this decision is waiting for a person to close it and say
           what the village decided.
-        </p>
+        </Trans></p>
         {mine ? (
-          <p className="mt-2 text-sm text-muted-foreground">Your vote stands as {mine}.</p>
+          <p className="mt-2 text-sm text-muted-foreground"><Trans context="VoteWidget, p">Your vote stands as {mine}.</Trans></p>
         ) : ballot.myVote ? (
           <p className="mt-2 text-sm text-muted-foreground">{ballot.myVote.sentence}.</p>
         ) : null}
@@ -153,11 +155,11 @@ export default function VoteWidget({
         <h3 className="text-base font-bold text-foreground">{mine ? "Your vote" : "Your vote is open"}</h3>
         {ballot.myWeight !== null && (
           <span className="text-xs text-muted-foreground">
-            weighs {ballot.myWeight}
+            <Trans context="VoteWidget, span">weighs {ballot.myWeight}
             <InfoTip
               tip="This is the weight frozen for you when this ballot opened. Changing the village's settings now does not change it."
               label="What your weight means here"
-            />
+            /></Trans>
           </span>
         )}
       </div>
@@ -169,18 +171,18 @@ export default function VoteWidget({
           right the whole feature was built around. */}
       {ballot.myVote?.state === "cast_following" && (
         <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-          {ballot.myVote.sentence}. Vote below whenever you want to decide this one yourself.
-        </p>
+          <Trans context="VoteWidget, p">{ballot.myVote.sentence}. Vote below whenever you want to decide this one yourself.
+        </Trans></p>
       )}
 
       {ballot.myWeight === 0 && (
         <p className="mt-2 rounded-lg bg-notice/10 px-3 py-2 text-sm text-notice">
-          You are on this roll holding no weight, so your vote is recorded and counts for nothing. Ask a steward why,
+          <Trans context="VoteWidget, p">You are on this roll holding no weight, so your vote is recorded and counts for nothing. Ask a steward why,
           and point them at the weight record.
-        </p>
+        </Trans></p>
       )}
 
-      <div role="group" aria-label="Your vote" className="mt-3 grid gap-2 sm:grid-cols-3">
+      <div role="group" aria-label={t({ message: "Your vote", context: "VoteWidget, aria-label" })} className="mt-3 grid gap-2 sm:grid-cols-3">
         {CHOICES.map((c) => {
           const Icon = c.icon;
           const chosen = mine === c.id;
@@ -201,7 +203,7 @@ export default function VoteWidget({
                 <Icon className="w-4 h-4" aria-hidden="true" />
               )}
               <span>{c.label}</span>
-              {chosen && <span className="sr-only">, your current vote</span>}
+              {chosen && <span className="sr-only"><Trans context="VoteWidget, span">, your current vote</Trans></span>}
             </button>
           );
         })}
@@ -227,11 +229,11 @@ export default function VoteWidget({
               className="mt-0.5 h-5 w-5 shrink-0 rounded border-border text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <span>
-              <strong className="font-semibold text-foreground">I accept the steward role.</strong> This proposal names
+              <Trans context="VoteWidget, span"><strong className="font-semibold text-foreground">I accept the steward role.</strong> This proposal names
               you for it. Carrying it for this first season means holding all {nomination.powerCount} of the powers this
               village has to give, and being able to stop a decision the village has already carried inside the window
               before it lands.
-            </span>
+            </Trans></span>
           </label>
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
             {accepts
@@ -243,9 +245,9 @@ export default function VoteWidget({
 
       {nomination?.answer === "declined" && (
         <p className="mt-3 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground leading-relaxed">
-          You declined the steward role, so nothing here can seat you. Change your mind below and the acceptance comes
+          <Trans context="VoteWidget, p">You declined the steward role, so nothing here can seat you. Change your mind below and the acceptance comes
           back to this vote.
-        </p>
+        </Trans></p>
       )}
 
       {(consent || reasonFor === "no" || (mine === "no" && reason)) && (
@@ -259,7 +261,7 @@ export default function VoteWidget({
             value={reason}
             maxLength={2000}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="What consequence or risk do you see that the village should avoid?"
+            placeholder={t({ message: "What consequence or risk do you see that the village should avoid?", context: "VoteWidget, placeholder" })}
             className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>

@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import type { TokenJob, TokenJobSource } from "@shared/tokenJobs";
+import { Trans } from "@lingui/react/macro";
 
 /** Where a founder goes to change a job, in words and as a link. */
 export function doorFor(source: TokenJobSource): { text: string; href?: string } {
@@ -54,12 +55,12 @@ export default function TokenJobsPanel({ password }: { password: string }) {
 
   return (
     <section aria-labelledby="token-jobs-h" className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
-      <h3 id="token-jobs-h" className="font-semibold text-foreground mb-1">Which token does what</h3>
+      <h3 id="token-jobs-h" className="font-semibold text-foreground mb-1"><Trans context="TokenJobsPanel, h3">Which token does what</Trans></h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Each job your village's tokens can do, which tokens do it today, and where you change that.
-      </p>
+        <Trans context="TokenJobsPanel, p">Each job your village's tokens can do, which tokens do it today, and where you change that.
+      </Trans></p>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-      {!jobs && !error && <p className="text-sm text-muted-foreground">Loading...</p>}
+      {!jobs && !error && <p className="text-sm text-muted-foreground"><Trans context="TokenJobsPanel, p">Loading...</Trans></p>}
       {jobs && (
         <ul className="divide-y divide-gray-100">
           {jobs.map((job) => {
@@ -69,7 +70,7 @@ export default function TokenJobsPanel({ password }: { password: string }) {
               <li key={job.id} className={`py-3 flex flex-wrap items-start gap-x-4 gap-y-1 ${off ? "opacity-60" : ""}`}>
                 <div className="min-w-0 flex-1 basis-48">
                   <p className="text-sm font-medium text-foreground">{job.label}</p>
-                  {off && <p className="text-[11px] text-muted-foreground">Its module is off, so this job is not running.</p>}
+                  {off && <p className="text-[11px] text-muted-foreground"><Trans context="TokenJobsPanel, p">Its module is off, so this job is not running.</Trans></p>}
                 </div>
                 <div className="min-w-0 flex-1 basis-40 flex flex-wrap gap-1.5">
                   {job.tokens.length ? (
@@ -79,7 +80,7 @@ export default function TokenJobsPanel({ password }: { password: string }) {
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-muted-foreground">None</span>
+                    <span className="text-xs text-muted-foreground"><Trans context="TokenJobsPanel, span">None</Trans></span>
                   )}
                 </div>
                 <div className="shrink-0 basis-44 text-xs">

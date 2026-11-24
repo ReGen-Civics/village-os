@@ -3,6 +3,7 @@
  */
 import { useEffect, useState } from "react";
 import { cancelUndo, pendingUndoLabel, subscribeUndo } from "./adminUndo";
+import { Trans } from "@lingui/react/macro";
 
 export default function UndoBar() {
   const [label, setLabel] = useState<string | null>(null);
@@ -11,10 +12,10 @@ export default function UndoBar() {
   return (
     <div className="fixed inset-x-0 bottom-16 z-50 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:bottom-4">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2 text-card-foreground shadow-sm motion-reduce:transition-none">
-        <p className="text-sm">{label} You have 10 seconds.</p>
+        <p className="text-sm"><Trans context="UndoBar, p">{label} You have 10 seconds.</Trans></p>
         <button type="button" onClick={cancelUndo} className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-sm font-medium text-white">
-          Undo
-        </button>
+          <Trans context="UndoBar, button">Undo
+        </Trans></button>
       </div>
     </div>
   );

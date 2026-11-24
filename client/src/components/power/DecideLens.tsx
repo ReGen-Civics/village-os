@@ -11,6 +11,7 @@
 import type { NestedLayout } from "@shared/mapLayout";
 import type { DecidesById } from "@shared/power";
 import type { PowerBlock, PowerCircle } from "./types";
+import { Trans } from "@lingui/react/macro";
 
 /** One colour per method, from an Okabe-Ito-derived set: distinguishable
  *  under the common colour blindnesses, which a governance lens owes its
@@ -114,7 +115,7 @@ export function DecideKey({
   }
   const entries = Array.from(present.entries()).sort((a, b) => b[1] - a[1]);
   if (!entries.length) {
-    return <p className="text-xs text-muted-foreground">No circle has declared a way of deciding yet.</p>;
+    return <p className="text-xs text-muted-foreground"><Trans context="DecideLens, p">No circle has declared a way of deciding yet.</Trans></p>;
   }
   return (
     <div className="flex items-center gap-2.5 flex-wrap" data-power-decide-key>

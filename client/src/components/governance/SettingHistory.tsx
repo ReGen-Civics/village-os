@@ -14,6 +14,7 @@ import { useCallback, useId, useState } from "react";
 import { Link } from "wouter";
 import { History } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface Amendment {
   id: string;
@@ -65,10 +66,10 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
         <span className="text-xs text-stone-500">{day(h.at)}</span>
       </div>
       <p className="text-sm text-stone-600 mt-0.5">
-        <span className="sr-only">From </span>
+        <span className="sr-only"><Trans context="SettingHistory, span">From </Trans></span>
         <del className="text-stone-500">{from}</del>
         <span aria-hidden="true"> → </span>
-        <span className="sr-only"> to </span>
+        <span className="sr-only"> <Trans context="SettingHistory, span">to </Trans></span>
         <ins className="no-underline font-semibold text-teal-deep">{to}</ins>
       </p>
       <p className="text-xs text-stone-600 mt-0.5">{howChanged(h)}</p>
@@ -82,8 +83,8 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
                 href={`/decisions/${ballot}`}
                 className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
               >
-                Read the vote
-              </Link>
+                <Trans context="SettingHistory, Link">Read the vote
+              </Trans></Link>
             </>
           )}
         </p>
@@ -94,8 +95,8 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
             href={`/decisions/${ballot}`}
             className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
           >
-            Read the vote that decided this
-          </Link>
+            <Trans context="SettingHistory, Link">Read the vote that decided this
+          </Trans></Link>
         </p>
       )}
       {h.note && <p className="text-[11px] text-stone-500 mt-0.5">{h.note}</p>}
@@ -113,6 +114,7 @@ export function SettingHistory({
   label: string;
   valueOf: (key: string, raw: string | null) => string;
 }) {
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<Amendment[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -140,24 +142,24 @@ export function SettingHistory({
         onClick={toggle}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`History of ${label}`}
+        aria-label={t({ message: `History of ${label}`, context: "SettingHistory, aria-label" })}
         className="inline-flex min-h-[44px] items-center gap-1 text-[11px] text-teal-deep hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep rounded"
       >
-        <History className="w-3 h-3" aria-hidden="true" /> History
-      </button>
+        <Trans context="SettingHistory, button"><History className="w-3 h-3" aria-hidden="true" /> History
+      </Trans></button>
       {open && (
         <div id={panelId} className="mt-1 rounded-lg border border-stone-200 bg-stone-50" data-setting-history={settingKey}>
           {failed ? (
             <p className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs text-stone-600" role="alert">
               That did not load.
               <button type="button" onClick={load} className="min-h-[44px] font-semibold text-teal-deep hover:underline">
-                Try again
-              </button>
+                <Trans context="SettingHistory, button">Try again
+              </Trans></button>
             </p>
           ) : rows === null ? (
-            <p className="px-3 py-2 text-xs text-stone-500" role="status">Loading the record…</p>
+            <p className="px-3 py-2 text-xs text-stone-500" role="status"><Trans context="SettingHistory, p">Loading the record…</Trans></p>
           ) : rows.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-stone-600">No changes yet. It has been this way since the village began.</p>
+            <p className="px-3 py-2 text-xs text-stone-600"><Trans context="SettingHistory, p">No changes yet. It has been this way since the village began.</Trans></p>
           ) : (
             <ul className="divide-y divide-stone-200">
               {rows.map((h) => (

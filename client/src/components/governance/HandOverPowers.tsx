@@ -11,6 +11,7 @@
  */
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 const PATH = "/api/governance/powers/hand-to-village";
 
@@ -142,9 +143,9 @@ export default function HandOverPowers() {
             />
             <span>
               <span className="font-medium">{p.title}</span>
-              {p.consequence && <span className="block text-xs text-stone-600">Lets whoever holds it {p.consequence}.</span>}
-              {p.matureOnly && <span className="block text-xs font-semibold text-amber-800">For mature villages only</span>}
-              {p.held && <span className="block text-xs text-teal-deep">The village holds this.</span>}
+              {p.consequence && <span className="block text-xs text-stone-600"><Trans context="HandOverPowers, span">Lets whoever holds it {p.consequence}.</Trans></span>}
+              {p.matureOnly && <span className="block text-xs font-semibold text-amber-800"><Trans context="HandOverPowers, span">For mature villages only</Trans></span>}
+              {p.held && <span className="block text-xs text-teal-deep"><Trans context="HandOverPowers, span">The village holds this.</Trans></span>}
             </span>
           </label>
         ))}
@@ -159,32 +160,32 @@ export default function HandOverPowers() {
       {(standing.cooling ?? []).map((c) => (
         <div key={c.capability} className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-stone-800 max-w-lg">
           <p>
-            {c.title} crosses to the village on {new Date(c.landsAt).toLocaleDateString()}, unless a steward stops it.
-          </p>
+            <Trans context="HandOverPowers, p">{c.title} crosses to the village on {new Date(c.landsAt).toLocaleDateString()}, unless a steward stops it.
+          </Trans></p>
           {stopping === c.capability ? (
             <div className="mt-2 space-y-2">
               <label className="block">
-                <span className="block font-semibold">Why stop it? The village reads this.</span>
+                <span className="block font-semibold"><Trans context="HandOverPowers, span">Why stop it? The village reads this.</Trans></span>
                 <input value={why} onChange={(e) => setWhy(e.target.value)} className="mt-1 w-full rounded border border-stone-300 px-2 py-2 text-sm" />
               </label>
               <button type="button" disabled={busy || why.trim().length < 3} onClick={() => stop(c.capability)} className="min-h-[44px] rounded-lg border border-stone-300 bg-white px-3 font-semibold disabled:opacity-40">
-                Stop it crossing
-              </button>
+                <Trans context="HandOverPowers, button">Stop it crossing
+              </Trans></button>
             </div>
           ) : (
             <button type="button" onClick={() => { setStopping(c.capability); setWhy(""); }} className="mt-2 min-h-[44px] rounded-lg border border-stone-300 bg-white px-3 font-semibold">
-              Stop this one
-            </button>
+              <Trans context="HandOverPowers, button">Stop this one
+            </Trans></button>
           )}
         </div>
       ))}
       {standing.twoSign && !standing.pending && !frozen && (
-        <p className="mt-3 text-xs text-stone-600 max-w-lg">Two of you can sign, so this takes two signatures.</p>
+        <p className="mt-3 text-xs text-stone-600 max-w-lg"><Trans context="HandOverPowers, p">Two of you can sign, so this takes two signatures.</Trans></p>
       )}
       {frozen && (
         <p className="mt-3 text-xs text-stone-700 max-w-lg">
-          The launch vote is open, and this list is written into it. To change it, withdraw that vote and open a new one.
-        </p>
+          <Trans context="HandOverPowers, p">The launch vote is open, and this list is written into it. To change it, withdraw that vote and open a new one.
+        </Trans></p>
       )}
       {!frozen && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -223,16 +224,16 @@ export default function HandOverPowers() {
                 onClick={send}
                 className="min-h-[44px] rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white disabled:opacity-50"
               >
-                Confirm
-              </button>
+                <Trans context="HandOverPowers, button">Confirm
+              </Trans></button>
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => setConfirming(false)}
                 className="min-h-[44px] rounded-lg border border-stone-300 px-4 text-sm text-stone-700"
               >
-                Cancel
-              </button>
+                <Trans context="HandOverPowers, button">Cancel
+              </Trans></button>
             </>
           )}
         </div>

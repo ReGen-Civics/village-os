@@ -31,6 +31,7 @@ import BadgeFlower, { type FlowerBadge } from "@/components/badges/BadgeFlower";
 import BadgeRoster from "@/components/badges/BadgeRoster";
 import { InventoryList } from "@/components/profile/InventoryCard";
 import { isEmptyInventory, type Inventory } from "@shared/profileInventory";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -152,10 +153,10 @@ export default function PublicProfile() {
         </p>
         {missing ? (
           <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-            <h1 className="text-2xl font-semibold text-teal-deep">Nobody here by that name</h1>
+            <h1 className="text-2xl font-semibold text-teal-deep"><Trans context="PublicProfile, h1">Nobody here by that name</Trans></h1>
           </div>
         ) : (
-          <div className="mx-auto max-w-2xl px-4 py-16 text-center text-gray-700">Looking.</div>
+          <div className="mx-auto max-w-2xl px-4 py-16 text-center text-gray-700"><Trans context="PublicProfile, div">Looking.</Trans></div>
         )}
       </Layout>
     );
@@ -209,7 +210,7 @@ export default function PublicProfile() {
               {moonsOnLandPhrase(sheet.moonsOnTheLand)}
             </p>
             {sheet.homeStructureKey ? (
-              <p className="mt-1 text-sm text-gray-700">Hearths at {sheet.homeStructureKey}</p>
+              <p className="mt-1 text-sm text-gray-700"><Trans context="PublicProfile, p">Hearths at {sheet.homeStructureKey}</Trans></p>
             ) : null}
           </div>
         </header>
@@ -242,7 +243,7 @@ export default function PublicProfile() {
         */}
         {sheet.party && sheet.party.length > 0 ? (
           <section className="mt-10">
-            <h2 className="text-lg font-semibold text-sage">Paths they walk</h2>
+            <h2 className="text-lg font-semibold text-sage"><Trans context="PublicProfile, h2">Paths they walk</Trans></h2>
             <ul className="mt-3 flex flex-wrap gap-3">
               {sheet.party.map((c) => (
                 <li
@@ -305,9 +306,9 @@ export default function PublicProfile() {
             the page says nothing rather than saying they have nothing. */}
         {sheet.standing ? (
           <section className="mt-10">
-            <h2 className="text-lg font-semibold text-sage">Standing</h2>
+            <h2 className="text-lg font-semibold text-sage"><Trans context="PublicProfile, h2">Standing</Trans></h2>
             {sheet.standing.length === 0 ? (
-              <p className="mt-2 text-sm text-gray-700">New on the land.</p>
+              <p className="mt-2 text-sm text-gray-700"><Trans context="PublicProfile, p">New on the land.</Trans></p>
             ) : (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {sheet.standing.map((s) => (
@@ -345,7 +346,7 @@ export default function PublicProfile() {
             something is live: absent and empty both say nothing. */}
         {sheet.inventory && !isEmptyInventory(sheet.inventory) ? (
           <section className="mt-10" data-public-inventory="">
-            <h2 className="text-lg font-semibold text-sage">Borrowed and booked</h2>
+            <h2 className="text-lg font-semibold text-sage"><Trans context="PublicProfile, h2">Borrowed and booked</Trans></h2>
             <div className="mt-3">
               <InventoryList inventory={sheet.inventory} />
             </div>

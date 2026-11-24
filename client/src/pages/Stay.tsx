@@ -21,6 +21,7 @@ import { useTokenNameFor, useTokenNameMap } from "@/hooks/useTokenNameFor";
 import { formatMoney } from "@shared/money";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -28,6 +29,7 @@ const headers = (): Record<string, string> => {
 };
 
 export default function Stay() {
+  const { t } = useLingui();
   const modules = useModules();
   const staysModule = useModule("stays");
   // The village's own word for its stay token (R084), from the registry, above
@@ -163,11 +165,11 @@ export default function Stay() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Stay With Us</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Stay, h1">Stay With Us</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Each room shows what a night costs. Request a stay, and the
+            <Trans context="Stay, p">Each room shows what a night costs. Request a stay, and the
             stewards reply.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="stays" noun="room" />
         </div>
       </section>
@@ -187,7 +189,7 @@ export default function Stay() {
                       number MUST be divided. Through the shared formatter for
                       the reason in client/src/lib/tokenAmount.ts. */}
                   Your balance: <span className="font-bold">{formatTokenAmount(Number(data.mine.balance ?? 0), Number(data.mine.balanceDecimals ?? 0))}</span> {stayName}
-                  {data.mine.balance < 0 && <span className="text-red-600">, please settle up with the stewards</span>}
+                  {data.mine.balance < 0 && <span className="text-red-600"><Trans context="Stay, span">, please settle up with the stewards</Trans></span>}
                 </p>
               </div>
               {data.mine.stays.filter((s: any) => s.status === "requested" || s.status === "active").map((s: any) => (
@@ -238,7 +240,7 @@ export default function Stay() {
                     {/* Recorded on every room since stays shipped, clamped to
                         at least 1 server-side, and shown only to admins. */}
                     {a.capacity > 0 && (
-                      <p className="text-xs text-muted-foreground mb-2">Sleeps {a.capacity}</p>
+                      <p className="text-xs text-muted-foreground mb-2"><Trans context="Stay, p">Sleeps {a.capacity}</Trans></p>
                     )}
                     {a.description && <p className="text-sm text-muted-foreground mb-3">{a.description}</p>}
                     <div className="mt-auto space-y-2">
@@ -247,18 +249,18 @@ export default function Stay() {
                             arrives MINOR and is divided, so the two a member
                             compares land on one scale. Dividing the rate as
                             well printed a ten-credit night as 0.1. */}
-                        {credit ? <><b>{formatHumanAmount(credit, stayScale)}</b> {stayName} a night</> : <span className="text-muted-foreground">rate coming soon</span>}
-                        {money ? <span className="text-muted-foreground"> · {formatMoney(money, "USD")} a night</span> : null}
+                        {credit ? <><b>{formatHumanAmount(credit, stayScale)}</b> {stayName} a night</> : <span className="text-muted-foreground"><Trans context="Stay, span">rate coming soon</Trans></span>}
+                        {money ? <span className="text-muted-foreground"> <Trans context="Stay, span">· {formatMoney(money, "USD")} a night</Trans></span> : null}
                         {/* 0092: a room can also post a nightly rate in the
                             village's own credits, which is where the cycle
                             pool's value finally buys something. Either
                             accepted, never a rate between them: the stewards
                             activate the stay in one of the two. */}
                         {villagePrices(a).map((v) => (
-                          <span key={v.slug} className="text-muted-foreground"> · {v.amount} {v.name} a night</span>
+                          <span key={v.slug} className="text-muted-foreground"> <Trans context="Stay, span">· {v.amount} {v.name} a night</Trans></span>
                         ))}
                         {tiered && audience === "member" && (
-                          <span className="ml-1 text-[10px] bg-teal-deep/10 text-teal-deep px-1.5 py-0.5 rounded-full">member rate</span>
+                          <span className="ml-1 text-[10px] bg-teal-deep/10 text-teal-deep px-1.5 py-0.5 rounded-full"><Trans context="Stay, span">member rate</Trans></span>
                         )}
                       </p>
                       {tiered && (
@@ -275,23 +277,23 @@ export default function Stay() {
                               className="w-full text-sm border border-border rounded-lg px-3 py-2" />
                             <VoiceArea value={notes} onValue={setNotes}>
                             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-                              placeholder="Anything the stewards should know?"
+                              placeholder={t({ message: "Anything the stewards should know?", context: "Stay, placeholder" })}
                               className="w-full text-sm border border-border rounded-lg px-3 py-2" />
                             </VoiceArea>
                             <div className="flex gap-2">
                               <button onClick={() => request(a.id)}
                                 className="flex-1 inline-flex items-center justify-center gap-1.5 text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium">
-                                <Send className="w-3.5 h-3.5" /> Send request
-                              </button>
-                              <button onClick={() => setRequesting("")} className="text-sm text-muted-foreground px-2">Cancel</button>
+                                <Trans context="Stay, button"><Send className="w-3.5 h-3.5" /> Send request
+                              </Trans></button>
+                              <button onClick={() => setRequesting("")} className="text-sm text-muted-foreground px-2"><Trans context="Stay, button">Cancel</Trans></button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex gap-2">
                             <button onClick={() => setRequesting(a.id)}
                               className="flex-1 text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium">
-                              Request a stay
-                            </button>
+                              <Trans context="Stay, button">Request a stay
+                            </Trans></button>
                             {data?.stripeConfigured && credit && money ? (
                               <div className="flex items-center gap-1">
                                 {/* Clamp BOTH ends here: the max attribute
@@ -299,19 +301,19 @@ export default function Stay() {
                                     used to fail after the click instead of
                                     before it. */}
                                 <input type="number" min={1} max={data?.maxPurchaseNights ?? 60} value={buyNights}
-                                  aria-label={`Nights of ${stayName} to buy`}
+                                  aria-label={t({ message: `Nights of ${stayName} to buy`, context: "Stay, aria-label" })}
                                   onChange={(e) => setBuyNights(Math.min(data?.maxPurchaseNights ?? 60, Math.max(1, Number(e.target.value) || 1)))}
-                                  className="w-14 text-sm border border-border rounded-lg px-2 py-2" title="Nights" />
-                                <button onClick={() => checkout(a.id)} title={`Buy ${buyNights} night(s) of ${stayName}`}
+                                  className="w-14 text-sm border border-border rounded-lg px-2 py-2" title={t({ message: "Nights", context: "Stay, title" })} />
+                                <button onClick={() => checkout(a.id)} title={t({ message: `Buy ${buyNights} night(s) of ${stayName}`, context: "Stay, title" })}
                                   className="inline-flex items-center gap-1.5 text-sm border border-teal-deep text-teal-deep rounded-lg px-3 py-2 font-medium hover:bg-teal-deep/5">
-                                  <CreditCard className="w-3.5 h-3.5" /> Buy
-                                </button>
+                                  <Trans context="Stay, button"><CreditCard className="w-3.5 h-3.5" /> Buy
+                                </Trans></button>
                               </div>
                             ) : null}
                           </div>
                         )
                       ) : (
-                        <p className="text-xs text-muted-foreground">Sign in to request a stay or buy {stayName}.</p>
+                        <p className="text-xs text-muted-foreground"><Trans context="Stay, p">Sign in to request a stay or buy {stayName}.</Trans></p>
                       )}
                       {refusedRoom && refusedRoom.id === a.id && (
                         <ExampleRefusal message={refusedRoom.message} className="mt-2" />
@@ -323,14 +325,14 @@ export default function Stay() {
             })}
           </div>
           {data && data.accommodations.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-12">No rooms posted yet. Check back soon.</p>
+            <p className="text-center text-sm text-muted-foreground py-12"><Trans context="Stay, p">No rooms posted yet. Check back soon.</Trans></p>
           )}
 
           {(data?.earnQuests ?? []).length > 0 && (
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Hammer className="w-4 h-4 text-teal-deep" />
-                <p className="font-semibold text-foreground text-sm">Earn your nights</p>
+                <p className="font-semibold text-foreground text-sm"><Trans context="Stay, p">Earn your nights</Trans></p>
               </div>
               <div className="space-y-2">
                 {data.earnQuests.map((q: any) => (

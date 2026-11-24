@@ -46,6 +46,7 @@ import { useModuleConfig } from "./ModuleConfigPanels";
 import SaberraOutboxPanel from "./SaberraOutboxPanel";
 import { QuestLevel } from "./SaberraBridgeQuests";
 import { ReviewQueueButton, ScheduleControl, SyncRunLog, WHY_WORDS } from "./SaberraSyncSchedule";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const MODULE_ID = "saberra";
 
@@ -106,6 +107,7 @@ interface SyncResult {
 const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export default function SaberraConfigPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const { config, lifecycle, loading, save } = useModuleConfig(MODULE_ID, password);
   /*
    * WHAT A FOUNDER TYPED, or null for "show what is stored".
@@ -198,7 +200,7 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
         // Back to showing what is stored, which `save` has just replaced.
         setApiDraft(null);
         setDashDraft(null);
-        toast.success("Saved. The next sync calls this address");
+        toast.success(t({ message: "Saved. The next sync calls this address", context: "SaberraConfigPanel, toast" }));
         // The Go-live card and the module cards read readiness, and an address
         // is exactly what flips this module's. They listen for this event.
         window.dispatchEvent(new Event("module:saved"));
@@ -249,24 +251,24 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
 
   return (
     <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 sm:p-5 space-y-4">
-      <Suspense fallback={<p className="text-xs text-gray-500">Reading Organisational Memory…</p>}>
+      <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="SaberraConfigPanel, p">Reading Organisational Memory…</Trans></p>}>
         <SaberraBridgeBoard password={password} />
       </Suspense>
-      <Suspense fallback={<p className="text-xs text-gray-500">Reading the Sera links…</p>}>
+      <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="SaberraConfigPanel, p">Reading the Sera links…</Trans></p>}>
         <SeraLinkPanel password={password} />
       </Suspense>
-      <QuestLevel level={1} title="This village's address at the service" state={status?.addressSet ? "done" : undefined}>
+      <QuestLevel level={1} title={t({ message: "This village's address at the service", context: "SaberraConfigPanel, title" })} state={status?.addressSet ? "done" : undefined}>
         <p className="text-xs text-gray-500 mb-3">
-          The service gives each village its own address. The key that goes with it is entered
+          <Trans context="SaberraConfigPanel, p">The service gives each village its own address. The key that goes with it is entered
           in Integrations, never here.
-        </p>
+        </Trans></p>
         <div className="grid sm:grid-cols-2 gap-3">
           <label className="text-xs text-gray-600">
             Service address, which a sync calls
             <input
               value={apiUrl}
               onChange={(e) => setApiDraft(e.target.value)}
-              placeholder="https://"
+              placeholder={t({ message: "https://", context: "SaberraConfigPanel, placeholder" })}
               inputMode="url"
               autoComplete="off"
               aria-describedby={problem ? "saberra-address-problem" : undefined}
@@ -278,7 +280,7 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
             <input
               value={dashboardUrl}
               onChange={(e) => setDashDraft(e.target.value)}
-              placeholder="https://"
+              placeholder={t({ message: "https://", context: "SaberraConfigPanel, placeholder" })}
               inputMode="url"
               autoComplete="off"
               aria-describedby={problem ? "saberra-address-problem" : undefined}
@@ -300,20 +302,20 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
         </button>
       </QuestLevel>
 
-      <QuestLevel level={2} title="The connection" state={keyState === "ready" && status?.addressSet ? "done" : undefined}>
+      <QuestLevel level={2} title={t({ message: "The connection", context: "SaberraConfigPanel, title" })} state={keyState === "ready" && status?.addressSet ? "done" : undefined}>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-500"><Trans context="SaberraConfigPanel, p">Loading…</Trans></p>
         ) : !on ? (
           <>
             <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-4">
-              The module is off. The addresses you save now are kept. The connection can be checked
+              <Trans context="SaberraConfigPanel, p">The module is off. The addresses you save now are kept. The connection can be checked
               and a sync run once the module is on, and preview is enough for that.
-            </p>
+            </Trans></p>
             <div className="mt-3">
               <ScheduleControl config={config} save={save} onSaved={rereadRuns} />
               <p className="text-[11px] text-gray-500 mt-1">
-                A schedule saved now starts once the module is on.
-              </p>
+                <Trans context="SaberraConfigPanel, p">A schedule saved now starts once the module is on.
+              </Trans></p>
             </div>
           </>
         ) : (
@@ -323,37 +325,37 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
                 {statusProblem}
               </p>
             )}
-            {!status && !statusProblem && <p className="text-sm text-gray-500">Reading the connection…</p>}
+            {!status && !statusProblem && <p className="text-sm text-gray-500"><Trans context="SaberraConfigPanel, p">Reading the connection…</Trans></p>}
             {status && (
               <ul className="text-sm text-gray-700 space-y-1 mb-3">
                 <li>
-                  <span className="font-medium text-gray-900">Key: </span>
+                  <span className="font-medium text-gray-900"><Trans context="SaberraConfigPanel, span">Key: </Trans></span>
                   {keyState === "ready" ? "set." : status.connection.sentence}
                   {keyState === "not-connected" && (
                     <>
                       {" "}
                       <a href="/admin?tab=integrations" className="text-teal-deep underline">
-                        Add the key in Integrations
-                      </a>
+                        <Trans context="SaberraConfigPanel, a">Add the key in Integrations
+                      </Trans></a>
                     </>
                   )}
                   {keyState === "key-changed" && (
                     <>
                       {" "}
                       <a href="/admin?tab=integrations" className="text-teal-deep underline">
-                        Replace the key in Integrations
-                      </a>
+                        <Trans context="SaberraConfigPanel, a">Replace the key in Integrations
+                      </Trans></a>
                     </>
                   )}
                 </li>
                 <li>
-                  <span className="font-medium text-gray-900">Address: </span>
+                  <span className="font-medium text-gray-900"><Trans context="SaberraConfigPanel, span">Address: </Trans></span>
                   {status.addressSet
                     ? "set. A sync calls the service address above."
                     : "no https service address is saved yet. Enter it above and save."}
                 </li>
                 <li>
-                  <span className="font-medium text-gray-900">Held here: </span>
+                  <span className="font-medium text-gray-900"><Trans context="SaberraConfigPanel, span">Held here: </Trans></span>
                   {status.held === 0
                     ? "nothing from the service yet."
                     : `${count(status.held, "fact")} from the service.`}
@@ -369,10 +371,10 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
               <ScheduleControl config={config} save={save} onSaved={rereadRuns} />
             </div>
             <p className="text-[11px] text-gray-500 mt-1">
-              Reads what the service holds and puts its suggestions in the review queue. Nothing
+              <Trans context="SaberraConfigPanel, p">Reads what the service holds and puts its suggestions in the review queue. Nothing
               changes until somebody accepts one there. On a schedule, a sync sends something to the
               queue only when the service holds something new.
-            </p>
+            </Trans></p>
 
             {syncProblem && (
               <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3" role="alert">
@@ -385,14 +387,14 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
       </QuestLevel>
 
       {!loading && on && (
-        <QuestLevel level={3} title="Sync history">
+        <QuestLevel level={3} title={t({ message: "Sync history", context: "SaberraConfigPanel, title" })}>
           <SyncRunLog password={password} version={runsVersion} />
         </QuestLevel>
       )}
 
       {/* Behind the module's own gate like the status read, so it is asked only while the module is on. */}
       {on && (
-        <QuestLevel level={4} title="Journal outbox" headingId="saberra-outbox-heading">
+        <QuestLevel level={4} title={t({ message: "Journal outbox", context: "SaberraConfigPanel, title" })} headingId="saberra-outbox-heading">
           <SaberraOutboxPanel password={password} />
         </QuestLevel>
       )}
@@ -416,10 +418,10 @@ function SyncAnswer({ result }: { result: SyncResult }) {
 
   return (
     <div className="mt-3 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 space-y-2" role="status">
-      <p>{count(result.landed, "suggestion")} reached the review queue.</p>
+      <p><Trans context="SaberraConfigPanel, p">{count(result.landed, "suggestion")} reached the review queue.</Trans></p>
       {result.landed > 0 && <ReviewQueueButton waiting={result.landed} />}
-      <p>This sync stored {count(result.facts, "fact")} from the service.</p>
-      {nothing && <p>The service answered with nothing to suggest.</p>}
+      <p><Trans context="SaberraConfigPanel, p">This sync stored {count(result.facts, "fact")} from the service.</Trans></p>
+      {nothing && <p><Trans context="SaberraConfigPanel, p">The service answered with nothing to suggest.</Trans></p>}
 
       {failures.length > 0 && (
         <ul className="text-red-700 space-y-1">
@@ -435,7 +437,7 @@ function SyncAnswer({ result }: { result: SyncResult }) {
         <ul className="text-amber-800 space-y-1">
           {refused.map((r, i) => (
             <li key={`${r.kind}-${i}`}>
-              {r.kind}: the review queue refused it{r.reason ? ` (${r.reason})` : ""}
+              <Trans context="SaberraConfigPanel, li">{r.kind}: the review queue refused it{r.reason ? ` (${r.reason})` : ""}</Trans>
             </li>
           ))}
         </ul>
@@ -443,7 +445,7 @@ function SyncAnswer({ result }: { result: SyncResult }) {
       {truncated.length > 0 && (
         <ul className="text-amber-800 space-y-1">
           {truncated.map((k) => (
-            <li key={k}>{k}: cut short. The service holds more than one sync reads.</li>
+            <li key={k}><Trans context="SaberraConfigPanel, li">{k}: cut short. The service holds more than one sync reads.</Trans></li>
           ))}
         </ul>
       )}
@@ -455,9 +457,9 @@ function SyncAnswer({ result }: { result: SyncResult }) {
       {asked && <p className={guessed ? "text-amber-800" : "text-xs text-gray-500"}>{asked.note}</p>}
       {addresses.length > 0 && (
         <p className="text-amber-800">
-          {count(addresses.length, "record")} carried an email address, and those fields were
+          <Trans context="SaberraConfigPanel, p">{count(addresses.length, "record")} carried an email address, and those fields were
           dropped before anything was stored.
-        </p>
+        </Trans></p>
       )}
     </div>
   );

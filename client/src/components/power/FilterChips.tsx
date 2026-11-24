@@ -5,6 +5,7 @@
  * the person filter; the person chip here is how it reads and clears.
  */
 import type { Filters, PowerCircle } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 function Chip({
   on,
@@ -45,13 +46,14 @@ export default function FilterChips({
   /** The display name behind the person filter, for the chip's words. */
   personName?: string | null;
 }) {
+  const { t } = useLingui();
   return (
-    <div className="flex items-center gap-1.5 flex-wrap" data-power-filters role="group" aria-label="Filters">
-      <Chip on={filters.open} label="Open roles" onToggle={() => onChange({ ...filters, open: !filters.open })} />
-      {signedIn && <Chip on={filters.mine} label="My roles" onToggle={() => onChange({ ...filters, mine: !filters.mine })} />}
-      <Chip on={filters.expiring} label="Ending soon" onToggle={() => onChange({ ...filters, expiring: !filters.expiring })} />
+    <div className="flex items-center gap-1.5 flex-wrap" data-power-filters role="group" aria-label={t({ message: "Filters", context: "FilterChips, aria-label" })}>
+      <Chip on={filters.open} label={t({ message: "Open roles", context: "FilterChips, label" })} onToggle={() => onChange({ ...filters, open: !filters.open })} />
+      {signedIn && <Chip on={filters.mine} label={t({ message: "My roles", context: "FilterChips, label" })} onToggle={() => onChange({ ...filters, mine: !filters.mine })} />}
+      <Chip on={filters.expiring} label={t({ message: "Ending soon", context: "FilterChips, label" })} onToggle={() => onChange({ ...filters, expiring: !filters.expiring })} />
       <label className="text-xs text-muted-foreground flex items-center gap-1">
-        <span className="sr-only">One circle</span>
+        <span className="sr-only"><Trans context="FilterChips, span">One circle</Trans></span>
         <select
           value={filters.circle ?? ""}
           onChange={(e) => onChange({ ...filters, circle: e.target.value || null })}

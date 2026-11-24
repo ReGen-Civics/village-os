@@ -14,8 +14,10 @@
 import { useCallback, useEffect, useState } from "react";
 import JourneyDetail from "./JourneyDetail";
 import { fetchJourneys, type JourneySummary } from "./journeysApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function CommsJourneys({ password }: { password: string }) {
+  const { t } = useLingui();
   const [journeys, setJourneys] = useState<JourneySummary[] | null>(null);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
@@ -38,19 +40,19 @@ export default function CommsJourneys({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-gray-900">Journeys</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsJourneys, h2">Journeys</Trans></h2>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          The emails that follow from what people do: saying yes to a gathering, joining, starting a path. Each journey is off until you
+          <Trans context="CommsJourneys, p">The emails that follow from what people do: saying yes to a gathering, joining, starting a path. Each journey is off until you
           turn it on. Open one to see its steps, change them, and walk someone through it.
-        </p>
+        </Trans></p>
       </div>
 
       {error && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      {!journeys && !error && <p className="py-12 text-center text-sm text-gray-400">Loading...</p>}
+      {!journeys && !error && <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsJourneys, p">Loading...</Trans></p>}
 
       {journeys && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <nav aria-label="Journeys">
+          <nav aria-label={t({ message: "Journeys", context: "CommsJourneys, aria-label" })}>
             <ul className="space-y-1">
               {journeys.map((j) => (
                 <li key={j.key}>
@@ -68,8 +70,8 @@ export default function CommsJourneys({ password }: { password: string }) {
                         {j.state === "on" ? "On" : "Off"}
                       </span>
                       <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-600">
-                        {j.active} on it
-                      </span>
+                        <Trans context="CommsJourneys, span">{j.active} on it
+                      </Trans></span>
                       <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-600">
                         {j.steps.length} {j.steps.length === 1 ? "email" : "emails"}
                       </span>
@@ -84,7 +86,7 @@ export default function CommsJourneys({ password }: { password: string }) {
             {selected ? (
               <JourneyDetail key={selected} password={password} journeyKey={selected} onChanged={load} />
             ) : (
-              <p className="text-sm text-gray-500">Choose a journey to see its steps.</p>
+              <p className="text-sm text-gray-500"><Trans context="CommsJourneys, p">Choose a journey to see its steps.</Trans></p>
             )}
           </div>
         </div>

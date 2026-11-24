@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
@@ -121,6 +121,7 @@ function Hero({ eyebrow, headline, intro, waiting }: { eyebrow: string; headline
 
 /** /training: one door per path, each in its own page's words. */
 function TrainingChooser() {
+  const { t } = useLingui();
   const steward = usePageContent(TRAINING_PAGES.steward);
   const resident = usePageContent(TRAINING_PAGES.resident);
   const pages: Record<TrainingTrack, ResolvedPage | null> = { steward, resident };
@@ -151,7 +152,7 @@ function TrainingChooser() {
             waiting={false}
           />
           {ready ? (
-            <nav aria-label="Training pages" className="grid gap-4 sm:grid-cols-2">
+            <nav aria-label={t({ message: "Training pages", context: "Training, aria-label" })} className="grid gap-4 sm:grid-cols-2">
               {TRAINING_TRACKS.map((t) => {
                 const door = pages[t]?.door.fields;
                 const yours = t === mine;
@@ -167,8 +168,8 @@ function TrainingChooser() {
                     <span className={H2}>{door?.title}</span>
                     <span className={HINT}>{door?.line}</span>
                     <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-notice">
-                      Open
-                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      <Trans context="Training, span">Open
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></Trans>
                     </span>
                   </Link>
                 );
@@ -176,7 +177,7 @@ function TrainingChooser() {
             </nav>
           ) : (
             <div className="flex justify-center py-10">
-              <BreathingLoader label="Opening the training" />
+              <BreathingLoader label={t({ message: "Opening the training", context: "Training, label" })} />
             </div>
           )}
           {lessons && lessons.length > 0 ? (
@@ -210,6 +211,7 @@ function TrainingChooser() {
 }
 
 function TrackTraining({ track }: { track: TrainingTrack }) {
+  const { t } = useLingui();
   const page = usePageContent(TRAINING_PAGES[track]);
   const [modules, setModules] = useState<TrainingModule[]>([]);
   const [completed, setCompleted] = useState<string[] | null>(null);
@@ -306,18 +308,18 @@ function TrackTraining({ track }: { track: TrainingTrack }) {
             walked={done}
             size="md"
             bloom
-            label={`${done} of ${total} lessons done`}
+            label={t({ message: `${done} of ${total} lessons done`, context: "Training, label" })}
             labels={modules.map((m) => m.title)}
             className="shrink-0"
           />
         ) : null}
         <div className="min-w-0 space-y-1">
           <h2 id="training-progress" className={EYEBROW}>
-            Your training
-          </h2>
+            <Trans context="Training, h2">Your training
+          </Trans></h2>
           <p className="font-display text-2xl text-card-foreground">
-            {done} of {total} lessons done
-          </p>
+            <Trans context="Training, p">{done} of {total} lessons done
+          </Trans></p>
           {required.length > 0 ? (
             <p className={HINT}>
               {requiredDone === required.length
@@ -330,11 +332,11 @@ function TrackTraining({ track }: { track: TrainingTrack }) {
     ) : !loading && !signedIn ? (
       <section className={CARD}>
         <p className={HINT}>
-          <Link href="/login" className={LINK}>
+          <Trans context="Training, p"><Link href="/login" className={LINK}>
             Sign in
           </Link>{" "}
           to mark lessons done as you go.
-        </p>
+        </Trans></p>
       </section>
     ) : null;
 
@@ -365,10 +367,10 @@ function TrackTraining({ track }: { track: TrainingTrack }) {
 
               {loading ? (
                 <div className="flex justify-center py-10">
-                  <BreathingLoader label="Gathering the lessons" />
+                  <BreathingLoader label={t({ message: "Gathering the lessons", context: "Training, label" })} />
                 </div>
               ) : modules.length === 0 ? (
-                <p className={HINT}>No lessons yet. They appear here once the village adds them.</p>
+                <p className={HINT}><Trans context="Training, p">No lessons yet. They appear here once the village adds them.</Trans></p>
               ) : (
                 <ul className="space-y-3">
                   {modules.map((m) => {
@@ -382,7 +384,7 @@ function TrackTraining({ track }: { track: TrainingTrack }) {
                             {isDone ? <CheckCircle2 className="size-5 text-open" /> : <Icon className="size-5" />}
                           </span>
                           <div className="min-w-0 flex-1 space-y-2">
-                            {isNext ? <p className={EYEBROW}>Next</p> : null}
+                            {isNext ? <p className={EYEBROW}><Trans context="Training, p">Next</Trans></p> : null}
                             {/*
                               The title and its chips share a row that may WRAP, so at 320 the
                               chips drop under the title instead of pushing the page wider than
@@ -404,10 +406,10 @@ function TrackTraining({ track }: { track: TrainingTrack }) {
                             <div className="flex flex-wrap items-center gap-3 pt-1">
                               {m.url ? (
                                 <a href={m.url} target="_blank" rel="noopener noreferrer" className={BTN_NOTICE}>
-                                  Open <ExternalLink className="size-3.5" aria-hidden="true" />
+                                  <Trans context="Training, a">Open <ExternalLink className="size-3.5" aria-hidden="true" /></Trans>
                                 </a>
                               ) : (
-                                <span className={`${HINT} italic`}>Link coming soon</span>
+                                <span className={`${HINT} italic`}><Trans context="Training, span">Link coming soon</Trans></span>
                               )}
                               {/* Disabled until the member's record has arrived, so
                                   nobody can toggle against a list nobody has read,

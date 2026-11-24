@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { Rocket } from "lucide-react";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** What `/api/admin/launch` says about the launch vote itself (R74). */
 export interface LaunchVote {
@@ -71,6 +72,7 @@ export default function StartTheGame({
   /** What the server said when it refused the ask, shown on the card. */
   refusal: string;
 }) {
+  const { t } = useLingui();
   // The village may name its launch vote (gap G7); blank keeps the platform's name.
   const launchName = useAppWords()("launch", "name") ?? "Start the Game";
   const running = vote?.openBallot ?? null;
@@ -91,12 +93,12 @@ export default function StartTheGame({
           </p>
           {!running && governanceOff && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">
-              The vote is held in the governance module, and it is off for members.{" "}
+              <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
               <Link href="/modules/governance" className="text-teal-deep underline">
                 Turn it on for members first
               </Link>
               .
-            </p>
+            </Trans></p>
           )}
           {!running && !status.readyToLaunch && shortOfPeople && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">{vote?.tooFew}</p>
@@ -112,8 +114,8 @@ export default function StartTheGame({
           </p>
           {!running && status.readyToLaunch && !shortOfPeople && vote?.unityPct != null && vote?.quorumPct != null && (
             <p className="text-xs text-stone-500 mt-1 max-w-md">
-              It carries when {vote.quorumPct}% of the roll has answered and {vote.unityPct}% of those who take a side agree.
-              {vote.onTheRoll != null && ` ${vote.onTheRoll} people hold a voice today.`}
+              <Trans context="StartTheGame, p">It carries when {vote.quorumPct}% of the roll has answered and {vote.unityPct}% of those who take a side agree.
+              {vote.onTheRoll != null && ` ${vote.onTheRoll} people hold a voice today.`}</Trans>
             </p>
           )}
         </div>
@@ -122,17 +124,17 @@ export default function StartTheGame({
             href={`/decisions/${running.id}`}
             className="text-sm bg-teal-deep text-white rounded-lg px-5 py-2.5 font-semibold"
           >
-            Open the vote
-          </Link>
+            <Trans context="StartTheGame, Link">Open the vote
+          </Trans></Link>
         ) : (
           <button
             onClick={onAsk}
             disabled={!canAsk || busy}
-            title={isFounder ? undefined : "Opening this vote is a founder's act"}
+            title={isFounder ? undefined : t({ message: "Opening this vote is a founder's act", context: "StartTheGame, title" })}
             className="text-sm bg-teal-deep text-white rounded-lg px-5 py-2.5 font-semibold disabled:opacity-40"
           >
-            Ask the village
-          </button>
+            <Trans context="StartTheGame, button">Ask the village
+          </Trans></button>
         )}
       </div>
 

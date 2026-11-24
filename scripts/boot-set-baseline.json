@@ -1,9 +1,7 @@
 {
   "modules": [
-    "client/src/components/natural/MoonProgress.tsx",
     "client/src/components/natural/index.ts",
     "client/src/components/natural/moments.ts",
-    "client/src/components/natural/moonGeometry.ts",
     "client/src/lib/celebrated.ts",
     "shared/capabilities.ts"
   ]
