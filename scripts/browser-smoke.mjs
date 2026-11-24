@@ -209,9 +209,14 @@ export async function enterPortal(context, opts, engine) {
       { email, header: SMOKE_HEADER, token: opts.token },
     );
     if (answer.status !== 201) return { status: "failed", detail: `the entrance refused the smoke (${answer.status}): ${String(answer.body?.message ?? answer.body?.error ?? "").slice(0, 300)}` };
+    if (answer.body?.next !== "/roles") return { status: "failed", detail: `the entrance would send the smoke to ${JSON.stringify(answer.body?.next)}, not back to /roles` };
     const after = await page.evaluate(() => fetch("/api/entrance").then((r) => (r.ok ? r.json() : null)).catch(() => null));
     if (!after?.entered) return { status: "failed", detail: "the entrance took the smoke and the device is still outside: the cookie did not hold" };
-    return { status: "passed", detail: "drew in front of /roles and let the smoke through" };
+    // The keep-in-touch step, its own screen after the entry. A smoke answers No, so it never reaches a list.
+    const kept = await page.evaluate(() => fetch("/api/entrance/updates", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ answer: "no", words: "release smoke" }) }).then((r) => r.status).catch(() => 0));
+    // A deploy from before the step has no such route; anything else must take the answer.
+    if (kept !== 200 && kept !== 404) return { status: "failed", detail: `the keep-in-touch step refused the smoke's answer (${kept})` };
+    return { status: "passed", detail: "drew in front of /roles, let the smoke through, took its answer, and would send it back to /roles" };
   } catch (e) {
     return { status: "failed", detail: `the entrance did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}` };
   } finally {

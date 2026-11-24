@@ -6,7 +6,7 @@
  *
  * `entranceMiddleware` sits in front of every route, installed right after the people lock and
  * for the same reason: a gate read per route is a gate every new route forgets. While the
- * village's dial `entrance.required` is on, a GET or HEAD to a path on `ENTRANCE_APIS` from a
+ * village's dial `entrance.required` is on, a GET or HEAD to any `/api` path `OPEN_APIS` does not name, from a
  * caller who is neither signed in nor carrying a live entry cookie is refused with 401 and
  * `entrance_required`, except where `ENTRANCE_BROCHURE_KEYS` names the few keys a brochure page
  * needs from that read, which the visitor is answered with and nothing more. Writes pass: every write already asks who is writing, and an application

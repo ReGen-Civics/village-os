@@ -1,6 +1,8 @@
 /**
  * PORTAL VISITORS: everyone who entered the portal (shared/entrance.ts), newest first, with the
- * people who asked for updates as a list of their own, a CSV of either, and a way to forget one
+ * people who said yes to keeping in touch as a list of their own, the page each one first asked
+ * for, the pages they opened since, a Make member button for a visitor who has made an account
+ * (the existing super-vouch, which asks its own capability), a CSV of either, and a way to forget one
  * person when they ask. Each row shows what the visitor chose under "What draws you here?" and what
  * they have done since (applied, made an account, sent a form), matched by address. While the
  * village has a Brevo list set up, it also says who has reached it and sends those waiting. Read through the one capability gate on `intake.moderate`
@@ -32,6 +34,8 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
   const [error, setError] = useState("");
   const [forget, setForget] = useState("");
   const [forgetNote, setForgetNote] = useState("");
+  const [memberNote, setMemberNote] = useState("");
+  const [admitting, setAdmitting] = useState("");
 
   const params = new URLSearchParams();
   if (updatesOnly) params.set("updates", "1");
@@ -68,7 +72,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
       }
       const sent = Number(body.sent ?? 0);
       const waiting = Number(body.waiting ?? 0);
-      setSyncNote(waiting === 0 ? t({ message: "Nobody is waiting: everyone who asked for updates is on the list.", context: "admin portal visitors: email list" }) : t({ message: `${sent} of ${waiting} reached the email list.`, context: "admin portal visitors: email list" }));
+      setSyncNote(waiting === 0 ? t({ message: "Nobody is waiting: everyone who said yes is on the list.", context: "admin portal visitors: email list" }) : t({ message: `${sent} of ${waiting} reached the email list.`, context: "admin portal visitors: email list" }));
       void load();
     } catch {
       setSyncNote(t({ message: "That did not go through. Check your connection.", context: "admin portal visitors" }));
@@ -97,6 +101,34 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const makeMember = async (e: PortalEntry) => {
+    const account = e.journey?.account;
+    if (!account || admitting) return;
+    setAdmitting(account.id);
+    setMemberNote("");
+    try {
+      const res = await fetch(`${API_BASE}/members/${encodeURIComponent(account.id)}/super-vouch`, { method: "POST", headers: authHeaders(password) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMemberNote(refusal(body, t({ message: "That did not go through.", context: "admin portal visitors" })));
+        return;
+      }
+      setMemberNote(t({ message: `${e.name} is a member now.`, context: "admin portal visitors: make member done" }));
+      void load();
+    } catch {
+      setMemberNote(t({ message: "That did not go through. Check your connection.", context: "admin portal visitors" }));
+    } finally {
+      setAdmitting("");
+    }
+  };
+
+  const updatesWords = (e: PortalEntry): string =>
+    e.updates === "yes"
+      ? t({ message: "Yes", context: "admin portal visitors: keep in touch answer" })
+      : e.updates === "no"
+        ? t({ message: "No", context: "admin portal visitors: keep in touch answer" })
+        : t({ message: "Not answered", context: "admin portal visitors: keep in touch answer" });
 
   const exportCsv = async () => {
     setError("");
@@ -159,7 +191,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground">
           <input type="checkbox" className="size-5" checked={updatesOnly} onChange={(e) => setUpdatesOnly(e.target.checked)} />
-          {t({ message: "Only the people who asked for updates", context: "admin portal visitors" })}
+          {t({ message: "Only the people who said yes to keeping in touch", context: "admin portal visitors" })}
         </label>
         <label className="flex min-h-11 items-center gap-2 text-sm text-foreground">
           {t({ message: "What drew them", context: "admin portal visitors: filter" })}
@@ -178,6 +210,11 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
           </button>
         )}
       </div>
+      {memberNote && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {memberNote}
+        </p>
+      )}
       {syncNote && (
         <p role="status" className="text-sm text-muted-foreground">
           {syncNote}
@@ -193,7 +230,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
       {entries === null ? (
         <p className="text-sm text-muted-foreground">{t({ message: "Loading the visitors.", context: "admin portal visitors" })}</p>
       ) : entries.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{updatesOnly ? t({ message: "Nobody has asked for updates yet.", context: "admin portal visitors" }) : t({ message: "Nobody has entered the portal yet.", context: "admin portal visitors" })}</p>
+        <p className="text-sm text-muted-foreground">{updatesOnly ? t({ message: "Nobody has said yes to keeping in touch yet.", context: "admin portal visitors" }) : t({ message: "Nobody has entered the portal yet.", context: "admin portal visitors" })}</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-left text-sm">
@@ -206,9 +243,10 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                 <th scope="col" className="px-3 py-2">{t({ message: "WhatsApp", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Link", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Drawn by", context: "admin portal visitors" })}</th>
-                <th scope="col" className="px-3 py-2">{t({ message: "Updates", context: "admin portal visitors" })}</th>
+                <th scope="col" className="px-3 py-2">{t({ message: "Keep in touch", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Since entering", context: "admin portal visitors" })}</th>
-                <th scope="col" className="px-3 py-2">{t({ message: "Was going to", context: "admin portal visitors" })}</th>
+                <th scope="col" className="px-3 py-2">{t({ message: "First asked for", context: "admin portal visitors" })}</th>
+                <th scope="col" className="px-3 py-2">{t({ message: "Pages opened", context: "admin portal visitors" })}</th>
               </tr>
             </thead>
             <tbody>
@@ -221,8 +259,8 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                   <td className="px-3 py-2 break-all">{e.link ?? ""}</td>
                   <td className="px-3 py-2">{e.interest ? interestWords[e.interest] : ""}</td>
                   <td className="px-3 py-2">
-                    {e.updates ? t({ message: "Yes", context: "admin portal visitors: asked for updates" }) : t({ message: "No", context: "admin portal visitors: asked for updates" })}
-                    {e.updates && emailList && (
+                    {updatesWords(e)}
+                    {e.updates === "yes" && emailList && (
                       <span className="block text-xs text-muted-foreground" title={e.syncError ?? undefined}>
                         {e.syncedAt ? t({ message: "On the email list", context: "admin portal visitors: email list" }) : e.syncError ? t({ message: "Not sent yet: see the reason", context: "admin portal visitors: email list" }) : t({ message: "Waiting", context: "admin portal visitors: email list" })}
                       </span>
@@ -238,8 +276,29 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                     ) : (
                       t({ message: "Nothing yet", context: "admin portal visitors: no later step" })
                     )}
+                    {e.journey?.account && !e.journey.account.member && (
+                      <button type="button" className={`${BTN} mt-2`} disabled={!!admitting} onClick={() => void makeMember(e)}>
+                        {t({ message: "Make member", context: "admin portal visitors: admit a visitor with an account" })}
+                      </button>
+                    )}
                   </td>
                   <td className="px-3 py-2 break-all text-muted-foreground">{e.nextPath ?? ""}</td>
+                  <td className="px-3 py-2 text-muted-foreground">
+                    {(e.views ?? []).length === 0 ? (
+                      t({ message: "None yet", context: "admin portal visitors: no pages opened" })
+                    ) : (
+                      <details>
+                        <summary className="cursor-pointer">{t({ message: `Opened: ${(e.views ?? []).length}`, context: "admin portal visitors: how many pages a visitor opened" })}</summary>
+                        <ul className="mt-1 space-y-0.5">
+                          {(e.views ?? []).map((v, i) => (
+                            <li key={i} className="break-all">
+                              <span className="whitespace-nowrap">{when(v.at)}</span> {v.path}
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

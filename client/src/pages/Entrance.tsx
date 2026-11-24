@@ -5,10 +5,12 @@
  * lists of what it stands in front of are shared/entrance.ts; components/EntranceGate.tsx decides
  * when it shows.
  *
- * Name and email are asked for; a WhatsApp number and a website or social link are offered; the box
- * for updates starts unticked. The human check is Cloudflare Turnstile while the village has it set
- * up, and otherwise a field no person sees plus the time the form was on screen. After entry the
- * page reloads onto where the visitor was going, so every read on it starts again with the entry.
+ * Name and email are asked for; a WhatsApp number and a website or social link are offered. Then, on
+ * a step of its own, one question with two buttons: "Do you want us to keep you updated, and to hear
+ * about opportunities?" Yes, No, or leaving without answering are all kept as they are, and only a
+ * yes ever reaches a list (the lead, 24 Nov 2026: two buttons, no box to tick). The human check is Cloudflare Turnstile while the village has it set
+ * up, and otherwise a field no person sees plus the time the form was on screen. After the answer the
+ * page reloads onto the page the visitor first asked for (`next`; `/roles` lands on `/roles`), so every read on it starts again with the entry.
  *
  * "What draws you here?" is optional and offers five plain answers (shared/entrance.ts, `INTERESTS`);
  * nothing ranks or sorts a visitor by it.
@@ -18,13 +20,13 @@
  * entry, so the record shows what each person agreed to.
  */
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, DoorOpen } from "lucide-react";
+import { ArrowRight, DoorOpen, Mail } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, TICK, WORLD } from "@/components/journey/look";
-import { INTERESTS, safeNext, type EntranceProblem, type Interest } from "@shared/entrance";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
+import { INTERESTS, safeNext, type EntranceProblem, type Interest, type UpdatesAnswer } from "@shared/entrance";
 
 declare global {
   interface Window {
@@ -94,13 +96,14 @@ function HumanCheck({ siteKey, onToken, locale }: { siteKey: string; onToken: (t
 export default function Entrance({ next, siteKey }: { next: string; siteKey: string | null }) {
   const { t, i18n } = useLingui();
   const village = useVillageName();
-  const { contactEmail } = useVillageLinks();
+  const { contactEmail, siteUrl } = useVillageLinks();
   const ids = useId();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [link, setLink] = useState("");
-  const [updates, setUpdates] = useState(false);
+  /** Where to go once in: set when the entry is kept, which opens the keep-in-touch step. */
+  const [goTo, setGoTo] = useState<string | null>(null);
   const [interest, setInterest] = useState<Interest | null>(null);
   const [website, setWebsite] = useState("");
   const [token, setToken] = useState("");
@@ -134,7 +137,6 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
           email,
           whatsapp,
           link,
-          updates,
           interest,
           next,
           locale: i18n.locale,
@@ -151,8 +153,8 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
         setToken("");
         return;
       }
-      // A full load, so every read on the next page starts again with the entry in hand.
-      window.location.assign(safeNext(body?.next) ?? safeNext(next) ?? "/");
+      // The entry is kept and the cookie set; the keep-in-touch question is the next step.
+      setGoTo(safeNext(body?.next) ?? safeNext(next) ?? "/");
     } catch {
       setError({ field: null, message: t({ message: "That did not go through. Check your connection and try again.", context: "portal entrance: the network failed" }) });
     } finally {
@@ -167,6 +169,10 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
     role: t({ message: "A role on the team", context: "portal entrance: what draws you, a role" }),
     curious: t({ message: "Just curious", context: "portal entrance: what draws you, curiosity" }),
   };
+
+  const siteHost = hostOf(siteUrl);
+
+  if (goTo) return <KeepInTouch village={village} goTo={goTo} />;
 
   const invalid = (f: EntranceProblem) => (error?.field === f ? { "aria-invalid": true, "aria-describedby": `${ids}-error` } : {});
   const signIn = `/login?next=${encodeURIComponent(next)}`;
@@ -187,6 +193,16 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
                 context: "portal entrance: what is inside, and what is asked",
               })}
             </p>
+            {siteHost && (
+              <p className={HINT}>
+                {t({ message: "To learn more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
+                <a href={siteUrl} className={LINK}>
+                  {siteHost}
+                </a>
+                .{" "}
+                {t({ message: "This site is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
+              </p>
+            )}
           </header>
 
           <form onSubmit={submit} noValidate className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-form-heading`}>
@@ -254,24 +270,17 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
               <input id={fieldId("website")} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
             </div>
 
-            <label htmlFor={fieldId("updates")} className="flex min-h-11 cursor-pointer items-start gap-3">
-              <input id={fieldId("updates")} type="checkbox" className={`${TICK} mt-0.5`} checked={updates} onChange={(e) => setUpdates(e.target.checked)} />
-              <span className="text-base text-foreground">
-                {t({ message: `Send me occasional updates about ${village} by email.`, context: "portal entrance: the updates box, unticked by default" })}
-              </span>
-            </label>
-
             {siteKey && <HumanCheck siteKey={siteKey} onToken={setToken} locale={i18n.locale} />}
 
             <p ref={privacy} className={HINT}>
               {contactEmail
                 ? t({
-                    message: `We keep what you type here so we know who is exploring ${village} and can follow up about what draws you here. If you tick the box, we also add you to our email list, kept with an email service, for occasional updates. We never sell it. To see it or have it deleted, write to ${contactEmail}.`,
-                    context: "portal entrance: the privacy line, with the village's contact address, naming the follow-up and the email list",
+                    message: `We keep what you type here, and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to ${contactEmail}.`,
+                    context: "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list",
                   })
                 : t({
-                    message: `We keep what you type here so we know who is exploring ${village} and can follow up about what draws you here. If you tick the box, we also add you to our email list, kept with an email service, for occasional updates. We never sell it. To see it or have it deleted, ask anyone at the village.`,
-                    context: "portal entrance: the privacy line, when the village has no contact address, naming the follow-up and the email list",
+                    message: `We keep what you type here, and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village.`,
+                    context: "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list",
                   })}
             </p>
 
@@ -286,12 +295,84 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
             </div>
           </form>
 
-          <p className={HINT}>
-            {t({ message: "Looking for the public pages? They are all open.", context: "portal entrance: the brochure stays open" })}{" "}
-            <a href="/" className={LINK}>
-              {t({ message: "Back to the home page", context: "portal entrance: link home" })}
-            </a>
-          </p>
+        </main>
+      </div>
+    </Layout>
+  );
+}
+
+/** The site's host for the visible link text (`amora.example`), or "" when the village has no site. */
+function hostOf(url: string): string {
+  try {
+    return url ? new URL(url).host.replace(/^www\./, "") : "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * The keep-in-touch step: one question, two buttons, after the entry is kept. Either answer is
+ * stored with the words shown, and either one opens the way on to the page first asked for.
+ */
+function KeepInTouch({ village, goTo }: { village: string; goTo: string }) {
+  const { t } = useLingui();
+  const ids = useId();
+  const question = useRef<HTMLHeadingElement>(null);
+  const [sending, setSending] = useState<UpdatesAnswer | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    question.current?.focus();
+  }, []);
+
+  const answer = async (a: UpdatesAnswer) => {
+    if (sending) return;
+    setSending(a);
+    setFailed(false);
+    try {
+      const res = await fetch("/api/entrance/updates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answer: a, words: question.current?.textContent ?? "" }),
+      });
+      if (!res.ok) {
+        setFailed(true);
+        return;
+      }
+      // A full load, so every read on the next page starts again with the entry in hand.
+      window.location.assign(goTo);
+    } catch {
+      setFailed(true);
+    } finally {
+      setSending(null);
+    }
+  };
+
+  return (
+    <Layout>
+      <div className={WORLD}>
+        <main className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-updates="">
+          <section className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-q`}>
+            <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
+              <Mail className="size-6" />
+            </span>
+            <h1 id={`${ids}-q`} ref={question} tabIndex={-1} className={`${H1} outline-none`}>
+              {t({ message: `Do you want us to keep you updated, and to hear about opportunities from ${village}?`, context: "portal entrance: the keep-in-touch question, its own step after entering" })}
+            </h1>
+            {failed && (
+              <p role="alert" className="rounded-xl border border-destructive/60 bg-muted p-4 text-sm text-foreground">
+                {t({ message: "That did not go through. Try again in a moment.", context: "portal entrance: a generic failure" })}
+              </p>
+            )}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button type="button" className={`${BTN_PRIMARY} text-base`} disabled={!!sending} aria-busy={sending === "yes"} onClick={() => void answer("yes")} data-answer="yes">
+                {t({ message: "Yes", context: "portal entrance: the keep-in-touch answer yes" })}
+              </button>
+              <button type="button" className={`${BTN_SECONDARY} text-base`} disabled={!!sending} aria-busy={sending === "no"} onClick={() => void answer("no")} data-answer="no">
+                {t({ message: "No", context: "portal entrance: the keep-in-touch answer no" })}
+              </button>
+            </div>
+          </section>
         </main>
       </div>
     </Layout>

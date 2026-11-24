@@ -3,7 +3,7 @@
  * Written by the entrance and read only by the admin list and its CSV (server/routes/entrance.ts).
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import { isInterest, type Interest, type PortalEntry, type VisitorJourney } from "../../shared/entrance";
+import { isInterest, isUpdatesAnswer, type Interest, type PortalEntry, type PortalView, type UpdatesAnswer, type VisitorJourney } from "../../shared/entrance";
 
 export interface NewPortalEntry {
   id: string;
@@ -12,7 +12,6 @@ export interface NewPortalEntry {
   emailKey: string;
   whatsapp: string | null;
   link: string | null;
-  updates: boolean;
   consentWords: string;
   nextPath: string | null;
   locale: string | null;
@@ -24,8 +23,8 @@ export interface NewPortalEntry {
 
 export async function insertPortalEntry(db: Pool, e: NewPortalEntry): Promise<void> {
   await db.query(
-    "INSERT INTO portal_entries (id, name, email, email_key, whatsapp, link, updates, consent_words, next_path, locale, human, is_test, created_at, interest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    [e.id, e.name, e.email, e.emailKey, e.whatsapp, e.link, e.updates ? 1 : 0, e.consentWords, e.nextPath, e.locale, e.human, e.isTest ? 1 : 0, e.at, e.interest],
+    "INSERT INTO portal_entries (id, name, email, email_key, whatsapp, link, consent_words, next_path, locale, human, is_test, created_at, interest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [e.id, e.name, e.email, e.emailKey, e.whatsapp, e.link, e.consentWords, e.nextPath, e.locale, e.human, e.isTest ? 1 : 0, e.at, e.interest],
   );
 }
 
@@ -41,7 +40,7 @@ const rowOf = (r: RowDataPacket): PortalEntry => ({
   email: String(r.email),
   whatsapp: r.whatsapp == null ? null : String(r.whatsapp),
   link: r.link == null ? null : String(r.link),
-  updates: Number(r.updates) === 1,
+  updates: isUpdatesAnswer(r.updates) ? r.updates : null,
   nextPath: r.next_path == null ? null : String(r.next_path),
   locale: r.locale == null ? null : String(r.locale),
   human: String(r.human),
@@ -57,7 +56,7 @@ const LIST_COLUMNS = "id, name, email, whatsapp, link, updates, next_path, local
 export async function listPortalEntries(db: Pool, opts: { limit: number; updatesOnly?: boolean; interest?: Interest | null }): Promise<PortalEntry[]> {
   const where = ["is_test = 0"];
   const args: unknown[] = [];
-  if (opts.updatesOnly) where.push("updates = 1");
+  if (opts.updatesOnly) where.push("updates = 'yes'");
   if (opts.interest) {
     where.push("interest = ?");
     args.push(opts.interest);
@@ -74,8 +73,16 @@ export async function portalEntryById(db: Pool, id: string): Promise<(PortalEntr
 
 /** Opted-in, real entries that have not reached the email list yet, oldest first. */
 export async function unsyncedOptedIn(db: Pool, limit: number): Promise<PortalEntry[]> {
-  const [rows] = await db.query<RowDataPacket[]>(`SELECT ${LIST_COLUMNS} FROM portal_entries WHERE is_test = 0 AND updates = 1 AND synced_at IS NULL ORDER BY created_at ASC LIMIT ?`, [limit]);
+  const [rows] = await db.query<RowDataPacket[]>(`SELECT ${LIST_COLUMNS} FROM portal_entries WHERE is_test = 0 AND updates = 'yes' AND synced_at IS NULL ORDER BY created_at ASC LIMIT ?`, [limit]);
   return rows.map(rowOf);
+}
+
+/**
+ * The keep-in-touch answer, on its own step after the entry. The latest answer stands, so a visitor
+ * who says yes and then no is off the list; the words they answered are kept with it.
+ */
+export async function setUpdatesAnswer(db: Pool, id: string, answer: UpdatesAnswer, words: string): Promise<void> {
+  await db.query("UPDATE portal_entries SET updates = ?, updates_words = ? WHERE id = ?", [answer, words, id]);
 }
 
 /** Record how a sync went: a time on success, a short reason on failure. */
@@ -105,10 +112,10 @@ export async function journeysFor(db: Pool, emailKeys: string[]): Promise<Map<st
     [keys],
   );
   for (const r of apps) out.get(String(r.email_key))?.applications.push({ status: String(r.status), at: new Date(Number(r.at_s) * 1000).toISOString() });
-  const [users] = await db.query<RowDataPacket[]>("SELECT LOWER(TRIM(email)) AS k, joined_at FROM users WHERE LOWER(TRIM(email)) IN (?) AND is_example = 0", [keys]);
+  const [users] = await db.query<RowDataPacket[]>("SELECT LOWER(TRIM(email)) AS k, id, joined_at, membership_granted FROM users WHERE LOWER(TRIM(email)) IN (?) AND is_example = 0", [keys]);
   for (const r of users) {
     const j = out.get(String(r.k));
-    if (j) j.account = { joined: new Date(r.joined_at).toISOString() };
+    if (j) j.account = { id: String(r.id), joined: new Date(r.joined_at).toISOString(), member: Number(r.membership_granted) === 1 };
   }
   const [forms] = await db.query<RowDataPacket[]>(
     "SELECT LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(data, '$.email')))) AS k, type, submitted_at FROM submissions WHERE LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(data, '$.email')))) IN (?) ORDER BY submitted_at",
@@ -120,6 +127,30 @@ export async function journeysFor(db: Pool, emailKeys: string[]): Promise<Map<st
 
 /** Every row for one address goes, on that person's request. Answers how many went. */
 export async function deletePortalEntriesFor(db: Pool, emailKey: string): Promise<number> {
+  await db.query("DELETE v FROM portal_views v JOIN portal_entries e ON e.id = v.entry_id WHERE e.email_key = ?", [emailKey]);
   const [r] = await db.query("DELETE FROM portal_entries WHERE email_key = ?", [emailKey]);
   return Number((r as { affectedRows?: number }).affectedRows ?? 0);
+}
+
+// ── The pages an entered visitor opens (portal_views) ──────────────────────
+
+/** One page view, first-party. The caller has already checked the entry cookie and refused members. */
+export async function insertPortalView(db: Pool, v: { id: string; entryId: string; path: string; roleSlug: string | null; at: Date }): Promise<void> {
+  await db.query("INSERT INTO portal_views (id, entry_id, path, role_slug, at) VALUES (?, ?, ?, ?, ?)", [v.id, v.entryId, v.path, v.roleSlug, v.at]);
+}
+
+/** The pages each entry opened, newest first, capped per entry so one busy visitor cannot swell the list. */
+export async function viewsFor(db: Pool, entryIds: string[], perEntry = 50): Promise<Map<string, PortalView[]>> {
+  const ids = Array.from(new Set(entryIds.filter(Boolean)));
+  const out = new Map<string, PortalView[]>();
+  if (!ids.length) return out;
+  const [rows] = await db.query<RowDataPacket[]>("SELECT entry_id, path, role_slug, at FROM portal_views WHERE entry_id IN (?) ORDER BY at DESC", [ids]);
+  for (const r of rows) {
+    const k = String(r.entry_id);
+    const list = out.get(k) ?? [];
+    if (list.length >= perEntry) continue;
+    list.push({ path: String(r.path), roleSlug: r.role_slug == null ? null : String(r.role_slug), at: new Date(r.at).toISOString() });
+    out.set(k, list);
+  }
+  return out;
 }

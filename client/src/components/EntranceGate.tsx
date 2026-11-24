@@ -6,6 +6,9 @@
  * and whose device has not entered meets the entrance instead of the page, and goes on to that
  * same page after it. A signed-in member never sees it. Every other path renders as it always did.
  *
+ * A visitor who entered (and is not signed in) has each page they open noted, first-party, for
+ * Admin, Portal visitors: the path without its query, posted once per page (`notePage`).
+ *
  * This is the drawing of the gate, not the gate. The server refuses the page's reads to the same
  * visitor whatever this component decides, so a status that cannot be read falls through to the
  * page, which then meets the server's refusal.
@@ -50,9 +53,21 @@ function takeEventPass(): boolean {
   return true;
 }
 
+let lastNoted = "";
+
+/** Note one page an entered visitor opened. Once per path in a row; a failure is let go. */
+function notePage(path: string): void {
+  if (path === lastNoted) return;
+  lastNoted = path;
+  void fetch("/api/entrance/view", { method: "POST", credentials: "same-origin", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) })
+    .then((r) => r.ok)
+    .catch(() => false);
+}
+
 /** For tests: forget the status. */
 export function forgetEntranceStatus(): void {
   statusRead = null;
+  lastNoted = "";
 }
 
 export default function EntranceGate({ children, waiting }: { children: ReactNode; waiting: ReactNode }) {
@@ -73,6 +88,11 @@ export default function EntranceGate({ children, waiting }: { children: ReactNod
       live = false;
     };
   }, [ask, status, location]);
+
+  const visitor = !signedIn && !authLoading && !!status?.visitor;
+  useEffect(() => {
+    if (visitor) notePage(location);
+  }, [visitor, location]);
 
   if (!behind || signedIn) return <>{children}</>;
   if (authLoading || status === undefined) return <>{waiting}</>;

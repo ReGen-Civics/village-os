@@ -52,10 +52,37 @@ describe("the entrance gate", () => {
     expect(screen.queryByTestId("page")).toBeNull();
   });
 
-  it("never asks on a brochure page", async () => {
-    at("/investor");
-    expect(screen.getByTestId("page")).toBeInTheDocument();
+  it("never asks on an open page: signing in, the legal pages", async () => {
+    for (const p of ["/login", "/privacy"]) {
+      at(p);
+      expect(screen.getByTestId("page")).toBeInTheDocument();
+      cleanup();
+    }
     expect(asked).toBe(0);
+  });
+
+  it("stands in front of the home page too, and sends the visitor back to it", async () => {
+    at("/");
+    expect(await screen.findByTestId("entrance")).toHaveTextContent("entrance:/:none");
+  });
+
+  it("notes the pages an entered visitor opens, and never a member's", async () => {
+    const posted: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === "/api/entrance/view") posted.push(JSON.parse(String(init?.body)).path);
+      return { ok: true, json: async () => ({ required: true, entered: true, siteKey: null, visitor: true }) } as Response;
+    }));
+    at("/roles/community-steward");
+    expect(await screen.findByTestId("page")).toBeInTheDocument();
+    await waitFor(() => expect(posted).toEqual(["/roles/community-steward"]));
+    cleanup();
+    forgetEntranceStatus();
+    posted.length = 0;
+    auth.user = { id: "u1" };
+    at("/roles");
+    expect(screen.getByTestId("page")).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(posted).toEqual([]);
   });
 
   it("lets a signed-in member straight through without asking", () => {

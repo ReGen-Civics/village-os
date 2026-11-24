@@ -5,6 +5,9 @@
  *   GET    /api/entrance                        whether this village keeps an entrance, whether this
  *                                               device has passed it, and the Turnstile site key
  *   POST   /api/entrance                        enter: the form, checked, kept, and the cookie set
+ *   POST   /api/entrance/updates                the keep-in-touch step: `yes` or `no`, for this
+ *                                               device's own entry
+ *   POST   /api/entrance/view                   a page an entered visitor opened (never a member's)
  *   GET    /api/admin/entrance/entries          the list, newest first (`?updates=1`: only those
  *                                               who asked for updates)
  *   GET    /api/admin/entrance/entries.csv      the same, as a spreadsheet
@@ -13,8 +16,8 @@
  * `register` installs the gate as well, in front of every later route, which is why it is called
  * right after the people lock in server/index.ts.
  *
- * NO EMAIL, EVER. Nothing here sends a message to anybody, the visitor included. A visitor who ticks
- * "send me updates" is added to the village's address book with the source `portal` and no
+ * NO EMAIL, EVER. Nothing here sends a message to anybody, the visitor included. A visitor who answers
+ * yes to keeping in touch is added to the village's address book with the source `portal` and no
  * permission at all: the address book grants nothing by itself (server/lib/comms/contacts.ts), and
  * asking them to confirm a letters subscription stays a human act in Village Comms.
  *
@@ -26,12 +29,12 @@ import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import type { Capability } from "../../shared/capabilities";
 import { emailKeyOf } from "../../shared/comms/address";
-import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, isInterest, LINK_MAX, MIN_FILL_MS, parseEntrance, safeNext, type EntranceStatus, type PortalEntry } from "../../shared/entrance";
+import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, isInterest, isUpdatesAnswer, LINK_MAX, MIN_FILL_MS, parseEntrance, roleSlugOf, safeNext, type EntranceStatus, type PortalEntry } from "../../shared/entrance";
 import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
-import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
+import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
-import { deletePortalEntriesFor, insertPortalEntry, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryExists, unsyncedOptedIn } from "../repos/portalEntries";
+import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
 import { csvCell } from "./commsPeople";
 
@@ -64,6 +67,8 @@ export interface EntranceRouteDeps {
 
 const LIST_MAX = 5000;
 const CONSENT_MAX = 2000;
+const VIEW_PATH_MAX = 500;
+const VIEWS_PER_HOUR = 600;
 
 const PROBLEM_WORDS: Record<string, string> = {
   name: "Tell us your name.",
@@ -97,8 +102,10 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   app.get("/api/entrance", async (req, res) => {
     const required = deps.boolVar("entrance.required");
     let passed = !required;
-    if (!passed) passed = carriesPass(req, deps.passToken()) || !!(await deps.authedUser(req).catch(() => null)) || (await deps.isAgent(req).catch(() => false)) || (await entered(req).catch(() => false));
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req) };
+    let visitor = false;
+    if (!passed) passed = carriesPass(req, deps.passToken()) || !!(await deps.authedUser(req).catch(() => null)) || (await deps.isAgent(req).catch(() => false));
+    if (!passed) passed = visitor = await entered(req).catch(() => false);
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });
@@ -130,7 +137,6 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       emailKey: emailKeyOf(v.email),
       whatsapp: v.whatsapp,
       link: v.link ? v.link.slice(0, LINK_MAX) : null,
-      updates: v.updates,
       consentWords,
       nextPath: next,
       locale,
@@ -139,14 +145,45 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       at: new Date(now()),
       interest: v.interest,
     });
-    // The address book learns the address of somebody who asked for updates, and nothing more.
-    if (v.updates && !smoke) {
-      await ensureContact({ getPool: deps.getPool }, { email: v.email, name: v.name, source: "portal", locale }).catch(() => null);
-      // And the village's email list, after the answer: the visitor never waits on Brevo.
-      if (brevoOn(deps.brevo)) void syncOne({ id, email: v.email, name: v.name, interest: v.interest, whatsapp: v.whatsapp });
-    }
     res.setHeader("Set-Cookie", entryCookieHeader(signEntry(deps.secret, id, now()), secureOf(req)));
     res.status(201).json({ ok: true, next });
+  });
+
+  /** This device's own entry id, from its signed cookie, or null. */
+  const ownEntry = (req: Request): string | null => readEntry(deps.secret, cookieValue(req), now());
+
+  // The keep-in-touch step, its own screen after the entry: two buttons, and the latest answer stands.
+  // Only a yes reaches the address book and the email list.
+  app.post("/api/entrance/updates", async (req, res) => {
+    const id = ownEntry(req);
+    if (!id) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    const answer = req.body?.answer;
+    if (!isUpdatesAnswer(answer)) return res.status(400).json({ error: "invalid", message: "Answer yes or no." });
+    const words = typeof req.body?.words === "string" ? req.body.words.trim().slice(0, CONSENT_MAX) : "";
+    const entry = await portalEntryById(deps.getPool(), id);
+    if (!entry) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    await setUpdatesAnswer(deps.getPool(), id, answer, words);
+    if (answer === "yes" && !entry.isTest) {
+      // The address book learns the address, and nothing more.
+      await ensureContact({ getPool: deps.getPool }, { email: entry.email, name: entry.name, source: "portal", locale: entry.locale }).catch(() => null);
+      // And the village's email list, after the answer: the visitor never waits on Brevo.
+      if (brevoOn(deps.brevo) && !entry.syncedAt) void syncOne(entry);
+    }
+    res.json({ ok: true, answer });
+  });
+
+  // A page an entered visitor opened. First-party, the path without its query, never a member's.
+  app.post("/api/entrance/view", async (req, res) => {
+    const id = ownEntry(req);
+    if (!id || !deps.boolVar("entrance.required")) return res.status(204).end();
+    if (await deps.authedUser(req).catch(() => null)) return res.status(204).end();
+    const raw = typeof req.body?.path === "string" ? req.body.path : "";
+    const path = safeNext(raw)?.split(/[?#]/)[0].slice(0, VIEW_PATH_MAX) ?? null;
+    if (!path) return res.status(400).json({ error: "invalid", message: "Name the page." });
+    if (await deps.overLimit(`entrance-view:${id}`, VIEWS_PER_HOUR, 60 * 60 * 1000)) return res.status(204).end();
+    if (!(await portalEntryExists(deps.getPool(), id))) return res.status(204).end();
+    await insertPortalView(deps.getPool(), { id: `pv-${crypto.randomBytes(10).toString("hex")}`, entryId: id, path, roleSlug: roleSlugOf(path), at: new Date(now()) });
+    res.status(204).end();
   });
 
   /** One entry to the email list, its outcome written on the entry. Never throws. */
@@ -178,7 +215,8 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     const interest = isInterest(req.query.interest) ? req.query.interest : null;
     const rows = await listPortalEntries(deps.getPool(), { limit: LIST_MAX, updatesOnly: req.query.updates === "1", interest });
     const journeys = await journeysFor(deps.getPool(), rows.map((e) => emailKeyOf(e.email)));
-    return rows.map((e) => ({ ...e, journey: journeys.get(emailKeyOf(e.email)) }));
+    const views = await viewsFor(deps.getPool(), rows.map((e) => e.id));
+    return rows.map((e) => ({ ...e, journey: journeys.get(emailKeyOf(e.email)), views: views.get(e.id) ?? [] }));
   };
 
   app.get("/api/admin/entrance/entries", async (req, res) => {
@@ -190,7 +228,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   app.get("/api/admin/entrance/entries.csv", async (req, res) => {
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const rows = await entriesFor(req);
-    const head = ["entered_at", "name", "email", "whatsapp", "link", "drawn_by", "wants_updates", "on_email_list", "applications", "has_account", "forms_sent", "was_going_to", "language"];
+    const head = ["entered_at", "name", "email", "whatsapp", "link", "drawn_by", "keep_in_touch", "on_email_list", "applications", "has_account", "is_member", "forms_sent", "first_asked_for", "pages_opened", "roles_opened", "language"];
     const lines = [head.join(",")].concat(
       rows.map((e) =>
         [
@@ -200,12 +238,15 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
           e.whatsapp ?? "",
           e.link ?? "",
           e.interest ?? "",
-          e.updates ? "yes" : "no",
+          e.updates ?? "unanswered",
           e.syncedAt ? "yes" : "no",
           (e.journey?.applications ?? []).map((a) => a.status).join(" "),
           e.journey?.account ? "yes" : "no",
+          e.journey?.account?.member ? "yes" : "no",
           (e.journey?.forms ?? []).map((f) => f.type).join(" "),
           e.nextPath ?? "",
+          String(e.views?.length ?? 0),
+          Array.from(new Set((e.views ?? []).map((w) => w.roleSlug).filter(Boolean))).join(" "),
           e.locale ?? "",
         ]
           .map(csvCell)
