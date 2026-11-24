@@ -17,6 +17,7 @@ import { authToken } from "@/lib/gameApi";
 import { CalendarPlus, HandHelping, Hourglass } from "lucide-react";
 import type { CalendarItem, EventSlot } from "@shared/gatherings";
 import { actionError } from "@/lib/actionOutcome";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -53,6 +54,7 @@ const EMPTY_POST = { title: "", startsAt: "", endsAt: "", place: "", note: "", l
 const EMPTY_WINDOW = { startsAt: "", endsAt: "", place: "", note: "", layer: "village" };
 
 export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean }) {
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [post, setPost] = useState(EMPTY_POST);
@@ -237,9 +239,9 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
         <span className="flex items-center gap-2 font-medium text-foreground">
-          <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+          <Trans context="CommunityCalendarCard, span"><CalendarPlus className="h-4 w-4" aria-hidden="true" />
           Your calendar: post, meet, bring
-        </span>
+        </Trans></span>
         <span className="text-xs text-muted-foreground">{open ? "Hide" : "Show"}</span>
       </button>
 
@@ -248,37 +250,37 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
           {note && <p className="text-xs text-foreground bg-muted rounded-lg px-3 py-2">{note}</p>}
 
           <div>
-            <p className="font-medium text-foreground mb-1">Put something on the calendar</p>
+            <p className="font-medium text-foreground mb-1"><Trans context="CommunityCalendarCard, p">Put something on the calendar</Trans></p>
             <p className="text-xs text-muted-foreground mb-2">
-              Your own layer is yours alone and goes live at once. The public calendar is the village's face to
+              <Trans context="CommunityCalendarCard, p">Your own layer is yours alone and goes live at once. The public calendar is the village's face to
               the world, so a post there waits for the crew.
-            </p>
+            </Trans></p>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className={label} htmlFor="cc-title">What</label>
-                <input id="cc-title" value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} className={input} placeholder="Seed swap on the porch" />
+                <label className={label} htmlFor="cc-title"><Trans context="CommunityCalendarCard, label">What</Trans></label>
+                <input id="cc-title" value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} className={input} placeholder={t({ message: "Seed swap on the porch", context: "CommunityCalendarCard, placeholder" })} />
               </div>
               <div>
-                <label className={label} htmlFor="cc-place">Where</label>
-                <input id="cc-place" value={post.place} onChange={(e) => setPost({ ...post, place: e.target.value })} className={input} placeholder="The commons" />
+                <label className={label} htmlFor="cc-place"><Trans context="CommunityCalendarCard, label">Where</Trans></label>
+                <input id="cc-place" value={post.place} onChange={(e) => setPost({ ...post, place: e.target.value })} className={input} placeholder={t({ message: "The commons", context: "CommunityCalendarCard, placeholder" })} />
               </div>
               <div>
-                <label className={label} htmlFor="cc-starts">Starts</label>
+                <label className={label} htmlFor="cc-starts"><Trans context="CommunityCalendarCard, label">Starts</Trans></label>
                 <input id="cc-starts" type="datetime-local" value={post.startsAt} onChange={(e) => setPost({ ...post, startsAt: e.target.value })} className={input} />
               </div>
               <div>
-                <label className={label} htmlFor="cc-ends">Ends (optional)</label>
+                <label className={label} htmlFor="cc-ends"><Trans context="CommunityCalendarCard, label">Ends (optional)</Trans></label>
                 <input id="cc-ends" type="datetime-local" value={post.endsAt} onChange={(e) => setPost({ ...post, endsAt: e.target.value })} className={input} />
               </div>
               <div>
-                <label className={label} htmlFor="cc-layer">Where it shows</label>
+                <label className={label} htmlFor="cc-layer"><Trans context="CommunityCalendarCard, label">Where it shows</Trans></label>
                 <select id="cc-layer" value={post.layer} onChange={(e) => setPost({ ...post, layer: e.target.value })} className={`${input} bg-background`}>
                   <option value="private">My calendar only</option>
                   <option value="public">Ask for the public calendar</option>
                 </select>
               </div>
               <div>
-                <label className={label} htmlFor="cc-note">A line about it</label>
+                <label className={label} htmlFor="cc-note"><Trans context="CommunityCalendarCard, label">A line about it</Trans></label>
                 <input id="cc-note" value={post.note} onChange={(e) => setPost({ ...post, note: e.target.value })} className={input} />
               </div>
             </div>
@@ -290,35 +292,35 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
               <ul className="mt-3 space-y-1">
                 {pending.map((m) => (
                   <li key={m.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Hourglass className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <Trans context="CommunityCalendarCard, li"><Hourglass className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span className="text-foreground">{m.title}</span> is waiting for the crew.
-                  </li>
+                  </Trans></li>
                 ))}
               </ul>
             )}
           </div>
 
           <div>
-            <p className="font-medium text-foreground mb-1">Meet me</p>
+            <p className="font-medium text-foreground mb-1"><Trans context="CommunityCalendarCard, p">Meet me</Trans></p>
             <p className="text-xs text-muted-foreground mb-2">
-              A window that says when and where you are findable. The village calendar is readable by anyone
+              <Trans context="CommunityCalendarCard, p">A window that says when and where you are findable. The village calendar is readable by anyone
               past the gate, so put it there when you mean to be found; your own layer stays yours alone.
-            </p>
+            </Trans></p>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className={label} htmlFor="mm-starts">From</label>
+                <label className={label} htmlFor="mm-starts"><Trans context="CommunityCalendarCard, label">From</Trans></label>
                 <input id="mm-starts" type="datetime-local" value={meetMe.startsAt} onChange={(e) => setMeetMe({ ...meetMe, startsAt: e.target.value })} className={input} />
               </div>
               <div>
-                <label className={label} htmlFor="mm-ends">Until</label>
+                <label className={label} htmlFor="mm-ends"><Trans context="CommunityCalendarCard, label">Until</Trans></label>
                 <input id="mm-ends" type="datetime-local" value={meetMe.endsAt} onChange={(e) => setMeetMe({ ...meetMe, endsAt: e.target.value })} className={input} />
               </div>
               <div>
-                <label className={label} htmlFor="mm-place">Where</label>
-                <input id="mm-place" value={meetMe.place} onChange={(e) => setMeetMe({ ...meetMe, place: e.target.value })} className={input} placeholder="By the greenhouse" />
+                <label className={label} htmlFor="mm-place"><Trans context="CommunityCalendarCard, label">Where</Trans></label>
+                <input id="mm-place" value={meetMe.place} onChange={(e) => setMeetMe({ ...meetMe, place: e.target.value })} className={input} placeholder={t({ message: "By the greenhouse", context: "CommunityCalendarCard, placeholder" })} />
               </div>
               <div>
-                <label className={label} htmlFor="mm-layer">Who sees it</label>
+                <label className={label} htmlFor="mm-layer"><Trans context="CommunityCalendarCard, label">Who sees it</Trans></label>
                 <select id="mm-layer" value={meetMe.layer} onChange={(e) => setMeetMe({ ...meetMe, layer: e.target.value })} className={`${input} bg-background`}>
                   <option value="village">The village</option>
                   <option value="private">Only me</option>
@@ -338,7 +340,7 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
                       {w.place ? `, ${w.place}` : ""}{w.layer === "private" ? " (only you)" : ""}
                     </span>
                     <button type="button" onClick={() => closeWindow(w.id)}
-                      className="px-2 py-1 border border-border rounded-lg hover:bg-muted shrink-0">Close it</button>
+                      className="px-2 py-1 border border-border rounded-lg hover:bg-muted shrink-0"><Trans context="CommunityCalendarCard, button">Close it</Trans></button>
                   </li>
                 ))}
               </ul>
@@ -347,15 +349,15 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
 
           <div>
             <p className="font-medium text-foreground mb-1 flex items-center gap-1.5">
-              <HandHelping className="h-4 w-4" aria-hidden="true" />
+              <Trans context="CommunityCalendarCard, p"><HandHelping className="h-4 w-4" aria-hidden="true" />
               Seats and slots
-            </p>
+            </Trans></p>
             {full.length === 0 && withNeeds.length === 0 && (
-              <p className="text-xs text-muted-foreground">Nothing needs a queue or a hand right now.</p>
+              <p className="text-xs text-muted-foreground"><Trans context="CommunityCalendarCard, p">Nothing needs a queue or a hand right now.</Trans></p>
             )}
             {full.length > 0 && (
               <div className="mb-2">
-                <p className="text-xs text-muted-foreground mb-1">Full gatherings you can queue for. The line is age order; a freed seat goes to whoever has waited longest.</p>
+                <p className="text-xs text-muted-foreground mb-1"><Trans context="CommunityCalendarCard, p">Full gatherings you can queue for. The line is age order; a freed seat goes to whoever has waited longest.</Trans></p>
                 <ul className="space-y-1.5">
                   {full.map((g) => {
                     const key = `wl:${g.id}:${g.occurrenceKey}`;
@@ -365,7 +367,7 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
                           <span className="text-foreground">{g.title}</span>
                           <span className="text-muted-foreground"> {new Date(g.startsAt).toLocaleDateString()}</span>
                           {typeof g.waitlistCount === "number" && g.waitlistCount > 0 && (
-                            <span className="text-muted-foreground"> ({g.waitlistCount} waiting)</span>
+                            <span className="text-muted-foreground"> <Trans context="CommunityCalendarCard, span">({g.waitlistCount} waiting)</Trans></span>
                           )}
                           {(g.seatPrice ?? 0) > 0 && (
                             <span className="text-teal-deep"> {g.seatPrice} {g.seatTokenName ?? g.seatToken}</span>
@@ -373,14 +375,14 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
                         </span>
                         {g.myWaitlistPosition ? (
                           <span className="flex items-center gap-1.5 shrink-0">
-                            <span className="text-muted-foreground">You are number {g.myWaitlistPosition}</span>
-                            <button type="button" onClick={() => leaveQueue(g)} className="px-2 py-1 border border-border rounded-lg hover:bg-muted">Leave</button>
+                            <span className="text-muted-foreground"><Trans context="CommunityCalendarCard, span">You are number {g.myWaitlistPosition}</Trans></span>
+                            <button type="button" onClick={() => leaveQueue(g)} className="px-2 py-1 border border-border rounded-lg hover:bg-muted"><Trans context="CommunityCalendarCard, button">Leave</Trans></button>
                           </span>
                         ) : g.myRsvp === "going" ? (
-                          <span className="text-muted-foreground shrink-0">You have a seat</span>
+                          <span className="text-muted-foreground shrink-0"><Trans context="CommunityCalendarCard, span">You have a seat</Trans></span>
                         ) : (
                           <button type="button" onClick={() => joinQueue(g)} disabled={busy === key}
-                            className="px-2 py-1 bg-teal-deep text-white rounded-lg shrink-0 disabled:opacity-50">Join the line</button>
+                            className="px-2 py-1 bg-teal-deep text-white rounded-lg shrink-0 disabled:opacity-50"><Trans context="CommunityCalendarCard, button">Join the line</Trans></button>
                         )}
                       </li>
                     );
@@ -390,7 +392,7 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
             )}
             {withNeeds.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">What gatherings ask for: a dish, a ride, childcare, setup. Names show once you are going.</p>
+                <p className="text-xs text-muted-foreground mb-1"><Trans context="CommunityCalendarCard, p">What gatherings ask for: a dish, a ride, childcare, setup. Names show once you are going.</Trans></p>
                 <ul className="space-y-1.5">
                   {withNeeds.map((g) => {
                     const key = `${g.id}:${g.occurrenceKey}`;
@@ -404,24 +406,24 @@ export default function CommunityCalendarCard({ signedIn }: { signedIn: boolean 
                         </button>
                         {slotsFor === key && (
                           <ul className="mt-1.5 ml-2 space-y-1">
-                            {list.length === 0 && <li className="text-muted-foreground">This gathering asks for nothing extra.</li>}
+                            {list.length === 0 && <li className="text-muted-foreground"><Trans context="CommunityCalendarCard, li">This gathering asks for nothing extra.</Trans></li>}
                             {list.map((s) => (
                               <li key={s.id} className="flex items-center justify-between gap-2">
                                 <span className="min-w-0 truncate">
                                   <span className="text-foreground">{s.label}</span>
-                                  <span className="text-muted-foreground"> ({s.kind}, {s.takenCount} of {s.needed})</span>
+                                  <span className="text-muted-foreground"> <Trans context="CommunityCalendarCard, span">({s.kind}, {s.takenCount} of {s.needed})</Trans></span>
                                   {s.names && s.names.length > 0 && (
                                     <span className="text-muted-foreground"> {s.names.map((n) => n.name ?? "a member who has since left").join(", ")}</span>
                                   )}
                                 </span>
                                 {s.mine ? (
                                   <button type="button" onClick={() => dropSlot(g, s)}
-                                    className="px-2 py-1 border border-border rounded-lg hover:bg-muted shrink-0">Give it back</button>
+                                    className="px-2 py-1 border border-border rounded-lg hover:bg-muted shrink-0"><Trans context="CommunityCalendarCard, button">Give it back</Trans></button>
                                 ) : s.takenCount >= s.needed ? (
-                                  <span className="text-muted-foreground shrink-0">Covered</span>
+                                  <span className="text-muted-foreground shrink-0"><Trans context="CommunityCalendarCard, span">Covered</Trans></span>
                                 ) : (
                                   <button type="button" onClick={() => takeSlot(g, s)} disabled={busy === `slot:${s.id}`}
-                                    className="px-2 py-1 bg-teal-deep text-white rounded-lg shrink-0 disabled:opacity-50">Take it</button>
+                                    className="px-2 py-1 bg-teal-deep text-white rounded-lg shrink-0 disabled:opacity-50"><Trans context="CommunityCalendarCard, button">Take it</Trans></button>
                                 )}
                               </li>
                             ))}

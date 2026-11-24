@@ -29,7 +29,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Repeat, Users, Video } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
 import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
 import { civilDate, lunarYearOf, type YearAnchor } from "@shared/lunar";
@@ -277,9 +277,9 @@ export default function Events() {
             </button>
           );
         })}
-        <InfoTip tip="A full gathering only blocks a new I'm coming. Maybe and can't make it always go through, and a freed place goes to whoever has waited longest." label="How answering works" />
+        <InfoTip tip="A full gathering only blocks a new I'm coming. Maybe and can't make it always go through, and a freed place goes to whoever has waited longest." label={t({ message: "How answering works", context: "Events, label" })} />
         {(g.seatPrice ?? 0) > 0 && (
-          <InfoTip tip="A place here costs credits, held from the moment you take it. Change your answer, leave the queue, or see the gathering come off the calendar, and every one of them gives it straight back." label="How the seat fee works" />
+          <InfoTip tip="A place here costs credits, held from the moment you take it. Change your answer, leave the queue, or see the gathering come off the calendar, and every one of them gives it straight back." label={t({ message: "How the seat fee works", context: "Events, label" })} />
         )}
       </div>
     );
@@ -303,13 +303,13 @@ export default function Events() {
                 </span>
               )}
               {g.status === "cancelled" && (
-                <span className="text-xs font-medium text-destructive bg-destructive/10 border border-destructive/40 rounded-lg px-1.5 py-0.5">Cancelled</span>
+                <span className="text-xs font-medium text-destructive bg-destructive/10 border border-destructive/40 rounded-lg px-1.5 py-0.5"><Trans context="Events, span">Cancelled</Trans></span>
               )}
               {g.status === "postponed" && (
-                <span className="text-xs font-medium text-notice border border-notice/50 rounded-lg px-1.5 py-0.5">Postponed</span>
+                <span className="text-xs font-medium text-notice border border-notice/50 rounded-lg px-1.5 py-0.5"><Trans context="Events, span">Postponed</Trans></span>
               )}
               {g.isExample && (
-                <span className="text-xs font-medium uppercase tracking-widest text-notice border border-notice/50 rounded-lg px-1.5 py-0.5">example</span>
+                <span className="text-xs font-medium uppercase tracking-widest text-notice border border-notice/50 rounded-lg px-1.5 py-0.5"><Trans context="Events, span">example</Trans></span>
               )}
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
@@ -333,13 +333,13 @@ export default function Events() {
             {g.onlineUrl && g.attendanceMode !== "offline" && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <Video className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <a href={g.onlineUrl} className="underline underline-offset-2 hover:text-foreground" target="_blank" rel="noopener noreferrer">Join online</a>
+                <a href={g.onlineUrl} className="underline underline-offset-2 hover:text-foreground" target="_blank" rel="noopener noreferrer"><Trans context="Events, a">Join online</Trans></a>
               </p>
             )}
             {g.link && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <a href={g.link} className="underline underline-offset-2 hover:text-foreground">Open</a>
+                <a href={g.link} className="underline underline-offset-2 hover:text-foreground"><Trans context="Events, a">Open</Trans></a>
               </p>
             )}
           </div>
@@ -351,7 +351,7 @@ export default function Events() {
                     and must not read as "no limit". */}
                 {g.capacity === null ? `${g.goingCount} going` : `${g.goingCount} of ${g.capacity} going`}
               </p>
-              {g.spotsLeft === 0 && <p className="text-xs text-notice mt-0.5">Full</p>}
+              {g.spotsLeft === 0 && <p className="text-xs text-notice mt-0.5"><Trans context="Events, p">Full</Trans></p>}
             </div>
           )}
         </div>
@@ -456,7 +456,7 @@ export default function Events() {
               ))}
             </div>
             {tab === "month" && (
-              <div role="radiogroup" aria-label="Grid by months or by moons" className="inline-flex rounded-xl border border-border bg-card p-0.5">
+              <div role="radiogroup" aria-label={t({ message: "Grid by months or by moons", context: "Events, aria-label" })} className="inline-flex rounded-xl border border-border bg-card p-0.5">
                 {(["months", "moons"] as GridMode[]).map((m) => (
                   <button key={m} role="radio" type="button" aria-checked={mode === m} onClick={() => pickMode(m)} className={segBtn(mode === m)}>
                     {m === "months" ? "Months" : "Moons"}
@@ -466,11 +466,11 @@ export default function Events() {
             )}
             {tab !== "list" && (
               <div className="inline-flex items-center gap-1">
-                <button type="button" onClick={() => step(-1)} aria-label={tab === "moon" ? t({ message: "The moon before", context: "calendar: step back one moon" }) : "Earlier"} className="jw-btn inline-flex size-11 items-center justify-center rounded-lg border border-border bg-card hover:bg-muted">
+                <button type="button" onClick={() => step(-1)} aria-label={tab === "moon" ? t({ message: "The moon before", context: "calendar: step back one moon" }) : t({ message: "Earlier", context: "Events, aria-label" })} className="jw-btn inline-flex size-11 items-center justify-center rounded-lg border border-border bg-card hover:bg-muted">
                   <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                 </button>
                 <button type="button" onClick={goToday} className="jw-btn min-h-11 px-3 py-1.5 text-sm rounded-lg border border-border bg-card hover:bg-muted">{t({ message: "Today", context: "calendar: go to today" })}</button>
-                <button type="button" onClick={() => step(1)} aria-label={tab === "moon" ? t({ message: "The moon after", context: "calendar: step on one moon" }) : "Later"} className="jw-btn inline-flex size-11 items-center justify-center rounded-lg border border-border bg-card hover:bg-muted">
+                <button type="button" onClick={() => step(1)} aria-label={tab === "moon" ? t({ message: "The moon after", context: "calendar: step on one moon" }) : t({ message: "Later", context: "Events, aria-label" })} className="jw-btn inline-flex size-11 items-center justify-center rounded-lg border border-border bg-card hover:bg-muted">
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
@@ -571,8 +571,8 @@ export default function Events() {
                 }}
               />
               <p className="text-center text-xs text-muted-foreground mt-2">
-                Tap a month on the outer ring or a moon on the inner ring to open it.
-              </p>
+                <Trans context="Events, p">Tap a month on the outer ring or a moon on the inner ring to open it.
+              </Trans></p>
               <MoonRoll year={cursor.year} anchor={anchor} timezone={timezone} monthNames={monthNames} moonOneCycle={moonOneCycle} onPick={(d) => { setCursor(d); setSelectedKey(d.key); pickMode("moons"); pickTab("month"); }} />
             </div>
           )}
@@ -593,8 +593,8 @@ export default function Events() {
                 <span>{villageDateLine({ startsAt: selectedDay.noon.toISOString(), endsAt: null, allDay: true }, timezone)}</span>
                 {selectedLunar && selectedMoonName && (
                   <span className="text-sm font-normal text-muted-foreground inline-flex items-center gap-1.5">
-                    <MoonGlyph phase={selectedLunar.phase} size={14} hemisphere={hemisphere} />
-                    {moonHeading(selectedMoonName)}, day {selectedLunar.day} of {selectedLunar.length}
+                    <Trans context="Events, span"><MoonGlyph phase={selectedLunar.phase} size={14} hemisphere={hemisphere} />
+                    {moonHeading(selectedMoonName)}, day {selectedLunar.day} of {selectedLunar.length}</Trans>
                   </span>
                 )}
               </h2>
@@ -603,7 +603,7 @@ export default function Events() {
                   {skyToday.map((s) => `${s.title} at ${villageClock(new Date(s.startsAt), timezone)}`).join(", ")}
                 </p>
               )}
-              {dayItems.length === 0 && <p className="text-sm text-muted-foreground mt-3">Nothing on this day.</p>}
+              {dayItems.length === 0 && <p className="text-sm text-muted-foreground mt-3"><Trans context="Events, p">Nothing on this day.</Trans></p>}
               <ul className="space-y-3 mt-3">{dayItems.map((g) => itemCard(g, false))}</ul>
             </div>
           )}
@@ -611,7 +611,7 @@ export default function Events() {
           {payload && tab === "list" && (
             <div>
               {listItems.length === 0 && (
-                <p className="text-center text-muted-foreground py-16">Nothing is on the calendar yet.</p>
+                <p className="text-center text-muted-foreground py-16"><Trans context="Events, p">Nothing is on the calendar yet.</Trans></p>
               )}
               <ul className="space-y-4">{listItems.map((g) => itemCard(g, true))}</ul>
             </div>
@@ -656,7 +656,7 @@ function MoonRoll({ year, anchor, timezone, monthNames, moonOneCycle, onPick }: 
                 {label.title && <span className="font-semibold">{label.title}</span>}
                 {label.name && <span className="text-muted-foreground">{label.title ? ", " : ""}{label.name}</span>}
               </span>
-              <span className="text-xs text-muted-foreground shrink-0">{fmt(r.startsAt)} to {fmt(new Date(r.endsAt.getTime() - 60_000))}</span>
+              <span className="text-xs text-muted-foreground shrink-0"><Trans context="Events, span">{fmt(r.startsAt)} to {fmt(new Date(r.endsAt.getTime() - 60_000))}</Trans></span>
             </button>
           </li>
         );

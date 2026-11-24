@@ -20,6 +20,7 @@ import type { CalendarItem } from "@shared/gatherings";
 import type { GuestDoor } from "@shared/comms/guests";
 import { useModule } from "@/modules/ModuleProvider";
 import { i18n } from "@/i18n/i18n";
+import { Trans } from "@lingui/react/macro";
 
 const jsonHeaders = (): Record<string, string> => ({ "Content-Type": "application/json" });
 
@@ -106,8 +107,8 @@ export default function GuestRsvpForm({ gathering }: { gathering: CalendarItem }
           disabled={stage === "checking"}
           className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-40"
         >
-          Come as a guest
-        </button>
+          <Trans context="GuestRsvpForm, button">Come as a guest
+        </Trans></button>
       </div>
     );
   }
@@ -122,7 +123,7 @@ export default function GuestRsvpForm({ gathering }: { gathering: CalendarItem }
 
   return (
     <form onSubmit={send} className="mt-3 space-y-2 rounded-xl border border-border bg-background p-3" aria-label={`Come to ${gathering.title} as a guest`}>
-      <p className="text-sm text-foreground">Come as a guest. No account needed.</p>
+      <p className="text-sm text-foreground"><Trans context="GuestRsvpForm, p">Come as a guest. No account needed.</Trans></p>
       <label className="block text-xs text-muted-foreground">
         Your name
         <input
@@ -148,9 +149,9 @@ export default function GuestRsvpForm({ gathering }: { gathering: CalendarItem }
         />
       </label>
       <p className="text-xs text-muted-foreground">
-        We email you a link. Your place is saved when you press it. We only write about this gathering, and every email can stop
+        <Trans context="GuestRsvpForm, p">We email you a link. Your place is saved when you press it. We only write about this gathering, and every email can stop
         the rest.
-      </p>
+      </Trans></p>
       {problem && (
         <p role="alert" className="text-xs text-red-700">
           {problem}
@@ -161,8 +162,8 @@ export default function GuestRsvpForm({ gathering }: { gathering: CalendarItem }
         disabled={busy || !name.trim() || !email.trim()}
         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-teal-deep text-white border border-teal-deep hover:bg-teal-deep-dark disabled:opacity-40"
       >
-        Email me the link
-      </button>
+        <Trans context="GuestRsvpForm, button">Email me the link
+      </Trans></button>
     </form>
   );
 }

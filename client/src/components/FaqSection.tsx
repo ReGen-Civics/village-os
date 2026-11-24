@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Trans } from "@lingui/react/macro";
 
 interface FaqItem {
   id: string;
@@ -32,8 +33,8 @@ export default function FaqSection({ pathway, heading = "Common Questions" }: { 
       <div className="container max-w-3xl mx-auto px-4">
         <div className="text-center mb-10">
           <span className="inline-block text-xs tracking-widest uppercase text-notice font-semibold mb-3">
-            FAQ
-          </span>
+            <Trans context="FaqSection, span">FAQ
+          </Trans></span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">
             {heading}
           </h2>

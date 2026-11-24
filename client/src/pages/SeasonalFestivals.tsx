@@ -73,12 +73,12 @@ export default function SeasonalFestivals() {
           <p className={EYEBROW}>
             <Trans context="seasonal festivals page eyebrow">The village year</Trans>
           </p>
-          <h1 className={`${H1} mt-2`}>Seasonal Festivals</h1>
+          <h1 className={`${H1} mt-2`}><Trans context="SeasonalFestivals, h1">Seasonal Festivals</Trans></h1>
           <p className={`${LEDE} mt-4`}>
-            The village moves in seasons, each with its own energy, and each
+            <Trans context="SeasonalFestivals, p">The village moves in seasons, each with its own energy, and each
             turned with a gathering. Festivals are how a season is opened,
             honored, and handed to the next.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -93,7 +93,7 @@ export default function SeasonalFestivals() {
             <div className={CARD_FEATURED}>
               <div className="flex items-center gap-2 mb-1">
                 <Vesica className="w-4 h-4 text-open" />
-                <p className={EYEBROW}>Now</p>
+                <p className={EYEBROW}><Trans context="SeasonalFestivals, p">Now</Trans></p>
               </div>
               <p className="font-display text-2xl font-bold text-card-foreground">{season.current.name}</p>
               {/*
@@ -114,7 +114,7 @@ export default function SeasonalFestivals() {
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-4">
               <CalendarDays className="w-5 h-5 text-notice" aria-hidden="true" />
-              <h2 className="font-display text-2xl font-bold text-card-foreground">The year's turning</h2>
+              <h2 className="font-display text-2xl font-bold text-card-foreground"><Trans context="SeasonalFestivals, h2">The year's turning</Trans></h2>
             </div>
             {/*
               * Filtered on `startsOn` alone. Requiring `endsOn` too dropped every
@@ -127,8 +127,8 @@ export default function SeasonalFestivals() {
               <div aria-hidden="true" className="h-[6.25rem] md:h-[5.25rem]" />
             ) : (season?.seasons ?? []).filter((s: any) => s.startsOn).length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                The season calendar hasn't been set yet. It lives with the stewards.
-              </p>
+                <Trans context="SeasonalFestivals, p">The season calendar hasn't been set yet. It lives with the stewards.
+              </Trans></p>
             ) : (
               <ul className="space-y-3">
                 {(season?.seasons ?? [])
@@ -146,18 +146,18 @@ export default function SeasonalFestivals() {
             <p className="text-sm leading-relaxed text-muted-foreground mt-5">
               Festival dates ride the season turnings above. To take part in
               shaping one, start at{" "}
-              <Link href="/quests" className={LINK}>Quests</Link>
+              <Link href="/quests" className={LINK}><Trans context="SeasonalFestivals, Link">Quests</Trans></Link>
               {workWithUsOn ? (
                 <>
                   {" "}or say hello through{" "}
-                  <Link href="/work-with-us" className={LINK}>Work With Us</Link>
+                  <Link href="/work-with-us" className={LINK}><Trans context="SeasonalFestivals, Link">Work With Us</Trans></Link>
                 </>
               ) : null}
               .
               {eventsModule && (
                 <>
                   {" "}Everything already dated sits on the{" "}
-                  <Link href="/events" className={LINK}>Village Calendar</Link>.
+                  <Link href="/events" className={LINK}><Trans context="SeasonalFestivals, Link">Village Calendar</Trans></Link>.
                 </>
               )}
             </p>

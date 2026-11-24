@@ -39,7 +39,7 @@
  * that renders nothing at all would pass an absence check on its own.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within, cleanup } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 import { GOVERNANCE_PAGE } from "@shared/pageContent/governance";
@@ -359,6 +359,8 @@ describe("the Hypha section follows the village's Hypha space", () => {
     await headline();
     expect(screen.queryByText(/Only admins see this note/)).toBeNull();
 
+    // A fresh tree: the first one re-renders when the admin flag flips, and would show the note twice.
+    cleanup();
     isAdmin = true;
     renderPage();
     expect(await screen.findByText(/Only admins see this note/)).toHaveTextContent("Admin, Variables");

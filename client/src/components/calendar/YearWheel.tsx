@@ -24,6 +24,7 @@ import { gregorianMonthArcs, instantYearAngle, lunarMonthArcs, solarSpokes, type
 import PrintButton from "./PrintButton";
 import { kindColour, moonHeading, moonLabel, zoneNote, type EventsPayload } from "./calendarTime";
 import { villageMoonOrdinal } from "@shared/villageMoon";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const T = {
   brand: "var(--tone-brand, #157f7d)",
@@ -70,6 +71,7 @@ export interface YearWheelProps {
 }
 
 export default function YearWheel({ year, timezone, anchor, hemisphere, monthNames, moonOneCycle, items = [], now = new Date(), onPickMonth, onPickMoon }: YearWheelProps) {
+  const { t } = useLingui();
   const months = useMemo(() => gregorianMonthArcs(year), [year]);
   const moons = useMemo(() => lunarMonthArcs(year, anchor, timezone), [year, anchor, timezone]);
   const spokes = useMemo(() => solarSpokes(year, hemisphere, timezone), [year, hemisphere, timezone]);
@@ -88,11 +90,11 @@ export default function YearWheel({ year, timezone, anchor, hemisphere, monthNam
     <figure className="calendar-print mx-auto max-w-[520px]" aria-label={`Year wheel for ${year}: twelve months on the outer ring, ${moons.length} moons on the inner ring`}>
       {/* 0088: the wheel is the year's print poster. */}
       <div className="print-header">
-        The wheel of {year}
-        <span className="print-header-sub">{zoneNote(timezone)}</span>
+        <Trans context="YearWheel, div">The wheel of {year}
+        <span className="print-header-sub">{zoneNote(timezone)}</span></Trans>
       </div>
       <div className="flex justify-end mb-1">
-        <PrintButton label="Print the wheel" />
+        <PrintButton label={t({ message: "Print the wheel", context: "YearWheel, label" })} />
       </div>
       <svg viewBox="0 0 400 400" role="img" aria-hidden="true" style={{ display: "block", width: "100%", height: "auto" }}>
         {/* the outer ring: twelve months */}
@@ -181,9 +183,9 @@ export default function YearWheel({ year, timezone, anchor, hemisphere, monthNam
         })()}
       </svg>
       <figcaption className="sr-only">
-        The year as two rings: twelve months outside, the true lunations inside as arcs of their real length,
+        <Trans context="YearWheel, figcaption">The year as two rings: twelve months outside, the true lunations inside as arcs of their real length,
         the four solar turnings as spokes, and today as a hand.
-      </figcaption>
+      </Trans></figcaption>
     </figure>
   );
 }

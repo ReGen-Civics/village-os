@@ -17,7 +17,7 @@
  * terms tier, where a reader may not know what a role pays.
  */
 import { Award, Coins, HandCoins } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import type { WorkPay } from "@shared/workValue";
 import {
   agreementCashWords,
@@ -61,9 +61,9 @@ export default function WorkPayBlock({
     if (headline === "inquire") {
       return (
         <span data-work-pay="inquire" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium">
-          <HandCoins className="w-3.5 h-3.5" aria-hidden="true" />
+          <Trans context="WorkPayBlock, span"><HandCoins className="w-3.5 h-3.5" aria-hidden="true" />
           Inquire for payment details
-        </span>
+        </Trans></span>
       );
     }
     return (
@@ -96,9 +96,9 @@ export default function WorkPayBlock({
     <div data-work-pay={headline} className="space-y-1.5 text-sm">
       {headline === "inquire" ? (
         <p className="text-muted-foreground">
-          <HandCoins className="inline w-4 h-4 mr-1 align-text-bottom" aria-hidden="true" />
+          <Trans context="WorkPayBlock, p"><HandCoins className="inline w-4 h-4 mr-1 align-text-bottom" aria-hidden="true" />
           Inquire for payment details. A steward has not set what this pays yet.
-        </p>
+        </Trans></p>
       ) : (
         <>
           {value ? (
@@ -112,7 +112,7 @@ export default function WorkPayBlock({
               {t({ message: `${cash} in cash, per the role agreement.`, context: "work pay cash line" })}
             </p>
           ) : valuedAtZero(pay) ? null : (
-            <p className="text-muted-foreground">No value set yet. Inquire for the full payment details.</p>
+            <p className="text-muted-foreground"><Trans context="WorkPayBlock, p">No value set yet. Inquire for the full payment details.</Trans></p>
           )}
           {pay.lines.length > 0 || ownCash ? (
             <p className="text-foreground">
@@ -132,15 +132,15 @@ export default function WorkPayBlock({
               .
             </p>
           ) : (
-            value && <p className="text-muted-foreground">Paid in no tokens on this platform. Inquire for payment details.</p>
+            value && <p className="text-muted-foreground"><Trans context="WorkPayBlock, p">Paid in no tokens on this platform. Inquire for payment details.</Trans></p>
           )}
           {ownCash && (
-            <p className="text-xs text-muted-foreground">The village pays the cash itself, and keeps a record of what it owes you on your profile.</p>
+            <p className="text-xs text-muted-foreground"><Trans context="WorkPayBlock, p">The village pays the cash itself, and keeps a record of what it owes you on your profile.</Trans></p>
           )}
           {pay.source === "standard" && pay.lines.length > 0 && (
-            <p className="text-xs text-muted-foreground">These are the village&apos;s standard amounts.</p>
+            <p className="text-xs text-muted-foreground"><Trans context="WorkPayBlock, p">These are the village&apos;s standard amounts.</Trans></p>
           )}
-          {cash && value && <p className="text-foreground">Plus {cash} in cash, per the role agreement.</p>}
+          {cash && value && <p className="text-foreground"><Trans context="WorkPayBlock, p">Plus {cash} in cash, per the role agreement.</Trans></p>}
           {cashNote && <p data-work-pay-note="" className="text-sm text-muted-foreground">{cashNote}</p>}
           {pay.lines.filter((l) => l.meaning).map((l) => (
             <p key={`meaning:${l.token}`} data-work-pay-meaning="" className="text-xs text-muted-foreground">
@@ -149,8 +149,8 @@ export default function WorkPayBlock({
           ))}
           {voices.length > 0 && (
             <p data-work-pay-voice="" className="text-xs text-muted-foreground">
-              {voices.join(" and ")} is your say in the village&apos;s decisions.
-            </p>
+              <Trans context="WorkPayBlock, p">{voices.join(" and ")} is your say in the village&apos;s decisions.
+            </Trans></p>
           )}
           {badges.length > 0 && (
             <ul data-work-pay-badges="" className="space-y-0.5">

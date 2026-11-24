@@ -11,6 +11,7 @@
  */
 import { BadgeCheck, Circle, CircleCheck, Hourglass } from "lucide-react";
 import { ALIGN_WORDS, STATE_WORDS, type AlignmentState } from "@shared/alignments";
+import { useLingui } from "@lingui/react/macro";
 
 export interface ChipParty {
   partyKey: string;
@@ -34,8 +35,9 @@ export function AlignedStamp({ sealed }: { sealed: boolean }) {
 }
 
 export function PartyChips({ parties }: { parties: readonly ChipParty[] }) {
+  const { t } = useLingui();
   return (
-    <ul className="flex flex-wrap gap-2" aria-label="Parties">
+    <ul className="flex flex-wrap gap-2" aria-label={t({ message: "Parties", context: "AlignmentMarks, aria-label" })}>
       {parties.map((p) => (
         <li
           key={p.partyKey}

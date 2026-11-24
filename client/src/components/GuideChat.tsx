@@ -2,7 +2,7 @@
 // an offer to work with the village, and a self-proposed quest. Both talk to
 // /api/assistant/proposal with a `kind`, so the two flows stay in step.
 import { useEffect, useRef, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { Sparkles, CheckCircle2, ArrowRight, Send } from "lucide-react";
 import { sendProposal, ProposalKind } from "@/lib/proposals";
 import type { IdeaReceipt } from "@shared/questIdeas";
@@ -142,7 +142,7 @@ export default function GuideChat({
         </div>
         <div>
           <p className="font-semibold text-teal-deep leading-tight">{guideNameAtSentenceStart(assistantName)}</p>
-          <p className="text-xs text-stone-600">Your {projectName} guide</p>
+          <p className="text-xs text-stone-600"><Trans context="GuideChat, p">Your {projectName} guide</Trans></p>
         </div>
       </div>
 
@@ -167,11 +167,11 @@ export default function GuideChat({
         {proposal && (
           <div className="bg-amber/10 border border-amber/30 rounded-2xl p-4 mt-2">
             <p className="font-semibold text-teal-deep mb-2 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Your proposal is ready
-            </p>
+              <Trans context="GuideChat, p"><CheckCircle2 className="w-4 h-4" /> Your proposal is ready
+            </Trans></p>
             <p className="text-sm text-stone-600 mb-3">
-              Review it, then send it to the {projectName} team.
-            </p>
+              <Trans context="GuideChat, p">Review it, then send it to the {projectName} team.
+            </Trans></p>
             <div className="flex flex-wrap gap-2">
               <button onClick={submit} disabled={submitting} className="inline-flex items-center gap-2 bg-teal-deep text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-teal-deep-dark disabled:opacity-50">
                 {submitting ? "Sending…" : "Send proposal"} <ArrowRight className="w-4 h-4" />
@@ -190,12 +190,12 @@ export default function GuideChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder={`Tell ${assistantName} about your idea…`}
+          placeholder={t({ message: `Tell ${assistantName} about your idea…`, context: "GuideChat, placeholder" })}
           aria-label={t({ message: `Message to ${assistantName}`, context: "guide chat: the message box, for a screen reader" })}
           rows={1}
           className="flex-1 resize-none px-3 py-2 text-sm border border-stone-200 rounded-xl outline-none focus:border-teal-deep max-h-32"
         />
-        <button onClick={send} aria-label="Send message" disabled={thinking || !input.trim()} className="shrink-0 w-10 h-10 rounded-xl bg-teal-deep text-white flex items-center justify-center hover:bg-teal-deep-dark disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
+        <button onClick={send} aria-label={t({ message: "Send message", context: "GuideChat, aria-label" })} disabled={thinking || !input.trim()} className="shrink-0 w-10 h-10 rounded-xl bg-teal-deep text-white flex items-center justify-center hover:bg-teal-deep-dark disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
           <Send className="w-4 h-4" />
         </button>
       </div>

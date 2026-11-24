@@ -60,7 +60,7 @@ export default function VoteClock({
     return (
       <span className={`inline-flex items-center gap-1.5 text-sm text-muted-foreground ${className}`}>
         <Clock className="w-4 h-4" aria-hidden="true" />
-        <span>Voting ended {closedOn}</span>
+        <span><Trans context="VoteClock, span">Voting ended {closedOn}</Trans></span>
       </span>
     );
   }
@@ -79,8 +79,8 @@ export default function VoteClock({
       <Clock className="w-4 h-4" aria-hidden="true" />
       <span className="sr-only">{c.reading}</span>
       <span aria-hidden="true" className="tabular-nums font-medium">
-        {c.text} left
-      </span>
+        <Trans context="VoteClock, span">{c.text} left
+      </Trans></span>
     </span>
   );
 }

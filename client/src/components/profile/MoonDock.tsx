@@ -69,6 +69,7 @@ import { useModuleOn } from "@/modules/ModuleProvider";
 import type { CalendarItem, LunarSummary } from "@shared/gatherings";
 import { moonCountLabel } from "@shared/villageMoon";
 import { getFormattingLocale } from "@/i18n/i18n";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The moon's window in the reader's language (go-live pass, M10): "9 Nov to
@@ -110,6 +111,7 @@ function thisMoon(events: CalendarItem[], lunar: LunarSummary): CalendarItem[] {
 }
 
 export default function MoonDock() {
+  const { t } = useLingui();
   const [answer, setAnswer] = useState<EventsAnswer | null>(null);
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement | null>(null);
@@ -206,7 +208,7 @@ export default function MoonDock() {
           ref={panel}
           role="dialog"
           aria-modal="false"
-          aria-label={`${name}. This moon's calendar.`}
+          aria-label={t({ message: `${name}. This moon's calendar.`, context: "MoonDock, aria-label" })}
           className="pointer-events-auto absolute bottom-[var(--moon-panel-bottom)] left-4 right-4 max-h-[55vh] overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-xl sm:right-auto sm:w-80 md:bottom-[7.5rem] md:left-6"
         >
           <div className="mb-3 flex items-start justify-between gap-3">
@@ -217,7 +219,7 @@ export default function MoonDock() {
             <button
               type="button"
               onClick={close}
-              aria-label="Close the moon calendar"
+              aria-label={t({ message: "Close the moon calendar", context: "MoonDock, aria-label" })}
               className="-mr-2 -mt-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-card-foreground"
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -225,13 +227,13 @@ export default function MoonDock() {
           </div>
 
           <p className="mb-4 text-sm text-muted-foreground">
-            {lunar.phaseName}, day {lunar.day} of {lunar.length}.
-          </p>
+            <Trans context="MoonDock, p">{lunar.phaseName}, day {lunar.day} of {lunar.length}.
+          </Trans></p>
 
           {upcoming.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nothing is on the calendar this moon yet.
-            </p>
+              <Trans context="MoonDock, p">Nothing is on the calendar this moon yet.
+            </Trans></p>
           ) : (
             <ul className="space-y-3">
               {upcoming.map((e) => (
