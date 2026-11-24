@@ -7467,6 +7467,11 @@ msgstr "Edit"
 msgid "The two of us talk it through, in person. In the room: the two of us."
 msgstr "The two of us talk it through, in person. In the room: the two of us."
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's label while the founding team is on"
+msgid "Paid role"
+msgstr "Paid role"
+
 #. placeholder {0}: money(ceiling.amount)
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup: above the full band"
@@ -10692,6 +10697,11 @@ msgstr "Choose your commitment to see a suggested compensation"
 #: client/src/pages/ExitPolicy.tsx
 msgid "Begin your own departure"
 msgstr "Begin your own departure"
+
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's line while the founding team is on"
+msgid "The founding team who hold the village's core domains."
+msgstr "The founding team who hold the village's core domains."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal: current value"
