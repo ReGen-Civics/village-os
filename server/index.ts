@@ -94,6 +94,7 @@ import { partnerRecipients } from "./lib/partnerRouting";
 import { PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
 import { replyMoonsNow } from "./lib/foundingFirst";
 import { PROSPERITY_PACKET_FORM, packetFrom, packetProblems } from "../shared/prosperityPacket";
+import { offerLocaleKey, villageLocaleTags } from "../shared/i18nLocales";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
@@ -104,7 +105,7 @@ import { register as registerBrochurePagesRoutes } from "./routes/brochurePages"
 import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
-import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger } from "./routes/peopleLock";
+import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
 import { register as registerGratitudeVoiceRoutes } from "./routes/gratitudeVoices";
@@ -577,7 +578,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
-import { livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
+import { hidesFirstNameFromVisitors, livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingFirstName, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
 import { seedEconomy, suggestClassTags } from "./lib/economySeed";
@@ -588,7 +589,7 @@ import { normalizeSeasonConfig, seasonRunningProblem } from "./lib/seasonCalenda
 import { completionsFor, completionsForMany, gatingModuleIds, trainingIsComplete, trainingProgress } from "./lib/trainingRecord";
 import { starterTrainingModules } from "./lib/trainingStarter";
 import { respondToTerminalError, installCrashHandlers, installShutdownHandlers, reachedSomebody, reportError, reportErrorWithin, wireErrorReporting } from "./lib/errors";
-import { crashAlertNotifier } from "./lib/crashAlerts";
+import { crashAlertMailer, crashAlertNotifier } from "./lib/crashAlerts";
 import { CRASH_ALERT_RECIPIENTS_KEY } from "../shared/crashAlerts";
 import {
   STAY_CREDIT,
@@ -4981,8 +4982,8 @@ async function startServer() {
    * was a log line in a stream with no reader.
    */
   wireErrorReporting({
-    // Crashes ride their own kind, to the accounts the village names (shared/crashAlerts.ts).
-    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY) }),
+    // Crashes ride their own kind, to the accounts the village names, and email any listed address with no account (shared/crashAlerts.ts).
+    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY), emailAddress: crashAlertMailer({ postOffice: commsPostOffice, origin: notifyDeps.origin, projectName: notifyDeps.projectName, brandColour: notifyDeps.brandColour }) }),
     instanceLabel: mergedConfig().project.name,
   });
   installCrashHandlers();
@@ -13181,8 +13182,11 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   app.get("/api/village/powers", async (req, res) => {
     // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
     // which is all a row carries. A member who keeps their roles off their profile (showRoles false) is left out
-    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out.
-    const hiddenFromVisitors = (await authedUser(req)) ? new Set<string>() : await membersHidingRoles(getPool());
+    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out. A member who
+    // turned off "Show my first name to visitors" is "A member" to a visitor (VISITOR_NEUTRAL_NAME, lib/peopleLock.ts).
+    const visitor = !(await authedUser(req));
+    const hiddenFromVisitors = visitor ? await membersHidingRoles(getPool()) : new Set<string>();
+    const namelessToVisitors = visitor ? await membersHidingFirstName(getPool()) : new Set<string>();
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
@@ -13192,7 +13196,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
     );
     // Who holds each power today through a role, too (server/lib/villagePowers.ts), so a power a role
     // carries is never described as the admin panel's. Fixed order, no count: the R55 rules hold there.
-    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
+    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: namelessToVisitors.has(String(m.id)) ? VISITOR_NEUTRAL_NAME : firstName(m.name ?? "Member") }]));
     const orgNames = new Map((await listOrgRoles(getPool())).map((r) => [r.id, r.name]));
     const ladder = servedLadder(mergedConfig().project.commitmentName) as Array<{ id: string; name?: string }>;
     const unlock = stageUnlockOverridesFromVars();
@@ -18259,6 +18263,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       replyWindowMoons: replyMoonsNow(), // what every proposer is told once they have sent, application included: within one moon cycle (the lead, 24 Nov 2026; server/lib/foundingFirst.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
+      offeredLocales: villageLocaleTags((tag) => boolVar(offerLocaleKey(tag))), // the languages this village offers: one switch each (shared/i18nLocales.ts)
     });
   });
 
@@ -19108,6 +19113,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!targetId) return res.status(404).json({ error: "Not found" });
     const loaded = await loadProfile(getPool(), villageId(), targetId);
     if (!loaded) return res.status(404).json({ error: "Not found" });
+    // A member who turned off "Show my first name to visitors" has no public sheet: a page reached by their handle
+    // that carried a portrait beside "A member" would still say who it is. Members read it as before.
+    if (!viewer && hidesFirstNameFromVisitors(loaded.privacy)) return res.status(404).json({ error: "Not found" });
 
     const { startsAt } = cycleWindow();
     const full = {
@@ -24609,8 +24617,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       listOrgAssignments(getPool(), lapseContext()),
       members.all(),
     ]);
+    // A stranger reads "A member" for whoever turned off "Show my first name to visitors" (VISITOR_NEUTRAL_NAME,
+    // lib/peopleLock.ts). `nameOf` serves the public holder row; a member's row needs a signed-in viewer.
+    const namelessToVisitors = viewer ? new Set<string>() : await membersHidingFirstName(getPool());
     const nameOf = (id: string) =>
-      firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
+      namelessToVisitors.has(String(id)) ? VISITOR_NEUTRAL_NAME : firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
 
     // ONE projection, shared with `/api/map` (shared/circleView.ts). The
     // hand-picked object this replaces dropped `color` and `icon`, so the
@@ -25666,7 +25677,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
   });
 
-  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
+  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), logo: () => String(mergedConfig().images?.logo ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
 
   /*
    * ROBOTS AND SITEMAP, as real files.
@@ -25968,7 +25979,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   /** `<html lang dir>` for this visitor (spec i18n R16): the cookie, their browser, the village default. */
   function withShellLocale(html: string, req: express.Request, res: express.Response): string {
     res.vary("Cookie").vary("Accept-Language");
-    return setShellLang(html, shellLocale({ cookie: req.headers.cookie, acceptLanguage: req.headers["accept-language"], villageDefault: String(stringVar("village.default_locale")) }));
+    return setShellLang(html, shellLocale({ cookie: req.headers.cookie, acceptLanguage: req.headers["accept-language"], villageDefault: String(stringVar("village.default_locale")), offered: villageLocaleTags((tag) => boolVar(offerLocaleKey(tag))) }));
   }
 
   // Terminal error handler. Express 5 forwards a rejected handler promise

@@ -91,7 +91,18 @@ check("on the real registry every module opens after what it requires, at a post
 
 check("a held module is named, reported, and never sent: session-card waits on its security review", () => {
   const plan = planRun(listed(registry));
-  assert.deepStrictEqual(plan.held.map((h) => h.id), ["session-card", "moon-review", "canvas", "conflict-evolution", "funding-rounds"]);
+  // Pinned by hand on purpose: holding a module back, or letting one go, is a
+  // decision this list should have to be edited for.
+  assert.deepStrictEqual(plan.held.map((h) => h.id), [
+    "rites",
+    "session-card",
+    "moon-review",
+    "canvas",
+    "conflict-evolution",
+    "funding-rounds",
+    "hidden-map",
+    "season-places",
+  ]);
   assert.ok(plan.held.every((h) => h.reason.length > 0), "a held module says why");
   assert.ok(!plan.steps.some((s) => s.id === "session-card"), "session-card would be switched on");
   assert.ok(!plan.missing.includes("session-card"), "a held module is accounted for, not missing");

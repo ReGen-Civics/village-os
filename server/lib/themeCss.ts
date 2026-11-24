@@ -233,6 +233,10 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined, ownOri
   if (derived?.lightVars) {
     const light = Object.entries(derived.lightVars).map(([k, v]) => `  ${k}: ${v};`);
     parts.push(`.admin-root:not(.sheet-night) {\n  color-scheme: light;\n${light.join("\n")}\n}`);
+    // A visitor who chose light mode (data-mode on <html>, client/src/lib/colourMode.ts)
+    // gets the village's light palette on a dark-scheme village too. One more
+    // attribute than `:root:root`, so it wins wherever the two meet.
+    parts.push(`:root:root[data-mode="light"] {\n  color-scheme: light;\n${light.join("\n")}\n}`);
   }
 
   return parts.length ? parts.join("\n") + "\n" : "";

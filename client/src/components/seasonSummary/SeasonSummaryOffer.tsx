@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { SeasonSummary } from "@shared/seasonSummary";
 import { useFloorFree } from "@/lib/onceDialogs";
 import { markSeasonSeen, shouldOffer } from "./seen";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const ASKED = "season-summary-asked";
 const WAIT_MS = 2500;
@@ -38,6 +39,7 @@ function markAsked(userId: string) {
 }
 
 export default function SeasonSummaryOffer() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [location] = useLocation();
   const [offer, setOffer] = useState<SeasonSummary | null>(null);
@@ -95,10 +97,10 @@ export default function SeasonSummaryOffer() {
         <div className="flex items-start gap-3">
           <Sparkles className="mt-1 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
           <div className="flex-1 space-y-1">
-            <p id="season-offer-title" className="font-display text-xl">{offer.season.name} has turned</p>
-            <p className="text-sm text-muted-foreground">What you earned, what you carried and your badges, on one card you can share.</p>
+            <p id="season-offer-title" className="font-display text-xl"><Trans context="SeasonSummaryOffer, p">{offer.season.name} has turned</Trans></p>
+            <p className="text-sm text-muted-foreground"><Trans context="SeasonSummaryOffer, p">What you earned, what you carried and your badges, on one card you can share.</Trans></p>
           </div>
-          <button type="button" onClick={done} aria-label="Not now" className="-m-2 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground">
+          <button type="button" onClick={done} aria-label={t({ message: "Not now", context: "SeasonSummaryOffer, aria-label" })} className="-m-2 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground">
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
@@ -107,7 +109,7 @@ export default function SeasonSummaryOffer() {
           onClick={done}
           className="mt-4 flex min-h-11 items-center justify-center rounded-full bg-notice px-5 text-sm font-semibold text-background"
         >
-          See my season
+          <Trans context="SeasonSummaryOffer, Link">See my season</Trans>
         </Link>
       </div>
     </div>

@@ -79,6 +79,8 @@ export function altOr(value: string | undefined, fallback: string): string {
 export interface PublicGameConfig {
   /** The village's default language, dial `village.default_locale` (spec i18n US3). */
   defaultLocale?: string;
+  /** The languages this village offers (its per-language switches); absent from an older server, which offers them all. */
+  offeredLocales?: string[];
   /** What every proposer is told once they have sent: within this many moon cycles (`effectiveReplyMoons`, shared/contributorRoutes.ts). */
   replyWindowMoons?: number;
   project: {
