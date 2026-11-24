@@ -45,14 +45,30 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
   let members: ReturnType<typeof usersRepo>;
 
-  const call = async (method: string, path: string, as: string | null, body?: unknown) => {
-    const r = await fetch(`${base}${path}`, {
-      method,
-      headers: { "Content-Type": "application/json", ...(as ? { "x-test-user": as } : {}) },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  const call = (method: string, path: string, as: string | null, body?: unknown) =>
+    new Promise<{ status: number; body: any }>((resolve, reject) => {
+      const payload = body === undefined ? undefined : JSON.stringify(body);
+      const req = http.request(
+        `${base}${path}`,
+        { method, headers: { "Content-Type": "application/json", ...(as ? { "x-test-user": as } : {}) } },
+        (res) => {
+          let text = "";
+          res.on("data", (c) => (text += c));
+          res.on("end", () => {
+            let parsed: any = null;
+            try {
+              parsed = JSON.parse(text);
+            } catch {
+              parsed = null;
+            }
+            resolve({ status: res.statusCode ?? 0, body: parsed });
+          });
+        },
+      );
+      req.on("error", reject);
+      if (payload) req.write(payload);
+      req.end();
     });
-    return { status: r.status, body: (await r.json().catch(() => null)) as any };
-  };
 
   const codeFor = (address: string): string => {
     const c = codes.get(address);
@@ -134,26 +150,26 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   });
 
   it("an account whose main address was never proved cannot attach another, and learns nothing about other accounts", async () => {
-    const r = await call("POST", "/api/me/emails", "u-new", { email: "someone.else@example.test" });
+    const r = await call("POST", "/api/me/email-addresses", "u-new", { email: "someone.else@example.test" });
     expect(r.status).toBe(400);
     expect(r.body.error).toBe(ADDRESS_REFUSAL.mainUnproved);
     expect(letters).toHaveLength(0);
   });
 
   it("refuses an address that already has its own account, and explains", async () => {
-    const r = await call("POST", "/api/me/emails", "u-lead", { email: "Someone.Else@example.test" });
+    const r = await call("POST", "/api/me/email-addresses", "u-lead", { email: "Someone.Else@example.test" });
     expect(r.status).toBe(409);
     expect(r.body.error).toBe(ADDRESS_REFUSAL.takenElsewhere);
     expect(letters).toHaveLength(0);
   });
 
   it("refuses a malformed address and the account's own main address", async () => {
-    expect((await call("POST", "/api/me/emails", "u-lead", { email: "not an address" })).body.error).toBe(ADDRESS_REFUSAL.invalid);
-    expect((await call("POST", "/api/me/emails", "u-lead", { email: "LEAD.personal@example.test" })).body.error).toBe(ADDRESS_REFUSAL.alreadyMain);
+    expect((await call("POST", "/api/me/email-addresses", "u-lead", { email: "not an address" })).body.error).toBe(ADDRESS_REFUSAL.invalid);
+    expect((await call("POST", "/api/me/email-addresses", "u-lead", { email: "LEAD.personal@example.test" })).body.error).toBe(ADDRESS_REFUSAL.alreadyMain);
   });
 
   it("mails a code to the NEW address, and attaches nothing until the code comes back", async () => {
-    const r = await call("POST", "/api/me/emails", "u-lead", { email: " Ops@Village.example.test " });
+    const r = await call("POST", "/api/me/email-addresses", "u-lead", { email: " Ops@Village.example.test " });
     expect(r.status).toBe(200);
     expect(r.body.pending.email).toBe("ops@village.example.test");
     expect(letters).toHaveLength(1);
@@ -161,7 +177,7 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
     expect(letters[0].origin).toBe("auth.add_email");
     // Nothing attached yet: the address finds no account, and the owner's read shows it pending only.
     expect(await members.byEmail("ops@village.example.test")).toBeNull();
-    const read = await call("GET", "/api/me/emails", "u-lead");
+    const read = await call("GET", "/api/me/email-addresses", "u-lead");
     expect(read.body.extras).toEqual([]);
     expect(read.body.pending.email).toBe("ops@village.example.test");
     // The code is never in an answer.
@@ -172,16 +188,16 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   it("a wrong code spends a try; the right one attaches the address", async () => {
     const code = codeFor("ops@village.example.test");
     const wrong = code === "000000" ? "111111" : "000000";
-    const bad = await call("POST", "/api/me/emails/confirm", "u-lead", { code: wrong });
+    const bad = await call("POST", "/api/me/email-addresses/confirm", "u-lead", { code: wrong });
     expect(bad.status).toBe(400);
     expect(bad.body.code).toBe("wrong");
-    const good = await call("POST", "/api/me/emails/confirm", "u-lead", { code });
+    const good = await call("POST", "/api/me/email-addresses/confirm", "u-lead", { code });
     expect(good.status).toBe(200);
     expect(good.body.emails.extras.map((e: any) => e.email)).toEqual(["ops@village.example.test"]);
     expect(good.body.emails.pending).toBeNull();
     expect(audits).toContain("auth:email-attached");
     // A spent code does not work twice.
-    expect((await call("POST", "/api/me/emails/confirm", "u-lead", { code })).body.code).toBe("none");
+    expect((await call("POST", "/api/me/email-addresses/confirm", "u-lead", { code })).body.code).toBe("none");
   });
 
   it("every lookup by address reaches the same account: sign-in, sign-up's 'already exists', and the case does not matter", async () => {
@@ -192,17 +208,17 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   });
 
   it("another account cannot attach an address that is already attached here", async () => {
-    const r = await call("POST", "/api/me/emails", "u-other", { email: "ops@village.example.test" });
+    const r = await call("POST", "/api/me/email-addresses", "u-other", { email: "ops@village.example.test" });
     expect(r.status).toBe(409);
     expect(r.body.error).toBe(ADDRESS_REFUSAL.takenElsewhere);
   });
 
   it("five wrong codes spend the code, and a new one must be asked for", async () => {
-    await call("POST", "/api/me/emails", "u-other", { email: "other.work@example.test" });
+    await call("POST", "/api/me/email-addresses", "u-other", { email: "other.work@example.test" });
     const right = codeFor("other.work@example.test");
     const wrong = right === "000000" ? "111111" : "000000";
-    for (let i = 0; i < EMAIL_CODE_TRIES; i++) expect((await call("POST", "/api/me/emails/confirm", "u-other", { code: wrong })).body.code).toBe("wrong");
-    expect((await call("POST", "/api/me/emails/confirm", "u-other", { code: right })).body.code).toBe("spent");
+    for (let i = 0; i < EMAIL_CODE_TRIES; i++) expect((await call("POST", "/api/me/email-addresses/confirm", "u-other", { code: wrong })).body.code).toBe("wrong");
+    expect((await call("POST", "/api/me/email-addresses/confirm", "u-other", { code: right })).body.code).toBe("spent");
     expect(await members.byEmail("other.work@example.test")).toBeNull();
   });
 
@@ -235,12 +251,12 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
     expect(to()).toEqual(["lead.personal@example.test"]);
 
     sent.length = 0;
-    expect((await call("PUT", "/api/me/emails/delivery", "u-lead", { delivery: "other" })).body.emails.deliversTo).toEqual(["ops@village.example.test"]);
+    expect((await call("PUT", "/api/me/email-addresses/delivery", "u-lead", { delivery: "other" })).body.emails.deliversTo).toEqual(["ops@village.example.test"]);
     await post(office, notice());
     expect(to()).toEqual(["ops@village.example.test"]);
 
     sent.length = 0;
-    await call("PUT", "/api/me/emails/delivery", "u-lead", { delivery: "both" });
+    await call("PUT", "/api/me/email-addresses/delivery", "u-lead", { delivery: "both" });
     const both = await post(office, notice());
     expect(both.status).toBe("sent");
     expect(to().sort()).toEqual(["lead.personal@example.test", "ops@village.example.test"]);
@@ -255,7 +271,7 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
     await post(office, { ...notice(), to: { email: "steward@example.test", userId: "u-lead" } });
     expect(to()).toEqual(["steward@example.test"]);
 
-    await call("PUT", "/api/me/emails/delivery", "u-lead", { delivery: "other" });
+    await call("PUT", "/api/me/email-addresses/delivery", "u-lead", { delivery: "other" });
   });
 
   it("a reset asked at an extra address goes to that address, as it was proved", async () => {
@@ -271,19 +287,19 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   });
 
   it("an admin reads the addresses and the choice, never the pending code, and has no way to attach one", async () => {
-    await call("POST", "/api/me/emails", "u-lead", { email: "third@example.test" });
-    const r = await call("GET", "/api/admin/members/u-lead/emails", "u-admin");
+    await call("POST", "/api/me/email-addresses", "u-lead", { email: "third@example.test" });
+    const r = await call("GET", "/api/admin/members/u-lead/email-addresses", "u-admin");
     expect(r.status).toBe(200);
     expect(r.body.main).toBe("lead.personal@example.test");
     expect(r.body.extras.map((e: any) => e.email)).toEqual(["ops@village.example.test"]);
     expect(r.body.delivery).toBe("other");
     expect(r.body).not.toHaveProperty("pending");
-    expect((await call("GET", "/api/admin/members/u-lead/emails", "u-other")).status).toBe(401);
-    expect((await call("POST", "/api/admin/members/u-lead/emails", "u-admin", { email: "x@example.test" })).status).toBe(404);
+    expect((await call("GET", "/api/admin/members/u-lead/email-addresses", "u-other")).status).toBe(401);
+    expect((await call("POST", "/api/admin/members/u-lead/email-addresses", "u-admin", { email: "x@example.test" })).status).toBe(404);
   });
 
   it("making the other address the main one keeps both, keeps the proof, and keeps the mail going to it", async () => {
-    const r = await call("POST", "/api/me/emails/main", "u-lead", { email: "ops@village.example.test" });
+    const r = await call("POST", "/api/me/email-addresses/main", "u-lead", { email: "ops@village.example.test" });
     expect(r.status).toBe(200);
     expect(r.body.emails.main).toBe("ops@village.example.test");
     expect(r.body.emails.mainVerified).toBe(true);
@@ -296,13 +312,13 @@ describe.skipIf(!configured)("one account, more than one address, on a real sche
   });
 
   it("removing the address mail went to brings the mail home to the main address; the main address cannot be removed", async () => {
-    await call("PUT", "/api/me/emails/delivery", "u-lead", { delivery: "both" });
-    const r = await call("DELETE", `/api/me/emails/${encodeURIComponent("lead.personal@example.test")}`, "u-lead");
+    await call("PUT", "/api/me/email-addresses/delivery", "u-lead", { delivery: "both" });
+    const r = await call("DELETE", `/api/me/email-addresses/${encodeURIComponent("lead.personal@example.test")}`, "u-lead");
     expect(r.status).toBe(200);
     expect(r.body.emails.extras).toEqual([]);
     expect(r.body.emails.delivery).toBe("main");
     expect(await members.byEmail("lead.personal@example.test")).toBeNull();
-    const main = await call("DELETE", `/api/me/emails/${encodeURIComponent("ops@village.example.test")}`, "u-lead");
+    const main = await call("DELETE", `/api/me/email-addresses/${encodeURIComponent("ops@village.example.test")}`, "u-lead");
     expect(main.status).toBe(400);
   });
 

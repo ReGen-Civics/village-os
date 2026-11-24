@@ -95,14 +95,14 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
     return me;
   };
 
-  app.get("/api/me/emails", async (req, res) => {
+  app.get("/api/me/email-addresses", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     res.json(await accountEmails(deps.getPool(), me, { withPending: true }));
   });
 
   /** Mail a code to a new address. Nothing is attached until the code comes back. */
-  app.post("/api/me/emails", async (req, res) => {
+  app.post("/api/me/email-addresses", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     const address = normalizeAddress(req.body?.email);
@@ -138,7 +138,7 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
   });
 
   /** The code back from the mailbox: the one write that attaches an address. */
-  app.post("/api/me/emails/confirm", async (req, res) => {
+  app.post("/api/me/email-addresses/confirm", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     if (await deps.overLimit(`member-email-confirm-acct:${me.id}`, 20, HOUR)) {
@@ -174,7 +174,7 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
   });
 
   /** Remove an extra address. The main address is never one of them, so the last address can never go. */
-  app.delete("/api/me/emails/:email", async (req, res) => {
+  app.delete("/api/me/email-addresses/:email", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     const pool = deps.getPool();
@@ -195,7 +195,7 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
   });
 
   /** Make an extra address the main one. The old main address stays attached. */
-  app.post("/api/me/emails/main", async (req, res) => {
+  app.post("/api/me/email-addresses/main", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     const pool = deps.getPool();
@@ -215,7 +215,7 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
   });
 
   /** Where the mail goes: the main address, the other one, or both. */
-  app.put("/api/me/emails/delivery", async (req, res) => {
+  app.put("/api/me/email-addresses/delivery", async (req, res) => {
     const me = await signedIn(req, res);
     if (!me) return;
     const delivery = req.body?.delivery;
@@ -235,7 +235,7 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
   });
 
   /** An admin reads a member's addresses and delivery choice. There is no admin write. */
-  app.get("/api/admin/members/:id/emails", async (req, res) => {
+  app.get("/api/admin/members/:id/email-addresses", async (req, res) => {
     if (!(await deps.isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const target = await deps.members.byId(String(req.params.id));
     if (!target) return res.status(404).json({ error: "No such member" });

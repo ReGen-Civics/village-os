@@ -47,7 +47,7 @@ export interface ExtraAddress {
   getsMail: boolean;
 }
 
-/** `GET /api/me/emails`, and the same shape for `GET /api/admin/members/:id/emails`. */
+/** `GET /api/me/email-addresses`, and the same shape for `GET /api/admin/members/:id/email-addresses`. */
 export interface AccountEmails {
   main: string;
   /** Whether the main address was ever proved. An account must prove it before attaching another. */

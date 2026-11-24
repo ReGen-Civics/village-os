@@ -31,7 +31,7 @@ export default function AccountEmailsPanel() {
 
   useEffect(() => {
     let live = true;
-    fetch("/api/me/emails", { headers: headers() })
+    fetch("/api/me/email-addresses", { headers: headers() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => live && d && setData(d))
       .catch(() => {});
@@ -62,7 +62,7 @@ export default function AccountEmailsPanel() {
   };
 
   const startAdding = async () => {
-    const d = await send("/api/me/emails", "POST", { email: adding });
+    const d = await send("/api/me/email-addresses", "POST", { email: adding });
     if (!d) return;
     setData((cur) => (cur ? { ...cur, pending: d.pending } : cur));
     setAdding("");
@@ -75,7 +75,7 @@ export default function AccountEmailsPanel() {
   };
 
   const confirm = async () => {
-    const d = await send("/api/me/emails/confirm", "POST", { code });
+    const d = await send("/api/me/email-addresses/confirm", "POST", { code });
     if (!d) return;
     setCode("");
     setNote({ tone: "ok", text: t({ message: "Address added. You can sign in with it now.", context: "account emails: attached" }) });
@@ -83,19 +83,19 @@ export default function AccountEmailsPanel() {
 
   const remove = async (email: string) => {
     if (!window.confirm(t({ message: `Remove ${email} from your account? You will no longer be able to sign in with it.`, context: "account emails: confirm remove" }))) return;
-    if (await send(`/api/me/emails/${encodeURIComponent(email)}`, "DELETE")) {
+    if (await send(`/api/me/email-addresses/${encodeURIComponent(email)}`, "DELETE")) {
       setNote({ tone: "ok", text: t({ message: "Address removed.", context: "account emails: removed" }) });
     }
   };
 
   const makeMain = async (email: string) => {
-    if (await send("/api/me/emails/main", "POST", { email })) {
+    if (await send("/api/me/email-addresses/main", "POST", { email })) {
       setNote({ tone: "ok", text: t({ message: `${email} is now your main address.`, context: "account emails: main changed" }) });
     }
   };
 
   const choose = async (delivery: EmailDelivery, to?: string) => {
-    if (await send("/api/me/emails/delivery", "PUT", { delivery, ...(to ? { to } : {}) })) {
+    if (await send("/api/me/email-addresses/delivery", "PUT", { delivery, ...(to ? { to } : {}) })) {
       setNote({ tone: "ok", text: t({ message: "Saved. Your email will go where you chose.", context: "account emails: delivery saved" }) });
     }
   };

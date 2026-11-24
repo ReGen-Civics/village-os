@@ -486,12 +486,9 @@ export async function post(deps: PostOfficeDeps, email: OutgoingEmail): Promise<
   if (addresses.length === 1 && addresses[0] === email.to?.email) return postOne(deps, email);
   let best: PostResult | null = null;
   for (let i = 0; i < addresses.length; i++) {
-    const r = await postOne(deps, {
-      ...email,
-      // The first address keeps the caller's key, so a retried post is still one email; a second needs its own.
-      idempotencyKey: i === 0 ? email.idempotencyKey : `${email.idempotencyKey}:also`,
-      to: { ...email.to, email: addresses[i] },
-    });
+    // The first address keeps the caller's key, so a retried post is still one email; a second needs its own.
+    const idempotencyKey = i === 0 ? email.idempotencyKey : `${email.idempotencyKey}:also`;
+    const r = await postOne(deps, { ...email, idempotencyKey, to: { ...email.to, email: addresses[i] } });
     if (!best || (!WENT.has(best.status) && WENT.has(r.status))) best = r;
   }
   return best as PostResult;
