@@ -24,6 +24,7 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
 import { Celebration, scrollBehavior, useReducedMotion } from "@/components/natural";
 import Leaf from "@/components/journey/Leaf";
 import { useAppWords } from "@/hooks/useAppWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * S2 brochure lane, 2026-08-30: this page used to state, nine times, that
@@ -159,6 +160,7 @@ export function paragraphsOf(text: string | null | undefined): string[] {
 }
 
 export default function LoveLetter() {
+  const { t } = useLingui();
   const { content: legal } = useVillageContent<LegalContent>("legal");
   const { content: covenant } = useVillageContent<CovenantContent>("covenant");
   // The village's own words for this page and for the letter itself (Admin,
@@ -367,11 +369,7 @@ export default function LoveLetter() {
       <Layout>
         <section className={`${WORLD} py-16 sm:py-24`}>
           <div className="container max-w-2xl mx-auto">
-            <m.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
+            <div className="m-arrive text-center">
               {/* Aligned: seeds carried out from the heart and settling, once. The heart itself holds still,
                   because the words below it are being read. Reduce motion: the seeds already landed. */}
               <div className="relative mx-auto mb-6 flex h-40 w-40 justify-center" data-aligned-moment={still ? "still" : "live"}>
@@ -381,8 +379,8 @@ export default function LoveLetter() {
                 </span>
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Thank you{firstName ? `, ${firstName}` : ""}.
-              </h1>
+                <Trans context="LoveLetter, h1">Thank you{firstName ? `, ${firstName}` : ""}.
+              </Trans></h1>
               {user && (
                 <p className="text-base text-foreground mb-8">
                   {word("letter", "done") ?? LETTER_WORDS.done}{" "}
@@ -392,24 +390,24 @@ export default function LoveLetter() {
                 </p>
               )}
               <div className="bg-card border border-border rounded-2xl p-8 mb-8 text-left">
-                <h2 className="font-display text-2xl font-bold text-foreground mb-4">What happens next</h2>
+                <h2 className="font-display text-2xl font-bold text-foreground mb-4"><Trans context="LoveLetter, h2">What happens next</Trans></h2>
                 <div data-next-steps="" className="space-y-4 text-muted-foreground">
-                  <NextStep>Your letter is with the people who look after joining {villageName}.</NextStep>
+                  <NextStep><Trans context="LoveLetter, NextStep">Your letter is with the people who look after joining {villageName}.</Trans></NextStep>
                   {user ? (
-                    <NextStep>You'll get a notice when they answer, and your profile shows where it stands.</NextStep>
+                    <NextStep><Trans context="LoveLetter, NextStep">You'll get a notice when they answer, and your profile shows where it stands.</Trans></NextStep>
                   ) : (
                     <NextStep>
-                      Someone will write to you at{" "}
+                      <Trans context="LoveLetter, NextStep">Someone will write to you at{" "}
                       <span className="font-medium text-foreground break-words">{form.email.trim()}</span>.
-                    </NextStep>
+                    </Trans></NextStep>
                   )}
                   {user && handle && vouchesLeft && (
                     <NextStep>
-                      Members who know you can also vouch for you on{" "}
+                      <Trans context="LoveLetter, NextStep">Members who know you can also vouch for you on{" "}
                       <Link href={`/profile/${encodeURIComponent(handle)}`} className="font-semibold text-notice underline underline-offset-2">
                         your page
                       </Link>
-                      . {vouchesLeft}
+                      . {vouchesLeft}</Trans>
                     </NextStep>
                   )}
                 </div>
@@ -423,10 +421,10 @@ export default function LoveLetter() {
                 href="/"
                 className={`${BTN_PRIMARY} px-8 py-4`}
               >
-                Return Home
-                <ArrowRight className="w-5 h-5" />
+                <Trans context="LoveLetter, a">Return Home
+                <ArrowRight className="w-5 h-5" /></Trans>
               </a>
-            </m.div>
+            </div>
           </div>
         </section>
       </Layout>
@@ -533,7 +531,7 @@ export default function LoveLetter() {
                       reader met five unnamed controls on the form that
                       introduces someone to the village. */}
                   <label htmlFor="letter-name" className="block text-sm font-medium text-foreground mb-2">
-                    Full Name <span className="text-destructive">*</span>
+                    <Trans context="LoveLetter, label">Full Name <span className="text-destructive">*</span></Trans>
                   </label>
                   <input
                     id="letter-name"
@@ -542,13 +540,13 @@ export default function LoveLetter() {
                     required
                     value={form.name}
                     onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                    placeholder="Your full name"
+                    placeholder={t({ message: "Your full name", context: "LoveLetter, placeholder" })}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div>
                   <label htmlFor="letter-email" className="block text-sm font-medium text-foreground mb-2">
-                    Email Address <span className="text-destructive">*</span>
+                    <Trans context="LoveLetter, label">Email Address <span className="text-destructive">*</span></Trans>
                   </label>
                   <input
                     id="letter-email"
@@ -557,7 +555,7 @@ export default function LoveLetter() {
                     required
                     value={form.email}
                     onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                    placeholder="your@email.com"
+                    placeholder={t({ message: "your@email.com", context: "LoveLetter, placeholder" })}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -567,8 +565,8 @@ export default function LoveLetter() {
               {/* Phone */}
               <div>
                 <label htmlFor="letter-phone" className="block text-sm font-medium text-foreground mb-2">
-                  Phone / WhatsApp (optional)
-                </label>
+                  <Trans context="LoveLetter, label">Phone / WhatsApp (optional)
+                </Trans></label>
                 <input
                   id="letter-phone"
                   type="tel"
@@ -583,9 +581,9 @@ export default function LoveLetter() {
               {/* Which paths */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-3">
-                  Which path(s) are you on? <span className="text-destructive">*</span>
+                  <Trans context="LoveLetter, label">Which path(s) are you on? <span className="text-destructive">*</span></Trans>
                 </label>
-                <p className="text-sm text-muted-foreground mb-4">Select all that apply, you can walk multiple paths.</p>
+                <p className="text-sm text-muted-foreground mb-4"><Trans context="LoveLetter, p">Select all that apply, you can walk multiple paths.</Trans></p>
                 <div className="grid md:grid-cols-2 gap-3">
                   {words.lists.paths.map(path => {
                     const id = path.id ?? "";
@@ -642,7 +640,7 @@ export default function LoveLetter() {
                 {form.contribution === "custom" && (
                   <input
                     type="text"
-                    aria-label="Your custom monthly contribution"
+                    aria-label={t({ message: "Your custom monthly contribution", context: "LoveLetter, aria-label" })}
                     placeholder={contribution.fields.customPlaceholder}
                     value={form.customAmount}
                     onChange={e => setForm(p => ({ ...p, customAmount: e.target.value }))}
@@ -654,7 +652,7 @@ export default function LoveLetter() {
               {/* Why */}
               <div>
                 <label htmlFor="letter-why" className="block text-sm font-medium text-foreground mb-2">
-                  What called you to {villageName}? <span className="text-destructive">*</span>
+                  <Trans context="LoveLetter, label">What called you to {villageName}? <span className="text-destructive">*</span></Trans>
                 </label>
                 <textarea
                   id="letter-why"
@@ -662,7 +660,7 @@ export default function LoveLetter() {
                   value={form.why}
                   onChange={e => setForm(p => ({ ...p, why: e.target.value }))}
                   rows={4}
-                  placeholder="Share what resonates for you, what you're hoping to co-create, and what gifts you'd bring to the village..."
+                  placeholder={t({ message: "Share what resonates for you, what you're hoping to co-create, and what gifts you'd bring to the village...", context: "LoveLetter, placeholder" })}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                 />
               </div>

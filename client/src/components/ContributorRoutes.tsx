@@ -28,6 +28,7 @@ import { useStoryPageShown } from "@/lib/brochure";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
 import { replyMoonsOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
+import Mycelium from "@/components/motion/Mycelium";
 
 /** The proposal page, as the village's story-page switch names it. */
 export const VENTURE_PITCH_PAGE = "/work-with-us";
@@ -188,6 +189,7 @@ export default function ContributorRoutes({
     return (
       <div className={className} data-contributor-routes="tiles">
         {heading ? <Heading id={headingId} className="mb-2 font-display text-lg leading-tight text-foreground sm:mb-3 sm:text-2xl">{heading}</Heading> : null}
+        <Mycelium>
         <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           {routes.map((r) => (
             <li key={r} className="m-germ min-w-0" data-route={r}>
@@ -206,6 +208,7 @@ export default function ContributorRoutes({
             </li>
           ))}
         </ul>
+        </Mycelium>
       </div>
     );
   }
@@ -214,6 +217,7 @@ export default function ContributorRoutes({
     return (
       <div className={`grid gap-2 ${className}`} data-contributor-routes="links">
         {heading ? <Heading id={headingId} className={headingAs === "h2" ? EYEBROW : LABEL}>{heading}</Heading> : null}
+        <Mycelium>
         <ul className="grid gap-3">
           {routes.map((r) => (
             <li key={r} className="m-germ" data-route={r}>
@@ -231,6 +235,7 @@ export default function ContributorRoutes({
             </li>
           ))}
         </ul>
+        </Mycelium>
       </div>
     );
   }
@@ -241,6 +246,7 @@ export default function ContributorRoutes({
   return (
     <div className={className} data-contributor-routes="cards">
       {heading ? <Heading id={headingId} className="mb-4 font-display text-2xl leading-tight text-foreground sm:text-3xl">{heading}</Heading> : null}
+      <Mycelium>
       <ul className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
         {routes.map((r) => (
           <li key={r} className={`m-germ ${TILE} flex flex-col gap-3`} data-route={r}>
@@ -271,6 +277,7 @@ export default function ContributorRoutes({
           </li>
         ))}
       </ul>
+      </Mycelium>
     </div>
   );
 }

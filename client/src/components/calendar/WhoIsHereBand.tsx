@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 import type { CivilDay } from "./calendarTime";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface DayEntry {
   date: string;
@@ -30,6 +31,7 @@ const headers = (): Record<string, string> => {
 };
 
 export default function WhoIsHereBand({ days }: { days: CivilDay[] }) {
+  const { t } = useLingui();
   const [data, setData] = useState<Payload | null>(null);
   const from = days[0]?.key;
   const to = days[days.length - 1]?.key;
@@ -64,9 +66,9 @@ export default function WhoIsHereBand({ days }: { days: CivilDay[] }) {
   };
 
   return (
-    <div className="print-hide mb-2 rounded-lg border border-border bg-card px-2 py-1.5" aria-label="Who is here this week">
+    <div className="print-hide mb-2 rounded-lg border border-border bg-card px-2 py-1.5" aria-label={t({ message: "Who is here this week", context: "WhoIsHereBand, aria-label" })}>
       <div className="text-[11px] text-muted-foreground mb-1">
-        On the land now: <span className="font-medium text-foreground">{data.here.names?.length ? data.here.names.join(", ") : data.here.count}</span>
+        <Trans context="WhoIsHereBand, div">On the land now: <span className="font-medium text-foreground">{data.here.names?.length ? data.here.names.join(", ") : data.here.count}</span></Trans>
       </div>
       {(arrivals.size > 0 || departures.size > 0) && (
         <div className="grid grid-cols-7 gap-1 sm:gap-2 text-[10px] text-muted-foreground">

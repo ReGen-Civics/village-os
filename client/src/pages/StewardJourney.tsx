@@ -22,6 +22,7 @@ import type { ResolvedSection } from "@shared/pageContent/types";
 import { m } from "framer-motion";
 import { Users, ArrowRight, ExternalLink, ShieldCheck, Home } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { usePageLang } from "@/hooks/usePageContent";
 
 /*
  * EVERY WORD ON THIS PAGE IS THE VILLAGE'S OWN, from Admin, Pages, Steward
@@ -40,6 +41,7 @@ import { useEffect, useRef, useState } from "react";
 export default function StewardJourney() {
   // This village's own destinations. Blank hides the control.
   const { eventsUrl, mailTo } = useVillageLinks();
+  const langOf = usePageLang(STEWARD_JOURNEY);
   const page = useJourneyContent(STEWARD_JOURNEY);
   const hero = page?.hero.fields;
   const steps = page?.steps.lists.items ?? null;
@@ -177,10 +179,10 @@ export default function StewardJourney() {
               <div className="mb-8 lg:mb-0">
                 <div className="lg:sticky lg:top-24">
                   <div className="mb-4 h-px w-16 bg-notice/60" aria-hidden="true" />
-                  <h2 id="role-path-heading" className="font-display text-3xl md:text-4xl font-semibold text-foreground break-words">
+                  <h2 lang={langOf("steps.heading")} id="role-path-heading" className="font-display text-3xl md:text-4xl font-semibold text-foreground break-words">
                     {page.steps.fields.heading}
                   </h2>
-                  <p className={`${LEDE} mt-3`}>
+                  <p lang={langOf("steps.intro")} className={`${LEDE} mt-3`}>
                     <Emphasized text={page.steps.fields.intro} />
                   </p>
                 </div>
@@ -282,10 +284,10 @@ export default function StewardJourney() {
         <section className="pb-16" aria-labelledby="extras-heading">
           <div className="container">
             <div className="mx-auto max-w-3xl">
-              <h2 id="extras-heading" className="font-display text-2xl md:text-3xl font-semibold text-foreground break-words">
+              <h2 lang={langOf("extras.heading")} id="extras-heading" className="font-display text-2xl md:text-3xl font-semibold text-foreground break-words">
                 {page.extras.fields.heading}
               </h2>
-              <p className={`${HINT} mt-2`}>
+              <p lang={langOf("extras.body")} className={`${HINT} mt-2`}>
                 <Emphasized text={page.extras.fields.body} />
               </p>
               <ul className="mt-6 space-y-3">
@@ -322,10 +324,10 @@ export default function StewardJourney() {
         <section className="border-t border-border/60 py-16">
           <div className="container">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 break-words">
+              <h2 lang={langOf("rights.heading")} className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 break-words">
                 {page.rights.fields.heading}
               </h2>
-              <p className="text-muted-foreground mb-6">
+              <p lang={langOf("rights.body")} className="text-muted-foreground mb-6">
                 <Emphasized text={page.rights.fields.body} />
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">

@@ -27,6 +27,7 @@ import { Gloss, GlossChip } from "@/components/sheet/GlossChip";
 import SeatGlyph from "./SeatGlyph";
 import SeatRoster from "./SeatRoster";
 import { useRoleArt } from "@/lib/natureArt";
+import { Trans } from "@lingui/react/macro";
 
 /** Which gloss on this card is open; from `useGlossGroup` in the card root. */
 export interface CardGloss {
@@ -255,7 +256,7 @@ export default function SeatCardFront({
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {chips.suits && (
                 <GlossChip tone="suggestion" tag={SHEET_WORDS.suggestedTag} {...chip("suits")}>
-                  Suits <span className="font-semibold text-foreground">{chips.suits.name}</span>
+                  <Trans context="SeatCardFront, GlossChip">Suits <span className="font-semibold text-foreground">{chips.suits.name}</span></Trans>
                 </GlossChip>
               )}
               {chips.speaksFor && (

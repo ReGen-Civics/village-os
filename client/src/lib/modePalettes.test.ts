@@ -11,6 +11,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@shared/brandTokens";
+import { MODE_PALETTE } from "@shared/modePalette";
 
 const css = readFileSync(path.resolve(__dirname, "../index.css"), "utf8");
 const shell = readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
@@ -99,5 +100,11 @@ describe("the palette block is the only source", () => {
     const to = css.indexOf("THE DARK SCHEME (gap G1");
     const rules = css.slice(from, to).replace(/\/\*[\s\S]*?\*\//g, "");
     expect(rules.match(/#[0-9a-f]{3,8}\b/gi) ?? []).toEqual([]);
+  });
+});
+
+describe("shared/modePalette.ts, the server's copy", () => {
+  it("is the palette block's four lines, so the install manifest matches the page", () => {
+    expect(MODE_PALETTE).toEqual({ dayGround: P["day-ground"], dayBand: P["day-band"], nightGround: P["night-ground"], nightBand: P["night-band"] });
   });
 });

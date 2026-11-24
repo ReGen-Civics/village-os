@@ -13,6 +13,7 @@ import { useModuleOn } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 import { useModalFocus } from "@/lib/useModalFocus";
 import { Mail, X } from "lucide-react";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface BriefPayload {
   week: string;
@@ -37,6 +38,7 @@ function briefParam(): string | null {
 }
 
 export default function WeeklyBrief({ signedIn }: { signedIn: boolean }) {
+  const { t } = useLingui();
   const [open, setOpen] = useState<boolean>(() => briefParam() !== null);
   const [week] = useState<string | null>(() => briefParam());
   const [brief, setBrief] = useState<BriefPayload | null>(null);
@@ -89,24 +91,24 @@ export default function WeeklyBrief({ signedIn }: { signedIn: boolean }) {
     <>
       <div className="print-hide mt-4 border border-border rounded-xl bg-card px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
         <span className="flex items-center gap-2 text-sm text-foreground">
-          <Mail className="h-4 w-4" aria-hidden="true" />
+          <Trans context="WeeklyBrief, span"><Mail className="h-4 w-4" aria-hidden="true" />
           The weekly brief: what the coming week holds, every week, in your inbox here and by email.
-        </span>
+        </Trans></span>
         <button
           type="button"
           onClick={() => setOpen(true)}
           className="px-3 py-1.5 text-xs font-medium rounded-lg bg-teal-deep text-white"
         >
-          Read this week's
-        </button>
+          <Trans context="WeeklyBrief, button">Read this week's
+        </Trans></button>
       </div>
 
       {open && (
-        <div className="print-hide fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Weekly brief" ref={panel}>
+        <div className="print-hide fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t({ message: "Weekly brief", context: "WeeklyBrief, aria-label" })} ref={panel}>
           <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-xl my-8">
             <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border">
               <h2 className="font-display text-lg font-semibold text-foreground">{brief?.subject ?? "Your week"}</h2>
-              <button type="button" onClick={close} aria-label="Close the brief" className="p-1.5 rounded-lg hover:bg-muted">
+              <button type="button" onClick={close} aria-label={t({ message: "Close the brief", context: "WeeklyBrief, aria-label" })} className="p-1.5 rounded-lg hover:bg-muted">
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
@@ -118,7 +120,7 @@ export default function WeeklyBrief({ signedIn }: { signedIn: boolean }) {
                   every time it arrived. */}
               <div role="status">
                 {problem && <p className="text-sm text-red-700">{problem}</p>}
-                {!problem && !brief && <p className="text-sm text-muted-foreground">Loading...</p>}
+                {!problem && !brief && <p className="text-sm text-muted-foreground"><Trans context="WeeklyBrief, p">Loading...</Trans></p>}
               </div>
               {brief && (
                 <div className="text-sm text-foreground leading-relaxed [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_ul]:pl-4 [&_li]:my-0.5"
@@ -136,7 +138,7 @@ export default function WeeklyBrief({ signedIn }: { signedIn: boolean }) {
                   />
                   Send me this every week
                 </label>
-                <span className="text-[11px] text-muted-foreground">Week of {brief.week}, village time</span>
+                <span className="text-[11px] text-muted-foreground"><Trans context="WeeklyBrief, span">Week of {brief.week}, village time</Trans></span>
               </div>
             )}
           </div>

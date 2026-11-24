@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CalendarItem } from "@shared/gatherings";
 import type { PollView } from "@shared/comms/timePoll";
 import { authToken } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 const REFRESH_MS = 10_000;
 
@@ -102,7 +103,7 @@ export default function TimePollPanel({ item, onChanged }: { item: CalendarItem;
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <p className="text-sm text-foreground">
           <span className="font-medium">{voting ? (summary.stillVoting ? "Time still being voted" : "Time set for this evening") : "Time set"}</span>
-          {summary.leadingLabel && voting && <span className="text-muted-foreground"> · Leading: {summary.leadingLabel}</span>}
+          {summary.leadingLabel && voting && <span className="text-muted-foreground"> <Trans context="TimePollPanel, span">· Leading: {summary.leadingLabel}</Trans></span>}
         </p>
         <button
           type="button"
@@ -116,10 +117,10 @@ export default function TimePollPanel({ item, onChanged }: { item: CalendarItem;
 
       {open && (
         <div className="mt-3">
-          {!poll && <p className="text-sm text-muted-foreground">Loading...</p>}
+          {!poll && <p className="text-sm text-muted-foreground"><Trans context="TimePollPanel, p">Loading...</Trans></p>}
           {poll && (
             <>
-              {voting && <p className="text-sm text-muted-foreground mb-2">Pick every time you can make. The time with the most picks becomes the gathering's time.</p>}
+              {voting && <p className="text-sm text-muted-foreground mb-2"><Trans context="TimePollPanel, p">Pick every time you can make. The time with the most picks becomes the gathering's time.</Trans></p>}
               {problem && (
                 <p role="alert" className="text-sm text-destructive mb-2">
                   {problem}
@@ -143,10 +144,10 @@ export default function TimePollPanel({ item, onChanged }: { item: CalendarItem;
                       <span className="min-w-0">
                         <span className={o.applied ? "font-semibold text-foreground" : "text-foreground"}>{o.label}</span>
                         <span className="text-muted-foreground">
-                          {" "}
+                          <Trans context="TimePollPanel, span">{" "}
                           · {o.count} can come
                           {o.leading ? " · leading" : ""}
-                          {o.pinned ? " · chosen by the host" : ""}
+                          {o.pinned ? " · chosen by the host" : ""}</Trans>
                         </span>
                         {o.names && o.names.length > 0 && <span className="block text-xs text-muted-foreground">{o.names.join(", ")}</span>}
                       </span>
@@ -154,8 +155,8 @@ export default function TimePollPanel({ item, onChanged }: { item: CalendarItem;
                   );
                 })}
               </ul>
-              {voting && !poll.canVote && !signedIn && <p className="text-xs text-muted-foreground mt-2">Sign in to vote.</p>}
-              {voting && poll.closesAt && <p className="text-xs text-muted-foreground mt-2">Voting closes {new Date(poll.closesAt).toLocaleString()}.</p>}
+              {voting && !poll.canVote && !signedIn && <p className="text-xs text-muted-foreground mt-2"><Trans context="TimePollPanel, p">Sign in to vote.</Trans></p>}
+              {voting && poll.closesAt && <p className="text-xs text-muted-foreground mt-2"><Trans context="TimePollPanel, p">Voting closes {new Date(poll.closesAt).toLocaleString()}.</Trans></p>}
             </>
           )}
         </div>

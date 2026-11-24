@@ -35,6 +35,7 @@
 import { useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
+import { Trans } from "@lingui/react/macro";
 
 interface VendorFact {
   vendorRecordId: string;
@@ -123,8 +124,8 @@ export default function SeatVendorFacts({
         onClick={() => setOpen(true)}
         className="text-sm underline underline-offset-2 min-h-[44px]"
       >
-        See what {serviceName} holds
-      </button>
+        <Trans context="SeatVendorFacts, button">See what {serviceName} holds
+      </Trans></button>
     );
   }
 
@@ -139,7 +140,7 @@ export default function SeatVendorFacts({
         return (
           <div key={fact.vendorRecordId} className="space-y-2">
             <p className="text-sm">
-              These are {serviceName}'s own words about this role. {whenRead(fact.updatedAt)}
+              <Trans context="SeatVendorFacts, p">These are {serviceName}'s own words about this role. {whenRead(fact.updatedAt)}</Trans>
             </p>
             <dl className="space-y-1">
               {pairs.map(([k, v]) => (
@@ -156,7 +157,7 @@ export default function SeatVendorFacts({
                 rel="noreferrer noopener"
                 className="text-sm underline underline-offset-2 inline-block min-h-[44px]"
               >
-                Open this record in {serviceName}
+                <Trans context="SeatVendorFacts, a">Open this record in {serviceName}</Trans>
               </a>
             )}
           </div>

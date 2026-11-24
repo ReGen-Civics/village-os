@@ -22,7 +22,7 @@ import PlaceCard, { type PlaceCardData } from "@/components/places/PlaceCard";
 import PhotoReportsPanel from "@/components/places/PhotoReportsPanel";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
 import { H1, LINK, WORLD } from "@/components/journey/look";
 
@@ -78,31 +78,31 @@ function PlacesPage() {
       <div className={WORLD}>
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
         <header className="space-y-2">
-          <h1 className={H1}>Places, photographed</h1>
+          <h1 className={H1}><Trans context="Places, h1">Places, photographed</Trans></h1>
           {/* R47: the Trail line leads, and the Lore line comes last. */}
           <p className="text-muted-foreground">
-            Open a place to see its photographs. Each one carries the name of whoever took it and the month it was
+            <Trans context="Places, p">Open a place to see its photographs. Each one carries the name of whoever took it and the month it was
             taken.
-          </p>
-          <nav aria-label="Every photograph">
+          </Trans></p>
+          <nav aria-label={t({ message: "Every photograph", context: "Places, aria-label" })}>
             <Link href="/photographs" className={`${LINK} text-sm inline-flex items-center min-h-11`}>
-              See every photograph on one page, newest first
-            </Link>
+              <Trans context="Places, Link">See every photograph on one page, newest first
+            </Trans></Link>
           </nav>
           <p className="text-sm italic text-muted-foreground">
-            Every place on the land that somebody has stood in front of with a camera.
-          </p>
+            <Trans context="Places, p">Every place on the land that somebody has stood in front of with a camera.
+          </Trans></p>
         </header>
 
         {locked ? (
           <p className="rounded-xl border border-border bg-card p-6">
-            <Link href={`/login?next=${encodeURIComponent("/places")}`} className={LINK}>
+            <Trans context="Places, p"><Link href={`/login?next=${encodeURIComponent("/places")}`} className={LINK}>
               Sign in
             </Link>{" "}
             to see the places this village has photographed.
-          </p>
+          </Trans></p>
         ) : !data ? (
-          <BreathingLoader label="Opening the places" />
+          <BreathingLoader label={t({ message: "Opening the places", context: "Places, label" })} />
         ) : data.places.length === 0 ? (
           <ComingSoonPanel title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })} body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })} door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }} />
         ) : (
