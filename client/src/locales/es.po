@@ -7,47 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgctxt "powers page eyebrow"
-msgid "How the village is held"
-msgstr "Cómo se sostiene la aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "What this village looks after"
-msgstr "Lo que cuida esta aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
-msgstr "Cada responsabilidad compartida aquí tiene a alguien que la cuida. Abre un tema para ver qué permite hacer cada una y qué rol la tiene hoy."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Reading the village's own record."
-msgstr "Leyendo el registro de la aldea."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Whoever holds this can {0}."
-msgstr "Quien tiene esto puede {0}."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "The village voted this one across."
-msgstr "La aldea votó para asumir esta."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
-msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propias decisiones, y esta página cambia con ella."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "How a power moves"
-msgstr "Cómo pasa un poder"
-
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
@@ -2745,6 +2704,11 @@ msgctxt "membership letter on the open form"
 msgid "Read the {title}"
 msgstr "Leer {title}"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Reading the village's own record."
+msgstr "Leyendo el registro de la aldea."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Leave empty if this village does not use this rung"
 msgstr ""
@@ -4918,6 +4882,11 @@ msgstr "Abrir las misiones"
 msgid "The agreement this vote would adopt"
 msgstr ""
 
+#. placeholder {0}: catalyst.aNameCap
+#: client/src/pages/Powers.tsx
+msgid "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+msgstr ""
+
 #: client/src/components/roleCard/WaitlistLetter.tsx
 #~ msgctxt "waitlist letter: what happens"
 #~ msgid "This goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
@@ -5116,6 +5085,11 @@ msgstr "Listo. Borramos de este dispositivo los archivos guardados y la versión
 msgctxt "admin protocols editor"
 msgid "A completed run hands in: {0}"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "What this village looks after"
+msgstr "Lo que cuida esta aldea"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
@@ -6242,6 +6216,12 @@ msgstr "Llevar otras gracias"
 msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: p.consequence
+#: client/src/pages/Powers.tsx
+msgid "Whoever holds this can {0}."
+msgstr "Quien tiene esto puede {0}."
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
@@ -8923,6 +8903,11 @@ msgctxt "funding rounds"
 msgid "Yours"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
+msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propias decisiones, y esta página cambia con ella."
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
@@ -9636,6 +9621,12 @@ msgctxt "copy settlement button, done"
 msgid "Copied ✓"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgctxt "powers page eyebrow"
+msgid "How the village is held"
+msgstr "Cómo se sostiene la aldea"
+
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: the journal, when it can go to the outside agent"
 msgid "Your journal goes to {outside} only once you choose {outside}."
@@ -10156,6 +10147,10 @@ msgstr ""
 msgctxt "founding application confirm"
 msgid "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 msgstr "Ese enlace venció o ya se usó. Envía tu solicitud de nuevo y abre el enlace nuevo dentro de {OPEN_CONFIRM_HOURS} horas."
+
+#: client/src/pages/Powers.tsx
+msgid "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
+msgstr ""
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
@@ -13966,6 +13961,11 @@ msgstr "Mostrando los {total} {noun}."
 #~ msgctxt "price popup"
 #~ msgid "Your price each moon, in {0}"
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+msgstr "Cada responsabilidad compartida aquí tiene a alguien que la cuida. Abre un tema para ver qué permite hacer cada una y qué rol la tiene hoy."
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -18494,6 +18494,10 @@ msgctxt "open work: the board is ordered for the reader"
 msgid "Ordered by how well each fits the {memberPct}% you can give now."
 msgstr "Ordenadas según cuánto encaja cada una con el {memberPct}% que puedes dar ahora."
 
+#: client/src/pages/Powers.tsx
+msgid "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+msgstr ""
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Approved"
@@ -19381,6 +19385,11 @@ msgstr ""
 msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Ahora no"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "The village voted this one across."
+msgstr "La aldea votó para asumir esta."
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/openProposal/ContractPrice.tsx
@@ -26121,6 +26130,11 @@ msgstr ""
 msgctxt "change request note outcome"
 msgid "Answered"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "How a power moves"
+msgstr "Cómo pasa un poder"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"

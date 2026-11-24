@@ -2641,6 +2641,10 @@ msgctxt "membership letter on the open form"
 msgid "Read the {title}"
 msgstr "Read the {title}"
 
+#: client/src/pages/Powers.tsx
+msgid "Reading the village's own record."
+msgstr "Reading the village's own record."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Leave empty if this village does not use this rung"
 msgstr "Leave empty if this village does not use this rung"
@@ -4773,6 +4777,11 @@ msgstr "Open the quests"
 msgid "The agreement this vote would adopt"
 msgstr "The agreement this vote would adopt"
 
+#. placeholder {0}: catalyst.aNameCap
+#: client/src/pages/Powers.tsx
+msgid "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+msgstr "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "label of the season file text box"
 msgid "Season file"
@@ -4963,6 +4972,10 @@ msgstr "Done. We cleared this site's saved files and old version from this devic
 msgctxt "admin protocols editor"
 msgid "A completed run hands in: {0}"
 msgstr "A completed run hands in: {0}"
+
+#: client/src/pages/Powers.tsx
+msgid "What this village looks after"
+msgstr "What this village looks after"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
@@ -6070,6 +6083,11 @@ msgstr "Carry another thanks"
 msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
 msgstr "The quest you want to do: what you would create, and what it brings to the village."
+
+#. placeholder {0}: p.consequence
+#: client/src/pages/Powers.tsx
+msgid "Whoever holds this can {0}."
+msgstr "Whoever holds this can {0}."
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
@@ -8700,6 +8718,10 @@ msgctxt "funding rounds"
 msgid "Yours"
 msgstr "Yours"
 
+#: client/src/pages/Powers.tsx
+msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
+msgstr "As the village grows, it takes these on through its own decisions, and this page changes with it."
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
@@ -9380,6 +9402,11 @@ msgctxt "copy settlement button, done"
 msgid "Copied ✓"
 msgstr "Copied ✓"
 
+#: client/src/pages/Powers.tsx
+msgctxt "powers page eyebrow"
+msgid "How the village is held"
+msgstr "How the village is held"
+
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: the journal, when it can go to the outside agent"
 msgid "Your journal goes to {outside} only once you choose {outside}."
@@ -9894,6 +9921,10 @@ msgstr "In the memory"
 msgctxt "founding application confirm"
 msgid "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 msgstr "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
+
+#: client/src/pages/Powers.tsx
+msgid "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
+msgstr "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
@@ -13600,6 +13631,10 @@ msgstr "Showing all {total} {noun}."
 #~ msgctxt "price popup"
 #~ msgid "Your price each moon, in {0}"
 #~ msgstr "Your price each moon, in {0}"
+
+#: client/src/pages/Powers.tsx
+msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+msgstr "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -17990,6 +18025,10 @@ msgctxt "open work: the board is ordered for the reader"
 msgid "Ordered by how well each fits the {memberPct}% you can give now."
 msgstr "Ordered by how well each fits the {memberPct}% you can give now."
 
+#: client/src/pages/Powers.tsx
+msgid "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+msgstr "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Approved"
@@ -18869,6 +18908,10 @@ msgstr "The vote is open until {closes}. Every member on the roll has been told.
 msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Not now"
+
+#: client/src/pages/Powers.tsx
+msgid "The village voted this one across."
+msgstr "The village voted this one across."
 
 #: client/src/components/openProposal/ContractPrice.tsx
 msgctxt "open proposal: the contract's pay"
@@ -25449,6 +25492,10 @@ msgstr "Page"
 msgctxt "change request note outcome"
 msgid "Answered"
 msgstr "Answered"
+
+#: client/src/pages/Powers.tsx
+msgid "How a power moves"
+msgstr "How a power moves"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"
