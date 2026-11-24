@@ -1,3 +1,4 @@
+import { useThanksInView } from "@/lib/thanksInView";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { fetchConfigCached } from "@/lib/gameApi";
@@ -149,6 +150,8 @@ export default function WorkWithUs() {
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [mode, setMode] = useState<"ai" | "form">("form");
   const [submitted, setSubmitted] = useState(false);
+  // On a phone the thank-you would open scrolled past its own end (lib/thanksInView.ts).
+  const thanks = useThanksInView(submitted);
   const [form, setForm] = useState<Proposal>(EMPTY);
   // The reciprocity line and the thank-you are the village's own, from Admin,
   // Pages, Work With Us (shared/pageContent/workWithUs.ts).
@@ -208,7 +211,7 @@ export default function WorkWithUs() {
             <CheckCircle2 className="w-14 h-14 text-amber-on-band mx-auto mb-6" />
             {/* A longer heading the village wrote steps down a size on a
                 phone: at its 48-character limit it ran five lines at 320px. */}
-            <h1 className={`font-display ${Array.from(page?.thanks.fields.heading ?? "").length > 32 ? "text-3xl md:text-4xl" : "text-4xl"} font-bold mb-4 break-words${page ? "" : " invisible"}`}>
+            <h1 ref={thanks} tabIndex={-1} className={`focus:outline-none font-display ${Array.from(page?.thanks.fields.heading ?? "").length > 32 ? "text-3xl md:text-4xl" : "text-4xl"} font-bold mb-4 break-words${page ? "" : " invisible"}`}>
               {page?.thanks.fields.heading || "\u00a0"}
             </h1>
             <p className="text-white text-lg break-words">
