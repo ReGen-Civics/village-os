@@ -18,6 +18,7 @@ import type { CSSProperties } from "react";
 import { BookOpen, Coins, Hammer, Mountain, Package, Repeat, Sparkles, UserRound, type LucideIcon } from "lucide-react";
 import Celebration from "@/components/natural/Celebration";
 import { useArrival, useMomentWindow } from "@/components/natural/moments";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The kit's water tokens, repainted in the board's gold. Recolouring through
@@ -517,9 +518,9 @@ export function SlotMeter({
         <div className="cp-slots-delivered" style={{ width: `${dPct}%`, background: tint }} />
       </div>
       <div className="cp-slots-caption">
-        <span>{hours ? `${delivered}% of energy and attention` : delivered} arrived</span>
-        <span>{hours ? `${Math.max(0, claimed - delivered)}% of energy and attention` : Math.max(0, claimed - delivered)} spoken for</span>
-        <span>{hours ? `${wanted}% of energy and attention` : wanted} wanted</span>
+        <span><Trans context="PoolPieces, span">{hours ? `${delivered}% of energy and attention` : delivered} arrived</Trans></span>
+        <span><Trans context="PoolPieces, span">{hours ? `${Math.max(0, claimed - delivered)}% of energy and attention` : Math.max(0, claimed - delivered)} spoken for</Trans></span>
+        <span><Trans context="PoolPieces, span">{hours ? `${wanted}% of energy and attention` : wanted} wanted</Trans></span>
       </div>
       {/*
         * NOT ON AN HOURS NEED, and for a sharper reason than "it cannot
@@ -531,9 +532,9 @@ export function SlotMeter({
         */}
       {over && !hours && (
         <p className="cp-slots-over">
-          More arrived than were wanted. The hub counts a delivery twice when two stewards confirm
+          <Trans context="PoolPieces, p">More arrived than were wanted. The hub counts a delivery twice when two stewards confirm
           it at once, and it is fixing that. Nothing here changes what the hub recorded.
-        </p>
+        </Trans></p>
       )}
     </div>
   );
@@ -611,12 +612,12 @@ export function GrowthStrip({ percentDelivered, percentPledged }: { percentDeliv
         * pointing at a repair that had already happened.
         */}
       <p className="cp-growth-note">
-        The ring holds the promise; the walls are what has arrived.
+        <Trans context="PoolPieces, p">The ring holds the promise; the walls are what has arrived.
         {percentDelivered > percentPledged
           ? ` More is standing than the pool records as pledged: ${percentPledged}% pooled against ${percentDelivered}% delivered. Both cannot be true, because delivered work was pledged first. One of the two figures is wrong and this page does not know which.`
           : percentPledged > percentDelivered
             ? ` Right now the ring runs ahead: ${percentPledged}% pooled, ${percentDelivered}% delivered and standing.`
-            : ` Delivered work is keeping pace with the pool: ${percentDelivered}% standing.`}
+            : ` Delivered work is keeping pace with the pool: ${percentDelivered}% standing.`}</Trans>
       </p>
     </div>
   );

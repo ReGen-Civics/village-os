@@ -34,6 +34,7 @@
 import { Link, useLocation } from "wouter";
 import { Users } from "lucide-react";
 import { internalPath } from "@/lib/internalPath";
+import { Trans } from "@lingui/react/macro";
 
 export interface PeopleTier {
   /** Are holder names in the payload this page just read? */
@@ -66,23 +67,23 @@ export function PeopleLockNote({
         <Users className="w-6 h-6 text-sage" />
       </div>
       <p className="font-display text-2xl font-bold text-foreground mb-2">
-        {seats} {seats === 1 ? "place" : "places"}, {held} of them held
-      </p>
+        <Trans context="PeopleLock, p">{seats} {seats === 1 ? "place" : "places"}, {held} of them held
+      </Trans></p>
       <p className="text-muted-foreground mb-6 leading-relaxed">
-        This village keeps the names of the people holding them for members. Every circle,
+        <Trans context="PeopleLock, p">This village keeps the names of the people holding them for members. Every circle,
         every role and every open call is on this page.
-      </p>
+      </Trans></p>
       {people.signedIn ? (
         <p className="text-sm text-muted-foreground">
-          Seeing who holds a role is a power here, and your account does not carry it yet.
-        </p>
+          <Trans context="PeopleLock, p">Seeing who holds a role is a power here, and your account does not carry it yet.
+        </Trans></p>
       ) : (
         <Link
           href={`/login?next=${encodeURIComponent(internalPath(location) ?? "/")}`}
           className="inline-flex items-center min-h-[44px] px-5 rounded-lg bg-teal-deep text-white font-semibold"
         >
-          Sign in to see who holds them
-        </Link>
+          <Trans context="PeopleLock, Link">Sign in to see who holds them
+        </Trans></Link>
       )}
     </div>
   );

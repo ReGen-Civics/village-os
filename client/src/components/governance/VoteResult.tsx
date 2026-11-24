@@ -63,6 +63,7 @@ import {
   type BarMark,
   type BarReading,
 } from "./voteBars";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const MARK_ICON = { met: Check, short: X, none: Minus } as const;
 const MARK_TONE = { met: "text-open", short: "text-destructive", none: "text-muted-foreground" } as const;
@@ -125,13 +126,14 @@ function Heading({
 
 /** The agreement moon, with the line it has to reach drawn on the disc. */
 function UnityMoon({ bar, size }: { bar: BarReading; size: number }) {
+  const { t } = useLingui();
   return (
     <MoonProgress
       value={bar.valuePct / 100}
       size={size}
       showNumber={false}
       showRing={false}
-      label="Agreement"
+      label={t({ message: "Agreement", context: "VoteResult, label" })}
       threshold={bar.thresholdPct / 100}
       thresholdTone={bar.mark}
       thresholdLabel={`This vote needs ${pctText(bar.thresholdPct)}`}
@@ -162,6 +164,7 @@ export default function VoteResult({
   votedCount,
   openObjections = 0,
 }: VoteResultProps) {
+  const { t } = useLingui();
   const unity = unityBar(tallies, unityPct, method);
   const quorum = quorumBar(tallies, totalWeight, quorumPct);
   const { spokenWeight } = spoken(tallies, totalWeight);
@@ -177,27 +180,27 @@ export default function VoteResult({
         <div>
           {consent ? (
             <>
-              <Heading title="Objections" tip={CONSENT_TIP} mark={objections.mark} value={null} />
+              <Heading title={t({ message: "Objections", context: "VoteResult, title" })} tip={CONSENT_TIP} mark={objections.mark} value={null} />
               <div className="mt-3 flex items-start gap-3 rounded-lg border border-border bg-muted px-3 py-3">
                 <ObjectionMark
                   className={`mt-0.5 w-5 h-5 shrink-0 ${MARK_TONE[objections.mark]}`}
                   aria-hidden="true"
                 />
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {objections.reading}. <span className="text-muted-foreground">Consent is decided by what stands in the way, so it carries no percentage of agreement.</span>
+                  {objections.reading}. <span className="text-muted-foreground"><Trans context="VoteResult, span">Consent is decided by what stands in the way, so it carries no percentage of agreement.</Trans></span>
                 </p>
               </div>
             </>
           ) : (
             <>
-              <Heading title="Agreement" tip={UNITY_TIP} mark={unity.mark} value={unityValueText(unity)} />
+              <Heading title={t({ message: "Agreement", context: "VoteResult, title" })} tip={UNITY_TIP} mark={unity.mark} value={unityValueText(unity)} />
               <div className="mt-3 flex items-center gap-4">
                 <UnityMoon bar={unity} size={96} />
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {unity.reading}.{" "}
                   <span className="text-muted-foreground">
-                    {weightText(tallies.yesW)} yes, {weightText(tallies.noW)} no.
-                  </span>
+                    <Trans context="VoteResult, span">{weightText(tallies.yesW)} yes, {weightText(tallies.noW)} no.
+                  </Trans></span>
                 </p>
               </div>
             </>
@@ -206,7 +209,7 @@ export default function VoteResult({
 
         <div>
           <Heading
-            title="Participation"
+            title={t({ message: "Participation", context: "VoteResult, title" })}
             tip={QUORUM_TIP}
             mark={quorum.mark}
             value={pctText(quorum.valuePct)}
@@ -215,7 +218,7 @@ export default function VoteResult({
             <QuorumField
               valuePct={quorum.valuePct}
               thresholdPct={quorum.thresholdPct}
-              title="Participation"
+              title={t({ message: "Participation", context: "VoteResult, title" })}
               reading={quorum.reading}
               detail={fieldDetail}
             />
@@ -254,6 +257,7 @@ export function VoteResultMini({
    */
   standingObjections: number;
 }) {
+  const { t } = useLingui();
   const unity = unityBar(tallies, unityPct, method);
   const quorum = quorumBar(tallies, totalWeight, quorumPct);
   const consent = method === "consent";
@@ -269,7 +273,7 @@ export function VoteResultMini({
         // it. What stands in the moon's place is the thing that DOES decide
         // it, with a mark beside it so it is never colour alone.
         <div className="flex flex-col leading-tight">
-          <span className="text-xs font-medium text-muted-foreground">Objections decide this one</span>
+          <span className="text-xs font-medium text-muted-foreground"><Trans context="VoteResult, span">Objections decide this one</Trans></span>
           <span className="flex items-center gap-1 text-xs font-bold text-foreground">
             <ObjectionMark className={`w-3 h-3 ${MARK_TONE[objections.mark]}`} aria-hidden="true" />
             {standingObjections > 0
@@ -281,7 +285,7 @@ export function VoteResultMini({
         <div className="flex items-center gap-2">
           <UnityMoon bar={unity} size={36} />
           <div className="flex flex-col leading-tight">
-            <span className="text-xs font-medium text-muted-foreground">Agreement</span>
+            <span className="text-xs font-medium text-muted-foreground"><Trans context="VoteResult, span">Agreement</Trans></span>
             <span className="flex items-center gap-1 text-xs font-bold tabular-nums text-foreground">
               <UnityMark className={`w-3 h-3 ${MARK_TONE[unity.mark]}`} aria-hidden="true" />
               {unityValueText(unity)}
@@ -295,14 +299,14 @@ export function VoteResultMini({
           <QuorumField
             valuePct={quorum.valuePct}
             thresholdPct={quorum.thresholdPct}
-            title="Participation"
+            title={t({ message: "Participation", context: "VoteResult, title" })}
             reading={quorum.reading}
             detail={`Of the frozen weight, ${pctText(quorum.valuePct)} has spoken.`}
             compact
           />
         </div>
         <div className="flex flex-col leading-tight">
-          <span className="text-xs font-medium text-muted-foreground">Participation</span>
+          <span className="text-xs font-medium text-muted-foreground"><Trans context="VoteResult, span">Participation</Trans></span>
           <span className="flex items-center gap-1 text-xs font-bold tabular-nums text-foreground">
             <QuorumMark className={`w-3 h-3 ${MARK_TONE[quorum.mark]}`} aria-hidden="true" />
             {pctText(quorum.valuePct)}

@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { GeneKeysLines, GeneKeysOwnerControls } from "./GeneKeysLines";
 import { EYEBROW } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * ONE TIER ABOVE A MODAL SHEET, overlay included (live 2026-10-30, 9ba19a2).
@@ -84,9 +85,9 @@ export default function GeneKeysSeal({ view, whose, mine = null, className = "ab
       {open && wide ? (
         <Dialog open onOpenChange={setOpen}>
           <DialogContent overlayClassName={ABOVE_A_MODAL} className={`${ABOVE_A_MODAL} sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground sm:max-w-2xl`}>
-            <p className={EYEBROW}>Gene Keys {view.profile}</p>
+            <p className={EYEBROW}><Trans context="GeneKeysSeal, p">Gene Keys {view.profile}</Trans></p>
             <DialogTitle className="font-display text-3xl font-normal text-foreground">{view.names}</DialogTitle>
-            <DialogDescription className="sr-only">Gene Keys lines and how this person works best.</DialogDescription>
+            <DialogDescription className="sr-only"><Trans context="GeneKeysSeal, DialogDescription">Gene Keys lines and how this person works best.</Trans></DialogDescription>
             {body}
           </DialogContent>
         </Dialog>
@@ -98,9 +99,9 @@ export default function GeneKeysSeal({ view, whose, mine = null, className = "ab
             overlayClassName={ABOVE_A_MODAL}
             className={`${ABOVE_A_MODAL} sheet-night max-h-[90vh] overflow-y-auto rounded-t-2xl border-border bg-card px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-card-foreground`}
           >
-            <p className={EYEBROW}>Gene Keys {view.profile}</p>
+            <p className={EYEBROW}><Trans context="GeneKeysSeal, p">Gene Keys {view.profile}</Trans></p>
             <SheetTitle className="font-display text-3xl font-normal text-foreground">{view.names}</SheetTitle>
-            <SheetDescription className="sr-only">Gene Keys lines and how this person works best.</SheetDescription>
+            <SheetDescription className="sr-only"><Trans context="GeneKeysSeal, SheetDescription">Gene Keys lines and how this person works best.</Trans></SheetDescription>
             {body}
           </SheetContent>
         </Sheet>

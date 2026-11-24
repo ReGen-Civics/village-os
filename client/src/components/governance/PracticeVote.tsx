@@ -50,6 +50,7 @@ import InfoTip from "@/components/InfoTip";
 import { openAdvisory } from "./governanceApi";
 import { subjectNoun, type WizardType } from "./wizardConfig";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The methods a practice vote may run, in the order a member meets them.
@@ -101,6 +102,7 @@ export default function PracticeVote({
   /** Present when the module library opened this with the question written. */
   asking?: FixedAsk;
 }) {
+  const { t } = useLingui();
   const Heading = asking ? "h2" : "h3";
   const noun = about ? subjectNoun(about) : "";
   const [question, setQuestion] = useState(asking?.question ?? "");
@@ -143,7 +145,7 @@ export default function PracticeVote({
         {asking ? asking.heading : "Ask the village about this"}
         <InfoTip
           tip="A practice vote runs on the same engine a binding one does: the same roll, the same weights, the same turnout to reach. Closing it records the answer and changes nothing on its own."
-          label="What a practice vote is"
+          label={t({ message: "What a practice vote is", context: "PracticeVote, label" })}
         />
       </Heading>
       {/* The type is named as a CHIP and never inside a sentence. The wizard
@@ -184,7 +186,7 @@ export default function PracticeVote({
             value={question}
             maxLength={200}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Should the repair shed hold a shared tool library?"
+            placeholder={t({ message: "Should the repair shed hold a shared tool library?", context: "PracticeVote, placeholder" })}
             className="mt-2 min-h-[44px] w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
           />
         )}
@@ -211,8 +213,8 @@ export default function PracticeVote({
 
       <div className="mt-4">
         <label htmlFor="practice-method" className="block text-sm font-semibold text-stone-900">
-          How should it be decided?
-        </label>
+          <Trans context="PracticeVote, label">How should it be decided?
+        </Trans></label>
         <select
           id="practice-method"
           value={method}
@@ -254,9 +256,9 @@ export default function PracticeVote({
       </div>
 
       <p className="mt-3 text-xs text-stone-500 leading-relaxed">
-        Opening it rings everyone on the roll once, and closing it rings them once more. One practice vote at a time,
+        <Trans context="PracticeVote, p">Opening it rings everyone on the roll once, and closing it rings them once more. One practice vote at a time,
         each, so a village's attention is spent on questions it can answer.
-      </p>
+      </Trans></p>
     </section>
   );
 }

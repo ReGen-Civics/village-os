@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useModule } from "@/modules/ModuleProvider";
 import type { Evenness, VoiceSpreadView } from "@shared/voiceSpread";
 import { fetchVoiceSpread } from "./governanceApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const EVENNESS_WORDS: Record<Evenness, string> = {
   even: "Voice is spread fairly evenly: each group's say is close to its size.",
@@ -38,6 +39,7 @@ function Tile({ label, value }: { label: string; value: string }) {
 }
 
 export default function VoiceSpreadBand({ heading, intro }: { heading: string; intro: string }) {
+  const { t } = useLingui();
   const governance = useModule("governance");
   const [view, setView] = useState<VoiceSpreadView | null>(null);
 
@@ -71,7 +73,7 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
         <div className="mt-6 grid gap-8 md:grid-cols-[3fr_2fr]">
           <div>
             {!spread.anyVoice ? (
-              <p className="text-stone-700">Nobody holds any Voice yet.</p>
+              <p className="text-stone-700"><Trans context="VoiceSpreadBand, p">Nobody holds any Voice yet.</Trans></p>
             ) : spread.bands.length === 0 ? (
               <p className="text-stone-700">
                 {`With ${spread.voters} ${spread.voters === 1 ? "voter" : "voters"}, the village is too small to show how Voice is spread without pointing at someone. It shows once there are more of you.`}
@@ -83,8 +85,8 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
                     <li key={b.topPct}>
                       <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm text-stone-800">
                         <span>
-                          The top <strong>{b.topPct}%</strong> of voters hold <strong>{b.sharePct}%</strong> of the Voice
-                        </span>
+                          <Trans context="VoiceSpreadBand, span">The top <strong>{b.topPct}%</strong> of voters hold <strong>{b.sharePct}%</strong> of the Voice
+                        </Trans></span>
                       </div>
                       <div className="relative mt-2.5 mb-1 h-4 rounded-full bg-stone-200" aria-hidden="true">
                         <div data-spread-fill className="h-full rounded-full bg-teal-deep" style={{ width: `${b.sharePct}%` }} />
@@ -103,10 +105,10 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
           </div>
 
           <div className="grid grid-cols-2 gap-3 self-start">
-            <Tile label={ballots.since ? "Votes this season" : "Votes so far"} value={String(ballots.run)} />
-            <Tile label="Carried" value={ballots.closed ? `${ballots.passed} of ${ballots.closed}` : "None yet"} />
-            <Tile label="Average turnout" value={ballots.turnoutPct === null ? "None closed yet" : `${ballots.turnoutPct}%`} />
-            <Tile label="Quorum" value={`${view.quorumPct}%`} />
+            <Tile label={ballots.since ? t({ message: "Votes this season", context: "VoiceSpreadBand, label" }) : t({ message: "Votes so far", context: "VoiceSpreadBand, label" })} value={String(ballots.run)} />
+            <Tile label={t({ message: "Carried", context: "VoiceSpreadBand, label" })} value={ballots.closed ? `${ballots.passed} of ${ballots.closed}` : "None yet"} />
+            <Tile label={t({ message: "Average turnout", context: "VoiceSpreadBand, label" })} value={ballots.turnoutPct === null ? "None closed yet" : `${ballots.turnoutPct}%`} />
+            <Tile label={t({ message: "Quorum", context: "VoiceSpreadBand, label" })} value={`${view.quorumPct}%`} />
           </div>
         </div>
       </div>

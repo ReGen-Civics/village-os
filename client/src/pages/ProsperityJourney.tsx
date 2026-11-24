@@ -8,13 +8,14 @@ import { useValueTokenName } from "@/hooks/useTokenNames";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent";
+import { usePageLang } from "@/hooks/usePageContent";
 import { buttonAction, stepPoints, type JourneyAction, type TargetContext } from "@/lib/journeyPage";
 import { JOURNEY_LEGACY_STEP_IDS, JOURNEY_TARGETS, PROSPERITY_JOURNEY } from "@shared/pageContent/journeys";
 import PacketRequestForm, { PACKET_ANCHOR } from "@/components/prosperity/PacketRequestForm";
 import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
   Sprout,
@@ -60,6 +61,7 @@ export default function ProsperityJourney() {
   // The village's own name for its guide, or "The village guide" while it has
   // none. Raised to a capital because the step's words open a sentence with it.
   const guide = useGuideName();
+  const langOf = usePageLang(PROSPERITY_JOURNEY);
   const page = useJourneyContent(PROSPERITY_JOURNEY, (resolved) => ({
     guide: guideNameAtSentenceStart(guide.name),
     acronym: resolved.tiers.fields.acronym,
@@ -217,7 +219,7 @@ export default function ProsperityJourney() {
               className="text-center min-w-0"
             >
               <Heart className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
-              <h2 className="font-display text-xl font-semibold text-foreground mb-3 break-words">
+              <h2 lang={langOf("economy.firstHeading")} className="font-display text-xl font-semibold text-foreground mb-3 break-words">
                 {page.economy.fields.firstHeading}
               </h2>
               <p className="text-muted-foreground text-sm break-words">
@@ -235,10 +237,10 @@ export default function ProsperityJourney() {
               className="text-center min-w-0"
             >
               <Users className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
-              <h2 className="font-display text-xl font-semibold text-foreground mb-3 break-words">
+              <h2 lang={langOf("economy.secondHeading")} className="font-display text-xl font-semibold text-foreground mb-3 break-words">
                 {page.economy.fields.secondHeading}
               </h2>
-              <p className="text-muted-foreground text-sm break-words">
+              <p lang={langOf("economy.secondBody")} className="text-muted-foreground text-sm break-words">
                 <Emphasized text={page.economy.fields.secondBody} />
               </p>
             </m.div>
@@ -257,11 +259,11 @@ export default function ProsperityJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("steps.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.steps.fields.heading}
             </h2>
             {/* "{count} steps" follows the list; it said "seven" in code. */}
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            <p lang={langOf("steps.intro")} className="text-muted-foreground max-w-2xl mx-auto mb-6">
               <Emphasized text={page.steps.fields.intro} />
             </p>
 
@@ -274,8 +276,8 @@ export default function ProsperityJourney() {
                 size="md"
               />
               <p className="text-sm text-muted-foreground">
-                {progress.doneCount} of {progress.total} steps completed
-              </p>
+                <Trans context="ProsperityJourney, p">{progress.doneCount} of {progress.total} steps completed
+              </Trans></p>
             </div>
           </m.div>
 
@@ -425,10 +427,10 @@ export default function ProsperityJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("tiers.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.tiers.fields.heading}
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p lang={langOf("tiers.intro")} className="text-muted-foreground max-w-2xl mx-auto">
               <Emphasized text={page.tiers.fields.intro} />
             </p>
           </m.div>
@@ -453,7 +455,7 @@ export default function ProsperityJourney() {
                   {tier.focus}
                 </p>
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Impact Metrics:</p>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground"><Trans context="ProsperityJourney, p">Impact Metrics:</Trans></p>
                   <ul className="space-y-1">
                     {[tier.metric1, tier.metric2, tier.metric3].filter(Boolean).map((metric, i) => (
                       <li key={i} className="text-xs text-muted-foreground flex items-center gap-2 min-w-0 break-words">
@@ -483,10 +485,10 @@ export default function ProsperityJourney() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("packet.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.packet.fields.heading}
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p lang={langOf("packet.body")} className="text-muted-foreground mb-8">
               <Emphasized text={page.packet.fields.body} />
             </p>
             {packetCta && packetCta.action.kind !== "anchor" ? (
@@ -512,10 +514,10 @@ export default function ProsperityJourney() {
             viewport={{ once: true }}
           >
             <Sprout className="w-12 h-12 text-open mx-auto mb-6" aria-hidden="true" />
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("closing.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.closing.fields.heading}
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p lang={langOf("closing.body")} className="text-muted-foreground mb-8">
               <Emphasized text={page.closing.fields.body} />
             </p>
             <div className="flex flex-wrap justify-center gap-4">

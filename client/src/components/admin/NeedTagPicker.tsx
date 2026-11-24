@@ -44,6 +44,7 @@ import {
   type NeedWeight,
 } from "@shared/needs";
 import type { NeedTag } from "@/components/NeedChips";
+import { Trans } from "@lingui/react/macro";
 
 /** One row of `village_needs`, as `GET /api/needs/scope` sends it. */
 interface ScopeRow {
@@ -157,22 +158,22 @@ export default function NeedTagPicker({
   if (live.length === 0) {
     return (
       <div className="border border-border rounded-2xl p-4 bg-card">
-        <h3 className="font-semibold text-foreground mb-1">What need does this meet?</h3>
+        <h3 className="font-semibold text-foreground mb-1"><Trans context="NeedTagPicker, h3">What need does this meet?</Trans></h3>
         <p className="text-sm text-muted-foreground">
-          This village has not said which needs it is taking on. Say that first in Setup, and
+          <Trans context="NeedTagPicker, p">This village has not said which needs it is taking on. Say that first in Setup, and
           every quest and role can then name which of them it meets.
-        </p>
+        </Trans></p>
       </div>
     );
   }
 
   return (
     <div className="border border-border rounded-2xl p-4 bg-card">
-      <h3 className="font-semibold text-foreground mb-1">What need does this meet?</h3>
+      <h3 className="font-semibold text-foreground mb-1"><Trans context="NeedTagPicker, h3">What need does this meet?</Trans></h3>
       <p className="text-sm text-muted-foreground mb-3">
-        A tag describes the work. It never changes who may claim this, what it pays, or when it
+        <Trans context="NeedTagPicker, p">A tag describes the work. It never changes who may claim this, what it pays, or when it
         opens.
-      </p>
+      </Trans></p>
       {problem && (
         <p className="text-sm text-destructive mb-3" role="alert">
           {problem}

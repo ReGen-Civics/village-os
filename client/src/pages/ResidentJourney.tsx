@@ -3,7 +3,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, RING, WORLD } from "@/components/j
 import { SeedOfLife } from "@/components/journey/nature";
 import FirstSteps from "@/components/tracks/FirstSteps";
 import TwoTracks from "@/components/tracks/TwoTracks";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { figureWithCurrency } from "@shared/money";
 import WhyCostaRica from "@/components/WhyCostaRica";
@@ -17,7 +17,7 @@ import { buttonAction, stepPoints, type TargetContext } from "@/lib/journeyPage"
 import { JOURNEY_LEGACY_STEP_IDS, RESIDENT_JOURNEY, STEWARD_JOURNEY } from "@shared/pageContent/journeys";
 import type { ResolvedSection } from "@shared/pageContent/types";
 import { useState, useEffect } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -126,6 +126,7 @@ export default function ResidentJourney() {
   const depositRange = money?.depositRange?.trim();
   const depositSummary = money?.depositSummary?.trim();
   // The words only this page fills, each nothing while its setting is blank.
+  const langOf = usePageLang(RESIDENT_JOURNEY);
   const page = useJourneyContent(RESIDENT_JOURNEY, () => ({
     range: depositRange ? `, ${depositRange}` : "",
     "deposit-summary": depositSummary ?? "",
@@ -275,10 +276,10 @@ export default function ResidentJourney() {
             viewport={{ once: true }}
           >
             <Key className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
-            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("tenure.heading")} className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-4 break-words">
               {page.tenure.fields.heading}
             </h2>
-            <p className="text-muted-foreground">
+            <p lang={langOf("tenure.body")} className="text-muted-foreground">
               <Emphasized text={page.tenure.fields.body} />
             </p>
           </m.div>
@@ -296,10 +297,10 @@ export default function ResidentJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("steps.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.steps.fields.heading}
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            <p lang={langOf("steps.intro")} className="text-muted-foreground max-w-2xl mx-auto mb-6">
               <Emphasized text={page.steps.fields.intro} />
             </p>
 
@@ -312,8 +313,8 @@ export default function ResidentJourney() {
                 size="md"
               />
               <p className="text-sm text-muted-foreground">
-                {progress.doneCount} of {progress.total} steps completed
-              </p>
+                <Trans context="ResidentJourney, p">{progress.doneCount} of {progress.total} steps completed
+              </Trans></p>
             </div>
           </m.div>
 
@@ -460,10 +461,10 @@ export default function ResidentJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4 break-words">
+            <h2 lang={langOf("titles.heading")} className="font-display text-3xl md:text-4xl font-semibold mb-4 break-words">
               {page.titles.fields.heading}
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p lang={langOf("titles.body")} className="text-muted-foreground max-w-2xl mx-auto">
               <Emphasized text={page.titles.fields.body} />
             </p>
           </m.div>
@@ -517,7 +518,7 @@ export default function ResidentJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("dues.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.dues.fields.heading}
             </h2>
             {dues?.amount && (
@@ -555,10 +556,10 @@ export default function ResidentJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 break-words">
+            <h2 lang={langOf("rights.heading")} className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 break-words">
               {page.rights.fields.heading}
             </h2>
-            <p className="text-muted-foreground mb-6">
+            <p lang={langOf("rights.body")} className="text-muted-foreground mb-6">
               <Emphasized text={page.rights.fields.body} />
             </p>
             <BandButton section={page.rights} targets={targets} />
@@ -577,10 +578,10 @@ export default function ResidentJourney() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("nextStep.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.nextStep.fields.heading}
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p lang={langOf("nextStep.body")} className="text-muted-foreground mb-8">
               <Emphasized text={page.nextStep.fields.body} />
             </p>
             <BandButton section={page.nextStep} targets={targets} icon />
@@ -602,10 +603,10 @@ export default function ResidentJourney() {
             viewport={{ once: true }}
           >
             <Sprout className="w-12 h-12 text-open mx-auto mb-6" aria-hidden="true" />
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+            <h2 lang={langOf("closing.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.closing.fields.heading}
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p lang={langOf("closing.body")} className="text-muted-foreground mb-8">
               <Emphasized text={page.closing.fields.body} />
             </p>
             <div className="flex flex-wrap justify-center gap-4">
