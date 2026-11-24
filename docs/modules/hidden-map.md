@@ -15,7 +15,8 @@ member reads about the map is fixed in platform code.
 ## Status
 
 Ships OFF, like every non-core module, and can never stand wider than `members` (`widest: "members"` in the
-registry entry; the lifecycle write refuses `public` with a 409).
+registry entry; the lifecycle write refuses `public` with a 409). Held in `scripts/enable-all-modules.mjs` until
+the Module Library Contract clause 13 review; then that line becomes `members`.
 
 Built:
 - **S1, this release:** the rules, every table, pins with photos, vouches, opening, return visits, the two-person
