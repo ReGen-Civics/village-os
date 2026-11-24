@@ -53,6 +53,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **Spanish:** sign-in, register, forgot password and Feedback read in Spanish. One list of the platform's languages, and each village chooses which to offer (Admin, Settings, Language). Spanish stays on.
 - **More pages in the house look:** /propose-quest and the email preference pages. Applicant letters make every link tappable and the one main act a button.
 - **Fixed:** the member-task bridge job crashed whenever it gave up on a message.
+- **Fixed:** on the review page, two translation changes to different fields no longer warn that accepting one would put back the other's words.
 
 ### What you must do
 
