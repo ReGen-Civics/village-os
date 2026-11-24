@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import FramelessImg from "@/components/FramelessImg";
-import { Sparkles } from "lucide-react";
+import { SeedOfLife } from "@/components/sacred/glyphs";
 
 /**
  * `portrait`: character art sits over a forest gradient from the app's tokens, so the frame
@@ -20,7 +20,7 @@ export default function ArtImage({ src, className = "", imgClassName = "", portr
         <FramelessImg src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} className={`sel-art h-full w-full object-cover ${imgClassName}`} />
       ) : (
         <span className="absolute inset-0 grid place-items-center text-primary-foreground/80" aria-hidden="true">
-          <Sparkles className="size-8" />
+          <SeedOfLife className="size-10" />
         </span>
       )}
     </div>
