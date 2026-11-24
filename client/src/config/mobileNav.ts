@@ -26,7 +26,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
-import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Triad, Tripoint } from "@/components/sacred/glyphs";
+import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Tripoint } from "@/components/sacred/glyphs";
+import { Cell } from "@/components/sacred/living";
 
 /**
  * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in
@@ -65,7 +66,8 @@ export const TAB_SLOTS: TabSlot[] = [
  * page is a member's working area (config/nav.ts, `newcomers`), so a visitor's
  * bar offers the roles, the way in, where a member's offers Gratitude.
  */
-export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Triad };
+// A role is a cell: a living unit of the village with its own purpose (the lead, 24 Nov 2026: not a shield).
+export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Cell };
 
 /**
  * Tabs a newcomer's bar gives to the roles even though their page is open to a
@@ -126,7 +128,7 @@ export type FabAction = {
  * reaches for daily, and only while the journal module is on for them.
  */
 export const FAB_ACTIONS: FabAction[] = [
-  { key: "roles", label: "Roles", href: "/roles", Icon: Triad },
+  { key: "roles", label: "Roles", href: "/roles", Icon: Cell },
   { key: "profile", label: "Profile", href: "/profile", Icon: User, requiresAuth: true },
   {
     // The task board on the profile, beside the profile itself because it is
