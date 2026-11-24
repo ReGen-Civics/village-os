@@ -1,5 +1,5 @@
 /**
- * THE SQL FOR THE PORTAL'S ENTRIES (migration 0424; the contract is shared/entrance.ts).
+ * THE SQL FOR THE PORTAL'S ENTRIES (migration 0425; the contract is shared/entrance.ts).
  * Written by the entrance and read only by the admin list and its CSV (server/routes/entrance.ts).
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";

@@ -1,4 +1,4 @@
--- 0424: a visitor enters the portal (the lead, 24 Nov 2026, from a team member's feedback).
+-- 0425: a visitor enters the portal (the lead, 24 Nov 2026, from a team member's feedback).
 --
 -- THE CONTRACT IS shared/entrance.ts; the SQL is server/repos/portalEntries.ts and the
 -- routes sit in server/routes/entrance.ts.
