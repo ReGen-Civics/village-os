@@ -602,7 +602,7 @@ const POINTER_LISTS = (() => {
  * stopped seeing them would otherwise pass by measuring nothing.
  */
 const FIXED: Record<string, number> = {
-  "client/src/components/GuideChat.tsx": 2,
+  // GuideChat.tsx's two left on 2026-11-24 (public launch QA): the guide chat wears the sheet's tokens, its acts the sheet's gold.
   "client/src/components/QuestActions.tsx": 2,
   // ContentEditorTab.tsx's one left this list on 2026-11-11: its section Save button went to
   // the floating save bar (components/SaveBar.tsx), so the tab draws no white-on-brand hover. 56.
@@ -644,7 +644,7 @@ const FIXED: Record<string, number> = {
   // ResidentRights.tsx's and StewardRights.tsx's one each left this list on 2026-11-24 (public launch QA):
   // both rights pages stand in the sheet's world (docs/DESIGN_RULE.md), their doors the sheet's gold and edge. 46 with #1534 and #1538.
   "client/src/pages/Visit.tsx": 2,
-  "client/src/pages/WorkWithUs.tsx": 1,
+  // WorkWithUs.tsx's one left on 2026-11-24 (public launch QA): the page stands in the sheet's world.
 };
 
 describe("under the pointer, a brand button stays readable and visibly moves, light only", () => {
@@ -658,11 +658,11 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 49 since How We Create and Good Neighbor moved to the night world (public launch QA, 24 Nov 2026).
     // 48 since the prosperity path moved to the night world too (public launch QA, 24 Nov 2026).
     // 46 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(42);
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(39);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(42 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(39 + 25);
   });
 
   for (const list of POINTER_LISTS) {
@@ -811,7 +811,7 @@ const BAND_FIXED = [
   "client/src/pages/Governance.tsx",
   "client/src/pages/Housing.tsx",
   "client/src/pages/Visit.tsx",
-  "client/src/pages/WorkWithUs.tsx",
+  // WorkWithUs.tsx left the band on 24 Nov 2026 for the night world (public launch QA).
 ];
 
 describe("white on the band reads for every village, light only", () => {
