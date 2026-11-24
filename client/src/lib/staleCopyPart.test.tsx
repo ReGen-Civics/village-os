@@ -96,6 +96,7 @@ describe("a copy part the server no longer has", () => {
     window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
     mount(await missingPartError());
     expect(reload).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toBe("We just updated the site");
+    // The refresh screen (#1531) heads the stale-build card "The site just grew".
+    expect(screen.getByRole("alert").textContent).toContain("The site just grew");
   });
 });
