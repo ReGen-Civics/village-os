@@ -240,6 +240,24 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(sent?.body.sections.applyBy).toBe("2026-11-30");
   });
 
+  it("an agent proposes a lead card's related roles: real role ids file and are sent on accept in order; an unknown id, the card's own role or a repeat is refused by name (the lead, 24 Nov 2026)", async () => {
+    await q("DELETE FROM org_roles WHERE id IN ('rc-lead', 'rc-rel-a', 'rc-rel-b')");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-lead', 'Lead Water Steward', 'Lead the water.', 1, 1), ('rc-rel-a', 'Pond Keeper', 'Keep the pond.', 1, 1), ('rc-rel-b', 'Spring Keeper', 'Keep the spring.', 1, 1)");
+    const item = (relatedRoles: string[]) => ({ kind: "role_card", target: { roleId: "rc-lead" }, body: { sections: { relatedRoles } }, summary: "Name the related roles." });
+    for (const list of [["rc-rel-a", "rc-nowhere"], ["rc-lead"], ["rc-rel-a", "rc-rel-a"]]) {
+      const bad = await call("POST", "/api/admin/proposals", { batch: "Related", items: [item(list)] }, AGENT.id);
+      expect(bad.status, list.join(",")).toBe(400);
+      expect(bad.body.refused[0].field).toBe("sections.relatedRoles");
+    }
+    const good = await call("POST", "/api/admin/proposals", { batch: "Related", items: [item(["rc-rel-b", "rc-rel-a"])] }, AGENT.id);
+    expect(good.status).toBe(200);
+    const id = good.body.ids[0];
+    hits.length = 0;
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results).toEqual([{ id, ok: true }]);
+    const sent = hits.find((h) => h.method === "POST" && h.path === "/api/org/role-edit/rc-lead");
+    expect(sent?.body.sections.relatedRoles).toEqual(["rc-rel-b", "rc-rel-a"]);
+  });
+
   it("FILING MIRRORS ACCEPT: words naming a split the card does not pay are refused when filed; its own split files (control)", async () => {
     await q("DELETE FROM org_roles WHERE id = 'rc-split'");
     await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-split', 'Mill Keeper', 'Keep the mill.', 1, 1)");

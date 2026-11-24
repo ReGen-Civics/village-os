@@ -64,7 +64,7 @@ import { villageId } from "./economy";
 import { readHeldBy } from "../../shared/agentHolders";
 import { storedCommitmentPct } from "../../shared/commitment";
 import { storedCommitmentMin, storedCommitmentTarget } from "../../shared/commitmentRange";
-import { readSections, SECTION_WORDS, type RoleCardSections } from "../../shared/roleCardSections";
+import { readSections, SECTION_WORDS, withoutGoneRelated, type RoleCardSections } from "../../shared/roleCardSections";
 import { saveSections, sectionsFor } from "./roleCardSections";
 import { splitDriftRefusal } from "./roleSplitDrift";
 
@@ -342,8 +342,15 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
     const held = (await sectionsFor(pool, roleId)).sections;
     // A part of the sections changes that part alone (Rye, 15 Nov 2026): the agent connector sends only the
     // word sections it may write, and the pay sections it may not touch stay as they are. The editor sends all.
-    const patch = body.sections && typeof body.sections === "object" && !Array.isArray(body.sections) ? { ...held, ...(body.sections as Record<string, unknown>) } : body.sections;
-    const read = readSections(patch);
+    // A related role removed since the list was written falls out of the held list first (withoutGoneRelated).
+    // The editor sends the list back as it read it, so the same removed role is taken out of what it sends too; a role
+    // newly named that is not a role is still refused.
+    const isRole = (id: string) => roleIds.has(id);
+    const gone = new Set((held.relatedRoles ?? []).filter((id) => !isRole(id)));
+    const sent = body.sections && typeof body.sections === "object" && !Array.isArray(body.sections) ? { ...(body.sections as Record<string, unknown>) } : null;
+    if (sent && Array.isArray(sent.relatedRoles) && gone.size) sent.relatedRoles = sent.relatedRoles.filter((id) => !gone.has(String(id)));
+    const patch = sent ? { ...withoutGoneRelated(held, isRole), ...sent } : body.sections;
+    const read = readSections(patch, { roleId, isRole });
     if (!read.ok) return bad(read.problem, 400, [read.field]);
     if (JSON.stringify(held) !== JSON.stringify(read.value)) sections = read.value;
   }

@@ -7834,6 +7834,12 @@ msgctxt "sera answers"
 msgid "Keep the vote"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: how the related roles work"
+msgid "The roles this role brings in, in the order the card shows them, up to {relatedMost}. Open, upcoming and held roles from any circle can be named. Empty: the card shows the upcoming roles of the circles this role leads."
+msgstr "Los roles que este rol incorpora, en el orden en que la tarjeta los muestra, hasta {relatedMost}. Puedes nombrar roles abiertos, próximos u ocupados de cualquier círculo. Vacío: la tarjeta muestra los próximos roles de los círculos que este rol lidera."
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: flag"
 msgid "Affects money words"
@@ -9224,6 +9230,12 @@ msgstr "Usaré la lectura que ya hiciste: <0>{0}</0>, {1}."
 msgctxt "sera answers"
 msgid "Changed since it was taken"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles, the list is full"
+msgid "The list holds {most}, the most it takes"
+msgstr "La lista tiene {most}, el máximo que admite"
 
 #: client/src/components/VillagePulse.tsx
 msgctxt "landing commons door"
@@ -11249,6 +11261,12 @@ msgstr "La guía está leyendo"
 #: client/src/components/admin/MenuPanel.tsx
 msgid "Show {0} in the menu"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Move {role} up"
+msgstr "Subir {role}"
 
 #: client/src/components/governance/GoalsList.tsx
 msgid "Three to five is the usual."
@@ -22292,6 +22310,12 @@ msgctxt "calendar spiral: label beside the first day"
 msgid "New moon, {date}"
 msgstr "Luna nueva, {date}"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Remove {role}"
+msgstr "Quitar {role}"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Warning: with this on, the agent of whoever holds this role can make most admin changes and accept proposals, each one approved in the chat and recorded. Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act."
@@ -24096,6 +24120,12 @@ msgctxt "rites"
 msgid "Saved"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: the related roles a lead role names"
+msgid "Related roles this role will onboard"
+msgstr "Roles relacionados que este rol incorporará"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
 msgid "Languages"
@@ -25158,6 +25188,12 @@ msgstr "El fogón de {circleName}. Todavía no hay roles aquí."
 msgctxt "partner form: a field to fix"
 msgid "Say what you would like from the village."
 msgstr "Cuenta qué te gustaría de la aldea."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: choose a role to add to the related roles"
+msgid "Add a related role"
+msgstr "Añadir un rol relacionado"
 
 #: client/src/components/TypographyPanel.tsx
 msgctxt "admin typography: a typed font stack field"
@@ -26256,6 +26292,12 @@ msgstr ""
 msgctxt "partner form: a field to fix"
 msgid "Add an email address we can write to."
 msgstr "Escribe un correo al que podamos escribirte."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Move {role} down"
+msgstr "Bajar {role}"
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"

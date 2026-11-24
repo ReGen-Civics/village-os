@@ -40,6 +40,20 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.59 (2026-11-24)
+
+### What changed for your village
+
+- **A lead role names its own related roles.** On /roles, a lead role's card shows "Related roles this role will onboard". Until now that list came only from the upcoming roles of the circles the role leads. The role editor now has a field to choose the related roles yourself, up to 12, in the order the card shows them: open, upcoming or held roles, from any circle. An open role in the list opens its own card, an upcoming role opens its waitlist, as before. A role the page does not show (unlisted, an example, a venture) is left off the card. Leave the field empty and the card keeps the list it shows today. An agent can propose the list too, as `relatedRoles` in a role card change's sections.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. The list is stored with the card's other sections, as role ids.
+
 ## 1.3.56 (2026-11-23)
 
 ### What changed for your village

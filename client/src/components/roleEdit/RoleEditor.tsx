@@ -533,7 +533,7 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
           </Frame>
         </section>
 
-        {base.sections && <SectionsFields value={form.sections} start={start.sections} onChange={(v) => set("sections", v)} />}
+        {base.sections && <SectionsFields value={form.sections} start={start.sections} onChange={(v) => set("sections", v)} roles={open.roles} />}
 
         {/* The roots it grows from: one to three, saved with the rest by the person's save. */}
         <section className={`${PANEL} ${!same([...form.tags].sort(), [...start.tags].sort()) ? "border-dash-gold" : ""}`.trim()} data-changed={same([...form.tags].sort(), [...start.tags].sort()) ? "false" : "true"}>
