@@ -8,11 +8,6 @@ msgstr ""
 "Language: es\n"
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Feedback.tsx
-msgctxt "feedback page eyebrow"
-msgid "Feedback"
-msgstr "Comentarios"
-
 #: client/src/pages/Powers.tsx
 msgctxt "powers page eyebrow"
 msgid "How the village is held"
@@ -20284,6 +20279,12 @@ msgstr ""
 #: client/src/components/VentureAccountsCard.tsx
 msgid "What members have paid each venture. Its credits never expire."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page eyebrow"
+msgid "Feedback"
+msgstr "Comentarios"
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
