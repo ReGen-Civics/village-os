@@ -571,7 +571,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
-import { livingHandle, loadGratitude, loadProfile, loadStanding, publicView, userIdForHandle } from "./lib/profile";
+import { livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
 import { seedEconomy, suggestClassTags } from "./lib/economySeed";
@@ -13165,9 +13165,11 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
    * of them, and the client cannot derive a score from it without inventing
    * the denominator itself.
    */
-  app.get("/api/village/powers", async (_req, res) => {
+  app.get("/api/village/powers", async (req, res) => {
     // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
-    // which is all a row carries. Under `org.public_people` off, peopleLockMiddleware takes the first names out.
+    // which is all a row carries. A member who keeps their roles off their profile (showRoles false) is left out
+    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out.
+    const hiddenFromVisitors = (await authedUser(req)) ? new Set<string>() : await membersHidingRoles(getPool());
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
@@ -13177,7 +13179,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
     );
     // Who holds each power today through a role, too (server/lib/villagePowers.ts), so a power a role
     // carries is never described as the admin panel's. Fixed order, no count: the R55 rules hold there.
-    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m)).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
+    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
     const orgNames = new Map((await listOrgRoles(getPool())).map((r) => [r.id, r.name]));
     const ladder = servedLadder(mergedConfig().project.commitmentName) as Array<{ id: string; name?: string }>;
     const unlock = stageUnlockOverridesFromVars();
