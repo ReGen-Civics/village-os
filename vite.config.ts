@@ -661,6 +661,8 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
 const LAZY_PIECE_BYTES = 32000;
 /** And a "lazy-" group stops growing at this many bytes of source, smallest pieces first, so opening one piece never fetches a page's worth. */
 const LAZY_GROUP_BYTES = 80000;
+/** lib/motionFeatures.ts, the animation engine App.tsx loads after the first page; never a "lazy-" group member. */
+const MOTION_FEATURES = /client[\\/]src[\\/]lib[\\/]motionFeatures\.ts$/;
 
 /*
  * LAZY PIECES SHARE A FILE, AND A MODULE ONLY A GROUP IMPORTS RIDES IN IT
@@ -801,6 +803,9 @@ function lazyGroupPlan(g: {
     const m = info(id);
     if (!m) continue;
     if (m.importers.length > 0 || m.dynamicImporters.length === 0 || ROUTE_PAGE.test(id)) continue;
+    // The animation engine keeps a file of its own (client/src/lib/lazyMotion.test.ts reads it by name):
+    // the shell's other lazy pieces (the tab titles) would otherwise make "lazy-App" a group of two.
+    if (MOTION_FEATURES.test(id)) continue;
     if (!m.code || weightOf(id) >= LAZY_PIECE_BYTES) continue;
     const owners = new Set(m.dynamicImporters.map((by) => base.get(by)));
     const owner = owners.size === 1 ? Array.from(owners)[0] : undefined;
