@@ -32,6 +32,15 @@
  * withdrawing agenda items, two more shipped reads, the `seat_power` write, and
  * a full-access switch tied to one ROLE, with a floor that stays a person's.
  * The whole record is the comment above LEAD_APPROVED_WRITES_VARIABLE below.
+ *
+ * 24 NOVEMBER 2026 (the lead: "just for my role, let's also build into it that
+ * my bot is able to do this in admin and change settings and send emails and
+ * have a super agent permissions so that all I have to do is give you the yes
+ * in this dialog box and you're able to do it"): for the full-access role
+ * only, the floor narrows to open the village's modules, variables and
+ * settings and sending email, each send naming its recipients before the yes.
+ * The record is the comment above LEAD_APPROVED_WRITES_VARIABLE, after the 20
+ * November one.
  */
 
 import { BREAK_GLASS_SEAT, isBadgeGrantable } from "./capabilities";
@@ -432,6 +441,40 @@ export function effectiveAgentAdminPaths(stored: unknown): AgentAdminPathsDoc {
  *      email parts of the powers, settings and tier C rules (`FULL_ACCESS_FLOOR`). The rules are reused, so a new
  *      route matching one is covered. With the switch off, nothing above it changes (a regression test walks the
  *      whole list).
+ */
+/**
+ * THE LEAD'S RULING OF 24 NOVEMBER 2026, binding, in the lead's words:
+ *
+ *   "just for my role, let's also build into it that my bot is able to do this
+ *   in admin and change settings and send emails and have a super agent
+ *   permissions so that all I have to do is give you the yes in this dialog box
+ *   and you're able to do it."
+ *
+ * FOR THE FULL-ACCESS ROLE ONLY (shared/agentFullAccess.ts): the agent of the live holder of the one role a person
+ * named in Admin, Players, Agents. No other agent gains anything, and with the switch off nothing changes. With it
+ * on, that agent may now, through `admin_request`, each in two calls:
+ *
+ *   1. CHANGE THE VILLAGE'S SETTINGS: game variables (`PUT /api/admin/variables/:key`) including Email and
+ *      reminders, module lifecycles and module settings, the village settings, brand and launch, and the Comms
+ *      settings, sender, paths, words and journeys.
+ *
+ *   2. SEND EMAIL: the Comms test, a letter's test and send, a journey step's test, turning a journey on or off,
+ *      trying a failed email again, and a letter to a role's waitlist (`FULL_ACCESS_EMAIL_SENDS`). The server reads
+ *      each send's recipients fresh at both calls (server/lib/agentFullAccess.ts) and the preview states them, with
+ *      the count for a letter or a waitlist letter. They ride in the echo the confirmToken covers, so an audience
+ *      that changed between the two calls is refused and asked again. A send whose recipients the platform cannot
+ *      name before it goes stays a person's (`isUnnamedSend`).
+ *
+ * Every opened write keeps the two-call confirm (the confirmToken is the person's yes), carries approvedBy and
+ * approvalNote, and is recorded through recordEvent BEFORE it is made, marked as an agent's act on its holder's yes,
+ * with the recipients of a send. `FULL_ACCESS_KEPT` is the short list the agent reads of what it still cannot do.
+ *
+ * THE FLOOR KEEPS, unchanged, even for that role: secrets and integration keys (the email provider's key, webhook and
+ * domain among them); money and value and anything that pays; erasure and anonymising; letting members in or out and
+ * a member's sign-in or admin flag; the agent accounts, their tokens and the full-access switch itself, so no agent
+ * widens its own power; the veto and the break-glass; applicant data under the Anchor's approval of AI agents, and
+ * first replies and decision letters to applicants; voice recordings; a person's own yes or no to letters. No AI ever
+ * selects, ranks or judges applicants. The switch itself stays a person's act.
  */
 export const LEAD_APPROVED_WRITES_VARIABLE = "agents.lead_approved_writes";
 

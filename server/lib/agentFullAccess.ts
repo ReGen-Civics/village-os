@@ -6,6 +6,8 @@
  *   recordFullAccessWrite        the audit of one full-access write, with who approved it and their note, stored
  *                                BEFORE the write is dispatched; it throws when it cannot be stored, so nothing is
  *                                written without it.
+ *   fullAccessRecipients         who an email send reaches, read fresh at both calls of the two-call confirm, so
+ *                                the preview names them and the confirmToken covers them (the lead, 24 Nov 2026)
  *   noticeFullAccessChange       the switch turned on or off: one admin-audience event naming who did it, and a
  *                                notice to every live role holder of the Anchor Circle, so consent stays visible.
  */
@@ -15,7 +17,13 @@ import { readConfigDocument } from "../repos/appConfigDocs";
 import { holdsLiveSeat, isAgentAccount, orgRoleForFullAccess } from "../repos/agentAccounts";
 import { holdersInCircles } from "../repos/roleProposals";
 import { anchorCircleId } from "../../shared/circlePicker";
-import { FULL_ACCESS_DOC, parseFullAccessDoc, type FullAccessDoc } from "../../shared/agentFullAccess";
+import { FULL_ACCESS_DOC, parseFullAccessDoc, type FullAccessDoc, type FullAccessRecipients, type FullAccessSendKind } from "../../shared/agentFullAccess";
+import { lettersRecipients } from "../../shared/roleWaitlistLetters";
+import { contactsByIds, letterById, recipientsOf } from "../repos/commsLetters";
+import { messageDetail } from "../repos/commsMessages";
+import { activeEnrollmentCounts } from "../repos/commsOverview";
+import { waitlistForRole } from "../repos/roleWaitlist";
+import { listOrgRoles } from "./orgChart";
 
 export async function readFullAccess(pool: Pool): Promise<FullAccessDoc> {
   return parseFullAccessDoc(await readConfigDocument(pool, FULL_ACCESS_DOC));
@@ -43,18 +51,85 @@ export interface FullAccessWriteRecord {
   summary: string;
   approvedBy: string;
   approvalNote: string;
+  /** For an email send, who it goes to as the preview named them. */
+  recipients?: FullAccessRecipients | null;
 }
 
+/** The mark every full-access record carries: an agent made it, on its holder's yes. */
+export const FULL_ACCESS_MARK = "made by an agent on its holder's yes";
+
 export async function recordFullAccessWrite(pool: Pool, a: FullAccessWriteRecord): Promise<void> {
+  const to = a.recipients ? ` Sent to ${a.recipients.to.slice(0, 200)} (${a.recipients.count}).` : "";
   await recordEvent(pool, {
     kind: "audit",
-    text: `full access through the connector (${a.tokenPrefix}...): ${a.method} ${a.path.slice(0, 200)}. ${a.summary.slice(0, 300)} Approved by ${a.approvedBy.slice(0, 120)}: "${a.approvalNote.slice(0, 600)}"`,
+    text: `full access through the connector (${a.tokenPrefix}...), ${FULL_ACCESS_MARK}: ${a.method} ${a.path.slice(0, 200)}. ${a.summary.slice(0, 300)}${to} Approved by ${a.approvedBy.slice(0, 120)}: "${a.approvalNote.slice(0, 600)}"`,
     actorUserId: a.agentUserId,
     actorKind: "agent",
     entityType: "agent_full_access",
     entityRef: `${a.method} ${a.path}`.slice(0, 64),
     audience: "admin",
   }, { throwOnFailure: true });
+}
+
+/** An address shown only as its first letter and its domain: a recipient the platform has no name for. */
+export function maskAddress(email: string): string {
+  const at = email.lastIndexOf("@");
+  if (at < 1) return "an address without a name";
+  return `${email[0]}...${email.slice(at)}`;
+}
+
+const nameOf = (c: { name: string | null; email: string }) => c.name?.trim() || maskAddress(c.email);
+
+/**
+ * WHO AN EMAIL SEND REACHES (the lead, 24 Nov 2026), read the way the send route itself will read it, or null when
+ * the platform cannot say. Names, never addresses, but for the holder's own address on a test to themselves.
+ */
+export async function fullAccessRecipients(
+  pool: Pool,
+  holder: { name: string | null; email: string | null },
+  send: { kind: FullAccessSendKind; params: Record<string, string> },
+  body: Record<string, unknown> | undefined,
+): Promise<FullAccessRecipients | null> {
+  switch (send.kind) {
+    case "holder": {
+      const email = String(holder.email ?? "").trim();
+      if (!email) return null;
+      return { to: `you, at ${email}`, count: 1, names: [holder.name?.trim() || email] };
+    }
+    case "letter": {
+      const letter = await letterById(pool, send.params.id ?? "");
+      if (!letter || letter.recipientCount < 1) return null;
+      const pending = await recipientsOf(pool, letter.id, "pending");
+      const named = await contactsByIds(pool, pending.slice(0, 20).map((r) => r.contactId).filter((x): x is string => !!x));
+      return { to: `the ${letter.recipientCount} people in this letter's audience, as its last preview fixed it`, count: letter.recipientCount, names: named.map(nameOf) };
+    }
+    case "journey": {
+      const key = send.params.key ?? "";
+      const now = (await activeEnrollmentCounts(pool))[key] ?? 0;
+      const on = body?.state === "on";
+      return {
+        to: on ? `everyone who enters the ${key} journey from now on, and the ${now} people on it now` : `nobody new: the ${now} people on the ${key} journey stop getting its emails`,
+        count: now,
+        names: [],
+      };
+    }
+    case "message": {
+      const m = await messageDetail(pool, send.params.id ?? "");
+      if (!m) return null;
+      const contact = m.contactId ? (await contactsByIds(pool, [m.contactId]))[0] : undefined;
+      const who = contact ? nameOf(contact) : maskAddress(m.toEmail);
+      return { to: `${who}, the one person this email was for`, count: 1, names: [who] };
+    }
+    case "waitlist": {
+      const roleId = typeof body?.roleId === "string" ? body.roleId : "";
+      if (!roleId) return null;
+      const role = (await listOrgRoles(pool)).find((r) => r.id === roleId);
+      if (!role) return null;
+      const rows = lettersRecipients((await waitlistForRole(pool, roleId)).map((r) => ({ ...r, email: r.emailKey })));
+      return { to: `everyone waiting for ${role.name} who said yes to letters`, count: rows.length, names: [] };
+    }
+  }
+  return null;
 }
 
 export interface NoticeDeps {
@@ -76,7 +151,7 @@ export async function noticeFullAccessChange(
     ? `Full access is on for the agent of whoever holds ${roleName}`
     : `Full access is off for the agent of ${roleName}`;
   const body = on
-    ? "That role's agent may now make most admin changes through the connector, each one approved in the chat and recorded. Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act."
+    ? "That role's agent may now make most admin changes through the connector, settings and email among them, each one approved in the chat with its recipients named, and recorded. Money, secrets, erasure, the veto and the agent accounts stay a person's act."
     : "That role's agent is back to the paths a person lists for agents, and the changes the village approved one by one.";
   await recordEvent(pool, {
     kind: "audit",

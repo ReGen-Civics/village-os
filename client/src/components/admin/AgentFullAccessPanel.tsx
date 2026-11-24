@@ -80,7 +80,7 @@ export default function AgentFullAccessPanel({ password }: { password: string })
     <div className="space-y-3 rounded-xl border border-border bg-white p-4" aria-label={t`Full access for one role's agent`}>
       <p className="text-sm font-semibold text-foreground"><Trans>Full access for one role's agent</Trans></p>
       <p role="note" className="rounded-md bg-amber-light px-3 py-2 text-sm text-notice">
-        <Trans>Warning: with this on, the agent of whoever holds this role can make most admin changes and accept proposals, each one approved in the chat and recorded. Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act.</Trans>
+        <Trans>Warning: with this on, the agent of whoever holds this role can make most admin changes, change settings, send email and accept proposals, each one approved in the chat and recorded, and every email names who it goes to before the yes. Money, secrets, erasure, the veto and the agent accounts stay a person's act.</Trans>
       </p>
       <div className="flex flex-wrap items-end gap-2">
         <label className="w-full text-sm text-foreground sm:w-auto">
