@@ -12,11 +12,13 @@ import { LINK_HOW_WORDS, LINK_WORDS, seraOwnerIdProblem, type LinksResponse, typ
 import { MATCH_WORDS, type BackfillCounts } from "@shared/seraPersonMatch";
 import { API_BASE, authHeaders } from "./adminApi";
 import { villageTime } from "@shared/seraBridgeBoard";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 // The same clock as the Sera board: village time, zone named when it is not the viewer's.
 const when = (iso: string | null): string => villageTime(iso, LINK_WORDS.never);
 
 function Row({ m, password, onDone }: { m: MemberLinkRow; password: string; onDone: (members: MemberLinkRow[], message: string) => void }) {
+  const { t } = useLingui();
   const [id, setId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +58,13 @@ function Row({ m, password, onDone }: { m: MemberLinkRow; password: string; onDo
       </div>
       {m.review && <p className="text-xs text-amber-800">{MATCH_WORDS[m.review.outcome]}</p>}
       <div className="flex flex-wrap gap-2">
-        <label className="sr-only" htmlFor={`sera-owner-${m.userId}`}>Sera owner id for {m.name}</label>
+        <label className="sr-only" htmlFor={`sera-owner-${m.userId}`}><Trans context="SeraLinkPanel, label">Sera owner id for {m.name}</Trans></label>
         <input
           id={`sera-owner-${m.userId}`}
           type="text"
           value={id}
           onChange={(e) => setId(e.target.value)}
-          placeholder="Sera owner id"
+          placeholder={t({ message: "Sera owner id", context: "SeraLinkPanel, placeholder" })}
           autoComplete="off"
           spellCheck={false}
           className="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
@@ -82,6 +84,7 @@ function Row({ m, password, onDone }: { m: MemberLinkRow; password: string; onDo
 }
 
 export default function SeraLinkPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [members, setMembers] = useState<MemberLinkRow[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState("");
@@ -130,22 +133,22 @@ export default function SeraLinkPanel({ password }: { password: string }) {
     setBusy(false);
   };
 
-  if (failed) return <p aria-live="polite" className="text-xs text-amber-800">The links to Sera could not be read just now. Reload the page to try again.</p>;
-  if (!members) return <p className="text-xs text-gray-500">Reading the Sera links…</p>;
+  if (failed) return <p aria-live="polite" className="text-xs text-amber-800"><Trans context="SeraLinkPanel, p">The links to Sera could not be read just now. Reload the page to try again.</Trans></p>;
+  if (!members) return <p className="text-xs text-gray-500"><Trans context="SeraLinkPanel, p">Reading the Sera links…</Trans></p>;
 
   return (
     <section aria-labelledby="sera-link-title" className="space-y-3">
       <div className="space-y-1">
         <h3 id="sera-link-title" className="text-sm font-semibold text-gray-900">{LINK_WORDS.title}</h3>
         <p className="text-xs text-gray-500">{LINK_WORDS.intro}</p>
-        <p className="text-xs text-gray-500">{linked} of {members.length} members linked{waiting ? `, ${waiting} waiting for a steward` : ""}.</p>
+        <p className="text-xs text-gray-500"><Trans context="SeraLinkPanel, p">{linked} of {members.length} members linked{waiting ? `, ${waiting} waiting for a steward` : ""}.</Trans></p>
       </div>
       <div className="space-y-1">
-        <p className="text-xs text-gray-500">Match members already here by a keyed hash of their verified email. Only the hash goes to Sera. Count first; nothing is sent until you press Match now.</p>
+        <p className="text-xs text-gray-500"><Trans context="SeraLinkPanel, p">Match members already here by a keyed hash of their verified email. Only the hash goes to Sera. Count first; nothing is sent until you press Match now.</Trans></p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={() => runMatch(true)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs">Count who would be matched</button>
+          <button type="button" disabled={busy} onClick={() => runMatch(true)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs"><Trans context="SeraLinkPanel, button">Count who would be matched</Trans></button>
           {counts?.dryRun && !counts.note && counts.candidates > 0 && (
-            <button type="button" disabled={busy} onClick={() => runMatch(false)} className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white">Match now ({counts.candidates})</button>
+            <button type="button" disabled={busy} onClick={() => runMatch(false)} className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white"><Trans context="SeraLinkPanel, button">Match now ({counts.candidates})</Trans></button>
           )}
         </div>
         {matchError && <p role="alert" className="text-xs text-amber-800">{matchError}</p>}
@@ -159,13 +162,13 @@ export default function SeraLinkPanel({ password }: { password: string }) {
           </p>
         )}
       </div>
-      <label className="sr-only" htmlFor="sera-link-filter">Find a member</label>
+      <label className="sr-only" htmlFor="sera-link-filter"><Trans context="SeraLinkPanel, label">Find a member</Trans></label>
       <input
         id="sera-link-filter"
         type="search"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder="Find a member"
+        placeholder={t({ message: "Find a member", context: "SeraLinkPanel, placeholder" })}
         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
       />
       <p aria-live="polite" className="text-xs text-emerald-800 min-h-4">{message}</p>

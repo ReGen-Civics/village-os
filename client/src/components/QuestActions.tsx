@@ -8,7 +8,7 @@ import { claimMoment } from "@/lib/celebrated";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { playMoment } from "@/lib/sound";
 import { linesWords, type WorkPay } from "@/lib/workPay";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 
 // questIdFromTitle is gone (S10): quest ids are REAL server references now.
 // Deriving ids from titles meant a rename silently orphaned every claim.
@@ -92,18 +92,18 @@ function ConsentedReward({ claim, decimals, pay }: { claim: QuestClaim; decimals
         </span>
       )}
       <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">
-        <CheckCircle2 className="w-4 h-4" /> Complete{credited ? ` · +${show(shown)}` : ""}
+        <Trans context="QuestActions, span"><CheckCircle2 className="w-4 h-4" /> Complete{credited ? ` · +${show(shown)}` : ""}</Trans>
       </span>
       {/* The bonus is information, so it stays after the drawing has gone. A
           badge holder was previously told the pre-multiplier grant and never
           saw the rest of what landed. */}
       {!credited && pay && pay.lines.length > 0 && (
-        <p className="text-xs text-emerald-800 mt-1">This quest rewards you with {linesWords(pay.lines)}.</p>
+        <p className="text-xs text-emerald-800 mt-1"><Trans context="QuestActions, p">This quest rewards you with {linesWords(pay.lines)}.</Trans></p>
       )}
       {bonus > 0 && (
         <p className="text-xs text-emerald-800 mt-1">
-          {show(granted)} granted, and {show(bonus)} more for a standing badge you hold.
-        </p>
+          <Trans context="QuestActions, p">{show(granted)} granted, and {show(bonus)} more for a standing badge you hold.
+        </Trans></p>
       )}
     </div>
   );
@@ -173,8 +173,8 @@ export default function QuestActions({
           href="/register"
           className="flex items-center min-h-[44px] text-sm font-semibold text-teal-deep hover:text-teal transition-colors"
         >
-          Sign in to take this Quest
-        </Link>
+          <Trans context="QuestActions, Link">Sign in to take this Quest
+        </Trans></Link>
       </div>
     );
   }
@@ -242,23 +242,23 @@ export default function QuestActions({
               type="url"
               value={artifactUrl}
               onChange={(e) => setArtifactUrl(e.target.value)}
-              placeholder="Link to your work (photo, doc...)"
+              placeholder={t({ message: "Link to your work (photo, doc...)", context: "QuestActions, placeholder" })}
               className="w-full px-3 py-1.5 text-sm border border-border rounded-lg outline-none focus:border-teal-deep"
             />
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="A few words about what you did"
+              placeholder={t({ message: "A few words about what you did", context: "QuestActions, placeholder" })}
               rows={2}
               className="w-full px-3 py-1.5 text-sm border border-border rounded-lg outline-none focus:border-teal-deep resize-y"
             />
             <div className="flex gap-2">
               <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 text-sm font-semibold bg-teal-deep text-white px-3 py-1.5 rounded-lg hover:bg-teal-deep-dark disabled:opacity-50 transition-colors pointer-coarse:min-h-11">
-                <Send className="w-3.5 h-3.5" /> Turn it in
-              </button>
+                <Trans context="QuestActions, button"><Send className="w-3.5 h-3.5" /> Turn it in
+              </Trans></button>
               <button type="button" onClick={() => setShowSubmit(false)} className="text-sm text-muted-foreground px-2 pointer-coarse:min-h-11 pointer-coarse:px-3">
-                Cancel
-              </button>
+                <Trans context="QuestActions, button">Cancel
+              </Trans></button>
             </div>
           </form>
         ) : (
@@ -266,13 +266,13 @@ export default function QuestActions({
             onClick={() => setShowSubmit(true)}
             className="inline-flex items-center gap-2 text-sm font-semibold bg-amber text-foreground px-4 py-2 rounded-lg hover:bg-amber/90 transition-colors pointer-coarse:min-h-11"
           >
-            <Send className="w-4 h-4" /> Turn in your work
-          </button>
+            <Trans context="QuestActions, button"><Send className="w-4 h-4" /> Turn in your work
+          </Trans></button>
         )
       ) : claim.status === "submitted" ? (
         <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-700">
-          <Send className="w-4 h-4" /> Turned in! Waiting on the circle's yes.
-        </span>
+          <Trans context="QuestActions, span"><Send className="w-4 h-4" /> Turned in! Waiting on the circle's yes.
+        </Trans></span>
       ) : (
         <ConsentedReward claim={claim} decimals={decimals} pay={pay} />
       )}

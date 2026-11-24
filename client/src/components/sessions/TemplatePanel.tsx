@@ -78,6 +78,7 @@ import { MoonGoalsBody, MoonInvoicesBody, MoonRecapBody, MoonShareChoice, useMoo
 import { ServesChip, ServesPicker } from "./ServesPicker";
 import { BTN_FORWARD, BTN_QUIET, BTN_SECONDARY, CHIP, EYEBROW, HINT, INPUT, LABEL_CAPS, PANEL, SOFT } from "./roomUi";
 import { BoardVoteSection, TopsReviewSection, TopsSection } from "@/components/priorities/RoomPriorities";
+import { Trans } from "@lingui/react/macro";
 
 const day = (iso: string) => {
   const d = new Date(iso);
@@ -283,8 +284,8 @@ export default function TemplatePanel({ sessionId, agenda }: { sessionId: number
         <ol className="mt-3 flex flex-wrap gap-1.5" aria-label={TEMPLATE_COPY.flowHeading}>
           {flow.map((s, i) => (
             <li key={s.key} className={CHIP} title={s.prompt || SECTION_KIND_DEFS[s.kind].hint}>
-              {i + 1}. {s.title} · {sectionMinutesFor(s, view.here.length)} min
-            </li>
+              <Trans context="TemplatePanel, li">{i + 1}. {s.title} · {sectionMinutesFor(s, view.here.length)} min
+            </Trans></li>
           ))}
         </ol>
       </div>

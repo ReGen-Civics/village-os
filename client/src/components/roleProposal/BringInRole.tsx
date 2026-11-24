@@ -38,6 +38,7 @@ import { copyText, promptFor } from "./OwnAiPrompt";
 import { RP_WORDS } from "./proposalWords";
 import { RC_WORDS } from "./roleCardWords";
 import { FOCUS, INPUT, LEDE, PANEL, PRIMARY, QUIET, SECONDARY } from "./parts";
+import { useLingui } from "@lingui/react/macro";
 
 type Mode = "file" | "paste" | "link";
 
@@ -88,6 +89,7 @@ export default function BringInRole({
   /** The draft the PUT answered, once the member has filled it. */
   onFilled: (p: ProposalOut) => void;
 }) {
+  const { t } = useLingui();
   const village = useVillageName("This village");
   const [mode, setMode] = useState<Mode>("file");
   // Open at first when the draft holds no role yet, then the member's own: filling the draft never snaps it shut.
@@ -238,7 +240,7 @@ export default function BringInRole({
           <div className="grid gap-2">
             <label className="grid gap-1 text-sm font-medium text-foreground">
               {RC_WORDS.linkLabel}
-              <input type="url" inputMode="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="Paste the Google Doc link" className={INPUT} data-role-link="" />
+              <input type="url" inputMode="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder={t({ message: "Paste the Google Doc link", context: "BringInRole, placeholder" })} className={INPUT} data-role-link="" />
             </label>
             <p className="text-xs text-muted-foreground">{RC_WORDS.linkHint}</p>
             <div>

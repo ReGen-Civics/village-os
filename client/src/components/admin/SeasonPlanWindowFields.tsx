@@ -1,4 +1,5 @@
-/**
+
+import { Trans } from "@lingui/react/macro";/**
  * A season's plan window, set by hand (season plans RC1), inside the admin
  * Season tab. Its own file because Admin.tsx sits on the monolith ratchet.
  *
@@ -18,10 +19,10 @@ export default function SeasonPlanWindowFields({ value, onChange }: { value: Pla
   };
   return (
     <fieldset className="rounded-lg border border-stone-200 p-3">
-      <legend className="px-1 text-xs font-semibold text-stone-600">Season plans window</legend>
+      <legend className="px-1 text-xs font-semibold text-stone-600"><Trans context="SeasonPlanWindowFields, legend">Season plans window</Trans></legend>
       <p className="mb-2 text-[11px] text-stone-600">
-        When members plan this season. Leave both empty to open one moon before it starts and close a moon after.
-      </p>
+        <Trans context="SeasonPlanWindowFields, p">When members plan this season. Leave both empty to open one moon before it starts and close a moon after.
+      </Trans></p>
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-stone-700">
           Opens

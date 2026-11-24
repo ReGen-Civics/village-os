@@ -22,6 +22,7 @@ import { MessagesSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { authToken, gameFetch } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export type WorkKind = "quest" | "task";
 
@@ -43,6 +44,7 @@ const LOOK =
   "inline-flex items-center justify-center gap-2 min-h-11 px-4 rounded-lg border border-teal-deep/40 bg-white text-teal-deep text-sm font-semibold hover:bg-teal-deep/5 transition-colors disabled:opacity-60";
 
 export default function WorkChatButton({ kind, id, probe = false, likely = false, className }: WorkChatButtonProps) {
+  const { t } = useLingui();
   // The session token, the way the menu counts read it: no AuthProvider needed,
   // so a card can carry this button wherever it is drawn.
   const signedIn = !!authToken();
@@ -85,7 +87,7 @@ export default function WorkChatButton({ kind, id, probe = false, likely = false
           : "The chat did not open. Try again in a moment.",
       );
     } catch {
-      toast.error("The chat did not open. Check your connection and try again.");
+      toast.error(t({ message: "The chat did not open. Check your connection and try again.", context: "WorkChatButton, toast" }));
     } finally {
       setBusy(false);
     }
@@ -93,8 +95,8 @@ export default function WorkChatButton({ kind, id, probe = false, likely = false
 
   return (
     <button type="button" onClick={open} disabled={busy} className={className ? `${LOOK} ${className}` : LOOK}>
-      <MessagesSquare className="w-4 h-4" aria-hidden="true" />
+      <Trans context="WorkChatButton, button"><MessagesSquare className="w-4 h-4" aria-hidden="true" />
       Chat
-    </button>
+    </Trans></button>
   );
 }

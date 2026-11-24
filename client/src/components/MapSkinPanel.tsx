@@ -15,6 +15,7 @@ import {
   SKIN_BOUNDS,
   type MapSkin,
 } from "@shared/mapSkin";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Admin, Make This Yours, step 6: how the Living Map draws this village.
@@ -58,6 +59,7 @@ import {
  * never leave the browser.
  */
 export default function MapSkinPanel() {
+  const { t } = useLingui();
   const mayAdminister = useIsAdmin();
   const [skin, setSkin] = useState<MapSkin | null>(null);
   const [saving, setSaving] = useState(false);
@@ -82,7 +84,7 @@ export default function MapSkinPanel() {
         stored = (await res.json())?.brand?.skin;
       }
       setSkin({ ...DEFAULT_MAP_SKIN, ...(stored ?? {}) });
-    } catch { toast.error("Could not load the map settings"); }
+    } catch { toast.error(t({ message: "Could not load the map settings", context: "MapSkinPanel, toast" })); }
   }, [mayAdminister]);
   useEffect(() => { load(); }, [load]);
 
@@ -115,8 +117,8 @@ export default function MapSkinPanel() {
        */
       window.dispatchEvent(new Event(MAP_SKIN_SAVED_EVENT));
       writeStored("local", MAP_SKIN_SAVED_KEY, String(Date.now()));
-      toast.success("Map style saved. An open map retints straight away");
-    } catch { toast.error("Save failed"); }
+      toast.success(t({ message: "Map style saved. An open map retints straight away", context: "MapSkinPanel, toast" }));
+    } catch { toast.error(t({ message: "Save failed", context: "MapSkinPanel, toast" })); }
     setSaving(false);
   };
 
@@ -193,8 +195,8 @@ export default function MapSkinPanel() {
           {value !== null && (
             <button type="button" onClick={() => setDial(null)}
               className="text-xs text-gray-400 underline underline-offset-2 shrink-0">
-              reset
-            </button>
+              <Trans context="MapSkinPanel, button">reset
+            </Trans></button>
           )}
         </div>
       </div>
@@ -220,7 +222,7 @@ export default function MapSkinPanel() {
         />
         {skin[key] && (
           <button type="button" onClick={() => set({ [key]: "" } as Partial<MapSkin>)}
-            className="text-xs text-gray-400 underline underline-offset-2">clear</button>
+            className="text-xs text-gray-400 underline underline-offset-2"><Trans context="MapSkinPanel, button">clear</Trans></button>
         )}
       </div>
     </div>
@@ -278,7 +280,7 @@ export default function MapSkinPanel() {
     <div>
       <div className="grid md:grid-cols-2 gap-5 mb-5">
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5" htmlFor="skin-theme">Land theme</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1.5" htmlFor="skin-theme"><Trans context="MapSkinPanel, label">Land theme</Trans></label>
           <select
             id="skin-theme"
             value={skin.theme}
@@ -291,17 +293,17 @@ export default function MapSkinPanel() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5" htmlFor="skin-words">Your land, in words</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1.5" htmlFor="skin-words"><Trans context="MapSkinPanel, label">Your land, in words</Trans></label>
           <input
             id="skin-words"
             value={skin.words}
             onChange={(e) => set({ words: e.target.value.slice(0, 160) })}
-            placeholder="high desert, red rock and juniper"
+            placeholder={t({ message: "high desert, red rock and juniper", context: "MapSkinPanel, placeholder" })}
             className="w-full text-sm border border-gray-200 rounded-lg px-2.5 py-2"
           />
           <p className="text-[11px] text-gray-400 mt-1">
-            Grows a theme from the words themselves. The map uses this when no theme is picked above.
-          </p>
+            <Trans context="MapSkinPanel, p">Grows a theme from the words themselves. The map uses this when no theme is picked above.
+          </Trans></p>
         </div>
 
         {/* theme-ok: neutral colour-input default, never rendered as chrome */}
@@ -332,9 +334,9 @@ export default function MapSkinPanel() {
           now drives the repaint from painterly.brush and painterly.palette, so
           both dials are real. */}
       <p className="text-xs text-gray-500 mb-4">
-        Saved styling reaches an open map straight away. Everything here travels with the
+        <Trans context="MapSkinPanel, p">Saved styling reaches an open map straight away. Everything here travels with the
         map's own export, so you can style inside the map and bring the result back.
-      </p>
+      </Trans></p>
 
       <button onClick={save} disabled={saving}
         className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50">

@@ -5,6 +5,7 @@ import type { PathLadder } from "@shared/pathLadders";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { StageFloorPicker } from "./StageFloorPicker";
 import { useGameConfig } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The Players roster, one card per person, plus the key that sits above it
@@ -142,7 +143,8 @@ const RUNG_WORDS = { lit: "holds now", fell: "reached, and it has since ended", 
  * own ladder refuses a bar or a fraction for the same reason.
  */
 function PathRows({ chosen, paths, ladders }: { chosen: string[]; paths: PathOption[]; ladders: PathLadder[] | undefined }) {
-  if (chosen.length === 0) return <p className="text-xs text-gray-500">No path chosen yet.</p>;
+  const { t } = useLingui();
+  if (chosen.length === 0) return <p className="text-xs text-gray-500"><Trans context="PlayerCard, p">No path chosen yet.</Trans></p>;
   return (
     <ul className="space-y-2">
       {chosen.map((id) => {
@@ -153,15 +155,15 @@ function PathRows({ chosen, paths, ladders }: { chosen: string[]; paths: PathOpt
           <li key={id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <span className="min-w-[9rem] text-sm font-medium text-gray-900">{label}</span>
             {ladders === undefined ? (
-              <span className="text-xs text-gray-400">Loading...</span>
+              <span className="text-xs text-gray-400"><Trans context="PlayerCard, span">Loading...</Trans></span>
             ) : !ladder ? (
-              <span className="text-xs text-gray-500">This path has no steps tracked yet.</span>
+              <span className="text-xs text-gray-500"><Trans context="PlayerCard, span">This path has no steps tracked yet.</Trans></span>
             ) : (
               <>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${now ? "bg-teal-deep/10 text-teal-deep" : "bg-gray-100 text-gray-600"}`}>
                   {now ?? "Not started"}
                 </span>
-                <ol className="flex flex-wrap items-center gap-1.5" aria-label={`${label} steps`}>
+                <ol className="flex flex-wrap items-center gap-1.5" aria-label={t({ message: `${label} steps`, context: "PlayerCard, aria-label" })}>
                   {ladder.rungs.map((r) => {
                     const state = r.lit ? "lit" : r.fell ? "fell" : "ahead";
                     const Icon = RUNG_ICON[state];
@@ -189,10 +191,11 @@ function PathRows({ chosen, paths, ladders }: { chosen: string[]; paths: PathOpt
 
 /** Every token they hold, formatted at its own scale. */
 function Holdings({ holdings }: { holdings: Holding[] | undefined }) {
-  if (holdings === undefined) return <p className="text-xs text-gray-400">Loading...</p>;
-  if (holdings.length === 0) return <p className="text-xs text-gray-500">Holds no tokens yet</p>;
+  const { t } = useLingui();
+  if (holdings === undefined) return <p className="text-xs text-gray-400"><Trans context="PlayerCard, p">Loading...</Trans></p>;
+  if (holdings.length === 0) return <p className="text-xs text-gray-500"><Trans context="PlayerCard, p">Holds no tokens yet</Trans></p>;
   return (
-    <ul aria-label="Tokens they hold" className="flex flex-wrap gap-1.5">
+    <ul aria-label={t({ message: "Tokens they hold", context: "PlayerCard, aria-label" })} className="flex flex-wrap gap-1.5">
       {holdings.map((h) => (
         <li key={h.slug} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
           <span className="font-semibold text-gray-900">{formatTokenAmount(h.balance, h.decimals)}</span> {h.name}
@@ -235,24 +238,25 @@ export function PlayersFilters({
   shown: number;
   total: number;
 }) {
+  const { t } = useLingui();
   const field = "rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm";
   const set = (k: keyof PlayerFilter) => (e: { target: { value: string } }) => onChange({ ...value, [k]: e.target.value });
   return (
     <div role="search" id={ADMIN_FILTERS_ID} className="mb-3 flex scroll-mt-32 flex-wrap items-center gap-2">
       <label className="relative min-w-[12rem] flex-1">
-        <span className="sr-only">Search players</span>
+        <span className="sr-only"><Trans context="PlayerCard, span">Search players</Trans></span>
         <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
-        <input type="search" value={value.text} onChange={set("text")} placeholder="Name, handle or email" className={`${field} w-full pl-8`} />
+        <input type="search" value={value.text} onChange={set("text")} placeholder={t({ message: "Name, handle or email", context: "PlayerCard, placeholder" })} className={`${field} w-full pl-8`} />
       </label>
-      <select aria-label="Filter by access" value={value.access} onChange={set("access")} className={field}>
+      <select aria-label={t({ message: "Filter by access", context: "PlayerCard, aria-label" })} value={value.access} onChange={set("access")} className={field}>
         <option value="">Any access</option>
         {ACCESS_ORDER.map((a) => <option key={a} value={a}>{ACCESS[a].label}</option>)}
       </select>
-      <select aria-label="Filter by stage" value={value.stage} onChange={set("stage")} className={field}>
+      <select aria-label={t({ message: "Filter by stage", context: "PlayerCard, aria-label" })} value={value.stage} onChange={set("stage")} className={field}>
         <option value="">Any stage</option>
         {stages.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
       </select>
-      <select aria-label="Filter by path" value={value.path} onChange={set("path")} className={field}>
+      <select aria-label={t({ message: "Filter by path", context: "PlayerCard, aria-label" })} value={value.path} onChange={set("path")} className={field}>
         <option value="">Any path</option>
         {paths.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
         <option value="none">No path chosen</option>
@@ -262,8 +266,8 @@ export function PlayersFilters({
       </span>
       {shown !== total && (
         <button type="button" onClick={() => onChange(NO_FILTER)} className="text-xs underline">
-          Clear
-        </button>
+          <Trans context="PlayerCard, button">Clear
+        </Trans></button>
       )}
     </div>
   );
@@ -285,14 +289,14 @@ export function PlayersKey({
   return (
     <details open className="group mb-6 rounded-2xl border border-gray-200 bg-white">
       <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-medium text-gray-900">
-        How to read this page
+        <Trans context="PlayerCard, summary">How to read this page
         <span className="text-xs font-normal text-gray-500 group-open:hidden">Show</span>
-        <span className="hidden text-xs font-normal text-gray-500 group-open:inline">Hide</span>
+        <span className="hidden text-xs font-normal text-gray-500 group-open:inline">Hide</span></Trans>
       </summary>
       <div className="grid gap-6 border-t border-gray-100 px-5 py-4 md:grid-cols-2">
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">Access</h3>
-          <p className="mt-1 text-sm text-gray-600">What their account may do on this site.</p>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500"><Trans context="PlayerCard, h3">Access</Trans></h3>
+          <p className="mt-1 text-sm text-gray-600"><Trans context="PlayerCard, p">What their account may do on this site.</Trans></p>
           <ul className="mt-3 space-y-2">
             {ACCESS_ORDER.map((a) => (
               <li key={a} className="flex flex-wrap items-start gap-x-3 gap-y-1 text-sm">
@@ -304,17 +308,17 @@ export function PlayersKey({
             ))}
           </ul>
           <p className="mt-3 text-xs text-gray-500">
-            {gameStarted
+            <Trans context="PlayerCard, p">{gameStarted
               ? "The founder role ended when the village started its Game. Admins now set access, and nobody new can be made a founder."
               : "Until the village starts its Game, only a founder can change access. The founder role ends at launch, and admins take it over."}{" "}
             Specific powers on top of this come from Power groups.
-          </p>
+          </Trans></p>
         </section>
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">{ladderLabel(stages, ladderTitle)}</h3>
           <p className="mt-1 text-sm text-gray-600">
-            Where they stand in village life. Most stages arrive on their own from real acts. The ceremony stages are granted here.
-          </p>
+            <Trans context="PlayerCard, p">Where they stand in village life. Most stages arrive on their own from real acts. The ceremony stages are granted here.
+          </Trans></p>
           <ol className="mt-3 flex flex-wrap gap-1.5">
             {stages.map((s) => (
               <li
@@ -367,6 +371,7 @@ export function PlayerCard({
   /** More actions for the footer, drawn before Sign out everywhere. */
   footerExtra?: ReactNode;
 }) {
+  const { t } = useLingui();
   const access = accessOf(p.role);
   const ladderTitle = useGameConfig()?.ladder?.title;
   const at = stages.findIndex((s) => s.id === p.stageComputed);
@@ -394,7 +399,7 @@ export function PlayerCard({
             {p.handle && <span className="font-normal text-gray-500"> @{p.handle}</span>}
           </div>
           <div className="truncate text-xs text-gray-500">
-            {p.email} · joined {shortDate(p.joinedAt)}
+            <Trans context="PlayerCard, div">{p.email} · joined {shortDate(p.joinedAt)}</Trans>
           </div>
         </div>
       </header>
@@ -403,8 +408,8 @@ export function PlayerCard({
       </div>
 
       <div className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <section aria-label="Access" className="rounded-xl bg-gray-50 px-4 py-3">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">Access</h4>
+        <section aria-label={t({ message: "Access", context: "PlayerCard, aria-label" })} className="rounded-xl bg-gray-50 px-4 py-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500"><Trans context="PlayerCard, h4">Access</Trans></h4>
           <div className="mt-2">
             {canSetAccess ? (
               <select
@@ -433,18 +438,18 @@ export function PlayerCard({
           <p className="mt-2 text-xs text-gray-600">{ACCESS[access].does}</p>
           {p.adminVia && p.adminVia.length > 0 && access === "member" && (
             <p className="mt-1 text-xs text-gray-600">
-              Opens the admin panel through {p.adminVia.join(" and ")}, while they hold it.
-            </p>
+              <Trans context="PlayerCard, p">Opens the admin panel through {p.adminVia.join(" and ")}, while they hold it.
+            </Trans></p>
           )}
         </section>
 
         <section aria-label={ladderLabel(stages, ladderTitle)} className="rounded-xl bg-gray-50 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">{ladderLabel(stages, ladderTitle)}</h4>
-            <StageFloorPicker stages={stages} value={p.stageGranted} onChange={onStage} label="Change stage" />
+            <StageFloorPicker stages={stages} value={p.stageGranted} onChange={onStage} label={t({ message: "Change stage", context: "PlayerCard, label" })} />
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span className="text-sm text-gray-600">Now at</span>
+            <span className="text-sm text-gray-600"><Trans context="PlayerCard, span">Now at</Trans></span>
             <span className="rounded-full bg-teal-deep/10 px-2.5 py-0.5 text-sm font-semibold text-teal-deep">
               {stages[at]?.name ?? p.stageComputed}
             </span>
@@ -453,13 +458,13 @@ export function PlayerCard({
           <p className="mt-2 text-xs text-gray-600">{howReached(stages, p)}</p>
           {detail?.stageSet && (
             <p className="mt-1 text-xs text-gray-500">
-              Stage last set{detail.stageSet.by ? ` by ${detail.stageSet.by}` : ""} on {shortDate(detail.stageSet.at)}.
-            </p>
+              <Trans context="PlayerCard, p">Stage last set{detail.stageSet.by ? ` by ${detail.stageSet.by}` : ""} on {shortDate(detail.stageSet.at)}.
+            </Trans></p>
           )}
         </section>
 
-        <section aria-label="Paths they walk" className="rounded-xl bg-gray-50 px-4 py-3 sm:col-span-2">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Paths they walk</h4>
+        <section aria-label={t({ message: "Paths they walk", context: "PlayerCard, aria-label" })} className="rounded-xl bg-gray-50 px-4 py-3 sm:col-span-2">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500"><Trans context="PlayerCard, h4">Paths they walk</Trans></h4>
           <PathRows chosen={p.paths} paths={paths} ladders={detail?.ladders} />
         </section>
       </div>
@@ -472,17 +477,17 @@ export function PlayerCard({
           title="Ends every session and agent token. Their password keeps working."
           className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
         >
-          <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+          <Trans context="PlayerCard, button"><LogOut className="h-3.5 w-3.5" aria-hidden="true" />
           Sign out everywhere
-        </button>
+        </Trans></button>
         <button
           type="button"
           onClick={onDelete}
           className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:text-red-700"
         >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          <Trans context="PlayerCard, button"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           Delete account
-        </button>
+        </Trans></button>
       </footer>
     </article>
   );

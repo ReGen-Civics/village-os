@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { KIND_WORDS, type KindView, type PreferencesView } from "@shared/comms/preferences";
 import type { PermissionKind } from "@shared/comms/kinds";
+import { Trans } from "@lingui/react/macro";
 
 /** The kinds this section offers. Notification emails have their own switches above. */
 const SHOWN: readonly PermissionKind[] = ["events", "paths", "letters"];
@@ -65,8 +66,8 @@ export default function EmailFromVillage() {
   return (
     <section aria-labelledby="email-from-village" className="border-t border-border pt-4 mb-4">
       <h3 id="email-from-village" className="text-sm font-semibold text-card-foreground mb-2">
-        Email from the village
-      </h3>
+        <Trans context="EmailFromVillage, h3">Email from the village
+      </Trans></h3>
       {quiet ? (
         <p className="text-xs text-muted-foreground mb-2">
           {view.blocked ? view.blocked.sentence : "You asked us to stop every email to this address."}

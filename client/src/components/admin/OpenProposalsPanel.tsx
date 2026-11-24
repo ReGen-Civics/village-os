@@ -9,7 +9,7 @@
  * answers and a holder of the power that seats people adopts or declines it
  * (open proposals part B, client/src/pages/OpenProposal.tsx).
  */
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowRight, Copy, Link2 } from "lucide-react";
@@ -201,14 +201,14 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <code className="min-w-0 break-all rounded bg-gray-50 px-2 py-1 text-sm text-gray-800">{publicUrl}</code>
             <button type="button" className={BUTTON} onClick={() => copy(publicUrl)}>
-              <Copy className="h-4 w-4" aria-hidden="true" />
+              <Trans context="OpenProposalsPanel, button"><Copy className="h-4 w-4" aria-hidden="true" />
               Copy
-            </button>
+            </Trans></button>
           </div>
         </section>
 
         <section className="grid gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">A link for one person</h3>
+          <h3 className="text-sm font-semibold text-gray-900"><Trans context="OpenProposalsPanel, h3">A link for one person</Trans></h3>
           <form
             className="flex flex-wrap items-end gap-2"
             onSubmit={(e) => {
@@ -227,20 +227,20 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
               <input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} className="min-h-10 rounded-lg border border-gray-200 px-3 py-2 text-gray-900" />
             </label>
             <button type="submit" className={BUTTON} disabled={busy || !label.trim()}>
-              Make a link
-            </button>
+              <Trans context="OpenProposalsPanel, button">Make a link
+            </Trans></button>
           </form>
           {made && (
             <div className="grid gap-2 rounded-lg border border-teal-deep/40 bg-teal-deep/5 p-3 text-sm" data-link-made="">
               <p className="text-gray-900">
-                {OPEN_WORDS.linkMade} For {made.label}:
-              </p>
+                <Trans context="OpenProposalsPanel, p">{OPEN_WORDS.linkMade} For {made.label}:
+              </Trans></p>
               <div className="flex flex-wrap items-center gap-2">
                 <code className="min-w-0 break-all rounded bg-white px-2 py-1 text-gray-800">{made.url}</code>
                 <button type="button" className={BUTTON} onClick={() => copy(made.url)}>
-                  <Copy className="h-4 w-4" aria-hidden="true" />
+                  <Trans context="OpenProposalsPanel, button"><Copy className="h-4 w-4" aria-hidden="true" />
                   Copy
-                </button>
+                </Trans></button>
               </div>
             </div>
           )}
@@ -249,12 +249,12 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
               {desk.links.map((l) => (
                 <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-800">
                   <span className="min-w-0 break-words">
-                    {l.label} {!l.on && <span className="text-gray-500">(switched off)</span>}
+                    {l.label} {!l.on && <span className="text-gray-500"><Trans context="OpenProposalsPanel, span">(switched off)</Trans></span>}
                   </span>
                   {l.on && (
                     <button type="button" className={BUTTON} disabled={busy} onClick={() => void act(() => call(`${API_BASE}/admin/open-proposals/links/${encodeURIComponent(l.id)}/revoke`, "POST"))}>
-                      Switch off
-                    </button>
+                      <Trans context="OpenProposalsPanel, button">Switch off
+                    </Trans></button>
                   )}
                 </li>
               ))}
@@ -263,7 +263,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
         </section>
 
         <section className="grid gap-3">
-          <h3 className="text-sm font-semibold text-gray-900">Confirmed role applications</h3>
+          <h3 className="text-sm font-semibold text-gray-900"><Trans context="OpenProposalsPanel, h3">Confirmed role applications</Trans></h3>
           {desk.transcribeOn && waiting > 0 && (
             <div className="flex flex-wrap items-center gap-2" data-transcribe-waiting="">
               <button type="button" className={BUTTON} disabled={running} onClick={() => void transcribeAll()} data-transcribe-waiting-button="">
@@ -275,7 +275,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
             </div>
           )}
           {desk.proposals.length === 0 ? (
-            <p className="text-sm text-gray-500">None yet. A role application shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
+            <p className="text-sm text-gray-500"><Trans context="OpenProposalsPanel, p">None yet. A role application shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</Trans></p>
           ) : (
             <>
             {/* Every application by stage, so nothing stalls unseen. Ordered by stage, then by the day it arrived: nothing is ranked. */}
@@ -311,7 +311,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 {p.confirmedAt && <p className="text-muted-foreground">{ONBOARDING_WORDS.arrivedOn(p.confirmedAt.slice(0, 10))}</p>}
                 <p className="break-words font-semibold text-foreground">
                   {p.name ?? "Name taken off"} <span className="font-normal text-gray-600">{p.email}</span>
-                  {p.via && <span className="font-normal text-gray-500"> (through the link for {p.via})</span>}
+                  {p.via && <span className="font-normal text-gray-500"> <Trans context="OpenProposalsPanel, span">(through the link for {p.via})</Trans></span>}
                 </p>
                 {p.addressUnconfirmed && (
                   <p role="note" className="break-words font-semibold text-notice" data-address-unconfirmed="">
@@ -333,7 +333,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 <p className="whitespace-pre-line break-words text-gray-800">{p.why}</p>
                 {clipOf(p, "why") && <PlayVoice href={clipOf(p, "why")!.href} seconds={clipOf(p, "why")!.seconds} label={clipOf(p, "why")!.label} fetcher={hear} />}
                 {clipOf(p, "why") && <StoredWordsSlot href={clipOf(p, "why")!.href} written={p.voice?.written?.[clipOf(p, "why")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "why")!.id)} />}
-                {p.aim && <p className="break-words text-gray-600">Aim: {p.aim}</p>}
+                {p.aim && <p className="break-words text-gray-600"><Trans context="OpenProposalsPanel, p">Aim: {p.aim}</Trans></p>}
                 {clipOf(p, "aim") && <PlayVoice href={clipOf(p, "aim")!.href} seconds={clipOf(p, "aim")!.seconds} label={clipOf(p, "aim")!.label} fetcher={hear} />}
                 {clipOf(p, "aim") && <StoredWordsSlot href={clipOf(p, "aim")!.href} written={p.voice?.written?.[clipOf(p, "aim")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "aim")!.id)} />}
                 {p.voice && (p.voice.notes.length > 0 || otherClips(p).length > 0) && (
@@ -362,8 +362,8 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                   </div>
                 )}
                 <a href={`/open-proposals/${encodeURIComponent(p.id)}#walkthrough`} className="inline-flex min-h-10 items-center gap-1.5 font-medium text-teal-deep underline underline-offset-2">
-                  Open its page, where it is walked through and decided
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  <Trans context="OpenProposalsPanel, a">Open its page, where it is walked through and decided
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" /></Trans>
                 </a>
               </article>
               </div>

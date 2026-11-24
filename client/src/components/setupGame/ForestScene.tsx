@@ -1,4 +1,5 @@
-/**
+
+import { Trans, useLingui } from "@lingui/react/macro";/**
  * The spring plot's picture, as the approved prototype drew it. Every colour
  * is a token from forest.css, so nothing here is a literal the theme guard
  * would have to excuse. What grows is driven by the real setup state the
@@ -24,9 +25,10 @@ export interface SceneState {
 const v = (name: string) => `var(--sg-${name})`;
 
 export default function ForestScene({ s }: { s: SceneState }) {
+  const { t } = useLingui();
   const op = (on: boolean, level = 1) => (on ? level : 0);
   return (
-    <svg viewBox="0 0 600 380" role="img" aria-label="The spring plot in the food forest">
+    <svg viewBox="0 0 600 380" role="img" aria-label={t({ message: "The spring plot in the food forest", context: "ForestScene, aria-label" })}>
       <defs>
         <linearGradient id="sg-sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={v("sky1")} />
@@ -82,7 +84,7 @@ export default function ForestScene({ s }: { s: SceneState }) {
         <circle cx="18" cy="16" r="26" fill="url(#sg-glow)" opacity={op(s.keyed, 0.45)} className="sg-fade" />
         <path d="M0 30 V8 a18 14 0 0 1 36 0 V30z" fill={v("door")} stroke={v("gold")} strokeWidth="1.5" />
         <circle cx="28" cy="20" r="2.4" fill={v("gold-b")} />
-        <text x="18" y="46" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" letterSpacing="1.5" fill={v("gold-b")} style={{ fontVariant: "small-caps" }}>root cellar</text>
+        <text x="18" y="46" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" letterSpacing="1.5" fill={v("gold-b")} style={{ fontVariant: "small-caps" }}><Trans context="ForestScene, text">root cellar</Trans></text>
       </g>
       <ellipse cx="300" cy="262" rx="92" ry="26" fill={v("hollow")} stroke={v("gold")} strokeOpacity=".55" strokeWidth="1.5" />
       <ellipse cx="300" cy="262" rx="84" ry="21" fill="url(#sg-pool)" opacity={s.flowing ? 1 : s.bees ? 0.85 : s.stones >= 4 ? 0.35 : 0} className="sg-fade" />
@@ -104,7 +106,7 @@ export default function ForestScene({ s }: { s: SceneState }) {
       <g opacity={op(s.nursery)} className="sg-fade">
         <path d="M226 262 a74 70 0 0 1 148 0" fill={v("pool1")} fillOpacity=".14" stroke={v("teal")} strokeWidth="1.5" />
         <path d="M262 262 a38 66 0 0 1 76 0 M300 192 V262" fill="none" stroke={v("teal")} strokeOpacity=".7" strokeWidth="1.2" />
-        <text x="300" y="184" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" letterSpacing="1.5" fill={v("teal")} style={{ fontVariant: "small-caps" }}>nursery</text>
+        <text x="300" y="184" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" letterSpacing="1.5" fill={v("teal")} style={{ fontVariant: "small-caps" }}><Trans context="ForestScene, text">nursery</Trans></text>
       </g>
       <path className="sg-stream" d="M384 268 C430 290 470 300 520 300 S590 312 600 316" fill="none" stroke={v("teal")} strokeWidth="6" strokeLinecap="round" opacity={op(s.flowing, 0.9)} />
       <g opacity={op(s.bees)} className="sg-fade">
@@ -126,7 +128,7 @@ export default function ForestScene({ s }: { s: SceneState }) {
       </g>
       <g transform="translate(300 336)">
         <rect x="-74" y="-15" width="148" height="28" rx="3" fill={v("banner")} fillOpacity=".92" stroke={v("gold")} strokeOpacity=".55" />
-        <text x="0" y="5" textAnchor="middle" fontFamily="Georgia, serif" fontSize="16" letterSpacing="3.3" fill={v("parch")} style={{ fontVariant: "small-caps" }}>The Spring</text>
+        <text x="0" y="5" textAnchor="middle" fontFamily="Georgia, serif" fontSize="16" letterSpacing="3.3" fill={v("parch")} style={{ fontVariant: "small-caps" }}><Trans context="ForestScene, text">The Spring</Trans></text>
       </g>
     </svg>
   );

@@ -34,7 +34,7 @@ export default function TimeZoneField() {
           aria-label={t({ message: "Time zone", context: "time zone field" })}
           className="border rounded px-2 py-1 min-w-[16rem]"
           value={value}
-          placeholder={browser ?? "Europe/Lisbon"}
+          placeholder={browser ?? t({ message: "Europe/Lisbon", context: "TimeZoneField, placeholder" })}
           onChange={(e) => setDraft(e.target.value)}
         />
         <button type="button" className="border rounded px-3 py-1" onClick={() => run(value.trim())} disabled={!value.trim()}><Trans context="time zone field">Save</Trans></button>

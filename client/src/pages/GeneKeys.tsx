@@ -40,6 +40,7 @@ import { countryName, loadPlaces, searchPlaces, zoneName, type Place } from "@/c
 import { BTN_GOLD, BTN_LINK, BTN_PLAIN, EYEBROW, HINT, INPUT } from "@/components/geneKeys/ui";
 import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Step = "form" | "choose" | "result" | "share" | "done";
 
@@ -78,6 +79,7 @@ function clock(minute: number): string {
 }
 
 export default function GeneKeysPage() {
+  const { t } = useLingui();
   const modules = useModules();
   const { user } = useAuth();
   const on = (modules.modules ?? []).some((m) => m.id === "gene-keys" && m.lifecycle !== "off");
@@ -146,7 +148,7 @@ export default function GeneKeysPage() {
     return (
       <Layout>
         <div className="flex min-h-[50vh] items-center justify-center">
-          <BreathingLoader label="Opening Gene Keys" />
+          <BreathingLoader label={t({ message: "Opening Gene Keys", context: "GeneKeys, label" })} />
         </div>
       </Layout>
     );
@@ -219,10 +221,10 @@ export default function GeneKeysPage() {
         <div className="container max-w-2xl">
           {step === "form" ? (
             <section aria-labelledby="gk-form-h" className="flex flex-col gap-5">
-              <p className={EYEBROW}>Step 1 of 2 · Find your lines</p>
+              <p className={EYEBROW}><Trans context="GeneKeys, p">Step 1 of 2 · Find your lines</Trans></p>
               <h1 id="gk-form-h" tabIndex={-1} className="font-display text-4xl focus:outline-none">
-                When and where were you born?
-              </h1>
+                <Trans context="GeneKeys, h1">When and where were you born?
+              </Trans></h1>
               <label className="flex flex-col gap-1.5 text-sm font-medium">
                 Birth date
                 <input className={INPUT} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -237,7 +239,7 @@ export default function GeneKeysPage() {
               </label>
               {unknownTime ? (
                 <fieldset className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
-                  <legend className="px-1 text-sm font-medium">Roughly when?</legend>
+                  <legend className="px-1 text-sm font-medium"><Trans context="GeneKeys, legend">Roughly when?</Trans></legend>
                   <div className="flex flex-wrap gap-2">
                     {PARTS.map((x) => (
                       <label
@@ -251,7 +253,7 @@ export default function GeneKeysPage() {
                       </label>
                     ))}
                   </div>
-                  <p className={HINT}>Even a rough answer narrows it down. Somebody who was there may know.</p>
+                  <p className={HINT}><Trans context="GeneKeys, p">Even a rough answer narrows it down. Somebody who was there may know.</Trans></p>
                   <button
                     type="button"
                     className={`${BTN_PLAIN} self-start`}
@@ -269,21 +271,21 @@ export default function GeneKeysPage() {
                       }
                     }}
                   >
-                    Ask someone who was there
-                  </button>
+                    <Trans context="GeneKeys, button">Ask someone who was there
+                  </Trans></button>
                   {asked ? <p className={HINT}>{asked}</p> : null}
                 </fieldset>
               ) : null}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="gk-town" className="text-sm font-medium">
-                  Birth town or city
-                </label>
+                  <Trans context="GeneKeys, label">Birth town or city
+                </Trans></label>
                 <input
                   id="gk-town"
                   className={INPUT}
                   type="text"
                   autoComplete="off"
-                  placeholder={places ? "Start typing, like Boulder" : "Loading towns"}
+                  placeholder={places ? t({ message: "Start typing, like Boulder", context: "GeneKeys, placeholder" }) : t({ message: "Loading towns", context: "GeneKeys, placeholder" })}
                   value={place ? `${place.name}, ${countryName(place.country)}` : typed}
                   onChange={(e) => {
                     setPlace(null);
@@ -292,7 +294,7 @@ export default function GeneKeysPage() {
                 />
                 {place ? <p className={HINT}>{zoneName(place.zone)}</p> : null}
                 {matches.length ? (
-                  <ul className="flex flex-col overflow-hidden rounded-lg border border-border bg-card" aria-label="Matching towns">
+                  <ul className="flex flex-col overflow-hidden rounded-lg border border-border bg-card" aria-label={t({ message: "Matching towns", context: "GeneKeys, aria-label" })}>
                     {matches.map((p) => (
                       <li key={`${p.name}|${p.country}|${p.zone}`} className="border-t border-border first:border-t-0">
                         <button
@@ -313,16 +315,16 @@ export default function GeneKeysPage() {
                   </ul>
                 ) : null}
                 {places && !place && typed.trim().length >= 2 && !matches.length ? (
-                  <p className={HINT}>No town by that name yet. Try the nearest bigger town with the same clock.</p>
+                  <p className={HINT}><Trans context="GeneKeys, p">No town by that name yet. Try the nearest bigger town with the same clock.</Trans></p>
                 ) : null}
-                {placesFailed ? <p className="text-sm text-destructive">The town list did not load. Refresh the page to try again.</p> : null}
+                {placesFailed ? <p className="text-sm text-destructive"><Trans context="GeneKeys, p">The town list did not load. Refresh the page to try again.</Trans></p> : null}
               </div>
               {problem ? (
                 <p role="alert" className="text-sm text-destructive">
                   {problem}
                 </p>
               ) : null}
-              <p className={HINT}>We keep your lines and keys. Your birth details never leave this device.</p>
+              <p className={HINT}><Trans context="GeneKeys, p">We keep your lines and keys. Your birth details never leave this device.</Trans></p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={BTN_GOLD} disabled={working} onClick={read}>
                   {working ? "Reading the sky" : "Show my lines"}
@@ -331,13 +333,13 @@ export default function GeneKeysPage() {
                   {next ? backWords : "Back to your profile"}
                 </Link>
               </div>
-              <p className="text-xs text-muted-foreground">Town data: GeoNames (CC BY 4.0)</p>
+              <p className="text-xs text-muted-foreground"><Trans context="GeneKeys, p">Town data: GeoNames (CC BY 4.0)</Trans></p>
             </section>
           ) : null}
 
           {step === "choose" ? (
             <section aria-labelledby="gk-choose-h" className="flex flex-col gap-4">
-              <p className={EYEBROW}>Step 1 of 2 · One more check</p>
+              <p className={EYEBROW}><Trans context="GeneKeys, p">Step 1 of 2 · One more check</Trans></p>
               <h1 id="gk-choose-h" tabIndex={-1} className="font-display text-4xl focus:outline-none">
                 {mine === null ? "Your lines shift during that day" : "You were born close to a change"}
               </h1>
@@ -366,46 +368,46 @@ export default function GeneKeysPage() {
                         </span>
                         <span className="flex flex-1 flex-col">
                           <span className="font-medium">
-                            {w.from === 0 && mine === null ? "From midnight" : `From ${clock(w.from)}`} to {clock(w.to - 1)}
+                            <Trans context="GeneKeys, span">{w.from === 0 && mine === null ? "From midnight" : `From ${clock(w.from)}`} to {clock(w.to - 1)}</Trans>
                           </span>
                           <span className="text-sm text-muted-foreground">
                             {v.names} · {v.type}
                           </span>
                         </span>
-                        {yours ? <span className="text-xs text-notice">Your time</span> : null}
+                        {yours ? <span className="text-xs text-notice"><Trans context="GeneKeys, span">Your time</Trans></span> : null}
                       </button>
                     </li>
                   );
                 })}
               </ul>
               <button type="button" className={BTN_PLAIN} onClick={() => setStep("form")}>
-                Change my details
-              </button>
+                <Trans context="GeneKeys, button">Change my details
+              </Trans></button>
             </section>
           ) : null}
 
           {step === "result" && picked ? (
             <section aria-labelledby="gk-result-h" className="flex flex-col gap-5">
-              <p className={EYEBROW}>Step 2 of 2 · Your lines</p>
+              <p className={EYEBROW}><Trans context="GeneKeys, p">Step 2 of 2 · Your lines</Trans></p>
               <GeneKeysReveal view={picked.view} chosen={picked.chosen} headingId="gk-result-h" />
               <GeneKeysLines view={picked.view} whose={null} />
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={BTN_GOLD} onClick={() => setStep("share")}>
-                  Next
-                </button>
+                  <Trans context="GeneKeys, button">Next
+                </Trans></button>
                 <button type="button" className={BTN_PLAIN} onClick={() => setStep("form")}>
-                  Change my details
-                </button>
+                  <Trans context="GeneKeys, button">Change my details
+                </Trans></button>
               </div>
             </section>
           ) : null}
 
           {step === "share" ? (
             <section aria-labelledby="gk-share-h" className="flex flex-col gap-4">
-              <p className={EYEBROW}>Almost done</p>
+              <p className={EYEBROW}><Trans context="GeneKeys, p">Almost done</Trans></p>
               <h1 id="gk-share-h" tabIndex={-1} className="font-display text-4xl focus:outline-none">
-                Who sees your lines?
-              </h1>
+                <Trans context="GeneKeys, h1">Who sees your lines?
+              </Trans></h1>
               <ShareChoices fromCard={fromCard} choices={choices} onChange={setChoices} guide={guide} />
               <p className={HINT}>{fromCard ? "You can change each of these any time on your profile." : "You can change both any time on your profile."}</p>
               {problem ? (
@@ -418,15 +420,15 @@ export default function GeneKeysPage() {
                   {working ? "Saving" : "Save"}
                 </button>
                 <button type="button" className={BTN_PLAIN} disabled={working} onClick={() => setStep("result")}>
-                  Back
-                </button>
+                  <Trans context="GeneKeys, button">Back
+                </Trans></button>
               </div>
             </section>
           ) : null}
 
           {step === "done" && picked ? (
             <section aria-labelledby="gk-done-h" className="flex flex-col items-start gap-4">
-              <p className={EYEBROW}>Lines found</p>
+              <p className={EYEBROW}><Trans context="GeneKeys, p">Lines found</Trans></p>
               <h1 id="gk-done-h" tabIndex={-1} className="font-display text-4xl focus:outline-none">
                 {picked.view.names}
               </h1>
@@ -435,7 +437,7 @@ export default function GeneKeysPage() {
               </p>
               {badge ? (
                 <p role="status" className="rounded-full border border-notice/60 bg-notice/15 px-4 py-2 text-sm font-semibold text-notice">
-                  Badge earned: {badge}
+                  <Trans context="GeneKeys, p">Badge earned: {badge}</Trans>
                 </p>
               ) : null}
               <RolesForYourLines me={user.id} lines={picked.view.lines} />
@@ -446,12 +448,12 @@ export default function GeneKeysPage() {
                   </Link>
                 ) : null}
                 <Link href="/profile#gene-keys" className={next ? BTN_PLAIN : BTN_GOLD}>
-                  See them on your profile
-                </Link>
+                  <Trans context="GeneKeys, Link">See them on your profile
+                </Trans></Link>
               </div>
               <a className={BTN_LINK} href={GENE_KEYS_SITE} target="_blank" rel="noopener noreferrer">
-                Explore more in depth on genekeys.com
-              </a>
+                <Trans context="GeneKeys, a">Explore more in depth on genekeys.com
+              </Trans></a>
             </section>
           ) : null}
         </div>

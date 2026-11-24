@@ -29,6 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { Trans } from "@lingui/react/macro";
 
 interface LegalContent {
   landShareTransferNote?: string;
@@ -187,7 +188,7 @@ export default function Housing() {
             >
               <Home className="w-16 h-16 mb-6 opacity-80" />
               <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
-                Housing at {villageName}
+                <Trans context="Housing, h1">Housing at {villageName}</Trans>
               </h1>
               {/* This paragraph used to open "From tiny homes to luxury
                   villas", naming four tiers the page can no longer promise
@@ -264,8 +265,8 @@ export default function Housing() {
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Housing Options
-              </h2>
+                <Trans context="Housing, h2">Housing Options
+              </Trans></h2>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -317,8 +318,8 @@ export default function Housing() {
                       </ul>
                     )}
                     <span className="inline-flex items-center gap-2 text-teal font-medium">
-                      Reserve this home
-                      <ArrowRight className="w-4 h-4" />
+                      <Trans context="Housing, span">Reserve this home
+                      <ArrowRight className="w-4 h-4" /></Trans>
                     </span>
                   </Link>
                 </m.div>
@@ -355,8 +356,8 @@ export default function Housing() {
                 href="/resident"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-teal-deep text-white rounded-lg font-semibold hover:bg-teal-deep-dark transition"
               >
-                Learn About Residency
-                <ArrowRight className="w-5 h-5" />
+                <Trans context="Housing, Link">Learn About Residency
+                <ArrowRight className="w-5 h-5" /></Trans>
               </Link>
             )}
           </div>
@@ -369,8 +370,8 @@ export default function Housing() {
         <div className="container">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Interested in Housing?
-            </h2>
+              <Trans context="Housing, h2">Interested in Housing?
+            </Trans></h2>
             <p className={`text-muted-foreground mb-8 break-words${cta ? "" : " invisible"}`}>
               <Emphasized text={cta?.body ?? "\u00a0"} />
             </p>
@@ -382,17 +383,17 @@ export default function Housing() {
                   rel="noopener noreferrer"
                   className="px-8 py-4 bg-teal-deep text-white rounded-lg font-semibold hover:bg-teal-deep-dark transition flex items-center gap-2"
                 >
-                  <Calendar className="w-5 h-5" />
+                  <Trans context="Housing, a"><Calendar className="w-5 h-5" />
                   Join Community Call
-                </a>
+                </Trans></a>
               )}
               {!pageOff("/resident") && (
                 <Link
                   href="/resident"
                   className="px-8 py-4 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors"
                 >
-                  Resident Journey
-                </Link>
+                  <Trans context="Housing, Link">Resident Journey
+                </Trans></Link>
               )}
             </div>
           </div>

@@ -32,6 +32,7 @@ import { ExternalLink } from "lucide-react";
 import { PATH_LADDERS, type PathParticulars } from "@shared/pathLadders";
 import { villageMoonLabel } from "@shared/villageMoon";
 import type { VillageMoon } from "@shared/villageMoon";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * A stored slug as a person would read it: "tiny-home" becomes "Tiny home".
@@ -85,7 +86,7 @@ function Empty({ children }: { children: React.ReactNode }) {
  * neither of them has.
  */
 function InvestorFacts({ facts }: { facts: NonNullable<PathParticulars["investor"]>["facts"] }) {
-  if (facts.length === 0) return <Empty>Nothing recorded yet. Facts appear here as the village records them.</Empty>;
+  if (facts.length === 0) return <Empty><Trans context="PathFacts, Empty">Nothing recorded yet. Facts appear here as the village records them.</Trans></Empty>;
   // The words for each fact key already exist: the investor ladder in
   // `shared/pathLadders.ts` names all four, and its rung ids match
   // `INVESTOR_FACTS` exactly, held there by a test. A second table here would
@@ -111,7 +112,7 @@ function InvestorFacts({ facts }: { facts: NonNullable<PathParticulars["investor
 }
 
 function Ventures({ ventures }: { ventures: NonNullable<PathParticulars["prosperity-creator"]>["ventures"] }) {
-  if (ventures.length === 0) return <Empty>No ventures open yet. The first one you open appears here.</Empty>;
+  if (ventures.length === 0) return <Empty><Trans context="PathFacts, Empty">No ventures open yet. The first one you open appears here.</Trans></Empty>;
   return (
     <ul className="space-y-2">
       {ventures.map((v) => (
@@ -133,8 +134,8 @@ function Ventures({ ventures }: { ventures: NonNullable<PathParticulars["prosper
               rel="noreferrer noopener"
               className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline underline-offset-2"
             >
-              Visit
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              <Trans context="PathFacts, a">Visit
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></Trans>
             </a>
           ) : null}
         </Card>
@@ -144,7 +145,7 @@ function Ventures({ ventures }: { ventures: NonNullable<PathParticulars["prosper
 }
 
 function Reservations({ reservations }: { reservations: NonNullable<PathParticulars["resident"]>["reservations"] }) {
-  if (reservations.length === 0) return <Empty>Nothing reserved yet. A reservation you make appears here.</Empty>;
+  if (reservations.length === 0) return <Empty><Trans context="PathFacts, Empty">Nothing reserved yet. A reservation you make appears here.</Trans></Empty>;
   return (
     <ul className="space-y-2">
       {reservations.map((r) => (
@@ -159,7 +160,7 @@ function Reservations({ reservations }: { reservations: NonNullable<PathParticul
             </span>
           </div>
           {r.structureKey ? (
-            <p className="mt-0.5 text-sm text-muted-foreground">On the map as {r.structureKey}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground"><Trans context="PathFacts, p">On the map as {r.structureKey}</Trans></p>
           ) : null}
           {/* "Asked", not "Reserved". The moon is `created_at`, the day they
               made the request, and a request sitting at "new" is not a
@@ -173,7 +174,7 @@ function Reservations({ reservations }: { reservations: NonNullable<PathParticul
 }
 
 function Seats({ seats }: { seats: NonNullable<PathParticulars["steward"]>["seats"] }) {
-  if (seats.length === 0) return <Empty>No roles held yet. A role the village gives you appears here.</Empty>;
+  if (seats.length === 0) return <Empty><Trans context="PathFacts, Empty">No roles held yet. A role the village gives you appears here.</Trans></Empty>;
   return (
     <ul className="space-y-2">
       {seats.map((s) => (
@@ -188,7 +189,7 @@ function Seats({ seats }: { seats: NonNullable<PathParticulars["steward"]>["seat
             <Standing live={s.live} word="Ended" />
           </div>
           {s.representsCircle ? (
-            <p className="mt-0.5 text-sm text-muted-foreground">Speaks for a circle.</p>
+            <p className="mt-0.5 text-sm text-muted-foreground"><Trans context="PathFacts, p">Speaks for a circle.</Trans></p>
           ) : null}
           <Moon moon={s.startedMoon} prefix="Seated" />
           {s.live ? null : <Moon moon={s.endedMoon} prefix="Ended" />}
@@ -234,8 +235,8 @@ export default function PathFacts({
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
         <h2 className="font-display text-2xl font-bold text-card-foreground">{title}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          This did not load just now. Reload the page to try again.
-        </p>
+          <Trans context="PathFacts, p">This did not load just now. Reload the page to try again.
+        </Trans></p>
       </section>
     );
   }

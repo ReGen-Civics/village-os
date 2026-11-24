@@ -24,6 +24,7 @@ import { SNAPSHOT_METRICS, snapshotTileLabel } from "@shared/healthMetrics";
 import { Activity, CheckCircle2, Circle, Leaf, Moon, Sprout, Users } from "lucide-react";
 import { ExampleChip, ExamplesBanner } from "@/components/ExamplesBanner";
 import { BrowserCrashesCard } from "@/components/health/BrowserCrashesCard";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -79,11 +80,11 @@ export default function VillageHealth() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Village Health</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="VillageHealth, h1">Village Health</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            The village's vital signs, frozen each lunar cycle, and the land's
+            <Trans context="VillageHealth, p">The village's vital signs, frozen each lunar cycle, and the land's
             own ledger of regeneration.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -116,7 +117,7 @@ export default function VillageHealth() {
                   green, not by a gate.
                 */}
                 {season.daysLeft != null && (
-                  <span className="text-xs text-muted-foreground">{count(season.daysLeft, "day")} left</span>
+                  <span className="text-xs text-muted-foreground"><Trans context="VillageHealth, span">{count(season.daysLeft, "day")} left</Trans></span>
                 )}
               </div>
               {goals.length > 0 ? (
@@ -129,7 +130,7 @@ export default function VillageHealth() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">This season has no posted goals yet.</p>
+                <p className="text-xs text-muted-foreground"><Trans context="VillageHealth, p">This season has no posted goals yet.</Trans></p>
               )}
             </div>
           )}
@@ -138,7 +139,7 @@ export default function VillageHealth() {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <Leaf className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm">Regeneration ledger</p>
+              <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">Regeneration ledger</Trans></p>
             </div>
             {/* The banner belongs to THIS card, not to the page hero. Health's
                 only seeded content is regen entries, and they are correctly
@@ -149,10 +150,10 @@ export default function VillageHealth() {
             <ExamplesBanner moduleId="health" noun="measurement" layout="mb-3 text-left" />
             {Object.keys(data?.regen?.totals ?? {}).length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                <Sprout className="w-4 h-4 inline mr-1 text-teal-deep/60" />
+                <Trans context="VillageHealth, p"><Sprout className="w-4 h-4 inline mr-1 text-teal-deep/60" />
                 Nothing recorded yet. The stewards log plantings, water and
                 restoration as they happen.
-              </p>
+              </Trans></p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {(data.regen.metrics ?? []).filter((m: any) => data.regen.totals[m.key]).map((m: any) => (
@@ -168,7 +169,7 @@ export default function VillageHealth() {
             )}
             {(data?.regen?.latest ?? []).length > 0 && (
               <details className="mt-3">
-                <summary className="text-xs text-muted-foreground cursor-pointer">Recent entries</summary>
+                <summary className="text-xs text-muted-foreground cursor-pointer"><Trans context="VillageHealth, summary">Recent entries</Trans></summary>
                 <div className="mt-2 space-y-1">
                   {data.regen.latest.map((e: any) => (
                     <p key={e.id} className="text-xs text-muted-foreground">
@@ -189,18 +190,18 @@ export default function VillageHealth() {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-1">
               <Moon className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm">Lunation snapshots</p>
+              <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">Lunation snapshots</Trans></p>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
               Frozen at each cycle close, never recomputed.{" "}
               {data && !data.trendsUnlocked && (
                 <span className="text-amber-600">
-                  {data.lunationsCollected} of {data.trendMinLunations} lunations collected, trends unlock at {data.trendMinLunations}.
-                </span>
+                  <Trans context="VillageHealth, span">{data.lunationsCollected} of {data.trendMinLunations} lunations collected, trends unlock at {data.trendMinLunations}.
+                </Trans></span>
               )}
             </p>
             {data && data.lunationsCollected === 0 ? (
-              <p className="text-sm text-muted-foreground">The first snapshot lands when the current lunar cycle closes.</p>
+              <p className="text-sm text-muted-foreground"><Trans context="VillageHealth, p">The first snapshot lands when the current lunar cycle closes.</Trans></p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {Object.entries(SNAPSHOT_LABELS).map(([key, label]) => {
@@ -227,7 +228,7 @@ export default function VillageHealth() {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-1">
               <Users className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm">Governance health</p>
+              <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">Governance health</Trans></p>
             </div>
             <p className="text-sm text-foreground">
               {count(data?.governance?.decisionsAllTime ?? 0, "decision")} opened by{" "}
@@ -252,7 +253,7 @@ export default function VillageHealth() {
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="w-4 h-4 text-teal-deep" />
-                <p className="font-semibold text-foreground text-sm">What the village depends on</p>
+                <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">What the village depends on</Trans></p>
               </div>
               <p className="text-sm text-foreground">
                 {data.structure.soleHeldSeats} of {count(data.structure.seatingsLive, "filled role")}{" "}
@@ -278,8 +279,8 @@ export default function VillageHealth() {
                     .filter((h: any) => h.soleHeld > 0)
                     .map((h: any) => (
                       <li key={h.holderKey} className="text-xs text-foreground">
-                        <span className="font-medium">{h.name}</span> is the only holder of{" "}
-                        {h.soleHeldNames.join(", ")}
+                        <Trans context="VillageHealth, li"><span className="font-medium">{h.name}</span> is the only holder of{" "}
+                        {h.soleHeldNames.join(", ")}</Trans>
                       </li>
                     ))}
                 </ul>
@@ -296,9 +297,9 @@ export default function VillageHealth() {
           )}
 
           <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
-            <Activity className="w-3.5 h-3.5" />
+            <Trans context="VillageHealth, p"><Activity className="w-3.5 h-3.5" />
             Absolute counts only. No leaderboards, no ranks. The village is not a scoreboard.
-          </p>
+          </Trans></p>
         </div>
       </section>
     </Layout>
@@ -331,6 +332,7 @@ function ring(cx: number, cy: number, r0: number, r1: number, a0: number, a1: nu
 }
 
 function DoughnutCard({ doughnut }: { doughnut: any }) {
+  const { t } = useLingui();
   const C = DOUGHNUT.C;
   const F_OUT = 188;   // foundation wedges grow inward from here
   const F_DEPTH = 96;  // a full share reaches this far in
@@ -357,13 +359,13 @@ function DoughnutCard({ doughnut }: { doughnut: any }) {
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center gap-2 mb-1">
         <Circle className="w-4 h-4 text-teal-deep" />
-        <p className="font-semibold text-foreground text-sm">The doughnut</p>
+        <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">The doughnut</Trans></p>
       </div>
       <p className="text-xs text-muted-foreground mb-3">
-        The social foundation inside, the land's ledger outside, the safe and
+        <Trans context="VillageHealth, p">The social foundation inside, the land's ledger outside, the safe and
         just space between. Red marks point at what the village agreed
         matters, never at a person.
-      </p>
+      </Trans></p>
 
       {/* The viewBox carries the label band as well as the rings. It used to
           be `0 0 720 720`, which stopped exactly at the centre plus 360 while
@@ -371,7 +373,7 @@ function DoughnutCard({ doughnut }: { doughnut: any }) {
           left, right and bottom names were painted outside the picture and
           clipped by the svg's default overflow. The numbers are derived in
           `@/lib/doughnutLayout` and checked there. */}
-      <svg viewBox={DOUGHNUT_VIEWBOX} className="w-full max-h-[76vh]" role="group" aria-label="The village doughnut">
+      <svg viewBox={DOUGHNUT_VIEWBOX} className="w-full max-h-[76vh]" role="group" aria-label={t({ message: "The village doughnut", context: "VillageHealth, aria-label" })}>
         <defs>
           <path id="ring-f-label" d={`M ${C - RING_F[0] - 11} ${C} A ${RING_F[0] + 11} ${RING_F[0] + 11} 0 1 1 ${C + RING_F[0] + 11} ${C}`} />
           <path id="ring-r-label" d={`M ${C - RING_R[0] - 11} ${C} A ${RING_R[0] + 11} ${RING_R[0] + 11} 0 1 1 ${C + RING_R[0] + 11} ${C}`} />
@@ -385,14 +387,14 @@ function DoughnutCard({ doughnut }: { doughnut: any }) {
         <path d={ring(C, C, RING_F[0], RING_F[1], 0, TAU - 0.0001)}
           style={{ fill: "var(--color-sage)", fillOpacity: 0.85 }} />
         <text style={{ fontSize: 13, letterSpacing: 3, fill: "white", fontWeight: 600 }}>
-          <textPath href="#ring-f-label" startOffset="25%" textAnchor="middle">SOCIAL FOUNDATION</textPath>
+          <textPath href="#ring-f-label" startOffset="25%" textAnchor="middle"><Trans context="VillageHealth, textPath">SOCIAL FOUNDATION</Trans></textPath>
         </text>
 
         {/* Outer band */}
         <path d={ring(C, C, RING_R[0], RING_R[1], 0, TAU - 0.0001)}
           style={{ fill: "var(--color-teal-deep)", fillOpacity: 0.9 }} />
         <text style={{ fontSize: 13, letterSpacing: 3, fill: "white", fontWeight: 600 }}>
-          <textPath href="#ring-r-label" startOffset="25%" textAnchor="middle">THE LAND'S LEDGER</textPath>
+          <textPath href="#ring-r-label" startOffset="25%" textAnchor="middle"><Trans context="VillageHealth, textPath">THE LAND'S LEDGER</Trans></textPath>
         </text>
 
         {/* Foundation wedges: share grows inward; shortfall is the red gap
@@ -477,23 +479,23 @@ function DoughnutCard({ doughnut }: { doughnut: any }) {
                 className="fill-muted-foreground"
                 style={{ fontSize: 10.5 }}
               >
-                {w.total.toLocaleString()} {w.unit} to date
-              </text>
+                <Trans context="VillageHealth, text">{w.total.toLocaleString()} {w.unit} to date
+              </Trans></text>
             </g>
           );
         })}
 
         {!doughnut.collected && (
           <text x={C} y={C} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 13 }}>
-            <tspan x={C} dy="-0.5em">The doughnut draws itself from lunation snapshots.</tspan>
-            <tspan x={C} dy="1.3em">The first lands when the current lunar cycle closes.</tspan>
+            <tspan x={C} dy="-0.5em"><Trans context="VillageHealth, tspan">The doughnut draws itself from lunation snapshots.</Trans></tspan>
+            <tspan x={C} dy="1.3em"><Trans context="VillageHealth, tspan">The first lands when the current lunar cycle closes.</Trans></tspan>
           </text>
         )}
       </svg>
 
       {/* The same numbers as text: the SVG is a picture of this list. */}
       <details className="mt-2">
-        <summary className="text-xs text-muted-foreground cursor-pointer">The numbers behind the rings</summary>
+        <summary className="text-xs text-muted-foreground cursor-pointer"><Trans context="VillageHealth, summary">The numbers behind the rings</Trans></summary>
         <div className="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-1">
           {foundation.map((w) => (
             <p key={w.key} className="text-xs text-muted-foreground">
@@ -501,14 +503,14 @@ function DoughnutCard({ doughnut }: { doughnut: any }) {
               {w.share == null
                 ? "no reading yet"
                 : `${w.value?.toLocaleString?.() ?? w.value} of ${w.denomValue?.toLocaleString?.() ?? w.denomValue} (${Math.round(w.share * 100)}%, floor ${Math.round(w.floor * 100)}%)`}
-              {w.shortfall && <span className="text-red-600"> · under the floor</span>}
+              {w.shortfall && <span className="text-red-600"> <Trans context="VillageHealth, span">· under the floor</Trans></span>}
             </p>
           ))}
           {regen.map((w) => (
             <p key={w.key} className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">{w.label}:</span>{" "}
+              <Trans context="VillageHealth, p"><span className="text-foreground font-medium">{w.label}:</span>{" "}
               {w.thisLunation.toLocaleString()} {w.unit} this lunation, {w.total.toLocaleString()} to date
-            </p>
+            </Trans></p>
           ))}
         </div>
       </details>

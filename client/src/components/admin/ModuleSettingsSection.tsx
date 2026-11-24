@@ -48,6 +48,7 @@ import RitesConfigPanel from "@/components/admin/RitesConfigPanel";
 import ProtocolsEditor from "@/components/admin/ProtocolsEditor";
 import HiddenMapConfigPanel from "@/components/admin/HiddenMapConfigPanel";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** A variable row as GET /api/admin/variables sends it. */
 interface Dial {
@@ -173,6 +174,7 @@ export default function ModuleSettingsSection({
   /** Called after the focus attempt, so the tab can take the key out of the URL. */
   onFocused?: () => void;
 }) {
+  const { t } = useLingui();
   const [dials, setDials] = useState<Dial[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -264,7 +266,7 @@ export default function ModuleSettingsSection({
       }
       setRefused((r) => { const n = { ...r }; delete n[dial.key]; return n; });
       setDrafts((p) => { const n = { ...p }; delete n[dial.key]; return n; });
-      toast.success("Saved");
+      toast.success(t({ message: "Saved", context: "ModuleSettingsSection, toast" }));
       // The Go-live card and the module cards read readiness, and answering a
       // place-dependent dial is exactly what flips one. They already listen
       // for this; without it the hint a founder just satisfied would sit there
@@ -360,23 +362,23 @@ export default function ModuleSettingsSection({
     <div className="mt-4 pt-4 border-t border-gray-100">
       {/* tabIndex -1 so a deep link that cannot find its dial has somewhere
           honest to put focus, and the reader hears where they landed. */}
-      <h4 className="font-semibold text-gray-900 text-sm" tabIndex={-1} ref={headingRef}>Settings</h4>
+      <h4 className="font-semibold text-gray-900 text-sm" tabIndex={-1} ref={headingRef}><Trans context="ModuleSettingsSection, h4">Settings</Trans></h4>
       <p className="text-xs text-gray-600 mt-0.5 mb-3">
-        Everything {moduleName} reads, editable here. Changes are live the moment they save.
-      </p>
+        <Trans context="ModuleSettingsSection, p">Everything {moduleName} reads, editable here. Changes are live the moment they save.
+      </Trans></p>
 
       {missed && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" role="status">
-          That link asked for a setting this card does not hold any more. Everything {moduleName}{" "}
+          <Trans context="ModuleSettingsSection, p">That link asked for a setting this card does not hold any more. Everything {moduleName}{" "}
           reads is below.
-        </p>
+        </Trans></p>
       )}
 
       {off && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
-          {moduleName} is off. You can set it up now: what you save here is kept, and it takes
+          <Trans context="ModuleSettingsSection, p">{moduleName} is off. You can set it up now: what you save here is kept, and it takes
           effect the moment you turn the module on.
-        </p>
+        </Trans></p>
       )}
 
       {emptyProcess && (
@@ -384,22 +386,22 @@ export default function ModuleSettingsSection({
           className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3"
           role="status"
         >
-          Redemption is on and "How redemption works here" is empty, so a member who asks to cash
+          <Trans context="ModuleSettingsSection, p">Redemption is on and "How redemption works here" is empty, so a member who asks to cash
           out is shown no instructions at all. Write it below. Nothing is blocked either way.
-        </p>
+        </Trans></p>
       )}
 
       {dials === null ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <p className="text-sm text-gray-500"><Trans context="ModuleSettingsSection, p">Loading…</Trans></p>
       ) : (
         <>
           {failed && (
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3" role="status">
-              The settings could not be read, so this list may be incomplete.
-            </p>
+              <Trans context="ModuleSettingsSection, p">The settings could not be read, so this list may be incomplete.
+            </Trans></p>
           )}
           {listed.length === 0 && !ConfigPanel && !elsewhere && !failed && (
-            <p className="text-sm text-gray-500">{moduleName} has no settings of its own.</p>
+            <p className="text-sm text-gray-500"><Trans context="ModuleSettingsSection, p">{moduleName} has no settings of its own.</Trans></p>
           )}
 
           <div className="space-y-3">
@@ -426,10 +428,10 @@ export default function ModuleSettingsSection({
                       <div className="font-medium text-gray-900 text-sm">
                         {v.label}
                         {v.isDefault && (
-                          <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">platform default</span>
+                          <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"><Trans context="ModuleSettingsSection, span">platform default</Trans></span>
                         )}
                         {v.ring === "founder" && (
-                          <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">founder held</span>
+                          <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"><Trans context="ModuleSettingsSection, span">founder held</Trans></span>
                         )}
                       </div>
                       <p className="text-xs text-gray-600 mt-0.5 max-w-xl">{v.description}</p>
@@ -443,10 +445,10 @@ export default function ModuleSettingsSection({
                           id={answerNoteId}
                           className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2"
                         >
-                          Needs your answer. {v.value === v.default ? `It starts as "${v.default}", which is where the platform starts and not something anybody here said.` : ""} Choose
+                          <Trans context="ModuleSettingsSection, p">Needs your answer. {v.value === v.default ? `It starts as "${v.default}", which is where the platform starts and not something anybody here said.` : ""} Choose
                           it, or press This is right to keep what it shows. Nothing is blocked
                           either way.
-                        </p>
+                        </Trans></p>
                       )}
                       {others.length > 0 && (
                         <p className="text-[11px] text-gray-600 mt-0.5">
@@ -454,16 +456,16 @@ export default function ModuleSettingsSection({
                         </p>
                       )}
                       {v.applyTiming === "cycle-close" && (
-                        <p className="text-[11px] text-gray-600 mt-0.5">A change here takes effect at the next cycle close.</p>
+                        <p className="text-[11px] text-gray-600 mt-0.5"><Trans context="ModuleSettingsSection, p">A change here takes effect at the next cycle close.</Trans></p>
                       )}
                       {ECHO[v.key] && <p className="text-xs text-gray-700 mt-1" aria-live="polite">{ECHO[v.key](draft)}</p>}
                     </div>
                     {v.movedToSecret ? (
                       <p className="text-xs text-gray-700 max-w-[260px]">
-                        Saved under Integrations, sealed, because a dedicated endpoint carries its key in the address.{" "}
+                        <Trans context="ModuleSettingsSection, p">Saved under Integrations, sealed, because a dedicated endpoint carries its key in the address.{" "}
                         <a href="/admin?tab=integrations" className="text-teal-deep underline">
                           Open Integrations
-                        </a>
+                        </a></Trans>
                       </p>
                     ) : (<>
                     {v.type === "boolean" ? (
@@ -536,8 +538,8 @@ export default function ModuleSettingsSection({
                         title={`Back to the platform default (${v.default})`}
                         className={resetCls}
                       >
-                        Reset
-                      </button>
+                        <Trans context="ModuleSettingsSection, button">Reset
+                      </Trans></button>
                     )}
                     </>)}
                   </div>
@@ -576,8 +578,8 @@ export default function ModuleSettingsSection({
             <p className="text-xs text-gray-600 mt-4">
               {elsewhere.what}{" "}
               <a href={`/admin?tab=${elsewhere.tab}`} className="text-teal-deep underline">
-                Open it
-              </a>
+                <Trans context="ModuleSettingsSection, a">Open it
+              </Trans></a>
             </p>
           )}
         </>

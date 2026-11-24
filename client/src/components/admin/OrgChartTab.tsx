@@ -147,8 +147,8 @@ export function OrgChartTab({ password }: { password: string }) {
     return d;
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Loading…</div>;
-  if (!org) return <div className="text-center py-12 text-gray-400">The org chart could not be read.</div>;
+  if (loading) return <div className="text-center py-12 text-gray-400"><Trans context="OrgChartTab, div">Loading…</Trans></div>;
+  if (!org) return <div className="text-center py-12 text-gray-400"><Trans context="OrgChartTab, div">The org chart could not be read.</Trans></div>;
 
   const circles: any[] = org.circles ?? [];
   const roles: any[] = org.roles ?? [];
@@ -321,9 +321,9 @@ export function OrgChartTab({ password }: { password: string }) {
               : "Mandates coming up"}
           </p>
           <p className="text-xs text-gray-600 mt-0.5">
-            Everyone here is still holding their role and still doing the work. What has run out is the
+            <Trans context="OrgChartTab, p">Everyone here is still holding their role and still doing the work. What has run out is the
             agreement to keep doing it unasked.
-          </p>
+          </Trans></p>
           <ul className="mt-2 space-y-1">
             {expiring.map((e: any) => (
               <li key={e.assignmentId} className="text-xs text-gray-800">
@@ -477,7 +477,7 @@ export function OrgChartTab({ password }: { password: string }) {
                 </label>
                 <label className="text-xs text-gray-500 flex items-center gap-2 min-h-[44px] sm:self-end">
                   <input type="checkbox" checked={!!cd.isAnchor} disabled={!!c.isExample} onChange={(e) => setCircle({ isAnchor: e.target.checked })} />
-                  <span>Anchor circle (shown with an anchor before its name)</span>
+                  <span><Trans context="OrgChartTab, span">Anchor circle (shown with an anchor before its name)</Trans></span>
                 </label>
                 {/* THE GOVERNANCE LAYER (0286). The circles map puts a link or
                     lead circle in the middle of the circle it sits inside, and
@@ -511,19 +511,19 @@ export function OrgChartTab({ password }: { password: string }) {
                 </label>
               </div>
               <div className="text-xs text-gray-400 pt-1">
-                {c.grownFromOrgRoleId && <span>Grew from a role. </span>}
-                {c.isExample && <span className="text-amber-700">Standing example, publish your own to replace it.</span>}
+                {c.grownFromOrgRoleId && <span><Trans context="OrgChartTab, span">Grew from a role. </Trans></span>}
+                {c.isExample && <span className="text-amber-700"><Trans context="OrgChartTab, span">Standing example, publish your own to replace it.</Trans></span>}
               </div>
               {/* A CIRCLE'S PURPOSE CHANGES BY CONSENT (Rye, 2026-10-22): shown here, and
                   proposed on the circle's card, where it goes to the village as an org draft. */}
               <div className="text-xs text-gray-500 mt-2">
-                <p>Purpose</p>
+                <p><Trans context="OrgChartTab, p">Purpose</Trans></p>
                 <p className="text-sm text-gray-700 mt-1">{c.purpose || "No purpose written yet"}</p>
                 <p className="text-[11px] text-gray-500 mt-0.5">
-                  Changes by consent.{" "}
+                  <Trans context="OrgChartTab, p">Changes by consent.{" "}
                   <a href={`/circles/${encodeURIComponent(String(c.id))}`} className="inline-flex min-h-[44px] items-center underline">
                     Propose new words on the circle's card
-                  </a>
+                  </a></Trans>
                 </p>
               </div>
             </section>
@@ -565,7 +565,7 @@ export function OrgChartTab({ password }: { password: string }) {
               */}
               <div className="flex flex-wrap gap-2 items-end pt-2 border-t border-gray-50">
                 <label className="text-xs text-gray-500">Add a role to this circle
-                  <input value={newSeat[c.id] ?? ""} placeholder="Welcome Host"
+                  <input value={newSeat[c.id] ?? ""} placeholder={t({ message: "Welcome Host", context: "OrgChartTab, placeholder" })}
                     className={`${inputCls} mt-1 min-h-[44px]`}
                     onChange={(e) => setNewSeat({ ...newSeat, [c.id]: e.target.value })} />
                 </label>
@@ -576,7 +576,7 @@ export function OrgChartTab({ password }: { password: string }) {
                     const ok = await call("/admin/org/roles", { name: String(newSeat[c.id]).trim(), circleId: c.id, seats: 1 });
                     if (ok) { toast.success("Role added"); setNewSeat({ ...newSeat, [c.id]: "" }); void load(); }
                   }}
-                >Add role</button>
+                ><Trans context="OrgChartTab, button">Add role</Trans></button>
               </div>
             </>
           )}
@@ -612,9 +612,9 @@ export function OrgChartTab({ password }: { password: string }) {
                 onChange={(e) => setDraft({ ...draft, [r.id]: { ...d, seats: Number(e.target.value) } })} />
             </label>
             <p className="text-xs text-gray-500">
-              State<br />
+              <Trans context="OrgChartTab, p">State<br />
               <span className="font-medium text-gray-800">{STATE_LABEL[r.state] ?? r.state}</span>
-              <span className="text-gray-400"> · {r.holderCount} of {r.seats}</span>
+              <span className="text-gray-400"> · {r.holderCount} of {r.seats}</span></Trans>
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-2 mt-2">
@@ -642,24 +642,24 @@ export function OrgChartTab({ password }: { password: string }) {
                 field name AND the hint under it, run together. */}
             <label className="text-xs text-gray-500">Key accountabilities, one per line
               <textarea rows={4} value={(d.accountabilities ?? []).join("\n")} className={`${inputCls} w-full mt-1`}
-                aria-label="Key accountabilities, one per line"
+                aria-label={t({ message: "Key accountabilities, one per line", context: "OrgChartTab, aria-label" })}
                 aria-describedby={`${r.id}-accountabilities-hint`}
                 onChange={(e) => setDraft({
                   ...draft,
                   [r.id]: { ...d, accountabilities: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) },
                 })} />
               <span id={`${r.id}-accountabilities-hint`} className="block text-[11px] text-gray-400 mt-0.5">
-                The ongoing work the circle counts on this role to keep doing. Listed on /roles.
-              </span>
+                <Trans context="OrgChartTab, span">The ongoing work the circle counts on this role to keep doing. Listed on /roles.
+              </Trans></span>
             </label>
             <label className="text-xs text-gray-500">Why this role matters
               <textarea rows={4} value={d.whyItMatters ?? ""} className={`${inputCls} w-full mt-1`}
-                aria-label="Why this role matters"
+                aria-label={t({ message: "Why this role matters", context: "OrgChartTab, aria-label" })}
                 aria-describedby={`${r.id}-why-hint`}
                 onChange={(e) => setDraft({ ...draft, [r.id]: { ...d, whyItMatters: e.target.value } })} />
               <span id={`${r.id}-why-hint`} className="block text-[11px] text-gray-400 mt-0.5">
-                Shown on /roles under Why This Role Matters.
-              </span>
+                <Trans context="OrgChartTab, span">Shown on /roles under Why This Role Matters.
+              </Trans></span>
             </label>
           </div>
 
@@ -686,7 +686,7 @@ export function OrgChartTab({ password }: { password: string }) {
               <span key={h.assignmentId ?? h.userId ?? h.name} className={`text-xs rounded-full pl-3 pr-1 py-1 inline-flex items-center gap-1 ${h.lapsed ? "bg-amber-50 border border-amber-200" : "bg-gray-100"}`}>
                 {h.name}
                 {h.focus && <span className="text-gray-500"> · {h.focus}</span>}
-                {h.kind === "documented" && <span className="text-amber-700"> · no account yet</span>}
+                {h.kind === "documented" && <span className="text-amber-700"> <Trans context="OrgChartTab, span">· no account yet</Trans></span>}
                 {h.lapsed && (
                   <span className="text-amber-700">
                     {" "}· {h.lapsedReason === "term" ? "term ended" : "seated last season"}
@@ -703,7 +703,7 @@ export function OrgChartTab({ password }: { password: string }) {
                       const ok = await call(`/admin/org/seatings/${h.assignmentId}`, { reason }, "DELETE");
                       if (ok) { toast.success("Holding ended"); void load(); }
                     }}
-                  >Unseat</button>
+                  ><Trans context="OrgChartTab, button">Unseat</Trans></button>
                 )}
                 {h.assignmentId && h.kind === "documented" && (
                   <button
@@ -719,11 +719,11 @@ export function OrgChartTab({ password }: { password: string }) {
                       const ok = await call(`/admin/org/seatings/${h.assignmentId}/forget`, { reason: "forgotten at their request" });
                       if (ok) { toast.success(`Forgotten. ${ok.seatings} holding(s) ended.`); void load(); }
                     }}
-                  >Forget</button>
+                  ><Trans context="OrgChartTab, button">Forget</Trans></button>
                 )}
               </span>
             ))}
-            {(r.holders ?? []).length === 0 && <span className="text-xs text-gray-400">Nobody holds this yet.</span>}
+            {(r.holders ?? []).length === 0 && <span className="text-xs text-gray-400"><Trans context="OrgChartTab, span">Nobody holds this yet.</Trans></span>}
           </div>
 
           {/*
@@ -768,14 +768,14 @@ export function OrgChartTab({ password }: { password: string }) {
           {!r.isExample && <EditRoleButton roleId={r.id} className="mt-2" onSaved={() => void load()} />}
 
           {journal[r.id] === "loading" && (
-            <p className="text-xs text-gray-400 mt-2">Reading the history…</p>
+            <p className="text-xs text-gray-400 mt-2"><Trans context="OrgChartTab, p">Reading the history…</Trans></p>
           )}
           {Array.isArray(journal[r.id]) && (
             <div className="mt-2 border-t border-gray-100 pt-2 space-y-1">
               {(journal[r.id] as any[]).length === 0 && (
                 <p className="text-xs text-gray-400">
-                  Nothing recorded against this role yet. Changes from here on will show up.
-                </p>
+                  <Trans context="OrgChartTab, p">Nothing recorded against this role yet. Changes from here on will show up.
+                </Trans></p>
               )}
               {(journal[r.id] as any[]).map((e) => (
                 <p key={e.id} className="text-xs text-gray-600">
@@ -794,14 +794,14 @@ export function OrgChartTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Org Chart</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="OrgChartTab, h2">Org Chart</Trans></h2>
         {level === 1 && <div className="mt-2"><NewRoleFromCardButton onMade={() => void load()} /></div>}
         <p className="text-sm text-gray-500 mt-1">
-          Circles, the roles inside them, and who holds each role. This is what
+          <Trans context="OrgChartTab, p">Circles, the roles inside them, and who holds each role. This is what
           /roles, /circles and /team show. Changes wait in the save bar at the bottom until you save them.
           Whether a role reads as filled or open is worked out from its holders,
           so it can never say filled with nobody in it.
-        </p>
+        </Trans></p>
       </div>
 
       {level === 1 && circlesLevel}

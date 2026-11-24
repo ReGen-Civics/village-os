@@ -15,6 +15,7 @@
  * from anywhere on the page.
  */
 import { useEffect, useId } from "react";
+import { useLingui } from "@lingui/react/macro";
 
 export const PROFILE_TABS = ["today", "quests", "roles", "treasury", "sheet"] as const;
 export type ProfileTab = (typeof PROFILE_TABS)[number];
@@ -58,6 +59,7 @@ export const TAB_OF_ANCHOR: Record<string, ProfileTab> = {
 };
 
 export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t: ProfileTab) => void }) {
+  const { t } = useLingui();
   const id = useId();
   // A hash that names a section on another tab opens that tab first.
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
 
   return (
     <nav
-      aria-label="Profile sections"
+      aria-label={t({ message: "Profile sections", context: "ProfileTabs, aria-label" })}
       className="sticky top-24 z-30 -mx-4 mb-4 grid grid-cols-5 border-b border-dash-edge bg-card/95 backdrop-blur sm:hidden"
     >
       {PROFILE_TABS.map((t) => (

@@ -14,6 +14,7 @@ import { PULSE_METRICS, fillVillage, type PulseAggregate, type PulseAggregateCel
 import { myPulse, problemText, pulseAggregate, type OwnPulseWeek } from "@/lib/journalApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { CARD, HINT, metricName, signed } from "./ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const RECENT = 12;
 
@@ -59,15 +60,15 @@ function VillageCell({
   centred: boolean;
   floor: number;
 }) {
-  if (!latest) return <p className={HINT}>No answers yet.</p>;
+  if (!latest) return <p className={HINT}><Trans context="PulseTab, p">No answers yet.</Trans></p>;
   if (latest.cell.suppressed || latest.cell.mean === null) {
     return (
       <div>
         <p className="text-sm text-foreground">{suppressedSentence(floor)}</p>
         {earlier && earlier.cell.mean !== null && (
           <p className={`${HINT} mt-1`}>
-            Week {earlier.weekId}: {signed(earlier.cell.mean, centred)}
-            {earlier.cell.n !== null ? `, from ${people(earlier.cell.n)}` : ""}
+            <Trans context="PulseTab, p">Week {earlier.weekId}: {signed(earlier.cell.mean, centred)}
+            {earlier.cell.n !== null ? `, from ${people(earlier.cell.n)}` : ""}</Trans>
           </p>
         )}
       </div>
@@ -78,13 +79,14 @@ function VillageCell({
       <span className="text-2xl font-bold">{signed(latest.cell.mean, centred)}</span>
       <span className="ml-2 text-sm text-muted-foreground">
         {latest.cell.n !== null ? `average from ${people(latest.cell.n)}, ` : "average, "}
-        <span className="whitespace-nowrap">week {latest.weekId}</span>
+        <span className="whitespace-nowrap"><Trans context="PulseTab, span">week {latest.weekId}</Trans></span>
       </span>
     </p>
   );
 }
 
 export default function PulseTab({ village }: { village: string }) {
+  const { t } = useLingui();
   const [mine, setMine] = useState<OwnPulseWeek[] | null>(null);
   const [agg, setAgg] = useState<PulseAggregate | null>(null);
   const [mineProblem, setMineProblem] = useState<string | null>(null);
@@ -136,19 +138,19 @@ export default function PulseTab({ village }: { village: string }) {
     <div className="space-y-8">
       <section aria-labelledby="pulse-mine">
         <h2 id="pulse-mine" className="font-display text-xl font-bold text-foreground">
-          Your weeks
-        </h2>
-        <p className={`${HINT} mt-1`}>Your own numbers from each weekly pulse, oldest on the left.</p>
+          <Trans context="PulseTab, h2">Your weeks
+        </Trans></h2>
+        <p className={`${HINT} mt-1`}><Trans context="PulseTab, p">Your own numbers from each weekly pulse, oldest on the left.</Trans></p>
         {mine === null ? (
           <div className="flex justify-center py-6">
-            <BreathingLoader label="Reading your weeks" />
+            <BreathingLoader label={t({ message: "Reading your weeks", context: "PulseTab, label" })} />
           </div>
         ) : mineProblem ? (
           <p role="alert" className="mt-3 text-sm text-destructive">
             {mineProblem}
           </p>
         ) : ownWeeks.length === 0 ? (
-          <p className={`${HINT} mt-3`}>No pulse yet. The weekly pulse on Today takes about two minutes.</p>
+          <p className={`${HINT} mt-3`}><Trans context="PulseTab, p">No pulse yet. The weekly pulse on Today takes about two minutes.</Trans></p>
         ) : (
           <ul className="mt-3 space-y-3">
             {PULSE_METRICS.map((m) => {
@@ -167,7 +169,7 @@ export default function PulseTab({ village }: { village: string }) {
                     <Sparkline values={values} min={m.min} max={m.max} />
                     {typeof last === "number" && (
                       <span className="text-2xl font-bold text-foreground">
-                        <span className="sr-only">Latest: </span>
+                        <span className="sr-only"><Trans context="PulseTab, span">Latest: </Trans></span>
                         {signed(last, m.min < 0)}
                       </span>
                     )}
@@ -181,18 +183,18 @@ export default function PulseTab({ village }: { village: string }) {
 
       <section aria-labelledby="pulse-village">
         <h2 id="pulse-village" className="font-display text-xl font-bold text-foreground">
-          The village
-        </h2>
+          <Trans context="PulseTab, h2">The village
+        </Trans></h2>
         <p className={`${HINT} mt-1`}>
-          Averages of everyone who answered each week. The words you write in a pulse stay in your own journal.
-        </p>
+          <Trans context="PulseTab, p">Averages of everyone who answered each week. The words you write in a pulse stay in your own journal.
+        </Trans></p>
         {aggProblem ? (
           <p role="alert" className="mt-3 text-sm text-destructive">
             {aggProblem}
           </p>
         ) : agg === null ? (
           <div className="flex justify-center py-6">
-            <BreathingLoader label="Reading the village's numbers" />
+            <BreathingLoader label={t({ message: "Reading the village's numbers", context: "PulseTab, label" })} />
           </div>
         ) : (
           <>
@@ -212,7 +214,7 @@ export default function PulseTab({ village }: { village: string }) {
                   <li key={m.key} className={CARD}>
                     <p className="font-semibold text-foreground">{metricName(m.key)}</p>
                     <p className="mb-2 text-xs text-muted-foreground">
-                      {m.ends[0]} to {m.ends[1]}
+                      <Trans context="PulseTab, p">{m.ends[0]} to {m.ends[1]}</Trans>
                     </p>
                     <VillageCell latest={latest} earlier={earlier} centred={m.min < 0} floor={agg.floor} />
                   </li>

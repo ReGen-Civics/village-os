@@ -45,7 +45,7 @@
  * word about it anywhere.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { Link, useParams } from "wouter";
 import Layout from "@/components/Layout";
 import { authToken } from "@/lib/gameApi";
@@ -220,7 +220,7 @@ export default function StructureReview() {
         <div className="sheet-night min-h-screen bg-background text-foreground">
           <div className="max-w-[1180px] mx-auto px-4 sm:px-5 pt-7 pb-16 grid gap-4">
             <p className="text-[11px] tracking-[0.16em] uppercase text-muted-foreground font-semibold">
-              Review · From {source} · Arrived {when(data.receivedAt)}
+              <Trans context="StructureReview, p">Review · From {source} · Arrived {when(data.receivedAt)}</Trans>
             </p>
             {notice && <p className={`${card} px-4 py-3 text-sm`} role="status" data-testid="notice">{notice}</p>}
             <StructureDraft
@@ -254,21 +254,21 @@ export default function StructureReview() {
         <div className="sheet-night min-h-screen bg-background text-foreground">
           <div className="max-w-3xl mx-auto px-4 py-10">
             <div className={`${card} p-6`}>
-              {load.state === "loading" && <p className="text-muted-foreground">Reading the change.</p>}
+              {load.state === "loading" && <p className="text-muted-foreground"><Trans context="StructureReview, p">Reading the change.</Trans></p>}
               {load.state === "refused" && (
-                <p>Reviewing structure changes is for whoever keeps the review queue. Ask a steward to open it for you.</p>
+                <p><Trans context="StructureReview, p">Reviewing structure changes is for whoever keeps the review queue. Ask a steward to open it for you.</Trans></p>
               )}
               {(load.state === "empty" || (load.state === "ready" && !plan)) && (
                 <p>
-                  Nothing in this arrival is waiting for a decision. <Link href="/review" className="underline">Back to the review queue</Link>
+                  <Trans context="StructureReview, p">Nothing in this arrival is waiting for a decision. <Link href="/review" className="underline">Back to the review queue</Link></Trans>
                 </p>
               )}
               {load.state === "failed" && (
                 <>
-                  <p>The change did not load. {load.why}. There may be proposals waiting; this is not an empty queue.</p>
+                  <p><Trans context="StructureReview, p">The change did not load. {load.why}. There may be proposals waiting; this is not an empty queue.</Trans></p>
                   <button type="button" onClick={() => void read()} className="mt-4 rounded-full border border-border px-4 py-2 min-h-[44px]">
-                    Try again
-                  </button>
+                    <Trans context="StructureReview, button">Try again
+                  </Trans></button>
                 </>
               )}
             </div>
@@ -432,12 +432,12 @@ export default function StructureReview() {
   };
 
   const pill = (s: PlanSeat) => {
-    if (exclude.has(s.key)) return <span className={`${pillBase} text-muted-foreground border-border`}>Left out</span>;
-    if (!s.match) return <span className={`${pillBase} text-open border-current`}>New role</span>;
+    if (exclude.has(s.key)) return <span className={`${pillBase} text-muted-foreground border-border`}><Trans context="StructureReview, span">Left out</Trans></span>;
+    if (!s.match) return <span className={`${pillBase} text-open border-current`}><Trans context="StructureReview, span">New role</Trans></span>;
     const c = conflicts[s.key];
-    if (c?.choice === "update") return <span className={`${pillBase} text-notice border-current`}>Updates live role</span>;
-    if (c?.choice === "rename") return <span className={`${pillBase} text-open border-current`}>Added as new</span>;
-    return <span className={`${pillBase} text-destructive border-current`}>Needs your call</span>;
+    if (c?.choice === "update") return <span className={`${pillBase} text-notice border-current`}><Trans context="StructureReview, span">Updates live role</Trans></span>;
+    if (c?.choice === "rename") return <span className={`${pillBase} text-open border-current`}><Trans context="StructureReview, span">Added as new</Trans></span>;
+    return <span className={`${pillBase} text-destructive border-current`}><Trans context="StructureReview, span">Needs your call</Trans></span>;
   };
 
   return (
@@ -446,28 +446,28 @@ export default function StructureReview() {
         <div className="max-w-[1180px] mx-auto px-4 sm:px-5 pt-7 pb-40 grid gap-6">
           <header className="grid gap-2.5">
             <p className="text-[11px] tracking-[0.16em] uppercase text-muted-foreground font-semibold">
-              Review · From {source} · Arrived {when(data.receivedAt)}
+              <Trans context="StructureReview, p">Review · From {source} · Arrived {when(data.receivedAt)}</Trans>
             </p>
             <h1 className="font-display text-[clamp(28px,4vw,40px)] leading-tight">{data.title ?? "A new shape for the village"}</h1>
             <p className="text-muted-foreground max-w-[68ch]">{summary}</p>
             {notice && <p className={`${card} px-4 py-3 text-sm text-foreground`} role="status" data-testid="notice">{notice}</p>}
             {draft && (
               <p className={`${card} px-4 py-3 text-sm flex flex-wrap gap-3 items-center justify-between`} data-testid="draft-banner">
-                <span>Part of this arrival is already in a draft, {draft.status === "published" ? "and it is live" : "waiting to publish"}.</span>
+                <span><Trans context="StructureReview, span">Part of this arrival is already in a draft, {draft.status === "published" ? "and it is live" : "waiting to publish"}.</Trans></span>
                 <button type="button" onClick={() => setMode("draft")} className={choiceClass(false)}>
-                  Open your draft
-                </button>
+                  <Trans context="StructureReview, button">Open your draft
+                </Trans></button>
               </p>
             )}
             {plan.notes.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                {plural(plan.notes.length, "note", "notes")} in this arrival change no structure and stay in the{" "}
+                <Trans context="StructureReview, p">{plural(plan.notes.length, "note", "notes")} in this arrival change no structure and stay in the{" "}
                 <Link href="/review" className="underline">review queue</Link>.
-              </p>
+              </Trans></p>
             )}
           </header>
 
-          <div className={`${card} flex flex-wrap`} role="list" aria-label="What this change does">
+          <div className={`${card} flex flex-wrap`} role="list" aria-label={t({ message: "What this change does", context: "StructureReview, aria-label" })}>
             {[
               { n: counts.newCircles, label: "New circles", tone: "text-open" },
               { n: counts.newSeats, label: "New roles", tone: "text-open" },
@@ -486,9 +486,9 @@ export default function StructureReview() {
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
             <section className={`${card} p-4 grid gap-3 order-2 lg:order-1 lg:sticky lg:top-3`} aria-labelledby="h-map">
-              <h2 id="h-map" className="sr-only">The circle map</h2>
+              <h2 id="h-map" className="sr-only"><Trans context="StructureReview, h2">The circle map</Trans></h2>
               <div className="flex flex-wrap justify-between gap-2.5 items-center">
-                <div className="inline-flex flex-wrap gap-0.5 rounded-full border border-border p-[3px]" role="group" aria-label="Map view">
+                <div className="inline-flex flex-wrap gap-0.5 rounded-full border border-border p-[3px]" role="group" aria-label={t({ message: "Map view", context: "StructureReview, aria-label" })}>
                   {VIEWS.map((v) => (
                     <button
                       key={v.id}
@@ -529,14 +529,14 @@ export default function StructureReview() {
               </div>
               {retire && decided.retire.carryFirst.length > 0 && (
                 <div className="text-sm grid gap-1" data-testid="carry-first">
-                  <p className="font-semibold">Carry people first</p>
+                  <p className="font-semibold"><Trans context="StructureReview, p">Carry people first</Trans></p>
                   <p className="text-muted-foreground">
-                    These old roles have people in them, so they stay until each person has a role in the new chart.
-                  </p>
+                    <Trans context="StructureReview, p">These old roles have people in them, so they stay until each person has a role in the new chart.
+                  </Trans></p>
                   <ul className="list-disc pl-5 text-muted-foreground">
                     {decided.retire.carryFirst.map((s) => (
                       <li key={s.id}>
-                        {s.name} in {circleName(s.circleId)}, {plural(s.holders, "person", "people")}
+                        <Trans context="StructureReview, li">{s.name} in {circleName(s.circleId)}, {plural(s.holders, "person", "people")}</Trans>
                       </li>
                     ))}
                   </ul>
@@ -560,8 +560,8 @@ export default function StructureReview() {
                 </div>
                 {matchedIn.length > 0 && (
                   <p className="text-muted-foreground">
-                    {source} names {plural(matchedIn.length, "role", "roles")} this village already has. Choose what each one does before this can be accepted.
-                  </p>
+                    <Trans context="StructureReview, p">{source} names {plural(matchedIn.length, "role", "roles")} this village already has. Choose what each one does before this can be accepted.
+                  </Trans></p>
                 )}
                 <div className="grid gap-2.5">
                   {matchedIn.map((s) => {
@@ -601,7 +601,7 @@ export default function StructureReview() {
                           <div>
                             <b>{live.name}</b>
                             <small className="block text-muted-foreground text-xs">
-                              Live today · {circleName(live.circleId)} · {live.holders ? plural(live.holders, "person holds it", "people hold it") : "nobody holds it"}
+                              <Trans context="StructureReview, small">Live today · {circleName(live.circleId)} · {live.holders ? plural(live.holders, "person holds it", "people hold it") : "nobody holds it"}</Trans>
                             </small>
                           </div>
                         </div>
@@ -650,7 +650,7 @@ export default function StructureReview() {
                         </div>
                         {choice?.choice === "rename" && (
                           <label className="grid gap-1 text-sm">
-                            <span>A name of its own. A second role with the same name stays blocked.</span>
+                            <span><Trans context="StructureReview, span">A name of its own. A second role with the same name stays blocked.</Trans></span>
                             <input
                               type="text"
                               value={choice.name}
@@ -676,7 +676,7 @@ export default function StructureReview() {
 
               <section className="grid gap-2.5" aria-labelledby="h-chg">
                 <div className="flex flex-wrap justify-between items-baseline gap-2.5">
-                  <h2 id="h-chg" className="font-display text-[22px]">Everything in this change</h2>
+                  <h2 id="h-chg" className="font-display text-[22px]"><Trans context="StructureReview, h2">Everything in this change</Trans></h2>
                   <button
                     type="button"
                     className={choiceClass(false)}
@@ -710,12 +710,12 @@ export default function StructureReview() {
                             </p>
                             {g.purpose && <p className="text-xs text-muted-foreground mt-0.5">{g.purpose}</p>}
                             {c?.sourceStatus === "proposed" && (
-                              <p className="text-xs text-notice mt-0.5">Proposed in {source}</p>
+                              <p className="text-xs text-notice mt-0.5"><Trans context="StructureReview, p">Proposed in {source}</Trans></p>
                             )}
-                            {g.problem && <p className="text-xs text-destructive mt-0.5">{g.problem}. Leave it out to go ahead.</p>}
+                            {g.problem && <p className="text-xs text-destructive mt-0.5"><Trans context="StructureReview, p">{g.problem}. Leave it out to go ahead.</Trans></p>}
                             {c && (
                               <details className="text-xs text-muted-foreground mt-1">
-                                <summary className="cursor-pointer min-h-[24px]">What {source} sent</summary>
+                                <summary className="cursor-pointer min-h-[24px]"><Trans context="StructureReview, summary">What {source} sent</Trans></summary>
                                 <pre className="whitespace-pre-wrap break-words bg-background rounded-lg p-2 mt-1.5 text-[11px]">
                                   {JSON.stringify(c.sent, null, 1)}
                                 </pre>
@@ -725,8 +725,8 @@ export default function StructureReview() {
                         </div>
                         {g.seats.length === 0 && (
                           <p className="px-4 py-3 text-[13px] text-muted-foreground border-b border-border">
-                            No roles in this circle yet. It arrives empty.
-                          </p>
+                            <Trans context="StructureReview, p">No roles in this circle yet. It arrives empty.
+                          </Trans></p>
                         )}
                         {g.seats.map((s) => (
                           <div
@@ -761,7 +761,7 @@ export default function StructureReview() {
                               {s.circleProblem && <p className="text-[13px] text-destructive">{s.circleProblem}</p>}
                               {s.problem && <p className="text-[13px] text-destructive">{s.problem}</p>}
                               {s.match && !settledOrOut(s) && (
-                                <p className="text-[13px] text-muted-foreground">Settle it above.</p>
+                                <p className="text-[13px] text-muted-foreground"><Trans context="StructureReview, p">Settle it above.</Trans></p>
                               )}
                               {/* A move lists the live words it changes; a new role, or one added under its own name, lists what it writes. */}
                               {(!s.match || conflicts[s.key]?.choice === "update" || conflicts[s.key]?.choice === "rename") && (
@@ -772,7 +772,7 @@ export default function StructureReview() {
                                 />
                               )}
                               <details className="text-xs text-muted-foreground mt-1">
-                                <summary className="cursor-pointer min-h-[24px]">What {source} sent</summary>
+                                <summary className="cursor-pointer min-h-[24px]"><Trans context="StructureReview, summary">What {source} sent</Trans></summary>
                                 <pre className="whitespace-pre-wrap break-words bg-background rounded-lg p-2 mt-1.5 text-[11px]">
                                   {JSON.stringify(s.sent, null, 1)}
                                 </pre>
@@ -786,7 +786,7 @@ export default function StructureReview() {
                   })}
                 </div>
                 {newSeatsCount === 0 && plan.seats.length === 0 && (
-                  <p className="text-sm text-muted-foreground">This arrival carries circles and no roles.</p>
+                  <p className="text-sm text-muted-foreground"><Trans context="StructureReview, p">This arrival carries circles and no roles.</Trans></p>
                 )}
               </section>
 
@@ -794,7 +794,7 @@ export default function StructureReview() {
                 <section className="grid gap-2" aria-labelledby="h-arch" data-testid="archived-at-source">
                   <details className={`${card} px-4 py-3`}>
                     <summary className="cursor-pointer min-h-[24px] text-sm text-muted-foreground">
-                      <span id="h-arch">Archived in {source}</span> ·{" "}
+                      <span id="h-arch"><Trans context="StructureReview, span">Archived in {source}</Trans></span> ·{" "}
                       {plural(plan.archived.filter((a) => a.kind === "circle").length, "circle", "circles")},{" "}
                       {plural(plan.archived.filter((a) => a.kind === "seat").length, "role", "roles")}. Left out of this change.
                     </summary>
@@ -834,7 +834,7 @@ export default function StructureReview() {
 
               {preview && (
                 <section className={`${card} p-4 grid gap-2`} aria-labelledby="h-preview" data-testid="draft-preview">
-                  <h2 id="h-preview" className="font-display text-[22px]">The draft, as it would read</h2>
+                  <h2 id="h-preview" className="font-display text-[22px]"><Trans context="StructureReview, h2">The draft, as it would read</Trans></h2>
                   <p className="text-sm text-muted-foreground">
                     {preview.blocked
                       ? `${plural(preview.blocked, "line is", "lines are")} blocked. Each one says why.`
@@ -853,10 +853,10 @@ export default function StructureReview() {
 
               {done && (
                 <section className={`${card} p-4 grid gap-2`} aria-labelledby="h-done" data-testid="accepted">
-                  <h2 id="h-done" className="font-display text-[22px]">Accepted into a draft</h2>
+                  <h2 id="h-done" className="font-display text-[22px]"><Trans context="StructureReview, h2">Accepted into a draft</Trans></h2>
                   <p className="text-sm text-muted-foreground">
-                    It is not live yet. The draft publishes as one change, and it can be withdrawn from the review queue until then.
-                    {done.leftInQueue > 0 ? ` ${plural(done.leftInQueue, "proposal stays", "proposals stay")} in the queue.` : ""}
+                    <Trans context="StructureReview, p">It is not live yet. The draft publishes as one change, and it can be withdrawn from the review queue until then.
+                    {done.leftInQueue > 0 ? ` ${plural(done.leftInQueue, "proposal stays", "proposals stay")} in the queue.` : ""}</Trans>
                   </p>
                   {done.blockedLines.length > 0 && (
                     <ul className="text-sm grid gap-1">
@@ -868,7 +868,7 @@ export default function StructureReview() {
                       ))}
                     </ul>
                   )}
-                  <Link href="/review" className="underline">Back to the review queue</Link>
+                  <Link href="/review" className="underline"><Trans context="StructureReview, Link">Back to the review queue</Trans></Link>
                 </section>
               )}
             </div>
@@ -882,20 +882,20 @@ export default function StructureReview() {
           <div className="max-w-[1180px] mx-auto flex flex-wrap gap-3 items-center justify-between">
             <p className="text-sm" role="status" data-testid="bar-status">
               {done ? (
-                <b className="text-open">Accepted into a draft</b>
+                <b className="text-open"><Trans context="StructureReview, b">Accepted into a draft</Trans></b>
               ) : counts.unsettled ? (
                 <>
-                  <b className="text-destructive">{plural(counts.unsettled, "role needs", "roles need")} your call</b>
-                  <span className="text-muted-foreground"> · {plural(counts.kept, "change", "changes")} kept</span>
+                  <b className="text-destructive"><Trans context="StructureReview, b">{plural(counts.unsettled, "role needs", "roles need")} your call</Trans></b>
+                  <span className="text-muted-foreground"> <Trans context="StructureReview, span">· {plural(counts.kept, "change", "changes")} kept</Trans></span>
                 </>
               ) : decided.problems.length ? (
                 <b className="text-destructive">{decided.problems[0]}</b>
               ) : (
                 <>
-                  <b className="text-open">Ready</b>
+                  <b className="text-open"><Trans context="StructureReview, b">Ready</Trans></b>
                   <span className="text-muted-foreground">
-                    {" "}· {plural(counts.kept, "change", "changes")} in one draft
-                    {retire && counts.retiringCircles ? ` · retires ${plural(counts.retiringCircles, "old circle", "old circles")}` : ""}
+                    <Trans context="StructureReview, span">{" "}· {plural(counts.kept, "change", "changes")} in one draft
+                    {retire && counts.retiringCircles ? ` · retires ${plural(counts.retiringCircles, "old circle", "old circles")}` : ""}</Trans>
                   </span>
                 </>
               )}

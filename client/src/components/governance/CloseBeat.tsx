@@ -28,6 +28,7 @@ import { evaluateBallot, type BallotOutcome } from "@shared/governanceEngine";
 import { pctText, weightText } from "./voteBars";
 import type { Ballot } from "./governanceApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * WHAT CLOSING DOES, and why there are two sets of words.
@@ -93,6 +94,7 @@ export default function CloseBeat({
   onClose: (outcomeNote: string) => Promise<void>;
   onCancel: () => void;
 }) {
+  const { t } = useLingui();
   const [note, setNote] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -140,42 +142,42 @@ export default function CloseBeat({
         {ballot.binding ? "Close this decision" : "Close this advisory vote"}
       </h3>
       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-        You are the person doing this. Nothing closed it while you were away, and nothing will.
-      </p>
+        <Trans context="CloseBeat, p">You are the person doing this. Nothing closed it while you were away, and nothing will.
+      </Trans></p>
 
       <div className="mt-4 rounded-lg bg-muted p-4">
         <p className="text-base font-bold text-foreground">{words.heading}</p>
         <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{words.blurb}</p>
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
           <div>
-            <dt className="text-xs text-muted-foreground">Yes</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="CloseBeat, dt">Yes</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.yesW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">No</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="CloseBeat, dt">No</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.noW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Abstain</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="CloseBeat, dt">Abstain</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.tallies.abstainW)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Of a possible</dt>
+            <dt className="text-xs text-muted-foreground"><Trans context="CloseBeat, dt">Of a possible</Trans></dt>
             <dd className="font-semibold tabular-nums text-foreground">{weightText(ballot.totalWeight)}</dd>
           </div>
         </dl>
         <p className="mt-2 text-xs text-muted-foreground">
-          Agreement {pctText(ballot.unity)} against {pctText(ballot.unityPct)} needed · participation{" "}
+          <Trans context="CloseBeat, p">Agreement {pctText(ballot.unity)} against {pctText(ballot.unityPct)} needed · participation{" "}
           {pctText(ballot.quorum)} against {pctText(ballot.quorumPct)} needed.
-          {standingObjections > 0 && ` ${standingObjections} objection${standingObjections === 1 ? "" : "s"} still standing.`}
+          {standingObjections > 0 && ` ${standingObjections} objection${standingObjections === 1 ? "" : "s"} still standing.`}</Trans>
         </p>
       </div>
 
       {fixedWords ? (
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          The record keeps fixed words for a role application, so it never names the member who applied. Members read the
+          <Trans context="CloseBeat, p">The record keeps fixed words for a role application, so it never names the member who applied. Members read the
           application on its own page.
-        </p>
+        </Trans></p>
       ) : (
       <div className="mt-4">
         <label htmlFor="outcome-note" className="block text-sm font-semibold text-foreground">
@@ -194,8 +196,8 @@ export default function CloseBeat({
           onChange={(e) => setNote(e.target.value)}
           placeholder={
             ballot.binding
-              ? "The village agreed to give proposals nine days of sensing instead of seven, starting now."
-              : "Most of the village would back a shared tool shelf. Nothing is decided by this, and it is worth writing up as a real proposal."
+              ? t({ message: "The village agreed to give proposals nine days of sensing instead of seven, starting now.", context: "CloseBeat, placeholder" })
+              : t({ message: "Most of the village would back a shared tool shelf. Nothing is decided by this, and it is worth writing up as a real proposal.", context: "CloseBeat, placeholder" })
           }
           className="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
@@ -223,8 +225,8 @@ export default function CloseBeat({
           onClick={onCancel}
           className="min-h-[44px] rounded-lg border border-border px-5 text-sm font-medium text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Not yet
-        </button>
+          <Trans context="CloseBeat, button">Not yet
+        </Trans></button>
       </div>
     </section>
   );

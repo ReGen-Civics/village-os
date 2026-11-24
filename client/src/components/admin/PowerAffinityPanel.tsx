@@ -44,6 +44,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import { Trans } from "@lingui/react/macro";
 
 /** One class as the server names it today. */
 interface ClassName {
@@ -227,17 +228,17 @@ export default function PowerAffinityPanel({
   return (
     <section aria-labelledby="power-affinity-h" className="mt-6 border-t border-gray-100 pt-4">
       <h4 id="power-affinity-h" className="text-sm font-semibold text-gray-900 mb-1">
-        Which powers suit each class
-      </h4>
+        <Trans context="PowerAffinityPanel, h4">Which powers suit each class
+      </Trans></h4>
       <p className="text-xs text-gray-500 mb-2">
-        A tick says a power suits that class. A member who reaches Contributor and plays a ticked class sees the
+        <Trans context="PowerAffinityPanel, p">A tick says a power suits that class. A member who reaches Contributor and plays a ticked class sees the
         power marked as suiting them, and each class card lists its powers. A tick hands nobody a power: the village
         still entrusts every one of these through a role or a badge.
-      </p>
+      </Trans></p>
       <p className="text-[11px] text-gray-500 mb-4">
-        The platform suggests a class for some powers, and a power you have not changed follows that suggestion. Once
+        <Trans context="PowerAffinityPanel, p">The platform suggests a class for some powers, and a power you have not changed follows that suggestion. Once
         you change one, it stays as you left it until you hand it back.
-      </p>
+      </Trans></p>
 
       {/* A STATUS, and never an alert. This panel sits low on a long setup page,
           and an assertive alert announces over whatever the founder is doing
@@ -258,13 +259,13 @@ export default function PowerAffinityPanel({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">
-              Powers down the side and classes across the top. A tick means the power suits that class.
-            </caption>
+              <Trans context="PowerAffinityPanel, caption">Powers down the side and classes across the top. A tick means the power suits that class.
+            </Trans></caption>
             <thead>
               <tr>
                 <th scope="col" className="py-2 pr-3 text-left text-xs font-medium text-gray-700">
-                  Power
-                </th>
+                  <Trans context="PowerAffinityPanel, th">Power
+                </Trans></th>
                 {columns.map((c) => (
                   <th key={c.key} scope="col" className="px-1 py-2 text-center text-xs font-medium text-gray-700">
                     {c.name}

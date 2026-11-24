@@ -23,6 +23,7 @@ import { MyGeneKeysSeal } from "@/components/geneKeys/ProfileGeneKeys";
 import BadgeFlower, { type FlowerBadge } from "@/components/badges/BadgeFlower";
 import BadgeRoster from "@/components/badges/BadgeRoster";
 import MoonString from "@/components/profile/MoonString";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -266,8 +267,8 @@ export default function ProfileHero({
             </p>
           ) : status === "loading" ? (
             <p role="status" className="m-0 text-lg text-muted-foreground">
-              Reading your characters…
-            </p>
+              <Trans context="ProfileHero, p">Reading your characters…
+            </Trans></p>
           ) : status === "failed" ? (
             /* The failure branch that used to be the empty branch. Retry, and
                never the sentence that tells a member with six characters that
@@ -279,15 +280,15 @@ export default function ProfileHero({
                 onClick={() => load()}
                 className="min-h-11 font-medium text-foreground underline underline-offset-2"
               >
-                Retry
-              </button>
+                <Trans context="ProfileHero, button">Retry
+              </Trans></button>
             </p>
           ) : (
             <p className="m-0 text-lg text-muted-foreground">
-              No character chosen yet.{" "}
+              <Trans context="ProfileHero, p">No character chosen yet.{" "}
               <Link href="/profile/characters" className="font-medium text-foreground underline underline-offset-2">
                 Choose who you will be
-              </Link>
+              </Link></Trans>
             </p>
           )}
           {title ? <p className="m-0 font-medium break-words text-foreground">{title}</p> : null}
@@ -330,8 +331,8 @@ export default function ProfileHero({
                 href="/profile/characters"
                 className="flex h-24 flex-col items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-border px-[18px] text-sm font-medium text-foreground hover:bg-muted"
               >
-                Forge a character
-                <span className="text-xs text-muted-foreground">Play as many as you like</span>
+                <Trans context="ProfileHero, Link">Forge a character
+                <span className="text-xs text-muted-foreground">Play as many as you like</span></Trans>
               </Link>
             </div>
           ) : null}

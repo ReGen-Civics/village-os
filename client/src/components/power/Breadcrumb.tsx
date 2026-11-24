@@ -6,6 +6,7 @@
 import { ChevronRight } from "lucide-react";
 import type { Filters, PowerCircle } from "./types";
 import { anyFilterOn } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export function ancestorChain(circles: PowerCircle[], focusId: string | null): PowerCircle[] {
   const byId = new Map(circles.map((c) => [c.id, c]));
@@ -35,6 +36,7 @@ export default function Breadcrumb({
   onFocus: (id: string | null) => void;
   onClearFilters: () => void;
 }) {
+  const { t } = useLingui();
   const chain = ancestorChain(circles, focusId);
   const filterWords = [
     filters.open ? "open roles" : null,
@@ -45,7 +47,7 @@ export default function Breadcrumb({
   ].filter(Boolean);
 
   return (
-    <nav aria-label="Where you are on the map" className="flex items-center gap-1 flex-wrap min-h-9 text-sm" data-power-crumb>
+    <nav aria-label={t({ message: "Where you are on the map", context: "Breadcrumb, aria-label" })} className="flex items-center gap-1 flex-wrap min-h-9 text-sm" data-power-crumb>
       <button
         type="button"
         onClick={() => onFocus(null)}
@@ -73,8 +75,8 @@ export default function Breadcrumb({
           onClick={onClearFilters}
           className="ml-2 text-xs bg-amber/15 text-amber-700 px-2 py-1 rounded-full hover:bg-amber/25"
         >
-          showing {filterWords.join(", ")} · clear
-        </button>
+          <Trans context="Breadcrumb, button">showing {filterWords.join(", ")} · clear
+        </Trans></button>
       )}
     </nav>
   );

@@ -52,6 +52,7 @@ import FormingBand from "./FormingBand";
 import CircleGlyph from "@/components/geneKeys/CircleGlyph";
 import type { Filters, PowerData, PowerSeat, Selection } from "./types";
 import { anyFilterOn, seatPassesFilters } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** Faces stop drawing outside the focus past this many seats (spec 13). */
 const AVATAR_SEAT_CAP = 400;
@@ -156,6 +157,7 @@ export default function PowerMap({
    */
   onName?: (id: string | null) => void;
 }) {
+  const { t } = useLingui();
   const byId = useMemo(() => new Map(data.circles.map((c) => [c.id, c])), [data.circles]);
   const posById = useMemo(() => new Map(layout.circles.map((p) => [p.id, p])), [layout]);
   const seatById = useMemo(() => new Map(data.roles.map((r) => [r.id, r])), [data.roles]);
@@ -481,7 +483,7 @@ export default function PowerMap({
         className="w-full h-full"
         preserveAspectRatio="xMidYMid meet"
         role="group"
-        aria-label="The power map"
+        aria-label={t({ message: "The power map", context: "PowerMap, aria-label" })}
         data-power-map
         data-shape={shape}
         onClick={() => onFocus(parentOf(focusId))}
@@ -931,8 +933,8 @@ export default function PowerMap({
           onClick={() => setNudge(NO_NUDGE)}
           className="absolute right-2 top-2 z-10 rounded-full bg-card/90 border border-border px-3 py-1.5 text-xs text-foreground shadow-sm"
         >
-          Fit the village
-        </button>
+          <Trans context="PowerMap, button">Fit the village
+        </Trans></button>
       )}
 
       <p className="sr-only" role="status" aria-live="polite">

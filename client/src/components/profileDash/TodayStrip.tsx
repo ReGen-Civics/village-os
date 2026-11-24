@@ -17,6 +17,7 @@
 import { Link } from "wouter";
 import type { DashData } from "./useDashData";
 import { daysUntil } from "./dashModel";
+import { Trans } from "@lingui/react/macro";
 
 type Tone = "gold" | "cash" | "session";
 const TONE_TEXT: Record<Tone, string> = { gold: "text-dash-gold-lit", cash: "text-dash-cash", session: "text-dash-session" };
@@ -127,8 +128,8 @@ export default function TodayStrip({ data, stepsWaiting = false, pathSpeaks = fa
     <section aria-labelledby="today-h" className="flex flex-col gap-2.5 sm:gap-3.5">
       <div className="flex flex-wrap items-baseline gap-3.5">
         <h2 id="today-h" className="m-0 font-display text-[28px] leading-tight sm:text-[34px]">
-          Today
-        </h2>
+          <Trans context="TodayStrip, h2">Today
+        </Trans></h2>
         <p className="m-0 hidden text-[15px] text-muted-foreground sm:block">
           {waiting === 0 ? "Nothing is waiting on you" : waiting === 1 ? "1 thing waiting on you" : `${waiting} things waiting on you`}
         </p>

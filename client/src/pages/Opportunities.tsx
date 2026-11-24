@@ -29,6 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { Trans } from "@lingui/react/macro";
 
 /*
  * EIGHT CAPITAL FIGURES LEFT THIS FILE (founder ruling, 2026-09-03).
@@ -121,8 +122,8 @@ export default function Opportunities() {
             >
               <Sparkles className="w-16 h-16 mb-6 opacity-80" />
               <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
-                Business Opportunities
-              </h1>
+                <Trans context="Opportunities, h1">Business Opportunities
+              </Trans></h1>
               {/* Invisible, not absent, until the saved words arrive. The
                   sentence named the recognition token as what a revenue share
                   is paid in; the token ruling of 2026-10-22 took that out. */}
@@ -170,7 +171,7 @@ export default function Opportunities() {
                 </p>
                 {range && (
                   <div className="mb-4">
-                    <span className="text-sm font-medium text-foreground">Investment Range: </span>
+                    <span className="text-sm font-medium text-foreground"><Trans context="Opportunities, span">Investment Range: </Trans></span>
                     <span className="text-sm text-teal-light font-semibold">{range}</span>
                   </div>
                 )}
@@ -219,8 +220,8 @@ export default function Opportunities() {
                 // the same reasoning, as the Register path pills.
                 className="inline-flex min-h-11 items-center gap-2 text-teal-deep font-medium hover:gap-3 transition-all"
               >
-                How we create together
-                <ArrowRight className="w-4 h-4" />
+                <Trans context="Opportunities, Link">How we create together
+                <ArrowRight className="w-4 h-4" /></Trans>
               </Link>
             )}
           </div>
@@ -233,8 +234,8 @@ export default function Opportunities() {
         <div className="container">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Interested in an Opportunity?
-            </h2>
+              <Trans context="Opportunities, h2">Interested in an Opportunity?
+            </Trans></h2>
             <p className={`text-muted-foreground mb-8 break-words${cta ? "" : " invisible"}`}>
               <Emphasized text={cta?.body ?? "\u00a0"} />
             </p>
@@ -246,17 +247,17 @@ export default function Opportunities() {
                   rel="noopener noreferrer"
                   className="px-8 py-4 bg-teal-deep text-white rounded-lg font-semibold hover:bg-teal-deep-dark transition flex items-center gap-2"
                 >
-                  <Calendar className="w-5 h-5" />
+                  <Trans context="Opportunities, a"><Calendar className="w-5 h-5" />
                   Join Community Call
-                </a>
+                </Trans></a>
               )}
               {!pageOff("/prosperity") && (
                 <Link
                   href="/prosperity"
                   className="px-8 py-4 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors"
                 >
-                  Prosperity Journey
-                </Link>
+                  <Trans context="Opportunities, Link">Prosperity Journey
+                </Trans></Link>
               )}
             </div>
           </div>

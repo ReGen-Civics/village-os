@@ -27,6 +27,7 @@ import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { forgetVillagePresets } from "@/lib/seatPresetsRead";
 import { gameFetch } from "@/lib/gameApi";
 import { settingsWords } from "@shared/seatSettings";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export const PRESET_EDITOR_WORDS = {
   title: "Village role presets",
@@ -50,6 +51,7 @@ const slug = (s: string) =>
     .slice(0, 60);
 
 export default function VillagePresetsEditor({ password }: { password: string }) {
+  const { t } = useLingui();
   const [rows, setRows] = useState<VillagePresetRow[] | null>(null);
   const [group, setGroup] = useState<SettingsGroup>("pay");
   const [label, setLabel] = useState("");
@@ -98,7 +100,7 @@ export default function VillagePresetsEditor({ password }: { password: string })
       setRows(Array.isArray(body?.presets) ? body.presets : presets);
       return true;
     } catch {
-      toast.error("That did not save");
+      toast.error(t({ message: "That did not save", context: "VillagePresetsEditor, toast" }));
       return false;
     } finally {
       setBusy(false);
@@ -139,7 +141,7 @@ export default function VillagePresetsEditor({ password }: { password: string })
             <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-100 px-3 py-2 text-sm">
               <span className="font-medium text-gray-800">{r.label}</span>
               <span className="text-xs text-gray-500">
-                {GROUP_LABELS[r.group] ?? r.group} · v{r.version}
+                <Trans context="VillagePresetsEditor, span">{GROUP_LABELS[r.group] ?? r.group} · v{r.version}</Trans>
               </span>
               {headline && <span className="text-xs text-gray-600">{headline}</span>}
               {r.retiredAt ? (

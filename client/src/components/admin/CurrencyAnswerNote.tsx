@@ -27,15 +27,16 @@
  * defect.
  */
 import { useSettingFocus } from "@/components/admin/settingFocus";
+import { Trans } from "@lingui/react/macro";
 
 export default function CurrencyAnswerNote({ answered }: { answered: boolean }) {
   useSettingFocus("project.fiatCurrency", "project-fiat-currency", true);
   if (answered) return null;
   return (
     <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-      Needs your answer. Until somebody here chooses one, prices follow the platform's own
+      <Trans context="CurrencyAnswerNote, p">Needs your answer. Until somebody here chooses one, prices follow the platform's own
       currency, which is where it starts and not something this village chose. Choose yours, even if
       it is already the one shown.
-    </p>
+    </Trans></p>
   );
 }

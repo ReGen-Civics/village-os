@@ -18,8 +18,10 @@ const AgentsPanel = lazy(() => import("./AgentsPanel"));
 // Only opened when a steward goes to delete someone, so it loads then.
 const ErasePrepPanel = lazy(() => import("@/components/yourList/ErasePrepPanel"));
 import { NO_FILTER, PlayerCard, PlayersFilters, PlayersKey, filterPlayers, type LadderStage, type PathOption, type Player, type PlayerDetail } from "./PlayerCard";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function PlayersTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const { user: me } = useAuth();
   const iAmFounder = me?.role === "founder";
   const [players, setPlayers] = useState<Player[]>([]);
@@ -76,9 +78,9 @@ export default function PlayersTab({ password }: { password: string }) {
         body: JSON.stringify({ stageId: stageId || null }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Stage updated");
+      toast.success(t({ message: "Stage updated", context: "PlayersTab, toast" }));
       load();
-    } catch { toast.error("Update failed"); }
+    } catch { toast.error(t({ message: "Update failed", context: "PlayersTab, toast" })); }
   };
 
   const [erasing, setErasing] = useState<{ id: string; email: string } | null>(null);
@@ -95,9 +97,9 @@ export default function PlayersTab({ password }: { password: string }) {
         headers: authHeaders(password),
       });
       if (!res.ok) throw new Error();
-      toast.success("Player deleted");
+      toast.success(t({ message: "Player deleted", context: "PlayersTab, toast" }));
       load();
-    } catch { toast.error("Delete failed"); }
+    } catch { toast.error(t({ message: "Delete failed", context: "PlayersTab, toast" })); }
   };
 
   const setRole = async (id: string, role: string, name: string) => {
@@ -130,8 +132,8 @@ export default function PlayersTab({ password }: { password: string }) {
         headers: authHeaders(password),
       });
       if (!res.ok) throw new Error();
-      toast.success("Sessions revoked");
-    } catch { toast.error("Revoke failed"); }
+      toast.success(t({ message: "Sessions revoked", context: "PlayersTab, toast" }));
+    } catch { toast.error(t({ message: "Revoke failed", context: "PlayersTab, toast" })); }
   };
 
   const detailFor = (id: string): PlayerDetail | undefined => {
@@ -148,7 +150,7 @@ export default function PlayersTab({ password }: { password: string }) {
     <div>
       {erasing && (
         <div ref={eraseSheet} className="mb-4 rounded-lg border border-border bg-card p-4">
-          <Suspense fallback={<p className="text-sm text-muted-foreground">Loading...</p>}>
+          <Suspense fallback={<p className="text-sm text-muted-foreground"><Trans context="PlayersTab, p">Loading...</Trans></p>}>
             <ErasePrepPanel
               key={erasing.id}
               password={password}
@@ -161,13 +163,13 @@ export default function PlayersTab({ password }: { password: string }) {
         </div>
       )}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Players</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="PlayersTab, h2">Players</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Everyone with an account: what they may do on this site, and where they stand in village life.
-        </p>
+          <Trans context="PlayersTab, p">Everyone with an account: what they may do on this site, and where they stand in village life.
+        </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : players.length === 0 ? (
-        <p className="text-sm text-gray-400">No players yet.</p>
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="PlayersTab, div">Loading...</Trans></div> : players.length === 0 ? (
+        <p className="text-sm text-gray-400"><Trans context="PlayersTab, p">No players yet.</Trans></p>
       ) : (
         <>
           <PersonalListsPanel password={password} players={players} />

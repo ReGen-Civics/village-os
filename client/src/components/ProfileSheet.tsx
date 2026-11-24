@@ -21,6 +21,7 @@ import { m } from "framer-motion";
 import { authToken } from "@/lib/gameApi";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { formatTokenGrouped } from "@/lib/tokenAmount";
+import { Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -77,7 +78,7 @@ export default function ProfileSheet() {
           and having them here as well would be the same row twice. */}
       {standing.length > 0 ? (
         <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={card}>
-          <h2 className={heading}>Standing</h2>
+          <h2 className={heading}><Trans context="ProfileSheet, h2">Standing</Trans></h2>
           <ul className="flex flex-wrap gap-2">
             {standing.map((s) => (
               <li
@@ -89,8 +90,8 @@ export default function ProfileSheet() {
             ))}
           </ul>
           <p className="mt-4 text-sm text-muted-foreground">
-            {tokenName}: held, never spent. A record of what the village noticed.
-          </p>
+            <Trans context="ProfileSheet, p">{tokenName}: held, never spent. A record of what the village noticed.
+          </Trans></p>
         </m.div>
       ) : null}
 

@@ -45,6 +45,7 @@ import SeasonGoalField from "./SeasonGoalField";
 import TermsOnOfferField from "./TermsOnOfferField";
 import { AimAssist } from "./SeraDraftFields";
 import { useVillagePresets } from "@/lib/seatPresetsRead";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface MechanicsVariableLite {
   key: string;
@@ -105,7 +106,7 @@ export default function WizardField({
     <label htmlFor={id} className="block text-sm font-semibold text-foreground">
       {field.label}
       {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
-      {field.required && <span className="sr-only"> (required)</span>}
+      {field.required && <span className="sr-only"> <Trans context="WizardField, span">(required)</Trans></span>}
       {field.tip && <InfoTip tip={field.tip} label={`What ${field.label.toLowerCase()} means`} />}
     </label>
   );
@@ -148,7 +149,7 @@ export default function WizardField({
           />
           {field.maxLength && (
             <p className="mt-1 text-right text-xs tabular-nums text-muted-foreground">
-              {text.length} of {field.maxLength}
+              <Trans context="WizardField, p">{text.length} of {field.maxLength}</Trans>
             </p>
           )}
           {footer}
@@ -362,6 +363,7 @@ function PickField({
   describedBy?: string;
   invalid: boolean;
 }) {
+  const { t } = useLingui();
   const [options, setOptions] = useState<PickOption[] | null>(null);
   const [query, setQuery] = useState("");
   const searched = field.source ? isSearchSource(field.source) : false;
@@ -404,7 +406,7 @@ function PickField({
           value={query}
           aria-describedby={describedBy}
           aria-invalid={invalid}
-          placeholder="Type two letters of a name"
+          placeholder={t({ message: "Type two letters of a name", context: "WizardField, placeholder" })}
           onChange={(e) => setQuery(e.target.value)}
           className={inputClass}
         />
@@ -456,8 +458,8 @@ function PickField({
       </select>
       {empty && (
         <p className="mt-1 text-xs text-muted-foreground">
-          This village has nothing here yet, so this kind of proposal has nothing to point at.
-        </p>
+          <Trans context="WizardField, p">This village has nothing here yet, so this kind of proposal has nothing to point at.
+        </Trans></p>
       )}
       {footerNode}
     </div>
@@ -522,12 +524,12 @@ function ChangeSetField({
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="text-xs text-muted-foreground">
-                    now <strong className="tabular-nums text-foreground">{dial?.withheld ? "kept private" : dial?.value ?? "?"}</strong>
-                    {dial?.unit ? ` ${dial.unit}` : ""}
+                    <Trans context="WizardField, span">now <strong className="tabular-nums text-foreground">{dial?.withheld ? "kept private" : dial?.value ?? "?"}</strong>
+                    {dial?.unit ? ` ${dial.unit}` : ""}</Trans>
                   </span>
                   <span className="text-xs text-muted-foreground" aria-hidden="true">
-                    to
-                  </span>
+                    <Trans context="WizardField, span">to
+                  </Trans></span>
                   {dial?.choices ? (
                     <select
                       value={change.to}
@@ -559,7 +561,7 @@ function ChangeSetField({
                   )}
                   {dial && (dial.min !== null || dial.max !== null) && (
                     <span className="text-xs text-muted-foreground">
-                      allowed {dial.min ?? "any"} to {dial.max ?? "any"}
+                      <Trans context="WizardField, span">allowed {dial.min ?? "any"} to {dial.max ?? "any"}</Trans>
                     </span>
                   )}
                 </div>
@@ -572,8 +574,8 @@ function ChangeSetField({
       {available.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor="add-dial" className="sr-only">
-            Add a rule to this proposal
-          </label>
+            <Trans context="WizardField, label">Add a rule to this proposal
+          </Trans></label>
           <select
             id="add-dial"
             value={adding}
@@ -588,9 +590,9 @@ function ChangeSetField({
             ))}
           </select>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Plus className="w-3 h-3" aria-hidden="true" />
+            <Trans context="WizardField, span"><Plus className="w-3 h-3" aria-hidden="true" />
             {available.length} more the village governs
-          </span>
+          </Trans></span>
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">

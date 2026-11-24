@@ -21,6 +21,7 @@ import PhotoCard, { BTN, TAP, jsonHeaders } from "@/components/places/PhotoCard"
 import { authToken } from "@/lib/gameApi";
 import { prepareImageForUpload } from "@/lib/imagePrep";
 import { ALT_TEXT_MAX, CAPTION_MAX, capacityLine, type PlacePhoto } from "@shared/placePhotos";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * No Content-Type for the upload: the browser has to set the multipart
@@ -44,6 +45,7 @@ export interface GalleryPayload {
 }
 
 export default function PlaceGallery({ structureKey, placeName }: { structureKey: string; placeName?: string }) {
+  const { t } = useLingui();
   const [data, setData] = useState<GalleryPayload | null>(null);
   const [failed, setFailed] = useState(false);
   const [say, setSay] = useState("");
@@ -69,21 +71,21 @@ export default function PlaceGallery({ structureKey, placeName }: { structureKey
   if (failed) {
     return (
       <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-        The photographs for this place did not load. Reload the page to try again.
-      </p>
+        <Trans context="PlaceGallery, p">The photographs for this place did not load. Reload the page to try again.
+      </Trans></p>
     );
   }
-  if (!data) return <BreathingLoader label="Opening this place's photographs" />;
+  if (!data) return <BreathingLoader label={t({ message: "Opening this place's photographs", context: "PlaceGallery, label" })} />;
 
   const live = data.photos.filter((p) => !p.hiddenAt);
   const name = placeName || structureKey;
 
   return (
-    <section aria-label={`Photographs of ${name}`} className="space-y-5">
+    <section aria-label={t({ message: `Photographs of ${name}`, context: "PlaceGallery, aria-label" })} className="space-y-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <p className="text-sm text-muted-foreground">{capacityLine(live.length, data.perPlace)}</p>
         <InfoTip
-          label="What a photograph does here"
+          label={t({ message: "What a photograph does here", context: "PlaceGallery, label" })}
           tip="Every other number on this map is something a person could have typed from anywhere. A photograph is somebody standing on the land with a camera, so it carries their name and the month it was taken. Location data is removed from the file before it is stored."
         />
       </div>
@@ -93,16 +95,16 @@ export default function PlaceGallery({ structureKey, placeName }: { structureKey
       )}
       {data.signedIn && !data.canContribute && (
         <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-          Adding a photograph opens at the member stage, or with a role or badge that grants it. The pictures below are yours to read meanwhile.
-        </p>
+          <Trans context="PlaceGallery, p">Adding a photograph opens at the member stage, or with a role or badge that grants it. The pictures below are yours to read meanwhile.
+        </Trans></p>
       )}
 
       <p role="status" aria-live="polite" className="text-sm text-teal-deep min-h-[20px]">{say}</p>
 
       {data.photos.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-          Nobody has photographed this place yet.
-        </p>
+          <Trans context="PlaceGallery, p">Nobody has photographed this place yet.
+        </Trans></p>
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none p-0">
           {data.photos.map((photo) => (
@@ -142,6 +144,7 @@ function AddPhoto({
   onAdded: () => void;
   onSay: (s: string) => void;
 }) {
+  const { t } = useLingui();
   const [file, setFile] = useState<File | null>(null);
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
@@ -191,11 +194,11 @@ function AddPhoto({
   return (
     <form onSubmit={submit} className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center gap-2 font-semibold">
-        <Camera className="w-4 h-4" aria-hidden="true" />
+        <Trans context="PlaceGallery, div"><Camera className="w-4 h-4" aria-hidden="true" />
         Add a photograph
-      </div>
+      </Trans></div>
       <label className="block text-sm">
-        <span className="block mb-1 font-medium">Picture</span>
+        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Picture</Trans></span>
         {/* A wrapping <label> names the control with every string inside it,
             so the size limit and the location note read as part of the field
             name. Both stay on screen as a description. */}
@@ -204,28 +207,28 @@ function AddPhoto({
           type="file"
           accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          aria-label="Picture"
+          aria-label={t({ message: "Picture", context: "PlaceGallery, aria-label" })}
           aria-describedby="place-photo-file-hint"
           className={`${TAP} block w-full text-sm`}
         />
         <span id="place-photo-file-hint" className="block mt-1 text-xs text-muted-foreground">
-          Up to {maxMb} MB. Location data is removed before it is stored.
-        </span>
+          <Trans context="PlaceGallery, span">Up to {maxMb} MB. Location data is removed before it is stored.
+        </Trans></span>
       </label>
       <label className="block text-sm">
-        <span className="block mb-1 font-medium">Describe it for someone who cannot see it</span>
+        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Describe it for someone who cannot see it</Trans></span>
         <input
           type="text"
           value={altText}
           onChange={(e) => setAltText(e.target.value)}
           maxLength={ALT_TEXT_MAX}
           required
-          placeholder="The north wall of the community kitchen, half built"
+          placeholder={t({ message: "The north wall of the community kitchen, half built", context: "PlaceGallery, placeholder" })}
           className={`${TAP} w-full rounded-lg border border-border px-3`}
         />
       </label>
       <label className="block text-sm">
-        <span className="block mb-1 font-medium">Say something about it, if you want to</span>
+        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Say something about it, if you want to</Trans></span>
         <input
           type="text"
           value={caption}
@@ -235,20 +238,20 @@ function AddPhoto({
         />
       </label>
       <label className="block text-sm">
-        <span className="block mb-1 font-medium">When was it taken?</span>
+        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">When was it taken?</Trans></span>
         {/* Same shape as the picture field above: the question is the name,
             what a blank date does is a description. */}
         <input
           type="date"
           value={takenOn}
           onChange={(e) => setTakenOn(e.target.value)}
-          aria-label="When was it taken?"
+          aria-label={t({ message: "When was it taken?", context: "PlaceGallery, aria-label" })}
           aria-describedby="place-photo-taken-hint"
           className={`${TAP} w-full rounded-lg border border-border px-3`}
         />
         <span id="place-photo-taken-hint" className="block mt-1 text-xs text-muted-foreground">
-          Left blank, the line under it says when it was added instead.
-        </span>
+          <Trans context="PlaceGallery, span">Left blank, the line under it says when it was added instead.
+        </Trans></span>
       </label>
       {problem && <p role="alert" className="text-sm text-red-700">{problem}</p>}
       <button type="submit" disabled={busy || !file || !altText.trim()} className={`${BTN} bg-teal-deep text-white border-teal-deep disabled:opacity-50`}>

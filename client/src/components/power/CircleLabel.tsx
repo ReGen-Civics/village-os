@@ -21,6 +21,7 @@
 import { m } from "framer-motion";
 import { captionSize } from "./labelFit";
 import type { PowerSeat } from "./types";
+import { Trans } from "@lingui/react/macro";
 
 /** The halo under a text of this size, in the same world units. */
 export function haloWidth(fontSize: number): number {
@@ -146,8 +147,8 @@ export default function CircleLabel({
             strokeWidth: haloWidth(captionSize(label.fontSize, pxPerWorld)),
           }}
         >
-          forming
-        </text>
+          <Trans context="CircleLabel, text">forming
+        </Trans></text>
       )}
 
       {/* WHAT HOVER ACTUALLY ANSWERS: is this the circle I want. Name plus the

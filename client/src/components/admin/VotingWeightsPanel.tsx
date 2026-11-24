@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import InfoTip from "@/components/InfoTip";
 import { sortMembersByName } from "@shared/memberOrder";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type WeightMode = "equal" | "token" | "custom";
 
@@ -99,6 +100,7 @@ export default function VotingWeightsPanel({
 }: {
   password: string;
 }) {
+  const { t } = useLingui();
   const auth = useMemo(() => ({ Authorization: `Bearer ${password}` }), [password]);
   const [data, setData] = useState<WeightsPayload | null>(null);
   const [history, setHistory] = useState<ChangeRow[]>([]);
@@ -214,7 +216,7 @@ export default function VotingWeightsPanel({
   if (loading) {
     return (
       <div className="py-12">
-        <BreathingLoader label="Reading the allocation table" showLabel />
+        <BreathingLoader label={t({ message: "Reading the allocation table", context: "VotingWeightsPanel, label" })} showLabel />
       </div>
     );
   }
@@ -222,11 +224,11 @@ export default function VotingWeightsPanel({
   if (moduleOff) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Voting Weights</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="VotingWeightsPanel, h2">Voting Weights</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Governance is off in this village, so there is nothing to allocate. Turn it on in Module Library and this
+          <Trans context="VotingWeightsPanel, p">Governance is off in this village, so there is nothing to allocate. Turn it on in Module Library and this
           table comes back with whatever it held.
-        </p>
+        </Trans></p>
       </div>
     );
   }
@@ -234,8 +236,8 @@ export default function VotingWeightsPanel({
   if (!data) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Voting Weights</h2>
-        <p className="text-sm text-gray-500 mt-1">The allocation table could not be read. Reload and try again.</p>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="VotingWeightsPanel, h2">Voting Weights</Trans></h2>
+        <p className="text-sm text-gray-500 mt-1"><Trans context="VotingWeightsPanel, p">The allocation table could not be read. Reload and try again.</Trans></p>
       </div>
     );
   }
@@ -268,11 +270,11 @@ export default function VotingWeightsPanel({
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Voting Weights</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="VotingWeightsPanel, h2">Voting Weights</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          What one member's vote counts for on a village ballot. Every change here carries a reason, and every change
+          <Trans context="VotingWeightsPanel, p">What one member's vote counts for on a village ballot. Every change here carries a reason, and every change
           lands on a permanent record any member can read.
-        </p>
+        </Trans></p>
       </div>
 
       {/* WHICH MODE IS LIVE, and where the dial that picks it lives. The mode
@@ -287,7 +289,7 @@ export default function VotingWeightsPanel({
           {MODE_LABEL[data.mode]}
           <InfoTip
             tip="How voting weight is assigned is one setting for the whole village. Equal gives everyone the same vote, token reads a balance, custom uses the table below."
-            label="What the weight mode is"
+            label={t({ message: "What the weight mode is", context: "VotingWeightsPanel, label" })}
           />
         </h3>
         <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{modeLine(data.mode, data.token)}</p>
@@ -296,8 +298,8 @@ export default function VotingWeightsPanel({
           href="/modules/governance"
           className="mt-2 inline-flex items-center min-h-[44px] text-sm font-semibold text-teal-deep hover:underline focus:outline-none focus:ring-2 focus:ring-teal-deep rounded-lg"
         >
-          Change how weight is assigned
-        </a>
+          <Trans context="VotingWeightsPanel, a">Change how weight is assigned
+        </Trans></a>
       </div>
 
       {/* THE STANDING COUNT. Plain information about the current allocation.
@@ -305,8 +307,8 @@ export default function VotingWeightsPanel({
           should spread weight wide or narrow, which is the village's call. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-4">
         <p className="text-sm text-gray-900 font-medium">
-          {data.membersWithNoWeight} of {members.length} member{members.length === 1 ? "" : "s"} hold no weight.
-        </p>
+          <Trans context="VotingWeightsPanel, p">{data.membersWithNoWeight} of {members.length} member{members.length === 1 ? "" : "s"} hold no weight.
+        </Trans></p>
         <p className="text-sm text-gray-600 mt-1 leading-relaxed">
           The allocated weight across the village adds up to {weightText(total)}.
           {data.mode === "custom" && total === 0 && (
@@ -324,21 +326,21 @@ export default function VotingWeightsPanel({
           made today reaches the next vote and never the one in flight. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
         <p className="text-sm text-gray-600 leading-relaxed">
-          A ballot copies who may vote and how much each of them weighs at the moment it opens, and keeps that copy for
+          <Trans context="VotingWeightsPanel, p">A ballot copies who may vote and how much each of them weighs at the moment it opens, and keeps that copy for
           its whole life. Anything you change here applies to the next vote. A vote already running keeps the weights it
           started with.
-        </p>
+        </Trans></p>
       </div>
 
       {/* THE BULK PASS. One weight and one reason across everybody picked, and
           the route writes one trail row per member, so the record stays
           per-person even when the act was a sweep. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
-        <h3 className="font-semibold text-gray-900">Set several at once</h3>
+        <h3 className="font-semibold text-gray-900"><Trans context="VotingWeightsPanel, h3">Set several at once</Trans></h3>
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-          Tick the members below, then give one weight and one reason for the whole pass. Each member still gets their
+          <Trans context="VotingWeightsPanel, p">Tick the members below, then give one weight and one reason for the whole pass. Each member still gets their
           own line on the record.
-        </p>
+        </Trans></p>
         <div className="flex flex-wrap gap-2 items-end mt-3">
           <label className="text-xs text-gray-500">
             Weight for everyone picked
@@ -357,7 +359,7 @@ export default function VotingWeightsPanel({
               value={bulkReason}
               onChange={(e) => setBulkReason(e.target.value)}
               maxLength={500}
-              placeholder="Founding members carry two, everyone else one"
+              placeholder={t({ message: "Founding members carry two, everyone else one", context: "VotingWeightsPanel, placeholder" })}
               className={`${inputCls} w-full mt-1 min-h-[44px] block`}
             />
           </label>
@@ -383,7 +385,7 @@ export default function VotingWeightsPanel({
           are proposing. The reason opens as soon as those two differ. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
         <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
-          <h3 className="font-semibold text-gray-900">Every member</h3>
+          <h3 className="font-semibold text-gray-900"><Trans context="VotingWeightsPanel, h3">Every member</Trans></h3>
           <button
             type="button"
             onClick={() => setPicked(allPicked ? new Set() : new Set(members.map((m) => m.id)))}
@@ -395,8 +397,8 @@ export default function VotingWeightsPanel({
 
         {members.length === 0 && (
           <p className="text-sm text-gray-500">
-            No members hold an account here yet. Weights become allocatable as people join.
-          </p>
+            <Trans context="VotingWeightsPanel, p">No members hold an account here yet. Weights become allocatable as people join.
+          </Trans></p>
         )}
 
         <div className="space-y-2">
@@ -439,7 +441,7 @@ export default function VotingWeightsPanel({
                     Weight now
                     <br />
                     <span className="text-sm font-medium text-gray-900 tabular-nums">{weightText(m.weight)}</span>
-                    {m.weight === 0 && <span className="text-gray-500"> (none)</span>}
+                    {m.weight === 0 && <span className="text-gray-500"> <Trans context="VotingWeightsPanel, span">(none)</Trans></span>}
                   </p>
 
                   <label className="text-xs text-gray-500">
@@ -487,17 +489,17 @@ export default function VotingWeightsPanel({
                       autoFocus
                       aria-label={`Why ${m.name} moves from ${weightText(m.weight)} to ${weightText(asNumber)}`}
                       aria-describedby={`${m.id}-reason-hint`}
-                      placeholder="Elected to the finance role this season"
+                      placeholder={t({ message: "Elected to the finance role this season", context: "VotingWeightsPanel, placeholder" })}
                       onChange={(e) => setReason({ ...reason, [m.id]: e.target.value })}
                       className={`${inputCls} w-full mt-1 min-h-[44px] block`}
                     />
                     <span id={`${m.id}-reason-hint`} className="block text-[11px] text-gray-400 mt-0.5">
-                      {m.name} reads this sentence on their own page, with your name beside it.
-                    </span>
+                      <Trans context="VotingWeightsPanel, span">{m.name} reads this sentence on their own page, with your name beside it.
+                    </Trans></span>
                   </label>
                 )}
                 {negative && (
-                  <p className="text-xs text-gray-700 mt-2">A weight is zero or a positive number.</p>
+                  <p className="text-xs text-gray-700 mt-2"><Trans context="VotingWeightsPanel, p">A weight is zero or a positive number.</Trans></p>
                 )}
               </div>
             );
@@ -510,15 +512,15 @@ export default function VotingWeightsPanel({
           other. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
         <h3 className="flex items-center gap-2 font-semibold text-gray-900">
-          <History className="w-4 h-4 text-gray-500" aria-hidden="true" />
+          <Trans context="VotingWeightsPanel, h3"><History className="w-4 h-4 text-gray-500" aria-hidden="true" />
           Every change ever made
-        </h3>
+        </Trans></h3>
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-          Append-only. Nothing here can be edited or removed, by anyone, and every signed-in member reads the same list
+          <Trans context="VotingWeightsPanel, p">Append-only. Nothing here can be edited or removed, by anyone, and every signed-in member reads the same list
           on the decisions page.
-        </p>
+        </Trans></p>
         {history.length === 0 ? (
-          <p className="text-sm text-gray-500 mt-3">Nobody's weight has been changed yet.</p>
+          <p className="text-sm text-gray-500 mt-3"><Trans context="VotingWeightsPanel, p">Nobody's weight has been changed yet.</Trans></p>
         ) : (
           <ul className="mt-3 space-y-2.5">
             {history.map((h) => (
@@ -529,8 +531,8 @@ export default function VotingWeightsPanel({
                   {weightText(h.newWeight)}
                 </span>
                 <span className="text-gray-400">
-                  {" by "}
-                  {nameOf(h.actorUserId)} on {new Date(h.at).toLocaleDateString()}
+                  <Trans context="VotingWeightsPanel, span">{" by "}
+                  {nameOf(h.actorUserId)} on {new Date(h.at).toLocaleDateString()}</Trans>
                 </span>
                 <p className="text-gray-600 leading-relaxed">{h.note}</p>
               </li>

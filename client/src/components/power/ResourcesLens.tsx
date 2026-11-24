@@ -22,6 +22,7 @@ import { crossRate, formatMoney } from "@shared/money";
 import { authToken } from "@/lib/gameApi";
 import type { PowerCircle } from "./types";
 import { storedDisplayCurrency, type FxTable } from "./CurrencyPicker";
+import { Trans } from "@lingui/react/macro";
 
 /** The outer margin the layout grows by while this lens is on: room for
  *  the source ring outside the village line. */
@@ -242,8 +243,8 @@ export default function ResourcesLens({
           $
         </text>
         <text x={treasury.x} y={treasury.y - 18} textAnchor="middle" className="fill-foreground" style={{ fontSize: 11, fontWeight: 600 }}>
-          Treasury
-        </text>
+          <Trans context="ResourcesLens, text">Treasury
+        </Trans></text>
       </g>
 
       {/* Budget arcs treasury to circle centres: declared envelopes, dotted,
@@ -384,12 +385,12 @@ export function ResourcesKey({ resources }: { resources: ResourcesData }) {
           </svg>
           measured
         </span>
-        <span className="text-muted-foreground">Dotted is what the village declares. Solid is what the ledger counted.</span>
+        <span className="text-muted-foreground"><Trans context="ResourcesLens, span">Dotted is what the village declares. Solid is what the ledger counted.</Trans></span>
       </div>
       {unconverted.length > 0 && chosen && (
         <p className="text-xs text-muted-foreground" data-resources-unconverted>
-          No exchange rate is on file to show {unconverted.join(", ")} in {chosen} yet, so those amounts stay in their own currency.
-        </p>
+          <Trans context="ResourcesLens, p">No exchange rate is on file to show {unconverted.join(", ")} in {chosen} yet, so those amounts stay in their own currency.
+        </Trans></p>
       )}
     </div>
   );

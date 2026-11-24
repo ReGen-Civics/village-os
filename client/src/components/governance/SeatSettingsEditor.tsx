@@ -52,6 +52,7 @@ import {
   type SeatPreset,
 } from "@shared/seatPresets";
 import SeatSettingsFields from "./SeatSettingsFields";
+import { Trans } from "@lingui/react/macro";
 
 export const EDITOR_WORDS = {
   wholeLead: "Start from a whole role",
@@ -160,7 +161,7 @@ function GroupRow({
             <button type="button" onClick={() => onChange(resetGroup(settings, group, villagePresets))} className={quietButton}>
               <RotateCcw className="size-4" aria-hidden="true" />
               {EDITOR_WORDS.reset}
-              <span className="sr-only"> for {GROUP_LABELS[group]}</span>
+              <span className="sr-only"> <Trans context="SeatSettingsEditor, span">for {GROUP_LABELS[group]}</Trans></span>
             </button>
           )}
           {row.set && (
