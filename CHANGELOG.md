@@ -49,7 +49,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **No reply promise before anyone sends.** After sending, every application and proposal says "You'll hear from us within one moon cycle". The new setting `org.reply_window_moons` (1 to 6, default 1) sets that window.
 - **A quieter front door for visitors.** Areas still being built are hidden from people who are not yet members and show "Coming soon" to members. The Prosperity packet comes through a form.
 - **A friendlier refresh screen.** When a page needs a refresh after a new version goes out, it says nothing is broken, offers one big Refresh button, and shows a public-domain quote that changes each time.
-- **Pages redrawn in the house look:** What We Look After (/powers, calmer for visitors), How We Create, Good Neighbor and Team. No night page scrolls sideways on a phone or tablet any more.
+- **Pages redrawn in the house look:** the Prosperity path, What We Look After (/powers, calmer for visitors), How We Create, Good Neighbor and Team. No night page scrolls sideways on a phone or tablet any more.
 - **A home-screen icon for iPhones,** made from the village's own favicon.
 - **A lighter build:** long copy in lazily loaded pages moved out of the code, so the site's total size dropped by about 380 KB with no page slower to open.
 
