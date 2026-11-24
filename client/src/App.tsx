@@ -97,7 +97,9 @@ function PageTitle() {
   // village's own the moment config arrives, same pattern as the title below.
   useEffect(() => {
     if (!favicon) return;
-    for (const rel of ["icon", "apple-touch-icon"]) {
+    // The tab icon only: the home-screen icon is /api/brand/touch-icon.png, a PNG the server draws from
+    // this same favicon, because iOS ignores an SVG there (server/lib/touchIcon.ts).
+    for (const rel of ["icon"]) {
       let link = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
       if (!link) {
         link = document.createElement("link");

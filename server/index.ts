@@ -292,6 +292,7 @@ import { register as registerSessionDecisionRoutes } from "./routes/sessionDecis
 import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
+import { register as registerTouchIconRoutes } from "./routes/touchIcon";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
 import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerPayRoutes } from "./routes/pay";
@@ -25653,6 +25654,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
       ],
     });
   });
+
+  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
 
   /*
    * ROBOTS AND SITEMAP, as real files.
