@@ -257,9 +257,8 @@ const Visit = brochurePage(() => import("./pages/Visit"));
 const GratitudeWall = lazyPage(() => import("./pages/GratitudeWall"));
 const WorkWithUs = brochurePage(() => import("./pages/WorkWithUs"));
 const ToolsHub = lazyPage(() => import("./pages/ToolsHub"));
-const VillageMap = lazyPage(() => import("./pages/VillageMap"));
-const LivingMap = lazyPage(() => import("./pages/LivingMap"));
-const MapMembersDoor = lazyPage(() => import("./components/map/MapMembersDoor"));
+const VillageMap = lazyPage(() => import("./pages/VillageMapForMembers"));
+const LivingMap = lazyPage(() => import("./pages/LivingMapForMembers"));
 const Events = lazyPage(() => import("./pages/Events"));
 const FirstWalk = lazyPage(() => import("./pages/FirstWalk"));
 const Forum = lazyPage(() => import("./pages/Forum"));
@@ -370,12 +369,7 @@ function Router() {
           view keeps its own address: it holds the concierge, the contact
           relay and raise-your-hand, which read live data behind the
           capability gate and have no equivalent in the artifact. */}
-      {/* The living map is for members (components/map/MapMembersDoor.tsx; the gate is server/routes/mapView.ts). */}
-      <Route path="/map">
-        <MapMembersDoor>
-          <LivingMap />
-        </MapMembersDoor>
-      </Route>
+      <Route path="/map" component={LivingMap} />
       {/* The photographs of the land, beside the map rather than inside it.
           The list route is declared before the detail route for the reason
           /decisions gives: wouter takes the first match, and a :key above the
@@ -387,11 +381,7 @@ function Router() {
           it was filed under. Top level and not under /places for the reason
           PAGE_TITLES gives. */}
       <Route path="/photographs" component={Photographs} />
-      <Route path="/map/circles">
-        <MapMembersDoor>
-          <VillageMap />
-        </MapMembersDoor>
-      </Route>
+      <Route path="/map/circles" component={VillageMap} />
       <Route path="/events" component={Events} />
       <Route path="/first-walk" component={FirstWalk} />
       <Route path="/feed" component={Feed} />

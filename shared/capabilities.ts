@@ -35,9 +35,6 @@ export type Capability =
   | "proposal.open" // open a governance decision
   | "proposal.decide" // record a decision's outcome
   | "map.viewPeople" // see WHO holds seats on the village map (not just counts)
-  // The living map itself, members only (the lead, 24 Nov 2026). A visitor, an entered portal
-  // visitor and a signed-in visitor account read the circles' words and never the map.
-  | "map.view" // open the living map
   // The open book (seat settings, 2026-10-09). Every member reads every
   // seat's terms on offer, money included; a visitor and a signed-in guest
   // read none of it. One key, unlocked at the member rung, and no bespoke
@@ -263,7 +260,6 @@ export const ALL_CAPABILITIES: Capability[] = [
   "proposal.open",
   "proposal.decide",
   "map.viewPeople",
-  "map.view",
   "terms.read",
   "records.confidential",
   "map.contact",
@@ -343,7 +339,6 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "proposal.open": "Open a governance decision",
   "proposal.decide": "Record a decision's outcome",
   "map.viewPeople": "See who holds roles on the village map",
-  "map.view": "Open the living map",
   "terms.read": "Read what each role offers, money included",
   "records.confidential": "Read the village's private records, while aligned with its confidentiality agreement",
   "map.contact": "Reach a role holder through the contact relay",
@@ -421,7 +416,6 @@ export const STAGE_UNLOCKS: Partial<Record<Capability, string>> = {
   "forum.post": "member", // you can talk once you have joined
   "proposal.open": "co-creator", // open a decision once you are co-creating
   "map.viewPeople": "guest", // any account sees who holds the village's seats
-  "map.view": "member", // the living map is for members (the lead, 24 Nov 2026); a village may move the rung
   // The open book: membership is the bar for reading a seat's terms. Guest is
   // deliberately NOT enough, which is why this is its own key and never
   // map.viewPeople.
@@ -717,7 +711,6 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
   "stay.member_rate": false,
   "map.photograph": false,
   "map.viewPeople": false,
-  "map.view": false,
   // Reading is a member's own act, so there is nobody for it to move to.
   "terms.read": false,
   // A role grants it (a finance role, say); the alignment is asked on top, in the gate (ALIGNMENT_BOUND).
@@ -793,7 +786,7 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * ── THIS IS A READING OF THOSE WORDS, AND IT HAS A PRODUCT CONSEQUENCE ─────
  *
  * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 34 keys
- * today. The other 25 are not withheld from anybody: they are personal acts
+ * today. The other 24 are not withheld from anybody: they are personal acts
  * and deployment plumbing that were never anyone's to hold, and `TRANSFERABLE`
  * carries the reasoning key by key.
  *
@@ -852,9 +845,6 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * transferable with Rye's word of 2026-11-15 on the hidden-map spec's I.10
  * ("go with your recommendations on all of them"), which moved only the
  * first: 34 and 24.
- * `map.view` (the living map for members, the lead's word of 2026-11-24) was
- * born held, a look every member has by the rung, which moved only the second:
- * 34 and 25.
  *
  * This sentence was itself wrong for one batch, and it is the reason the check
  * below reads the WHOLE paragraph rather than three sentences. It claimed
@@ -1020,7 +1010,6 @@ export const DENIABLE: Record<Capability, boolean> = {
   "forum.moderate": true,
   "proposal.decide": true,
   "map.viewPeople": true,
-  "map.view": true, // a look, like map.viewPeople: a deny may pause it
   "terms.read": true, // a look, like map.viewPeople: a deny may pause it
   "records.confidential": true, // a look at private records: a warning badge may pause it
   "map.edit": true,
@@ -1211,7 +1200,6 @@ export const BADGE_GRANTABLE: Record<Capability, boolean> = {
   "proposal.open": true,
   "proposal.decide": true,
   "map.viewPeople": true,
-  "map.view": true,
   "terms.read": true,
   "records.confidential": true,
   "map.contact": true,

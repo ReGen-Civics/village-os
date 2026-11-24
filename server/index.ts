@@ -106,7 +106,6 @@ import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
-import { register as registerMapView } from "./routes/mapView";
 import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
@@ -9762,7 +9761,6 @@ async function startServer() {
 
   // â”€â”€ S19-S23: the village map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€─
   app.use("/api/map", requireModule("map"));
-  registerMapView(app, { guardCapability });
   app.use("/api/saberra", requireModule("saberra"));
   app.use("/api/circles", requireModule("map"));
   /*
