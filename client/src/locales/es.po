@@ -18479,6 +18479,42 @@ msgctxt "admin helper, unnamed guide"
 msgid "your village guide"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by a founder or admin, mid-sentence"
+msgid "your village guide"
+msgstr "tu guía de la aldea"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by members and the public, mid-sentence"
+msgid "the village guide"
+msgstr "la guía de la aldea"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, proposing a quest: the guide's first message"
+msgid "Hi, I'm {assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring."
+msgstr "Hola, soy {assistantName}. ¿Falta una misión en el tablero? Cuéntame qué te encantaría aportar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, work with us: the guide's first message when the village wrote no greeting of its own"
+msgid "Hi, I'm {assistantName}, and I help people shape their offering to {projectName}. What are you dreaming of bringing? There's no wrong way to start."
+msgstr "Hola, soy {assistantName}, y ayudo a las personas a dar forma a lo que quieren ofrecer a {projectName}. ¿Qué sueñas con aportar? No hay una forma equivocada de empezar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat: while the guide writes its reply"
+msgid "{thinkingName} is thinking…"
+msgstr "{thinkingName} está pensando…"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us: the button that opens a conversation with the village guide"
+msgid "Talk it through with {assistantName}"
+msgstr "Háblalo con {assistantName}"
+
 #. placeholder {0}: items.length - took
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"

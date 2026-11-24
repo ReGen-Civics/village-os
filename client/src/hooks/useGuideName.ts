@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { guideAudience, guideName, type GuideAudience, type GuideName } from "@shared/guideName";
+import { useLingui } from "@lingui/react/macro";
+import { guideAudience, type GuideAudience, type GuideName } from "@shared/guideName";
+import { guideNameIn } from "@/lib/guideNameWords";
 
 /**
  * The village guide's name for whoever is looking, on a page that does not
@@ -9,13 +11,16 @@ import { guideAudience, guideName, type GuideAudience, type GuideName } from "@s
  * The name is `workWithUs.assistantName` (shared/guideName.ts says why it is
  * the only place). Until the village names its guide this reads "your village
  * guide" to a founder or admin and "the village guide" to everyone else, so
- * the guide is never hidden and never borrows another village's name.
+ * the guide is never hidden and never borrows another village's name. The
+ * neutral label is said in the reader's language (client/src/lib/guideNameWords.ts);
+ * a name the village typed is shown exactly as typed in every language.
  *
  * `loaded` turns true once the document has answered or failed, for a page
  * that would rather wait than show the neutral label and then the name.
  */
 export function useGuideName(): GuideName & { loaded: boolean; audience: GuideAudience } {
   const audience = useViewerGuideAudience();
+  const { i18n } = useLingui();
   const [source, setSource] = useState<unknown>(undefined);
   const [loaded, setLoaded] = useState(false);
 
@@ -39,7 +44,7 @@ export function useGuideName(): GuideName & { loaded: boolean; audience: GuideAu
     };
   }, []);
 
-  return { ...guideName(source, audience), loaded, audience };
+  return { ...guideNameIn(source, audience, i18n), loaded, audience };
 }
 
 /**
