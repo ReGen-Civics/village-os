@@ -24,9 +24,11 @@ import { pageVarsFrom } from "@shared/pageContent/vars";
 import { useTokenName, useTokensWord, useValueTokenName } from "@/hooks/useTokenNames";
 import { useValueConversion } from "@/lib/moneyClaims";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
+import QuestsComingSoon from "@/components/openWork/QuestsComingSoon";
 import { useLadderTitle } from "@/hooks/useVillagePaths";
 import QuestCard, { iconFor, QuestPoster } from "@/components/QuestCard";
 import {
+  boardHasRealOpenWork,
   currentClaims,
   filterBoard,
   groupByCircle,
@@ -230,6 +232,10 @@ export default function Quests() {
   );
   const goalFor = (q: BoardQuest) => goalOf(q.goalId, goalList);
   const now = new Date();
+  // Quests coming soon (the lead, 24 Nov 2026): a board with quests on it and
+  // no real open work among them is a board of examples. It says so up top,
+  // and each card carries its own stamp. An empty board has its own meadow.
+  const comingSoon = !boardFailed && quests.length > 0 && !boardHasRealOpenWork(quests);
 
   return (
     <Layout>
@@ -254,7 +260,11 @@ export default function Quests() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
               Take a Quest, do the work, turn it in.
             </p>
-            <ExamplesBanner moduleId="quests" noun="quest" tone="night" />
+            {comingSoon ? (
+              <QuestsComingSoon className="mx-auto mb-4 mt-6 max-w-3xl" />
+            ) : (
+              <ExamplesBanner moduleId="quests" noun="quest" tone="night" />
+            )}
             <p className="text-sm italic text-muted-foreground mt-2 mb-8">
               Real work, on real land, beside people becoming your people.
             </p>

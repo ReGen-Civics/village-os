@@ -27684,3 +27684,113 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/ExampleStamp.tsx
+msgctxt "the ink stamp across a quest that is an example of the work to come"
+msgid "Example"
+msgstr "Ejemplo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestCard.tsx
+#: client/src/components/openWork/ExampleStamp.tsx
+msgctxt "the example stamp, read aloud"
+msgid "Example quest"
+msgstr "Misión de ejemplo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner eyebrow"
+msgid "Open work"
+msgstr "Trabajo abierto"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests board banner while every quest is an example"
+msgid "Quests coming soon"
+msgstr "Pronto habrá misiones"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner: the one line under the heading"
+msgid "These are examples of the quests to come. Have one in mind?"
+msgstr "Estos son ejemplos de las misiones por venir. ¿Tienes alguna en mente?"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quests coming soon banner: the one door"
+msgid "Propose a quest"
+msgstr "Proponer una misión"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestCard.tsx
+msgctxt "open work card: in place of the status mark on an example quest"
+msgid "An example of the work to come. It cannot be taken yet."
+msgstr "Un ejemplo del trabajo por venir. Todavía no se puede tomar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the take button on an example, disabled"
+msgid "Example quest"
+msgstr "Misión de ejemplo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: under the disabled take button on an example"
+msgid "This shows the kind of quest to come. It cannot be taken."
+msgstr "Muestra el tipo de misión por venir. No se puede tomar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the note under an example quest's poster"
+msgid "An example of the quests to come. It cannot be taken yet."
+msgstr "Un ejemplo de las misiones por venir. Todavía no se puede tomar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Show the board as examples"
+msgstr "Mostrar el tablero como ejemplos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
+msgstr "Marca cada misión como ejemplo. Cada tarjeta lleva un sello de Ejemplo, nadie puede tomarla y el tablero dice que pronto habrá misiones. Una misión con trabajo en curso se queda como está. Devuelve una misión con el botón Keep as a real quest."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: confirm marking all as examples"
+msgid "Mark every quest on the board as an example? Nobody can take an example."
+msgstr "¿Marcar cada misión del tablero como ejemplo? Nadie puede tomar un ejemplo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: after marking all as examples"
+msgid "{marked} marked as examples"
+msgstr "{marked} marcadas como ejemplos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: quests the mark-all left alone"
+msgid "Left as real, with work in flight: {names}"
+msgstr "Siguen como reales, con trabajo en curso: {names}"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all button"
+msgid "Mark all current quests as examples"
+msgstr "Marcar todas las misiones actuales como ejemplos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: one quest marked as an example"
+msgid "Marked as an example"
+msgstr "Marcada como ejemplo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the per-quest example switch"
+msgid "Mark as example"
+msgstr "Marcar como ejemplo"

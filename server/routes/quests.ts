@@ -16,6 +16,7 @@
  *             PUT    /api/admin/quests/:id
  *             DELETE /api/admin/quests/:id
  *             POST   /api/admin/quests/:id/keep   (a starter kept as real, 2026-10-31)
+ *             POST   /api/admin/quests/mark-examples   (every real quest stamped, 2026-11-24)
  *   the walk  POST /api/game/quests/:id/claim
  *             POST /api/game/quests/:id/submit
  *
@@ -76,7 +77,7 @@ import { effectiveLifecycle } from "../lib/modules";
 import { linksForSubject, unlinkSubject } from "../lib/needs";
 import { register as registerMemberCommitment } from "./memberCommitment";
 import { readCommitmentPct } from "../../shared/commitment";
-import { keepExampleQuest, questClosed, setQuestRoots, type QuestRecord } from "../repos/quests";
+import { keepExampleQuest, markQuestExample, questClosed, setQuestRoots, type QuestRecord } from "../repos/quests";
 import { listArchetypeRows } from "../repos/archetypes";
 import { villageId } from "../lib/economy";
 import { rootsForWork } from "../../shared/archetypeRoots";
@@ -768,8 +769,78 @@ export function register(app: Express, deps: Deps): void {
     res.json(entry);
   });
 
+  /*
+   * THE EXAMPLE SWITCH (the lead, 24 Nov 2026: "put a big example stamp on the
+   * existing cards and say quests coming soon"). A save whose body is exactly
+   * `{ isExample: true }` or `{ isExample: false }` moves the flag and nothing
+   * else, so an agent's `setting` proposal against this route is one small
+   * body. Words and the flag never ride one save: a body naming the flag and
+   * anything else is refused with the sentence, because an edit laundered
+   * through the switch is the trap the guard below exists for.
+   *
+   *   true   a real quest becomes an example: stamped on the board, every
+   *          claim refused. Refused while a claim is in flight (settle first,
+   *          as delete is), because an example refuses submit too.
+   *   false  an example becomes the village's own again, through the same
+   *          door Keep uses, so it carries a value the way every real quest
+   *          does (Rye, 2026-10-21). One with no value is pointed at Keep.
+   *
+   * Asking for the state a quest is already in answers 200 with the quest, so
+   * an accepted proposal that lands twice is not an error.
+   */
+  const switchExample = async (req: express.Request, res: express.Response, want: boolean) => {
+    const id = String(req.params.id);
+    const actor = adminActor(req)?.id ?? null;
+    const audit = async (text: string) => void recordEvent(getPool(), {
+      kind: "audit", text, actorUserId: (await authedUser(req))?.id ?? actor,
+      entityType: "quest", entityRef: id, audience: "admin",
+    });
+    if (want) {
+      const marked = await markQuestExample(getPool(), id);
+      if (!marked.ok && marked.reason === "missing") return res.status(404).json({ error: "Not found" });
+      if (!marked.ok && marked.reason === "already_example") return res.json(await questsRepo.byId(id));
+      if (!marked.ok && marked.reason === "in_flight") {
+        return res.status(409).json({
+          error: `${marked.count} member(s) have this quest in flight. Consent or decline those claims first. An example cannot take their work.`,
+          openClaims: marked.count,
+        });
+      }
+      if (!marked.ok) return res.status(409).json({ error: "That did not change" });
+      await audit(`quest:marked-example:${id}`);
+      return res.json(marked.quest);
+    }
+    const quest = await questsRepo.byId(id);
+    if (!quest) return res.status(404).json({ error: "Not found" });
+    if (!quest.isExample) return res.json(quest);
+    if (quest.valueMinor === undefined || quest.valueMinor === null) {
+      return res.status(400).json({
+        error: "Every quest says what it is worth. Set its value and use Keep as a real quest.",
+        code: "value_required",
+      });
+    }
+    const kept = await keepExampleQuest(getPool(), id, () => {});
+    if (!kept.ok && kept.reason === "missing") return res.status(404).json({ error: "Not found" });
+    if (!kept.ok) return res.json(await questsRepo.byId(id));
+    const { stillShowing } = await afterExampleKept(getPool(), "quests", actor);
+    await captureIntoCurrentPattern(getPool(), currentPatternId(), "quest", id);
+    await audit(`quest:kept:${id}`);
+    return res.json({ ...kept.quest, startersLeft: stillShowing });
+  };
+
   app.put("/api/admin/quests/:id", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    if (Object.prototype.hasOwnProperty.call(raw, "isExample")) {
+      if (typeof raw.isExample !== "boolean") {
+        return res.status(400).json({ error: "isExample is true or false." });
+      }
+      if (Object.keys(raw).some((k) => k !== "isExample")) {
+        return res.status(400).json({
+          error: "Change the example switch on its own, then save the quest's words separately.",
+        });
+      }
+      return switchExample(req, res, raw.isExample);
+    }
     // Editing an example into a real quest would launder it: the row keeps
     // is_example, so retirement would later delete the admin's own work.
     if (await isExampleRow(getPool(), "quests", req.params.id)) {
@@ -833,6 +904,35 @@ export function register(app: Express, deps: Deps): void {
       entityType: "quest", entityRef: kept.quest.id, audience: "admin",
     });
     res.json({ ...kept.quest, startersLeft: stillShowing });
+  });
+
+  /*
+   * MARK EVERY REAL QUEST AS AN EXAMPLE, in one press (the lead, 24 Nov 2026).
+   * The board then reads "Quests coming soon" over stamped cards. Each quest
+   * goes through `markQuestExample`, so a quest with a claim in flight is
+   * skipped and named, never stranded. Undoing it is per quest: the switch
+   * on PUT /api/admin/quests/:id, or Keep in Admin.
+   */
+  app.post("/api/admin/quests/mark-examples", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const actor = adminActor(req)?.id ?? null;
+    const actorUserId = (await authedUser(req))?.id ?? actor;
+    let marked = 0;
+    const skipped: { id: string; title: string; openClaims: number }[] = [];
+    for (const q of await questsRepo.all()) {
+      if (q.isExample) continue;
+      const r = await markQuestExample(getPool(), q.id);
+      if (r.ok) {
+        marked += 1;
+        void recordEvent(getPool(), {
+          kind: "audit", text: `quest:marked-example:${q.id}`, actorUserId,
+          entityType: "quest", entityRef: q.id, audience: "admin",
+        });
+      } else if (r.reason === "in_flight") {
+        skipped.push({ id: q.id, title: q.title, openClaims: r.count });
+      }
+    }
+    res.json({ marked, skipped });
   });
 
   app.delete("/api/admin/quests/:id", async (req, res) => {

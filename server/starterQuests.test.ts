@@ -376,4 +376,101 @@ describe.skipIf(!configured)("a new village's starter quests", () => {
     expect(Number((await row(id)).is_example)).toBe(0);
     expect(await row("q-hijack")).toBeNull();
   });
+
+  /*
+   * THE EXAMPLE SWITCH (the lead, 24 Nov 2026): a village marks its own quests
+   * as examples, the board stamps them and says quests are coming soon, and
+   * the village brings them back one at a time. Its quests are its words, so
+   * no starter retirement, refresh or seeding may touch them.
+   */
+  const PUT = "PUT /api/admin/quests/:id";
+  const MARK_ALL = "POST /api/admin/quests/mark-examples";
+  const own = (id: string, title: string, value: number | null = 1500000) =>
+    makeQuestsRepo(pool).add({ id, title, gratitude: "", status: "Open", tags: [], order: 1, valueMinor: value, valueCurrency: value == null ? null : "USD" } as any);
+
+  it("marks a real quest as an example: stamped, claims refused, and a later real post does not delete it", async () => {
+    await boot();
+    await own("q-own", "Tend the swale");
+    const r = await call(PUT, { params: { id: "q-own" }, body: { isExample: true } });
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    expect(r.body.isExample).toBe(true);
+    expect(Number((await row("q-own")).is_example)).toBe(1);
+    // The claim gate refuses it, the way it refuses every example.
+    const claim = await call("POST /api/game/quests/:id/claim", { params: { id: "q-own" } });
+    expect(claim.status).toBe(409);
+    expect(claim.body.code).toBe("example_immutable");
+    // It is the village's own, never a starter: not counted, not retired.
+    expect(await exampleQuestCount(pool)).toBe(starterIds.length);
+    const posted = await call("POST /api/admin/quests", { body: { title: "Fix the water tank", ...VALUE } });
+    expect(posted.status).toBe(200);
+    for (let i = 0; i < 40 && !isRetired("quests"); i++) await new Promise((r) => setTimeout(r, 100));
+    expect(isRetired("quests")).toBe(true);
+    expect(await exampleQuestCount(pool), "the starters retired").toBe(0);
+    expect(Number((await row("q-own")).is_example), "the village's marked quest stands").toBe(1);
+    // Asking again is not an error.
+    expect((await call(PUT, { params: { id: "q-own" }, body: { isExample: true } })).status).toBe(200);
+  });
+
+  it("refuses to mark a quest with work in flight, and a switch mixed with words or not a boolean", async () => {
+    await own("q-busy", "Build the bench");
+    const claim = await call("POST /api/game/quests/:id/claim", { params: { id: "q-busy" } });
+    expect(claim.status, JSON.stringify(claim.body)).toBe(200);
+    const r = await call(PUT, { params: { id: "q-busy" }, body: { isExample: true } });
+    expect(r.status).toBe(409);
+    expect(r.body.openClaims).toBe(1);
+    expect(Number((await row("q-busy")).is_example)).toBe(0);
+
+    await own("q-calm", "Sweep the hall");
+    expect((await call(PUT, { params: { id: "q-calm" }, body: { isExample: true, title: "Renamed" } })).status).toBe(400);
+    expect((await call(PUT, { params: { id: "q-calm" }, body: { isExample: "yes" } })).status).toBe(400);
+    const after = await row("q-calm");
+    expect(Number(after.is_example)).toBe(0);
+    expect(after.title).toBe("Sweep the hall");
+    expect((await call(PUT, { params: { id: "q-nope" }, body: { isExample: true } })).status).toBe(404);
+
+    admin = false;
+    expect((await call(PUT, { params: { id: "q-calm" }, body: { isExample: true } })).status).toBe(401);
+    expect((await call(MARK_ALL, { body: {} })).status).toBe(401);
+  });
+
+  it("brings a marked quest back with its value, and points a quest with no value at Keep", async () => {
+    // A starter carries no value, and every real quest says what it is worth.
+    await boot();
+    const starter = await call(PUT, { params: { id: starterIds[0] }, body: { isExample: false } });
+    expect(starter.status).toBe(400);
+    expect(starter.body.code).toBe("value_required");
+    expect(Number((await row(starterIds[0])).is_example)).toBe(1);
+
+    await own("q-back", "Plant the hedge");
+    await call(PUT, { params: { id: "q-back" }, body: { isExample: true } });
+    const back = await call(PUT, { params: { id: "q-back" }, body: { isExample: false } });
+    expect(back.status, JSON.stringify(back.body)).toBe(200);
+    expect(back.body.isExample).toBe(false);
+    expect(Number((await row("q-back")).is_example)).toBe(0);
+    expect((await call("POST /api/game/quests/:id/claim", { params: { id: "q-back" } })).status).toBe(200);
+  });
+
+  it("marks every real quest at once, leaving the one with work in flight and naming it", async () => {
+    await own("q-a", "Weed the beds");
+    await own("q-b", "Paint the gate");
+    await own("q-c", "Fix the roof");
+    expect((await call("POST /api/game/quests/:id/claim", { params: { id: "q-c" } })).status).toBe(200);
+    const r = await call(MARK_ALL, { body: {} });
+    expect(r.status).toBe(200);
+    expect(r.body.marked).toBe(2);
+    expect(r.body.skipped).toEqual([{ id: "q-c", title: "Fix the roof", openClaims: 1 }]);
+    expect(Number((await row("q-a")).is_example)).toBe(1);
+    expect(Number((await row("q-b")).is_example)).toBe(1);
+    expect(Number((await row("q-c")).is_example)).toBe(0);
+  });
+
+  it("never seeds starters over a board the village marked as examples", async () => {
+    await own("q-mine", "Mend the fence");
+    await call(PUT, { params: { id: "q-mine" }, body: { isExample: true } });
+    await loadExampleState(pool);
+    expect(await boot(), "a board of the village's own examples is a village that has spoken").toBe(0);
+    expect(await exampleQuestCount(pool)).toBe(0);
+    const [[n]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM quests"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect(Number(n.n)).toBe(1);
+  });
 });
