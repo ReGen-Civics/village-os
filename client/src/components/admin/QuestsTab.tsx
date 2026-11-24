@@ -60,7 +60,12 @@ export default function QuestsTab({ password }: { password: string }) {
     () => Array.from(new Set(quests.map((q) => q?.circle).filter(Boolean))).sort() as string[],
     [quests],
   );
-  const starters = quests.filter((q) => q?.isExample).length;
+  // A STARTER is an example the platform seeded, always an `ex-quest-` id
+  // (STARTER_QUEST_IDS, server/repos/questExamples.ts). A quest the village
+  // marked as an example itself is its own, and posting a quest never clears it.
+  const isStarter = (q: any) => !!q?.isExample && String(q?.id ?? "").startsWith("ex-quest-");
+  const starters = quests.filter(isStarter).length;
+  const realCount = quests.filter((q) => !q?.isExample).length;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -182,6 +187,42 @@ export default function QuestsTab({ password }: { password: string }) {
             className="mt-2 min-h-[44px] px-3 rounded-md border border-amber-400 bg-white font-medium"
           >
             Clear the starters you have not kept
+          </button>
+        </div>
+      )}
+
+      {/* The board's example switch (the lead, 24 Nov 2026). Every quest
+          marked as an example shows a stamp, cannot be taken, and the board
+          reads "Quests coming soon" until a real one is open again. */}
+      {realCount > 0 && (
+        <div className="mb-6 rounded-xl border border-border bg-card px-4 py-3 text-sm" data-mark-all-examples>
+          <p className="font-medium text-foreground">
+            <Trans context="admin quests: the mark-all panel">Show the board as examples</Trans>
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            <Trans context="admin quests: the mark-all panel">
+              Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest.
+            </Trans>
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!window.confirm(t({ message: "Mark every quest on the board as an example? Nobody can take an example.", context: "admin quests: confirm marking all as examples" }))) return;
+              const r = await call("/admin/quests/mark-examples", {});
+              if (r) {
+                const skipped = Array.isArray(r.skipped) ? r.skipped : [];
+                const marked = Number(r.marked ?? 0);
+                toast.success(t({ message: `${marked} marked as examples`, context: "admin quests: after marking all as examples" }));
+                if (skipped.length) {
+                  const names = skipped.map((x: any) => x.title).join(", ");
+                  toast.message(t({ message: `Left as real, with work in flight: ${names}`, context: "admin quests: quests the mark-all left alone" }));
+                }
+                load();
+              }
+            }}
+            className="mt-2 min-h-11 rounded-lg border border-border px-3 font-medium text-foreground hover:bg-muted"
+          >
+            <Trans context="admin quests: the mark-all button">Mark all current quests as examples</Trans>
           </button>
         </div>
       )}
@@ -418,6 +459,17 @@ export default function QuestsTab({ password }: { password: string }) {
                     className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
                   >
                     Save
+                  </button>
+                  <button
+                    type="button"
+                    data-mark-example={q.id}
+                    onClick={async () => {
+                      const r = await call(`/admin/quests/${encodeURIComponent(q.id)}`, { isExample: true }, "PUT");
+                      if (r) { toast.success(t({ message: "Marked as an example", context: "admin quests: one quest marked as an example" })); setDraft({ ...draft, [q.id]: undefined }); load(); }
+                    }}
+                    className="min-h-11 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted"
+                  >
+                    <Trans context="admin quests: the per-quest example switch">Mark as example</Trans>
                   </button>
                   <button
                     onClick={async () => {

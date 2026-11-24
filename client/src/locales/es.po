@@ -630,6 +630,12 @@ msgstr "Abierto de nuevo"
 #~ msgid "Characters {roleName} suits"
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: quests the mark-all left alone"
+msgid "Left as real, with work in flight: {names}"
+msgstr "Siguen como reales, con trabajo en curso: {names}"
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "sera draft mark"
 msgid "Keep this"
@@ -3006,6 +3012,13 @@ msgstr ""
 msgid "Your idea is shared. Others can comment on it in its thread."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/ExampleStamp.tsx
+#: client/src/components/QuestCard.tsx
+msgctxt "the example stamp, read aloud"
+msgid "Example quest"
+msgstr "Misión de ejemplo"
+
 #: client/src/pages/Quests.tsx
 msgctxt "quests board, roots filter hid everything"
 msgid "Show every quest"
@@ -3517,6 +3530,12 @@ msgstr ""
 #~ msgctxt "founding application review"
 #~ msgid "Your price"
 #~ msgstr "Tu precio"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: after marking all as examples"
+msgid "{marked} marked as examples"
+msgstr "{marked} marcadas como ejemplos"
 
 #. needs-native-review
 #: client/src/pages/RoleDraft.tsx
@@ -7576,6 +7595,11 @@ msgstr ""
 msgid "The two of us talk it through, in person. In the room: the two of us."
 msgstr ""
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's label while the founding team is on"
+msgid "Paid role"
+msgstr ""
+
 #. placeholder {0}: money(ceiling.amount)
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup: above the full band"
@@ -7826,6 +7850,12 @@ msgctxt "split control: it is editable, percents only"
 msgid "You can change this split for your proposal. Type a percent for each share."
 msgstr "Puedes cambiar este reparto para tu propuesta. Escribe un porcentaje para cada parte."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestCard.tsx
+msgctxt "open work card: in place of the status mark on an example quest"
+msgid "An example of the work to come. It cannot be taken yet."
+msgstr "Un ejemplo del trabajo por venir. Todavía no se puede tomar."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
 msgstr ""
@@ -7946,6 +7976,12 @@ msgstr ""
 msgctxt "sera answers"
 msgid "Keep the vote"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the take button on an example, disabled"
+msgid "Example quest"
+msgstr "Misión de ejemplo"
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: flag"
@@ -9878,6 +9914,12 @@ msgctxt "admin compare"
 msgid "Where they overlap"
 msgstr "Dónde se repiten"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: one quest marked as an example"
+msgid "Marked as an example"
+msgstr "Marcada como ejemplo"
+
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 #~ msgctxt "founding application know us act"
 #~ msgid "Watch the last recording"
@@ -10869,6 +10911,11 @@ msgstr "Elige tu compromiso para ver una compensación sugerida"
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Begin your own departure"
+msgstr ""
+
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's line while the founding team is on"
+msgid "The founding team who hold the village's core domains."
 msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
@@ -12601,6 +12648,13 @@ msgctxt "admin protocols editor"
 msgid "Remove"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quests coming soon banner: the one door"
+msgid "Propose a quest"
+msgstr "Proponer una misión"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, scanning a code"
@@ -12698,6 +12752,12 @@ msgstr ""
 msgctxt "voice transcription switch"
 msgid "Write down my words automatically"
 msgstr "Escribir mis palabras automáticamente"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
+msgstr "Marca cada misión como ejemplo. Cada tarjeta lleva un sello de Ejemplo, nadie puede tomarla y el tablero dice que pronto habrá misiones. Una misión con trabajo en curso se queda como está. Devuelve una misión con el botón Keep as a real quest."
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -16808,6 +16868,12 @@ msgctxt "budget line button"
 msgid "Withdraw {0}"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all button"
+msgid "Mark all current quests as examples"
+msgstr "Marcar todas las misiones actuales como ejemplos"
+
 #: client/src/pages/Decision.tsx
 msgctxt "decision: your turn"
 msgid "You are on the roll and have not voted yet."
@@ -17752,6 +17818,12 @@ msgstr "Quedan {0} caracteres en esta respuesta."
 #: client/src/components/canvas/RecordReadingForm.tsx
 msgid "Why, in one sentence"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Show the board as examples"
+msgstr "Mostrar el tablero como ejemplos"
 
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review, several roles"
@@ -20570,6 +20642,12 @@ msgstr "Ver los roles fundadores"
 msgctxt "sera answers"
 msgid "Add to draft"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: confirm marking all as examples"
+msgid "Mark every quest on the board as an example? Nobody can take an example."
+msgstr "¿Marcar cada misión del tablero como ejemplo? Nadie puede tomar un ejemplo."
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -23476,6 +23554,12 @@ msgctxt "next step box, link to open roles"
 msgid "See the open roles"
 msgstr "Ver los roles abiertos"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner eyebrow"
+msgid "Open work"
+msgstr "Trabajo abierto"
+
 #: client/src/components/priorities/RoomPriorities.tsx
 msgid "Keep this order on the board"
 msgstr ""
@@ -24098,6 +24182,12 @@ msgstr "Cómo sirve tu trabajo"
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Read the pasted list"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the per-quest example switch"
+msgid "Mark as example"
+msgstr "Marcar como ejemplo"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "You are backing this quest (pending). The Backer badge comes when the quest is done."
@@ -24875,6 +24965,12 @@ msgctxt "role draft step"
 msgid "Select up to three"
 msgstr "Elige hasta tres"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests board banner while every quest is an example"
+msgid "Quests coming soon"
+msgstr "Pronto habrá misiones"
+
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription"
 msgid "Stopped. Nothing more is sent. Your recording is kept."
@@ -25360,6 +25456,12 @@ msgstr ""
 msgctxt "budget line status"
 msgid "Withdrawn"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the note under an example quest's poster"
+msgid "An example of the quests to come. It cannot be taken yet."
+msgstr "Un ejemplo de las misiones por venir. Todavía no se puede tomar."
 
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, menu button"
@@ -26402,6 +26504,12 @@ msgctxt "founding team tally: open roles"
 msgid "{0} open"
 msgstr "{0} abiertos"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: under the disabled take button on an example"
+msgid "This shows the kind of quest to come. It cannot be taken."
+msgstr "Muestra el tipo de misión por venir. No se puede tomar."
+
 #: client/src/components/notebook/NotebookAdd.tsx
 msgctxt "notebook add mode"
 msgid "Add a file"
@@ -27281,6 +27389,12 @@ msgctxt "admin protocols editor"
 msgid "Check the file"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/ExampleStamp.tsx
+msgctxt "the ink stamp across a quest that is an example of the work to come"
+msgid "Example"
+msgstr "Ejemplo"
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -27354,6 +27468,12 @@ msgstr "tu guía"
 msgctxt "how pay works"
 msgid "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner: the one line under the heading"
+msgid "These are examples of the quests to come. Have one in mind?"
+msgstr "Estos son ejemplos de las misiones por venir. ¿Tienes alguna en mente?"
 
 #. placeholder {0}: me.needed
 #: client/src/pages/HiddenMap.tsx

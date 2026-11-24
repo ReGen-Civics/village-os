@@ -37,6 +37,7 @@ import { useStatusWords } from "@/components/openWork/statusWords";
 import { usePlaceWords } from "@/components/openWork/placeWords";
 import { useQuestGoals } from "@/components/openWork/useQuestGoals";
 import QuestThreadPicker from "@/components/openWork/QuestThreadPicker";
+import ExampleStamp from "@/components/openWork/ExampleStamp";
 import { statusFor } from "@/lib/questStatus";
 import { goalOf } from "@shared/questThreads";
 import { useLingui } from "@lingui/react/macro";
@@ -244,6 +245,12 @@ export default function QuestDetail() {
             <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <Icon className="w-6 h-6 text-white" />
             </div>
+            {/* The example stamp (the lead, 24 Nov 2026), large across the poster. */}
+            {quest.isExample && (
+              <div className="absolute inset-x-0 top-1/3 flex -translate-y-1/2 justify-center">
+                <ExampleStamp size="page" />
+              </div>
+            )}
             {statusIs(quest, "seasonal") && (
               <span className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-white/85 text-teal-deep text-xs font-bold uppercase tracking-wide">
                 Seasonal
@@ -266,11 +273,14 @@ export default function QuestDetail() {
           <div className="flex flex-wrap items-center gap-2.5 mt-4">
             {/* What the quest is worth and pays, or to inquire (0265). */}
             <WorkPayBlock pay={quest.pay} />
-            {/* The status mark. It describes the work, never a person. */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm" data-status={status}>
-              <PlantGlyph state={status} className="size-5" />
-              {statusWords[status]}
-            </span>
+            {/* The status mark. It describes the work, never a person. An
+                example has no status to describe: it is not open. */}
+            {!quest.isExample && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm" data-status={status}>
+                <PlantGlyph state={status} className="size-5" />
+                {statusWords[status]}
+              </span>
+            )}
             {place && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm" data-place={place}>
                 <MapPin className="w-4 h-4" aria-hidden="true" />
@@ -325,9 +335,11 @@ export default function QuestDetail() {
           )}
 
           {quest.isExample && (
-            <p className="mt-4 text-sm text-muted-foreground bg-amber/10 border border-amber/30 rounded-xl px-4 py-3">
-              A standing example. It shows what a quest looks like here until the
-              village posts its own, and it can't be claimed.
+            <p className="mt-4 text-sm text-muted-foreground bg-amber/10 border border-amber/30 rounded-xl px-4 py-3" data-example-note>
+              {t({ message: "An example of the quests to come. It cannot be taken yet.", context: "quest page: the note under an example quest's poster" })}{" "}
+              <Link href="/propose-quest" className="font-semibold text-teal-deep underline underline-offset-2 hover:text-teal">
+                {t({ message: "Propose a quest", context: "quests coming soon banner: the one door" })}
+              </Link>
             </p>
           )}
 
@@ -487,6 +499,7 @@ export default function QuestDetail() {
                 claim={claim}
                 decimals={payoutDecimals}
                 pay={quest.pay}
+                isExample={!!quest.isExample}
                 onChanged={refreshClaims}
               />
               <TakeCurrentPrice claim={claim} quest={quest} onTaken={refreshClaims} />

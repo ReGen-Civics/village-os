@@ -172,6 +172,17 @@ export type ClaimLike = { questId: string; status: string };
  * "seasonal" would silently lose the badge while the suggestion logic kept
  * working. One helper, one convention.
  */
+/**
+ * Whether the board has any real work open: a quest that is not an example
+ * and that the board has not closed. Closed is the one word that shuts a
+ * quest (`questClosed` in server/repos/quests.ts reads it the same way), so a
+ * Seasonal quest counts as open work. Without any, the board says its quests
+ * are coming soon (the lead, 24 Nov 2026).
+ */
+export function boardHasRealOpenWork(quests: readonly Pick<BoardQuest, "isExample" | "status">[]): boolean {
+  return quests.some((q) => !q.isExample && !statusIs(q, "closed"));
+}
+
 export function statusIs(
   q: Pick<BoardQuest, "status">,
   want: string,

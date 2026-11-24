@@ -143,6 +143,7 @@ export const ROUTE_POWERS: Readonly<Record<string, Capability>> = {
   "POST /api/admin/quests": "quest.approve",
   "PUT /api/admin/quests/:id": "quest.approve",
   "POST /api/admin/quests/:id/keep": "quest.approve",
+  "POST /api/admin/quests/mark-examples": "quest.approve",
   "DELETE /api/admin/quests/:id": "quest.approve",
   "PUT /api/admin/seasons": "dial.set",
   "PUT /api/admin/seat-presets": "org.declare",

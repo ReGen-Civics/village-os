@@ -38,7 +38,7 @@ import { documentedKey } from "./orgChart";
 import { badgeProblem } from "./badges";
 import { priceToStored, USD } from "./stays";
 import { CURRENCY_DECIMALS, WHOLE_UNITS } from "../../shared/tokenScale";
-import { villageHasOwnQuests } from "../repos/questExamples";
+import { STARTER_QUEST_IDS, villageHasOwnQuests } from "../repos/questExamples";
 
 export const EXAMPLE_REFUSAL =
   "This is a standing example. Publish your own to replace it.";
@@ -202,6 +202,13 @@ const SCOPE: Record<string, Record<string, string>> = {
   },
   feed: {
     forum_threads: "id LIKE 'ex-feed-%'",
+  },
+  // A village may mark its OWN quests as examples (the board's "coming soon"
+  // stamp, 24 Nov 2026). Those are its words, not the platform's starters, so
+  // retirement, a refresh and the banner's row count reach the starters alone,
+  // and posting the first real quest never deletes a quest the village wrote.
+  quests: {
+    quests: STARTER_QUEST_IDS,
   },
 };
 
