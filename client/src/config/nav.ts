@@ -85,6 +85,18 @@ export type NavLink = {
    * member who holds none of them never sees a page that would refuse them.
    */
   door?: "treasury";
+  /**
+   * THE FRONT DOOR (a reviewer's feedback, approved by the lead on 24 Nov 2026).
+   * A visitor, or someone signed in whom the village has not admitted yet,
+   * meets these areas as a sign-in wall, a page of standing examples or an
+   * empty page, so the menu keeps them for members:
+   *   "never"   hidden from newcomers: a member's own working surface;
+   *   "in-use"  hidden from newcomers until the area is in real use
+   *             (client/src/lib/areasInUse.ts says what counts for each).
+   * Absent: shown to everyone the other gates let through. A member sees every
+   * one of them, and an empty page says "Coming soon" (ComingSoonPanel).
+   */
+  newcomers?: "never" | "in-use";
 };
 
 export type NavGroup = {
@@ -150,19 +162,19 @@ export const NAV: readonly NavEntry[] = [
   {
     label: "Community",
     items: [
-      { href: "/feed", label: "Feed", module: "feed" },
-      { href: "/forum", label: "Forum", module: "forum" },
-      { href: "/messages", label: "Messages", module: "messaging" },
+      { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use" },
+      { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use" },
+      { href: "/messages", label: "Messages", module: "messaging", newcomers: "never" },
       // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
-      { href: "/rites", label: "Rites", module: "rites" },
-      { href: "/introductions", label: "Introductions", module: "introductions" },
-      { href: "/events", label: "Events", module: "events" },
+      { href: "/rites", label: "Rites", module: "rites", newcomers: "never" },
+      { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never" },
+      { href: "/events", label: "Events", module: "events", newcomers: "in-use" },
       // The circle calls a member takes part in. It sat in the account menu,
       // where only a member already looking for it would find it. The
       // shortcuts button carries the other door (config/mobileNav.ts).
-      { href: "/sessions", label: "Live Sessions", module: "sessions" },
-      { href: "/gratitude", label: "Gratitude", token: "recognition" },
-      { href: "/seasonal-festivals", label: "Seasonal Festivals" },
+      { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never" },
+      { href: "/gratitude", label: "Gratitude", token: "recognition", newcomers: "never" },
+      { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use" },
       { href: "/feedback", label: "Share Feedback" },
     ],
   },
@@ -177,14 +189,14 @@ export const NAV: readonly NavEntry[] = [
       { href: "/map/circles", label: "Circles & Roles", module: "map" },
       { href: "/circles", label: "Circles", unlessModule: "map" },
       { href: "/roles", label: "Roles", unlessModule: "map" },
-      { href: "/places", label: "Places", module: "map" },
-      { href: "/photographs", label: "Photographs", module: "map" },
+      { href: "/places", label: "Places", module: "map", newcomers: "in-use" },
+      { href: "/photographs", label: "Photographs", module: "map", newcomers: "in-use" },
       // Members only; the module can never stand at public.
-      { href: "/hidden-map", label: "Hidden map", module: "hidden-map" },
+      { href: "/hidden-map", label: "Hidden map", module: "hidden-map", newcomers: "never" },
       { href: "/stay", label: "Stay", module: "stays" },
       { href: "/housing", brochure: true, label: "Housing" },
       { href: "/library", label: "Library", module: "library" },
-      { href: "/tools", label: "Tools", module: "tools" },
+      { href: "/tools", label: "Tools", module: "tools", newcomers: "in-use" },
       { href: "/tokens", label: "The Exchange", module: "exchange" },
       { href: "/village-health", label: "Health", module: "health" },
     ],
@@ -200,25 +212,25 @@ export const NAV: readonly NavEntry[] = [
       // The live surface, module-gated: /governance (under About) explains
       // how the village decides and is always there; /decisions shows what it
       // is deciding and exists only where the engine is switched on.
-      { href: "/decisions", label: "Decisions", module: "governance" },
+      { href: "/decisions", label: "Decisions", module: "governance", newcomers: "never" },
       // Funding rounds (0338): the village chooses which quests the season funds,
       // within a pot. Signed-in roles only: every door asks for a member.
-      { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"] },
+      { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"], newcomers: "never" },
       // Season plans (RC1): everyone's plan for the season, by name. Members
       // read it (terms.read), so it is listed for the signed-in roles only.
-      { href: "/season-plans", label: "Season Plans", module: "governance", roles: ["member", "admin", "founder"] },
+      { href: "/season-plans", label: "Season Plans", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never" },
       // Season places (0408): apply for the season, and who takes part. Members read it, so signed-in roles only.
-      { href: "/season-places", label: "Join the Season", module: "season-places", roles: ["member", "admin", "founder"] },
+      { href: "/season-places", label: "Join the Season", module: "season-places", roles: ["member", "admin", "founder"], newcomers: "never" },
       // The aligned register (seat settings PR6): every set of terms members
       // have aligned with. Members read it (terms.read), so signed-in roles only.
-      { href: "/aligned", label: "Aligned", module: "governance", roles: ["member", "admin", "founder"] },
+      { href: "/aligned", label: "Aligned", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never" },
       // Signed out, the page itself asks the visitor to sign in to write one.
-      { href: "/propose", label: "Make a Proposal", module: "governance" },
+      { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never" },
       // Change requests (Rye, 2026-11-06): several connected changes to the
       // village's settings gathered, reviewed and sent to one vote. The routes
       // mount outside requireModule(), and the page meets a stranger with a
       // sign-in line, so it is listed for the signed-in roles and no module.
-      { href: "/changes", label: "Change Requests", roles: ["member", "admin", "founder"] },
+      { href: "/changes", label: "Change Requests", roles: ["member", "admin", "founder"], newcomers: "never" },
       /**
        * 0140. What an outside service has proposed, waiting for somebody to
        * read it. Capability-gated in the page so that a steward who is not an
@@ -226,10 +238,10 @@ export const NAV: readonly NavEntry[] = [
        * the capability straight back behind the panel it was written to
        * escape. Signed in only, because a stranger cannot hold the capability.
        */
-      { href: "/review", label: "Review Queue", roles: ["member", "admin", "founder"] },
+      { href: "/review", label: "Review Queue", roles: ["member", "admin", "founder"], newcomers: "never" },
       // 0098. What the village looks after, and who holds each one: who do I
       // ask. Open to visitors, and the page says what signing in adds.
-      { href: "/powers", label: "What We Look After" },
+      { href: "/powers", label: "What We Look After", newcomers: "never" },
       /**
        * R12 opened this page to every member. `POST /api/dry-run` answers any
        * signed-in member, so a member could run the village test run and had
@@ -249,6 +261,7 @@ export const NAV: readonly NavEntry[] = [
         label: "🌳 Launch Plan",
         roles: ["member", "admin", "founder"],
         accent: true,
+        newcomers: "never",
       },
       /**
        * /project-history is the Command Centre, not a public history page. Its
@@ -284,7 +297,7 @@ export const NAV: readonly NavEntry[] = [
        * link to /campaigns in the whole client sat on the campaign page,
        * reachable only from /campaigns: a closed loop with no door in.
        */
-      { href: "/campaigns", label: "Pooling Resources", module: "crowdpool" },
+      { href: "/campaigns", label: "Pooling Resources", module: "crowdpool", newcomers: "in-use" },
     ],
   },
   {
@@ -318,7 +331,7 @@ export const NAV: readonly NavEntry[] = [
       { href: "/master-plan", brochure: true, label: "Master Plan" },
       { href: "/team", brochure: true, label: "Our Team" },
       // The other villages this one is linked with: part of what it is.
-      { href: "/network", label: "Village Network", module: "network" },
+      { href: "/network", label: "Village Network", module: "network", newcomers: "in-use" },
       // A visitor's door to the library, which a member has on the bar (design pass D-27).
       { href: "/modules", label: "Module Library", signedIn: false },
     ],
@@ -344,7 +357,7 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   { href: "/protocols", label: "Protocols", module: "protocols" },
   // Direct messages and the shared work chats, with the member's own unread
   // count. The shortcuts button carries the other door (config/mobileNav.ts).
-  { href: "/messages", label: "Messages", module: "messaging", count: "messages" },
+  { href: "/messages", label: "Messages", module: "messaging", count: "messages", newcomers: "never" },
   { href: "/profile#wallet", label: "Wallet", module: "exchange" },
   // The live-session task board on the profile, with the member's own count
   // of what waits on them beside it. The shortcuts button carries the other

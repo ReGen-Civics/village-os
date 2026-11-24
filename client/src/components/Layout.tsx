@@ -24,6 +24,7 @@ import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
 import { storyPageShown } from "@/lib/brochure";
 import { MachineTranslationNote } from "@/i18n/machineTranslation";
+import { useNewcomerShows } from "@/lib/newcomer";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -77,8 +78,11 @@ export default function Layout({ children }: LayoutProps) {
   // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden
   // flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
+  // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
+  const { shows: forNewcomer } = useNewcomerShows();
   const visible = (item: NavLink) =>
     !menu.hidden.includes(item.href) &&
+    forNewcomer(item) &&
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.href)) &&

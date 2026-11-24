@@ -2,8 +2,9 @@
  * THE COMMONS AS A PANEL: the drawing beside the season's goals in words,
  * the two joined so a goal in hand lights its circle.
  *
- * Used on the public landing (VillagePulse) and on a member's own season
- * page (MySeason). Both read the live season and nothing else: the goals, the
+ * Used on a member's own season page (MySeason). It left the public landing
+ * on 24 Nov 2026 (the front door: a goal count and goal names read as insider
+ * detail to a first-time visitor). Both read the live season and nothing else: the goals, the
  * dates and the village's own count of goals reached. No name and no
  * personal count can reach it, because nothing it is given carries one.
  *

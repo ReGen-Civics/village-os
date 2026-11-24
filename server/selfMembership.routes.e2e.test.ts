@@ -450,6 +450,29 @@ describe.skipIf(!DB_CONFIGURED)("a submitted form cannot name its own type", () 
     expect(rows.map((r) => [r.type, r.status, r.user_id ?? null])).toEqual([["partner", "new", null]]);
   });
 
+  it("takes a prosperity packet request from someone with no account, and refuses a bad one storing nothing (the lead, 24 Nov 2026)", async () => {
+    await forgetTheRateWindow();
+    // Bad input first: no email, nothing to build. Refused by name, nothing kept.
+    const bad = await call("POST", "/api/forms/submit", {
+      token: null,
+      body: { type: "prosperity-packet", data: { name: "Ana Lima", email: "not an address", build: "  " } },
+    });
+    expect(bad.status, JSON.stringify(bad.json)).toBe(400);
+    expect(bad.json?.error).toBe("invalid_request");
+    expect(bad.json?.problems).toEqual(["email", "build"]);
+    const wrongShape = await call("POST", "/api/forms/submit", { token: null, body: { type: "prosperity-packet", data: { name: ["Ana"], email: "ana@example.org", build: "A bakery" } } });
+    expect(wrongShape.status).toBe(400);
+    expect(await submissionsOfType("prosperity-packet")).toEqual([]);
+    // CONTROL: the same door takes a good one, as its own type.
+    const good = await call("POST", "/api/forms/submit", {
+      token: null,
+      body: { type: "prosperity-packet", data: { name: "Ana Lima", email: "ana@example.org", build: "A bakery with the village's grain", note: "" } },
+    });
+    expect(good.status, JSON.stringify(good.json)).toBe(200);
+    const rows = await submissionsOfType("prosperity-packet");
+    expect(rows.map((r) => [r.type, r.status, r.user_id ?? null])).toEqual([["prosperity-packet", "new", null]]);
+  });
+
   it("refuses the types only the village's own routes are allowed to write", async () => {
     await forgetTheRateWindow();
     // `role-application` is written by raise-hand and `investor-doc-request`

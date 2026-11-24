@@ -555,25 +555,25 @@ describe("/prosperity", () => {
     expect(document.body.textContent).not.toContain("Maia");
   });
 
-  it("emails the packet request with the village's own subject line", async () => {
+  // THE PACKET IS ASKED FOR ON THE PAGE (24 Nov 2026): a mailto: opens nothing on a phone with no mail app.
+  it("points every packet button at the request form on the page, never a mailto:", async () => {
     state.pages[pageSectionKey(PROSPERITY_JOURNEY)] = { hero: { contactSubject: "Business pack, please" } };
     show(ProsperityJourney);
     const [heroButton] = await screen.findAllByRole("link", { name: phrase(fieldDefault(PROSPERITY_JOURNEY, "hero", "primaryLabel")) });
-    expect(heroButton).toHaveAttribute("href", "mailto:team@example.org?subject=Business%20pack%2C%20please");
+    expect(heroButton).toHaveAttribute("href", "#packet-request");
+    expect(document.querySelector('a[href^="mailto:"]')).toBeNull();
+    expect(document.querySelector("#packet-request [data-packet-form]")).not.toBeNull();
+    // The band's own button words label the send.
+    expect(screen.getByRole("button", { name: phrase(fieldDefault(PROSPERITY_JOURNEY, "packet", "ctaLabel")) })).toBeInTheDocument();
   });
 
-  it("hides the packet band and every packet button while the village has no contact address", async () => {
+  it("keeps the packet band and its form while the village has no contact address, since the form reaches the inbox itself", async () => {
     state.contactEmail = "";
     show(ProsperityJourney);
-    await screen.findByText(fieldDefault(PROSPERITY_JOURNEY, "economy", "firstHeading"));
-    expect(screen.queryByText(fieldDefault(PROSPERITY_JOURNEY, "packet", "heading"))).toBeNull();
-    for (const label of [
-      fieldDefault(PROSPERITY_JOURNEY, "hero", "primaryLabel"),
-      fieldDefault(PROSPERITY_JOURNEY, "packet", "ctaLabel"),
-      fieldDefault(PROSPERITY_JOURNEY, "closing", "secondaryLabel"),
-    ]) {
-      expect(screen.queryByRole("link", { name: phrase(label) }), label).toBeNull();
-    }
+    expect(await screen.findByText(fieldDefault(PROSPERITY_JOURNEY, "packet", "heading"))).toBeInTheDocument();
+    expect(document.querySelector("[data-packet-form]")).not.toBeNull();
+    const [heroButton] = screen.getAllByRole("link", { name: phrase(fieldDefault(PROSPERITY_JOURNEY, "hero", "primaryLabel")) });
+    expect(heroButton).toHaveAttribute("href", "#packet-request");
     expect(document.querySelector('a[href^="mailto:"]')).toBeNull();
   });
 });

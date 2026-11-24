@@ -2,7 +2,7 @@
 /**
  * D-01 (go-live design pass): the landing's first screen. While the village
  * has its founding team section on, "Join the founding team" is the hero's one
- * gold act, the map sits beside it edged, the hero says the founding team is forming, and
+ * gold act, "Learn about" the village sits beside it edged (24 Nov 2026, in place of the map), the hero says the founding team is forming, and
  * the founding card leads the ways in with the gold edge. Off, the hero keeps
  * its own door to the paths and says nothing of a founding team.
  */
@@ -27,13 +27,12 @@ let mapOn = true;
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/components/BuildProgress", () => ({ default: () => null }));
 vi.mock("@/components/SeasonBanner", () => ({ default: () => null }));
-vi.mock("@/components/VillagePulse", () => ({ default: () => null }));
 vi.mock("@/components/MapPeek", () => ({ default: () => null }));
 vi.mock("@/modules/ModuleProvider", () => ({ useModule: (id: string) => (id === "map" && mapOn ? { id: "map" } : null) }));
 vi.mock("@/lib/gameApi", () => ({
   useBrandImages: () => ({ hero: "" }),
   useGameConfig: () => ({ project: { name: "Willowbrook", tagline: "", location: "" }, currency: { name: "Thanks" } }),
-  useVillageLinks: () => ({ siteUrl: "", eventsUrl: "", contactEmail: "", mailTo: () => "" }),
+  useVillageLinks: () => ({ siteUrl: "https://willowbrook.example.org", eventsUrl: "", contactEmail: "", mailTo: () => "" }),
   altOr: (value: string | undefined, fallback: string) => (typeof value === "string" ? value : fallback),
 }));
 vi.mock("@/hooks/useVillageContent", () => ({ readVillageSection: () => Promise.resolve(null) }));
@@ -67,13 +66,14 @@ const renderHome = () =>
 const hero = () => document.querySelector("[data-landing-hero]") as HTMLElement;
 
 describe("the landing's first screen with the founding team on", () => {
-  it("makes Join the founding team the hero's one gold act, with the map beside it edged", async () => {
+  it("makes Join the founding team the hero's one gold act, with Learn about the village beside it edged", async () => {
     renderHome();
     const join = await screen.findByRole("link", { name: /Join the founding team/ });
     expect(join.getAttribute("href")).toBe("/roles");
     expect(join.className).toContain("bg-notice");
-    const map = screen.getByRole("link", { name: "Explore the map" });
-    expect(map.className).not.toContain("bg-notice");
+    const about = screen.getByRole("link", { name: "Learn about Willowbrook" });
+    expect(about.className).not.toContain("bg-notice");
+    expect(screen.queryByRole("link", { name: "Explore the map" })).toBeNull();
     // One gold act in the hero.
     expect(hero().querySelectorAll("a.bg-notice")).toHaveLength(1);
     expect(hero().textContent).toContain("the people who'll take the village from idea to home, season by season");

@@ -27684,3 +27684,159 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site"
+msgid "Learn about {villageName}"
+msgstr "Conoce {villageName}"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site, when it has no name yet"
+msgid "Learn about the village"
+msgstr "Conoce la aldea"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ComingSoonPanel.tsx
+msgctxt "an area the village has not filled yet: the eyebrow over its name"
+msgid "Coming soon"
+msgstr "Próximamente"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the land"
+msgstr "Fotografías de la tierra"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it."
+msgstr "Aquí se reunirán las fotografías de los lugares de la tierra a medida que los miembros las añadan, cada una con el nombre de quien la tomó."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages, the door meanwhile"
+msgid "Open the map"
+msgstr "Abrir el mapa"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "Pooling resources"
+msgstr "Juntar recursos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it."
+msgstr "Cuando la aldea abra su primera recaudación, su anillo aparecerá aquí, y podrás ver lo que aún necesita y aportar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add your name."
+msgstr "Escribe tu nombre."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Añade un correo al que podamos escribirte."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Say what you would like to build."
+msgstr "Cuéntanos qué te gustaría construir."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Keep the note under 2,000 characters."
+msgstr "Mantén la nota por debajo de 2.000 caracteres."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "Your request is on its way"
+msgstr "Tu solicitud va en camino"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "The people who look after new businesses here read every request. We will write to the email you gave."
+msgstr "Quienes cuidan los nuevos negocios aquí leen cada solicitud. Te escribiremos al correo que nos diste."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: an optional field"
+msgid "(optional)"
+msgstr "(opcional)"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "No account needed. It takes a minute."
+msgstr "No necesitas una cuenta. Toma un minuto."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the list of fields to fix"
+msgid "A few things to fix before it can go:"
+msgstr "Faltan algunos detalles antes de enviarla:"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your name"
+msgstr "Tu nombre"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your email"
+msgstr "Tu correo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "What you would like to build"
+msgstr "Qué te gustaría construir"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the build field's hint"
+msgid "A business, a service, a craft: a few lines is plenty."
+msgstr "Un negocio, un servicio, un oficio: bastan unas líneas."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the optional note"
+msgid "Anything else"
+msgstr "Algo más"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "No se envió. Inténtalo de nuevo en unos minutos."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button while it sends"
+msgid "Sending"
+msgstr "Enviando"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button"
+msgid "Send my request"
+msgstr "Enviar mi solicitud"

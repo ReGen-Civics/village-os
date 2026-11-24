@@ -1,10 +1,9 @@
 import Layout from "@/components/Layout";
 import BuildProgress from "@/components/BuildProgress";
 import SeasonBanner from "@/components/SeasonBanner";
-import VillagePulse from "@/components/VillagePulse";
 import MapPeek from "@/components/MapPeek";
 import ContributorRoutes, { useFourWaysHeading } from "@/components/ContributorRoutes";
-import { altOr, useBrandImages, useVillageLinks } from "@/lib/gameApi";
+import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import {
@@ -33,9 +32,8 @@ import { Image } from "@/components/Image";
 import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { HOME_PAGE } from "@shared/pageContent/home";
-import { useModule } from "@/modules/ModuleProvider";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
-import { useStoryPageOffAlone } from "@/lib/brochure";
+import { useStoryPageOffAlone, useStoryPageShown } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 
 
@@ -141,7 +139,9 @@ export default function Home() {
   const { t } = useLingui();
   const fourWaysHeading = useFourWaysHeading();
   // Blank hides both buttons rather than pointing at another village.
-  const { eventsUrl } = useVillageLinks();
+  const { eventsUrl, siteUrl } = useVillageLinks();
+  const villageName = String(useGameConfig()?.project?.name ?? "").trim();
+  const storyShown = useStoryPageShown();
   const brand = useBrandImages();
   // Every word on this page is the village's own, from Admin, Pages, Home
   // (shared/pageContent/home.ts). Null until the saved words have arrived:
@@ -160,9 +160,18 @@ export default function Home() {
   });
   const personas = page?.personas;
   const cta = page?.cta;
-  // R47: the hero holds one door forward, plus the map when this village has
-  // one. An off module would only answer the door with its closed card.
-  const mapOn = !!useModule("map");
+  /*
+   * THE SECOND ACT IS "LEARN ABOUT" THE VILLAGE (a reviewer's feedback, approved
+   * by the lead on 24 Nov 2026). It used to be "Explore the map", which sent a
+   * first-time visitor into the members' working map; the map keeps its place in
+   * the menu. It opens the village's own main site (Admin, Setup Wizard, the main
+   * site link), in a new tab like the header's link to it, and with no main site
+   * set, the village's How We Create page while the story pages are served.
+   */
+  const aboutHref = /^https?:\/\//i.test(siteUrl) ? siteUrl : storyShown("/how-we-create") ? "/how-we-create" : "";
+  const aboutWords = villageName
+    ? t({ message: `Learn about ${villageName}`, context: "landing hero second act: the village's main site" })
+    : t({ message: "Learn about the village", context: "landing hero second act: the village's main site, when it has no name yet" });
   // THE FOUNDING TEAM IS THE FIRST SCREEN'S ONE ACT while the village has the
   // section on (D-01). A senior professional landing here read no word about
   // paid roles, and the only gold on the screen was a link off the site. Off,
@@ -282,10 +291,14 @@ export default function Home() {
               className="hero-rise relative flex flex-wrap items-center gap-3"
             >
               {heroAct}
-              {mapOn ? (
-                <Link href="/map" className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`}>
-                  {t({ message: "Explore the map", context: "landing hero second act" })}
+              {aboutHref.startsWith("/") ? (
+                <Link href={aboutHref} className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`} data-hero-act="about">
+                  {aboutWords}
                 </Link>
+              ) : aboutHref ? (
+                <a href={aboutHref} target="_blank" rel="noopener noreferrer" className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`} data-hero-act="about">
+                  {aboutWords}
+                </a>
               ) : founding ? (
                 <a href="#choose-path" className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`}>
                   Pick your path
@@ -382,10 +395,6 @@ export default function Home() {
       </section>
 
       <SeasonBanner />
-
-      {/* The commons: this season's goals, the village's own count and no
-          names (batch 157, D3; D-19). Placed right after the ways in. */}
-      <VillagePulse />
 
       {/* Journey Stages */}
       {journey && !journey.hidden && (

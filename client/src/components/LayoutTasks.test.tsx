@@ -15,7 +15,7 @@ import { TASK_BOARD_PATH, TASK_COPY, TASKS_COUNT_URL } from "@shared/sessionTask
 const env = vi.hoisted(() => ({ modules: [{ id: "sessions", lifecycle: "members" }] as { id: string; lifecycle: string }[] }));
 
 vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "u1", name: "Ada Lovelace", role: "member" }, logout: vi.fn() }),
+  useAuth: () => ({ user: { id: "u1", name: "Ada Lovelace", role: "member", membershipGranted: true }, logout: vi.fn() }),
 }));
 vi.mock("@/modules/ModuleProvider", () => ({
   useModules: () => ({ modules: env.modules, loaded: true, failed: false }),

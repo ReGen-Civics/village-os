@@ -16,7 +16,7 @@ vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => useAuthMock() }));
 vi.mock("@/lib/gameApi", () => ({ fetchGameMe: () => fetchGameMeMock(), useGameConfig: () => ({ project: { commitmentName: "Love Letter" } }) }));
 vi.mock("@/lib/profileRefresh", () => ({ onProfileRefresh: () => () => {} }));
 
-import { RootStripSlot, VISITOR_STEP_HREF, holdsStripSpace, isQuietPath } from "./NextStepTrail";
+import NextStepTrail, { RootStripSlot, VISITOR_STEP_HREF, holdsStripSpace, isQuietPath, quietForReader } from "./NextStepTrail";
 import RootLine from "./path/RootLine";
 import { clearPathCache } from "@/lib/usePath";
 import { chaptersOf } from "./path/pathView";
@@ -199,7 +199,10 @@ describe("the strip's held space (page speed pass)", () => {
   });
 
   it("holds space where the strip will show, and nowhere it is quiet", () => {
-    expect(holdsStripSpace("/", false)).toBe(true);
+    // The front door (24 Nov 2026): the home page holds no strip for a visitor; a member keeps theirs there.
+    expect(holdsStripSpace("/", false)).toBe(false);
+    expect(holdsStripSpace("/", true)).toBe(true);
+    expect(holdsStripSpace("/visit", false)).toBe(true);
     expect(holdsStripSpace("/quests", true)).toBe(true);
     expect(holdsStripSpace("/roles", false)).toBe(false);
     expect(holdsStripSpace("/roles?from=home", false)).toBe(false);
@@ -235,5 +238,43 @@ describe("the strip's held space (page speed pass)", () => {
     expect(container.querySelector("[data-root-slot]")).not.toBeNull();
     await waitFor(() => expect(container.querySelector("[data-root-slot]")).toBeNull());
     expect(container.querySelector("[data-root-line]")).toBeNull();
+  });
+});
+
+describe("the front door: no path strip on the home page for a visitor (24 Nov 2026)", () => {
+  const shell = (path: string) => {
+    const { hook } = memoryLocation({ path });
+    return render(
+      <Router hook={hook}>
+        <NextStepTrail />
+      </Router>,
+    );
+  };
+
+  it("draws nothing at all on / for a visitor: no strip, no held space, and reads no path", async () => {
+    useAuthMock.mockReturnValue({ user: null, token: null, loading: false });
+    const { container } = shell("/");
+    await Promise.resolve();
+    expect(container.querySelector("[data-root-slot]")).toBeNull();
+    expect(container.querySelector("[data-root-line]")).toBeNull();
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("CONTROL: the same visitor still gets the strip's space on another page, and a member keeps it on /", () => {
+    useAuthMock.mockReturnValue({ user: null, token: null, loading: false });
+    const visitor = shell("/visit");
+    expect(visitor.container.querySelector("[data-root-slot]")).not.toBeNull();
+    visitor.unmount();
+    useAuthMock.mockReturnValue({ user: { id: "u1", role: "member" }, token: "t", loading: false });
+    const member = shell("/");
+    expect(member.container.querySelector("[data-root-slot]")).not.toBeNull();
+  });
+
+  it("is quiet for a visitor on / with a query or a hash, and nowhere else", () => {
+    expect(quietForReader("/", false)).toBe(true);
+    expect(quietForReader("/?utm_source=x", false)).toBe(true);
+    expect(quietForReader("/#choose-path", false)).toBe(true);
+    expect(quietForReader("/", true)).toBe(false);
+    expect(quietForReader("/quests", false)).toBe(false);
   });
 });

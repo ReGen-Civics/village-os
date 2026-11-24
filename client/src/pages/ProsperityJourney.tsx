@@ -6,8 +6,9 @@ import { useValueTokenName } from "@/hooks/useTokenNames";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent";
-import { buttonAction, stepPoints, type TargetContext } from "@/lib/journeyPage";
-import { JOURNEY_LEGACY_STEP_IDS, PROSPERITY_JOURNEY } from "@shared/pageContent/journeys";
+import { buttonAction, stepPoints, type JourneyAction, type TargetContext } from "@/lib/journeyPage";
+import { JOURNEY_LEGACY_STEP_IDS, JOURNEY_TARGETS, PROSPERITY_JOURNEY } from "@shared/pageContent/journeys";
+import PacketRequestForm, { PACKET_ANCHOR } from "@/components/prosperity/PacketRequestForm";
 import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { useState } from "react";
@@ -70,11 +71,26 @@ export default function ProsperityJourney() {
   // mails a stranger's enquiry to a different village.
   const { eventsUrl, mailTo } = useVillageLinks();
   const targets: TargetContext = { eventsUrl, mailTo, subject: hero?.contactSubject ?? "" };
-  const heroPrimary = buttonAction(hero?.primaryLabel, hero?.primaryTarget, targets);
-  const heroSecondary = buttonAction(hero?.secondaryLabel, hero?.secondaryTarget, targets);
-  const packetCta = buttonAction(page?.packet.fields.ctaLabel, page?.packet.fields.ctaTarget, targets);
-  const closingPrimary = buttonAction(page?.closing.fields.primaryLabel, page?.closing.fields.primaryTarget, targets);
-  const closingSecondary = buttonAction(page?.closing.fields.secondaryLabel, page?.closing.fields.secondaryTarget, targets);
+  /*
+   * THE PACKET IS ASKED FOR ON THE PAGE (24 Nov 2026). Every button that would
+   * have written to the village (the contact shortcut, or a mailto: a village
+   * typed) goes to the request form in the packet band instead: a mailto:
+   * opens nothing on a phone with no mail app. It works with no contact address
+   * set, because the form reaches the village's inbox itself.
+   */
+  const act = (label: string | undefined, raw: string | undefined) => {
+    const words = (label ?? "").trim();
+    const target = (raw ?? "").trim();
+    if (words && (target === JOURNEY_TARGETS.contact || /^mailto:/i.test(target))) {
+      return { label: words, action: { kind: "anchor", href: `#${PACKET_ANCHOR}` } as JourneyAction };
+    }
+    return buttonAction(label, raw, targets);
+  };
+  const heroPrimary = act(hero?.primaryLabel, hero?.primaryTarget);
+  const heroSecondary = act(hero?.secondaryLabel, hero?.secondaryTarget);
+  const packetCta = act(page?.packet.fields.ctaLabel, page?.packet.fields.ctaTarget);
+  const closingPrimary = act(page?.closing.fields.primaryLabel, page?.closing.fields.primaryTarget);
+  const closingSecondary = act(page?.closing.fields.secondaryLabel, page?.closing.fields.secondaryTarget);
   const progress = useJourneyProgress("amora-prosperity-progress", steps, JOURNEY_LEGACY_STEP_IDS.prosperity);
   const [expandedStep, setExpandedStep] = useState<number | null>(0);
 
@@ -279,7 +295,7 @@ export default function ProsperityJourney() {
                 const isCompleted = progress.isDone(step);
                 const isExpanded = expandedStep === index;
                 const StepIcon = STEP_ICONS[index % STEP_ICONS.length];
-                const action = buttonAction(step.actionLabel, step.actionTarget, targets);
+                const action = act(step.actionLabel, step.actionTarget);
 
                 return (
                   <m.div
@@ -465,12 +481,11 @@ export default function ProsperityJourney() {
       </section>
       )}
 
-      {/* Download Packet CTA. This section's only control is the packet
-          request, so the whole section hides when that button has nowhere to
-          go (by default, no published contact address): a heading and a
-          promise over an empty band is a worse answer than saying nothing. */}
-      {page && !page.packet.hidden && packetCta && (
-      <section className="py-20 bg-gold/5">
+      {/* THE PACKET REQUEST (24 Nov 2026): the band holds the request form
+          itself, so it needs no contact address and opens on any phone. The
+          band's own button words, when the village set them, label the send. */}
+      {page && !page.packet.hidden && (
+      <section id={PACKET_ANCHOR} className="scroll-mt-24 py-20 bg-gold/5" data-packet-band="">
         <div className="container">
           <m.div
             className="max-w-2xl mx-auto text-center"
@@ -484,10 +499,13 @@ export default function ProsperityJourney() {
             <p className="text-muted-foreground mb-8">
               <Emphasized text={page.packet.fields.body} />
             </p>
-            <JourneyLink action={packetCta.action} className="btn-village inline-flex items-center gap-2">
-              <Download className="w-5 h-5" />
-              {packetCta.label}
-            </JourneyLink>
+            {packetCta && packetCta.action.kind !== "anchor" ? (
+              <JourneyLink action={packetCta.action} className="btn-village mb-8 inline-flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                {packetCta.label}
+              </JourneyLink>
+            ) : null}
+            <PacketRequestForm sendLabel={packetCta?.action.kind === "anchor" ? packetCta.label : undefined} />
           </m.div>
         </div>
       </section>
