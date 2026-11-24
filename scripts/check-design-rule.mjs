@@ -86,10 +86,10 @@ const PAGES = [
   "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
+  "client/src/pages/Powers.tsx",
   "client/src/pages/Team.tsx",
   "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",
-  "client/src/pages/ProsperityJourney.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
   // Decider calm (Phase D, decision 4): every page where people decide stands in the night world.
@@ -103,6 +103,7 @@ const PAGES = [
   "client/src/pages/Pay.tsx",
   // The investor path (24 Nov 2026, investor remake): into the night world with the other paths.
   "client/src/pages/InvestorJourney.tsx",
+  "client/src/pages/ProsperityJourney.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
