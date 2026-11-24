@@ -106,6 +106,7 @@ import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
+import { register as registerMapView } from "./routes/mapView";
 import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
@@ -6689,7 +6690,7 @@ async function startServer() {
   app.use(express.json({ limit: "1mb" }));
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
   registerPeopleLock(app, { authedUser, getPool, boolVar });
-  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok }); // the portal entrance, in front of every later route (shared/entrance.ts)
+  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
   // ── LANE L6 ZONE START: your agent ──────────────────────────────────────────
   //
@@ -9761,6 +9762,7 @@ async function startServer() {
 
   // â”€â”€ S19-S23: the village map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€─
   app.use("/api/map", requireModule("map"));
+  registerMapView(app, { guardCapability });
   app.use("/api/saberra", requireModule("saberra"));
   app.use("/api/circles", requireModule("map"));
   /*

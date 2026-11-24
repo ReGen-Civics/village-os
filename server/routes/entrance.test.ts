@@ -19,6 +19,7 @@ import express from "express";
 import type { Pool } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
+import { insertPortalView, sweepPortalViews } from "../repos/portalEntries";
 import { register } from "./entrance";
 
 const configured = testDbConfigured();
@@ -43,6 +44,7 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
       authedUser: async () => (member ? { id: "u-member" } : null),
       boolVar: (k) => k === "entrance.required",
       stringVar: () => "",
+      numberVar: (k) => (k === "entrance.views_keep_days" ? 30 : 0),
       turnstileSecret: () => "",
       secret: SECRET,
       clientIp: () => "203.0.113.7",
@@ -138,6 +140,17 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
     expect(rows.map((r) => [r.path, r.role_slug])).toEqual([["/roles/garden-steward", "garden-steward"]]);
   });
 
+  it("sweeps page views past the keeping period and keeps the recent ones", async () => {
+    const { cookie } = await enter("Fern Test", "fern@example.org", "/");
+    const id = decodeURIComponent(cookie.split("=")[1]).split(".")[0];
+    const day = 24 * 60 * 60 * 1000;
+    await insertPortalView(pool, { id: "pv-old-one", entryId: id, path: "/roles/old", roleSlug: "old", at: new Date(Date.now() - 40 * day) });
+    await insertPortalView(pool, { id: "pv-new-one", entryId: id, path: "/roles/new", roleSlug: "new", at: new Date(Date.now() - 2 * day) });
+    expect(await sweepPortalViews(pool, new Date(Date.now() - 30 * day), 1)).toBe(1);
+    const left = await read("SELECT id FROM portal_views WHERE entry_id = ?", [id]);
+    expect(left.map((r) => r.id)).toEqual(["pv-new-one"]);
+  });
+
   it("shows Admin the answer, the first page asked for and the pages opened, and forgets them together", async () => {
     // Not signed in: the entrance itself turns the read away before the capability gate is asked.
     expect((await call(`/api/admin/entrance/entries`)).status).toBe(401);
@@ -163,7 +176,7 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
 
     const gone = await call(`/api/admin/entrance/entries?email=MOSS@example.org`, { method: "DELETE" });
     expect(((await gone.json()) as { removed: number }).removed).toBe(1);
-    const views = await read("SELECT COUNT(*) AS n FROM portal_views");
+    const views = await read("SELECT COUNT(*) AS n FROM portal_views WHERE path = '/roles/garden-steward'");
     expect(Number(views[0].n)).toBe(0);
     member = false;
   });

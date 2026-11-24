@@ -34,7 +34,8 @@ import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
 import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
-import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
+import { registerJob } from "../lib/scheduler";
+import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, sweepPortalViews, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
 import { csvCell } from "./commsPeople";
 
@@ -51,6 +52,8 @@ export interface EntranceRouteDeps {
   stringVar(key: string): string;
   /** The Turnstile secret from Admin, Integrations, or "" when none is set. */
   turnstileSecret(): string;
+  /** A whole-number dial (`entrance.views_keep_days`). */
+  numberVar(key: string): number;
   /** The secret the entry cookie is signed under. */
   secret: string;
   clientIp(req: Request): string;
@@ -90,6 +93,12 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   // A gathering's invite link is signed under the same secret, wherever the link is written.
   useEventPassSecret(deps.secret);
   const eventPassFor = (req: Request): string | null => readEventPass(deps.secret, cookieValue(req, EVENT_PASS_COOKIE), now())?.eventId ?? null;
+  // The pages visitors opened are kept `entrance.views_keep_days` (365 by default), then swept daily.
+  registerJob("portal-views-sweep", 24 * 60 * 60 * 1000, async () => {
+    const days = Math.max(1, Math.floor(deps.numberVar("entrance.views_keep_days") || 365));
+    const n = await sweepPortalViews(deps.getPool(), new Date(now() - days * 24 * 60 * 60 * 1000));
+    return `${n} page view(s) older than ${days} days`;
+  });
   // The gate, in front of every route registered after this call.
   app.use(entranceMiddleware({ boolVar: deps.boolVar, authedUser: deps.authedUser, isAgent: deps.isAgent, passToken: deps.passToken, eventPassFor }, entered));
   const secureOf = (req: Request) => req.secure || String(req.headers["x-forwarded-proto"] ?? "").split(",")[0].trim() === "https";

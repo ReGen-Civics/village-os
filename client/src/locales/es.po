@@ -32616,14 +32616,14 @@ msgstr "En espera"
 #: client/src/pages/Entrance.tsx
 #, needs-native-review
 msgctxt "portal entrance: before the link to the village's public site"
-msgid "To learn more about us, visit"
-msgstr "Para saber más sobre nosotros, visita"
+msgid "To know more about us, visit"
+msgstr "Para conocernos más, visita"
 
 #: client/src/pages/Entrance.tsx
 #, needs-native-review
 msgctxt "portal entrance: what this site is, after the link to the public site"
-msgid "This site is our game, where we co-create the village."
-msgstr "Este sitio es nuestro juego, donde co-creamos la aldea."
+msgid "This is our game, where we co-create the village."
+msgstr "Este es nuestro juego, donde co-creamos la aldea."
 
 #: client/src/pages/Entrance.tsx
 #, needs-native-review
@@ -32732,3 +32732,33 @@ msgstr "Ninguna todavía"
 msgctxt "admin portal visitors: how many pages a visitor opened"
 msgid "Opened: {0}"
 msgstr "Abiertas: {0}"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: eyebrow"
+msgid "The living map"
+msgstr "El mapa vivo"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: heading"
+msgid "The living map is for members"
+msgstr "El mapa vivo es para miembros"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: what the map holds, and what is open instead"
+msgid "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now."
+msgstr "Los miembros ven la tierra, sus lugares y quién ocupa cada rol. Los círculos, y para qué es cada uno, ya están abiertos para ti."
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: the main button"
+msgid "See the circles"
+msgstr "Ver los círculos"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: sign in"
+msgid "I am a member: sign in"
+msgstr "Soy miembro: iniciar sesión"

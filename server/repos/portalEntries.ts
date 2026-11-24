@@ -154,3 +154,14 @@ export async function viewsFor(db: Pool, entryIds: string[], perEntry = 50): Pro
   }
   return out;
 }
+
+/** Page views older than the cutoff go, oldest first in batches. Answers how many went. */
+export async function sweepPortalViews(db: Pool, olderThan: Date, batch = 5000): Promise<number> {
+  let total = 0;
+  for (;;) {
+    const [r] = await db.query("DELETE FROM portal_views WHERE at < ? ORDER BY at LIMIT ?", [olderThan, batch]);
+    const n = Number((r as { affectedRows?: number }).affectedRows ?? 0);
+    total += n;
+    if (n < batch) return total;
+  }
+}

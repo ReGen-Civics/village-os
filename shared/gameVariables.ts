@@ -2885,11 +2885,23 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Portal entrance: Brevo list",
     description:
-      "The number of the Brevo list that portal visitors join when they tick \"send me updates\". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
+      "The number of the Brevo list that portal visitors join when they answer Yes to keeping in touch. It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
     type: "integer",
     default: "0",
     min: 0,
     max: 100000000,
+    ring: "founder",
+  },
+  {
+    key: "entrance.views_keep_days",
+    category: "The village's people",
+    label: "Portal entrance: keep the pages visitors opened for",
+    description:
+      "How many days the list of pages each portal visitor opened is kept, shown under Admin, Portal visitors. Older page views are deleted once a day. The visitor's name and email are kept until somebody asks for them to be forgotten; this setting covers only the pages.",
+    type: "integer",
+    default: "365",
+    min: 1,
+    max: 3650,
     ring: "founder",
   },
   {

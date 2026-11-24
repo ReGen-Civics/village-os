@@ -53,6 +53,7 @@ export const SUGGESTION_ROUTE: Record<Capability, SuggestionRoute> = {
   "proposal.open": "holders",
   "proposal.decide": "holders",
   "map.viewPeople": "holders",
+  "map.view": "holders",
   "terms.read": "holders",
   "records.confidential": "holders",
   "map.contact": "holders",

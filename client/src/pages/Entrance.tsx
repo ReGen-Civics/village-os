@@ -195,12 +195,12 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
             </p>
             {siteHost && (
               <p className={HINT}>
-                {t({ message: "To learn more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
+                {t({ message: "To know more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
                 <a href={siteUrl} className={LINK}>
                   {siteHost}
                 </a>
                 .{" "}
-                {t({ message: "This site is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
+                {t({ message: "This is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
               </p>
             )}
           </header>

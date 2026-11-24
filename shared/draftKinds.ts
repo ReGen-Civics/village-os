@@ -203,6 +203,7 @@ export const CAPABILITY_CONSEQUENCE: Record<Capability, string> = {
   "proposal.open": "open a governance decision",
   "proposal.decide": "record the outcome of a governance decision and close it",
   "map.viewPeople": "see which named people hold which roles",
+  "map.view": "open the living map",
   "terms.read": "read what every role offers whoever holds it, money included",
   "records.confidential": "read the village's private records, once aligned with its confidentiality agreement",
   "map.contact": "reach role holders through the contact relay",
