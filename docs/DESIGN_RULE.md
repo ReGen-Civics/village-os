@@ -38,6 +38,41 @@ added to `JOURNEY` (and `PAGES`, for a page) in the script, once it passes.
 10. Motion moves transform and opacity, settles inside 600ms, never loops beside text, and sits
     inside `prefers-reduced-motion: no-preference`. Nothing scores or ranks a person.
 
+## Light and dark modes (24 Nov 2026)
+
+Every page drawn in the sheet's look has two palettes: **light, "Golden Hour"** (the default) and
+**dark, "Canopy at Night"**. The visitor picks with the switch in the header (one glyph, a tiny
+"Light" or "Dark" under it); the choice is `data-mode` on `<html>`, set before the first paint
+(`client/src/lib/colourMode.ts`). The tokens above (`bg-card`, `text-muted-foreground`,
+`text-notice` and the rest) are the same in both modes; only their values change, which is why a
+page that follows this rule needs no edit to work in either.
+
+**Changing a palette is one line.** The colours live in one block, `THE MODE PALETTES` in
+`client/src/index.css` (`--pal-day-*` and `--pal-night-*`). Edit the line, then run
+`npx vitest run client/src/lib/modePalettes.test.ts`: it measures every pair a page draws (text,
+quiet text, links, held green and errors on all three surfaces, edges and the focus ring, the
+main button's label, the header band, the tab bar, the repainted logo) and fails on any that drops
+under WCAG AA. A village changes its own palette without code, in Admin, Look: the `day-*` and
+`night-*` tokens take the place of the line with the same name, and the theme's contrast report
+measures them the same way.
+
+What else follows the mode:
+
+- **Dialogue is sand.** A dialog, an alert and anything marked `data-dialogue` takes the light
+  palette in dark mode too.
+- **The header band and the tab bar** take the mode's band; in light mode the logo is repainted in
+  the band's ink from its own shape (`/api/brand/logo-mark.png`), whatever logo the village set.
+- **Admin stays light** (the 4 Sep 2026 ruling) whichever mode the visitor picked.
+- **Icons are sacred geometry** where a stock icon was arbitrary: `client/src/components/sacred/glyphs.tsx`
+  (Seed of Life, vesica, three circles, lotus, labyrinth, golden spiral, day and night).
+
+| Light, measured | ratio | Dark, measured | ratio |
+|---|---|---|---|
+| text on the ground | 12.5 | text on the ground | 11.3 |
+| quiet text on a tile | 5.4 | quiet text on a tile | 7.3 |
+| the main act on a panel | 7.5 | the main act on a panel | 9.1 |
+| an edge on a panel | 4.1 | an edge on a panel | 5.4 |
+
 ## Why the profile
 
 The profile was rebuilt as a place: a night ground (`.sheet-night` in `client/src/index.css`), a

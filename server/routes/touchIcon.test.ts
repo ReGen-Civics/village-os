@@ -9,7 +9,7 @@ import path from "node:path";
 import type { AddressInfo } from "node:net";
 import sharp from "sharp";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchableIconSource, iconBackground, renderTouchIcon, TOUCH_ICON_PX } from "../lib/touchIcon";
+import { fetchableIconSource, iconBackground, LOGO_MARK_PX, renderTouchIcon, TOUCH_ICON_PX } from "../lib/touchIcon";
 import { register } from "./touchIcon";
 
 const SVG = (fill: string) =>
@@ -95,5 +95,34 @@ describe("GET /api/brand/touch-icon.png", () => {
     const bounded = await serve({ favicon: () => "https://village.example/favicon.svg", overLimit: async () => true, fetchImpl: fetchImpl as unknown as (url: string) => Promise<Response> });
     expect((await fetch(`${bounded}/api/brand/touch-icon.png`)).status).toBe(200); // module-review-ok: the test client dialling its own in-process server on localhost
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/brand/logo-mark.png (light mode's logo, as a same-origin mask)", () => {
+  it("draws the village's logo as a transparent PNG, once however many ask", async () => {
+    const fetchImpl = vi.fn(async () => new Response(SVG("#c9a46a"), { status: 200 }));
+    const base = await serve({ favicon: () => "", logo: () => "https://elsewhere.example/mark.svg", fetchImpl: fetchImpl as unknown as (url: string) => Promise<Response> });
+    for (let i = 0; i < 2; i++) {
+      const res = await fetch(`${base}/api/brand/logo-mark.png`); // module-review-ok: the test client dialling its own in-process server on localhost
+      expect(res.status).toBe(200);
+      expect(res.headers.get("content-type")).toBe("image/png");
+      const png = Buffer.from(await res.arrayBuffer());
+      const meta = await sharp(png).metadata();
+      expect(meta.height).toBe(LOGO_MARK_PX);
+      expect(meta.hasAlpha).toBe(true);
+      // The corner, outside the circle, stays transparent: only the shape masks.
+      const { data } = await sharp(png).raw().toBuffer({ resolveWithObject: true });
+      expect(data[3]).toBe(0);
+    }
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("answers 404 with no logo, an unreadable one, or the bound reached, so the page keeps the logo as it is", async () => {
+    const none = await serve({ favicon: () => "", logo: () => "" });
+    expect((await fetch(`${none}/api/brand/logo-mark.png`)).status).toBe(404); // module-review-ok: the test client dialling its own in-process server on localhost
+    const broken = await serve({ favicon: () => "", logo: () => "https://elsewhere.example/gone.svg", fetchImpl: (async () => new Response("", { status: 404 })) as unknown as (url: string) => Promise<Response> });
+    expect((await fetch(`${broken}/api/brand/logo-mark.png`)).status).toBe(404); // module-review-ok: the test client dialling its own in-process server on localhost
+    const bounded = await serve({ favicon: () => "", logo: () => "https://elsewhere.example/mark.svg", overLimit: async () => true });
+    expect((await fetch(`${bounded}/api/brand/logo-mark.png`)).status).toBe(404); // module-review-ok: the test client dialling its own in-process server on localhost
   });
 });

@@ -66,7 +66,7 @@ function QuoteOfTheMoment() {
 
 /** A sprout, unfurling once (index.css .jw-unfurl, still under reduced motion). */
 const SPROUT = (
-  <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true" className="jw-unfurl mb-4 text-open">
+  <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true" className="jw-unfurl text-open">
     <path d="M32 58V30M10 58c14-6 30-6 44 0" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
     <path d="M32 38C30 28 22 22 12 22c1 10 9 16 20 16zM32 32c2-10 10-17 21-17-1 11-9 17-21 17z" fill="currentColor" />
   </svg>
@@ -94,7 +94,7 @@ function RefreshMark() {
       height={72}
       decoding="async"
       onError={() => setBroken(true)}
-      className="jw-unfurl mb-4 h-18 w-auto max-w-40 object-contain"
+      className="jw-unfurl h-18 w-auto max-w-40 object-contain"
     />
   );
 }
@@ -126,7 +126,10 @@ function RefreshCard({
   return (
     <main className="relative sheet-night flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="flex w-full max-w-lg flex-col items-center rounded-2xl border-2 border-notice/60 bg-card p-6 text-center shadow-sm sm:p-10">
-        <RefreshMark />
+        {/* The mark unfurls, then breathes three times and rests (index.css, LIVING MOTION). */}
+        <span className="m-breathe mb-4 inline-flex">
+          <RefreshMark />
+        </span>
         <p className="text-xs font-semibold uppercase tracking-widest text-notice">{eyebrow}</p>
         <h1 role="alert" className="mt-2 mb-3 font-display text-3xl leading-tight text-card-foreground sm:text-4xl">
           {heading}
@@ -135,7 +138,7 @@ function RefreshCard({
         <button
           type="button"
           onClick={onPress}
-          className="jw-btn mt-3 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-notice px-6 py-3 text-lg font-semibold text-background shadow-sm hover:bg-notice/90 cursor-pointer sm:w-auto sm:min-w-64"
+          className="jw-btn m-breathe-ring mt-3 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-notice px-6 py-3 text-lg font-semibold text-background shadow-sm hover:bg-notice/90 cursor-pointer sm:w-auto sm:min-w-64"
         >
           <RotateCcw size={20} aria-hidden="true" />
           {button ?? <Trans context="refresh screen: the one button, reloads the page">Refresh the page</Trans>}

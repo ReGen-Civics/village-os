@@ -945,7 +945,10 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    * block. This is the merging fix the block-charge note above
    * describes, at the smallest scale it is worth doing.
    */
-  if (NATURAL_KIT.test(id)) {
+  // The celebration is the kit's one large piece and nothing on the first page
+  // draws it (its last boot importer, NotificationToasts, went lazy with
+  // MemberMoments), so it rides with the lazy pages that do.
+  if (NATURAL_KIT.test(id) && !/natural[\\/](?:Celebration|celebrationPlan)\./.test(id)) {
     return "natural";
   }
   // SMALL SHARED MODULES, two lazy chunks: see SMALL_MODULE_BYTES above.

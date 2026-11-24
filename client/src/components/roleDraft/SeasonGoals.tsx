@@ -17,7 +17,8 @@
  */
 import { useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight, Check, Sprout } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { SeedOfLife, Vesica } from "@/components/sacred/glyphs";
 import { useLingui } from "@lingui/react/macro";
 import { useSeason } from "@/lib/gameApi";
 import { seasonView } from "@shared/seasonGoalsView";
@@ -46,7 +47,7 @@ export default function SeasonGoals() {
   return (
     <section aria-labelledby="roles-season-h" className={`sel-rise mx-auto mb-12 max-w-5xl text-left ${CARD_FEATURED}`}>
       <div className="flex items-center gap-2">
-        <Sprout className="h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
+        <Vesica className="h-5 w-5 shrink-0 text-notice" />
         <p className={EYEBROW}>{t({ message: "This season's goals", context: "roles page season" })}</p>
       </div>
       <h2 id="roles-season-h" className="mt-3 font-display text-3xl leading-tight text-card-foreground text-balance sm:text-4xl">
@@ -86,13 +87,14 @@ export default function SeasonGoals() {
             {shown.map((g, i) => (
               <li
                 key={g.id}
-                className={`flex min-h-[4.5rem] items-center gap-4 rounded-xl border bg-muted p-4 transition-colors ${active === i ? "border-notice" : "border-border"}`}
+                className={`m-germ flex min-h-[4.5rem] items-center gap-4 rounded-xl border bg-muted p-4 transition-colors ${active === i ? "border-notice" : "border-border"}`}
                 data-done={g.done || undefined}
                 onPointerEnter={() => setActive(i)}
                 onPointerLeave={() => setActive(null)}
               >
                 <span aria-hidden="true" className={`${RING} font-display text-lg ${g.done ? "bg-notice text-background" : ""}`}>
-                  {g.done ? <Check className="size-5" /> : i + 1}
+                  {/* Its own colour: RING sets text-notice, which beat the fill's text-background and drew the mark gold on gold. */}
+                  {g.done ? <SeedOfLife className="size-5 text-background" /> : i + 1}
                 </span>
                 <GoalWords goal={g} count={openWorkFor(work, g.goalId)} />
                 {g.done && (
