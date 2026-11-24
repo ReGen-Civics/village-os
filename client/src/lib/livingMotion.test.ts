@@ -13,7 +13,9 @@ import { describe, expect, it } from "vitest";
  * reformatting the block cannot pass or fail it.
  */
 
-const css = fs.readFileSync(path.resolve(__dirname, "../index.css"), "utf8");
+// index.css holds the tokens and the always-loaded movements; components/motion/motion.css rides with its
+// components. Both are held to the same promises, so they are read as one sheet.
+const css = ["../index.css", "../components/motion/motion.css"].map((f) => fs.readFileSync(path.resolve(__dirname, f), "utf8")).join("\n");
 const root = postcss.parse(css);
 
 /** The at-rules wrapping a node, innermost first, as "name params". */
@@ -43,10 +45,10 @@ function keyframes(name: string): AtRule {
   return kf;
 }
 
-const MOVES_ONLY = new Set(["opacity", "translate", "scale", "transform"]);
+const MOVES_ONLY = new Set(["opacity", "translate", "scale", "transform", "stroke-dashoffset"]);
 const NO_PREFERENCE = "media (prefers-reduced-motion: no-preference)";
 
-describe("LIVING MOTION in index.css", () => {
+describe("LIVING MOTION in index.css and motion.css", () => {
   it("declares the motion tokens once, on :root", () => {
     const decls = new Map<string, string>();
     root.walkDecls(/^--m-/, (d) => {
@@ -84,15 +86,17 @@ describe("LIVING MOTION in index.css", () => {
   });
 
   it("moves only compositor properties in its keyframes", () => {
-    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight"]) {
+    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight", "m-breathe", "m-breathe-ring", "m-seed-land", "m-draw", "m-unfurl-l", "m-unfurl-r"]) {
       keyframes(name).walkDecls((d) => {
         expect(MOVES_ONLY.has(d.prop), `${name} animates ${d.prop}`).toBe(true);
       });
     }
   });
 
-  it("keeps every touch transition and animation inside the reduced-motion guard", () => {
-    for (const r of rulesFor((s) => s.startsWith(".m-touch"))) {
+  it("keeps every motion class's transitions and animations inside the reduced-motion guard", () => {
+    const moving = rulesFor((s) => /(^|\s)\.m-/.test(s));
+    expect(moving.length).toBeGreaterThan(5);
+    for (const r of moving) {
       const moves = r.nodes.some((n) => n.type === "decl" && /^(transition|animation)/.test(n.prop));
       if (moves) expect(guards(r), r.selector).toContain(NO_PREFERENCE);
     }
@@ -108,6 +112,26 @@ describe("LIVING MOTION in index.css", () => {
   it("leaves ::after to the coarse-pointer tap target", () => {
     for (const r of rulesFor((s) => s.startsWith(".m-touch") || s.startsWith(".m-germ"))) {
       expect(r.selector).not.toMatch(/::?after/);
+    }
+  });
+
+  it("lets ambient life rest: a breath runs a few times and stops, never forever", () => {
+    const breaths = rulesFor((s) => s.startsWith(".m-breathe"));
+    expect(breaths.length).toBe(2);
+    for (const r of breaths) {
+      const anim = r.nodes.find((n): n is Declaration => n.type === "decl" && n.prop === "animation");
+      expect(anim?.value, r.selector).toBeDefined();
+      expect(anim!.value).not.toMatch(/infinite/);
+      const count = Number(anim!.value.trim().split(/\s+/).pop());
+      expect(count).toBeGreaterThan(0);
+      expect(count).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("draws the sprout whole by default: every dash and growth lives behind the guard", () => {
+    for (const r of rulesFor((s) => s.startsWith(".m-sprout"))) {
+      const sets = r.nodes.some((n) => n.type === "decl" && /^(stroke-dash|animation)/.test(n.prop));
+      if (sets) expect(guards(r), r.selector).toContain(NO_PREFERENCE);
     }
   });
 });

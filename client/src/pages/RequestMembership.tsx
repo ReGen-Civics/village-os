@@ -31,7 +31,7 @@
  * and it is left for a ruling.
  */
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, CalendarDays, HeartHandshake } from "lucide-react";
+import { ArrowRight, CalendarDays } from "lucide-react";
 
 import Layout from "@/components/Layout";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
@@ -39,6 +39,7 @@ import { useVillageName } from "@/hooks/useVillageName";
 import { authToken } from "@/lib/gameApi";
 import { useLingui } from "@lingui/react/macro";
 import VoiceArea from "@/components/voice/VoiceArea";
+import Sprout from "@/components/motion/Sprout";
 
 const FIELD =
   "w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -103,7 +104,7 @@ export default function RequestMembership() {
         <div className="container max-w-2xl">
           {sent ? (
             <section aria-live="polite" className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-              <HeartHandshake className="h-8 w-8 text-notice" aria-hidden="true" />
+              <Sprout size={64} className="text-open" />
               <h1 ref={thanks} tabIndex={-1} className="mt-4 font-display text-3xl font-bold text-card-foreground outline-none">
                 Thank you{firstName ? `, ${firstName}` : ""}.
               </h1>
