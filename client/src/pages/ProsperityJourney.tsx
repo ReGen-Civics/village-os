@@ -1,4 +1,6 @@
 import Layout from "@/components/Layout";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, RING, WORLD } from "@/components/journey/look";
+import { SeedOfLife } from "@/components/journey/nature";
 import { altOr, useBrandImages, useVillageLinks } from "@/lib/gameApi";
 import FaqSection from "@/components/FaqSection";
 import { useVillageName } from "@/hooks/useVillageName";
@@ -12,9 +14,10 @@ import PacketRequestForm, { PACKET_ANCHOR } from "@/components/prosperity/Packet
 import { useGuideName } from "@/hooks/useGuideName";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
+  Sprout,
   ArrowRight,
   CheckCircle2,
   Circle,
@@ -25,7 +28,6 @@ import {
   Vote,
   Download,
   TrendingUp,
-  Zap,
   ChevronDown,
   ExternalLink,
   Users
@@ -41,15 +43,15 @@ import {
 const STEP_ICONS = [Calendar, Download, FileText, Heart, Vote, PartyPopper, TrendingUp];
 
 /**
- * Tier card colours, lowest first. The first has no tint: bg-gold/10 outranks
- * the card's bg-card by stylesheet order and would freeze this card light
- * under text that themes. Gold heading, 24px: 4.55:1 light, 3.78:1 dark.
+ * Tier card edges and heading inks, lowest first, in the sheet's tokens only
+ * (docs/DESIGN_RULE.md): gold for what is held, green for what is living. The
+ * old brand tints (teal, sage, coral) went dark on the night ground.
  */
 const TIER_COLORS = [
-  "text-gold border-gold/20",
-  "bg-teal-light/10 text-teal-light border-teal-light/20",
-  "bg-sage/10 text-sage border-sage/20",
-  "bg-coral/10 text-coral border-coral/20",
+  "text-foreground border-border",
+  "text-open border-open/40",
+  "text-notice border-notice/40",
+  "text-notice border-notice/70",
 ];
 
 export default function ProsperityJourney() {
@@ -93,6 +95,10 @@ export default function ProsperityJourney() {
   const closingSecondary = act(page?.closing.fields.secondaryLabel, page?.closing.fields.secondaryTarget);
   const progress = useJourneyProgress("amora-prosperity-progress", steps, JOURNEY_LEGACY_STEP_IDS.prosperity);
   const [expandedStep, setExpandedStep] = useState<number | null>(0);
+  const { t } = useLingui();
+  const walkedCount = progress.doneCount;
+  const stepCount = progress.total;
+  const seedLabel = t({ message: `${walkedCount} of ${stepCount} steps completed`, context: "prosperity path ticked off" });
 
   // Until the saved words arrive the hero keeps its space and stays
   // invisible, so a visitor never reads the defaults and watches them change.
@@ -100,6 +106,10 @@ export default function ProsperityJourney() {
 
   return (
     <Layout>
+      {/* THE NIGHT WORLD (public launch, 24 Nov 2026): the page stands on the
+          sheet's ground like /resident and /steward, in the semantic tokens
+          only, with no looping motion beside its words. */}
+      <div className={WORLD}>
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -134,22 +144,17 @@ export default function ProsperityJourney() {
                 on. heroCopy.contrast.test.tsx */}
             <div
               aria-hidden="true"
-              className="absolute -inset-x-5 -inset-y-6 sm:-inset-x-8 sm:-inset-y-10 rounded-3xl bg-background"
+              className="absolute -inset-x-5 -inset-y-6 sm:-inset-x-8 sm:-inset-y-10 rounded-2xl bg-background"
             />
             <m.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="relative flex items-center gap-3 mb-6"
             >
-              <m.div
-                className="w-12 h-12 shrink-0 rounded-xl bg-gold flex items-center justify-center"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="w-6 h-6 text-white" />
-              </m.div>
-              {/* amber-ink, index.css's amber for text on light grounds: gold is 4.07:1 on the band. */}
-              <span className={`text-amber-ink font-medium tracking-wide uppercase text-sm min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
+              <span className={`${RING} size-12 shrink-0`} aria-hidden="true">
+                <Sprout className="w-6 h-6" />
+              </span>
+              <span className={`${EYEBROW} text-sm min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
             </m.div>
 
             {/* 36px under 360px wide: at 48px "Regenerative" is one unbreakable word
@@ -165,7 +170,7 @@ export default function ProsperityJourney() {
               <Highlighted
                 text={hero?.headline || " "}
                 phrase={hero?.highlight ?? ""}
-                render={(phrase) => <span className="text-gold italic">{phrase}</span>}
+                render={(phrase) => <span className="text-notice italic">{phrase}</span>}
               />
             </m.h1>
 
@@ -185,16 +190,13 @@ export default function ProsperityJourney() {
               className="relative flex flex-wrap gap-4"
             >
               {heroPrimary && (
-                <JourneyLink action={heroPrimary.action} className="btn-village flex items-center gap-2">
+                <JourneyLink action={heroPrimary.action} className={BTN_PRIMARY}>
                   <Download className="w-5 h-5" />
                   {heroPrimary.label}
                 </JourneyLink>
               )}
               {heroSecondary && (
-                <JourneyLink
-                  action={heroSecondary.action}
-                  className="px-6 py-3 bg-white/90 text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-white transition-all"
-                >
+                <JourneyLink action={heroSecondary.action} className={`${BTN_SECONDARY} bg-card`}>
                   {heroSecondary.label}
                 </JourneyLink>
               )}
@@ -205,7 +207,7 @@ export default function ProsperityJourney() {
 
       {/* Shared enterprise & Co-Ownership */}
       {page && !page.economy.hidden && (
-      <section className="py-16 bg-gold/5">
+      <section className="py-16 bg-muted">
         <div className="container">
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             <m.div
@@ -214,12 +216,7 @@ export default function ProsperityJourney() {
               viewport={{ once: true }}
               className="text-center min-w-0"
             >
-              <m.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Heart className="w-12 h-12 text-gold mx-auto mb-4" />
-              </m.div>
+              <Heart className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
               <h2 className="font-display text-xl font-semibold text-foreground mb-3 break-words">
                 {page.economy.fields.firstHeading}
               </h2>
@@ -237,12 +234,7 @@ export default function ProsperityJourney() {
               transition={{ delay: 0.1 }}
               className="text-center min-w-0"
             >
-              <m.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
-              >
-                <Users className="w-12 h-12 text-gold mx-auto mb-4" />
-              </m.div>
+              <Users className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
               <h2 className="font-display text-xl font-semibold text-foreground mb-3 break-words">
                 {page.economy.fields.secondHeading}
               </h2>
@@ -273,16 +265,14 @@ export default function ProsperityJourney() {
               <Emphasized text={page.steps.fields.intro} />
             </p>
 
-            {/* Progress Bar */}
-            <div className="max-w-md mx-auto">
-              <div className="relative h-3 bg-muted rounded-full overflow-hidden mb-2">
-                <m.div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold to-coral rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress.progress}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                />
-              </div>
+            {/* Progress grows as a Seed of Life, one circle per step ticked; never a filling bar (DESIGN_RULE). */}
+            <div className="flex flex-col items-center gap-2">
+              <SeedOfLife
+                total={Math.min(Math.max(progress.total, 1), 19)}
+                walked={Math.min(progress.doneCount, 19)}
+                label={seedLabel}
+                size="md"
+              />
               <p className="text-sm text-muted-foreground">
                 {progress.doneCount} of {progress.total} steps completed
               </p>
@@ -305,7 +295,7 @@ export default function ProsperityJourney() {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.05 }}
                     className={`bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
-                      isCompleted ? "border-l-4 border-gold" : "border-l-4 border-transparent hover:border-gold/50"
+                      isCompleted ? "border border-l-4 border-border border-l-notice" : "border border-l-4 border-border border-l-transparent hover:border-l-notice/50"
                     }`}
                   >
                     <div
@@ -331,21 +321,21 @@ export default function ProsperityJourney() {
                             e.stopPropagation();
                             progress.toggle(step);
                           }}
-                          className="flex-shrink-0 -mx-2.5 -mt-2 -mb-2.5 inline-flex size-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          className="flex-shrink-0 -mx-2.5 -mt-2 -mb-2.5 inline-flex size-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <m.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             {isCompleted ? (
-                              <CheckCircle2 className="w-6 h-6 text-gold" />
+                              <CheckCircle2 className="w-6 h-6 text-notice" />
                             ) : (
-                              <Circle className="w-6 h-6 text-muted-foreground hover:text-gold transition-colors" />
+                              <Circle className="w-6 h-6 text-muted-foreground hover:text-notice transition-colors" />
                             )}
                           </m.div>
                         </button>
 
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isCompleted ? "bg-gold/10" : "bg-gold/5"
+                          isCompleted ? "bg-notice/10" : "bg-muted"
                         }`}>
-                          <StepIcon className={`w-5 h-5 ${isCompleted ? "text-gold" : "text-gold/60"}`} />
+                          <StepIcon className={`w-5 h-5 ${isCompleted ? "text-notice" : "text-muted-foreground"}`} />
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -355,7 +345,7 @@ export default function ProsperityJourney() {
                                 stage name at 320px left it a sliver one letter wide. */}
                             <div className="flex items-center gap-x-2 gap-y-1 flex-wrap min-w-0">
                               <span className={`px-2 py-0.5 text-xs font-medium rounded ${
-                                isCompleted ? "bg-gold/10 text-gold" : "bg-muted text-muted-foreground"
+                                isCompleted ? "bg-notice/10 text-notice" : "bg-muted text-muted-foreground"
                               }`}>
                                 {step.stage}
                               </span>
@@ -386,7 +376,7 @@ export default function ProsperityJourney() {
                           className="overflow-hidden"
                         >
                           <div className="px-5 pb-5 pt-0 ml-14">
-                            <div className="bg-muted/50 rounded-lg p-4 mb-4">
+                            <div className="bg-muted rounded-lg p-4 mb-4">
                               <ul className="grid grid-cols-2 gap-2">
                                 {stepPoints(step).map((detail, i) => (
                                   <m.li
@@ -396,7 +386,7 @@ export default function ProsperityJourney() {
                                     transition={{ delay: i * 0.05 }}
                                     className="flex items-center gap-2 text-sm text-muted-foreground min-w-0 break-words"
                                   >
-                                    <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-gold" />
+                                    <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-open" />
                                     <span className="min-w-0 break-words">{detail}</span>
                                   </m.li>
                                 ))}
@@ -405,7 +395,7 @@ export default function ProsperityJourney() {
                             {action && (
                               <JourneyLink
                                 action={action.action}
-                                className="inline-flex min-h-11 items-center gap-2 px-4 py-2 bg-gold text-white rounded-full text-sm font-medium hover:bg-amber-800 transition"
+                                className={`${BTN_PRIMARY} text-sm`}
                               >
                                 {action.label}
                                 {leavesSite(action.action) ? <ExternalLink className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
@@ -427,7 +417,7 @@ export default function ProsperityJourney() {
       {/* Impact tiers. The id stays whatever the tiers are called, so a step's
           "#ari-tiers" button lands here. */}
       {page && !page.tiers.hidden && (
-      <section id="ari-tiers" className="py-20 bg-cream">
+      <section id="ari-tiers" className="py-20 bg-card">
         <div className="container">
           <m.div
             className="text-center mb-12"
@@ -451,8 +441,7 @@ export default function ProsperityJourney() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className={`bg-card p-6 rounded-xl shadow-sm border-2 ${TIER_COLORS[index % TIER_COLORS.length]} transition-all min-w-0`}
+                className={`bg-muted p-6 rounded-xl shadow-sm border-2 ${TIER_COLORS[index % TIER_COLORS.length]} min-w-0`}
               >
                 <h3 className="font-display text-2xl font-semibold mb-2 break-words">
                   {tier.tier}
@@ -486,7 +475,7 @@ export default function ProsperityJourney() {
           send button says what it does ("Send my request"): the band's own
           button words were written for a mail link ("Email the Village"). */}
       {page && !page.packet.hidden && (
-      <section id={PACKET_ANCHOR} className="scroll-mt-24 py-20 bg-gold/5" data-packet-band="">
+      <section id={PACKET_ANCHOR} className="scroll-mt-24 py-20 bg-muted" data-packet-band="">
         <div className="container">
           <m.div
             className="max-w-2xl mx-auto text-center"
@@ -501,7 +490,7 @@ export default function ProsperityJourney() {
               <Emphasized text={page.packet.fields.body} />
             </p>
             {packetCta && packetCta.action.kind !== "anchor" ? (
-              <JourneyLink action={packetCta.action} className="btn-village mb-8 inline-flex items-center gap-2">
+              <JourneyLink action={packetCta.action} className={`${BTN_PRIMARY} mb-8`}>
                 <Download className="w-5 h-5" />
                 {packetCta.label}
               </JourneyLink>
@@ -522,12 +511,7 @@ export default function ProsperityJourney() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <m.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Zap className="w-12 h-12 text-gold mx-auto mb-6" />
-            </m.div>
+            <Sprout className="w-12 h-12 text-open mx-auto mb-6" aria-hidden="true" />
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.closing.fields.heading}
             </h2>
@@ -536,16 +520,13 @@ export default function ProsperityJourney() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               {closingPrimary && (
-                <JourneyLink action={closingPrimary.action} className="btn-village flex items-center gap-2">
+                <JourneyLink action={closingPrimary.action} className={BTN_PRIMARY}>
                   <Calendar className="w-5 h-5" />
                   {closingPrimary.label}
                 </JourneyLink>
               )}
               {closingSecondary && (
-                <JourneyLink
-                  action={closingSecondary.action}
-                  className="px-6 py-3 bg-white text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-white/90 transition-all border border-border inline-flex items-center gap-2"
-                >
+                <JourneyLink action={closingSecondary.action} className={`${BTN_SECONDARY} bg-card`}>
                   <Download className="w-5 h-5" />
                   {closingSecondary.label}
                 </JourneyLink>
@@ -557,6 +538,7 @@ export default function ProsperityJourney() {
       )}
 
       {page && <FaqSection pathway="prosperity" heading={page.faq.fields.heading} />}
+      </div>
     </Layout>
   );
 }
