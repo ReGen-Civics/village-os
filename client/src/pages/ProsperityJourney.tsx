@@ -482,8 +482,9 @@ export default function ProsperityJourney() {
       )}
 
       {/* THE PACKET REQUEST (24 Nov 2026): the band holds the request form
-          itself, so it needs no contact address and opens on any phone. The
-          band's own button words, when the village set them, label the send. */}
+          itself, so it needs no contact address and opens on any phone. Its
+          send button says what it does ("Send my request"): the band's own
+          button words were written for a mail link ("Email the Village"). */}
       {page && !page.packet.hidden && (
       <section id={PACKET_ANCHOR} className="scroll-mt-24 py-20 bg-gold/5" data-packet-band="">
         <div className="container">
@@ -505,7 +506,7 @@ export default function ProsperityJourney() {
                 {packetCta.label}
               </JourneyLink>
             ) : null}
-            <PacketRequestForm sendLabel={packetCta?.action.kind === "anchor" ? packetCta.label : undefined} />
+            <PacketRequestForm />
           </m.div>
         </div>
       </section>

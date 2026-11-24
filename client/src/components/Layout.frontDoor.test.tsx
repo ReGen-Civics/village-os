@@ -123,3 +123,33 @@ describe("a member's menu", () => {
     for (const h of ["/forum", "/gratitude", "/decisions"]) expect(hrefs, h).toContain(h);
   });
 });
+
+describe("the footer", () => {
+  const footerShows = async () => {
+    render(
+      <Router>
+        <Layout>
+          <p>page</p>
+        </Layout>
+      </Router>,
+    );
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    return Array.from(document.querySelectorAll("footer a[href]"))
+      .filter((a) => !a.closest("[hidden]"))
+      .map((a) => a.getAttribute("href") ?? "");
+  };
+
+  it("leaves out the unfinished areas for a visitor", async () => {
+    const hrefs = await footerShows();
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/review"]) expect(hrefs, h).not.toContain(h);
+    expect(hrefs).toContain("/quests");
+  });
+
+  it("CONTROL: keeps them for a member", async () => {
+    user = { id: "u1", name: "Ora Vale", role: "member", membershipGranted: true };
+    const hrefs = await footerShows();
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/review"]) expect(hrefs, h).toContain(h);
+  });
+});

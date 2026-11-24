@@ -563,8 +563,8 @@ describe("/prosperity", () => {
     expect(heroButton).toHaveAttribute("href", "#packet-request");
     expect(document.querySelector('a[href^="mailto:"]')).toBeNull();
     expect(document.querySelector("#packet-request [data-packet-form]")).not.toBeNull();
-    // The band's own button words label the send.
-    expect(screen.getByRole("button", { name: phrase(fieldDefault(PROSPERITY_JOURNEY, "packet", "ctaLabel")) })).toBeInTheDocument();
+    // The send says what it does; the band's words were written for a mail link.
+    expect(screen.getByRole("button", { name: "Send my request" })).toBeInTheDocument();
   });
 
   it("keeps the packet band and its form while the village has no contact address, since the form reaches the inbox itself", async () => {

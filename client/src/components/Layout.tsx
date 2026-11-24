@@ -79,7 +79,7 @@ export default function Layout({ children }: LayoutProps) {
   // flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
-  const { shows: forNewcomer } = useNewcomerShows();
+  const { shows: forNewcomer, showsHref } = useNewcomerShows();
   const visible = (item: NavLink) =>
     !menu.hidden.includes(item.href) &&
     forNewcomer(item) &&
@@ -624,7 +624,7 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   </li>
                 )}
-                <li>
+                <li hidden={!showsHref("/gratitude")}>
                   <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     {tokenName} Wall
                   </Link>
@@ -690,7 +690,7 @@ export default function Layout({ children }: LayoutProps) {
                     Leaving Well
                   </Link>
                 </li>
-                {networkModule && (
+                {networkModule && showsHref("/network") && (
                   <li>
                     <Link href="/network" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Village Network
@@ -714,7 +714,7 @@ export default function Layout({ children }: LayoutProps) {
                     looking may not open it, so a member who follows this link
                     without the capability gets a sentence and never a blank
                     screen. */}
-                {user && (
+                {user && showsHref("/review") && (
                   <li>
                     <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Review Queue
@@ -756,7 +756,7 @@ export default function Layout({ children }: LayoutProps) {
                     each. The footer is the second door: it is on every page, it
                     survives a nav reshuffle, and it costs a fork nothing when
                     the module is off. */}
-                {crowdpoolModule && (
+                {crowdpoolModule && showsHref("/campaigns") && (
                   <li>
                     <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Pooling Resources
@@ -770,14 +770,14 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   </li>
                 )}
-                {toolsModule && (
+                {toolsModule && showsHref("/tools") && (
                   <li>
                     <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Village Tools
                     </Link>
                   </li>
                 )}
-                {mapModule && (
+                {mapModule && showsHref("/places") && (
                   <li>
                     <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Places, Photographed

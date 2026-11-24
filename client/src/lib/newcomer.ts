@@ -17,6 +17,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useGameConfig } from "@/lib/gameApi";
 import { useAreaInUse } from "@/lib/areasInUse";
+import { ACCOUNT_MENU, NAV, isGroup, type NavLink } from "@/config/nav";
+
+/** Every menu entry by address, so a link elsewhere (the footer) can ask the same question of its page. */
+const ENTRY_AT: ReadonlyMap<string, NavLink> = new Map([...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => [l.href, l] as const));
 
 /** The rung whose rule is being admitted (ADMISSION_RUNG, server/lib/admission.ts). */
 const ADMISSION_RUNG = "member";
@@ -51,8 +55,14 @@ export function useNewcomer(): boolean {
  * when this reader is offered it. A member is offered every entry; a newcomer
  * none marked "never", and an "in-use" one once its area is in use.
  */
-export function useNewcomerShows(): { newcomer: boolean; shows: (entry: { href: string; module?: string; newcomers?: "never" | "in-use" }) => boolean } {
+export function useNewcomerShows(): {
+  newcomer: boolean;
+  shows: (entry: { href: string; module?: string; newcomers?: "never" | "in-use" }) => boolean;
+  /** The same test for a link to a menu entry's page, by its address; an address with no entry is shown. */
+  showsHref: (href: string) => boolean;
+} {
   const newcomer = useNewcomer();
   const inUse = useAreaInUse(newcomer);
-  return { newcomer, shows: (e) => !newcomer || !e.newcomers || (e.newcomers === "in-use" && inUse(e)) };
+  const shows = (e: { href: string; module?: string; newcomers?: "never" | "in-use" }) => !newcomer || !e.newcomers || (e.newcomers === "in-use" && inUse(e));
+  return { newcomer, shows, showsHref: (href) => shows(ENTRY_AT.get(href) ?? { href }) };
 }
