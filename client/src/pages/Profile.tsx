@@ -25,6 +25,7 @@ import RoleStartSteps from "@/components/profile/RoleStartSteps";
 import type { MembershipSigning } from "@shared/membershipSigning";
 import PathFacts from "@/components/profile/PathFacts";
 import InventoryCard from "@/components/profile/InventoryCard";
+import VisitorNameCard from "@/components/profile/VisitorNameCard";
 import QuietSection from "@/components/profile/QuietSection";
 import { SHEET_SECTIONS } from "@/components/profile/sheetSections";
 import SeasonPlanSection from "@/components/profile/SeasonPlanSection";
@@ -786,6 +787,9 @@ export default function Profile() {
               {/* BORROWED AND BOOKED: loans, stays and homes asked about, live only.
                   Homes are listed once: on the Resident path card when walked. */}
               <InventoryCard lotsOnPath={user.paths.includes("resident")} />
+
+              {/* WHAT A VISITOR CALLS YOU: your first name on the public pages, or "A member". */}
+              <VisitorNameCard />
 
               {/* THE PATH BAND: a walked path's particulars, an unwalked one's quiet line. */}
               {SHEET_SECTIONS.filter((sec) => sec.band === "path" && sec.path && user.paths.includes(sec.path)).map((sec) => (
