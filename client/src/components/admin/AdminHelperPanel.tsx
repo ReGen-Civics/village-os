@@ -23,7 +23,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { ArrowRight, Check, Loader2, Send, X } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { HelperAnswer, HelperProposal, HelperProvider, HelperStatus } from "@shared/adminHelper";
-import { guideNameAtSentenceStart } from "@shared/guideName";
+import { guideNameAtSentenceStart, UNNAMED_GUIDE } from "@shared/guideName";
+import { guideLabelIn } from "@/lib/guideNameWords";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import type { NavGroup } from "./adminNavGroups";
@@ -54,7 +55,7 @@ export default function AdminHelperPanel({
   /** For tests and previews: skip the status fetch. */
   initialStatus?: HelperStatus;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
   const [statusError, setStatusError] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -100,8 +101,10 @@ export default function AdminHelperPanel({
     setPicked(p);
     rememberPicked(p);
   };
+  // The server says an unnamed guide in English; guideLabelIn says it in the reader's language, and leaves a
+  // village's own name exactly as typed.
   const guide = guideNameAtSentenceStart(
-    (chosen && status?.names?.[chosen]) || status?.guide || t({ message: "your village guide", context: "admin helper, unnamed guide" }),
+    guideLabelIn((chosen && status?.names?.[chosen]) || status?.guide || UNNAMED_GUIDE.own, i18n),
   );
 
   const send = useCallback(
