@@ -92,7 +92,7 @@ import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { ReviewPromises } from "@/components/fireflyPath/ReviewPromises";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
-import { serverExtrasOf, useSaveLater } from "@/components/fireflyPath/useSaveLater";
+import { useSaveLater } from "@/components/fireflyPath/useSaveLater";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
 import { remembersByDefault } from "@/components/fireflyPath/applyRemember";
 import { needsSafetyNet, type SendFailure } from "@/components/fireflyPath/applySendFailure";
@@ -247,7 +247,7 @@ export default function ProposeARole() {
   useEffect(() => {
     const o = later.opened?.opened;
     if (form.kind !== "open" || !o || !form.roles.some((r) => r.id === o.roleId) || roleId === o.roleId || draftFor === o.roleId) return;
-    setRoleId(o.roleId); setExtras([]); setGone(false); if (serverExtrasOf(o.draft).early) setEarly(true);
+    setRoleId(o.roleId); setExtras([]); setGone(false); if (later.opened?.extras.early) setEarly(true);
   }, [form, later.opened, roleId, draftFor]);
 
   // R-Ikigai answers the person ticked on the draft board become their own words in "Why you", once, and only into an empty field.
@@ -302,7 +302,7 @@ export default function ProposeARole() {
       setStone(d.step);
       setReached(d.reached);
       setRestored(server ? "server" : own ? "draft" : "carry");
-      if (server) { const x = serverExtrasOf(server.opened.draft); setFiles(server.files); setAbout((a) => ({ ...a, references: x.references, consent: x.consent })); setAgreed(x.agreed); setStone(Math.min(LAST_STONE, server.opened.step)); }
+      if (server) { const x = server.extras; setFiles(server.files); setAbout((a) => ({ ...a, references: x.references, consent: x.consent })); setAgreed(x.agreed); setStone(Math.min(LAST_STONE, server.opened.step)); }
     }
     if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the box starts as remembersByDefault set it (19 Nov 2026); the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor, early, later.opening, later.opened]);

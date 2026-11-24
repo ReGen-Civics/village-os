@@ -9,11 +9,27 @@
  * Which File the server already holds is remembered per File object (`KEPT`), so saving again sends only what
  * is new, and a file removed on the page is dropped from the draft.
  */
+import { aboutYouOf, type AboutYouValue } from "@/components/openProposal/AboutYou";
 import { DRAFT_ERRORS, resumePath, type DraftError, type DraftFileRef, type DraftOpened, type DraftSaved } from "@shared/applicationDrafts";
 
 /** The parts door a send uses (components/openProposal/sendParts.ts PARTS_PATH), written here so this lazy file imports nothing from the page's chunk. */
 const PARTS_PATH = "/api/open-proposals/parts";
 const SAVE_PATH = "/api/application-drafts";
+
+/** What a server draft keeps beyond the device draft: references, consent, the agreement and an early application. */
+export interface ServerExtras {
+  references: AboutYouValue["references"];
+  consent: boolean;
+  agreed: { nda: boolean };
+  early: boolean;
+}
+
+export function serverExtrasOf(draft: Record<string, unknown> | undefined): ServerExtras {
+  const s = draft && typeof draft.server === "object" && draft.server ? (draft.server as Record<string, unknown>) : {};
+  const about = aboutYouOf({ references: s.references, consent: s.consent });
+  return { references: about.references, consent: about.consent, agreed: { nda: (s.agreed as { nda?: unknown } | undefined)?.nda === true }, early: s.early === true };
+}
+
 
 /** The server's id for each File it keeps in the draft. */
 const KEPT = new WeakMap<File, string>();
@@ -79,7 +95,7 @@ export async function saveDraft(d: DraftToSave, fetchImpl: Fetch = defaultFetch)
   }
 }
 
-export type OpenResult = { ok: true; opened: DraftOpened; files: File[] } | { ok: false; error: DraftError | "network" };
+export type OpenResult = { ok: true; opened: DraftOpened; files: File[]; extras: ServerExtras } | { ok: false; error: DraftError | "network" };
 
 /** Read a saved draft back, with every kept file as a File the form can send. */
 export async function openDraft(token: string, fetchImpl: Fetch = defaultFetch): Promise<OpenResult> {
@@ -93,7 +109,7 @@ export async function openDraft(token: string, fetchImpl: Fetch = defaultFetch):
       const f = await fileOf(token, ref, fetchImpl);
       if (f) files.push(f);
     }
-    return { ok: true, opened, files };
+    return { ok: true, opened, files, extras: serverExtrasOf(opened.draft) };
   } catch {
     return { ok: false, error: "network" };
   }
