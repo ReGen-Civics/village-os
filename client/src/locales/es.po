@@ -7,6 +7,12 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals page eyebrow"
+msgid "The village year"
+msgstr "El año de la aldea"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
