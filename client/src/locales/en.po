@@ -12770,6 +12770,11 @@ msgctxt "your path, the whole path page"
 msgid "These wait behind the step above. Take them in any order once it's done."
 msgstr "These wait behind the step above. Take them in any order once it's done."
 
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by date said whole, for a screen reader"
+msgid "Applications close {whenLong}"
+msgstr "Applications close {whenLong}"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application choose, founding roles heading"
 #~ msgid "Hiring first: the founding team"
@@ -13085,9 +13090,9 @@ msgid "AI transcript, written down by {0}. Not checked by the applicant."
 msgstr "AI transcript, written down by {0}. Not checked by the applicant."
 
 #: client/src/components/roleCard/frontWords.ts
-msgctxt "role card front: the last day to apply"
-msgid "Apply by {when}"
-msgstr "Apply by {when}"
+#~ msgctxt "role card front: the last day to apply"
+#~ msgid "Apply by {when}"
+#~ msgstr "Apply by {when}"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season. Hours are an estimate: full time is roughly 30 to 40 hours a week, half time roughly 20."
@@ -13506,6 +13511,11 @@ msgstr "Loading the open roles…"
 msgctxt "admin art library filter"
 msgid "Ocean"
 msgstr "Ocean"
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: applications close today"
+msgid "Closes today"
+msgstr "Closes today"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
@@ -14392,6 +14402,11 @@ msgstr "You hold the village's funding pots, so you can open a pot and a round."
 msgctxt "admin confidentiality section"
 msgid "Attach the document"
 msgstr "Attach the document"
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by ribbon, a short date"
+msgid "Applications close {whenKept}"
+msgstr "Applications close {whenKept}"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "That was not recorded."
@@ -15557,6 +15572,11 @@ msgstr "Move goal {n} down"
 #: client/src/pages/RoleDraft.tsx
 msgid "Kept in this browser only. Nothing is sent until you send your proposal."
 msgstr "Kept in this browser only. Nothing is sent until you send your proposal."
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by stamp's top line, over the day and month"
+msgid "Apply by"
+msgstr "Apply by"
 
 #: client/src/components/sessions/RhythmForm.tsx
 msgid "For example, Thursday sync"
@@ -24188,6 +24208,11 @@ msgstr "Paste a list"
 msgctxt "tag on the season's current week"
 msgid "This week"
 msgstr "This week"
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: days left to apply"
+msgid "{daysLeft, plural, one {# day left} other {# days left}}"
+msgstr "{daysLeft, plural, one {# day left} other {# days left}}"
 
 #. placeholder {0}: CARD_LIMITS.serves
 #: client/src/components/openProposal/RoleCardBridge.tsx
