@@ -6,11 +6,12 @@
  * Every absence carries a positive control: the same fixture at the tier that
  * does carry the key.
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { PUBLIC_PAY_KEYS } from "../../shared/rolePublicPay";
 import type { OrgAssignment, OrgRole } from "./orgChart";
 import { orgSeatTier, projectSeat, type SeatProjectionCtx } from "./seatProjection";
 import { gateOf } from "./roleCardProjection";
+import { loadVariables } from "./variables";
 
 const NOW = new Date("2026-10-01T12:00:00Z");
 const PLANTED = "PLANTED-ALLOWANCE-NOTE";
@@ -176,5 +177,34 @@ describe("the card's parameters", () => {
     // Control: with no setting on the interviewing roles, no step carries a booking.
     const none = projectSeat(role(), held, VISITOR, { ...ctx, roleBooking: new Map() }).card as Record<string, any>;
     expect(none.conversations.some((s: any) => "booking" in s)).toBe(false);
+  });
+});
+
+describe("the village's nationality line (org.role_card_nationality, the lead, 24 Nov 2026)", () => {
+  const LINE = "Costa Rican (preferred) | Other nationalities (possible)";
+  const pool = (rows: Array<{ config_key: string; value: string }>) => ({ query: async () => [rows] }) as unknown as Parameters<typeof loadVariables>[0];
+  afterEach(async () => {
+    await loadVariables(pool([]));
+  });
+  const filled: OrgAssignment = {
+    id: "a1", orgRoleId: "lead-financial-steward", holderKind: "member", userId: "u1", displayName: "Mara", holderKey: "u1", focus: null, note: null,
+    seasonId: null, termEndsAt: null, startedAt: new Date("2026-09-01T00:00:00Z"), endedAt: null, endedReason: null,
+  } as OrgAssignment;
+
+  it("rides on every listed open role, coming soon and future ventures too, at every tier", async () => {
+    await loadVariables(pool([{ config_key: "org.role_card_nationality", value: LINE }]));
+    for (const tier of [VISITOR, GUEST, MEMBER]) expect(card(role(), tier).nationality).toBe(LINE);
+    expect(card(role({ comingSoon: true } as Partial<OrgRole>), VISITOR).nationality).toBe(LINE);
+    expect(card(role({ futureVenture: true } as Partial<OrgRole>), VISITOR).nationality).toBe(LINE);
+    // Not on a role the village has not listed, nor on one whose places are all held.
+    expect("nationality" in card(role({ listed: false }), VISITOR)).toBe(false);
+    expect("nationality" in (projectSeat(role(), [filled], VISITOR, ctx).card as Record<string, unknown>)).toBe(false);
+  });
+
+  it("is absent while the village leaves the line blank, so another village is unaffected", async () => {
+    await loadVariables(pool([{ config_key: "org.role_card_nationality", value: "   " }]));
+    expect("nationality" in card(role(), VISITOR)).toBe(false);
+    await loadVariables(pool([]));
+    expect("nationality" in card(role(), VISITOR)).toBe(false);
   });
 });
