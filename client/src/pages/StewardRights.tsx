@@ -18,6 +18,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, RING, WORLD } from "@/components/journey/look";
 
 /*
  * Every word on this page is the village's own, from Admin, Pages, Steward
@@ -34,13 +35,8 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
  */
 const RIGHT_ICONS = [Users, Heart, Star, Compass, Leaf, Shield, Sparkles, TreePine];
 const RESPONSIBILITY_ICONS = [Users, TreePine, Compass, Heart, Sparkles, Star, Leaf, Shield];
-const STAGE_LOOKS = [
-  { icon: Star, color: "bg-teal-deep" },
-  { icon: Compass, color: "bg-sage" },
-  { icon: Crown, color: "bg-amber text-foreground" },
-  { icon: TreePine, color: "bg-teal-deep" },
-  { icon: Heart, color: "bg-sage" },
-];
+/** Each stage's mark, by position, in a gold ring (look.ts RING): the sheet's tokens only. */
+const STAGE_LOOKS = [{ icon: Star }, { icon: Compass }, { icon: Crown }, { icon: TreePine }, { icon: Heart }];
 
 export default function StewardRights() {
   // Null until the saved words have arrived: the hero keeps its space and
@@ -58,22 +54,22 @@ export default function StewardRights() {
   const waiting = page ? "" : " invisible";
   return (
     <Layout>
+      {/* The night world (public launch, 24 Nov 2026): the sheet's ground and
+          tokens, the same words. The hero was a teal-to-sage gradient with
+          cream type and blurred white and amber blobs. */}
+      <div className={WORLD}>
       {/* Hero */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-teal-deep to-sage">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-amber blur-3xl" />
-        </div>
+      <section className="relative py-20 overflow-hidden">
         <div className="container relative z-10 max-w-3xl">
           <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 mb-6"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <TreePine className="w-5 h-5 text-white" />
-            </div>
-            <span className={`min-w-0 break-words text-cream/80 text-sm font-medium uppercase tracking-wide${waiting}`}>
+            <span className={`${RING} size-10 flex-shrink-0`} aria-hidden="true">
+              <TreePine className="w-5 h-5" />
+            </span>
+            <span className={`min-w-0 break-words ${EYEBROW} text-sm${waiting}`}>
               {hero?.eyebrow || " "}
             </span>
           </m.div>
@@ -81,7 +77,7 @@ export default function StewardRights() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className={`font-display text-4xl md:text-5xl font-semibold text-cream mb-4 break-words${waiting}`}
+            className={`font-display text-4xl md:text-5xl font-semibold text-foreground mb-4 break-words${waiting}`}
           >
             {hero?.headline || " "}
           </m.h1>
@@ -89,7 +85,7 @@ export default function StewardRights() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className={`text-cream text-lg leading-relaxed break-words${waiting}`}
+            className={`text-muted-foreground text-lg leading-relaxed break-words${waiting}`}
           >
             <Emphasized text={hero?.intro || " "} />
           </m.p>
@@ -98,15 +94,15 @@ export default function StewardRights() {
 
       {/* Co-ownership framing */}
       {ownership && !ownership.hidden && (
-      <section className="py-16 bg-cream">
+      <section className="py-16 bg-muted">
         <div className="container max-w-3xl">
           <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-2xl border border-teal/30 bg-white p-8 text-center break-words"
+            className={`${CARD_FEATURED} text-center break-words`}
           >
-            <TreePine className="w-10 h-10 text-sage mx-auto mb-4" />
+            <TreePine className="w-10 h-10 text-open mx-auto mb-4" aria-hidden="true" />
             <h2 className="font-display text-2xl font-semibold text-foreground mb-3">
               {ownership.fields.heading}
             </h2>
@@ -123,7 +119,7 @@ export default function StewardRights() {
       <section className="py-20 bg-background">
         <div className="container max-w-4xl">
           <div className="text-center mb-12 break-words">
-            <span className="text-sm font-medium uppercase tracking-wide text-teal-deep">
+            <span className={`${EYEBROW} text-sm`}>
               {rights.fields.eyebrow}
             </span>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
@@ -143,12 +139,12 @@ export default function StewardRights() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-2xl border border-border bg-card p-6"
+                  className={CARD}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-teal-deep/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Icon className="w-5 h-5 text-teal-deep" />
-                    </div>
+                    <span className={`${RING} size-10 flex-shrink-0 mt-0.5`} aria-hidden="true">
+                      <Icon className="w-5 h-5" />
+                    </span>
                     <div className="min-w-0 break-words">
                       <h3 className="font-semibold text-foreground mb-2">{right.title}</h3>
                       <p className="text-muted-foreground text-sm leading-relaxed">
@@ -166,10 +162,10 @@ export default function StewardRights() {
 
       {/* Responsibilities */}
       {responsibilities && !responsibilities.hidden && (
-      <section className="py-20 bg-cream">
+      <section className="py-20 bg-muted">
         <div className="container max-w-4xl">
           <div className="text-center mb-12 break-words">
-            <span className="text-sm font-medium uppercase tracking-wide text-sage">
+            <span className={`${EYEBROW} text-sm`}>
               {responsibilities.fields.eyebrow}
             </span>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
@@ -189,12 +185,12 @@ export default function StewardRights() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-2xl border border-border bg-white p-6"
+                  className={CARD}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-sage/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Icon className="w-5 h-5 text-sage" />
-                    </div>
+                    <span className="inline-flex size-10 flex-shrink-0 mt-0.5 items-center justify-center rounded-full border border-open/50 text-open" aria-hidden="true">
+                      <Icon className="w-5 h-5" />
+                    </span>
                     <div className="min-w-0 break-words">
                       <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
                       <p className="text-muted-foreground text-sm leading-relaxed">
@@ -215,7 +211,7 @@ export default function StewardRights() {
       <section className="py-20 bg-background">
         <div className="container max-w-3xl">
           <div className="text-center mb-12 break-words">
-            <span className="text-sm font-medium uppercase tracking-wide text-amber-ink">
+            <span className={`${EYEBROW} text-sm`}>
               {progression.fields.eyebrow}
             </span>
             <h2 className="font-display text-3xl font-semibold text-foreground mt-2">
@@ -235,11 +231,11 @@ export default function StewardRights() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-5 rounded-2xl border border-border bg-card p-5"
+                  className="flex items-center gap-5 rounded-2xl border border-border bg-card p-5 shadow-sm"
                 >
-                  <div className={`w-12 h-12 rounded-xl ${look.color} flex items-center justify-center flex-shrink-0`}>
-                    <look.icon className="w-6 h-6 text-white" />
-                  </div>
+                  <span className={`${RING} size-12 flex-shrink-0`} aria-hidden="true">
+                    <look.icon className="w-6 h-6" />
+                  </span>
                   {/* A tag, when the village gives the stage one, takes the
                       place of the check and drops under the words on a phone. */}
                   <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-4 gap-y-2 break-words">
@@ -248,11 +244,11 @@ export default function StewardRights() {
                       <div className="text-muted-foreground text-sm">{stage.description}</div>
                     </div>
                     {stage.years ? (
-                      <span className="text-xs font-medium text-teal-deep bg-teal/10 px-3 py-1 rounded-full whitespace-nowrap">
+                      <span className="text-xs font-medium text-notice bg-notice/10 px-3 py-1 rounded-full whitespace-nowrap">
                         {stage.years}
                       </span>
                     ) : (
-                      i < all.length - 1 && <CheckCircle2 className="w-5 h-5 text-teal ml-auto opacity-40 flex-shrink-0" />
+                      i < all.length - 1 && <CheckCircle2 className="w-5 h-5 text-open ml-auto opacity-60 flex-shrink-0" />
                     )}
                   </div>
                 </m.div>
@@ -270,7 +266,7 @@ export default function StewardRights() {
 
       {/* CTA */}
       {cta && !cta.hidden && (
-      <section className="py-16 bg-cream">
+      <section className="py-16 bg-muted">
         <div className="container max-w-2xl text-center break-words">
           <h2 className="font-display text-2xl font-semibold text-foreground mb-4">
             {cta.fields.heading}
@@ -286,7 +282,7 @@ export default function StewardRights() {
             {!pageOff("/steward") && (
               <Link
                 href="/steward"
-                className="self-center inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-deep text-white font-medium hover:bg-teal-deep-dark transition-colors"
+                className={`${BTN_PRIMARY} self-center`}
               >
                 {cta.fields.primaryLabel}
                 <ArrowRight className="w-4 h-4 flex-shrink-0" />
@@ -295,7 +291,7 @@ export default function StewardRights() {
             {cta.fields.secondaryLabel && (
               <Link
                 href="/quests"
-                className="self-center inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-teal-deep text-teal-deep font-medium hover:bg-teal-deep/5 transition-colors"
+                className={`${BTN_SECONDARY} self-center bg-card`}
               >
                 {cta.fields.secondaryLabel}
               </Link>
@@ -304,6 +300,7 @@ export default function StewardRights() {
         </div>
       </section>
       )}
+      </div>
     </Layout>
   );
 }

@@ -89,6 +89,9 @@ const PAGES = [
   "client/src/pages/Team.tsx",
   "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",
+  "client/src/pages/StewardRights.tsx",
+  "client/src/pages/ResidentRights.tsx",
+  "client/src/pages/ExitPolicy.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
   // Decider calm (Phase D, decision 4): every page where people decide stands in the night world.

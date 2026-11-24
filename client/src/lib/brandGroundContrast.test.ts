@@ -641,8 +641,8 @@ const FIXED: Record<string, number> = {
   "client/src/pages/RequestMembership.tsx": 2,
   // ResidentJourney.tsx's one left this list on 2026-11-11 (batch 155, lane A5): the resident path
   // stands in the sheet's world (docs/DESIGN_RULE.md), so its steps draw no white-on-brand hover. 53.
-  "client/src/pages/ResidentRights.tsx": 1,
-  "client/src/pages/StewardRights.tsx": 1,
+  // ResidentRights.tsx's and StewardRights.tsx's one each left this list on 2026-11-24 (public launch QA):
+  // both rights pages stand in the sheet's world (docs/DESIGN_RULE.md), their doors the sheet's gold and edge. 47 with #1538.
   "client/src/pages/Visit.tsx": 2,
   "client/src/pages/WorkWithUs.tsx": 1,
 };
@@ -656,11 +656,12 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 52 since the 404 moved to the night world with a gold door (Phase B, lane B3).
     // 51 since the landing moved to the night world (go-live pass, D-01).
     // 49 since How We Create and Good Neighbor moved to the night world (public launch QA, 24 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(49);
+    // 47 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(47);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(51 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(47 + 25);
   });
 
   for (const list of POINTER_LISTS) {

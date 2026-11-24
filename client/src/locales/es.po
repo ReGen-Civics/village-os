@@ -7,6 +7,12 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ExitPolicy.tsx
+msgctxt "exit policy page eyebrow"
+msgid "How departure works"
+msgstr "Cómo funciona la partida"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
