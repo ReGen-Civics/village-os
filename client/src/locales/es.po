@@ -11829,6 +11829,12 @@ msgctxt "founding application know us fork"
 msgid "Explore the Steward path first"
 msgstr "Explora primero el camino de Steward"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: under this season's goals, the invitation to the steward path"
+msgid "If you can help us meet these, consider the <0>Village Steward path</0>."
+msgstr "Si puedes ayudarnos a alcanzarlas, considera el <0>camino de Steward de la aldea</0>."
+
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Nobody holds the {chosenName} role today, so a request would reach nobody. <0>Give the role a holder under Power groups</0>, or name a contact outside the village."
 msgstr ""
