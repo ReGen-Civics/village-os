@@ -54,7 +54,8 @@ describe("the powers page", () => {
     serve();
     render(<Powers />);
     expect(await screen.findByText("Tell the village's story")).toBeTruthy();
-    expect(screen.getByText("Story Keeper (Wren) holds this.")).toBeTruthy();
+    // A visitor reads the plain sentence (visitorHolderSentence), never "the admin panel".
+    expect(screen.getByText("Story Keeper (Wren) looks after this.")).toBeTruthy();
     expect(screen.getByText("The village voted this one across.")).toBeTruthy();
     expect(screen.queryByText(/Sign in to see who looks after what/)).toBeNull();
     // Members' doors stay with members.
@@ -71,5 +72,29 @@ describe("the powers page", () => {
     expect(await screen.findByText("A suggested change to this goes to its holders to review.")).toBeTruthy();
     const read = asked.find((a) => a.url === "/api/village/powers");
     expect((read?.init?.headers as Record<string, string>)?.Authorization).toBe("Bearer tok");
+  });
+});
+
+describe("the powers page is calm for a visitor (public launch, 24 Nov 2026)", () => {
+  it("folds each theme shut for a visitor and opens it for a member", async () => {
+    serve();
+    const { container } = render(<Powers />);
+    await screen.findByText("Tell the village's story");
+    expect(container.querySelector("details")?.open).toBe(false);
+    cleanup();
+    auth.user = { id: "u1", name: "Wren Example" };
+    auth.token = "tok";
+    serve();
+    const member = render(<Powers />);
+    await screen.findByText("Tell the village's story");
+    expect(member.container.querySelector("details")?.open).toBe(true);
+  });
+
+  it("keeps the handover mechanics and the admin panel's name off a visitor's page", async () => {
+    serve();
+    render(<Powers />);
+    await screen.findByText("Tell the village's story");
+    expect(screen.queryByText(/How a power moves/)).toBeNull();
+    expect(document.body.textContent).not.toMatch(/admin panel/i);
   });
 });
