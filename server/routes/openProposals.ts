@@ -95,6 +95,7 @@ import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt, 
 import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
+import { registerApplicationDraftRoutes } from "./applicationDrafts";
 import { clearAboutYouDecidedBefore } from "../repos/seatApplications";
 import { arrivalFor, confirmAndAsk, describeFor, tellTheCircle } from "../lib/openProposalDecide";
 import { addressAccount } from "../lib/applicantAccount";
@@ -521,6 +522,8 @@ export function register(app: Express, deps: Deps): void {
   const incoming = incomingDir(deps.proposalFileDir);
   // Whatever a crash left half-written, or a part no application took, goes after its time.
   void sweepIncoming(incoming, PART_KEPT_MS).catch(() => 0);
+  // Save and finish later (the lead, 24 Nov 2026): the unsent application kept with its files, through this door and mail door.
+  registerApplicationDraftRoutes(app, { getPool, overLimit, connectionKey: (req) => ipBucket(clientIp(req)), door, offered, incoming, fileDir: deps.proposalFileDir, postEmail, siteUrl: site, projectName, escapeHtml, now });
   // Clips are capped at the village's own count (org.voice_clips_max), read for each post, never at the platform ceiling.
   const uploadFor = (clipsMax: number, clipCap = Math.max(1, Math.min(VOICE_CLIPS_CEILING, clipsMax))) =>
     multer({

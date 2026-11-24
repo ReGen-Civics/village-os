@@ -28266,3 +28266,123 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the link was emailed"
+msgid "We emailed this link to {to}."
+msgstr "Te enviamos este enlace a {to}."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email limit"
+msgid "We have emailed this link a few times today, so we did not send it again. Copy it to keep it."
+msgstr "Ya te enviamos este enlace varias veces hoy, así que no lo enviamos de nuevo. Cópialo para guardarlo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email failed"
+msgid "We could not email the link just now. Copy it to keep it."
+msgstr "No pudimos enviarte el enlace ahora. Cópialo para guardarlo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: no email yet"
+msgid "Add your email on the About you step and save again, and we will email you the link too."
+msgstr "Escribe tu correo en el paso Sobre ti y guarda de nuevo, y también te enviaremos el enlace."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: rate limited"
+msgid "That is a lot of saves from here in a short while. Please wait a little and try again."
+msgstr "Son muchos guardados desde aquí en poco tiempo. Espera un poco e inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: draft gone"
+msgid "This saved application is no longer kept. Save again to start a new link."
+msgstr "Ya no guardamos esta solicitud. Guárdala de nuevo para crear un enlace nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: too big"
+msgid "This application is too long to save. Shorten the longest answer and try again."
+msgstr "Esta solicitud es demasiado larga para guardarla. Acorta la respuesta más larga e inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: a file failed"
+msgid "A file did not save. Check it and try again."
+msgstr "Un archivo no se guardó. Revísalo e inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: failed"
+msgid "That did not save. Please try again."
+msgstr "No se guardó. Inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: while saving"
+msgid "Saving"
+msgstr "Guardando"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the button"
+msgid "Save and finish later"
+msgstr "Guardar y terminar después"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: saved, with the time"
+msgid "Saved at {time}"
+msgstr "Guardado a las {time}"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Your private link to finish later"
+msgstr "Tu enlace privado para terminar después"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: link copied"
+msgid "Copied"
+msgstr "Copiado"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: copy the link"
+msgid "Copy link"
+msgstr "Copiar enlace"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Keep it to yourself: anyone with the link can open your saved answers. We keep it for {days} days after your last save, and nothing reaches the team until you send."
+msgstr "Guárdalo solo para ti: quien tenga el enlace puede abrir tus respuestas guardadas. Lo guardamos {days} días después de la última vez que guardes, y nada llega al equipo hasta que envíes."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, opened from a save and finish later link"
+msgid "Your application is saved. Pick up where you left off."
+msgstr "Tu solicitud está guardada. Sigue donde lo dejaste."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the email was refused"
+msgid "Write an email address, like name@example.org."
+msgstr "Escribe un correo electrónico, como nombre@ejemplo.org."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the WhatsApp number was refused"
+msgid "Write the WhatsApp number with its country code, like +506 8888 8888, or leave it empty."
+msgstr "Escribe el número de WhatsApp con su código de país, como +506 8888 8888, o déjalo vacío."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: no role chosen"
+msgid "Choose at least one role that is coming soon."
+msgstr "Elige al menos un rol que abrirá pronto."

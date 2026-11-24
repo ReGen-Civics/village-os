@@ -257,11 +257,16 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       await setVar("org.founding_recording_link", "https://video.example.test/last-call");
       await setVar("org.founding_tour_link", "https://book.example.test/tour");
       try {
+        // Land tours paused by default (the lead, 24 Nov 2026, shared/toursPaused.ts): the link is kept and not offered.
+        const paused = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
+        expect(paused).toMatchObject({ recording: "https://video.example.test/last-call", tour: { href: null, next: null } });
+        await setVar("org.tours_resumed", "true");
         const l = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
         expect(l).toMatchObject({ recording: "https://video.example.test/last-call", tour: { href: "https://book.example.test/tour", next: null }, potluck: { href: null } });
       } finally {
         await setVar("org.founding_recording_link", null);
         await setVar("org.founding_tour_link", null);
+        await setVar("org.tours_resumed", null);
       }
     });
 
@@ -310,7 +315,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     it("the form carries the village's words from its settings, and no pay shape the village has not written (the page shows N%)", async () => {
       const r = await call("GET", "/api/open-proposals/form");
       expect(r.body.founding).toMatchObject({
-        knowUs: ["Join a community call", "Visit the land", "Share a meal with us"],
+        // Land tours and shared meals paused by default (the lead, 24 Nov 2026): only the call's way shows.
+        knowUs: ["Join a community call"],
         shares: [],
         atRisk: "",
         footer: "",
@@ -322,9 +328,10 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     });
 
     it("keeps the ticks for ways the village lists, drops any other, and keeps the ramp-up and Human Design or Gene Keys", async () => {
-      const { id } = await send({ knowUs: ["Visit the land", "A way nobody lists", "Visit the land"], rampUp: true, selfKnowledge: "Projector, 4/6" });
+      // "Visit the land" is a paused way by default (shared/toursPaused.ts), so it is dropped like one nobody lists.
+      const { id } = await send({ knowUs: ["Join a community call", "A way nobody lists", "Join a community call", "Visit the land"], rampUp: true, selfKnowledge: "Projector, 4/6" });
       const row = await readOpenProposal(pool, id);
-      expect(row?.body).toMatchObject({ knowUs: ["Visit the land"], rampUp: true, selfKnowledge: "Projector, 4/6" });
+      expect(row?.body).toMatchObject({ knowUs: ["Join a community call"], rampUp: true, selfKnowledge: "Projector, 4/6" });
       // An application without them stores none of the three.
       const plain = await send({ email: "plain@example.test" });
       const body = (await readOpenProposal(pool, plain.id))?.body ?? {};

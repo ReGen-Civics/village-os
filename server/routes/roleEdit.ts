@@ -204,6 +204,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       villagePay: villagePay(),
       // The "Other ways to join" tiles beside the section (QA2-07): village words, sent whether the section is on or off.
       otherWays: otherWaysFrom((k) => stringVar(k)),
+      // Land tours and potlucks running (shared/toursPaused.ts): off, the steward page shows only the webinar's first step.
+      toursResumed: boolVar("org.tours_resumed"),
     });
   });
 

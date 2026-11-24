@@ -462,17 +462,17 @@ describe("the six steps", () => {
     expect(ways.textContent).not.toMatch(/potluck/);
     // Every link opens in a new tab, so the draft stays.
     for (const a of within(ways).getAllByRole("link")) expect([a.getAttribute("target"), a.getAttribute("rel")]).toEqual(["_blank", "noopener noreferrer"]);
-    const steward = within(ways).getByRole("link", { name: /Explore the Steward path first/ });
-    expect(steward.getAttribute("href")).toBe("/steward");
-    expect(ways.textContent).toMatch(/Already feel like a strong fit\? Carry on with your application\./);
+    // No fork back to the Steward path (the lead, 24 Nov 2026): it looped back to the page the applicant had just read.
+    expect(within(ways).queryByRole("link", { name: /Steward path/ })).toBeNull();
+    expect(ways.querySelector("[data-know-us-fork]")).toBeNull();
   });
 
-  it("with no links written, the push stays, no act is drawn, and the Steward path still is (control)", async () => {
+  it("with no links written, the push stays, no act is drawn, and no Steward path fork is drawn (control)", async () => {
     await applyFor();
     const ways = document.querySelector("[data-know-us-ways]") as HTMLElement;
     expect(ways.querySelector("[data-know-us-acts]")).toBeNull();
     expect(ways.textContent).not.toMatch(/recording/);
-    expect(within(ways).getByRole("link", { name: /Explore the Steward path first/ }).getAttribute("href")).toBe("/steward");
+    expect(within(ways).queryByRole("link", { name: /Explore the Steward path first/ })).toBeNull();
   });
 
   it("Get to know us never locks: the note shows while a way is open, and Continue moves on with nothing ticked", async () => {

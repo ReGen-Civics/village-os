@@ -3195,11 +3195,22 @@ export const VARIABLES: VariableDef[] = [
     type: "text",
     default: "",
   },
+  // Land tours and potlucks paused (the lead, 24 Nov 2026, shared/toursPaused.ts). Off by default, so a paused
+  // gathering is never offered by mistake; a village turns it on when its tours and potlucks are running.
+  {
+    key: "org.tours_resumed",
+    category: "The founding team",
+    label: "Land tours and potlucks are running",
+    description:
+      "Off, the application's first step and the steward page's first steps show only the webinar or community call: every way, link or step that names a land tour, a visit to the land, a potluck or a shared meal is hidden. On, they all show again, as written. Nothing is deleted either way.",
+    type: "boolean",
+    default: "false",
+  },
   {
     key: "org.founding_steward_path_link",
     category: "The founding team",
     label: "Where someone completely new explores first",
-    description: "Step 1 says \"Completely new here? Explore the Steward path first\" with this link. A page of this site or an https address; empty means /steward.",
+    description: "Where the Steward path lives, carried with the application's links. The application's first step no longer offers it (the lead, 24 Nov 2026: it sent an applicant back to the page they had just read). A page of this site or an https address; empty means /steward.",
     type: "text",
     default: "",
   },
