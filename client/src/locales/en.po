@@ -8506,6 +8506,11 @@ msgctxt "my token pay"
 msgid "Send your answer"
 msgstr "Send your answer"
 
+#: client/src/pages/ExitPolicy.tsx
+msgctxt "exit policy page eyebrow"
+msgid "How departure works"
+msgstr "How departure works"
+
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: why the lead quest was chosen"
 msgid "It grows from your roots."
@@ -11290,6 +11295,11 @@ msgstr "Silence"
 msgctxt "pay page, amount pad"
 msgid "That is more than you hold. You hold {heldText} {tokenName}."
 msgstr "That is more than you hold. You hold {heldText} {tokenName}."
+
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals page eyebrow"
+msgid "The village year"
+msgstr "The village year"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing counts as removed because of a check that failed. A role leaves the list only when {agent} archives it, or when it is missing from two full checks in a row."
@@ -18001,6 +18011,11 @@ msgstr "The role is made, unlisted. Find it in its circle and choose Edit this r
 msgctxt "sera answers"
 msgid "including {n} roles inside {name}"
 msgstr "including {n} roles inside {name}"
+
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page eyebrow"
+msgid "Feedback"
+msgstr "Feedback"
 
 #. placeholder {0}: map.commitment.total
 #. placeholder {1}: map.commitment.gap

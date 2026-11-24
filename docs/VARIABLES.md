@@ -301,7 +301,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The role that sends first replies to applicants | `org.onboarding_role` | The village's people | text | blank | the whole village |
 | The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
 | The role that makes the final call on an applicant | `org.final_call_role` | The village's people | text | blank | the whole village |
-| Days we promise to reply to a role proposal | `org.applicant_reply_days` | The village's people | integer | `7` | the whole village |
+| Longest reply in days a proposer was ever promised (a floor for the moon cycles) | `org.applicant_reply_days` | The village's people | integer | `7` | the whole village |
 | Moon cycles we tell a proposer they will hear back within | `org.reply_window_moons` | The village's people | integer | `1` | the whole village |
 | The role that answers partner proposals | `org.partnerships_role` | The village's people | text | blank | the whole village |
 | Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `24` | the whole village |
@@ -3940,9 +3940,9 @@ The role whose holders read everything gathered for an applicant (the reference 
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
 
-### Days we promise to reply to a role proposal
+### Longest reply in days a proposer was ever promised (a floor for the moon cycles)
 
-The number of days the applicant's status page and thank-you page say we reply within, and the one promise under the four ways to build the village (join the team, start a venture, become a partner, propose a quest). It is a promise to the person, so set the number the people who reply can keep. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.
+Nobody is told a number of days any more (the lead, 24 Nov 2026): every proposer, an applicant included, is told they will hear back within the moon cycles set below. This number is kept so a village that once promised a long wait is never made to promise a shorter one: the moon cycles said are never fewer than these days, rounded up to whole cycles (45 days reads as two). The default 7 sits inside one cycle and changes nothing. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.
 
 | Fact | Value |
 | --- | --- |
@@ -3957,7 +3957,7 @@ The number of days the applicant's status page and thank-you page say we reply w
 
 ### Moon cycles we tell a proposer they will hear back within
 
-What a person is told once they have sent an application, a venture, a partnership or a quest idea: that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. The application's own dated steps and letters still use the days above.
+What a person is told once they have sent an application, a venture, a partnership or a quest idea: on the thank-you page, in the confirmation and update letters, in the application's steps and on its status page, that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. It never reads fewer cycles than the days above, rounded up.
 
 | Fact | Value |
 | --- | --- |
