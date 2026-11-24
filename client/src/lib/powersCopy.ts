@@ -75,6 +75,26 @@ export function holderSentence(power: PowerRow): string {
 }
 
 /** Where a suggested change to this power goes, in one sentence. */
+/**
+ * The same fact for a visitor, in plain words (public launch, 24 Nov 2026).
+ * A stranger does not know what "the admin panel" is and should not have to:
+ * the panel is the village's administrators, so the sentence says that. Every
+ * branch says the same thing holderSentence says, true to the row; only the
+ * vocabulary changes. Still no count, no order by held, no pace (R55).
+ */
+export function visitorHolderSentence(power: PowerRow): string {
+  if (power.heldBy) {
+    const who = power.heldBy.roleName;
+    if (power.heldBy.people.length === 0) return `This sits with the ${who} role, which is open for now.`;
+    return `${who} (${namesSentence(power.heldBy.people)}) looks after this.`;
+  }
+  const today = power.heldToday ?? [];
+  if (today.length) return `${namesSentence(today)} ${today.length === 1 ? "looks" : "look"} after this today.`;
+  if (power.stage) return `Every member from the ${power.stage} stage on shares this.`;
+  if (power.movable) return "The village's administrators look after this for now. The village can take it on by its own decision.";
+  return "The village's administrators look after this.";
+}
+
 export function suggestionSentence(power: PowerRow): string {
   return power.suggestionsGoTo === "holders"
     ? "A suggested change to this goes to its holders to review."
