@@ -38,7 +38,7 @@ import {
   type SeasonView,
   type SeasonWin,
 } from "@shared/sessionTemplates";
-import { SESSION_LIST_COPY } from "@shared/sessions";
+import { SESSION_LIST_COPY, SESSION_REFUSALS } from "@shared/sessions";
 import Layout from "@/components/Layout";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import ModuleGate, { SignInToSee } from "@/components/modules/ModuleGate";
@@ -55,7 +55,7 @@ const dayLabel = (iso: string) => {
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { day: "numeric", month: "long" });
 };
 
-type Load = { kind: "loading" } | { kind: "ready"; view: SeasonView | null } | { kind: "failed" };
+type Load = { kind: "loading" } | { kind: "ready"; view: SeasonView | null } | { kind: "failed" } | { kind: "membersOnly" };
 
 function PriorityList({ items }: { items: readonly SeasonPriorityItem[] }) {
   return (
@@ -100,6 +100,9 @@ export default function SessionSeason() {
     setLoad({ kind: "loading" });
     try {
       const res = await gameFetch(id ? `${SEASON_VIEW_API}?season=${encodeURIComponent(id)}` : SEASON_VIEW_API);
+      // A refusal is not a failure to load: a newcomer the village has not admitted is told sessions are for members,
+      // as /sessions tells them, never "Try again in a moment" (every-page audit, 24 Nov 2026).
+      if (res.status === 403) return setLoad({ kind: "membersOnly" });
       if (!res.ok) return setLoad({ kind: "failed" });
       const body = (await res.json()) as { view?: SeasonView | null };
       setLoad({ kind: "ready", view: body?.view ?? null });
@@ -170,6 +173,11 @@ export default function SessionSeason() {
           <div className={`${LIST_UI.card} flex justify-center py-10`}>
             <BreathingLoader label={SESSION_LIST_COPY.loading} showLabel />
           </div>
+        )}
+        {load.kind === "membersOnly" && (
+          <p role="status" className={`${LIST_UI.card} text-foreground`} data-season-members-only="">
+            {SESSION_REFUSALS.membersOnly}
+          </p>
         )}
         {load.kind === "failed" && (
           <p role="alert" className={LIST_UI.card}>
