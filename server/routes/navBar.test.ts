@@ -27,7 +27,7 @@ function harness(over: Partial<NavBarDeps> & { vars?: Record<string, string | nu
     authedUser: async (req) => (req.headers.authorization ? { id: "usr-1", email: "m@example.test" } : null),
     overLimit: async () => false,
     connectionKey: () => "1.2.3.4",
-    fixedRoutes: () => new Set(["/", "/quests", "/roles", "/events", "/journal"]),
+    fixedRoutes: () => new Set(["/", "/path", "/quests", "/roles", "/events", "/journal"]),
     boolVar: (k) => Boolean(vars[k]),
     numberVar: (k) => Number(vars[k]),
     stringVar: (k) => String(vars[k] ?? ""),
@@ -73,10 +73,10 @@ describe("POST /api/nav/visit", () => {
     expect(JSON.stringify(h.counted)).not.toContain("usr-1");
   });
 
-  it("counts only a fixed address the client draws, and never Home", async () => {
+  it("counts only a fixed address the client draws, and never a fixed place", async () => {
     const h = harness();
     const base = await h.start();
-    for (const path of ["/", "/profile/usr-9", "/roles/abc", "https://elsewhere.example/x", 42]) await post(base, { path });
+    for (const path of ["/", "/path", "/profile/usr-9", "/roles/abc", "https://elsewhere.example/x", 42]) await post(base, { path });
     expect(h.counted).toEqual([]);
   });
 

@@ -3849,7 +3849,7 @@ export const VARIABLES: VariableDef[] = [
     category: "Village",
     label: "Fill the phone's bottom bar from where members go",
     description:
-      "On, a signed-in member's bottom bar on a phone keeps Home first and More last, and fills the places between with the pages members visit most across the village, plus one place for the page that member visits most on their own phone. Visits are counted per page per day with no person in the count, and the personal place is worked out on the member's own phone and never sent. Off, every member sees the village's fixed bar, as before.",
+      "On, a signed-in member's bottom bar on a phone keeps its fixed places (Home first, the member's path, More last) and fills the two places between with the pages members visit most across the village, plus one place for the page that member visits most on their own phone. Visits are counted per page per day with no person in the count, and the personal place is worked out on the member's own phone and never sent. Off, every member sees the village's fixed bar, as before.",
     type: "boolean",
     default: "false",
   },
@@ -3858,18 +3858,18 @@ export const VARIABLES: VariableDef[] = [
     category: "Village",
     label: "Places on the bottom bar for the village's most visited pages",
     description:
-      "How many of the bar's places between Home and More go to the pages members visit most across the village, pinned pages included. The bar has three places between Home and More: with the personal place on, two here leaves one for it.",
+      "How many of the bar's two changing places go to the pages members visit most across the village, pinned pages included. Home, the member's path and More never move. With the personal place on, it takes the second of the two.",
     type: "integer",
     default: "2",
     min: 1,
-    max: 3,
+    max: 2,
   },
   {
     key: "nav.personal_slot",
     category: "Village",
     label: "Keep one bottom bar place for each member's own most visited page",
     description:
-      "On, one place on the bar shows the page that member visits most, when it is not already on the bar. It is worked out on their own phone from their own visits and changes at most once a day. Off, that place goes to the village's next most visited page.",
+      "On, one place on the bar shows the page that member visits most, when it is not already on the bar. It is worked out on their own phone from their own visits and changes at most once a day. Off, both changing places go to the village's most visited pages.",
     type: "boolean",
     default: "true",
   },

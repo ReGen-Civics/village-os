@@ -6,7 +6,9 @@
  * Pure functions, shared by the server (the site-wide pages) and the phone (the
  * personal slot), so both choose the same way and both are tested here.
  *
- * Home is never chosen: it is the bar's fixed first slot. "More" is the last.
+ * The bar's fixed places are never chosen: Home first, the member's path (the
+ * lead, 24 Nov 2026: the path slot is never displaced by popularity) and More
+ * last. Only the places between move: MOVING_PLACES of them.
  *
  * PRIVACY. The site-wide choice reads aggregate counts only, one number per
  * page per day with no person in it (server/repos/navVisits.ts). The personal
@@ -15,6 +17,10 @@
  */
 
 export const HOME_PATH = "/";
+/** The path slot's page (fixed on the bar, never counted or chosen). */
+export const PATH_PATH = "/path";
+/** How many places on the bar the responsive choice fills. */
+export const MOVING_PLACES = 2;
 
 export interface PathCount {
   path: string;
@@ -22,7 +28,7 @@ export interface PathCount {
 }
 
 export interface SiteBarOptions {
-  /** How many site-wide slots (pins included). */
+  /** How many site-wide places (pins included), at most MOVING_PLACES. */
   slots: number;
   /** A newcomer must beat the page it would replace by this many percent. */
   marginPct: number;
@@ -48,8 +54,8 @@ export function pathList(raw: unknown): string[] {
  * and never move; excluded pages and Home never appear.
  */
 export function chooseSiteBar(counts: readonly PathCount[], current: readonly string[] | null, opts: SiteBarOptions): string[] {
-  const slots = Math.max(0, Math.floor(opts.slots));
-  const off = new Set([HOME_PATH, ...opts.excluded]);
+  const slots = Math.min(MOVING_PLACES, Math.max(0, Math.floor(opts.slots)));
+  const off = new Set([HOME_PATH, PATH_PATH, ...opts.excluded]);
   const pins = opts.pinned.filter((p, i, a) => !off.has(p) && a.indexOf(p) === i).slice(0, slots);
   const free = slots - pins.length;
   const countOf = new Map<string, number>();
@@ -88,7 +94,7 @@ export function dayKey(at: Date): string {
  * then gives the place to the next site-wide page.
  */
 export function choosePersonal(history: Readonly<Record<string, number>>, bar: readonly string[], excluded: readonly string[]): string | null {
-  const off = new Set([HOME_PATH, ...bar, ...excluded]);
+  const off = new Set([HOME_PATH, PATH_PATH, ...bar, ...excluded]);
   let best: string | null = null;
   let bestN = 0;
   for (const [p, n] of Object.entries(history)) {
@@ -101,9 +107,12 @@ export function choosePersonal(history: Readonly<Record<string, number>>, bar: r
   return best;
 }
 
-/** The bar's four page slots: Home, the site-wide pages, then the personal one. */
+/**
+ * The bar's moving places, in order: the village's pages, and the personal one
+ * (when there is one) reserved as the last of them. Fixed places never appear.
+ */
 export function barTabs(siteWide: readonly string[], personal: string | null): string[] {
-  const out = [HOME_PATH, ...siteWide.filter((p) => p !== HOME_PATH)];
-  if (personal && !out.includes(personal)) out.push(personal);
-  return out.slice(0, 4);
+  const village = siteWide.filter((p, i, a) => p !== HOME_PATH && p !== PATH_PATH && a.indexOf(p) === i);
+  if (!personal || village.includes(personal) || personal === HOME_PATH || personal === PATH_PATH) return village.slice(0, MOVING_PLACES);
+  return [...village.slice(0, MOVING_PLACES - 1), personal];
 }

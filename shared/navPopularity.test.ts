@@ -12,8 +12,12 @@ describe("pathList", () => {
 });
 
 describe("chooseSiteBar", () => {
-  it("takes the most visited pages, never Home", () => {
-    expect(chooseSiteBar([c("/", 999), c("/quests", 50), c("/roles", 40), c("/events", 10)], null, opts)).toEqual(["/quests", "/roles"]);
+  it("takes the most visited pages, never a fixed place (Home, the path)", () => {
+    expect(chooseSiteBar([c("/", 999), c("/path", 500), c("/quests", 50), c("/roles", 40), c("/events", 10)], null, opts)).toEqual(["/quests", "/roles"]);
+  });
+
+  it("fills at most the bar's two moving places", () => {
+    expect(chooseSiteBar([c("/quests", 50), c("/roles", 40), c("/events", 30)], null, { ...opts, slots: 3 })).toEqual(["/quests", "/roles"]);
   });
 
   it("puts pins first, in order, and they count toward the places", () => {
@@ -46,7 +50,7 @@ describe("chooseSiteBar", () => {
 
 describe("the personal place", () => {
   it("is the member's most visited page not already on the bar", () => {
-    expect(choosePersonal({ "/quests": 9, "/journal": 7, "/": 30 }, ["/quests"], [])).toBe("/journal");
+    expect(choosePersonal({ "/quests": 9, "/journal": 7, "/": 30, "/path": 20 }, ["/quests"], [])).toBe("/journal");
   });
 
   it("is nothing when every page they visit is on the bar or excluded", () => {
@@ -55,10 +59,11 @@ describe("the personal place", () => {
 });
 
 describe("barTabs", () => {
-  it("is Home, the village's pages, then the member's own, four at most", () => {
-    expect(barTabs(["/quests", "/roles"], "/journal")).toEqual(["/", "/quests", "/roles", "/journal"]);
-    expect(barTabs(["/quests", "/roles", "/events"], "/journal")).toEqual(["/", "/quests", "/roles", "/events"]);
-    expect(barTabs(["/quests"], null)).toEqual(["/", "/quests"]);
+  it("is the two moving places: the village's page, then the member's own, kept for them", () => {
+    expect(barTabs(["/quests", "/roles"], "/journal")).toEqual(["/quests", "/journal"]);
+    expect(barTabs(["/quests", "/roles"], null)).toEqual(["/quests", "/roles"]);
+    expect(barTabs(["/quests", "/roles"], "/roles")).toEqual(["/quests", "/roles"]);
+    expect(barTabs(["/", "/path", "/quests"], "/path")).toEqual(["/quests"]);
   });
 });
 

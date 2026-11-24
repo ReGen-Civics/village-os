@@ -19,7 +19,7 @@
  */
 import type { Express, Request } from "express";
 import type { Pool } from "mysql2/promise";
-import { chooseSiteBar, pathList, type PathCount } from "../../shared/navPopularity";
+import { chooseSiteBar, MOVING_PLACES, PATH_PATH, pathList, type PathCount } from "../../shared/navPopularity";
 
 export interface NavBarDeps {
   getPool(): Pool;
@@ -58,8 +58,8 @@ export function register(app: Express, d: NavBarDeps): void {
     if (!(await d.authedUser(req))) return res.status(401).json({ error: "auth_required" });
     if (await d.overLimit(`nav-visit:${d.connectionKey(req)}`, VISITS_PER_HOUR, 3_600_000)) return res.status(204).end();
     const path = cleanPath(req.body?.path);
-    // Only a fixed address the client draws, and never Home (its place is fixed).
-    if (!path || path === "/" || !d.fixedRoutes().has(path)) return res.status(204).end();
+    // Only a fixed address the client draws, and never a fixed place (Home, the path).
+    if (!path || path === "/" || path === PATH_PATH || !d.fixedRoutes().has(path)) return res.status(204).end();
     try {
       await d.countVisit(d.getPool(), utcDay(d.now()), path);
     } catch {
@@ -72,7 +72,7 @@ export function register(app: Express, d: NavBarDeps): void {
     res.setHeader("Cache-Control", "private, no-store");
     const off = { on: false, siteWide: [] as string[], personal: false, excluded: [] as string[] };
     if (!d.boolVar("nav.responsive_bar") || !(await d.authedUser(req))) return res.json(off);
-    const slots = Math.min(3, Math.max(1, d.numberVar("nav.popular_slots")));
+    const slots = Math.min(MOVING_PLACES, Math.max(1, d.numberVar("nav.popular_slots")));
     const refreshDays = Math.min(90, Math.max(1, d.numberVar("nav.refresh_days")));
     const pinned = pathList(d.stringVar("nav.pinned"));
     const excluded = pathList(d.stringVar("nav.excluded"));

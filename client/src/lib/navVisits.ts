@@ -14,7 +14,7 @@
  * Every storage read and write is wrapped: a private window or blocked
  * storage gives the village's bar, never an error.
  */
-import { barTabs, choosePersonal, dayKey } from "@shared/navPopularity";
+import { barTabs, choosePersonal, dayKey, PATH_PATH } from "@shared/navPopularity";
 
 export const HISTORY_KEY = "village-nav-history";
 export const SENT_KEY = "village-nav-sent";
@@ -71,7 +71,7 @@ function sentThisSession(): Set<string> {
  */
 export async function visited(location: string, token: string, fetchImpl: typeof fetch = fetch): Promise<void> {
   const path = clean(location);
-  if (path === "/" || !/^\/[\w\-/]*$/.test(path)) return;
+  if (path === "/" || path === PATH_PATH || !/^\/[\w\-/]*$/.test(path)) return;
   const sent = sentThisSession();
   if (sent.has(path)) return;
   sent.add(path);
@@ -109,8 +109,7 @@ export function personalFor(bar: readonly string[], excluded: readonly string[],
 let cached: { at: number; answer: BarAnswer } | null = null;
 
 /**
- * The bar's four page places (Home, the village's pages, the member's own),
- * or null for the village's fixed bar: the setting is off, the member is not
+ * The bar's moving places (the village's pages, then the member's own), or null for the village's fixed bar: the setting is off, the member is not
  * signed in, or the server could not be asked.
  */
 export async function loadBar(token: string, fetchImpl: typeof fetch = fetch, now: number = Date.now()): Promise<string[] | null> {

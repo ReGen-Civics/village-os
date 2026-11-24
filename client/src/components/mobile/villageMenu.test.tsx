@@ -72,19 +72,19 @@ describe("the phone tabs", () => {
 describe("the responsive phone tabs", () => {
   const open = (m?: string) => !m || m === "forum";
   const paths = (slots: ReturnType<typeof responsiveSlots>) => slots.map((s) => s.path ?? s.event);
+  const fixed = (slots: ReturnType<typeof responsiveSlots>) => [slots[0], slots[3], slots[4]];
 
-  it("draw the chosen pages in order, then More", () => {
-    expect(paths(responsiveSlots(["/", "/forum", "/quests", "/circles"], {}, [], open))).toEqual(["/", "/forum", "/quests", "/circles", "open-mobile-menu"]);
+  it("fill only the two moving places, and Home, the path place and More never move", () => {
+    const slots = responsiveSlots(["/forum", "/gratitude"], {}, [], open);
+    expect(paths(slots)).toEqual(["/", "/forum", "/gratitude", TAB_SLOTS[3].path, "open-mobile-menu"]);
+    expect(fixed(slots)).toEqual(fixed(TAB_SLOTS));
   });
 
-  it("never show a page twice, and fill a short bar from the platform's tabs", () => {
-    // Two chosen pages: the rest come from the platform's tabs not already there.
-    expect(paths(responsiveSlots(["/", "/circles"], {}, [], open))).toEqual(["/", "/circles", "/gratitude", "/quests", "open-mobile-menu"]);
-    // A chosen page that is off falls back to the platform's slot, which may already be on the bar.
-    const slots = paths(responsiveSlots(["/", "/feed", "/quests"], {}, [], open));
-    expect(slots).toHaveLength(5);
-    expect(new Set(slots).size).toBe(5);
-    expect(slots[4]).toBe("open-mobile-menu");
+  it("never show a page twice, and keep the platform's tab in a place left empty", () => {
+    // A fixed page, a closed one and a repeat are skipped; the empty place keeps the platform's tab.
+    const slots = paths(responsiveSlots(["/", String(TAB_SLOTS[3].path), "/feed", "/forum", "/forum"], {}, [], open));
+    expect(slots).toEqual(["/", "/forum", TAB_SLOTS[1].path, TAB_SLOTS[3].path, "open-mobile-menu"]);
+    expect(paths(responsiveSlots([], {}, [], open))).toEqual(paths(TAB_SLOTS));
   });
 });
 

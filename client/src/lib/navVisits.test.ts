@@ -17,11 +17,12 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("visited", () => {
-  it("sends the address alone, once per page per session, and never Home", async () => {
+  it("sends the address alone, once per page per session, and never a fixed place", async () => {
     const f = vi.fn(() => ok({}));
     await visited("/quests?tab=mine", "tok", f as unknown as typeof fetch);
     await visited("/quests", "tok", f as unknown as typeof fetch);
     await visited("/", "tok", f as unknown as typeof fetch);
+    await visited("/path", "tok", f as unknown as typeof fetch);
     expect(f).toHaveBeenCalledTimes(1);
     const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("/api/nav/visit");
@@ -67,11 +68,11 @@ describe("loadBar", () => {
     expect(await loadBar("tok", (() => Promise.reject(new Error("offline"))) as unknown as typeof fetch)).toBeNull();
   });
 
-  it("is Home, the village's pages and the member's own, and asks the server at most every ten minutes", async () => {
+  it("is the village's page and the member's own, and asks the server at most every ten minutes", async () => {
     window.localStorage.setItem(HISTORY_KEY, JSON.stringify({ counts: { "/journal": 4 } }));
     const f = vi.fn(() => ok({ on: true, siteWide: ["/quests", "/roles"], personal: true, excluded: [] }));
     const t = Date.parse("2026-11-24T12:00:00Z");
-    expect(await loadBar("tok", f as unknown as typeof fetch, t)).toEqual(["/", "/quests", "/roles", "/journal"]);
+    expect(await loadBar("tok", f as unknown as typeof fetch, t)).toEqual(["/quests", "/journal"]);
     await loadBar("tok", f as unknown as typeof fetch, t + 5 * 60_000);
     expect(f).toHaveBeenCalledTimes(1);
     await loadBar("tok", f as unknown as typeof fetch, t + 11 * 60_000);
