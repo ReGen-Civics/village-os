@@ -215,3 +215,20 @@
   .m-air .m-mote { animation: m-firefly var(--t) var(--m-ease-sway, ease-in-out) var(--dl) infinite; }
   :root[data-mode="light"] .m-air .m-mote { animation: m-spore calc(var(--t) * 1.6) linear var(--dl) infinite; }
 }
+
+/* ---------- The living network (LivingNetwork.tsx) ---------- */
+.m-network {
+  position: absolute;
+  top: -6rem;
+  bottom: -3rem;
+  left: 50%;
+  z-index: -1;
+  width: 100vw;
+  height: calc(100% + 9rem);
+  translate: -50% 0;
+  pointer-events: none;
+  opacity: 0.75;
+  /* The words sit in the middle: the threads keep to the edges around them. */
+  -webkit-mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
+  mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
+}

@@ -161,28 +161,44 @@ export function Seeds({ plan, still }: SceneProps) {
  * flower already open, which is where the motion was going anyway.
  */
 export function Blossom({ plan, still }: SceneProps) {
+  // BLOOM (LIVING MOTION, motion lane): the brand's lotus, drawn in its monoline. Pointed petals in the
+  // accent open from the centre, one by one, and a single ring spreads across still water beneath. The
+  // accent is the semantic gold (deep ocean in light mode), so it holds in both modes and any palette.
   const petals = plan.elements.length;
   const per = plan.duration / 1.4;
+  const edge = "var(--sheet-notice, #b0813c)";
   return (
-    <g transform="translate(50 54)">
-      {plan.elements.map((e, n) => {
-        const angle = (360 / petals) * n;
-        return (
-          <g key={e.i} transform={`rotate(${angle})`}>
-            <ellipse
-              className={still ? undefined : "nat-petal"}
-              style={still ? undefined : vars(e.delay, per)}
-              cx="0" cy="-20" rx="9" ry="19"
-              fill="var(--nat-petal, #f3cdd8)"
-              stroke="var(--nat-petal-edge, #d79bb0)"
-              strokeWidth="0.8"
-            />
-          </g>
-        );
-      })}
-      <circle cx="0" cy="0" r="8" fill="var(--nat-pollen, #ecb163)" />
-      <circle cx="0" cy="0" r="3.4" fill="var(--nat-pollen-deep, #c98b3a)" />
-    </g>
+    <>
+      {!still && (
+        <circle
+          className="nat-ripple"
+          style={{ ...vars(plan.duration * 0.45, plan.duration * 0.8), transformOrigin: "50px 54px" }}
+          cx="50" cy="54" r="8"
+          fill="none" stroke={edge} strokeWidth="1"
+        />
+      )}
+      <g transform="translate(50 54)">
+        {plan.elements.map((e, n) => {
+          const angle = (360 / petals) * n;
+          return (
+            <g key={e.i} transform={`rotate(${angle})`}>
+              <path
+                className={still ? undefined : "nat-petal"}
+                style={still ? undefined : vars(e.delay, per)}
+                d="M0 -3C-8 -11 -8 -27 0 -38C8 -27 8 -11 0 -3Z"
+                fill={`color-mix(in srgb, ${edge} 16%, transparent)`}
+                stroke={edge}
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+          );
+        })}
+        <circle cx="0" cy="0" r="5.5" fill="none" stroke={edge} strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+        <circle cx="0" cy="0" r="2.6" fill={edge} />
+      </g>
+    </>
   );
 }
 
