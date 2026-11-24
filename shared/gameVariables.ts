@@ -3287,6 +3287,15 @@ export const VARIABLES: VariableDef[] = [
     type: "text",
     default: "",
   },
+  // Who the village hopes will apply, said once and drawn on every open role (the lead, 24 Nov 2026).
+  {
+    key: "org.role_card_nationality",
+    category: "The founding team",
+    label: "Nationality line on every open role",
+    description: "Shown under Nationality on every open role card, coming soon and venture cards too. Put a | between two lines, for example: Citizens of this country (preferred) | Other nationalities (possible). Empty, no Nationality row.",
+    type: "text",
+    default: "",
+  },
   {
     key: "org.role_card_onboarding",
     category: "The founding team",
@@ -4023,15 +4032,20 @@ export const VARIABLES: VariableDef[] = [
   /*
    * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts, 2026-11-24). A crash
    * alert went to every admin and founder, and an admin whose seat is not
-   * operational got crash emails that were never hers to act on. This narrows
-   * the alert to named accounts among them; blank keeps everyone.
+   * operational got crash emails that were never hers to act on. This names
+   * who hears instead: an admin or founder's address gets the notice in the
+   * app and the email, and an address with no account, such as a shared
+   * operations inbox, gets the email alone (the lead, 24 Nov 2026). A
+   * member's address that is neither is ignored. Blank keeps everyone.
    *
    * OPEN on purpose, though it sits under Platform: the value is set by a
    * village proposal (`propose_setting`, approved through PUT
    * /api/admin/variables), and a founder-held dial is refused there once the
-   * village holds `dial.set`. Opening it moves no power: it can only choose
-   * among accounts that already hear every crash, and a list that matches none
-   * of them falls back to all of them, so a typo can never mute the alarm.
+   * village holds `dial.set`. What opening it moves: an approved list can now
+   * send the crash line (where it broke and the error's first words, never a
+   * stack or a body) to an outside inbox, so every change still passes an
+   * admin's approval. A list that names no usable address falls back to every
+   * admin and founder, so a typo can never mute the alarm.
    *
    * WITHHELD and MEMBERS ONLY because the value is a list of email addresses:
    * no public mechanics door shows it, and Admin still reads it.
@@ -4040,9 +4054,9 @@ export const VARIABLES: VariableDef[] = [
     // Literal, so the generated docs can read it; shared/crashAlerts.test.ts holds it equal to CRASH_ALERT_RECIPIENTS_KEY.
     key: "ops.crash_alert_recipients",
     category: "Platform",
-    label: "Accounts that hear about crashes",
+    label: "Addresses that hear about crashes",
     description:
-      "The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.",
+      "Email addresses that hear about crashes. An admin or founder's address also gets the notice in the app; an address with no account gets the email only. Blank tells every admin and founder. Separate addresses with commas, at most 10. A member's address is skipped, and a list with no address left to reach tells every admin and founder.",
     type: "text",
     default: "",
     ring: "open",

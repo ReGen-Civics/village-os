@@ -46,11 +46,12 @@ import { villageId } from "../lib/economy";
 import type { LapseContext } from "../lib/orgChart";
 import { addChange, createDraft } from "../lib/orgDrafts";
 import { buildPlayerCards, cardSeasons, type CardContext, type CardLevel, type CardTier } from "../lib/playerCardData";
-import { userIdForHandle } from "../lib/profile";
+import { hidesFirstNameFromVisitors, resolvePrivacy, userIdForHandle } from "../lib/profile";
 import { villageClock } from "../lib/stewardship";
 import type { CycleClock } from "../../shared/cycleClock";
 import { mapShowsStructureTo, orgSeatTier } from "../lib/seatProjection";
 import { hiddenFromStranger } from "../lib/peopleLock";
+import { readPrivacyBlob } from "../repos/profileInventory";
 import { roleHeldBy } from "../repos/playerCard";
 import { effectiveLifecycle } from "../lib/modules";
 import { rhythmDoc } from "../lib/moonRecap";
@@ -168,6 +169,9 @@ export function register(app: Express, deps: Deps): void {
       ownerId = String(viewer.id);
     }
     if (!ownerId) return res.status(404).json({ error: "Not found" });
+    // A member who turned off "Show my first name to visitors" has no card for a stranger: it carries their
+    // portrait, and a portrait beside "A member" still says who it is (server/lib/profile.ts).
+    if (!viewer && hidesFirstNameFromVisitors(resolvePrivacy(await readPrivacyBlob(pool, ownerId)))) return res.status(404).json({ error: "Not found" });
     const { tier, viewerId, admin, member } = await tierFor(req, ownerId);
     const cards = await buildPlayerCards(pool, [{ userId: ownerId, tier }], await cardContext(deps, viewerId, admin, member));
     const card = cards.get(ownerId);
