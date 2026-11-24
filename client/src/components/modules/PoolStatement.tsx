@@ -122,9 +122,9 @@ export default function PoolStatement() {
           <dt className="text-xs text-muted-foreground"><Trans context="PoolStatement, dt">To builders</Trans></dt>
           <dd className="text-xl font-semibold text-foreground">{num(data.totals.distributed)}</dd>
         </div>
-        <div className="rounded-lg border border-teal-deep/30 bg-teal-deep/5 p-3">
-          <dt className="text-xs text-teal-deep"><Trans context="PoolStatement, dt">Back into the pool</Trans></dt>
-          <dd className="text-xl font-semibold text-teal-deep">{num(data.totals.recycled)}</dd>
+        <div className="rounded-lg border border-notice/40 bg-notice/10 p-3">
+          <dt className="text-xs text-notice"><Trans context="PoolStatement, dt">Back into the pool</Trans></dt>
+          <dd className="text-xl font-semibold text-notice">{num(data.totals.recycled)}</dd>
         </div>
         <div className="rounded-lg border border-border p-3">
           <dt className="text-xs text-muted-foreground"><Trans context="PoolStatement, dt">Next cycle holds</Trans></dt>
@@ -172,7 +172,7 @@ export default function PoolStatement() {
                   <td className="py-2 pr-3 text-right tabular-nums text-foreground">{pct(m.reach)}</td>
                   <td className="py-2 pr-3 text-right tabular-nums text-foreground">{num(m.share)}</td>
                   <td
-                    className={`py-2 ${m.settlement === "recycled" ? "text-teal-deep" : "text-foreground"}`}
+                    className={`py-2 ${m.settlement === "recycled" ? "text-notice" : "text-foreground"}`}
                   >
                     {WHERE_IT_GOES[m.settlement]}
                   </td>
