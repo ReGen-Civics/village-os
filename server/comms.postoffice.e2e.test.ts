@@ -29,6 +29,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { waitForHealth } from "./db/e2eBoot";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFree } from "./db/testDb";
 import { makeWebhookSecret, startFakeResend, type FakeResend } from "./testkit/fakeResend";
+import { putADocumentInThePack } from "./testkit/investorPack";
 
 const DB_CONFIGURED = testDbConfigured();
 if (!DB_CONFIGURED) {
@@ -233,6 +234,8 @@ describe.skipIf(!DB_CONFIGURED)("Village Comms, the post office", () => {
     expect(moved.status, JSON.stringify(moved.json)).toBe(200);
     expect(moved.json?.notified).toBe(true);
 
+    // An empty pack is refused (server/index.ts, 24 Nov 2026): put one document in it first.
+    await putADocumentInThePack(BASE, founderToken);
     const investor = await call("POST", "/api/investor-docs/request", {
       body: { name: "Ivo Invest", email: `ivo-${PORT}@example.test`, accredited: false },
       token: null,

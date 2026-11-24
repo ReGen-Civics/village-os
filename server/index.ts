@@ -17698,6 +17698,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * Computed BEFORE the lead is written, so the lead can record what went.
      */
     const packet: any[] = investorDocsRepo.all().filter((d) => d.inPacket === true);
+    // An empty pack is refused, not thanked (the lead, 24 Nov 2026): the page disables its button (packReady below), and a request that arrives anyway saves no lead and sends nothing.
+    if (!packet.length) return res.status(409).json({ error: "packet_empty", message: "The investor pack is being prepared. Please check back soon." });
 
     /*
      * Whether a mailer is configured at all is a DEPLOYMENT fact, and it is a
@@ -18207,7 +18209,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // â”€â”€ Investor Summary (NEW-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   app.get("/api/investor-summary", async (_req, res) => {
-    res.json(investorSummaryRepo.get());
+    // packReady: whether any document is in the pack, so the page can disable "request the pack" while there is none.
+    res.json({ ...investorSummaryRepo.get(), packReady: investorDocsRepo.all().some((d) => d.inPacket === true) });
   });
 
   app.get("/api/admin/investor-summary", async (req, res) => {

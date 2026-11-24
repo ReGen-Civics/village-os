@@ -37,6 +37,7 @@ import { waitForHealth } from "./db/e2eBoot";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFree } from "./db/testDb";
 import { usersRepo } from "./repos/users";
 import { startFakeResend, type FakeResend } from "./testkit/fakeResend";
+import { putADocumentInThePack } from "./testkit/investorPack";
 
 const DB_CONFIGURED = testDbConfigured();
 if (!DB_CONFIGURED) {
@@ -412,6 +413,8 @@ describe.skipIf(!DB_CONFIGURED)("Village Comms, the paths", () => {
 
   it("the investor journey sends only the welcome and the hand-off until its words are reviewed", async () => {
     const email = `ivy-${PORT}@example.test`;
+    // An empty pack is refused (server/index.ts, 24 Nov 2026): put one document in it first.
+    await putADocumentInThePack(BASE, founderToken);
     const asked = await call("POST", "/api/investor-docs/request", { body: { name: "Ivy Investor", email, accredited: true, commsConsent: true }, token: null });
     expect(asked.status, JSON.stringify(asked.json)).toBe(200);
     const e = await waitFor("the investor journey", () => enrollment(email, "path.investor"));
