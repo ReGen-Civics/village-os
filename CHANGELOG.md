@@ -40,6 +40,33 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.60 (2026-11-24)
+
+### What changed for your village
+
+- **Save and finish later.** An application can be saved on any step. The applicant gets a private link, shown with a copy button and emailed once through the village's own mail, that brings back every answer, reference, file and step. An unsent draft is never shown to the team, and it is deleted 30 days after the last save.
+- **The waitlist takes numbers copied from WhatsApp or a phone's contacts.** It used to refuse them when they carried invisible characters. A refusal now shows on its own field, in the reader's language, and scrolls into view on a phone.
+- **Founding role cards on /roles start closed** on every screen, and a second press closes one on a desktop.
+- **Tours paused.** While the new setting `org.tours_resumed` is off, the application's first step and the steward path's first steps show only the webinar or call, and hide any step naming a tour, a land visit, a potluck or a shared meal. Nothing is deleted.
+- **The application's first step** no longer links to the steward path.
+- **/powers is public**, with the first names of the people holding each role, and nothing more. A member who keeps their roles private is left out. The village-wide `org.public_people` switch still applies.
+- **The gratitude wall shows visitors first names only**, with no profile links or portraits. Members see no change.
+- **The festivals page** follows the season's goals with "If you can help us meet these, consider the Village Steward path."
+- **The investor page in the night look**, phone first, with the investment summary and the home page's roadmap redrawn to match. Three new optional sections in Admin, Pages: the reasons to invest, a "not an offer" line (a neutral one shows by default) and the risks.
+- **Crash alerts go to the accounts you choose.** The new setting `ops.crash_alert_recipients` lists the admin or founder emails that hear about crashes. Blank keeps today's behaviour, every admin and founder.
+- **A page left open across a release refreshes itself** instead of showing an error and emailing the admins. It reloads once, quietly.
+- **Spanish:** an unnamed village guide is called by a Spanish label, and the founders' "Name your guide" note is translated. A guide's own name is never translated.
+
+### What you must do
+
+Nothing. Tours stay paused until you turn on `org.tours_resumed` (Admin, Game Mechanics). To narrow crash alerts, set `ops.crash_alert_recipients` (Admin, Game Mechanics).
+
+### Does it touch your data
+
+Yes, by adding only. Migration 0423 adds the table `application_drafts`. Nothing existing changes, so going back to an earlier version leaves the new table unused.
+
+---
+
 ## 1.3.59 (2026-11-24)
 
 ### What changed for your village
