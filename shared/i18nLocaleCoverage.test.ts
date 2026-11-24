@@ -60,3 +60,11 @@ describe("each village chooses its languages", () => {
     expect(villageLocaleTags(() => false)).toEqual(LOCALES.filter((l) => l.tier === "source").map((l) => l.tag));
   });
 });
+
+describe("a default village keeps today's languages (coordinator, 24 Nov 2026)", () => {
+  it("es stays in offeredLocales when every offer switch reads its default", () => {
+    const byDefault = (tag: string) => VARIABLES_BY_KEY[offerLocaleKey(tag)]?.default === "true";
+    expect(villageLocaleTags(byDefault)).toContain("es");
+    expect(villageLocaleTags(byDefault)).toEqual(LOCALES.map((l) => l.tag));
+  });
+});
