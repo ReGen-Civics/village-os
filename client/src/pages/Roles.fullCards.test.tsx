@@ -220,7 +220,7 @@ describe("open ventures: what a venture is, the pitch, and the ones open now fir
     const group = document.querySelector("[data-future-ventures]") as HTMLElement;
     expect(group.querySelector("[data-venture-explainer]")?.textContent).toBe("A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role.");
     const pitch = within(group).getByRole("link", { name: "Start a venture" });
-    expect(["/work-with-us", "/role-proposals/new"]).toContain(pitch.getAttribute("href"));
+    expect(["/work-with-us?kind=venture", "/role-proposals/new"]).toContain(pitch.getAttribute("href"));
     // The venture open now comes first, though it was listed last; the other reads Accepting proposals.
     const rows = Array.from(group.querySelectorAll("[data-role-row]")).map((r) => r.getAttribute("data-role-row"));
     expect(rows).toEqual(["cafe", "guest"]);
@@ -291,6 +291,9 @@ describe("open ventures: what a venture is, the pitch, and the ones open now fir
     const gift = screen.getByRole("region", { name: "Don't see your gift in a role? Consider these:" });
     expect(Array.from(gift.querySelectorAll("[data-route-door]")).map((a) => a.textContent)).toEqual(["Start a venture", "Become a partner", "Propose a quest"]);
     expect(within(gift).getByRole("link", { name: "Propose a quest" }).getAttribute("href")).toBe("/propose-quest");
+    // Start a venture here leaves for the venture form, never the anchor at the top (the lead, 24 Nov 2026); this village
+    // serves no story pages, so it is the new-role door (ContributorRoutes.test.tsx holds the served case).
+    expect(["/work-with-us?kind=venture", "/role-proposals/new"]).toContain(within(gift).getByRole("link", { name: "Start a venture" }).getAttribute("href"));
     expect(gift.textContent).toContain("A one-off piece of value, rewarded when the work is accepted.");
   });
 });

@@ -420,7 +420,9 @@ describe("the six steps", () => {
     expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
     expect(document.querySelector('[data-more-roles] [data-route-door="quest"]')?.textContent).toMatch(/^Offer a one-off piece of work/);
     expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
-      ["venture", "/roles#open-ventures"],
+      // Start a venture goes to the venture form (the lead, 24 Nov 2026), or the new-role door on a village whose story
+      // pages are off, as this one's are.
+      ["venture", "/role-proposals/new"],
       ["partner", "/partner"],
       ["quest", "/propose-quest"],
     ]);
