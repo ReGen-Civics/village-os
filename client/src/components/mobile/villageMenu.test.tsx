@@ -30,7 +30,7 @@ vi.mock("@/components/RewardMoment", () => ({ default: () => null }));
 vi.mock("@/components/mobile/MobileFab", () => ({ default: () => null }));
 vi.mock("@/components/NextStepTrail", () => ({ default: () => null }));
 
-import { villageSlots } from "./MobileTabBar";
+import { responsiveSlots, villageSlots } from "./MobileTabBar";
 
 afterEach(cleanup);
 
@@ -66,6 +66,25 @@ describe("the phone tabs", () => {
   it("keep the platform's tab where the chosen page is not open, hidden, or not an entry", () => {
     const slots = villageSlots(["/feed", "/forum", "/not-a-page"], {}, ["/forum"], open);
     expect(slots.map((s) => s.path ?? s.event)).toEqual(TAB_SLOTS.map((s) => s.path ?? s.event));
+  });
+});
+
+describe("the responsive phone tabs", () => {
+  const open = (m?: string) => !m || m === "forum";
+  const paths = (slots: ReturnType<typeof responsiveSlots>) => slots.map((s) => s.path ?? s.event);
+
+  it("draw the chosen pages in order, then More", () => {
+    expect(paths(responsiveSlots(["/", "/forum", "/quests", "/circles"], {}, [], open))).toEqual(["/", "/forum", "/quests", "/circles", "open-mobile-menu"]);
+  });
+
+  it("never show a page twice, and fill a short bar from the platform's tabs", () => {
+    // Two chosen pages: the rest come from the platform's tabs not already there.
+    expect(paths(responsiveSlots(["/", "/circles"], {}, [], open))).toEqual(["/", "/circles", "/gratitude", "/quests", "open-mobile-menu"]);
+    // A chosen page that is off falls back to the platform's slot, which may already be on the bar.
+    const slots = paths(responsiveSlots(["/", "/feed", "/quests"], {}, [], open));
+    expect(slots).toHaveLength(5);
+    expect(new Set(slots).size).toBe(5);
+    expect(slots[4]).toBe("open-mobile-menu");
   });
 });
 

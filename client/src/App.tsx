@@ -14,7 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ModuleProvider } from "./modules/ModuleProvider";
 import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./lib/landing";
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
-import { useConfigFailed, useGameConfig } from "./lib/gameApi";
+import { authToken, useConfigFailed, useGameConfig } from "./lib/gameApi";
 import ConfigUnavailable from "./components/ConfigUnavailable";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
 
@@ -322,12 +322,29 @@ function PageLoading() {
   return <QuietLoading world label={t({ message: "Gathering your page", context: "loading: a page is on its way" })} />;
 }
 
+/**
+ * The responsive bottom bar's visit count (client/src/lib/navVisits.ts): after a
+ * signed-in member's page settles, its address is counted once per session, and
+ * nothing about the member leaves the phone. Loaded on its own, after the paint.
+ */
+function NavVisits() {
+  const [location] = useLocation();
+  useEffect(() => {
+    const token = authToken();
+    if (!token) return;
+    const id = window.setTimeout(() => void import("@/lib/navVisits").then((m) => m.visited(location, token)).catch(() => undefined), 1500);
+    return () => window.clearTimeout(id);
+  }, [location]);
+  return null;
+}
+
 function Router() {
   const [location] = useLocation();
   return (
     <>
     <ScrollToTop />
       <PageTitle />
+      <NavVisits />
     <ErrorBoundary key={location}>
     <Suspense fallback={<PageLoading />}>
     <Switch>

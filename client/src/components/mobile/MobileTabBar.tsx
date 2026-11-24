@@ -25,6 +25,9 @@ import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
 import { useNewcomerShows } from "@/lib/newcomer";
+import { authToken } from "@/lib/gameApi";
+import { routeIcon } from "@/config/routeIcons";
+import { useEffect, useState } from "react";
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -56,6 +59,61 @@ export function villageSlots(tabs: readonly string[], labels: Readonly<Record<st
     out[i] = platform ?? { path: href, label: labels[href] || entry.label, Icon: entry.icon ?? Compass, ...(entry.token ? { token: entry.token } : {}) };
   });
   return out;
+}
+
+/**
+ * THE RESPONSIVE BAR (nav.responsive_bar, shared/navPopularity.ts): the four
+ * page places it chose, drawn the way the village's own tabs are (a page whose
+ * module is off, or that is hidden, keeps the platform's slot there), with no
+ * page twice: a place left empty or doubled takes the next platform tab not on
+ * the bar. Each place wears its page's own icon where one is drawn.
+ */
+export function responsiveSlots(tabs: readonly string[], labels: Readonly<Record<string, string>>, hidden: readonly string[], open: (module?: string) => boolean): TabSlot[] {
+  const drawn = villageSlots(tabs, labels, hidden, open).slice(0, 4);
+  const out: TabSlot[] = [];
+  const taken = new Set<string>();
+  for (const s of drawn) {
+    if (s.path && !taken.has(s.path)) {
+      taken.add(s.path);
+      out.push({ ...s, Icon: routeIcon(s.path, s.Icon) });
+    }
+  }
+  for (const s of TAB_SLOTS) {
+    if (out.length >= 4) break;
+    if (s.path && !taken.has(s.path)) {
+      taken.add(s.path);
+      out.push(s);
+    }
+  }
+  return [...out, TAB_SLOTS[TAB_SLOTS.length - 1]];
+}
+
+/**
+ * The responsive bar's places for a signed-in member, asked after the first
+ * paint so the first page's scripts stay as they were; null is the village's
+ * fixed bar (the setting off, signed out, or the server not answering).
+ */
+function useResponsiveTabs(path: string): string[] | null {
+  const [tabs, setTabs] = useState<string[] | null>(null);
+  useEffect(() => {
+    const token = authToken();
+    if (!token) {
+      setTabs(null);
+      return;
+    }
+    let live = true;
+    const id = window.setTimeout(() => {
+      void import("@/lib/navVisits")
+        .then((m) => m.loadBar(token))
+        .then((t) => live && setTabs(t))
+        .catch(() => undefined);
+    }, 800);
+    return () => {
+      live = false;
+      window.clearTimeout(id);
+    };
+  }, [path]);
+  return tabs;
 }
 
 /**
@@ -106,7 +164,9 @@ export default function MobileTabBar() {
   const menu = useVillageMenu();
   const modules = useModules();
   const { newcomer, shows } = useNewcomerShows();
-  const chosen = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+  const responsive = useResponsiveTabs(currentPath);
+  const isOpen = (m?: string) => !m || moduleIsOn(modules, m);
+  const chosen = responsive ? responsiveSlots(responsive, menu.labels, menu.hidden, isOpen) : villageSlots(menu.tabs, menu.labels, menu.hidden, isOpen);
   const slots = newcomer ? newcomerSlots(chosen, shows) : chosen;
 
   // Sign-in and the other focused, signed-out screens render no bar at all.

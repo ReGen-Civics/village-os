@@ -298,6 +298,8 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerTouchIconRoutes } from "./routes/touchIcon";
+import { register as registerNavBarRoutes } from "./routes/navBar";
+import { countVisit, visitTotals } from "./repos/navVisits";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
 import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerPayRoutes } from "./routes/pay";
@@ -25679,6 +25681,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
 
   registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), logo: () => String(mergedConfig().images?.logo ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
+  // The responsive bottom bar: visits counted per page per day with no person, and the village's most visited pages (server/routes/navBar.ts).
+  registerNavBarRoutes(app, { getPool, authedUser, overLimit, connectionKey: clientIp, boolVar, numberVar, stringVar, countVisit, visitTotals, readDoc: (p, k) => readConfigDocument(p, k), writeDoc: (p, k, doc) => writeConfigDocument(p, k, doc), now: () => new Date(), fixedRoutes: (() => { let set: ReadonlySet<string> | null = null; return () => (set ??= (() => { try { return new Set((JSON.parse(fs.readFileSync(path.resolve(staticPath, "..", "client-routes.json"), "utf8")).patterns as string[]).filter((p) => !/[:*]/.test(p))); } catch { return new Set<string>(); } })()); })() });
 
   /*
    * ROBOTS AND SITEMAP, as real files.
