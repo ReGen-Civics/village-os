@@ -2,9 +2,9 @@
  * FOUR WAYS TO BUILD THE VILLAGE (the lead, 23 Nov 2026), largest commitment first, with the same verbs wherever
  * they are offered: Join the team, Start a venture, Become a partner, Propose a quest (shared/contributorRoutes.ts).
  *
- * Each says, in one line, what it is; what you bring; and what you get back. When you hear from us is said ONCE under
- * the group (the lead, 23 Nov 2026), in the village's one reply promise, `org.applicant_reply_days` (served on
- * /api/game/config as `applicantReplyDays`), the same number the application's thank-you page says. Drawn at the top of the
+ * Each says, in one line, what it is; what you bring; and what you get back. No reply promise is made here (the lead,
+ * 24 Nov 2026: "only at submission we want to be careful about overpromising"): a person is told when they will hear
+ * back once they have sent, in the village's own moon cycles (useReplyPromise, `org.reply_window_moons`). Drawn at the top of the
  * roles page, at the end of its lists and in the application's role picker ("Don't see your gift in a role?",
  * the other three), on the home page under the hero, on the pages after an application or a waitlist sign-up, from
  * the footer's "Work with us", on the empty quest board and on a member's Start here card.
@@ -26,7 +26,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useGameConfig } from "@/lib/gameApi";
 import { useStoryPageShown } from "@/lib/brochure";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
-import { replyDaysOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
+import { replyMoonsOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
 
 /** The proposal page, as the village's story-page switch names it. */
@@ -51,16 +51,18 @@ export function useVentureHref(): string {
   return shown(VENTURE_PITCH_PAGE) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
 }
 
-/** The village's one answer-by promise, in days (`org.applicant_reply_days`). */
-export function useReplyDays(): number {
-  return replyDaysOf(useGameConfig()?.applicantReplyDays);
+/** The moon cycles a proposer is told they will hear back within, once they have sent (`org.reply_window_moons`). */
+export function useReplyMoons(): number {
+  return replyMoonsOf(useGameConfig()?.replyWindowMoons);
 }
 
-/** "You'll hear within 7 days.", in the village's own days. */
+/** "You'll hear from us within one moon cycle.", said on a thank-you state only (the lead, 24 Nov 2026). */
 export function useReplyPromise(): string {
   const { t } = useLingui();
-  const days = useReplyDays();
-  return days === 1 ? t({ message: "You'll hear within 1 day.", context: "four ways to build: when you hear back" }) : t({ message: `You'll hear within ${days} days.`, context: "four ways to build: when you hear back" });
+  const moons = useReplyMoons();
+  return moons === 1
+    ? t({ message: "You'll hear from us within one moon cycle.", context: "after sending a proposal: when you hear back" })
+    : t({ message: `You'll hear from us within ${moons} moon cycles.`, context: "after sending a proposal: when you hear back, more than one moon" });
 }
 
 interface RouteWords {
@@ -139,7 +141,6 @@ export default function ContributorRoutes({
   hrefs = {},
   register = "plain",
   className = "",
-  promise: sayPromise = true,
 }: {
   /**
    * `cards`: one card each, side by side on a desktop. `links`: a quiet list, for inside a form or beside a page.
@@ -154,13 +155,9 @@ export default function ContributorRoutes({
   /** A page that holds one of the routes itself points its card there (the roles page's open roles). */
   hrefs?: Partial<Record<ContributorRoute, string>>;
   className?: string;
-  /** Say the reply promise under the group. A page that already makes its own promise leaves it out (said once). */
-  promise?: boolean;
 }) {
   const { t } = useLingui();
   const words = useRouteWords(register);
-  const days = useReplyDays();
-  const promise = useReplyPromise();
   const routes = routesExcept(except);
   // The compact tiles sit at the top of /roles and scroll to its open ventures; every other Start a venture opens the
   // proposal form set up for a venture (the lead, 24 Nov 2026).
@@ -234,7 +231,6 @@ export default function ContributorRoutes({
             </li>
           ))}
         </ul>
-        {sayPromise ? <p className={HINT} data-route-promise={days}>{promise}</p> : null}
       </div>
     );
   }
@@ -275,8 +271,6 @@ export default function ContributorRoutes({
           </li>
         ))}
       </ul>
-      {/* The reply promise once, under the group (the lead, 23 Nov 2026), never on every card. */}
-      {sayPromise ? <p className="mt-4 text-sm font-semibold text-notice" data-route-promise={days}>{promise}</p> : null}
     </div>
   );
 }

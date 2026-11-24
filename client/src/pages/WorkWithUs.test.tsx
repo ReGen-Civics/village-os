@@ -121,6 +121,8 @@ describe("every field in the Work With Us spec reaches the page", () => {
     fireEvent.click(screen.getByRole("button", { name: /Barter/ }));
     send();
     expect(await screen.findByRole("heading", { level: 1, name: "Your proposal is with us" })).toBeTruthy();
+    // When they hear back, said once it is sent (the lead, 24 Nov 2026).
+    expect(document.querySelector("[data-route-promise]")?.textContent).toBe("You'll hear from us within one moon cycle.");
     const thanks = WORK_WITH_US_PAGE.sections.find((s) => s.id === "thanks")!.fields.find((f) => f.key === "body")!.default;
     expect(screen.getByText(thanks.replace("{village}", "Willowbrook"))).toBeTruthy();
     // A reply time is a promise only a village can make, so the starter makes none.

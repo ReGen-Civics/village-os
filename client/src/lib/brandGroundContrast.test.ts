@@ -630,9 +630,9 @@ const FIXED: Record<string, number> = {
   "client/src/pages/Opportunities.tsx": 1,
   "client/src/pages/ProjectHistory.tsx": 5,
   // The journey pages draw each step's button from ONE class list since their
-  // steps became admin-edited rows (2026-10-22): Prosperity's three fixed gold
-  // buttons and Resident's two are one each, still fixed. The total is 60.
-  "client/src/pages/ProsperityJourney.tsx": 1,
+  // steps became admin-edited rows (2026-10-22). ProsperityJourney.tsx's one left this list on
+  // 2026-11-24 (public launch QA): the prosperity path stands in the sheet's world
+  // (docs/DESIGN_RULE.md), its acts the sheet's gold, no longer white on the brand. 48 with #1538.
   "client/src/pages/ProposeQuest.tsx": 2,
   "client/src/pages/QuestDetail.tsx": 1,
   // Quests.tsx kept one and SetPassword.tsx's left on 2026-11-11: both stand in the sheet's world
@@ -642,7 +642,7 @@ const FIXED: Record<string, number> = {
   // ResidentJourney.tsx's one left this list on 2026-11-11 (batch 155, lane A5): the resident path
   // stands in the sheet's world (docs/DESIGN_RULE.md), so its steps draw no white-on-brand hover. 53.
   // ResidentRights.tsx's and StewardRights.tsx's one each left this list on 2026-11-24 (public launch QA):
-  // both rights pages stand in the sheet's world (docs/DESIGN_RULE.md), their doors the sheet's gold and edge. 47 with #1538.
+  // both rights pages stand in the sheet's world (docs/DESIGN_RULE.md), their doors the sheet's gold and edge. 46 with #1534 and #1538.
   "client/src/pages/Visit.tsx": 2,
   "client/src/pages/WorkWithUs.tsx": 1,
 };
@@ -656,12 +656,13 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 52 since the 404 moved to the night world with a gold door (Phase B, lane B3).
     // 51 since the landing moved to the night world (go-live pass, D-01).
     // 49 since How We Create and Good Neighbor moved to the night world (public launch QA, 24 Nov 2026).
-    // 47 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(47);
+    // 48 since the prosperity path moved to the night world too (public launch QA, 24 Nov 2026).
+    // 46 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(46);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(47 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(46 + 25);
   });
 
   for (const list of POINTER_LISTS) {

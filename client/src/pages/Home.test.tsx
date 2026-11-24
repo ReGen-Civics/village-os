@@ -126,8 +126,9 @@ describe("the homepage headline", () => {
 
     const h1 = await headline();
     const subline = screen.getByText("Come and see").closest("p") as HTMLElement;
-    const actions = hero().querySelector('a[href="#choose-path"]')?.parentElement as HTMLElement;
-    for (const el of [h1, subline, actions]) {
+    // The hero holds no buttons (the lead, 24 Nov 2026): the paths and the four ways are the doors.
+    expect(hero().querySelectorAll("a, button")).toHaveLength(0);
+    for (const el of [h1, subline]) {
       expect(el.style.opacity, el.tagName).toBe("");
       expect(el.className, el.tagName).toContain("hero-rise");
     }

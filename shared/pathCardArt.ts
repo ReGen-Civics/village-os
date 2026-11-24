@@ -96,3 +96,21 @@ export const FOUNDING_CARD_ART = {
   srcSet: `${NATURE_ART_URL}/sm/scarlet-macaw.webp 360w, ${NATURE_ART_URL}/scarlet-macaw.webp 720w`,
   focus: "50% 30%",
 } as const;
+
+/** One nature library painting as a card picture: the half-size copy, the full painting for wide screens. */
+const natureCard = (slug: string, focus: string) =>
+  ({ src: `${NATURE_ART_URL}/sm/${slug}.webp`, srcSet: `${NATURE_ART_URL}/sm/${slug}.webp 360w, ${NATURE_ART_URL}/${slug}.webp 720w`, focus }) as const;
+
+/**
+ * THE FOUR WAYS' PICTURES ON THE LANDING PAGE (the lead, 24 Nov 2026: "redesign the other 3 cards to look more like
+ * the team card and add animals to them"). The founding team keeps its scarlet macaw; the other three are paintings
+ * from the same library, chosen for what each way is and so no animal repeats on the page: leafcutter ants farm and
+ * carry what they build (a venture), two dolphins swim together (a partnership), a blue morpho is one bright journey
+ * (a quest).
+ */
+export const FOUR_WAYS_ART = {
+  venture: natureCard("leafcutter-ants", "50% 35%"),
+  partner: natureCard("bottlenose-dolphin", "50% 55%"),
+  quest: natureCard("blue-morpho", "60% 40%"),
+} as const;
+

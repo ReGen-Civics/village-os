@@ -81,6 +81,8 @@ export interface PublicGameConfig {
   defaultLocale?: string;
   /** The village's one reply promise in days, `org.applicant_reply_days`: the application's and the four ways' (shared/contributorRoutes.ts). */
   applicantReplyDays?: number;
+  /** What a proposer is told once they have sent: within this many moon cycles, `org.reply_window_moons` (shared/contributorRoutes.ts). */
+  replyWindowMoons?: number;
   project: {
     name: string;
     tagline: string;
@@ -103,6 +105,9 @@ export interface PublicGameConfig {
      *  "email us" control. See useVillageLinks below for why blank hides. */
     contactEmail?: string;
     footerBlurb?: string;
+    /** The homepage's headline and sentence from Identity; blank keeps Pages, Home. Absent on an older server. */
+    heroHeadline?: string;
+    heroBody?: string;
     /** The money this village trades in, as a three-letter code ("CRC").
      *  Blank = none declared; `defaultDisplayCurrency` then falls back to the
      *  platform's own. Read by the display-currency picker. */

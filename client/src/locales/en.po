@@ -2078,9 +2078,9 @@ msgid "Circle"
 msgstr "Circle"
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero main act"
-msgid "Join the founding team"
-msgstr "Join the founding team"
+#~ msgctxt "landing hero main act"
+#~ msgid "Join the founding team"
+#~ msgstr "Join the founding team"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value of a setting once changed"
@@ -2346,9 +2346,9 @@ msgid "For the decisions the platform does not run, the village writes who appro
 msgstr "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site, when it has no name yet"
-msgid "Learn about the village"
-msgstr "Learn about the village"
+#~ msgctxt "landing hero second act: the village's main site, when it has no name yet"
+#~ msgid "Learn about the village"
+#~ msgstr "Learn about the village"
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -2567,9 +2567,9 @@ msgid "Access to give or take back"
 msgstr "Access to give or take back"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
-msgctxt "founding application, when we reply"
-msgid "We reply within 1 day."
-msgstr "We reply within 1 day."
+#~ msgctxt "founding application, when we reply"
+#~ msgid "We reply within 1 day."
+#~ msgstr "We reply within 1 day."
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "That could not be withdrawn"
@@ -2640,6 +2640,10 @@ msgstr "By when (optional)"
 msgctxt "membership letter on the open form"
 msgid "Read the {title}"
 msgstr "Read the {title}"
+
+#: client/src/pages/Powers.tsx
+msgid "Reading the village's own record."
+msgstr "Reading the village's own record."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Leave empty if this village does not use this rung"
@@ -4773,6 +4777,11 @@ msgstr "Open the quests"
 msgid "The agreement this vote would adopt"
 msgstr "The agreement this vote would adopt"
 
+#. placeholder {0}: catalyst.aNameCap
+#: client/src/pages/Powers.tsx
+msgid "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+msgstr "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "label of the season file text box"
 msgid "Season file"
@@ -4963,6 +4972,10 @@ msgstr "Done. We cleared this site's saved files and old version from this devic
 msgctxt "admin protocols editor"
 msgid "A completed run hands in: {0}"
 msgstr "A completed run hands in: {0}"
+
+#: client/src/pages/Powers.tsx
+msgid "What this village looks after"
+msgstr "What this village looks after"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
@@ -5158,6 +5171,11 @@ msgstr "Your proposal sets your rewards: propose your own compensation, and we a
 #: client/src/pages/HiddenMap.tsx
 msgid "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
 msgstr "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
+
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the quest card's eyebrow"
+msgid "One piece of work"
+msgstr "One piece of work"
 
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "The name could not be saved."
@@ -6070,6 +6088,11 @@ msgstr "Carry another thanks"
 msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
 msgstr "The quest you want to do: what you would create, and what it brings to the village."
+
+#. placeholder {0}: p.consequence
+#: client/src/pages/Powers.tsx
+msgid "Whoever holds this can {0}."
+msgstr "Whoever holds this can {0}."
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
@@ -8700,6 +8723,10 @@ msgctxt "funding rounds"
 msgid "Yours"
 msgstr "Yours"
 
+#: client/src/pages/Powers.tsx
+msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
+msgstr "As the village grows, it takes these on through its own decisions, and this page changes with it."
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
@@ -8978,9 +9005,9 @@ msgid "Link to {seatName}"
 msgstr "Link to {seatName}"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
-msgctxt "founding application, when we reply"
-msgid "We reply within {days} days."
-msgstr "We reply within {days} days."
+#~ msgctxt "founding application, when we reply"
+#~ msgid "We reply within {days} days."
+#~ msgstr "We reply within {days} days."
 
 #: client/src/pages/Quests.tsx
 msgctxt "empty quest board: the one door"
@@ -9379,6 +9406,11 @@ msgstr "We couldn't read one of your recordings. Record it again."
 msgctxt "copy settlement button, done"
 msgid "Copied ✓"
 msgstr "Copied ✓"
+
+#: client/src/pages/Powers.tsx
+msgctxt "powers page eyebrow"
+msgid "How the village is held"
+msgstr "How the village is held"
 
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: the journal, when it can go to the outside agent"
@@ -9894,6 +9926,10 @@ msgstr "In the memory"
 msgctxt "founding application confirm"
 msgid "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 msgstr "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
+
+#: client/src/pages/Powers.tsx
+msgid "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
+msgstr "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
@@ -11544,9 +11580,9 @@ msgid "{open} waiting"
 msgstr "{open} waiting"
 
 #: client/src/components/ContributorRoutes.tsx
-msgctxt "four ways to build: when you hear back"
-msgid "You'll hear within {days} days."
-msgstr "You'll hear within {days} days."
+#~ msgctxt "four ways to build: when you hear back"
+#~ msgid "You'll hear within {days} days."
+#~ msgstr "You'll hear within {days} days."
 
 #: client/src/components/profile/WaitingOnYou.tsx
 msgctxt "task handed to a role"
@@ -13601,6 +13637,10 @@ msgstr "Showing all {total} {noun}."
 #~ msgid "Your price each moon, in {0}"
 #~ msgstr "Your price each moon, in {0}"
 
+#: client/src/pages/Powers.tsx
+msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+msgstr "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "Taken down if you accept"
@@ -14566,6 +14606,11 @@ msgstr "Add an email address we can reach you at."
 msgctxt "admin age band"
 msgid "Confirm {name}'s age band as {0}? The change is recorded with your name."
 msgstr "Confirm {name}'s age band as {0}? The change is recorded with your name."
+
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the venture card's eyebrow"
+msgid "A business of your own"
+msgstr "A business of your own"
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -17528,9 +17573,9 @@ msgstr "Listing and the door"
 #~ msgstr "Proposed by {0}"
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero, the founding team line"
-msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
-msgstr "We're building the founding team: the people who'll take the village from idea to home, season by season."
+#~ msgctxt "landing hero, the founding team line"
+#~ msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
+#~ msgstr "We're building the founding team: the people who'll take the village from idea to home, season by season."
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: kind of change"
@@ -17990,6 +18035,10 @@ msgctxt "open work: the board is ordered for the reader"
 msgid "Ordered by how well each fits the {memberPct}% you can give now."
 msgstr "Ordered by how well each fits the {memberPct}% you can give now."
 
+#: client/src/pages/Powers.tsx
+msgid "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+msgstr "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Approved"
@@ -18046,6 +18095,12 @@ msgstr "The role's name"
 #: client/src/pages/Roles.tsx
 #~ msgid "A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person steps into it."
 #~ msgstr "A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person steps into it."
+
+#: client/src/components/ContributorRoutes.tsx
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after sending a proposal: when you hear back"
+msgid "You'll hear from us within one moon cycle."
+msgstr "You'll hear from us within one moon cycle."
 
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: button while saving"
@@ -18164,6 +18219,7 @@ msgid "The microphone is blocked for this site. Allow it in your browser setting
 msgstr "The microphone is blocked for this site. Allow it in your browser settings, or type your answers."
 
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/Home.tsx
 #: client/src/pages/Partner.tsx
 msgctxt "four ways to build: the label before what you bring"
 msgid "You bring"
@@ -18870,6 +18926,10 @@ msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Not now"
 
+#: client/src/pages/Powers.tsx
+msgid "The village voted this one across."
+msgstr "The village voted this one across."
+
 #: client/src/components/openProposal/ContractPrice.tsx
 msgctxt "open proposal: the contract's pay"
 msgid "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
@@ -19253,6 +19313,11 @@ msgstr "What will be done when it is finished?"
 msgctxt "admin compare"
 msgid "A way to share the work"
 msgstr "A way to share the work"
+
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the partner card's eyebrow"
+msgid "Work alongside us"
+msgstr "Work alongside us"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Kept in this browser only. Nothing is sent until you apply."
@@ -20346,9 +20411,9 @@ msgid "You can compare up to {MAX_COMPARE} at a time. Untick one to add another.
 msgstr "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site"
-msgid "Learn about {villageName}"
-msgstr "Learn about {villageName}"
+#~ msgctxt "landing hero second act: the village's main site"
+#~ msgid "Learn about {villageName}"
+#~ msgstr "Learn about {villageName}"
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
@@ -22090,6 +22155,11 @@ msgctxt "proposed changes"
 msgid "What went live"
 msgstr "What went live"
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the team card's eyebrow"
+msgid "A role on the team"
+msgstr "A role on the team"
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a suggestion is being adopted"
 msgid "Adopting"
@@ -23273,6 +23343,12 @@ msgstr "Your name and email come from your account."
 msgctxt "drafted letters"
 msgid "Subject"
 msgstr "Subject"
+
+#: client/src/components/ContributorRoutes.tsx
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after sending a proposal: when you hear back, more than one moon"
+msgid "You'll hear from us within {moons} moon cycles."
+msgstr "You'll hear from us within {moons} moon cycles."
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -24573,6 +24649,7 @@ msgstr "Bring it to the {intakeRoleLabel} and you hear back within {replyHours, 
 #~ msgstr "Why you"
 
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/Home.tsx
 #: client/src/pages/Partner.tsx
 msgctxt "four ways to build: the label before what you get back"
 msgid "You get back"
@@ -25449,6 +25526,10 @@ msgstr "Page"
 msgctxt "change request note outcome"
 msgid "Answered"
 msgstr "Answered"
+
+#: client/src/pages/Powers.tsx
+msgid "How a power moves"
+msgstr "How a power moves"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"
@@ -26678,9 +26759,9 @@ msgid "Pay by member"
 msgstr "Pay by member"
 
 #: client/src/components/ContributorRoutes.tsx
-msgctxt "four ways to build: when you hear back"
-msgid "You'll hear within 1 day."
-msgstr "You'll hear within 1 day."
+#~ msgctxt "four ways to build: when you hear back"
+#~ msgid "You'll hear within 1 day."
+#~ msgstr "You'll hear within 1 day."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"

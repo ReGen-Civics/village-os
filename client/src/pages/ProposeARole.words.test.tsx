@@ -143,7 +143,7 @@ describe("said once", () => {
 });
 
 describe("a reply promise (idea 18)", () => {
-  it("the sent page says we reply within the days the server sent", async () => {
+  it("the sent page says they will hear within one moon cycle, once it is sent (the lead, 24 Nov 2026)", async () => {
     await open();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.nameLabel), { target: { value: "Rowan" } });
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@example.test" } });
@@ -157,6 +157,6 @@ describe("a reply promise (idea 18)", () => {
     fireEvent.click(screen.getByLabelText(/confidentiality agreement before I see/));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
-    expect(document.querySelector("[data-reply-promise]")?.textContent).toBe("We reply within 5 days.");
+    expect(document.querySelector("[data-reply-promise]")?.textContent).toBe("You'll hear from us within one moon cycle.");
   });
 });

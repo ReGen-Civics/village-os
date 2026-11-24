@@ -7,47 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgctxt "powers page eyebrow"
-msgid "How the village is held"
-msgstr "Cómo se sostiene la aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "What this village looks after"
-msgstr "Lo que cuida esta aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
-msgstr "Cada responsabilidad compartida aquí tiene a alguien que la cuida. Abre un tema para ver qué permite hacer cada una y qué rol la tiene hoy."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Reading the village's own record."
-msgstr "Leyendo el registro de la aldea."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "Whoever holds this can {0}."
-msgstr "Quien tiene esto puede {0}."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "The village voted this one across."
-msgstr "La aldea votó para asumir esta."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
-msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propias decisiones, y esta página cambia con ella."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Powers.tsx
-msgid "How a power moves"
-msgstr "Cómo pasa un poder"
-
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
@@ -2162,9 +2121,9 @@ msgid "Circle"
 msgstr ""
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero main act"
-msgid "Join the founding team"
-msgstr "Únete al equipo fundador"
+#~ msgctxt "landing hero main act"
+#~ msgid "Join the founding team"
+#~ msgstr "Únete al equipo fundador"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value of a setting once changed"
@@ -2440,9 +2399,9 @@ msgstr ""
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site, when it has no name yet"
-msgid "Learn about the village"
-msgstr "Conoce la aldea"
+#~ msgctxt "landing hero second act: the village's main site, when it has no name yet"
+#~ msgid "Learn about the village"
+#~ msgstr "Conoce la aldea"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -2670,9 +2629,9 @@ msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/Thresholds.tsx
-msgctxt "founding application, when we reply"
-msgid "We reply within 1 day."
-msgstr "Respondemos en un plazo de 1 día."
+#~ msgctxt "founding application, when we reply"
+#~ msgid "We reply within 1 day."
+#~ msgstr "Respondemos en un plazo de 1 día."
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "That could not be withdrawn"
@@ -2744,6 +2703,11 @@ msgstr ""
 msgctxt "membership letter on the open form"
 msgid "Read the {title}"
 msgstr "Leer {title}"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Reading the village's own record."
+msgstr "Leyendo el registro de la aldea."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Leave empty if this village does not use this rung"
@@ -4918,6 +4882,11 @@ msgstr "Abrir las misiones"
 msgid "The agreement this vote would adopt"
 msgstr ""
 
+#. placeholder {0}: catalyst.aNameCap
+#: client/src/pages/Powers.tsx
+msgid "{0} can still reach past a power the village holds, on a day something has gone wrong. Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever holds it. That is the whole of the arrangement: the way back exists, and the village sees it used."
+msgstr ""
+
 #: client/src/components/roleCard/WaitlistLetter.tsx
 #~ msgctxt "waitlist letter: what happens"
 #~ msgid "This goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
@@ -5116,6 +5085,11 @@ msgstr "Listo. Borramos de este dispositivo los archivos guardados y la versión
 msgctxt "admin protocols editor"
 msgid "A completed run hands in: {0}"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "What this village looks after"
+msgstr "Lo que cuida esta aldea"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
@@ -5320,6 +5294,12 @@ msgstr "Tu propuesta fija tus recompensas: propón tu propia compensación, y la
 #: client/src/pages/HiddenMap.tsx
 msgid "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the quest card's eyebrow"
+msgid "One piece of work"
+msgstr "Un trabajo puntual"
 
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "The name could not be saved."
@@ -6242,6 +6222,12 @@ msgstr "Llevar otras gracias"
 msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: p.consequence
+#: client/src/pages/Powers.tsx
+msgid "Whoever holds this can {0}."
+msgstr "Quien tiene esto puede {0}."
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
@@ -8929,6 +8915,11 @@ msgctxt "funding rounds"
 msgid "Yours"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
+msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propias decisiones, y esta página cambia con ella."
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
@@ -9226,9 +9217,9 @@ msgstr "Enlace a {seatName}"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/Thresholds.tsx
-msgctxt "founding application, when we reply"
-msgid "We reply within {days} days."
-msgstr "Respondemos en un plazo de {days} días."
+#~ msgctxt "founding application, when we reply"
+#~ msgid "We reply within {days} days."
+#~ msgstr "Respondemos en un plazo de {days} días."
 
 #: client/src/pages/Quests.tsx
 msgctxt "empty quest board: the one door"
@@ -9641,6 +9632,12 @@ msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
 msgctxt "copy settlement button, done"
 msgid "Copied ✓"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgctxt "powers page eyebrow"
+msgid "How the village is held"
+msgstr "Cómo se sostiene la aldea"
 
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: the journal, when it can go to the outside agent"
@@ -10162,6 +10159,10 @@ msgstr ""
 msgctxt "founding application confirm"
 msgid "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 msgstr "Ese enlace venció o ya se usó. Envía tu solicitud de nuevo y abre el enlace nuevo dentro de {OPEN_CONFIRM_HOURS} horas."
+
+#: client/src/pages/Powers.tsx
+msgid "A power moves in two steps, and the order matters. First a role is given the power, so there is somebody who can act. Then the village takes it on, and from that day the admin panel stops being the answer: whoever sits in that role acts on their own account."
+msgstr ""
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
@@ -11864,9 +11865,9 @@ msgstr ""
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
-msgctxt "four ways to build: when you hear back"
-msgid "You'll hear within {days} days."
-msgstr "Te responderemos en {days} días."
+#~ msgctxt "four ways to build: when you hear back"
+#~ msgid "You'll hear within {days} days."
+#~ msgstr "Te responderemos en {days} días."
 
 #: client/src/components/profile/WaitingOnYou.tsx
 msgctxt "task handed to a role"
@@ -12179,6 +12180,12 @@ msgstr ""
 msgctxt "approval inbox"
 msgid "Approve {count} selected"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ProsperityJourney.tsx
+msgctxt "prosperity path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team view: a list of roles"
@@ -13973,6 +13980,11 @@ msgstr "Mostrando los {total} {noun}."
 #~ msgid "Your price each moon, in {0}"
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+msgstr "Cada responsabilidad compartida aquí tiene a alguien que la cuida. Abre un tema para ver qué permite hacer cada una y qué rol la tiene hoy."
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "Taken down if you accept"
@@ -14959,6 +14971,12 @@ msgstr "Escribe un correo donde podamos contactarte."
 msgctxt "admin age band"
 msgid "Confirm {name}'s age band as {0}? The change is recorded with your name."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the venture card's eyebrow"
+msgid "A business of your own"
+msgstr "Un negocio propio"
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -18015,9 +18033,9 @@ msgstr ""
 #~ msgstr ""
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero, the founding team line"
-msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
-msgstr ""
+#~ msgctxt "landing hero, the founding team line"
+#~ msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
+#~ msgstr ""
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: kind of change"
@@ -18500,6 +18518,10 @@ msgctxt "open work: the board is ordered for the reader"
 msgid "Ordered by how well each fits the {memberPct}% you can give now."
 msgstr "Ordenadas según cuánto encaja cada una con el {memberPct}% que puedes dar ahora."
 
+#: client/src/pages/Powers.tsx
+msgid "Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts. Some of them the village has taken on. This page says which is which, and who to ask."
+msgstr ""
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Approved"
@@ -18552,6 +18574,13 @@ msgstr "Rol abierto"
 msgctxt "admin venture accounts"
 msgid "The role's name"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after sending a proposal: when you hear back"
+msgid "You'll hear from us within one moon cycle."
+msgstr "Tendrás noticias nuestras dentro de un ciclo lunar."
 
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: button while saving"
@@ -18671,6 +18700,7 @@ msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configur
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/Home.tsx
 #: client/src/pages/Partner.tsx
 msgctxt "four ways to build: the label before what you bring"
 msgid "You bring"
@@ -19388,6 +19418,11 @@ msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Ahora no"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "The village voted this one across."
+msgstr "La aldea votó para asumir esta."
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/openProposal/ContractPrice.tsx
 msgctxt "open proposal: the contract's pay"
@@ -19778,6 +19813,12 @@ msgstr ""
 msgctxt "admin compare"
 msgid "A way to share the work"
 msgstr "Una forma de repartir el trabajo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the partner card's eyebrow"
+msgid "Work alongside us"
+msgstr "Trabaja a nuestro lado"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Kept in this browser only. Nothing is sent until you apply."
@@ -20906,9 +20947,9 @@ msgstr "Puedes comparar hasta {MAX_COMPARE} a la vez. Desmarca una para añadir 
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site"
-msgid "Learn about {villageName}"
-msgstr "Conoce {villageName}"
+#~ msgctxt "landing hero second act: the village's main site"
+#~ msgid "Learn about {villageName}"
+#~ msgstr "Conoce {villageName}"
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
@@ -22690,6 +22731,12 @@ msgctxt "proposed changes"
 msgid "What went live"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the team card's eyebrow"
+msgid "A role on the team"
+msgstr "Un rol en el equipo"
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a suggestion is being adopted"
 msgid "Adopting"
@@ -23897,6 +23944,13 @@ msgstr ""
 msgctxt "drafted letters"
 msgid "Subject"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after sending a proposal: when you hear back, more than one moon"
+msgid "You'll hear from us within {moons} moon cycles."
+msgstr "Tendrás noticias nuestras dentro de {moons} ciclos lunares."
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -25225,6 +25279,7 @@ msgstr ""
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/Home.tsx
 #: client/src/pages/Partner.tsx
 msgctxt "four ways to build: the label before what you get back"
 msgid "You get back"
@@ -26127,6 +26182,11 @@ msgstr ""
 msgctxt "change request note outcome"
 msgid "Answered"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "How a power moves"
+msgstr "Cómo pasa un poder"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"
@@ -27389,9 +27449,9 @@ msgstr "Pago por persona"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
-msgctxt "four ways to build: when you hear back"
-msgid "You'll hear within 1 day."
-msgstr "Te responderemos en 1 día."
+#~ msgctxt "four ways to build: when you hear back"
+#~ msgid "You'll hear within 1 day."
+#~ msgstr "Te responderemos en 1 día."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"

@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import BuildProgress from "@/components/BuildProgress";
 import SeasonBanner from "@/components/SeasonBanner";
 import MapPeek from "@/components/MapPeek";
-import ContributorRoutes, { useFourWaysHeading } from "@/components/ContributorRoutes";
+import { useFourWaysHeading, useRouteWords, useVentureHref } from "@/components/ContributorRoutes";
 import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { Link } from "wouter";
 import { m } from "framer-motion";
@@ -25,18 +25,18 @@ import {
   Briefcase,
   Globe
 } from "lucide-react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
+import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
 import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import { Image } from "@/components/Image";
 import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { HOME_PAGE } from "@shared/pageContent/home";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
-import { useStoryPageOffAlone, useStoryPageShown } from "@/lib/brochure";
+import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
-import { FOUNDING_CARD_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
+import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
 
 
 
@@ -106,13 +106,6 @@ function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcS
   );
 }
 
-/**
- * The lights on the one act, through React.lazy (docs/DESIGN_RULE.md): a
- * static import here regrouped the shared chunks and pulled lazy-only modules
- * onto the first page (the guard-boot-set build check). Until the kit arrives
- * the act draws without its lights.
- */
-const Fireflies = lazy(() => import("@/components/journey/nature/Fireflies"));
 
 /** What each path card needs that is not words: where it goes, its icon, its picture. */
 const PATH_CARD_LOOK = {
@@ -150,18 +143,26 @@ const PERSONA_LOOKS = [
 
 export default function Home() {
   const { t } = useLingui();
-  const fourWaysHeading = useFourWaysHeading();
   // Blank hides both buttons rather than pointing at another village.
-  const { eventsUrl, siteUrl } = useVillageLinks();
-  const villageName = String(useGameConfig()?.project?.name ?? "").trim();
-  const storyShown = useStoryPageShown();
+  const { eventsUrl } = useVillageLinks();
+  const project = useGameConfig()?.project;
   const brand = useBrandImages();
   // Every word on this page is the village's own, from Admin, Pages, Home
   // (shared/pageContent/home.ts). Null until the saved words have arrived:
   // the hero keeps its space and stays invisible meanwhile, so a visitor never
   // reads the platform's defaults and then watches them change.
   const page = usePageContent(HOME_PAGE);
-  const hero = page?.hero.fields;
+  const heroFields = page?.hero.fields;
+  /*
+   * THE HERO'S WORDS ARE THE VILLAGE'S OWN, IN IDENTITY (the lead, 24 Nov 2026: "this should be editable in admin").
+   * Admin, Make this site yours, Identity, holds a Homepage headline and a Homepage sentence (`project.heroHeadline`,
+   * `project.heroBody` in the brand document); blank keeps the words in Admin, Pages, Home. The founding team line that
+   * used to follow the sentence was not the village's to change, so it is gone: the founding team has its own card in
+   * the four ways at the foot of the page.
+   */
+  const hero: Record<string, string> | undefined = heroFields
+    ? { ...heroFields, headline: project?.heroHeadline?.trim() || heroFields.headline, subline: project?.heroBody?.trim() || heroFields.subline }
+    : undefined;
   const journey = page?.journey;
   const paths = page?.paths;
   // A journey switched off on its own in Admin, Pages takes its card with it,
@@ -173,22 +174,9 @@ export default function Home() {
   });
   const personas = page?.personas;
   const cta = page?.cta;
-  /*
-   * THE SECOND ACT IS "LEARN ABOUT" THE VILLAGE (a reviewer's feedback, approved
-   * by the lead on 24 Nov 2026). It used to be "Explore the map", which sent a
-   * first-time visitor into the members' working map; the map keeps its place in
-   * the menu. It opens the village's own main site (Admin, Setup Wizard, the main
-   * site link), in a new tab like the header's link to it, and with no main site
-   * set, the village's How We Create page while the story pages are served.
-   */
-  const aboutHref = /^https?:\/\//i.test(siteUrl) ? siteUrl : storyShown("/how-we-create") ? "/how-we-create" : "";
-  const aboutWords = villageName
-    ? t({ message: `Learn about ${villageName}`, context: "landing hero second act: the village's main site" })
-    : t({ message: "Learn about the village", context: "landing hero second act: the village's main site, when it has no name yet" });
-  // THE FOUNDING TEAM IS THE FIRST SCREEN'S ONE ACT while the village has the
-  // section on (D-01). A senior professional landing here read no word about
-  // paid roles, and the only gold on the screen was a link off the site. Off,
-  // the hero keeps its own door to the paths. The read never blocks the page.
+  // Whether the village has its founding team on: its card leads the four ways at the
+  // foot of the page, and the steward path card is its door in the paths row (#1522).
+  // The read never blocks the page.
   const foundingRead = useFoundingOn();
   const founding = foundingRead === true;
   /*
@@ -203,26 +191,7 @@ export default function Home() {
    */
   const ready = !!page && foundingRead !== null;
   const pathsShown = !!paths && !paths.hidden && pathCards.length > 0;
-  const waysShown = pathsShown || founding;
-  const stewardShown = pathsShown && pathCards.some((card) => card.id === "steward");
-  const foundingLink = (
-      <Link href="/roles" className={`${BTN_PRIMARY} min-h-12 px-6 text-base`} data-hero-act="founding">
-        {t({ message: "Join the founding team", context: "landing hero main act" })}
-        <ArrowRight aria-hidden="true" className="h-5 w-5" />
-      </Link>
-  );
-  const heroAct = founding ? (
-    <Suspense fallback={foundingLink}>
-    <Fireflies count={6}>
-      {foundingLink}
-    </Fireflies>
-    </Suspense>
-  ) : (
-    <a href="#choose-path" className={`${BTN_PRIMARY} min-h-12 px-6 text-base`} data-hero-act="paths">
-      Pick your path
-      <ArrowRight aria-hidden="true" className="h-5 w-5" />
-    </a>
-  );
+  const waysShown = pathsShown;
   return (
     <Layout>
       {/* THE LANDING STANDS IN THE NIGHT WORLD (D-01, docs/DESIGN_RULE.md): the
@@ -289,47 +258,18 @@ export default function Home() {
               className={`hero-rise relative max-w-[34em] text-lg sm:text-xl text-foreground/90 leading-relaxed mb-8${ready ? "" : " invisible"}`}
             >
               <Emphasized text={hero?.subline ?? ""} strongClassName="font-semibold text-foreground" />
-              {founding ? (
-                <>
-                  {" "}
-                  {t({
-                    message: "We're building the founding team: the people who'll take the village from idea to home, season by season.",
-                    context: "landing hero, the founding team line",
-                  })}
-                </>
-              ) : null}
             </p>
-
-            <div
-              style={{ animationDelay: "0.15s" }}
-              className="hero-rise relative flex flex-wrap items-center gap-3"
-            >
-              {heroAct}
-              {aboutHref.startsWith("/") ? (
-                <Link href={aboutHref} className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`} data-hero-act="about">
-                  {aboutWords}
-                </Link>
-              ) : aboutHref ? (
-                <a href={aboutHref} target="_blank" rel="noopener noreferrer" className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`} data-hero-act="about">
-                  {aboutWords}
-                </a>
-              ) : founding ? (
-                <a href="#choose-path" className={`${BTN_SECONDARY} min-h-12 bg-background/60 px-5 text-base`}>
-                  Pick your path
-                </a>
-              ) : null}
-            </div>
+            {/* No buttons here (the lead, 24 Nov 2026: "since we have 4 button cards right next"): the paths
+                sit just under the hero and the four ways at the foot of the page. */}
           </div>
         </div>
       </section>
 
-      {/* THE WAYS IN, overlapping the hero's foot (D-01, D-16). One row on a
-          desktop, every card the same height with its door at the bottom; a
-          column on a phone. While the village has its founding team on, the
-          Village Steward card is that team's door (option B, the lead, 24 Nov
-          2026); the gold founding card returns only when the steward path is
-          hidden, so the door never disappears. The section keeps its id when it is
-          empty so the hero's "Pick your path" never points at nothing. */}
+      {/* THE PATHS, overlapping the hero's foot (D-01, D-16): the four paths, one row on a desktop,
+          every card the same height with its door at the bottom; a column on a phone. While the
+          village has its founding team on, the Village Steward card is that team's door (option B,
+          the lead, 24 Nov 2026). The gold founding card lives in the four ways at the foot of the
+          page (the lead, 24 Nov 2026), so this row is the four paths only. */}
       {ready ? (
       <>
       <section id="choose-path" aria-labelledby={waysShown ? "choose-path-h" : undefined} className={waysShown ? "relative z-20 scroll-mt-24 pb-16 sm:pb-20" : undefined}>
@@ -348,29 +288,6 @@ export default function Home() {
             </h2>
           )}
           <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
-            {/* With no steward card on the page (its path hidden), the founding team keeps a card of its own. */}
-            {founding && !stewardShown && (
-              <li className="min-w-0">
-                <Link href="/roles" className={`${WAY_CARD} border-2 border-notice/60`} data-way="founding">
-                  {/* The same frame as the path cards, with a painting from the
-                      platform's nature library, so the row reads as one. */}
-                  <span className={JOURNEY_FRAME}>
-                    <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
-                  </span>
-                  <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
-                  <span className="mt-2 block font-display text-2xl leading-tight text-foreground">
-                    {t({ message: "Founding team", context: "landing, founding team card title" })}
-                  </span>
-                  <span className={`mt-2 block ${WAY_BODY}`}>
-                    {t({ message: "Hold a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
-                  </span>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-notice">
-                    {t({ message: "See the open roles", context: "landing, founding team card door" })}
-                    <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </Link>
-              </li>
-            )}
             {pathsShown && pathCards.map((card) => {
               const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
               if (!look) return null;
@@ -421,14 +338,6 @@ export default function Home() {
           ) : null}
         </div>
         )}
-      </section>
-
-      {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026): join the team, start a venture, become a partner, propose a
-          quest. Under the hero and its ways in. */}
-      <section aria-labelledby="four-ways-h" className="pb-16 sm:pb-20" data-four-ways="">
-        <div className="container">
-          <ContributorRoutes heading={fourWaysHeading} headingId="four-ways-h" />
-        </div>
       </section>
 
       <SeasonBanner />
@@ -623,10 +532,103 @@ export default function Home() {
         </div>
       </section>
       )}
+
+      <FourWaysToBuild founding={founding} />
       </>
       ) : null}
       </div>
     </Layout>
+  );
+}
+
+/**
+ * FOUR WAYS TO BUILD, ONCE, AT THE FOOT OF THE PAGE (the lead, 24 Nov 2026): "Put this just once at the bottom of the
+ * landing page - we already have the 4 paths option", and "Move the 'founding team' card as it is down to the '4 ways
+ * to build' and have it replace the join the team button. Then redesign the other 3 cards to look more like the team
+ * card and add animals to them. That way there are 8 different routes here."
+ *
+ * The founding team card as it was in the paths row (its painting, the gold edge, "Roles with rewards", "See the open
+ * roles"), then Start a venture, Become a partner and Propose a quest in the same card: a painting on top, an
+ * eyebrow, the verb, its line, what you bring and what you get back, and the door. A village with its founding team
+ * off gets Join the team in the same card. No reply promise here: a person is told when they will hear back once
+ * they have sent (shared/contributorRoutes.ts, REPLY_WINDOW_MOONS_VARIABLE).
+ */
+function FourWaysToBuild({ founding }: { founding: boolean }) {
+  const { t } = useLingui();
+  const heading = useFourWaysHeading();
+  const words = useRouteWords();
+  const ventureHref = useVentureHref();
+  const others = [
+    { key: "venture", href: ventureHref, art: FOUR_WAYS_ART.venture, eyebrow: t({ message: "A business of your own", context: "landing, four ways: the venture card's eyebrow" }) },
+    { key: "partner", href: "/partner", art: FOUR_WAYS_ART.partner, eyebrow: t({ message: "Work alongside us", context: "landing, four ways: the partner card's eyebrow" }) },
+    { key: "quest", href: "/propose-quest", art: FOUR_WAYS_ART.quest, eyebrow: t({ message: "One piece of work", context: "landing, four ways: the quest card's eyebrow" }) },
+  ] as const;
+  const bringBack = (w: { bring: string; back: string }) => (
+    <dl className="mt-3 grid gap-1.5 text-sm">
+      <div>
+        <dt className="inline font-semibold text-foreground">{t({ message: "You bring", context: "four ways to build: the label before what you bring" })}: </dt>
+        <dd className="inline text-muted-foreground">{w.bring}</dd>
+      </div>
+      <div>
+        <dt className="inline font-semibold text-foreground">{t({ message: "You get back", context: "four ways to build: the label before what you get back" })}: </dt>
+        <dd className="inline text-muted-foreground">{w.back}</dd>
+      </div>
+    </dl>
+  );
+  return (
+    <section aria-labelledby="four-ways-h" className="border-t border-border/60 py-16 sm:py-20" data-four-ways="">
+      <div className="container">
+        <h2 id="four-ways-h" className="mb-5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+          {heading}
+        </h2>
+        <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <li className="min-w-0" data-route="team">
+            <Link href={`/roles#${ROLES_SECTIONS.team}`} className={`${WAY_CARD} ${founding ? "border-2 border-notice/60" : "border border-border"}`} data-way={founding ? "founding" : "team"} data-route-door="team">
+              <span className={JOURNEY_FRAME}>
+                <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
+              </span>
+              {founding ? (
+                <>
+                  <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
+                  <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{t({ message: "Founding team", context: "landing, founding team card title" })}</h3>
+                  <span className={`mt-2 block ${WAY_BODY}`}>
+                    {t({ message: "Hold a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className={EYEBROW}>{t({ message: "A role on the team", context: "landing, four ways: the team card's eyebrow" })}</span>
+                  <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words.team.verb}</h3>
+                  <span className={`mt-2 block ${WAY_BODY}`}>{words.team.line}</span>
+                  {bringBack(words.team)}
+                </>
+              )}
+              <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-notice">
+                {founding ? t({ message: "See the open roles", context: "landing, founding team card door" }) : words.team.verb}
+                <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          </li>
+          {others.map((o) => (
+            <li key={o.key} className="min-w-0" data-route={o.key}>
+              <Link href={o.href} className={`${WAY_CARD} border border-border`} data-route-door={o.key}>
+                <span className={JOURNEY_FRAME}>
+                  <JourneyArt src={o.art.src} srcSet={o.art.srcSet} alt="" focus={o.art.focus} />
+                </span>
+                <span className={EYEBROW}>{o.eyebrow}</span>
+                <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words[o.key].verb}</h3>
+                <span className={`mt-2 block ${WAY_BODY}`}>{words[o.key].line}</span>
+                {bringBack(words[o.key])}
+                <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
+                  {words[o.key].verb}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }
 

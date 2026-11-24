@@ -236,6 +236,14 @@ export interface GameConfig {
     contactEmail: string;
     /** The one-sentence footer introduction under the logo. */
     footerBlurb: string;
+    /**
+     * The homepage's headline and the sentence under it (the lead, 24 Nov 2026:
+     * "this should be editable in admin"), set in Admin, Make this site yours,
+     * Identity. Blank keeps the words in Admin, Pages, Home. Optional so a
+     * village document written before them still reads.
+     */
+    heroHeadline?: string;
+    heroBody?: string;
   };
   currency: {
     /** The in-site recognition currency (e.g. Gratitude, Seeds, Thanks).
@@ -467,6 +475,9 @@ export const GAME_CONFIG: GameConfig = {
     // in Costa Rica. Same graduation and same precondition as `location`: the
     // live village holds its own copy, so neutralising this cannot blank it.
     footerBlurb: "A regenerative village where all beings belong and thrive.",
+    // Blank: the homepage keeps the neutral words in shared/pageContent/home.ts.
+    heroHeadline: "",
+    heroBody: "",
   },
 
   currency: {

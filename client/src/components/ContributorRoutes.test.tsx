@@ -12,7 +12,7 @@ let served = false;
 vi.mock("@/lib/gameApi", () => ({ useGameConfig: () => config }));
 vi.mock("@/lib/brochure", () => ({ useStoryPageShown: () => (href: string) => served && href === "/work-with-us" }));
 
-import ContributorRoutes, { StartVentureButton, useFourWaysHeading } from "./ContributorRoutes";
+import ContributorRoutes, { StartVentureButton, useFourWaysHeading, useReplyPromise } from "./ContributorRoutes";
 
 afterEach(() => {
   cleanup();
@@ -25,7 +25,7 @@ function Headed() {
 }
 
 describe("the four cards", () => {
-  it("draws the four in order, each with a line, what you bring and what you get back, and the promise once under them", () => {
+  it("draws the four in order, each with a line, what you bring and what you get back, and no reply promise", () => {
     served = true;
     render(<ContributorRoutes />);
     const cards = Array.from(document.querySelectorAll("[data-route]"));
@@ -35,8 +35,8 @@ describe("the four cards", () => {
       expect(within(c as HTMLElement).getByText("You get back")).toBeTruthy();
       expect(c.querySelector("[data-route-promise]")).toBeNull();
     }
-    // One promise for the group, the village's one reply number (org.applicant_reply_days, 7 by default).
-    expect(Array.from(document.querySelectorAll("[data-route-promise]")).map((p) => p.textContent)).toEqual(["You'll hear within 7 days."]);
+    // No promise before anyone has sent anything (the lead, 24 Nov 2026).
+    expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     // Compensation for a role; "rewarded" is for quests only.
     expect(within(cards[0] as HTMLElement).getByText("The compensation the role's terms set out, agreed together.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles#founding-team");
@@ -47,23 +47,39 @@ describe("the four cards", () => {
     expect(screen.getByText("A partnership shaped together, with no role on the team and no lease.")).toBeTruthy();
   });
 
-  it("promises the village's own days, and names the village in the heading", () => {
-    config = { applicantReplyDays: 10, project: { name: "Riverbend" } };
+  // No reply promise before submission (the lead, 24 Nov 2026: "only at submission we want to be careful about overpromising").
+  it("names the village in the heading and promises no reply, in any variant", () => {
+    config = { applicantReplyDays: 10, replyWindowMoons: 1, project: { name: "Riverbend" } };
     render(<Headed />);
     expect(screen.getByRole("heading", { level: 2, name: "Four ways to build Riverbend" })).toBeTruthy();
-    expect(Array.from(document.querySelectorAll("[data-route-promise]")).map((p) => p.textContent)).toEqual(["You'll hear within 10 days."]);
+    cleanup();
+    for (const el of [<ContributorRoutes key="c" />, <ContributorRoutes key="l" variant="links" />, <ContributorRoutes key="t" variant="tiles" />]) {
+      render(el);
+      expect(document.querySelector("[data-route-promise]")).toBeNull();
+      expect(document.body.textContent).not.toMatch(/hear (from us )?within|days\./);
+      cleanup();
+    }
   });
 
-  it("CONTROL: with no name yet the heading says the village, and a bad number of days reads as the default 7", () => {
+  it("CONTROL: with no name yet the heading says the village", () => {
     config = { applicantReplyDays: 0, project: { name: "" } };
     render(<Headed />);
     expect(screen.getByRole("heading", { level: 2, name: "Four ways to build the village" })).toBeTruthy();
-    expect(document.querySelector("[data-route-promise]")?.textContent).toBe("You'll hear within 7 days.");
   });
 
-  it("leaves the promise out where the page already makes its own", () => {
-    render(<ContributorRoutes variant="links" except={["team"]} promise={false} />);
-    expect(document.querySelector("[data-route-promise]")).toBeNull();
+  it("says the window in moon cycles once someone has sent: one by default, the village's own number when set", () => {
+    const Said = () => <p data-said="">{useReplyPromise()}</p>;
+    config = {};
+    render(<Said />);
+    expect(document.querySelector("[data-said]")?.textContent).toBe("You'll hear from us within one moon cycle.");
+    cleanup();
+    config = { replyWindowMoons: 2 };
+    render(<Said />);
+    expect(document.querySelector("[data-said]")?.textContent).toBe("You'll hear from us within 2 moon cycles.");
+    cleanup();
+    config = { replyWindowMoons: 0 };
+    render(<Said />);
+    expect(document.querySelector("[data-said]")?.textContent).toBe("You'll hear from us within one moon cycle.");
   });
 
   it("pitches a venture from the Open ventures button on the proposal form while the village serves it, else at the new-role door", () => {
@@ -86,7 +102,7 @@ describe("Start a venture lands on the venture form (the lead, 24 Nov 2026)", ()
       <ContributorRoutes key="cards" />,
       <ContributorRoutes key="gift" except={["team"]} heading="Don't see your gift in a role? Consider these:" />,
       <ContributorRoutes key="links" variant="links" except={["team"]} />,
-      <ContributorRoutes key="founding" variant="links" register="founding" except={["team"]} promise={false} />,
+      <ContributorRoutes key="founding" variant="links" register="founding" except={["team"]} />,
     ]) {
       render(el);
       expect(ventureHref()).toBe("/work-with-us?kind=venture");
@@ -138,11 +154,11 @@ describe("the compact tiles, the application's register and the nonprofit line",
 });
 
 describe("the other three, beside a role", () => {
-  it("leaves out the one named, as a quiet list with one promise, and keeps a same-page anchor a plain link", () => {
+  it("leaves out the one named, as a quiet list with no promise, and keeps a same-page anchor a plain link", () => {
     render(<ContributorRoutes variant="links" except={["team"]} heading="Don't see your gift in a role? Consider these:" />);
     expect(Array.from(document.querySelectorAll("[data-route-door]")).map((a) => a.getAttribute("data-route-door"))).toEqual(["venture", "partner", "quest"]);
     expect(screen.getByText("Don't see your gift in a role? Consider these:")).toBeTruthy();
-    expect(screen.getAllByText("You'll hear within 7 days.")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     cleanup();
     render(<ContributorRoutes hrefs={{ team: "/roles/select" }} />);
     expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles/select");

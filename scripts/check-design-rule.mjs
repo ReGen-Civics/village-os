@@ -106,6 +106,7 @@ const PAGES = [
   "client/src/pages/Pay.tsx",
   // The investor path (24 Nov 2026, investor remake): into the night world with the other paths.
   "client/src/pages/InvestorJourney.tsx",
+  "client/src/pages/ProsperityJourney.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */

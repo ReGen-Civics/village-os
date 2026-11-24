@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 284 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 285 open and 64 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 321 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-348 dials in 41 categories. 174 carry a minimum and a maximum. By type: 135 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 72 text, 13 longtext.
+349 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 72 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 321 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 24 | 23 | 1 |
+| The village's people | 25 | 24 | 1 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 29 | 29 | 0 |
 | Events | 3 | 3 | 0 |
@@ -302,6 +302,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
 | The role that makes the final call on an applicant | `org.final_call_role` | The village's people | text | blank | the whole village |
 | Days we promise to reply to a role proposal | `org.applicant_reply_days` | The village's people | integer | `7` | the whole village |
+| Moon cycles we tell a proposer they will hear back within | `org.reply_window_moons` | The village's people | integer | `1` | the whole village |
 | The role that answers partner proposals | `org.partnerships_role` | The village's people | text | blank | the whole village |
 | Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `24` | the whole village |
 | Longest voice clip beside an answer | `org.voice_clip_seconds` | The village's people | integer | `60` | the whole village |
@@ -3867,7 +3868,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-24 dials. 23 for the whole village, 1 for the founder or an admin.
+25 dials. 24 for the whole village, 1 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3950,6 +3951,21 @@ The number of days the applicant's status page and thank-you page say we reply w
 | Default | `7` |
 | Range | 1 to 60 |
 | Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Moon cycles we tell a proposer they will hear back within
+
+What a person is told once they have sent an application, a venture, a partnership or a quest idea: that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. The application's own dated steps and letters still use the days above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.reply_window_moons` |
+| Type | integer, a whole number |
+| Default | `1` |
+| Range | 1 to 6 |
+| Counted in | moons |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

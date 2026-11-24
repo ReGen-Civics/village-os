@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * D-01 (go-live design pass): the landing's first screen. While the village
- * has its founding team section on, "Join the founding team" is the hero's one
- * gold act, "Learn about" the village sits beside it edged (24 Nov 2026, in place of the map), the hero says the founding team is forming, and
- * the founding card leads the ways in with the gold edge. Off, the hero keeps
- * its own door to the paths and says nothing of a founding team.
+ * The landing's founding team (the lead's landing round, 24 Nov 2026): the hero
+ * holds no buttons and no founding line; the paths row is the four paths, with
+ * the Village Steward card as the founding team's door while the section is on
+ * (option B); and the gold founding card leads the four ways at the foot of the
+ * page. Off, the four ways start with Join the team in the same card.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 class NoopIntersectionObserver {
@@ -75,34 +75,37 @@ const renderHome = () =>
 const hero = () => document.querySelector("[data-landing-hero]") as HTMLElement;
 
 describe("the landing's first screen with the founding team on", () => {
-  it("makes Join the founding team the hero's one gold act, with Learn about the village beside it edged", async () => {
+  it("draws no buttons and no founding line in the hero", async () => {
     renderHome();
-    const join = await screen.findByRole("link", { name: /Join the founding team/ });
-    expect(join.getAttribute("href")).toBe("/roles");
-    expect(join.className).toContain("bg-notice");
-    const about = screen.getByRole("link", { name: "Learn about Willowbrook" });
-    expect(about.className).not.toContain("bg-notice");
+    await waitFor(() => expect(document.querySelector("[data-four-ways]")).not.toBeNull());
+    expect(hero().querySelectorAll("a, button")).toHaveLength(0);
+    expect(hero().textContent).not.toContain("season by season");
     expect(screen.queryByRole("link", { name: "Explore the map" })).toBeNull();
-    // One gold act in the hero.
-    expect(hero().querySelectorAll("a.bg-notice")).toHaveLength(1);
-    expect(hero().textContent).toContain("the people who'll take the village from idea to home, season by season");
-    expect(hero().textContent).not.toContain("multi-year");
   });
 
-  it("with no steward card on the page, keeps a founding card of its own, on the gold edge", async () => {
+  it("puts the gold founding card at the head of the four ways at the foot of the page, never in the paths row", async () => {
     hiddenPages = ["/steward"];
     renderHome();
-    await screen.findByRole("link", { name: /Join the founding team/ });
-    const ways = Array.from(document.querySelectorAll("#choose-path a"));
-    expect(ways[0].getAttribute("data-way")).toBe("founding");
-    expect(ways[0].className).toContain("border-notice/60");
-    expect(ways.slice(1).every((a) => !a.className.includes("border-2"))).toBe(true);
+    const card = await waitFor(() => {
+      const a = document.querySelector('[data-four-ways] a[data-way="founding"]') as HTMLAnchorElement | null;
+      expect(a).not.toBeNull();
+      return a as HTMLAnchorElement;
+    });
+    expect(card.getAttribute("href")).toBe("/roles#founding-team");
+    expect(card.className).toContain("border-notice/60");
+    expect(card.textContent).toContain("Roles with rewards");
+    expect(card.textContent).toContain("See the open roles");
+    expect(document.querySelector('#choose-path [data-way="founding"]')).toBeNull();
+    const doors = Array.from(document.querySelectorAll("[data-four-ways] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")]);
+    expect(doors).toEqual([["team", "/roles#founding-team"], ["venture", "/role-proposals/new"], ["partner", "/partner"], ["quest", "/propose-quest"]]);
+    // The four ways are the last section of the landing.
+    const sections = Array.from(document.querySelectorAll("[data-landing-hero] ~ section, section"));
+    expect(sections[sections.length - 1]?.hasAttribute("data-four-ways")).toBe(true);
   });
 
   it("makes the Village Steward card the founding team's door, with a Paid role label, and draws no separate founding card (option B)", async () => {
     withPaths = true;
     renderHome();
-    await screen.findByRole("link", { name: /Join the founding team/ });
     const steward = await waitFor(() => {
       const a = document.querySelector('#choose-path a[data-way="core-team"]') as HTMLAnchorElement | null;
       expect(a).not.toBeNull();
@@ -112,7 +115,7 @@ describe("the landing's first screen with the founding team on", () => {
     expect(steward.querySelector("h3")?.textContent).toBe("Village Steward");
     expect(steward.querySelector("[data-paid-role]")?.textContent).toBe("Paid role");
     expect(steward.textContent).toContain("The founding team who hold the village's core domains.");
-    expect(document.querySelector('[data-way="founding"]')).toBeNull();
+    expect(document.querySelector('#choose-path [data-way="founding"]')).toBeNull();
     expect(document.querySelectorAll("[data-paid-role]")).toHaveLength(1);
     expect(document.querySelector('#choose-path a[href="/investor"]')).not.toBeNull();
   });
@@ -127,16 +130,16 @@ describe("the landing's first screen with the founding team on", () => {
     expect(document.body.textContent).not.toContain("core domains");
   });
 
-  it("CONTROL: with the section off, the hero keeps its door to the paths and names no founding team", async () => {
+  it("CONTROL: with the section off, the four ways start with Join the team in the same card, with no gold edge", async () => {
     foundingOn = false;
     renderHome();
-    await screen.findByRole("heading", { level: 1 });
-    await new Promise((r) => setTimeout(r, 0));
-    expect(screen.queryByRole("link", { name: /Join the founding team/ })).toBeNull();
-    const act = hero().querySelector('[data-hero-act="paths"]') as HTMLElement;
-    expect(act.getAttribute("href")).toBe("#choose-path");
-    expect(act.className).toContain("bg-notice");
-    expect(hero().textContent).not.toContain("season by season");
+    const card = await waitFor(() => {
+      const a = document.querySelector('[data-four-ways] a[data-way="team"]') as HTMLAnchorElement | null;
+      expect(a).not.toBeNull();
+      return a as HTMLAnchorElement;
+    });
+    expect(card.querySelector("h3")?.textContent).toBe("Join the team");
+    expect(card.className).not.toContain("border-notice/60");
     expect(document.querySelector('[data-way="founding"]')).toBeNull();
   });
 });
@@ -151,7 +154,6 @@ describe("the pictures on the ways in", () => {
     };
     hiddenPages = ["/steward"];
     renderHome();
-    await screen.findByRole("link", { name: /Join the founding team/ });
     const founding = await waitFor(() => {
       const el = document.querySelector('[data-way="founding"]') as HTMLElement | null;
       expect(el).not.toBeNull();

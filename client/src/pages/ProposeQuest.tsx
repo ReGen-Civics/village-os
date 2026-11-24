@@ -18,6 +18,7 @@ import { APPLY_TEXT } from "@shared/applyLimits";
 /** Each answer here (shared/applyLimits.ts): kept whole, counted under its box, and held at send when over. */
 const QUEST_PROSE_MAX = APPLY_TEXT.questProse;
 import { useLingui } from "@lingui/react/macro";
+import { useReplyPromise } from "@/components/ContributorRoutes";
 
 interface QuestProposal {
   title: string;
@@ -63,6 +64,8 @@ const HELD_WHY: Record<IdeaHold, (held: Held, team: string) => string> = {
 
 export default function ProposeQuest() {
   const { t } = useLingui();
+  // When they will hear back, said once they have sent (the lead, 24 Nov 2026).
+  const replyPromise = useReplyPromise();
   const { user } = useAuth();
   // The example compensation names the village's pay tokens, never the
   // recognition token: Gratitude never pays work (Rye, 2026-11-01: "Gratitude
@@ -208,6 +211,7 @@ export default function ProposeQuest() {
                 to explore it with you. Every Quest starts as someone caring enough to
                 imagine it.
               </p>
+              <p className="-mt-5 mb-8 font-semibold text-foreground" data-route-promise="">{replyPromise}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link href="/quests">
                   <a className="px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition">
