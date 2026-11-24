@@ -26,14 +26,15 @@ import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import type { Capability } from "../../shared/capabilities";
 import { emailKeyOf } from "../../shared/comms/address";
-import { ENTRIES_PER_HOUR, LINK_MAX, MIN_FILL_MS, parseEntrance, safeNext, type EntranceStatus } from "../../shared/entrance";
+import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, LINK_MAX, MIN_FILL_MS, parseEntrance, safeNext, type EntranceStatus } from "../../shared/entrance";
 import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
-import { entranceMiddleware, entryChecker, entryCookieHeader, fallbackHuman, signEntry, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
+import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import { deletePortalEntriesFor, insertPortalEntry, listPortalEntries, portalEntryExists } from "../repos/portalEntries";
 import { csvCell } from "./commsPeople";
 
+export { ENTRANCE_PASS_CARD } from "../lib/entrance";
 // Re-exported so server/index.ts takes the Integrations card and the page test (for the sitemap) on the same line as `register`.
 export { TURNSTILE_CARD } from "../lib/entrance";
 export { pageBehindEntrance } from "../../shared/entrance";
@@ -50,6 +51,10 @@ export interface EntranceRouteDeps {
   clientIp(req: Request): string;
   overLimit(bucket: string, max: number, windowMs: number): Promise<boolean>;
   guardCapability(req: Request, res: Response, cap: Capability): Promise<boolean>;
+  /** A live agent token (connector or API) in the Authorization header: its holder is a member. */
+  isAgent(req: Request): Promise<boolean>;
+  /** The entrance pass for our own automation, from Admin, Integrations, or "". */
+  passToken(): string;
   now?: () => number;
 }
 
@@ -73,8 +78,12 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   const now = deps.now ?? (() => Date.now());
   const { guardCapability } = deps;
   const entered = entryChecker({ secret: deps.secret, entryExists: (id) => portalEntryExists(deps.getPool(), id), now });
+  // A gathering's invite link is signed under the same secret, wherever the link is written.
+  useEventPassSecret(deps.secret);
+  const eventPassFor = (req: Request): string | null => readEventPass(deps.secret, cookieValue(req, EVENT_PASS_COOKIE), now())?.eventId ?? null;
   // The gate, in front of every route registered after this call.
-  app.use(entranceMiddleware({ boolVar: deps.boolVar, authedUser: deps.authedUser }, entered));
+  app.use(entranceMiddleware({ boolVar: deps.boolVar, authedUser: deps.authedUser, isAgent: deps.isAgent, passToken: deps.passToken, eventPassFor }, entered));
+  const secureOf = (req: Request) => req.secure || String(req.headers["x-forwarded-proto"] ?? "").split(",")[0].trim() === "https";
 
   const siteKey = (): string | null => {
     const key = deps.stringVar("entrance.turnstile_site_key").trim();
@@ -84,8 +93,8 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   app.get("/api/entrance", async (req, res) => {
     const required = deps.boolVar("entrance.required");
     let passed = !required;
-    if (!passed) passed = !!(await deps.authedUser(req).catch(() => null)) || (await entered(req).catch(() => false));
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey() };
+    if (!passed) passed = carriesPass(req, deps.passToken()) || !!(await deps.authedUser(req).catch(() => null)) || (await deps.isAgent(req).catch(() => false)) || (await entered(req).catch(() => false));
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req) };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });
@@ -129,9 +138,21 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     if (v.updates && !smoke) {
       await ensureContact({ getPool: deps.getPool }, { email: v.email, name: v.name, source: "portal", locale }).catch(() => null);
     }
-    const secure = req.secure || String(req.headers["x-forwarded-proto"] ?? "").split(",")[0].trim() === "https";
-    res.setHeader("Set-Cookie", entryCookieHeader(signEntry(deps.secret, id, now()), secure));
+    res.setHeader("Set-Cookie", entryCookieHeader(signEntry(deps.secret, id, now()), secureOf(req)));
     res.status(201).json({ ok: true, next });
+  });
+
+  // An invited guest's link (`/events?pass=`): the pass becomes a cookie for that one gathering,
+  // so the calendar shows them their gathering and its RSVP. Nothing is kept about them here.
+  app.post("/api/entrance/event-pass", async (req, res) => {
+    if (await deps.overLimit(`entrance-event:${ipBucket(deps.clientIp(req))}`, 30, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "slow_down", message: "Too many tries from this connection. Try again in an hour." });
+    }
+    const value = typeof req.body?.pass === "string" ? req.body.pass : "";
+    const pass = readEventPass(deps.secret, value, now());
+    if (!pass) return res.status(400).json({ error: "pass_invalid", message: "This invitation link has run out or is not ours. Enter the portal, or ask your host for a new one." });
+    res.setHeader("Set-Cookie", eventPassCookieHeader(value, pass.exp, now(), secureOf(req)));
+    res.json({ ok: true, eventId: pass.eventId });
   });
 
   // ── The admin half ────────────────────────────────────────────────────────

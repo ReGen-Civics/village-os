@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import express from "express";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, ENTRY_MS, fallbackHuman, pickKeys, readEntry, signEntry, verifyTurnstile } from "./entrance";
+import { cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, ENTRY_MS, eventPassOpens, fallbackHuman, pickKeys, readEntry, readEventPass, signEntry, signEventPass, verifyTurnstile } from "./entrance";
 
 const SECRET = "test-secret-that-is-long-enough-for-hmac"; // module-review-ok: a test fixture key for the HMAC, never a real credential
 const ID = "pe-0123456789abcdef0123";
@@ -72,6 +72,26 @@ describe("Turnstile", () => {
   });
 });
 
+describe("a gathering's pass", () => {
+  it("reads back the gathering it signed until it runs out, and refuses another key or an edit", () => {
+    const now = 1_800_000_000_000;
+    const v = signEventPass(SECRET, "ev-abc", now);
+    expect(readEventPass(SECRET, v, now + 1000)).toMatchObject({ eventId: "ev-abc" });
+    expect(readEventPass(SECRET, v, now + 121 * 24 * 60 * 60 * 1000)).toBeNull();
+    expect(readEventPass("another", v, now)).toBeNull();
+    const [, exp, sig] = v.split(".");
+    expect(readEventPass(SECRET, `${Buffer.from("ev-other").toString("base64url")}.${exp}.${sig}`, now)).toBeNull();
+  });
+
+  it("opens the calendar and that gathering's own routes, and nothing else", () => {
+    expect(eventPassOpens("/api/events", "ev-1")).toBe("list");
+    expect(eventPassOpens("/api/events/ev-1", "ev-1")).toBe("open");
+    expect(eventPassOpens("/api/events/ev-1/guest-rsvp", "ev-1")).toBe("open");
+    expect(eventPassOpens("/api/events/ev-10", "ev-1")).toBe(false);
+    expect(eventPassOpens("/api/org", "ev-1")).toBe(false);
+  });
+});
+
 describe("pickKeys", () => {
   it("keeps only the listed keys of an object, and nothing of anything else", () => {
     expect(pickKeys({ on: true, roleIds: ["a"], names: { a: "A" }, sections: { a: { payCeiling: 1 } }, team: [{ holders: ["X"] }] }, ["on", "roleIds", "names"])).toEqual({ on: true, roleIds: ["a"], names: { a: "A" } });
@@ -84,6 +104,7 @@ describe("the gate, on a real server", () => {
   let server: Server;
   let base = "";
   let required = true;
+  const PASS = "pass-for-our-own-automation-0123456789";
   const records = new Set<string>([ID]);
   const now = Date.now();
   // A local request to the test's own server, never an outbound call.
@@ -95,13 +116,22 @@ describe("the gate, on a real server", () => {
     const entered = entryChecker({ secret: SECRET, entryExists: async (id) => records.has(id) });
     app.use(
       entranceMiddleware(
-        { boolVar: (k) => (k === "entrance.required" ? required : false), authedUser: async (req) => (req.headers.authorization === "Bearer member" ? { id: "u1" } : null) },
+        {
+          boolVar: (k) => (k === "entrance.required" ? required : false),
+          authedUser: async (req) => (req.headers.authorization === "Bearer member" ? { id: "u1" } : null),
+          isAgent: async (req) => req.headers.authorization === "Bearer vat_live",
+          passToken: () => PASS,
+          eventPassFor: (req) => readEventPass(SECRET, cookieValue(req, "vos_event"))?.eventId ?? null,
+        },
         entered,
       ),
     );
     app.get("/api/org", (_req, res) => res.json({ roles: [{ id: "r", card: { publicPay: { kind: "range" } } }] }));
     app.get("/api/org/founding-team", (_req, res) => res.json({ on: true, roleIds: ["r"], names: { r: "Role" }, sections: { r: { payCeiling: { amount: 1 } } }, team: [{ holders: ["Ana"] }] }));
     app.get("/api/game/config", (_req, res) => res.json({ project: { name: "V" } }));
+    app.get("/api/events", (_req, res) => res.json({ events: [{ id: "ev-1" }, { id: "ev-2" }], timezone: "UTC" }));
+    app.get("/api/events/:id", (req, res) => res.json({ id: req.params.id }));
+    app.get("/api/events/:id/join", (_req, res) => res.json({ room: true }));
     app.post("/api/org", (_req, res) => res.json({ wrote: true }));
     server = app.listen(0);
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -145,6 +175,41 @@ describe("the gate, on a real server", () => {
     required = true;
     expect((await get("/api/game/config")).status).toBe(200);
     expect((await get("/api/org", { method: "POST" })).status).toBe(200);
+  });
+
+  it("lets an agent token through, as its holder is a member", async () => {
+    required = true;
+    expect((await get("/api/org", { headers: { Authorization: "Bearer vat_live" } })).status).toBe(200);
+    expect((await get("/api/org", { headers: { Authorization: "Bearer vat_dead" } })).status).toBe(401);
+  });
+
+  it("lets our own automation through by the pass header, and refuses a wrong one", async () => {
+    required = true;
+    expect((await get("/api/org", { headers: { "X-Entrance-Pass": PASS } })).status).toBe(200);
+    expect((await get("/api/org", { headers: { "X-Entrance-Pass": PASS + "x" } })).status).toBe(401);
+    expect((await get("/api/org", { headers: { "X-Entrance-Pass": "" } })).status).toBe(401);
+  });
+
+  it("refuses a visitor with no cookie at all", async () => {
+    required = true;
+    const r = await get("/api/org");
+    expect(r.status).toBe(401);
+    expect((await r.json()).error).toBe("entrance_required");
+  });
+
+  it("opens one gathering to an invited guest, and the calendar trimmed to it", async () => {
+    required = true;
+    const c = `vos_event=${encodeURIComponent(signEventPass(SECRET, "ev-1"))}`;
+    expect(await (await get("/api/events", { headers: { cookie: c } })).json()).toEqual({ events: [{ id: "ev-1" }], timezone: "UTC" });
+    expect((await get("/api/events/ev-1", { headers: { cookie: c } })).status).toBe(200);
+    expect((await get("/api/events/ev-2", { headers: { cookie: c } })).status).toBe(401);
+    expect((await get("/api/org", { headers: { cookie: c } })).status).toBe(401);
+    expect((await get("/api/events")).status).toBe(401);
+  });
+
+  it("keeps a gathering's join link open to anybody holding it", async () => {
+    required = true;
+    expect((await get("/api/events/ev-2/join")).status).toBe(200);
   });
 
   it("stands nowhere while the village keeps no entrance", async () => {

@@ -148,6 +148,9 @@ const BASE_SECRET_KEYS = [
   // typed under Admin, Integrations. Its site key is public by design and lives in the dial
   // `entrance.turnstile_site_key`. No host variable: an admin sets it, sealed.
   "turnstile_secret_key",
+  // The portal entrance's pass for the village's own automation (the lead, 24 Nov 2026: "I don't
+  // want to stop our own sessions from accessing it"). Carried in X-Entrance-Pass. No host variable.
+  "entrance_pass_token",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -204,6 +207,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   voice_transcription_key: null,
   voice_transcription_groq_key: null,
   turnstile_secret_key: null,
+  entrance_pass_token: null,
 };
 
 /**

@@ -45,9 +45,9 @@ export const ENTRIES_PER_HOUR = 8;
  * equals one of these or begins with one followed by `/`. Pages that already ask a visitor to
  * sign in are not listed: they need no second door.
  *
- * HELD FOR THE LEAD (the audit's judgment calls, 24 Nov 2026), and therefore NOT on either list
- * yet: `/governance`, `/gratitude`, `/network`, `/events`, `/seasonal-festivals` and the calendar
- * feed. They stay as they are until the lead answers; adding them is one line each here.
+ * The audit's judgment calls went behind it on the lead's word (24 Nov 2026, "Sounds good!"):
+ * `/governance`, `/gratitude`, `/network`, `/events`, `/seasonal-festivals` and the calendar feed.
+ * `/team` stays open, its names hidden until entry (its read of `/api/org` is refused).
  */
 export const ENTRANCE_PAGES: readonly string[] = [
   // Roles, pay and applying.
@@ -69,6 +69,12 @@ export const ENTRANCE_PAGES: readonly string[] = [
   "/feed",
   "/forum",
   "/introductions",
+  // How the village decides and thanks, its calendar and its festivals (the lead, 24 Nov 2026).
+  "/governance",
+  "/gratitude",
+  "/network",
+  "/events",
+  "/seasonal-festivals",
 ];
 
 /**
@@ -88,9 +94,12 @@ export const ENTRANCE_APIS: readonly string[] = [
   "/api/governance/objections",
   // The game.
   "/api/quests",
-  "/api/game/mechanics/history",
-  "/api/game/mechanics/proposals",
+  "/api/game/mechanics",
   "/api/game/pulse",
+  "/api/game/gratitude",
+  "/api/game/cycle",
+  "/api/game/rules",
+  "/api/governance/voice-spread",
   "/api/village/powers",
   "/api/badges",
   "/api/economy",
@@ -104,6 +113,9 @@ export const ENTRANCE_APIS: readonly string[] = [
   "/api/crowdpool",
   "/api/forum",
   "/api/feed",
+  // The calendar, the festivals' details and the network (the lead, 24 Nov 2026).
+  "/api/events",
+  "/api/network",
 ];
 
 /** Inside a gated prefix, what stays open, and why. */
@@ -111,6 +123,20 @@ export const ENTRANCE_API_EXEMPT: readonly string[] = [
   // The village's vision, which the brochure reads.
   "/api/org/vision",
 ];
+
+/**
+ * Paths inside a gated prefix that stay open by shape. The join link in a gathering's emails
+ * (`/api/events/<id>/join`) redirects an invited person into the room; it reads nothing.
+ */
+const EXEMPT_SHAPES: readonly RegExp[] = [/^\/api\/events\/[^/]+\/join$/];
+
+/** The header our own automation (release smoke, QA probes) carries to pass the entrance. */
+export const ENTRANCE_PASS_HEADER = "x-entrance-pass";
+
+/** A gathering's invite link carries this query parameter: a signed pass to that one gathering. */
+export const EVENT_PASS_PARAM = "pass";
+export const EVENT_PASS_COOKIE = "vos_event";
+export const EVENT_PASS_DAYS = 120;
 
 /**
  * A gated read a brochure page also needs, answered to a visitor who has not entered with only
@@ -132,10 +158,17 @@ export function pageBehindEntrance(path: string): boolean {
   return under(bare, ENTRANCE_PAGES);
 }
 
-/** Whether an API request path is behind the entrance. */
-export function apiBehindEntrance(path: string): boolean {
+/**
+ * Whether an API request path is behind the entrance. `query` matters for one path: a member's
+ * own calendar feed (`/api/events/calendar.ics?token=`) is read by a calendar app that carries no
+ * cookie, and the route checks its token strictly itself, so it passes; the tokenless public
+ * feed does not.
+ */
+export function apiBehindEntrance(path: string, query: Record<string, unknown> = {}): boolean {
   if (Object.prototype.hasOwnProperty.call(ENTRANCE_BROCHURE_KEYS, path)) return true;
   if (under(path, ENTRANCE_API_EXEMPT)) return false;
+  if (EXEMPT_SHAPES.some((re) => re.test(path))) return false;
+  if (path === "/api/events/calendar.ics" && typeof query.token === "string" && query.token !== "") return false;
   return under(path, ENTRANCE_APIS);
 }
 
@@ -179,6 +212,8 @@ export interface EntranceStatus {
   entered: boolean;
   /** The Turnstile site key, when the village has set the check up; null means the fallback check. */
   siteKey: string | null;
+  /** The one gathering an invite's pass opens on this device, or null. */
+  eventPass?: string | null;
 }
 
 export interface PortalEntry {

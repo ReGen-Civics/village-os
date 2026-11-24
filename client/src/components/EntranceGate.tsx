@@ -13,7 +13,7 @@
 import { lazy, useEffect, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useOptionalAuth } from "@/contexts/AuthContext";
-import { pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
+import { EVENT_PASS_PARAM, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
 
 const Entrance = lazy(() => import("@/pages/Entrance"));
 
@@ -27,6 +27,27 @@ function readStatus(): Promise<EntranceStatus | null> {
       .catch(() => null);
   }
   return statusRead;
+}
+
+/**
+ * An invited guest's link (`/events?pass=`, server/lib/comms/gatheringVars.ts): the pass is traded
+ * for a cookie that opens that one gathering, and the page loads again without it in the address.
+ * Answers true while that is under way.
+ */
+function takeEventPass(): boolean {
+  const params = new URLSearchParams(window.location.search);
+  const pass = params.get(EVENT_PASS_PARAM);
+  if (!pass) return false;
+  params.delete(EVENT_PASS_PARAM);
+  const rest = params.toString();
+  const clean = window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash;
+  // Whatever the answer, the page loads again: a pass that held opens the gathering, and one that
+  // ran out leaves the guest at the entrance, where the status says so.
+  void fetch("/api/entrance/event-pass", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pass }) })
+    .then((r) => r.ok)
+    .catch(() => false)
+    .finally(() => window.location.replace(clean));
+  return true;
 }
 
 /** For tests: forget the status. */
@@ -45,16 +66,19 @@ export default function EntranceGate({ children, waiting }: { children: ReactNod
 
   useEffect(() => {
     if (!ask || status !== undefined) return;
+    if (location.startsWith("/events") && takeEventPass()) return;
     let live = true;
     void readStatus().then((s) => live && setStatus(s));
     return () => {
       live = false;
     };
-  }, [ask, status]);
+  }, [ask, status, location]);
 
   if (!behind || signedIn) return <>{children}</>;
   if (authLoading || status === undefined) return <>{waiting}</>;
   if (!status || !status.required || status.entered) return <>{children}</>;
+  // An invited guest: the calendar, which the server trims to their gathering.
+  if (status.eventPass && (location === "/events" || location.startsWith("/events/"))) return <>{children}</>;
   const next = location + window.location.search + window.location.hash;
   return <Entrance next={next} siteKey={status.siteKey} />;
 }
