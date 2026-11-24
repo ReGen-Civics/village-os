@@ -63,6 +63,10 @@ function pairs(mode: "day" | "night"): Pair[] {
     out.push(["page titles on a panel", c("heading"), c("panel"), TEXT]);
     out.push(["the repainted logo on the band", c("logo"), c("band"), EDGE]);
     out.push(["page titles under the sky", c("heading"), c("sky"), TEXT]);
+    for (const s of surfaces) {
+      out.push([`gratitude on the dashboard, on the ${s}`, c("thanks"), c(s), TEXT]);
+      out.push([`a live session on the dashboard, on the ${s}`, c("session"), c(s), TEXT]);
+    }
   }
   return out;
 }

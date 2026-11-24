@@ -1807,6 +1807,8 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --pal-day-sky: #ead7b4;              /* the sky at the top of a page */
   --pal-day-sun: rgb(255 236 196 / 0.95);
   --pal-day-shadow: 0 1px 2px rgb(43 39 32 / 0.06), 0 14px 32px -18px rgb(122 90 34 / 0.28);
+  --pal-day-thanks: #8e3552;           /* gratitude, as text (the dashboard) */
+  --pal-day-session: #55489a;          /* a live session, as text (the dashboard) */
 
   /* DARK: Canopy at Night */
   --pal-night-ground: #14362b;
@@ -2084,6 +2086,11 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root[data-mode="dark"] :is(.text-teal-light, .text-sage):not(.admin-root *) {
   color: var(--sheet-living);
 }
+/* The brand's band colour as text (the welcome's "See the open quests" on a
+   white button the dark remap turns to a night panel): read as the page's ink. */
+:root[data-mode="dark"] .text-teal-band:not(.admin-root *) {
+  color: var(--foreground);
+}
 /* Tailwind inlines these two inks as literals (@theme inline), so the
    variables redeclared on <body> cannot reach the utility: named here. */
 :root[data-mode="dark"] :is(.text-amber-ink, .text-gold):not(.admin-root *) {
@@ -2100,6 +2107,72 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root[data-mode="dark"] [data-mobile-fab] button[aria-haspopup] {
   outline: 1px solid var(--band-rule);
   outline-offset: 1px;
+}
+
+/*
+ * THE PROFILE DASHBOARD IN EACH MODE (QA audit, signed in, 24 Nov 2026). Its
+ * purses and panels are night colours by default (--color-dash-* reads the
+ * --sheet-dash-* knobs), so in light mode its gold text sat on cream at 1.18:1
+ * and its raised panels stayed dark under dark ink. Each knob reads the
+ * palette here, and a filled gold button takes the ground as its ink.
+ */
+:root[data-mode="light"] .sheet-night,
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+  /* (The second selector: a dialog is sand in dark mode, so it draws the day's dashboard too.) */
+  --sheet-dash-gold: var(--day-accent, var(--pal-day-accent));
+  --sheet-dash-gold-lit: var(--day-accent, var(--pal-day-accent));
+  --sheet-dash-gold-edge: var(--day-rule-soft, var(--pal-day-rule-soft));
+  --sheet-dash-gold-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-cash: var(--day-living, var(--pal-day-living));
+  --sheet-dash-cash-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-voice: var(--day-living, var(--pal-day-living));
+  --sheet-dash-thanks: var(--pal-day-thanks);
+  --sheet-dash-thanks-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-session: var(--pal-day-session);
+  --sheet-dash-raised: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-warm: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-warm-edge: var(--day-rule-soft, var(--pal-day-rule-soft));
+  --sheet-dash-next: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-track: color-mix(in srgb, var(--day-edge, var(--pal-day-edge)) 35%, var(--day-panel, var(--pal-day-panel)));
+  --sheet-dash-chip: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-edge: color-mix(in srgb, var(--day-edge, var(--pal-day-edge)) 55%, var(--day-panel, var(--pal-day-panel)));
+}
+:root[data-mode="dark"] .sheet-night {
+  --sheet-dash-gold: var(--night-accent, var(--pal-night-accent));
+  --sheet-dash-gold-lit: var(--night-accent-highlight, var(--pal-night-accent-highlight));
+  --sheet-dash-gold-ink: var(--night-ground, var(--pal-night-ground));
+  --sheet-dash-raised: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-warm: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-next: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-track: color-mix(in srgb, var(--night-edge, var(--pal-night-edge)) 35%, var(--night-panel, var(--pal-night-panel)));
+  --sheet-dash-chip: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-edge: color-mix(in srgb, var(--night-edge, var(--pal-night-edge)) 55%, var(--night-panel, var(--pal-night-panel)));
+}
+/* The rites packet is laid on a dark table in both modes (rites.css,
+   .packapp): on it, text takes the night's inks whatever the mode. */
+:root[data-mode="light"] .rites .packapp.app {
+  --foreground: var(--night-ink, var(--pal-night-ink));
+  --muted-foreground: var(--night-ink-dim, var(--pal-night-ink-dim));
+  --border: var(--night-edge, var(--pal-night-edge));
+  color: var(--foreground);
+  color-scheme: dark;
+}
+/* A chart colour used as text on a light sheet (the hidden map's "vouched"):
+   chart-3 is a pale tone drawn for fills, 2.13:1 on the day ground. */
+:root[data-mode="light"] .sheet-night .text-chart-3 {
+  color: var(--sheet-open);
+}
+/* The rites world's "success" (its "live" mark, its ticks) is the chart's pale
+   tone, drawn for the night; by day it is the living green. */
+:root[data-mode="light"] .rites {
+  --success: var(--sheet-open);
+}
+/* The rites' gold button runs from the brand's soft tone to its fill. In dark
+   mode the fill is the night's accent, and a village whose soft tone is dark
+   drew the "Print" button near-black under its ground-coloured label. */
+:root[data-mode="dark"] .rites .btn.gold {
+  background: linear-gradient(180deg, var(--sheet-earned-highlight), var(--sheet-earned));
+  color: var(--sheet-ground);
 }
 
 /*
