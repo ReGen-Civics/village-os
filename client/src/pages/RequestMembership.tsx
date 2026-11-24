@@ -34,6 +34,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarDays } from "lucide-react";
 
 import Layout from "@/components/Layout";
+import { BTN_PRIMARY, H1, LINK, WORLD } from "@/components/journey/look";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import { useVillageName } from "@/hooks/useVillageName";
 import { authToken } from "@/lib/gameApi";
@@ -100,7 +101,8 @@ export default function RequestMembership() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-background py-16">
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={`${WORLD} py-16`}>
         <div className="container max-w-2xl">
           {sent ? (
             <section aria-live="polite" className="rounded-2xl border border-border bg-card p-8 shadow-sm">
@@ -117,7 +119,7 @@ export default function RequestMembership() {
               </p>
               <a
                 href="/events"
-                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className={`mt-6 ${BTN_PRIMARY} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <CalendarDays className="h-5 w-5" aria-hidden="true" />
                 See calls and events
@@ -126,7 +128,7 @@ export default function RequestMembership() {
           ) : (
             <>
               <div className="mb-8">
-                <h1 className="font-display text-4xl font-bold text-foreground">Ask to join {villageName}</h1>
+                <h1 className={H1}>Ask to join {villageName}</h1>
                 <p className="mt-3 text-muted-foreground">
                   Everybody here arrives because somebody already in the village knows them. If nobody has invited you
                   yet, tell us a little about yourself and someone will be in touch.
@@ -214,7 +216,7 @@ export default function RequestMembership() {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  className={`${BTN_PRIMARY} w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   {sending ? "Sending..." : "Send my request"}
                   {!sending && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
@@ -223,7 +225,7 @@ export default function RequestMembership() {
 
               <p className="mt-6 text-center text-muted-foreground">
                 Want to meet us first?{" "}
-                <a href="/events" className="font-medium text-foreground underline underline-offset-2">
+                <a href="/events" className={LINK}>
                   Come to a community call or an event
                 </a>
                 .
@@ -231,14 +233,14 @@ export default function RequestMembership() {
               {/* Somebody who already knows the role they want can propose for it, no account needed (sheet 19i). */}
               <p className="mt-3 text-center text-muted-foreground">
                 Know the role you'd take on next season?{" "}
-                <a href="/propose-a-role" className="font-medium text-foreground underline underline-offset-2">
+                <a href="/propose-a-role" className={LINK}>
                   Propose a role
                 </a>
                 .
               </p>
               {/* The draft board: every open role by character, a shortlist, then apply (pages/RoleDraft.tsx). */}
               <p className="mt-3 text-center text-muted-foreground">
-                <a href="/roles/select" className="font-medium text-foreground underline underline-offset-2">
+                <a href="/roles/select" className={LINK}>
                   {t({ message: "Find your roles", context: "join page link" })}
                 </a>
               </p>
