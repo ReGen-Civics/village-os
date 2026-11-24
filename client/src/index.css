@@ -1910,7 +1910,44 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * rules below, which read `[data-mode="dark"]` as well as the village's own
  * dark scheme. Admin keeps its own ruling and is skipped, as there.
  */
-:root[data-mode="dark"] {
+/*
+ * Admin stays light by ruling (2026-09-04; the coordinator kept it for modes,
+ * 24 Nov 2026). The night is promoted on <body>, not <html>, so the root still
+ * holds the village's light tokens: --light-* copies them there, and
+ * `.admin-root` takes them back below. A copy on the root is the only way to
+ * reach them, because an element that redeclares a token cannot read its
+ * parent's value of it. A dark-scheme village's root is already its night, so
+ * there theme.css's own `.admin-root` block (its light derivation) does this.
+ */
+:root {
+  --light-background: var(--background);
+  --light-foreground: var(--foreground);
+  --light-card: var(--card);
+  --light-card-foreground: var(--card-foreground);
+  --light-popover: var(--popover);
+  --light-popover-foreground: var(--popover-foreground);
+  --light-muted: var(--muted);
+  --light-muted-foreground: var(--muted-foreground);
+  --light-border: var(--border);
+  --light-input: var(--input);
+  --light-ring: var(--ring);
+}
+:root[data-mode="dark"]:not([data-scheme="dark"]) .admin-root:not(.sheet-night) {
+  --background: var(--light-background);
+  --foreground: var(--light-foreground);
+  --card: var(--light-card);
+  --card-foreground: var(--light-card-foreground);
+  --popover: var(--light-popover);
+  --popover-foreground: var(--light-popover-foreground);
+  --muted: var(--light-muted);
+  --muted-foreground: var(--light-muted-foreground);
+  --border: var(--light-border);
+  --input: var(--light-input);
+  --ring: var(--light-ring);
+  color-scheme: light;
+  color: var(--foreground);
+}
+:root[data-mode="dark"] body {
   --background: var(--sheet-ground, #0d1411);
   --foreground: var(--sheet-ink, #e9efe6);
   --card: var(--sheet-panel, #16221c);
@@ -2440,3 +2477,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   }
 }
 
+
+/* The header logo: with a light-band mark set (images.logoLight), light mode
+   shows it and every other look shows the usual one (Layout.tsx). */
+[data-logo="light"],
+:root[data-mode="light"] [data-logo="night"] {
+  display: none;
+}
+:root[data-mode="light"] [data-logo="light"] {
+  display: inline;
+}

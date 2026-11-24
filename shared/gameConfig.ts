@@ -274,6 +274,12 @@ export interface GameConfig {
     masterPlanHero: string;
     /** Header logo (on the primary-colour nav). ~64px tall, width auto. */
     logo: string;
+    /**
+     * The header logo on the light band, in light mode (the brand mark drawn
+     * for a pale ground, e.g. Emerald on Linen). Blank: light mode shows
+     * `logo`. Its description is `logoAlt`: it is the same mark.
+     */
+    logoLight?: string;
     /** Footer/secondary mark. ~90px tall, width auto. */
     heartLogo: string;
     /** Browser tab icon, swapped in client-side once config loads. */
@@ -585,6 +591,7 @@ export const GAME_CONFIG: GameConfig = {
     // what makes that fallback engage instead of being permanently shadowed
     // by a non-empty default.
     logo: "",
+    logoLight: "",
     heartLogo: "",
     favicon: "",
   },

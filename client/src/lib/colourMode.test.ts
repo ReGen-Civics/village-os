@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_MODE, MODES_LIVE, MODE_KEY, applyMode, resolveMode } from "./colourMode";
+import { DEFAULT_MODE, FOLLOW_DEVICE, MODES_LIVE, MODE_KEY, applyMode, resolveMode } from "./colourMode";
 
 const shell = readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
 const firstPaint = (() => {
@@ -16,8 +16,8 @@ function prefers(scheme: "dark" | "light" | null) {
   window.matchMedia = vi.fn((q: string) => ({ matches: scheme !== null && q.includes(scheme) })) as unknown as typeof window.matchMedia;
 }
 
-function runShellScript(live: boolean) {
-  const src = firstPaint.replace(/var live = (true|false)/, `var live = ${live}`);
+function runShellScript(live: boolean, device: boolean) {
+  const src = firstPaint.replace(/var live = (true|false)/, `var live = ${live}`).replace(/device = (true|false)/, `device = ${device}`);
   // eslint-disable-next-line no-new-func
   new Function(src)();
 }
@@ -38,9 +38,15 @@ describe("resolveMode", () => {
     expect(resolveMode(false)).toBe("dark");
   });
 
-  it("follows the device when nobody has chosen, once live", () => {
+  it("opens in light whatever the device says, while FOLLOW_DEVICE is off", () => {
+    expect(FOLLOW_DEVICE).toBe(false);
     prefers("dark");
-    expect(resolveMode(true)).toBe("dark");
+    expect(resolveMode(true)).toBe("light");
+  });
+
+  it("follows the device when nobody has chosen, once FOLLOW_DEVICE is on", () => {
+    prefers("dark");
+    expect(resolveMode(true, true)).toBe("dark");
   });
 
   it("falls back to light when the device says nothing", () => {
@@ -79,19 +85,20 @@ describe("applyMode", () => {
 });
 
 describe("the first-paint script in client/index.html agrees with colourMode.ts", () => {
-  it("carries the same live flag and fallback", () => {
+  it("carries the same live flag, device flag and fallback", () => {
     expect(firstPaint).toContain(`var live = ${MODES_LIVE}`);
+    expect(firstPaint).toContain(`device = ${FOLLOW_DEVICE}`);
     expect(firstPaint).toContain(`fallback = "${DEFAULT_MODE}"`);
   });
 
-  const cases: { stored: string | null; device: "dark" | "light" | null; live: boolean }[] = [];
-  for (const stored of [null, "light", "dark", "sepia"]) for (const device of [null, "light", "dark"] as const) for (const live of [true, false]) cases.push({ stored, device, live });
+  const cases: { stored: string | null; device: "dark" | "light" | null; live: boolean; follow: boolean }[] = [];
+  for (const stored of [null, "light", "dark", "sepia"]) for (const device of [null, "light", "dark"] as const) for (const live of [true, false]) for (const follow of [true, false]) cases.push({ stored, device, live, follow });
 
-  it.each(cases)("stored $stored, device $device, live $live", ({ stored, device, live }) => {
+  it.each(cases)("stored $stored, device $device, live $live, follow $follow", ({ stored, device, live, follow }) => {
     if (stored) localStorage.setItem(MODE_KEY, stored);
     prefers(device);
-    const want = resolveMode(live);
-    runShellScript(live);
+    const want = resolveMode(live, follow);
+    runShellScript(live, follow);
     expect(document.documentElement.getAttribute("data-mode")).toBe(want);
   });
 });

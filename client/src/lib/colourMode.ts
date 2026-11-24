@@ -13,7 +13,8 @@
  * the two to each other.
  *
  *   1. the visitor's own choice, remembered in this browser;
- *   2. the device's preference (prefers-color-scheme), once MODES_LIVE;
+ *   2. the device's preference (prefers-color-scheme), once MODES_LIVE, and
+ *      only while FOLLOW_DEVICE is on;
  *   3. DEFAULT_MODE, once MODES_LIVE.
  */
 
@@ -33,6 +34,15 @@ export const DEFAULT_MODE: Mode = "light";
  * script carries the same flag as `live`.
  */
 export const MODES_LIVE = false;
+
+/**
+ * Whether a first visit follows the device's light or dark setting. Off: the
+ * lead asked for light as the default, so a first visit opens in light
+ * whatever the device says, and the visitor's own choice is the only thing
+ * that changes it (coordinator, 24 Nov 2026). One line to turn on; the
+ * first-paint script carries the same flag as `device`.
+ */
+export const FOLLOW_DEVICE = false;
 
 export function isMode(v: unknown): v is Mode {
   return v === "light" || v === "dark";
@@ -58,11 +68,11 @@ function deviceMode(): Mode | null {
 }
 
 /** The mode this visitor should see, or null for the look from before modes. */
-export function resolveMode(live: boolean = MODES_LIVE): Mode | null {
+export function resolveMode(live: boolean = MODES_LIVE, followDevice: boolean = FOLLOW_DEVICE): Mode | null {
   const stored = storedMode();
   if (stored) return stored;
   if (!live) return null;
-  return deviceMode() ?? DEFAULT_MODE;
+  return (followDevice ? deviceMode() : null) ?? DEFAULT_MODE;
 }
 
 /** The mode on the page now, as the switch should show it. */

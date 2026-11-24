@@ -7,9 +7,6 @@ import { ModeAndLanguage } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import NotificationBell from "@/components/NotificationBell";
-import NotificationToasts from "@/components/NotificationToasts";
-import RewardMoment from "@/components/RewardMoment";
-import SeasonSummaryOffer from "@/components/seasonSummary/SeasonSummaryOffer";
 import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import MessageCountBadge from "@/components/messages/MessageCountBadge";
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
@@ -18,7 +15,8 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MobileFab = lazy(() => import("./mobile/MobileFab"));
+const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx) // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
@@ -242,12 +240,10 @@ export default function Layout({ children }: LayoutProps) {
             style={{ minHeight: "64px" }}
           >
             {cfg?.images?.logo ? (
-              <img
-                src={cfg.images.logo}
-                alt={altOr(cfg.images.logoAlt, villageName || "Village logo")}
-                style={{ height: "64px", width: "auto" }}
-                draggable={false}
-              />
+              /* Light mode's band is pale, so a village can give it its own mark (images.logoLight); index.css shows one of the two. */
+              [cfg.images.logo, cfg.images.logoLight].filter(Boolean).map((src, i) => (
+                <img key={i} src={src} alt={altOr(cfg.images.logoAlt, villageName || "Village logo")} style={{ height: "64px", width: "auto" }} draggable={false} data-logo={i ? "light" : cfg.images.logoLight ? "night" : undefined} />
+              ))
             ) : villageName ? (
               /* A flex item of the link above, which is already `items-center`
                  inside a 64px box, so the wordmark sits on the same baseline
@@ -902,9 +898,7 @@ export default function Layout({ children }: LayoutProps) {
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
-      {user && <NotificationToasts />}
-      {user && <RewardMoment />}
-      {user && <SeasonSummaryOffer /> /* idea 4: once, after a season turns */}
+      {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
     </div>
   );
 }

@@ -44,13 +44,13 @@
     -->
     <script>
       (function () {
-        var live = false, fallback = "light", light = "#f3ebdd";
+        var live = false, device = false, fallback = "light", light = "#f3ebdd";
         var d = document.documentElement, m = null;
         try { m = localStorage.getItem("village-mode"); } catch (e) {}
         if (m !== "light" && m !== "dark") {
           m = null;
           if (live) {
-            try {
+            if (device) try {
               if (matchMedia("(prefers-color-scheme: dark)").matches) m = "dark";
               else if (matchMedia("(prefers-color-scheme: light)").matches) m = "light";
             } catch (e) {}

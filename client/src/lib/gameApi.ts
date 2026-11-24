@@ -37,6 +37,8 @@ export interface BrandImages {
   prosperityHero?: string;
   masterPlanHero?: string;
   logo?: string;
+  /** The header logo for the light band in light mode; blank shows `logo` (shared/gameConfig.ts). */
+  logoLight?: string;
   heartLogo?: string;
   favicon?: string;
   /*
