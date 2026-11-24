@@ -69,10 +69,10 @@ export default function ClosingPolicyCard({ closing }: { closing: ClosingSection
   const named = closingNamed(closing);
   const def = named && closing ? closingPolicyDef(closing.policyId) : null;
   return (
-    <div className="bg-card border border-border rounded-xl p-5">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-2 mb-2">
-        <Landmark className="w-4 h-4 text-teal-deep" aria-hidden="true" />
-        <p className="font-semibold text-foreground text-sm">
+        <Landmark className="w-5 h-5 text-notice" aria-hidden="true" />
+        <p className="font-display text-xl font-bold text-card-foreground">
           <Trans context="heading of the closing policy card">If the village closes</Trans>
         </p>
       </div>
@@ -144,7 +144,7 @@ export function ClosingSuggestDoor({ closing }: { closing: ClosingSectionForRead
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="min-h-[44px] rounded-lg border border-teal-deep px-4 text-sm font-medium text-teal-deep hover:bg-teal-deep/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
+          className="jw-btn min-h-[44px] rounded-lg border border-notice/70 px-4 text-sm font-medium text-notice hover:bg-notice/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Trans context="button that suggests a change to what closing means">Suggest a change</Trans>
         </button>
@@ -221,7 +221,7 @@ export function ClosingSuggestDoor({ closing }: { closing: ClosingSectionForRead
         <button
           type="submit"
           disabled={busy}
-          className="min-h-[44px] rounded-lg bg-teal-deep px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
+          className="jw-btn min-h-[44px] rounded-xl bg-notice px-4 text-sm font-semibold text-background hover:bg-notice/90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Trans context="button that sends a closing policy suggestion">Send the suggestion</Trans>
         </button>
@@ -296,7 +296,7 @@ export function ClosingAdvisoryDoor() {
     return (
       <p className={line}>
         <Trans>The village is deciding a change to this right now.</Trans>{" "}
-        <Link href={`/decisions/${running}`} className="font-medium text-teal-deep underline">
+        <Link href={`/decisions/${running}`} className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
           <Trans>Go to the vote</Trans>
         </Link>
       </p>
@@ -328,7 +328,7 @@ export function ClosingAdvisoryDoor() {
         <button
           type="button"
           onClick={() => setAsking(true)}
-          className="min-h-[44px] rounded-lg border border-teal-deep px-4 text-sm font-medium text-teal-deep hover:bg-teal-deep/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
+          className="jw-btn min-h-[44px] rounded-lg border border-notice/70 px-4 text-sm font-medium text-notice hover:bg-notice/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Trans context="button that proposes a change to what closing means">Propose a change</Trans>
         </button>

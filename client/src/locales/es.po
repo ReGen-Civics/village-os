@@ -8097,6 +8097,12 @@ msgctxt "sera answers"
 msgid "Each one leaves the list until {agent} changes it again."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ExitPolicy.tsx
+msgctxt "exit policy page eyebrow"
+msgid "How departure works"
+msgstr "Cómo funciona la partida"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths, a pasted path that is new"
 msgid "Adds"

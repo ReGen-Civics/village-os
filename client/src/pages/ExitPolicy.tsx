@@ -17,6 +17,7 @@ import ClosingPolicyCard from "@/components/ClosingPolicyCard";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { plural } from "@lingui/core/macro";
 import { failureWords } from "@/lib/failureWords";
+import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, LEDE, WORLD } from "@/components/journey/look";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -114,12 +115,17 @@ export default function ExitPolicy() {
 
   return (
     <Layout>
-      <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
-        <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">
+      {/* The night world (public launch, 24 Nov 2026): the sheet's ground and tokens, the same words. */}
+      <div className={WORLD}>
+      <section className="pt-12 pb-4 sm:pt-16">
+        <div className="container max-w-2xl">
+          <p className={EYEBROW}>
+            <Trans context="exit policy page eyebrow">How departure works</Trans>
+          </p>
+          <h1 className={`${H1} mt-2`}>
             <Trans context="exit policy page title">Leaving Well</Trans>
           </h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className={`${LEDE} mt-4`}>
             <Trans>
               A village that designs its exits before it needs them can afford to
               welcome people wholeheartedly. This is how departure works here.
@@ -128,10 +134,10 @@ export default function ExitPolicy() {
         </div>
       </section>
 
-      <section className="py-8 bg-background">
+      <section className="pt-6 pb-16">
         <div className="container max-w-2xl space-y-6">
           {policy?.placeholder && (
-            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+            <p className="text-sm text-foreground bg-notice/10 border border-notice/50 rounded-lg px-4 py-2.5">
               <Trans>
                 These are the platform's starting terms. The community has not
                 yet written its own. Treat them as a draft to be decided
@@ -139,13 +145,13 @@ export default function ExitPolicy() {
               </Trans>
             </p>
           )}
-          {msg && <p role="status" className="text-sm text-teal-deep bg-teal-deep/10 rounded-lg px-4 py-2.5">{msg}</p>}
-          {shownError && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">{shownError}</p>}
+          {msg && <p role="status" className="text-sm text-open bg-open/10 border border-open/40 rounded-lg px-4 py-2.5">{msg}</p>}
+          {shownError && <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive rounded-lg px-4 py-2.5">{shownError}</p>}
 
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
-              <DoorOpen className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm"><Trans context="exit policy section heading">Choosing to leave</Trans></p>
+              <DoorOpen className="w-5 h-5 text-notice" aria-hidden="true" />
+              <p className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Choosing to leave</Trans></p>
             </div>
             <p className="text-sm text-muted-foreground mb-3">
               <Trans>
@@ -162,10 +168,10 @@ export default function ExitPolicy() {
             <p className="text-xs text-muted-foreground mt-3">{policy?.voluntary?.valuationMethod}</p>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
-              <ShieldQuestion className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm"><Trans>If the village asks someone to leave</Trans></p>
+              <ShieldQuestion className="w-5 h-5 text-notice" aria-hidden="true" />
+              <p className="font-display text-xl font-bold text-card-foreground"><Trans>If the village asks someone to leave</Trans></p>
             </div>
             <p className="text-sm text-muted-foreground">{policy?.involuntary?.process}</p>
             {(policy?.involuntary?.decidingCircle || policy?.involuntary?.appealCircle) && (
@@ -186,10 +192,10 @@ export default function ExitPolicy() {
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
-              <HeartHandshake className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm"><Trans context="exit policy section heading">Repair before departure</Trans></p>
+              <HeartHandshake className="w-5 h-5 text-notice" aria-hidden="true" />
+              <p className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Repair before departure</Trans></p>
             </div>
             <p className="text-sm text-muted-foreground mb-2">
               <Trans>
@@ -256,9 +262,9 @@ export default function ExitPolicy() {
                 </p>
                 <textarea value={intake} onChange={(e) => setIntake(e.target.value)} rows={3}
                   placeholder={t`What happened, in your own words…`}
-                  className="w-full text-sm border border-border rounded-lg px-3 py-2" />
+                  className={`${FIELD} w-full px-3 py-2 text-base`} />
                 <button onClick={sendIntake} disabled={!intake.trim()}
-                  className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
+                  className={`${BTN_PRIMARY} text-sm`}>
                   <Trans context="button that sends a private restorative intake">Send privately</Trans>
                 </button>
               </div>
@@ -270,8 +276,8 @@ export default function ExitPolicy() {
 
           {user && (
             // The delete screen's "Leave the village instead" lands here (`?focus=begin-departure`).
-            <div id="begin-departure" className="bg-card border border-border rounded-xl p-5 scroll-mt-24">
-              <p className="font-semibold text-foreground text-sm mb-2"><Trans>Begin your own departure</Trans></p>
+            <div id="begin-departure" className={`${CARD} scroll-mt-24`}>
+              <p className="font-display text-xl font-bold text-card-foreground mb-2"><Trans>Begin your own departure</Trans></p>
               <p className="text-xs text-muted-foreground mb-3">
                 <Trans>
                   This opens the process above. It does not close your account.
@@ -288,12 +294,12 @@ export default function ExitPolicy() {
                 <IdentityConfirmField state={identity} action="request-exit"
                   password={password} onPassword={setPassword}
                   placeholder={t`Confirm with your password`}
-                  inputClassName="w-full text-sm border border-border rounded-lg px-3 py-2" />
+                  inputClassName={`${FIELD} w-full px-3 py-2 text-base`} />
                 <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
                   placeholder={t`Anything you want the stewards to know (optional)`}
-                  className="w-full text-sm border border-border rounded-lg px-3 py-2" />
+                  className={`${FIELD} w-full px-3 py-2 text-base`} />
                 <button onClick={requestExit} disabled={!identityReady(identity, password)}
-                  className="text-sm border border-red-300 text-red-600 rounded-lg px-4 py-2 font-medium hover:bg-red-50 disabled:opacity-40">
+                  className="jw-btn inline-flex min-h-11 items-center justify-center rounded-lg border border-destructive px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50">
                   <Trans>Open my departure process</Trans>
                 </button>
               </div>
@@ -301,6 +307,7 @@ export default function ExitPolicy() {
           )}
         </div>
       </section>
+      </div>
     </Layout>
   );
 }
