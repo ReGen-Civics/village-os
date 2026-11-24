@@ -100,6 +100,24 @@ describe("reportCrash rate limit", () => {
 });
 
 describe("installCrashReporting", () => {
+  it("tells neither a chunk that did not arrive (the page reloads for it) nor a fetch the network dropped", () => {
+    const listeners = new Map<string, (ev: Event) => void>();
+    const target = { addEventListener: (type: string, fn: (ev: Event) => void) => listeners.set(type, fn) } as unknown as Window;
+    const s = senderAt();
+    installCrashReporting(target, s.sender);
+    const stale = new TypeError("Failed to fetch dynamically imported module: https://village.example/assets/Quests-abc123.js");
+    listeners.get("unhandledrejection")!({ reason: stale } as unknown as Event);
+    listeners.get("error")!({ message: stale.message, error: stale } as unknown as Event);
+    listeners.get("unhandledrejection")!({ reason: new Error("copy part a1b2c3d4e5f6: 404") } as unknown as Event);
+    listeners.get("unhandledrejection")!({ reason: new TypeError("Failed to fetch") } as unknown as Event);
+    listeners.get("unhandledrejection")!({ reason: new TypeError("Load failed") } as unknown as Event);
+    listeners.get("unhandledrejection")!({ reason: new TypeError("NetworkError when attempting to fetch resource.") } as unknown as Event);
+    expect(s.sent).toHaveLength(0);
+    // A real error that only mentions a fetch is still told.
+    listeners.get("unhandledrejection")!({ reason: new Error("Failed to fetch the quest list: 500") } as unknown as Event);
+    expect(s.sent.map((r) => r.message)).toEqual(["Failed to fetch the quest list: 500"]);
+  });
+
   it("reports a window error and an unhandled rejection, and ignores noise", () => {
     const listeners = new Map<string, (ev: Event) => void>();
     const target = { addEventListener: (type: string, fn: (ev: Event) => void) => listeners.set(type, fn) } as unknown as Window;

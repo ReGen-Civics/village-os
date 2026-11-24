@@ -20,6 +20,8 @@
  * MIN_GAP_MS apart. A render loop that throws a thousand times sends one.
  */
 
+import { isStaleBuildMessage } from "@shared/staleBuild";
+
 export type CrashSource = "boundary" | "error" | "rejection";
 
 /** The whole report. Adding a field here is a privacy decision: say why in the commit. */
@@ -187,10 +189,28 @@ export function reportCrash(err: unknown, source: CrashSource, sender: CrashSend
  */
 export function isNoise(message: string, stack: string): boolean {
   if (!message || message === "Script error." || /ResizeObserver loop/.test(message)) return true;
+  // A fetch the network dropped (offline, a tunnel, a tab put away mid-request): each engine's
+  // whole message for it, and nothing about the page. Matched whole, so a real error that merely
+  // mentions a fetch is still told.
+  if (NETWORK_DROP.test(message)) return true;
   return /(?:chrome|moz|safari(?:-web)?)-extension:\/\//.test(stack);
 }
 
-/** Listen for the window's own crashes. Called once from main.tsx. */
+/** "TypeError: Failed to fetch" (Chromium), "Load failed" (Safari), "NetworkError when attempting to fetch resource." (Firefox). */
+const NETWORK_DROP = /^(?:TypeError: )?(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?)$/;
+
+/**
+ * Listen for the window's own crashes. Called once from main.tsx.
+ *
+ * A CHUNK OR COPY PART THAT DID NOT ARRIVE is not told from here (public
+ * launch QA, 24 Nov 2026). The page is already reloading itself for it
+ * (lib/staleChunk.ts, on `vite:preloadError`), and when a reload is not
+ * allowed the error boundary shows the card and reports it then. Told from
+ * here as well, every deploy sent "Failed to fetch dynamically imported
+ * module" from tabs that were about to come back on their own, and a report
+ * that lands on a server still serving the same bundle (a deploy in flight)
+ * passes the crash route's stale check and emails the admins.
+ */
 export function installCrashReporting(target: Pick<Window, "addEventListener"> = window, sender: CrashSender = browserSender): void {
   target.addEventListener("error", (ev: Event) => {
     const e = ev as ErrorEvent;
@@ -198,12 +218,14 @@ export function installCrashReporting(target: Pick<Window, "addEventListener"> =
     if (typeof e.message !== "string") return;
     const err = e.error ?? { message: e.message };
     if (isNoise(e.message, String(err?.stack ?? e.filename ?? ""))) return;
+    if (isStaleBuildMessage(e.message)) return;
     reportCrash(err, "error", sender);
   });
   target.addEventListener("unhandledrejection", (ev: Event) => {
     const reason = (ev as PromiseRejectionEvent).reason;
     const message = String(reason?.message ?? reason ?? "");
     if (isNoise(message, String(reason?.stack ?? ""))) return;
+    if (isStaleBuildMessage(message)) return;
     reportCrash(reason ?? { message: "unhandled rejection" }, "rejection", sender);
   });
 }
