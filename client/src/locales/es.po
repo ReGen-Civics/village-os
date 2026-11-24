@@ -1278,6 +1278,12 @@ msgctxt "rites"
 msgid "underway"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by members and the public, mid-sentence"
+msgid "the village guide"
+msgstr "la guía de la aldea"
+
 #: client/src/components/sessions/HarvestPlant.tsx
 msgctxt "friday harvest, the line under the read back"
 msgid "Nothing is marked as failed. What did not grow goes back to Monday's soil."
@@ -11829,12 +11835,6 @@ msgctxt "founding application know us fork"
 msgid "Explore the Steward path first"
 msgstr "Explora primero el camino de Steward"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/SeasonalFestivals.tsx
-msgctxt "seasonal festivals: under this season's goals, the invitation to the steward path"
-msgid "If you can help us meet these, consider the <0>Village Steward path</0>."
-msgstr "Si puedes ayudarnos a alcanzarlas, considera el <0>camino de Steward de la aldea</0>."
-
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Nobody holds the {chosenName} role today, so a request would reach nobody. <0>Give the role a holder under Power groups</0>, or name a contact outside the village."
 msgstr ""
@@ -13468,6 +13468,12 @@ msgstr "Ocupa un rol en el equipo, con sus propias responsabilidades y condicion
 msgctxt "rites"
 msgid "Copy the link"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat: while the guide writes its reply"
+msgid "{thinkingName} is thinking…"
+msgstr "{thinkingName} está pensando…"
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Always the village's to edit. Choosing the default fills this with its words: keep its first sentence, which is the default itself, and change or add anything else."
@@ -17888,6 +17894,12 @@ msgctxt "talk it out: quick start with words in the box"
 msgid "Help me make what I've written clearer."
 msgstr "Ayúdame a que lo que escribí quede más claro."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: under this season's goals, the invitation to the steward path"
+msgid "If you can help us meet these, consider the <0>Village Steward path</0>."
+msgstr "Si puedes ayudarnos a alcanzarlas, considera el <0>camino de Steward de la aldea</0>."
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 #~ msgctxt "coming-soon waitlist: what the details are for"
 #~ msgid "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time."
@@ -18810,45 +18822,9 @@ msgid "{0}, amount in {currency}"
 msgstr "{0}, monto en {currency}"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
-msgctxt "admin helper, unnamed guide"
-msgid "your village guide"
-msgstr ""
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/lib/guideNameWords.ts
-msgctxt "the village guide's name while the village has not named it, read by a founder or admin, mid-sentence"
-msgid "your village guide"
-msgstr "tu guía de la aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/lib/guideNameWords.ts
-msgctxt "the village guide's name while the village has not named it, read by members and the public, mid-sentence"
-msgid "the village guide"
-msgstr "la guía de la aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/GuideChat.tsx
-msgctxt "guide chat, proposing a quest: the guide's first message"
-msgid "Hi, I'm {assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring."
-msgstr "Hola, soy {assistantName}. ¿Falta una misión en el tablero? Cuéntame qué te encantaría aportar."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/GuideChat.tsx
-msgctxt "guide chat, work with us: the guide's first message when the village wrote no greeting of its own"
-msgid "Hi, I'm {assistantName}, and I help people shape their offering to {projectName}. What are you dreaming of bringing? There's no wrong way to start."
-msgstr "Hola, soy {assistantName}, y ayudo a las personas a dar forma a lo que quieren ofrecer a {projectName}. ¿Qué sueñas con aportar? No hay una forma equivocada de empezar."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/GuideChat.tsx
-msgctxt "guide chat: while the guide writes its reply"
-msgid "{thinkingName} is thinking…"
-msgstr "{thinkingName} está pensando…"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/WorkWithUs.tsx
-msgctxt "work with us: the button that opens a conversation with the village guide"
-msgid "Talk it through with {assistantName}"
-msgstr "Háblalo con {assistantName}"
+#~ msgctxt "admin helper, unnamed guide"
+#~ msgid "your village guide"
+#~ msgstr ""
 
 #. placeholder {0}: items.length - took
 #: client/src/components/proposals/BatchCard.tsx
@@ -21048,6 +21024,12 @@ msgstr ""
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Terms we offer"
 msgstr "Términos que ofrecemos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, proposing a quest: the guide's first message"
+msgid "Hi, I'm {assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring."
+msgstr "Hola, soy {assistantName}. ¿Falta una misión en el tablero? Cuéntame qué te encantaría aportar."
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/PaySteps.tsx
@@ -25879,6 +25861,12 @@ msgctxt "role editor"
 msgid "The pay group of the terms"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/lib/guideNameWords.ts
+msgctxt "the village guide's name while the village has not named it, read by a founder or admin, mid-sentence"
+msgid "your village guide"
+msgstr "tu guía de la aldea"
+
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgid "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
 msgstr ""
@@ -26682,6 +26670,12 @@ msgstr "Tras un no, o un sí sin cuenta creada, tu nombre y tu correo se borran 
 msgctxt "shape the role heading"
 msgid "Shape the role (optional)"
 msgstr "Dale forma al rol (opcional)"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, work with us: the guide's first message when the village wrote no greeting of its own"
+msgid "Hi, I'm {assistantName}, and I help people shape their offering to {projectName}. What are you dreaming of bringing? There's no wrong way to start."
+msgstr "Hola, soy {assistantName}, y ayudo a las personas a dar forma a lo que quieren ofrecer a {projectName}. ¿Qué sueñas con aportar? No hay una forma equivocada de empezar."
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload button"
@@ -27775,6 +27769,12 @@ msgstr "Empezar como “{0}”"
 msgctxt "thanks thread: the vesica, read aloud"
 msgid "They thanked each other both ways"
 msgstr "Se agradecieron en ambos sentidos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us: the button that opens a conversation with the village guide"
+msgid "Talk it through with {assistantName}"
+msgstr "Háblalo con {assistantName}"
 
 #: client/src/pages/Quests.tsx
 msgid "The Quest Board didn't load. Reload to try again."
