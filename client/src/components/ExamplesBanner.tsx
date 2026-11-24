@@ -23,6 +23,7 @@
 import { useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface ExamplesState {
   modules: string[];
@@ -359,6 +360,7 @@ export function ExamplesBanner({
   tone = "day",
 }: { moduleId: string; noun: string; layout?: string; row?: boolean; tone?: "day" | "night" }) {
   const { showing, trigger } = useExamplesState(moduleId);
+  const { t } = useLingui();
   // D-13: on a night page the day amber is a light slab on the dark ground; the notice tokens hold the world.
   const skin = tone === "night"
     ? "border border-notice/40 bg-notice/10 text-foreground"
@@ -371,11 +373,11 @@ export function ExamplesBanner({
         aria-labelledby={headingId}
         className={`${layout} rounded-lg ${skin} px-4 py-3 text-sm`}
       >
-        <p id={headingId} className="font-medium">This is a standing example.</p>
+        <p id={headingId} className="font-medium"><Trans context="ExamplesBanner, p">This is a standing example.</Trans></p>
         <p className="mt-1 leading-relaxed">
-          Nobody here made it. It shows what this module is for, and nothing you
-          do to it takes effect.{" "}
-          {trigger ?? `Publishing your first real ${noun} clears them for good.`}
+          <Trans context="examples banner, one example">Nobody here made it. It shows what this module is for, and nothing you
+          do to it takes effect.</Trans>{" "}
+          {trigger ?? t({ message: `Publishing your first real ${noun} clears them for good.`, context: "examples banner" })}
         </p>
       </aside>
     );
@@ -388,20 +390,20 @@ export function ExamplesBanner({
       aria-labelledby={headingId}
       className={`${layout} rounded-lg ${skin} px-4 py-3 text-sm`}
     >
-      <p id={headingId} className="font-medium">These are standing examples.</p>
+      <p id={headingId} className="font-medium"><Trans context="ExamplesBanner, p">These are standing examples.</Trans></p>
       <p className="mt-1 leading-relaxed">
         {/* A categorical claim, not a list. "They cannot be borrowed, booked,
             bought or replied to" reads as the whole of what is refused, and
             every page offers something outside it: the tools hub opens an
             example's real URL, the network prints an address you can write
             to, quests and the map refuse things the sentence never named. */}
-        Nobody here made them. They show what this module is for, and nothing
-        you do to one takes effect.{" "}
+        <Trans context="examples banner, several examples">Nobody here made them. They show what this module is for, and nothing
+        you do to one takes effect.</Trans>{" "}
         {/* The module's own words for what clears them. "Your first real
             listing" is true of the exchange and unhelpful, because a TOKEN is
             what actually retires it. The generic line stays as the fallback
             for a fork that has not written its own. */}
-        {trigger ?? `Publishing your first real ${noun} clears them for good.`}
+        {trigger ?? t({ message: `Publishing your first real ${noun} clears them for good.`, context: "examples banner" })}
       </p>
     </aside>
   );
@@ -428,7 +430,7 @@ export function ExampleChip({ className = "", tone = "day" }: { className?: stri
       : "border border-amber-300/70 bg-amber-50 text-[10px] text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100";
   return (
     <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium ${look} ${className}`}>
-      example
+      <Trans context="ExamplesBanner, span">example</Trans>
     </span>
   );
 }

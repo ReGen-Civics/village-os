@@ -1,5 +1,6 @@
 import { defineConfig } from "@lingui/cli";
 import { formatter } from "@lingui/format-po";
+import { LOCALES } from "./shared/i18nLocales";
 
 /**
  * Translation catalogs (internal spec i18n, plan §1.1).
@@ -14,7 +15,8 @@ import { formatter } from "@lingui/format-po";
  */
 export default defineConfig({
   sourceLocale: "en",
-  locales: ["en", "es"],
+  // The one registry (shared/i18nLocales.ts): a new language is an entry there and a PO file here.
+  locales: LOCALES.map((l) => l.tag),
   fallbackLocales: { default: "en" },
   catalogs: [
     {

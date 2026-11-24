@@ -54,6 +54,7 @@ import { useStoryPageShown } from "@/lib/brochure";
 import { haptic } from "@/lib/haptics";
 import { useNewcomer } from "@/lib/newcomer";
 import { isBareRoute, normalisePath } from "./MobileTabBar";
+import { useLingui } from "@lingui/react/macro";
 
 /**
  * The founding team's pages: the steward front door, the roles page that
@@ -110,6 +111,7 @@ export function resolve(
 }
 
 export default function MobileFab() {
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { user } = useAuth();
@@ -274,7 +276,7 @@ export default function MobileFab() {
         <div
           ref={menuRef}
           role="menu"
-          aria-label="Shortcuts"
+          aria-label={t({ message: "Shortcuts", context: "MobileFab, aria-label" })}
           aria-hidden={!open}
           onKeyDown={onMenuKey}
           // THE SHUT MENU TAKES NO ROOM AND IS NOT DRAWN.
@@ -377,7 +379,7 @@ export default function MobileFab() {
               ? "0 0 0 4px rgba(236,177,99,0.45), 0 12px 32px rgba(0,0,0,0.4)"
               : "0 10px 24px rgba(0,0,0,0.35)",
           }}
-          aria-label={open ? "Close shortcuts" : "Open shortcuts"}
+          aria-label={open ? t({ message: "Close shortcuts", context: "MobileFab, aria-label" }) : t({ message: "Open shortcuts", context: "MobileFab, aria-label" })}
           aria-expanded={open}
           aria-haspopup="menu"
         >
