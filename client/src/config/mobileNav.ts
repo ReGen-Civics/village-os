@@ -12,17 +12,12 @@
  * beat a considered order.
  */
 import {
-  Home,
   Scroll,
   Heart,
-  Users,
-  Menu,
   User,
   MessageCircle,
   UserPlus,
   PenLine,
-  Shield,
-  Compass,
   NotebookPen,
   Orbit,
   ListChecks,
@@ -31,6 +26,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
+import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Triad, Tripoint } from "@/components/sacred/glyphs";
 
 /**
  * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in
@@ -38,7 +34,7 @@ import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
  * default is a plain icon. Swap in a square brand glyph here when one exists,
  * without touching the component.
  */
-export const FabTriggerIcon = Compass;
+export const FabTriggerIcon = GoldenSpiral;
 
 export type TabSlot = {
   /** Route to navigate to, or omit and set `event` to dispatch instead. */
@@ -57,11 +53,11 @@ export type TabSlot = {
  * drawer rather than duplicating it as a second full menu.
  */
 export const TAB_SLOTS: TabSlot[] = [
-  { path: "/", label: "Home", Icon: Home },
-  { path: "/quests", label: "Quests", Icon: Scroll },
+  { path: "/", label: "Home", Icon: Lotus },
+  { path: "/quests", label: "Quests", Icon: Labyrinth },
   { path: "/gratitude", label: "Gratitude", Icon: Heart, token: "recognition" },
-  { path: "/circles", label: "Circles", Icon: Users },
-  { event: "open-mobile-menu", label: "More", Icon: Menu },
+  { path: "/circles", label: "Circles", Icon: SeedOfLife },
+  { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 
 /**
@@ -69,7 +65,7 @@ export const TAB_SLOTS: TabSlot[] = [
  * page is a member's working area (config/nav.ts, `newcomers`), so a visitor's
  * bar offers the roles, the way in, where a member's offers Gratitude.
  */
-export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Shield };
+export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Triad };
 
 /**
  * Tabs a newcomer's bar gives to the roles even though their page is open to a
@@ -130,7 +126,7 @@ export type FabAction = {
  * reaches for daily, and only while the journal module is on for them.
  */
 export const FAB_ACTIONS: FabAction[] = [
-  { key: "roles", label: "Roles", href: "/roles", Icon: Shield },
+  { key: "roles", label: "Roles", href: "/roles", Icon: Triad },
   { key: "profile", label: "Profile", href: "/profile", Icon: User, requiresAuth: true },
   {
     // The task board on the profile, beside the profile itself because it is

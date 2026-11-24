@@ -34,7 +34,8 @@
  */
 
 import { createHash } from "node:crypto";
-import { deriveTheme, type DerivedTheme } from "../../shared/brandTokens";
+import { deriveTheme, sanitizeGameTokens, type DerivedTheme } from "../../shared/brandTokens";
+import { MODE_PALETTE } from "../../shared/modePalette";
 
 export interface BrandThemeFields {
   /** The three founder decisions (docs/DESIGN_TOKENS_SPEC.md §3.1). */
@@ -233,6 +234,10 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined, ownOri
   if (derived?.lightVars) {
     const light = Object.entries(derived.lightVars).map(([k, v]) => `  ${k}: ${v};`);
     parts.push(`.admin-root:not(.sheet-night) {\n  color-scheme: light;\n${light.join("\n")}\n}`);
+    // A visitor who chose light mode (data-mode on <html>, client/src/lib/colourMode.ts)
+    // gets the village's light palette on a dark-scheme village too. One more
+    // attribute than `:root:root`, so it wins wherever the two meet.
+    parts.push(`:root:root[data-mode="light"] {\n  color-scheme: light;\n${light.join("\n")}\n}`);
   }
 
   return parts.length ? parts.join("\n") + "\n" : "";
@@ -295,14 +300,22 @@ export function darkScheme(theme: BrandThemeFields | null | undefined): { ground
   return d && d.mode === "dark" ? { ground: d.vars["--background"] } : null;
 }
 
-/** The install screen's ground: the village's own in the dark scheme, white as before otherwise. */
+/**
+ * The install screen's ground: the village's own in the dark scheme; otherwise
+ * light mode's ground, the default a first visit opens in (the village's own
+ * `day-ground` token if it set one, else the platform's Golden Hour cream).
+ */
 export function installBackground(theme: BrandThemeFields | null | undefined): string {
-  return darkScheme(theme)?.ground ?? "#ffffff";
+  return darkScheme(theme)?.ground ?? sanitizeGameTokens(theme?.tokens)["day-ground"] ?? MODE_PALETTE.dayGround;
 }
 
-/** The phone's bar in an installed app: the dark ground in the dark scheme, the brand otherwise. */
+/**
+ * The phone's bar in an installed app: the dark ground in the dark scheme;
+ * otherwise light mode's header band, so the bar and the header are one strip.
+ * A page in dark mode repaints the bar itself (client/index.html's first paint).
+ */
 export function installThemeColour(theme: BrandThemeFields | null | undefined): string {
-  return darkScheme(theme)?.ground ?? brandColour(theme);
+  return darkScheme(theme)?.ground ?? sanitizeGameTokens(theme?.tokens)["day-band"] ?? MODE_PALETTE.dayBand;
 }
 
 /**
