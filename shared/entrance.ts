@@ -42,6 +42,56 @@ export const MIN_FILL_MS = 2500;
 /** Entries one connection may make in an hour before the door asks them to wait. */
 export const ENTRIES_PER_HOUR = 8;
 
+// ── A SHORT LOOK, THEN THE CODE (the lead, 24 Nov 2026) ─────────────────────
+//
+// While the village can send email, entering sends a 6-digit code to the address and the visitor
+// goes straight in. They may look around until either `entrance.look_minutes` pass or they open
+// `entrance.look_pages` pages, whichever comes first; the next page they open asks for the code.
+// The step only ever appears on a page change, never over a page being read. The server holds the
+// same window (with `LOOK_GRACE_MS` for a slow page), so the step is the friendly face of a rule.
+
+export const CODE_LENGTH = 6;
+/** The query a page carries after a Google entry, so the entrance asks its keep-in-touch question there. */
+export const KEEP_IN_TOUCH_PARAM = "keep-in-touch";
+/** A code works this long after it is sent. */
+export const CODE_TTL_MS = 15 * 60 * 1000;
+/** Wrong tries a code survives; the next one spends it, and a new code is needed. */
+export const CODE_TRIES = 5;
+/** A new code may be asked for this long after the last one. */
+export const RESEND_AFTER_MS = 30 * 1000;
+/** The server lets a page finish loading this long after the look ends. */
+export const LOOK_GRACE_MS = 60 * 1000;
+
+/** Six digits, nothing else (spaces and dashes a person types between them are dropped first). */
+export function cleanCode(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const digits = v.replace(/[\s-]/g, "");
+  return /^[0-9]{6}$/.test(digits) ? digits : null;
+}
+
+/** What the entrance says about this device's look, while it has one. */
+export interface LookStatus {
+  /** True while the address still needs its code. */
+  needsCode: boolean;
+  /** When the entry was made, ms since the epoch. */
+  startedAt: number;
+  /** Pages opened since, as the server counted them when the status was read. */
+  pages: number;
+  lookMs: number;
+  lookPages: number;
+  /** The address the code went to, for the step's sentence. */
+  sentTo: string;
+}
+
+/**
+ * Whether the look is over at a page change: the time has run, or this page would be one past the
+ * pages allowed. `openedBefore` counts the pages already opened before this one.
+ */
+export function lookOver(look: Pick<LookStatus, "needsCode" | "startedAt" | "lookMs" | "lookPages">, openedBefore: number, now: number): boolean {
+  if (!look.needsCode) return false;
+  return now - look.startedAt >= look.lookMs || openedBefore >= look.lookPages;
+}
+
 /**
  * The pages that stay open while the village keeps an entrance, as leading path segments. A path
  * is open when it equals one of these or begins with one followed by `/`. Every other page draws
@@ -220,6 +270,8 @@ export interface EntranceStatus {
   eventPass?: string | null;
   /** True when this device passed by its entry alone (not a member, an agent or our automation): its page views are kept. */
   visitor?: boolean;
+  /** The short look and its code, while this device's entry has one; null otherwise. */
+  look?: LookStatus | null;
 }
 
 export interface PortalEntry {
@@ -241,6 +293,10 @@ export interface PortalEntry {
   syncError: string | null;
   /** What this person has done since, matched by their address (Admin only). */
   journey?: VisitorJourney;
+  /** When the visitor proved they read the address (the code or Google), or null. */
+  verifiedAt?: string | null;
+  /** Whether the entry asked for a code at all (made while the village could send email). */
+  codeRequired?: boolean;
   /** The pages they opened after entering, newest first (Admin only). */
   views?: PortalView[];
 }
@@ -263,7 +319,7 @@ export function roleSlugOf(path: string): string | null {
 export interface VisitorJourney {
   applications: Array<{ status: string; at: string }>;
   /** The account at this address, and whether it holds membership (Make member shows only when it does not). */
-  account: { id: string; joined: string; member: boolean } | null;
+  account: { id: string; joined: string; member: boolean; verified?: boolean } | null;
   forms: Array<{ type: string; at: string }>;
 }
 

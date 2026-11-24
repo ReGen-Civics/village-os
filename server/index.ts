@@ -107,7 +107,7 @@ import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
 import { register as registerMapView } from "./routes/mapView";
-import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
+import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, portalGoogleVisitor, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
 import { register as registerGratitudeVoiceRoutes } from "./routes/gratitudeVoices";
@@ -6690,7 +6690,7 @@ async function startServer() {
   app.use(express.json({ limit: "1mb" }));
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
   registerPeopleLock(app, { authedUser, getPool, boolVar });
-  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok }); // the portal entrance, in front of every later route (shared/entrance.ts)
+  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name }, accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
   // ── LANE L6 ZONE START: your agent ──────────────────────────────────────────
   //
@@ -8260,6 +8260,7 @@ async function startServer() {
     invites: inviteDoor,
     endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), // R104: ending an unproved password ends what its sessions planted
     onPasswordEnded: (m) => void sendPasswordEndedLetter(letters, m),
+    portalVisitor: portalGoogleVisitor({ getPool, secret: AUTH_TOKEN_SECRET }), // "Continue with Google" at the entrance: a proved portal entry, no account
   });
   registerVerifyEmailRoutes(app, { ...letters, members, authedUser, verifyPassword, overLimit, clientIp, recordAudit: recordAuthAudit });
 

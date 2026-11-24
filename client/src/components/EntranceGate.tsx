@@ -9,16 +9,23 @@
  * A visitor who entered (and is not signed in) has each page they open noted, first-party, for
  * Admin, Portal visitors: the path without its query, posted once per page (`notePage`).
  *
+ * A visitor whose address still needs its code (shared/entrance.ts, "a short look, then the code")
+ * is let through until the look is over, judged once per page change and never while a page is
+ * being read; the page they then open shows the code step instead (pages/EntranceCode.tsx).
+ *
  * This is the drawing of the gate, not the gate. The server refuses the page's reads to the same
  * visitor whatever this component decides, so a status that cannot be read falls through to the
  * page, which then meets the server's refusal.
  */
-import { lazy, useEffect, useState, type ReactNode } from "react";
+import { lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useOptionalAuth } from "@/contexts/AuthContext";
-import { EVENT_PASS_PARAM, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
+import { useVillageName } from "@/hooks/useVillageName";
+import { EVENT_PASS_PARAM, KEEP_IN_TOUCH_PARAM, lookOver, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
 
 const Entrance = lazy(() => import("@/pages/Entrance"));
+const KeepInTouch = lazy(() => import("@/pages/Entrance").then((m) => ({ default: m.KeepInTouch })));
+const EntranceCode = lazy(() => import("@/pages/EntranceCode"));
 
 let statusRead: Promise<EntranceStatus | null> | null = null;
 
@@ -73,11 +80,17 @@ export function forgetEntranceStatus(): void {
 export default function EntranceGate({ children, waiting }: { children: ReactNode; waiting: ReactNode }) {
   const [location] = useLocation();
   const auth = useOptionalAuth();
+  const village = useVillageName();
   const behind = pageBehindEntrance(location);
   const signedIn = !!auth?.user;
   const authLoading = !!auth?.loading;
   const ask = behind && !signedIn && !authLoading;
   const [status, setStatus] = useState<EntranceStatus | null | undefined>(undefined);
+  const [changingEmail, setChangingEmail] = useState(false);
+  /** Pages noted on this load, so the look counts the ones opened since the status was read. */
+  const noted = useRef(0);
+  /** The decision for the page being opened, made once per page change and never while it is read. */
+  const decided = useRef<{ loc: string; due: boolean } | null>(null);
 
   useEffect(() => {
     if (!ask || status !== undefined) return;
@@ -90,15 +103,37 @@ export default function EntranceGate({ children, waiting }: { children: ReactNod
   }, [ask, status, location]);
 
   const visitor = !signedIn && !authLoading && !!status?.visitor;
+  const look = visitor && behind ? (status?.look ?? null) : null;
+  if (look && decided.current?.loc !== location) {
+    decided.current = { loc: location, due: lookOver(look, look.pages + noted.current, Date.now()) };
+  }
+  const codeDue = !!look && !!decided.current?.due;
+
   useEffect(() => {
-    if (visitor) notePage(location);
-  }, [visitor, location]);
+    if (!visitor || codeDue) return;
+    notePage(location);
+    noted.current += 1;
+  }, [visitor, codeDue, location]);
 
   if (!behind || signedIn) return <>{children}</>;
   if (authLoading || status === undefined) return <>{waiting}</>;
-  if (!status || !status.required || status.entered) return <>{children}</>;
+  if (!status || !status.required) return <>{children}</>;
+  const next = location + window.location.search + window.location.hash;
+  if (status.entered) {
+    // After "Continue with Google": the keep-in-touch question, on the page they asked for.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get(KEEP_IN_TOUCH_PARAM) === "1") {
+      params.delete(KEEP_IN_TOUCH_PARAM);
+      const rest = params.toString();
+      return <KeepInTouch village={village} goTo={location + (rest ? `?${rest}` : "") + window.location.hash} />;
+    }
+    if (look && codeDue) {
+      if (changingEmail) return <Entrance next={next} siteKey={status.siteKey} />;
+      return <EntranceCode sentTo={look.sentTo} next={next} onChangeEmail={() => setChangingEmail(true)} />;
+    }
+    return <>{children}</>;
+  }
   // An invited guest: the calendar, which the server trims to their gathering.
   if (status.eventPass && (location === "/events" || location.startsWith("/events/"))) return <>{children}</>;
-  const next = location + window.location.search + window.location.hash;
   return <Entrance next={next} siteKey={status.siteKey} />;
 }

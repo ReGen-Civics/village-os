@@ -8,6 +8,9 @@
  *   POST   /api/entrance/updates                the keep-in-touch step: `yes` or `no`, for this
  *                                               device's own entry
  *   POST   /api/entrance/view                   a page an entered visitor opened (never a member's)
+ *   POST   /api/entrance/code                   the 6-digit code: proves the address (and signs in an
+ *                                               address that already has an account)
+ *   POST   /api/entrance/code/resend            a new code, 30 seconds after the last
  *   GET    /api/admin/entrance/entries          the list, newest first (`?updates=1`: only those
  *                                               who asked for updates)
  *   GET    /api/admin/entrance/entries.csv      the same, as a spreadsheet
@@ -29,12 +32,19 @@ import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import type { Capability } from "../../shared/capabilities";
 import { emailKeyOf } from "../../shared/comms/address";
+import { domainOf, isDisposable } from "../../shared/emailCheck";
+import { sameAddress, endUnprovenPassword, proveAddress } from "../lib/emailVerification";
+import { holdsUnprovenPassword, isUnclaimable } from "../lib/oauthAccounts";
+import { codeMatches, domainTakesMail, hashCode, makeCode, sendCodeLetter, type CodeLetterDeps, type MailLookup } from "../lib/entranceCode";
+import { codesSentTo, countWrongTry, deletePortalCodesFor, insertPortalCode, latestPortalCode, takePortalCode } from "../repos/portalCodes";
+import { CODE_TRIES, CODE_TTL_MS, KEEP_IN_TOUCH_PARAM, LOOK_GRACE_MS, RESEND_AFTER_MS, cleanCode, type LookStatus } from "../../shared/entrance";
 import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, isInterest, isUpdatesAnswer, LINK_MAX, MIN_FILL_MS, parseEntrance, roleSlugOf, safeNext, type EntranceStatus, type PortalEntry } from "../../shared/entrance";
 import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
 import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import { registerJob } from "../lib/scheduler";
+import { entryLook, markEntryVerified, type EntryLook } from "../repos/portalEntries";
 import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, sweepPortalViews, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
 import { csvCell } from "./commsPeople";
@@ -65,6 +75,23 @@ export interface EntranceRouteDeps {
   isAgent(req: Request): Promise<boolean>;
   /** The entrance pass for our own automation, from Admin, Integrations, or "". */
   passToken(): string;
+  /**
+   * The code's letter, through the one mail door (`sendResendEmail`, an essential email). `ready`
+   * is whether the village can send email at all; without it the entrance asks for no code.
+   */
+  mail: CodeLetterDeps & { ready(): boolean };
+  /** The accounts, for an address that already has one: a correct code signs it in, never a second account. */
+  accounts: {
+    byEmail(email: string): Promise<any | null>;
+    update(id: string, mutate: (m: any) => void): Promise<any | null>;
+    encodeToken(userId: string, email: string, tokenVersion: number): string;
+    publicUser(u: any): any;
+    /** Ends agent reach on both sides of a change that ends an unproved password (R104). */
+    endReachAround<T>(userId: string, change: () => Promise<T>): Promise<T>;
+    recordAudit(text: string, userId: string): void;
+  };
+  /** DNS, swapped in tests. */
+  mailLookup?: MailLookup;
   now?: () => number;
 }
 
@@ -89,7 +116,24 @@ const HUMAN_WORDS: Record<string, string> = {
 export function register(app: Express, deps: EntranceRouteDeps): void {
   const now = deps.now ?? (() => Date.now());
   const { guardCapability } = deps;
-  const entered = entryChecker({ secret: deps.secret, entryExists: (id) => portalEntryExists(deps.getPool(), id), now });
+  const lookMs = () => Math.max(1, Math.floor(deps.numberVar("entrance.look_minutes") || 3)) * 60 * 1000;
+  const lookPages = () => Math.max(1, Math.floor(deps.numberVar("entrance.look_pages") || 3));
+  /** Where an entry stands, for the gate: the server's half of the short look. */
+  const stateOf = (e: EntryLook): "in" | "look" | "code" => {
+    if (!e.codeRequired || e.verified) return "in";
+    const over = now() - e.createdAt > lookMs() + LOOK_GRACE_MS || e.views > lookPages();
+    return over ? "code" : "look";
+  };
+  /** This device's own entry id, from its signed cookie, or null. */
+  const ownEntry = (req: Request): string | null => readEntry(deps.secret, cookieValue(req), now());
+  const entered = entryChecker({
+    secret: deps.secret,
+    entryState: async (id) => {
+      const e = await entryLook(deps.getPool(), id);
+      return e ? stateOf(e) : null;
+    },
+    now,
+  });
   // A gathering's invite link is signed under the same secret, wherever the link is written.
   useEventPassSecret(deps.secret);
   const eventPassFor = (req: Request): string | null => readEventPass(deps.secret, cookieValue(req, EVENT_PASS_COOKIE), now())?.eventId ?? null;
@@ -113,8 +157,15 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     let passed = !required;
     let visitor = false;
     if (!passed) passed = carriesPass(req, deps.passToken()) || !!(await deps.authedUser(req).catch(() => null)) || (await deps.isAgent(req).catch(() => false));
-    if (!passed) passed = visitor = await entered(req).catch(() => false);
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor };
+    let look: LookStatus | null = null;
+    if (!passed) {
+      const state = await entered(req).catch(() => false as const);
+      passed = visitor = state !== false;
+      const id = state === "look" || state === "code" ? ownEntry(req) : null;
+      const e = id ? await entryLook(deps.getPool(), id) : null;
+      if (e && e.codeRequired && !e.verified) look = { needsCode: true, startedAt: e.createdAt, pages: e.views, lookMs: lookMs(), lookPages: lookPages(), sentTo: e.email };
+    }
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });
@@ -134,6 +185,13 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     else if (siteKey()) human = await verifyTurnstile(deps.turnstileSecret(), String(body.turnstileToken ?? ""), ip || null);
     else human = fallbackHuman({ website: body.website, shownAt: body.shownAt }, MIN_FILL_MS, now());
     if (!human.ok) return res.status(human.why === "check_unavailable" ? 503 : 400).json({ error: human.why, message: HUMAN_WORDS[human.why] });
+    // The instant checks: a throwaway inbox, and a domain that receives no mail at all.
+    if (!smoke && isDisposable(v.email)) return res.status(400).json({ error: "invalid", field: "email", message: "That looks like a throwaway inbox. Use an address you read, so we can reach you." });
+    if (!smoke && (await domainTakesMail(domainOf(v.email), deps.mailLookup)) === "no") {
+      return res.status(400).json({ error: "invalid", field: "email", message: "That email domain does not receive mail. Check the part after the @." });
+    }
+    // A code only while the village can send one, and never for a release smoke.
+    const wantsCode = !smoke && deps.mail.ready();
 
     const id = `pe-${crypto.randomBytes(10).toString("hex")}`;
     const next = safeNext(body.next);
@@ -153,13 +211,122 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       isTest: smoke,
       at: new Date(now()),
       interest: v.interest,
+      codeRequired: wantsCode,
     });
     res.setHeader("Set-Cookie", entryCookieHeader(signEntry(deps.secret, id, now()), secureOf(req)));
-    res.status(201).json({ ok: true, next });
+    let code: { sentTo: string } | null = null;
+    if (wantsCode) {
+      const sent = await sendNewCode(id, v.email);
+      // A letter the provider would not take is no reason to stop a person at the door: the entry
+      // stands, and the code step offers to send again.
+      code = { sentTo: v.email };
+      if (!sent) console.warn(`[entrance] the code for ${id} was not sent; the visitor can ask again`);
+    }
+    res.status(201).json({ ok: true, next, code });
   });
 
-  /** This device's own entry id, from its signed cookie, or null. */
-  const ownEntry = (req: Request): string | null => readEntry(deps.secret, cookieValue(req), now());
+  /** A fresh code for an entry, to its address: hashed, kept, sent. Answers whether the letter went. */
+  async function sendNewCode(entryId: string, email: string): Promise<boolean> {
+    const pool = deps.getPool();
+    const existing = await deps.accounts.byEmail(email).catch(() => null);
+    const account = existing && sameAddress(existing.email, email) && !isUnclaimable(existing) ? existing : null;
+    const code = makeCode();
+    await insertPortalCode(pool, {
+      id: `pc-${crypto.randomBytes(10).toString("hex")}`,
+      entryId,
+      userId: account ? String(account.id) : null,
+      emailKey: emailKeyOf(email),
+      codeHash: hashCode(deps.secret, entryId, code),
+      expiresAt: new Date(now() + CODE_TTL_MS),
+      at: new Date(now()),
+    });
+    const mail = await sendCodeLetter(deps.mail, email, code, !!account);
+    return mail.sent;
+  }
+
+  /** On a proved address, a yes reaches the address book and the email list. */
+  async function listIfYes(entryId: string): Promise<void> {
+    const entry = await portalEntryById(deps.getPool(), entryId);
+    if (!entry || entry.isTest || entry.updates !== "yes") return;
+    await ensureContact({ getPool: deps.getPool }, { email: entry.email, name: entry.name, source: "portal", locale: entry.locale }).catch(() => null);
+    if (brevoOn(deps.brevo) && !entry.syncedAt) void syncOne(entry);
+  }
+
+  app.post("/api/entrance/code", async (req, res) => {
+    if (await deps.overLimit(`entrance-code:${ipBucket(deps.clientIp(req))}`, 30, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "slow_down", message: "Too many tries from this connection. Try again in an hour." });
+    }
+    const id = ownEntry(req);
+    if (!id) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    const typed = cleanCode(req.body?.code);
+    if (!typed) return res.status(400).json({ error: "invalid", message: "The code is 6 digits." });
+    const pool = deps.getPool();
+    const e = await entryLook(pool, id);
+    if (!e) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    const c = await latestPortalCode(pool, id);
+    const spent = (why: string) => res.status(410).json({ error: "code_spent", message: why });
+    if (!c || c.usedAt) return spent("That code has been used. Ask for a new one.");
+    if (c.expiresAt <= now()) return spent("That code has run out. Ask for a new one.");
+    if (c.attempts >= CODE_TRIES) return spent("Too many wrong tries for this code. Ask for a new one.");
+    if (!codeMatches(deps.secret, id, typed, c.codeHash)) {
+      const tries = await countWrongTry(pool, c.id);
+      if (tries >= CODE_TRIES) return spent("Too many wrong tries for this code. Ask for a new one.");
+      const left = CODE_TRIES - tries;
+      return res.status(400).json({ error: "wrong_code", message: left === 1 ? "That code is not right. One more try, then you will need a new one." : `That code is not right. ${left} more tries.` });
+    }
+    if (!(await takePortalCode(pool, c.id, new Date(now())))) return spent("That code has been used. Ask for a new one.");
+
+    // The address is proved. An account at this address is signed in; nobody else gets one.
+    let signedIn: { token: string; user: unknown } | null = null;
+    let userId: string | null = null;
+    if (c.userId) {
+      const account = await deps.accounts.byEmail(e.email).catch(() => null);
+      if (account && String(account.id) === c.userId && sameAddress(account.email, e.email) && !isUnclaimable(account)) {
+        let gone = false;
+        let ended = false;
+        const write = () =>
+          deps.accounts.update(String(account.id), (u: any) => {
+            if ((gone = isUnclaimable(u))) return;
+            // The mailbox's own power (R104): a password nobody proved ends, as a Google sign-in ends it.
+            ended = endUnprovenPassword(u);
+            proveAddress(u, e.email);
+          });
+        const saved = holdsUnprovenPassword(account) ? await deps.accounts.endReachAround(String(account.id), write) : await write();
+        if (saved && !gone) {
+          userId = String(saved.id);
+          if (ended) deps.accounts.recordAudit("auth:entrance-code-ended-unproven-password", userId);
+          deps.accounts.recordAudit("auth:entrance-code-sign-in", userId);
+          signedIn = { token: deps.accounts.encodeToken(userId, String(saved.email), Number(saved.tokenVersion ?? 0)), user: deps.accounts.publicUser(saved) };
+        }
+      }
+    }
+    await markEntryVerified(pool, id, new Date(now()), userId);
+    await listIfYes(id);
+    res.json({ ok: true, ...(signedIn ?? {}) });
+  });
+
+  app.post("/api/entrance/code/resend", async (req, res) => {
+    const id = ownEntry(req);
+    if (!id) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    const pool = deps.getPool();
+    const e = await entryLook(pool, id);
+    if (!e) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    if (!e.codeRequired || e.verified) return res.json({ ok: true, already: true });
+    if (!deps.mail.ready()) return res.status(503).json({ error: "mail_unavailable", message: "We cannot send email right now. Try again later." });
+    const last = await latestPortalCode(pool, id);
+    if (last && now() - last.createdAt < RESEND_AFTER_MS) {
+      return res.status(429).json({ error: "too_soon", message: "Give the first code a moment to arrive, then ask again." });
+    }
+    if (
+      (await deps.overLimit(`entrance-resend:${ipBucket(deps.clientIp(req))}`, 20, 60 * 60 * 1000)) ||
+      (await codesSentTo(pool, e.emailKey, new Date(now() - 60 * 60 * 1000))) >= 6
+    ) {
+      return res.status(429).json({ error: "slow_down", message: "That is a lot of codes for one hour. Try again later." });
+    }
+    const sent = await sendNewCode(id, e.email);
+    res.json({ ok: true, sent });
+  });
+
 
   // The keep-in-touch step, its own screen after the entry: two buttons, and the latest answer stands.
   // Only a yes reaches the address book and the email list.
@@ -172,7 +339,8 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     const entry = await portalEntryById(deps.getPool(), id);
     if (!entry) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
     await setUpdatesAnswer(deps.getPool(), id, answer, words);
-    if (answer === "yes" && !entry.isTest) {
+    // An address waiting on its code reaches no list yet; the code, when it comes, sends it on.
+    if (answer === "yes" && !entry.isTest && (entry.verifiedAt || !entry.codeRequired)) {
       // The address book learns the address, and nothing more.
       await ensureContact({ getPool: deps.getPool }, { email: entry.email, name: entry.name, source: "portal", locale: entry.locale }).catch(() => null);
       // And the village's email list, after the answer: the visitor never waits on Brevo.
@@ -237,7 +405,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   app.get("/api/admin/entrance/entries.csv", async (req, res) => {
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const rows = await entriesFor(req);
-    const head = ["entered_at", "name", "email", "whatsapp", "link", "drawn_by", "keep_in_touch", "on_email_list", "applications", "has_account", "is_member", "forms_sent", "first_asked_for", "pages_opened", "roles_opened", "language"];
+    const head = ["entered_at", "name", "email", "whatsapp", "link", "drawn_by", "keep_in_touch", "address_verified", "on_email_list", "applications", "has_account", "is_member", "forms_sent", "first_asked_for", "pages_opened", "roles_opened", "language"];
     const lines = [head.join(",")].concat(
       rows.map((e) =>
         [
@@ -248,6 +416,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
           e.link ?? "",
           e.interest ?? "",
           e.updates ?? "unanswered",
+          e.verifiedAt ? "yes" : e.codeRequired ? "no" : "not_checked",
           e.syncedAt ? "yes" : "no",
           (e.journey?.applications ?? []).map((a) => a.status).join(" "),
           e.journey?.account ? "yes" : "no",
@@ -277,6 +446,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     // Off the email list first, while the entry still says which address reached it.
     const listed = await portalEmailsFor(deps.getPool(), key);
     const listProblem = await removeFromBrevo(deps.brevo, listed);
+    await deletePortalCodesFor(deps.getPool(), key);
     const removed = await deletePortalEntriesFor(deps.getPool(), key);
     res.json({ ok: true, removed, ...(listProblem ? { listProblem } : {}) });
   });
@@ -290,4 +460,38 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     for (const e of waiting) if (await syncOne(e)) sent += 1;
     res.json({ ok: true, waiting: waiting.length, sent });
   });
+}
+
+
+/**
+ * "Continue with Google" from the entrance, at an address with no account (server/routes/authGoogle.ts
+ * calls this): a portal entry already proved by Google, its cookie, and the page to land on with
+ * the keep-in-touch question waiting there. Makes no account.
+ */
+export function portalGoogleVisitor(deps: { getPool(): Pool; secret: string; now?: () => number }) {
+  const now = deps.now ?? (() => Date.now());
+  return async (v: { name: string; email: string; next: string | null; secure: boolean }): Promise<{ cookie: string; next: string }> => {
+    const id = `pe-${crypto.randomBytes(10).toString("hex")}`;
+    const next = safeNext(v.next) ?? "/";
+    await insertPortalEntry(deps.getPool(), {
+      id,
+      name: v.name.slice(0, 120),
+      email: v.email,
+      emailKey: emailKeyOf(v.email),
+      whatsapp: null,
+      link: null,
+      consentWords: "Entered with Google from the portal entrance, under its privacy line.",
+      nextPath: next,
+      locale: null,
+      human: "google",
+      isTest: false,
+      at: new Date(now()),
+      interest: null,
+      codeRequired: false,
+      verifiedAt: new Date(now()),
+    });
+    const [path, hash = ""] = next.split("#");
+    const landing = `${path}${path.includes("?") ? "&" : "?"}${KEEP_IN_TOUCH_PARAM}=1${hash ? `#${hash}` : ""}`;
+    return { cookie: entryCookieHeader(signEntry(deps.secret, id, now()), v.secure), next: landing };
+  };
 }

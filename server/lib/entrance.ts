@@ -174,24 +174,35 @@ export function eventPassOpens(path: string, eventId: string): "list" | "open" |
 }
 
 /**
- * Whether this request comes from somebody who has passed the entrance: a live cookie whose
- * entry is still on record. Signed-in callers are the middleware's question, not this one's.
+ * Where an entry stands: `in` (no code asked, or the address is proved), `look` (still inside its
+ * short look), `code` (the look is over and the code has not come), or null when it is gone.
  */
-export function entryChecker(deps: { secret: string; entryExists(id: string): Promise<boolean>; now?: () => number }) {
+export type EntryState = "in" | "look" | "code";
+
+/** How long a `look` answer is trusted before the entry is read again: the window is short. */
+const LOOK_TTL_MS = 5 * 1000;
+
+/**
+ * Whether this request comes from somebody who has passed the entrance, and how: a live cookie
+ * whose entry is still on record, and where its short look stands. Signed-in callers are the
+ * middleware's question, not this one's. Answers false when there is no live entry.
+ */
+export function entryChecker(deps: { secret: string; entryState(id: string): Promise<EntryState | null>; now?: () => number }) {
   const now = deps.now ?? (() => Date.now());
-  const known = new Map<string, number>();
-  return async (req: Request): Promise<boolean> => {
+  const known = new Map<string, { state: EntryState; at: number }>();
+  return async (req: Request): Promise<EntryState | false> => {
     const id = readEntry(deps.secret, cookieValue(req), now());
     if (!id) return false;
     const seen = known.get(id);
-    if (seen && now() - seen < KNOWN_TTL_MS) return true;
-    if (!(await deps.entryExists(id))) {
+    if (seen && now() - seen.at < (seen.state === "in" ? KNOWN_TTL_MS : LOOK_TTL_MS)) return seen.state;
+    const state = await deps.entryState(id);
+    if (!state) {
       known.delete(id);
       return false;
     }
     if (known.size > 5000) known.clear();
-    known.set(id, now());
-    return true;
+    known.set(id, { state, at: now() });
+    return state;
   };
 }
 
@@ -205,7 +216,7 @@ export function pickKeys(body: unknown, keep: readonly string[]): Record<string,
 }
 
 /** The gate. See the header. */
-export function entranceMiddleware(deps: EntranceGateDeps, entered: (req: Request) => Promise<boolean>) {
+export function entranceMiddleware(deps: EntranceGateDeps, entered: (req: Request) => Promise<EntryState | false>) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
     if (!apiBehindEntrance(req.path, req.query as Record<string, unknown>)) return next();
@@ -215,7 +226,12 @@ export function entranceMiddleware(deps: EntranceGateDeps, entered: (req: Reques
       if (deps.passToken && carriesPass(req, deps.passToken())) return next();
       if (await deps.authedUser(req)) return next();
       if (deps.isAgent && (await deps.isAgent(req))) return next();
-      if (await entered(req)) return next();
+      const entry = await entered(req);
+      if (entry === "in" || entry === "look") return next();
+      if (entry === "code") {
+        res.status(401).json({ error: "code_required", message: "Type the 6-digit code we sent to your email to keep exploring." });
+        return;
+      }
       const eventId = deps.eventPassFor?.(req) ?? null;
       const opens = eventId ? eventPassOpens(req.path, eventId) : false;
       if (eventId && opens === "open") return next();

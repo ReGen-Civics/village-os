@@ -2893,6 +2893,30 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    key: "entrance.look_minutes",
+    category: "The village's people",
+    label: "Portal entrance: minutes to look around before the code",
+    description:
+      "While the village can send email, entering the portal sends a 6-digit code to the visitor's address, and they go straight in. They can look around for this many minutes, or until they open the number of pages below, whichever comes first. The next page they open asks for the code. The step never covers a page they are reading.",
+    type: "integer",
+    default: "3",
+    min: 1,
+    max: 60,
+    ring: "founder",
+  },
+  {
+    key: "entrance.look_pages",
+    category: "The village's people",
+    label: "Portal entrance: pages to look at before the code",
+    description:
+      "How many pages a visitor can open after entering, before the next one asks for the 6-digit code we sent them. Works together with the minutes above: whichever runs out first.",
+    type: "integer",
+    default: "3",
+    min: 1,
+    max: 50,
+    ring: "founder",
+  },
+  {
     key: "entrance.views_keep_days",
     category: "The village's people",
     label: "Portal entrance: keep the pages visitors opened for",

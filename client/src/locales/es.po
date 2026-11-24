@@ -32627,18 +32627,6 @@ msgstr "Este es nuestro juego, donde co-creamos la aldea."
 
 #: client/src/pages/Entrance.tsx
 #, needs-native-review
-msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
 msgctxt "portal entrance: the keep-in-touch question, its own step after entering"
 msgid "Do you want us to keep you updated, and to hear about opportunities from {village}?"
 msgstr "¿Quieres que te mantengamos al tanto y recibir noticias de oportunidades en {village}?"
@@ -32762,3 +32750,117 @@ msgstr "Ver los círculos"
 msgctxt "map members only: sign in"
 msgid "I am a member: sign in"
 msgstr "Soy miembro: iniciar sesión"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: before a suggested email address"
+msgid "Did you mean"
+msgstr "¿Quisiste decir"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened, the code by email and the email list"
+msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. We email you a 6-digit code to confirm your address. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
+msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Te enviamos por correo un código de 6 dígitos para confirmar tu dirección. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened, the code by email and the email list"
+msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. We email you a 6-digit code to confirm your address. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
+msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Te enviamos por correo un código de 6 dígitos para confirmar tu dirección. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: told up front that a code was emailed, before the keep-in-touch question"
+msgid "We have sent a 6-digit code to {sentTo}. Have a look around. You will need the code to keep exploring."
+msgstr "Enviamos un código de 6 dígitos a {sentTo}. Echa un vistazo. Necesitarás el código para seguir explorando."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the code is the wrong shape"
+msgid "The code is 6 digits."
+msgstr "El código tiene 6 dígitos."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: a new code was sent"
+msgid "A new code is on its way to {sentTo}."
+msgstr "Un código nuevo va camino a {sentTo}."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: eyebrow"
+msgid "One more step"
+msgstr "Un paso más"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: heading"
+msgid "Type the code we emailed you"
+msgstr "Escribe el código que te enviamos por correo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: what to do, naming the address"
+msgid "We sent a 6-digit code to {sentTo}. Type it here to keep exploring."
+msgstr "Enviamos un código de 6 dígitos a {sentTo}. Escríbelo aquí para seguir explorando."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the code field"
+msgid "Your code"
+msgstr "Tu código"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the main button"
+msgid "Keep exploring"
+msgstr "Seguir explorando"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: resend, counting down"
+msgid "Send a new code in {secondsLeft} s"
+msgstr "Enviar un código nuevo en {secondsLeft} s"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: resend"
+msgid "Send a new code"
+msgstr "Enviar un código nuevo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: change the address"
+msgid "Use a different email"
+msgstr "Usar otro correo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: Google instead"
+msgid "Use Google instead"
+msgstr "Usar Google en su lugar"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: verified or not"
+msgid "Address"
+msgstr "Dirección"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the address is proved"
+msgid "Verified"
+msgstr "Verificada"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the code has not come"
+msgid "Unverified"
+msgstr "Sin verificar"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: entered while no code could be sent"
+msgid "Not checked"
+msgstr "Sin comprobar"

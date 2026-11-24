@@ -2,7 +2,8 @@
  * PORTAL VISITORS: everyone who entered the portal (shared/entrance.ts), newest first, with the
  * people who said yes to keeping in touch as a list of their own, the page each one first asked
  * for, the pages they opened since, a Make member button for a visitor who has made an account
- * (the existing super-vouch, which asks its own capability), a CSV of either, and a way to forget one
+ * (the existing super-vouch, which asks its own capability; offered only once the address is proved),
+ * whether each address is verified (the code, or Google), a CSV of either, and a way to forget one
  * person when they ask. Each row shows what the visitor chose under "What draws you here?" and what
  * they have done since (applied, made an account, sent a form), matched by address. While the
  * village has a Brevo list set up, it also says who has reached it and sends those waiting. Read through the one capability gate on `intake.moderate`
@@ -240,6 +241,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                 <th scope="col" className="px-3 py-2">{t({ message: "Entered", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Name", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Email", context: "admin portal visitors" })}</th>
+                <th scope="col" className="px-3 py-2">{t({ message: "Address", context: "admin portal visitors: verified or not" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "WhatsApp", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Link", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Drawn by", context: "admin portal visitors" })}</th>
@@ -255,6 +257,13 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{when(e.at)}</td>
                   <td className="px-3 py-2 font-medium text-foreground break-words">{e.name}</td>
                   <td className="px-3 py-2 break-all">{e.email}</td>
+                  <td className="px-3 py-2">
+                    {e.verifiedAt
+                      ? t({ message: "Verified", context: "admin portal visitors: the address is proved" })
+                      : e.codeRequired
+                        ? t({ message: "Unverified", context: "admin portal visitors: the code has not come" })
+                        : t({ message: "Not checked", context: "admin portal visitors: entered while no code could be sent" })}
+                  </td>
                   <td className="px-3 py-2 break-all">{e.whatsapp ?? ""}</td>
                   <td className="px-3 py-2 break-all">{e.link ?? ""}</td>
                   <td className="px-3 py-2">{e.interest ? interestWords[e.interest] : ""}</td>
@@ -276,7 +285,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                     ) : (
                       t({ message: "Nothing yet", context: "admin portal visitors: no later step" })
                     )}
-                    {e.journey?.account && !e.journey.account.member && (
+                    {e.journey?.account && !e.journey.account.member && (e.verifiedAt || e.journey.account.verified) && (
                       <button type="button" className={`${BTN} mt-2`} disabled={!!admitting} onClick={() => void makeMember(e)}>
                         {t({ message: "Make member", context: "admin portal visitors: admit a visitor with an account" })}
                       </button>

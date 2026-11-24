@@ -372,3 +372,10 @@ describe("sign-in cookie names (R041)", () => {
     expect(confirmCookieName("delete-account", true)).toBe("__Host-village_confirm_delete-account");
   });
 });
+
+describe("a Google round trip from the portal entrance (0428)", () => {
+  it("carries the portal flag inside the signed state, and is false when absent", () => {
+    expect(readOAuthState(SECRET, makeOAuthState(SECRET, "/roles", Date.now(), { portal: true }))?.portal).toBe(true);
+    expect(readOAuthState(SECRET, makeOAuthState(SECRET, "/roles"))?.portal).toBe(false);
+  });
+});
