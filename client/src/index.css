@@ -1990,6 +1990,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --light-border: var(--border);
   --light-input: var(--input);
   --light-ring: var(--ring);
+  --light-primary: var(--primary);
+  --light-primary-foreground: var(--primary-foreground);
+  --light-sage: var(--color-sage);
+  --light-coral: var(--color-coral);
+  --light-amber-ink: var(--color-amber-ink);
+  --light-gold: var(--color-gold);
+  --light-notice: var(--sheet-notice, var(--color-amber-ink));
 }
 :root[data-mode="dark"]:not([data-scheme="dark"]) .admin-root:not(.sheet-night) {
   --background: var(--light-background);
@@ -2003,6 +2010,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --border: var(--light-border);
   --input: var(--light-input);
   --ring: var(--light-ring);
+  --primary: var(--light-primary);
+  --primary-foreground: var(--light-primary-foreground);
+  --color-sage: var(--light-sage);
+  --color-coral: var(--light-coral);
+  --color-amber-ink: var(--light-amber-ink);
+  --color-gold: var(--light-gold);
+  --sheet-notice: var(--light-notice);
   color-scheme: light;
   color: var(--foreground);
 }
@@ -2028,6 +2042,17 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --sheet-living: var(--night-living, var(--pal-night-living));
   --sheet-warn: var(--night-warn, var(--pal-night-warn));
   --sheet-shadow: var(--pal-night-shadow);
+  /* The status inks and the brand fill: on a light village these keep their
+     light-page values (dark inks, a canopy fill), which vanish on the night
+     ground (QA audit, 24 Nov 2026: amber-ink 2.67:1, text-primary 1.02:1). */
+  --color-sage: var(--sheet-living);
+  --color-coral: var(--sheet-warn);
+  --color-amber-ink: var(--sheet-earned);
+  --color-gold: var(--sheet-earned);
+  --sheet-notice: var(--sheet-earned);
+  --sheet-open: var(--sheet-living);
+  --primary: var(--sheet-earned);
+  --primary-foreground: var(--sheet-ground);
   /* And the page's tokens, read off them. */
   --background: var(--sheet-ground);
   --foreground: var(--sheet-ink);
@@ -2051,6 +2076,30 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root[data-mode="dark"]:has(main .sheet-night.min-h-screen) body {
   background-color: var(--night-ground, var(--pal-night-ground));
   color: var(--night-ink, var(--pal-night-ink));
+}
+
+/* Frozen light-page vocabulary the dark mode meets (QA audit, 24 Nov 2026):
+   the brand's middle tone as text, and a gold fill whose text names the page's
+   ink, which in dark mode is light. */
+:root[data-mode="dark"] :is(.text-teal-light, .text-sage):not(.admin-root *) {
+  color: var(--sheet-living);
+}
+/* Tailwind inlines these two inks as literals (@theme inline), so the
+   variables redeclared on <body> cannot reach the utility: named here. */
+:root[data-mode="dark"] :is(.text-amber-ink, .text-gold):not(.admin-root *) {
+  color: var(--sheet-earned);
+}
+:root[data-mode="dark"] .text-coral:not(.admin-root *) {
+  color: var(--sheet-warn);
+}
+:root[data-mode="dark"] :is(.bg-amber, .bg-secondary, .bg-notice, .bg-cream).text-foreground:not(.admin-root *) {
+  color: var(--sheet-ground);
+}
+/* The shortcuts button is the brand's canopy, the same as the night ground: a
+   hairline gives it its edge back. */
+:root[data-mode="dark"] [data-mobile-fab] button[aria-haspopup] {
+  outline: 1px solid var(--band-rule);
+  outline-offset: 1px;
 }
 
 /*
