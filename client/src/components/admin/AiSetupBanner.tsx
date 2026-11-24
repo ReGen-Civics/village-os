@@ -15,8 +15,9 @@
  */
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { Trans } from "@lingui/react/macro";
-import { guideNameAtSentenceStart } from "@shared/guideName";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { guideNameAtSentenceStart, UNNAMED_GUIDE } from "@shared/guideName";
+import { guideLabelIn } from "@/lib/guideNameWords";
 import type { HelperStatus } from "@shared/adminHelper";
 import { fetchHelperStatus } from "./adminHelperApi";
 
@@ -32,6 +33,7 @@ export default function AiSetupBanner({
   /** For tests: skip the fetch. */
   initialStatus?: HelperStatus;
 }) {
+  const { i18n } = useLingui();
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
 
   useEffect(() => {
@@ -42,7 +44,8 @@ export default function AiSetupBanner({
   }, [password, initialStatus]);
 
   if (!status || status.off !== "key") return null;
-  const guide = guideNameAtSentenceStart(status.guide || "your village guide");
+  // An unnamed guide in the reader's language; a village's own name exactly as typed.
+  const guide = guideNameAtSentenceStart(guideLabelIn(status.guide || UNNAMED_GUIDE.own, i18n));
 
   return (
     <section

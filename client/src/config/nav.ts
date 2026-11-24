@@ -241,7 +241,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/review", label: "Review Queue", roles: ["member", "admin", "founder"], newcomers: "never" },
       // 0098. What the village looks after, and who holds each one: who do I
       // ask. Open to visitors, and the page says what signing in adds.
-      { href: "/powers", label: "What We Look After", newcomers: "never" },
+      // Public since #1529 (the lead, 24 Nov 2026: holders by first name), so a newcomer is offered it too.
+      { href: "/powers", label: "What We Look After" },
       /**
        * R12 opened this page to every member. `POST /api/dry-run` answers any
        * signed-in member, so a member could run the village test run and had
