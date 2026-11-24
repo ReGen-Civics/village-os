@@ -8,7 +8,9 @@
  *   public   a stranger while `org.public_people` is on, the platform default:
  *            a first name and a handle (the public address of a profile) at
  *            most. Never a full display name, never an internal user id,
- *            never an email.
+ *            never an email. A member who turned off "Show my first name
+ *            to visitors" is "A member" here, with no handle (see
+ *            `peopleLockMiddleware` and `VISITOR_NEUTRAL_NAME`).
  *   none     a stranger while the village keeps its people for members (the
  *            secret-society lock, `org.public_people` off): no name, no
  *            handle, no id, no portrait, anywhere.
@@ -58,6 +60,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { rosterRows } from "../repos/peopleRoster";
+import { membersHidingFirstName } from "./profile";
 
 export type PeopleTier = "member" | "public" | "none";
 
@@ -75,6 +78,16 @@ export function firstNameOf(name: unknown): string {
   if (full === DEPARTED_NAME) return full;
   return full.split(/\s+/)[0] ?? "";
 }
+
+// ── A member who keeps their first name from visitors ──────────────────────
+
+/**
+ * What a visitor reads where a member who turned off "Show my first name to visitors" would be named
+ * (`showFirstNameToVisitors`, server/lib/profile.ts). The same words the lock writes, so a page reads one
+ * neutral phrase whichever rule took the name out. Server copy is English today: the catalog covers the
+ * client's chrome only (docs/I18N_STRATEGY.md section 1).
+ */
+export const VISITOR_NEUTRAL_NAME = "A member";
 
 // ── The roster the lock scrubs ─────────────────────────────────────────────
 
@@ -175,6 +188,17 @@ export interface PeopleLockDeps {
   boolVar(key: string): boolean;
   /** Tests hand in a clock. */
   now?: () => number;
+  /** The members who keep their first name from visitors. Defaults to reading the database. */
+  hidingFirstName?: () => Promise<Set<string>>;
+}
+
+/**
+ * A member who changes "Show my first name to visitors" is honoured on the next request, not after the roster
+ * cache runs out: the privacy route calls this after it writes, and every middleware drops what it holds.
+ */
+let rosterGeneration = 0;
+export function forgetCachedRosters(): void {
+  rosterGeneration += 1;
 }
 
 /** How long one read of the roster serves. A new member is hidden within this. */
@@ -202,22 +226,61 @@ export function lockExempt(path: string): boolean {
   return path.startsWith(NEVER_LOCKED_UNDER) && !path.includes("..");
 }
 
+const isEmptyRoster = (r: CompiledRoster) => !r.names && !r.tokens && !r.emails && !r.plainHandles;
+
+/**
+ * THE SECOND RULE THIS MIDDLEWARE CARRIES: A MEMBER'S OWN "SHOW MY FIRST NAME TO VISITORS".
+ *
+ * While the village's people are public, a stranger reads first names (the lead, 24 Nov 2026), and a member
+ * may opt out of that for themselves (`showFirstNameToVisitors`, server/lib/profile.ts). The routes that put a
+ * first name in a field say `VISITOR_NEUTRAL_NAME` for such a member already; this is the net under them, for
+ * the names frozen into sentences that no field projection reaches. The roster it scrubs is those members only,
+ * every part of their name, their handle, id and email, exactly as the lock scrubs everyone.
+ *
+ * What it costs: nothing while nobody has opted out, since the sign-in question is asked only once the roster
+ * holds somebody. What it errs on: another member who shares an opted-out member's first name reads as
+ * "a member" to a stranger too, the same side the lock errs on. It fails closed like the lock.
+ */
 export function peopleLockMiddleware(deps: PeopleLockDeps) {
   const now = deps.now ?? (() => Date.now());
-  let cached: { at: number; roster: CompiledRoster } | null = null;
-  const roster = async (): Promise<CompiledRoster> => {
-    if (cached && now() - cached.at < ROSTER_TTL_MS) return cached.roster;
-    cached = { at: now(), roster: compileRoster(await readRoster(deps.getPool())) };
-    return cached.roster;
+  const hiding = deps.hidingFirstName ?? (() => membersHidingFirstName(deps.getPool()));
+  const cache = (read: () => Promise<CompiledRoster>) => {
+    let held: { at: number; generation: number; roster: CompiledRoster } | null = null;
+    return async (): Promise<CompiledRoster> => {
+      if (held && held.generation === rosterGeneration && now() - held.at < ROSTER_TTL_MS) return held.roster;
+      const generation = rosterGeneration;
+      const roster = await read();
+      held = { at: now(), generation, roster };
+      return roster;
+    };
   };
+  const everyone = cache(async () => compileRoster(await readRoster(deps.getPool())));
+  const optedOut = cache(async () => {
+    const hidden = await hiding();
+    if (hidden.size === 0) return compileRoster([]);
+    return compileRoster((await readRoster(deps.getPool())).filter((p) => p.id !== null && hidden.has(p.id)));
+  });
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
     if (lockExempt(req.path)) return next();
-    if (deps.boolVar("org.public_people")) return next();
+    const locked = !deps.boolVar("org.public_people");
     try {
-      if (await deps.authedUser(req)) return next();
-      const r = await roster();
-      if (!r.names && !r.tokens && !r.emails && !r.plainHandles) return next();
+      let r: CompiledRoster;
+      if (locked) {
+        if (await deps.authedUser(req)) return next();
+        r = await everyone();
+      } else {
+        try {
+          r = await optedOut();
+        } catch (e) {
+          // A member reads names anyway, so a failed read of who opted out costs a member nothing.
+          if (await deps.authedUser(req)) return next();
+          throw e;
+        }
+        if (isEmptyRoster(r)) return next();
+        if (await deps.authedUser(req)) return next();
+      }
+      if (isEmptyRoster(r)) return next();
       const send = res.send.bind(res);
       res.send = ((body?: unknown) => send(typeof body === "string" ? scrubPeople(body, r) : body)) as Response["send"];
       next();

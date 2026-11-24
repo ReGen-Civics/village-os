@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 285 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 286 open and 64 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 323 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-349 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 72 text, 13 longtext.
+350 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 73 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and
 | Village map | 12 | 9 | 3 |
 | The village's people | 25 | 24 | 1 |
 | Companions | 3 | 3 | 0 |
-| The founding team | 29 | 29 | 0 |
+| The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Messages | 2 | 2 | 0 |
@@ -343,6 +343,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Lines every role card shows under what the village needs | `org.role_card_shared` | The founding team | longtext | blank | the whole village |
 | The sessions every role attends | `org.role_card_rhythm` | The founding team | longtext | blank | the whole village |
 | When a role's first review happens | `org.role_card_first_review` | The founding team | text | blank | the whole village |
+| Nationality line on every open role | `org.role_card_nationality` | The founding team | text | blank | the whole village |
 | The first steps once someone is selected | `org.role_card_onboarding` | The founding team | longtext | blank | the whole village |
 | Tooltips for your own words on the role cards | `org.role_card_word_tips` | The founding team | longtext | blank | the whole village |
 | Other ways to join: the resident path tile | `org.other_ways_seeder_title` | The founding team | text | `Become a Founding Seeder` | the whole village |
@@ -4273,7 +4274,7 @@ Which roles give their holders a companion that speaks for the role. Write all f
 
 ## The founding team
 
-29 dials. 29 for the whole village.
+30 dials. 30 for the whole village.
 
 ### When a moon counts as far from what was agreed
 
@@ -4535,6 +4536,20 @@ Read after First review on every role card, for example: at the first new moon c
 | Fact | Value |
 | --- | --- |
 | Key | `org.role_card_first_review` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Nationality line on every open role
+
+Shown under Nationality on every open role card, coming soon and venture cards too. Put a | between two lines, for example: Citizens of this country (preferred) | Other nationalities (possible). Empty, no Nationality row.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_nationality` |
 | Type | text, free text, one line |
 | Default | blank |
 | Range | no bounds are set |

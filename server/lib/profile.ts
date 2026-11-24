@@ -39,6 +39,12 @@ export interface Privacy {
   showRoles: boolean;
   /** Standing: the token chips and the ledger drawer behind them. */
   showHearts: boolean;
+  /**
+   * A signed-out visitor reads this member's first name on the public pages (/powers, the gratitude wall, the
+   * team page, a profile). Off, every visitor surface says "A member" instead and a page reached by their
+   * handle is not found. Members signed in read names exactly as before. See `membersHidingFirstName`.
+   */
+  showFirstNameToVisitors: boolean;
 }
 
 /**
@@ -52,6 +58,10 @@ export const PRIVACY_DEFAULTS: Readonly<Privacy> = Object.freeze({
   showBadges: true,
   showRoles: true,
   showHearts: true,
+  // ON, by the lead's ruling of 24 Nov 2026 (public pages show members' first names, and any member may opt
+  // out). This does not break the rule above: the visitor tier already served first names before this flag
+  // existed, so the default keeps every member exactly where they stood and opts nobody into anything new.
+  showFirstNameToVisitors: true,
 });
 
 /**
@@ -82,6 +92,25 @@ export async function membersHidingRoles(pool: Pool): Promise<Set<string>> {
     if (!resolvePrivacy(raw).showRoles) hidden.add(id);
   });
   return hidden;
+}
+
+/**
+ * The members who turned off "Show my first name to visitors" (`showFirstNameToVisitors` false). Every surface
+ * a signed-out visitor reads names them as `VISITOR_NEUTRAL_NAME` (server/lib/peopleLock.ts) instead, and
+ * `peopleLockMiddleware` takes any name of theirs out of whatever else a visitor is sent. An unset or junk flag
+ * reads as its default, which shows the first name, exactly as resolvePrivacy reads it.
+ */
+export async function membersHidingFirstName(pool: Pool): Promise<Set<string>> {
+  const hidden = new Set<string>();
+  (await readPrivacyBlobs(pool)).forEach((raw, id) => {
+    if (!resolvePrivacy(raw).showFirstNameToVisitors) hidden.add(id);
+  });
+  return hidden;
+}
+
+/** Whether one member keeps their first name from visitors. Same reading as `membersHidingFirstName`. */
+export function hidesFirstNameFromVisitors(privacy: Privacy): boolean {
+  return !privacy.showFirstNameToVisitors;
 }
 
 export interface ProfileView {

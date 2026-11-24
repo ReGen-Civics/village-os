@@ -3318,6 +3318,15 @@ export const VARIABLES: VariableDef[] = [
     type: "text",
     default: "",
   },
+  // Who the village hopes will apply, said once and drawn on every open role (the lead, 24 Nov 2026).
+  {
+    key: "org.role_card_nationality",
+    category: "The founding team",
+    label: "Nationality line on every open role",
+    description: "Shown under Nationality on every open role card, coming soon and venture cards too. Put a | between two lines, for example: Citizens of this country (preferred) | Other nationalities (possible). Empty, no Nationality row.",
+    type: "text",
+    default: "",
+  },
   {
     key: "org.role_card_onboarding",
     category: "The founding team",
