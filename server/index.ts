@@ -66,7 +66,8 @@ import { writeGoverningPurpose } from "./lib/governingPurpose";
 import { GPS_CHANGE } from "../shared/governingPurpose";
 import { pageContentProblem } from "../shared/pageContent";
 import { contentVersion } from "../shared/pageContent/resolve";
-import { sitePageMeta, siteWords, spliceHeroPreload, spliceMeta, trimTo } from "./lib/pageMeta";
+import { chosenSharePicture, sitePageMeta, siteWords, spliceHeroPreload, spliceMeta, trimTo } from "./lib/pageMeta";
+import { shareCardLookup } from "./lib/shareCard";
 import { pageVarsFrom } from "../shared/pageContent/vars";
 import { visitProgramProblem } from "../shared/visitProgram";
 import { greetingName, workWithUsAckEmail } from "./lib/workWithUsAck";
@@ -101,8 +102,9 @@ import { adminGateWasConsulted, markAdminGate } from "./lib/adminGate";
 import { type FaqPathway, register as registerFaqRoutes } from "./routes/faqs";
 import { register as registerBrochurePagesRoutes } from "./routes/brochurePages";
 import { register as registerRoleShareRoutes } from "./routes/roleShare";
+import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
-import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger } from "./routes/peopleLock";
+import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
 import { register as registerEntrance, ENTRANCE_PASS_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
@@ -576,7 +578,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
-import { livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
+import { hidesFirstNameFromVisitors, livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingFirstName, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
 import { seedEconomy, suggestClassTags } from "./lib/economySeed";
@@ -13181,8 +13183,11 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   app.get("/api/village/powers", async (req, res) => {
     // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
     // which is all a row carries. A member who keeps their roles off their profile (showRoles false) is left out
-    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out.
-    const hiddenFromVisitors = (await authedUser(req)) ? new Set<string>() : await membersHidingRoles(getPool());
+    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out. A member who
+    // turned off "Show my first name to visitors" is "A member" to a visitor (VISITOR_NEUTRAL_NAME, lib/peopleLock.ts).
+    const visitor = !(await authedUser(req));
+    const hiddenFromVisitors = visitor ? await membersHidingRoles(getPool()) : new Set<string>();
+    const namelessToVisitors = visitor ? await membersHidingFirstName(getPool()) : new Set<string>();
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
@@ -13192,7 +13197,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
     );
     // Who holds each power today through a role, too (server/lib/villagePowers.ts), so a power a role
     // carries is never described as the admin panel's. Fixed order, no count: the R55 rules hold there.
-    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
+    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: namelessToVisitors.has(String(m.id)) ? VISITOR_NEUTRAL_NAME : firstName(m.name ?? "Member") }]));
     const orgNames = new Map((await listOrgRoles(getPool())).map((r) => [r.id, r.name]));
     const ladder = servedLadder(mergedConfig().project.commitmentName) as Array<{ id: string; name?: string }>;
     const unlock = stageUnlockOverridesFromVars();
@@ -17700,6 +17705,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * Computed BEFORE the lead is written, so the lead can record what went.
      */
     const packet: any[] = investorDocsRepo.all().filter((d) => d.inPacket === true);
+    // An empty pack is refused, not thanked (the lead, 24 Nov 2026): the page disables its button (packReady below), and a request that arrives anyway saves no lead and sends nothing.
+    if (!packet.length) return res.status(409).json({ error: "packet_empty", message: "The investor pack is being prepared. Please check back soon." });
 
     /*
      * Whether a mailer is configured at all is a DEPLOYMENT fact, and it is a
@@ -18209,7 +18216,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // â”€â”€ Investor Summary (NEW-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   app.get("/api/investor-summary", async (_req, res) => {
-    res.json(investorSummaryRepo.get());
+    // packReady: whether any document is in the pack, so the page can disable "request the pack" while there is none.
+    res.json({ ...investorSummaryRepo.get(), packReady: investorDocsRepo.all().some((d) => d.inPacket === true) });
   });
 
   app.get("/api/admin/investor-summary", async (req, res) => {
@@ -19105,6 +19113,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!targetId) return res.status(404).json({ error: "Not found" });
     const loaded = await loadProfile(getPool(), villageId(), targetId);
     if (!loaded) return res.status(404).json({ error: "Not found" });
+    // A member who turned off "Show my first name to visitors" has no public sheet: a page reached by their handle
+    // that carried a portrait beside "A member" would still say who it is. Members read it as before.
+    if (!viewer && hidesFirstNameFromVisitors(loaded.privacy)) return res.status(404).json({ error: "Not found" });
 
     const { startsAt } = cycleWindow();
     const full = {
@@ -24606,8 +24617,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       listOrgAssignments(getPool(), lapseContext()),
       members.all(),
     ]);
+    // A stranger reads "A member" for whoever turned off "Show my first name to visitors" (VISITOR_NEUTRAL_NAME,
+    // lib/peopleLock.ts). `nameOf` serves the public holder row; a member's row needs a signed-in viewer.
+    const namelessToVisitors = viewer ? new Set<string>() : await membersHidingFirstName(getPool());
     const nameOf = (id: string) =>
-      firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
+      namelessToVisitors.has(String(id)) ? VISITOR_NEUTRAL_NAME : firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
 
     // ONE projection, shared with `/api/map` (shared/circleView.ts). The
     // hand-picked object this replaces dropped `color` and `icon`, so the
@@ -25842,6 +25856,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   const fileMiss = (_req: express.Request, res: express.Response) => {
     res.status(404).set("Cache-Control", "no-store").type("text/plain").send("Not found");
   };
+  registerShareCardRoutes(app, { uploadsDir: UPLOADS_DIR, picture: () => chosenSharePicture(mergedConfig(), contentRepo.get() ?? null), origin: requestOrigin, limitState: (bucket, max, windowMs) => limitState(getPool(), bucket, max, windowMs), clientIp });
   app.all("/api/{*splat}", (req, res) => {
     res.status(404).json({ error: `No such endpoint: ${req.method} ${req.path}` });
   });
@@ -25919,7 +25934,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // asks for a bundle hash that no longer exists, which is a white screen.
     res.type("html").set("Cache-Control", "no-cache").send(html);
   });
-  registerRoleShareRoutes(app, { shell: () => { const bare = indexShell(); return bare ? shellWithTheme(bare, getBrand) : null; }, config: mergedConfig, origin: requestOrigin, content: () => contentRepo.get() ?? null, send: (req, res, html) => res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(html, req, res)), pool: getPool });
+  registerRoleShareRoutes(app, { shell: () => { const bare = indexShell(); return bare ? shellWithTheme(bare, getBrand) : null; }, config: mergedConfig, origin: requestOrigin, content: () => contentRepo.get() ?? null, shareCard: shareCardLookup(UPLOADS_DIR), send: (req, res, html) => res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(html, req, res)), pool: getPool });
 
   /*
    * AN ADDRESS NO PAGE DRAWS IS A 404, with the same shell, so a person still
@@ -25954,7 +25969,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       return res.status(500).send(`Server error: could not serve index.html from ${indexPath}`);
     }
     const config = mergedConfig();
-    const meta = sitePageMeta(req.path, requestOrigin(req), config, contentRepo.get() ?? null, !brochurePageServed(req.path));
+    const meta = sitePageMeta(req.path, requestOrigin(req), config, contentRepo.get() ?? null, !brochurePageServed(req.path), shareCardLookup(UPLOADS_DIR));
     let html = spliceMeta(shellWithTheme(shell, getBrand), meta);
     // `/` draws the brochure landing page, and its hero photograph, only while the story pages are on (client/src/App.tsx, LandingRoute).
     if (req.path === "/" && brochureConfig().brochurePages) html = spliceHeroPreload(html, config.images.hero, uploadSrcSet(config.images.hero));

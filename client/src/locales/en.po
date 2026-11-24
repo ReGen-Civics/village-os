@@ -622,6 +622,11 @@ msgstr "Open again"
 #~ msgid "Characters {roleName} suits"
 #~ msgstr "Characters {roleName} suits"
 
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the button"
+msgid "Ask to join"
+msgstr "Ask to join"
+
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "admin quests: quests the mark-all left alone"
 msgid "Left as real, with work in flight: {names}"
@@ -2566,6 +2571,11 @@ msgstr "Contributed: cash"
 msgid "Access to give or take back"
 msgstr "Access to give or take back"
 
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button"
+msgid "Send the link"
+msgstr "Send the link"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "founding application, when we reply"
 #~ msgid "We reply within 1 day."
@@ -2731,6 +2741,11 @@ msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
 msgstr "Show every goal"
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button"
+msgid "Sign in"
+msgstr "Sign in"
+
 #: client/src/components/fireflyPath/SafetyNet.tsx
 msgctxt "application safety net"
 msgid "Download them so nothing is lost."
@@ -2797,6 +2812,11 @@ msgstr "Cancel"
 msgctxt "admin quest safety"
 msgid "Safety saved"
 msgstr "Safety saved"
+
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."
+msgstr "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
@@ -4768,6 +4788,11 @@ msgctxt "commitment field: after saving"
 msgid "Saved. The open work and roles now fit this."
 msgstr "Saved. The open work and roles now fit this."
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "No invitation yet?"
+msgstr "No invitation yet?"
+
 #: client/src/components/path/NextAct.tsx
 msgctxt "your path, the next act"
 msgid "Open the quests"
@@ -5486,6 +5511,11 @@ msgstr "Off"
 msgctxt "role card: the lines every role shares, as a banner"
 msgid "The goal we share"
 msgstr "The goal we share"
+
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Already have an account?"
+msgstr "Already have an account?"
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
@@ -6767,6 +6797,11 @@ msgstr "Copies"
 msgid "This page isn't open yet."
 msgstr "This page isn't open yet."
 
+#: client/src/pages/Register.tsx
+msgctxt "register: while it checks the invitation"
+msgid "Checking how to join..."
+msgstr "Checking how to join..."
+
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: the one act on the lead card"
 msgid "Take this on"
@@ -7046,6 +7081,11 @@ msgstr "How compensation is set"
 #: client/src/pages/Roles.tsx
 #~ msgid "When a Tension Is Between People"
 #~ msgstr "When a Tension Is Between People"
+
+#: client/src/pages/Register.tsx
+msgctxt "register: the page heading"
+msgid "Join {villageName}"
+msgstr "Join {villageName}"
 
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
@@ -7375,6 +7415,11 @@ msgstr "Each claim it opens is completed by the usual consent on the quest board
 msgctxt "a proposal's saved split"
 msgid "What they hold in {0}"
 msgstr "What they hold in {0}"
+
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "We're growing"
+msgstr "We're growing"
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Promised reply time, in hours"
@@ -9009,6 +9054,11 @@ msgctxt "roles page, role link"
 msgid "Link to {seatName}"
 msgstr "Link to {seatName}"
 
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: under the heading"
+msgid "Tell us the address you signed up with and we'll send you a link."
+msgstr "Tell us the address you signed up with and we'll send you a link."
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "founding application, when we reply"
 #~ msgid "We reply within {days} days."
@@ -9023,6 +9073,11 @@ msgstr "Propose a Quest"
 msgctxt "partner form"
 msgid "What you offer"
 msgstr "What you offer"
+
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button while it works"
+msgid "Sending…"
+msgstr "Sending…"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"
@@ -9922,6 +9977,11 @@ msgstr "Kind"
 msgid "Its role comes with it, and leaving the circle out leaves it out too."
 msgstr "Its role comes with it, and leaving the circle out leaves it out too."
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: when it fails"
+msgid "Sign-in didn't work. Check your email and password."
+msgstr "Sign-in didn't work. Check your email and password."
+
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
 msgid "In the memory"
@@ -10313,6 +10373,11 @@ msgstr "That did not reach the server. Your light is unchanged."
 #: client/src/components/admin/MintDesk.tsx
 msgid "Minted: {remaining} left under this cycle's cap"
 msgstr "Minted: {remaining} left under this cycle's cap"
+
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "Create an account"
+msgstr "Create an account"
 
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "venture redemption state"
@@ -12608,6 +12673,11 @@ msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
 msgstr "Read the quest above, then start with the first thing you can do today"
 
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "Check your email"
+msgstr "Check your email"
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Work out my Moon"
@@ -12821,6 +12891,11 @@ msgctxt "open work: gated quests explained once"
 msgid "Some of this work opens as you walk the {ladder} or step into a role. Each card says what opens it."
 msgstr "Some of this work opens as you walk the {ladder} or step into a role. Each card says what opens it."
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "Ask to join"
+msgstr "Ask to join"
+
 #. placeholder {0}: dayWords(g.day, locale)
 #. placeholder {0}: dayWords(r.start, locale)
 #: client/src/components/roleCard/DeliverablesGantt.tsx
@@ -12885,6 +12960,11 @@ msgstr "The week asks: "
 msgctxt "founding application, save and finish later: while saving"
 msgid "Saving"
 msgstr "Saving"
+
+#: client/src/pages/Login.tsx
+msgctxt "sign in: while a Google sign-in finishes"
+msgid "Finishing your Google sign-in."
+msgstr "Finishing your Google sign-in."
 
 #: client/src/pages/Crowdpool.tsx
 msgctxt "coming soon: the crowdpool page"
@@ -15420,6 +15500,11 @@ msgstr "Organizing"
 msgid "We couldn't reach the village just now"
 msgstr "We couldn't reach the village just now"
 
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Sign in"
+msgstr "Sign in"
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing this village means"
 msgstr "What closing this village means"
@@ -15713,6 +15798,11 @@ msgctxt "companion welcome"
 msgid "Worked out on this device. Your birth date, time and place are never sent or kept. Only your Moon sign and nakshatra are saved."
 msgstr "Worked out on this device. Your birth date, time and place are never sent or kept. Only your Moon sign and nakshatra are saved."
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "New here?"
+msgstr "New here?"
+
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
 msgid "Your first moon"
@@ -15981,6 +16071,12 @@ msgstr "Update our role with this"
 msgctxt "open proposal sent"
 msgid "What comes next"
 msgstr "What comes next"
+
+#: client/src/pages/ForgotPassword.tsx
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Email"
+msgstr "Email"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
@@ -16694,6 +16790,11 @@ msgctxt "admin character classes: the stock portraits heading"
 msgid "Faces"
 msgstr "Faces"
 
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor page: under a disabled request-the-pack button"
+msgid "The investor pack is being prepared."
+msgstr "The investor pack is being prepared."
+
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, choose the role that owns a new item"
 msgid "Owner role"
@@ -16958,6 +17059,11 @@ msgstr "No start date given"
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "Apply for the roles you drafted"
 #~ msgstr "Apply for the roles you drafted"
+
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Show password"
+msgstr "Show password"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
@@ -17506,6 +17612,11 @@ msgstr "For a decision"
 msgid "You selected roles before you joined."
 msgstr "You selected roles before you joined."
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the page heading"
+msgid "Sign in"
+msgstr "Sign in"
+
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Ideas are being shaped into quests"
@@ -17580,6 +17691,11 @@ msgstr "Listing and the door"
 #~ msgctxt "price popup lede"
 #~ msgid "As a contractor you can propose your own price. The contract decides the amount."
 #~ msgstr "As a contractor you can propose your own price. The contract decides the amount."
+
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "Got an invitation link? Open it to create your account."
+msgstr "Got an invitation link? Open it to create your account."
 
 #. placeholder {0}: c.by
 #: client/src/pages/ProposedChanges.tsx
@@ -17856,6 +17972,11 @@ msgctxt "limit notice under a box"
 msgid "{0} characters left in this answer."
 msgstr "{0} characters left in this answer."
 
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Hide password"
+msgstr "Hide password"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application value"
 #~ msgid "This season's goals"
@@ -17919,6 +18040,11 @@ msgstr "{villageName}'s source"
 msgctxt "workbook cover title"
 msgid "Governance Canvas workbook"
 msgstr "Governance Canvas workbook"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card fact"
+msgid "Nationality"
+msgstr "Nationality"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -18202,6 +18328,11 @@ msgstr "Your compensation"
 msgctxt "coming soon: the places and photographs pages, the door meanwhile"
 msgid "Open the map"
 msgstr "Open the map"
+
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the heading"
+msgid "You need an invitation to join {villageName}"
+msgstr "You need an invitation to join {villageName}"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
@@ -19543,6 +19674,11 @@ msgctxt "prosperity packet form"
 msgid "What you would like to build"
 msgstr "What you would like to build"
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button while it works"
+msgid "Signing in…"
+msgstr "Signing in…"
+
 #: client/src/components/admin/MenuPanel.tsx
 msgid "The menu did not save."
 msgstr "The menu did not save."
@@ -19573,6 +19709,11 @@ msgstr "Check your connection, then try again."
 msgctxt "rites"
 msgid "Your card"
 msgstr "Your card"
+
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: between the two ways in"
+msgid "or"
+msgstr "or"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
@@ -20323,6 +20464,11 @@ msgctxt "pricing desk"
 msgid "The village adopts them by vote"
 msgstr "The village adopts them by vote"
 
+#: client/src/pages/Login.tsx
+msgctxt "sign in: under the heading"
+msgid "Members sign in here."
+msgstr "Members sign in here."
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "The line that follows has Undo, to bring them back."
@@ -20415,6 +20561,11 @@ msgstr "added, with Gene Keys"
 msgctxt "proposed changes"
 msgid "Show everything ({0} unchanged)"
 msgstr "Show everything ({0} unchanged)"
+
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: link back"
+msgid "Back to sign in"
+msgstr "Back to sign in"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
@@ -21228,6 +21379,11 @@ msgstr "Cancel"
 msgctxt "rites"
 msgid "Save the first word"
 msgstr "Save the first word"
+
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the second button"
+msgid "See calls and events"
+msgstr "See calls and events"
 
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: the history"
@@ -23117,6 +23273,11 @@ msgctxt "pricing desk"
 msgid "Quest"
 msgstr "Quest"
 
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Password"
+msgstr "Password"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{who} pledged {much}, then withdrew it"
 msgstr "{who} pledged {much}, then withdrew it"
@@ -23669,6 +23830,11 @@ msgstr "Lead role"
 #~ msgid "At {0}%, the role pays up to {1} (the full role: {2})."
 #~ msgstr "At {0}%, the role pays up to {1} (the full role: {2})."
 
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the heading"
+msgid "Set a new password"
+msgstr "Set a new password"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall eyebrow"
 msgid "Thanks between us"
@@ -23688,6 +23854,11 @@ msgstr "Not given"
 msgctxt "role editor"
 msgid "Lowest amount"
 msgstr "Lowest amount"
+
+#: client/src/pages/Login.tsx
+msgctxt "sign in: link"
+msgid "Forgot your password?"
+msgstr "Forgot your password?"
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card: how you're chosen, when the role names no steps yet"
@@ -25152,9 +25323,9 @@ msgstr "We'd agree {0}"
 #~ msgstr "The monthly amount you would ask"
 
 #: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the eyebrow"
-msgid "A small stumble"
-msgstr "A small stumble"
+#~ msgctxt "refresh screen after a crash: the eyebrow"
+#~ msgid "A small stumble"
+#~ msgstr "A small stumble"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
@@ -25596,6 +25767,11 @@ msgstr "Review"
 msgctxt "open proposal: suggestions count, one"
 msgid "They suggested 1 change to the role card."
 msgstr "They suggested 1 change to the role card."
+
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: when it fails"
+msgid "That didn't go through. Try again."
+msgstr "That didn't go through. Try again."
 
 #: client/src/components/proposals/Diff.tsx
 msgctxt "proposed changes"
@@ -26161,6 +26337,11 @@ msgstr "Appeal: {appealShown}"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "What you bring to this role"
 #~ msgstr "What you bring to this role"
+
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: the button"
+msgid "Continue with Google"
+msgstr "Continue with Google"
 
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Nothing has moved yet."
@@ -26994,6 +27175,11 @@ msgstr "Usual times: {windowList}"
 #~ msgctxt "update card: reload the page"
 #~ msgid "Reload"
 #~ msgstr "Reload"
+
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once."
+msgstr "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once."
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"

@@ -4,6 +4,7 @@
  *
  *   GET /api/me/privacy    every flag, resolved: an unset one reads as its default
  *   PUT /api/me/privacy    change one or more flags, e.g. { showInventory: true }
+ *                          or { showFirstNameToVisitors: false }
  *
  * Only real booleans for flags that exist are taken; anything else is
  * refused with 400 and nothing is written, so a typo can never quietly leave
@@ -14,6 +15,7 @@
 import type { Express } from "express";
 
 import type { AppDeps } from "../lib/appDeps";
+import { forgetCachedRosters } from "../lib/peopleLock";
 import { PRIVACY_DEFAULTS, resolvePrivacy, type Privacy } from "../lib/profile";
 import { PRIVACY_URL } from "../../shared/profileInventory";
 import { readPrivacyBlob, writePrivacyBlob } from "../repos/profileInventory";
@@ -60,6 +62,8 @@ export function register(app: Express, deps: Deps): void {
     if (!now) return res.status(404).json({ error: "Not found" });
     const next: Privacy = { ...now, ...asked.change };
     await writePrivacyBlob(getPool(), String(user.id), next);
+    // "Show my first name to visitors" is honoured on a visitor's next request, not after the lock's cache runs out.
+    if ("showFirstNameToVisitors" in asked.change) forgetCachedRosters();
     return res.json({ privacy: next });
   });
 }
