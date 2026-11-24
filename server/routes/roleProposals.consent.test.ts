@@ -40,6 +40,7 @@ import { insertProposal } from "../repos/roleProposals";
 import { insertApplication, readApplication } from "../repos/seatApplications";
 import { emptyBody } from "../../shared/roleProposals";
 import { harness, HOLDER, OWNER, P, PEOPLE, READER, SEASONS } from "../testkit/roleProposalHarness";
+import { pathFactsFor, type PathEnv } from "../lib/pathFacts";
 
 const FOURTH = "u-four";
 const configured = testDbConfigured();
@@ -338,6 +339,8 @@ describe.skipIf(!configured)("the circle consents to a role proposal, on a real 
         lapse: { currentSeasonId: "s-now", cadence: "season_turn" } as any,
         members: Object.values(PEOPLE),
         isPresent: () => true,
+        // The guest is present and not admitted: the proposal routes refuse them, so the bell never sends them there.
+        mayPropose: async (m: any) => m.id !== "u-guest",
         notify: spine,
       });
     const rowsOf = (type: string, userId: string) => q("SELECT dedupe_key FROM notifications WHERE type = ? AND user_id = ?", [type, userId]);
@@ -367,6 +370,8 @@ describe.skipIf(!configured)("the circle consents to a role proposal, on a real 
       await sweep("2031-02-10T09:00:00Z");
       await sweep("2031-02-10T15:00:00Z");
       expect(await rowsOf("role_proposal_window_open", HOLDER)).toEqual([{ dedupe_key: nudgeKey({ reason: "window-open", trigger: "n-later" }, HOLDER) }]);
+      // An applicant the village has not admitted is not told either: the door would answer "opens at the member rung".
+      expect(await rowsOf("role_proposal_window_open", "u-guest")).toEqual([]);
       // A member with a draft for that season is not told it is open.
       expect(await rowsOf("role_proposal_window_open", READER)).toEqual([]);
       expect(await rowsOf("role_proposal_review_due", FOURTH)).toEqual([{ dedupe_key: nudgeKey({ reason: "review-due", trigger: `${water}:2031-02-09` }, FOURTH) }]);
@@ -405,6 +410,19 @@ describe.skipIf(!configured)("the circle consents to a role proposal, on a real 
       h.as(OWNER);
       const owner = await h.call("GET", `${P}/nudge`);
       expect(owner.body.reason).not.toBe("window-open");
+    });
+
+    it("the path offers the step only to somebody who may propose, so an applicant is never sent to a refusal", async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const inAMonth = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+      h.state.seasons = [SEASONS[0], { ...SEASONS[1], planWindow: { opensOn: today, closesOn: inAMonth } }];
+      const env = { pool, now: new Date(), timeZone: "UTC", clock: LUNAR_CLOCK } as unknown as PathEnv;
+      h.as(HOLDER);
+      expect((await pathFactsFor(env, HOLDER)).proposeWindow).toEqual({ href: PROPOSE_ENTRY_HREF, closesOn: null });
+      // The door the step points at, for the same guest: refused.
+      h.as("u-guest", "guest");
+      expect((await h.call("GET", `${P}/nudge`)).status).toBe(403);
+      expect((await pathFactsFor(env, "u-guest")).proposeWindow).toBeNull();
     });
   });
 });
