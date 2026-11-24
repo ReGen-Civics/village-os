@@ -41,8 +41,10 @@ import Layout from "@/components/Layout";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken, useCatalyst } from "@/lib/gameApi";
-import { KeyRound } from "lucide-react";
-import { holderSentence, inFamilies, suggestionSentence, type PowerRow } from "@/lib/powersCopy";
+import { ChevronDown, KeyRound } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
+import { CARD, EYEBROW, H1, H2, HINT, LEDE, NOTE, TILE, WORLD } from "@/components/journey/look";
+import { holderSentence, inFamilies, suggestionSentence, visitorHolderSentence, type PowerRow } from "@/lib/powersCopy";
 import HandsForPower, { type HandRow } from "@/components/power/HandsForPower";
 
 export default function Powers() {
@@ -84,84 +86,122 @@ export default function Powers() {
     readHands();
   }, [user?.id, readHands]);
 
+  /*
+   * THE VISITOR'S VIEW (public launch, 24 Nov 2026). The page is public now,
+   * and a first-time visitor read it as dense and technical. For a visitor:
+   * each family is folded shut under its plain title, each power says what it
+   * lets someone do and who looks after it in plain words
+   * (visitorHolderSentence), and the screens, launch guidance and the
+   * mechanics of a handover stay with members. Same order, same cards, no
+   * count, for a village holding none of these or all of them (R55).
+   */
+  const visitor = !user;
+
   return (
     <Layout>
-      <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
-        <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">
-            What this village looks after
-          </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Every power here has a place it lives. Some of them sit with the admin
-            panel, which is how a village starts. Some of them the village has taken
-            on. This page says which is which, and who to ask.
+      <div className={WORLD}>
+      <section className="container max-w-3xl pt-12 pb-6 sm:pt-16">
+        <p className={EYEBROW}>
+          <Trans context="powers page eyebrow">How the village is held</Trans>
+        </p>
+        <h1 className={`${H1} mt-2`}>
+          <Trans>What this village looks after</Trans>
+        </h1>
+        <p className={`${LEDE} mt-4`}>
+          {visitor ? (
+            <Trans>
+              Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a
+              person do, and which role holds it today.
+            </Trans>
+          ) : (
+            <Trans>
+              Every power here has a place it lives. Some of them sit with the admin panel, which is how a village starts.
+              Some of them the village has taken on. This page says which is which, and who to ask.
+            </Trans>
+          )}
+        </p>
+      </section>
+
+      <section className="container max-w-3xl pb-16">
+        {powers === null && (
+          <p className={HINT}>
+            <Trans>Reading the village's own record.</Trans>
           </p>
-        </div>
+        )}
+
+        {powers !== null && (
+          <ul className="space-y-4" data-testid="powers-list">
+            {inFamilies(powers, families).map((f) => (
+              <li key={`family-${f.id}`}>
+                <details className={`${CARD} group`} open={!visitor}>
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+                    <h2 className={H2}>{f.title}</h2>
+                    <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+                  </summary>
+                  <ul className="mt-5 space-y-3">
+                    {f.powers.map((p) => (
+                      <li key={p.capability} className={TILE} data-testid={`power-${p.capability}`}>
+                        <div className="flex items-start gap-3">
+                          <KeyRound className="mt-1 h-5 w-5 shrink-0 text-notice" aria-hidden />
+                          <div className="min-w-0">
+                            <h3 className="font-display text-lg text-foreground">{p.title}</h3>
+                            {!visitor && p.surface && <p className={`${HINT} mt-1`}>{p.surface}.</p>}
+                            <p className="mt-2 text-base text-foreground">
+                              <Trans>Whoever holds this can {p.consequence}.</Trans>
+                            </p>
+                            <p className={`${NOTE} mt-2`}>{visitor ? visitorHolderSentence(p) : holderSentence(p)}</p>
+                            {p.heldBy?.byBallot && (
+                              <p className="mt-1 text-sm text-open">
+                                <Trans>The village voted this one across.</Trans>
+                              </p>
+                            )}
+                            {user && <p className={`${HINT} mt-1`}>{suggestionSentence(p)}</p>}
+                            {!visitor && p.guidance && guidance[p.guidance] && (
+                              <p className={`${HINT} mt-1`}>{guidance[p.guidance]}</p>
+                            )}
+                            {user && <HandsForPower capability={p.capability} hands={hands} onOpened={readHands} />}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {powers !== null && visitor && (
+          <p className={`${NOTE} mt-10`}>
+            <Trans>
+              As the village grows, it takes these on through its own decisions, and this page changes with it.
+            </Trans>
+          </p>
+        )}
+
+        {powers !== null && !visitor && (
+          <div className={`${CARD} mt-10`}>
+            <h2 className={H2}>
+              <Trans>How a power moves</Trans>
+            </h2>
+            <p className={`${NOTE} mt-3`}>
+              <Trans>
+                A power moves in two steps, and the order matters. First a role is given the power, so there is somebody
+                who can act. Then the village takes it on, and from that day the admin panel stops being the answer:
+                whoever sits in that role acts on their own account.
+              </Trans>
+            </p>
+            <p className={`${NOTE} mt-3`}>
+              <Trans>
+                {catalyst.aNameCap} can still reach past a power the village holds, on a day something has gone wrong.
+                Doing it writes a line on the village's own feed naming the power and the person, and it tells whoever
+                holds it. That is the whole of the arrangement: the way back exists, and the village sees it used.
+              </Trans>
+            </p>
+          </div>
+        )}
       </section>
-
-      <section className="py-10">
-        <div className="container max-w-3xl">
-          {powers === null && (
-            <p className="text-muted-foreground">Reading the village's own record.</p>
-          )}
-
-          {powers !== null && (
-            <ul className="space-y-4" data-testid="powers-list">
-              {inFamilies(powers, families).map((f) => [
-                <li key={`family-${f.id}`} className="pt-4">
-                  <h2 className="font-display text-xl font-semibold text-foreground">{f.title}</h2>
-                </li>,
-                ...f.powers.map((p) => (
-                <li
-                  key={p.capability}
-                  className="rounded-xl border border-border bg-card p-5"
-                  data-testid={`power-${p.capability}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <KeyRound className="h-5 w-5 mt-1 text-muted-foreground shrink-0" aria-hidden />
-                    <div>
-                      <h3 className="font-display text-lg font-semibold text-foreground">{p.title}</h3>
-                      {p.surface && <p className="text-sm text-muted-foreground mt-1">{p.surface}.</p>}
-                      <p className="text-sm text-foreground mt-2">
-                        Whoever holds this can {p.consequence}.
-                      </p>
-                      <p className="text-sm text-foreground/80 mt-2">{holderSentence(p)}</p>
-                      {p.heldBy?.byBallot && (
-                        <p className="text-sm text-teal-deep mt-1">The village voted this one across.</p>
-                      )}
-                      {user && <p className="text-sm text-muted-foreground mt-1">{suggestionSentence(p)}</p>}
-                      {p.guidance && guidance[p.guidance] && (
-                        <p className="text-xs text-muted-foreground mt-1">{guidance[p.guidance]}</p>
-                      )}
-                      {user && <HandsForPower capability={p.capability} hands={hands} onOpened={readHands} />}
-                    </div>
-                  </div>
-                </li>
-                )),
-              ])}
-            </ul>
-          )}
-
-          {powers !== null && (
-            <div className="mt-10 rounded-xl border border-border bg-muted/30 p-5">
-              <h2 className="font-display text-lg font-semibold text-foreground">How a power moves</h2>
-              <p className="text-sm text-muted-foreground mt-2">
-                A power moves in two steps, and the order matters. First a role is
-                given the power, so there is somebody who can act. Then the village
-                takes it on, and from that day the admin panel stops being the
-                answer: whoever sits in that role acts on their own account.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                {catalyst.aNameCap} can still reach past a power the village holds, on a day
-                something has gone wrong. Doing it writes a line on the village's own
-                feed naming the power and the person, and it tells whoever holds it.
-                That is the whole of the arrangement: the way back exists, and the
-                village sees it used.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
+      </div>
     </Layout>
   );
 }

@@ -13,6 +13,46 @@ msgctxt "feedback page eyebrow"
 msgid "Feedback"
 msgstr "Comentarios"
 
+#: client/src/pages/Powers.tsx
+msgctxt "powers page eyebrow"
+msgid "How the village is held"
+msgstr "Cómo se sostiene la aldea"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "What this village looks after"
+msgstr "Lo que cuida esta aldea"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Every shared responsibility here has someone who looks after it. Open a theme to see what each one lets a person do, and which role holds it today."
+msgstr "Cada responsabilidad compartida aquí tiene a alguien que la cuida. Abre un tema para ver qué permite hacer cada una y qué rol la tiene hoy."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Reading the village's own record."
+msgstr "Leyendo el registro de la aldea."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "Whoever holds this can {0}."
+msgstr "Quien tiene esto puede {0}."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "The village voted this one across."
+msgstr "La aldea votó para asumir esta."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "As the village grows, it takes these on through its own decisions, and this page changes with it."
+msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propias decisiones, y esta página cambia con ella."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Powers.tsx
+msgid "How a power moves"
+msgstr "Cómo pasa un poder"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
