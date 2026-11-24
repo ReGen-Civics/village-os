@@ -482,16 +482,15 @@ async function sendRow(deps: PostOfficeDeps, row: OutboundRow, rehearse: string[
  * `duplicate` with the first row's id for a key already used.
  */
 export async function post(deps: PostOfficeDeps, email: OutgoingEmail): Promise<PostResult> {
-  const addresses = await memberDelivery(deps, email);
-  if (addresses.length === 1 && addresses[0] === email.to?.email) return postOne(deps, email);
-  let best: PostResult | null = null;
-  for (let i = 0; i < addresses.length; i++) {
-    // The first address keeps the caller's key, so a retried post is still one email; a second needs its own.
-    const idempotencyKey = i === 0 ? email.idempotencyKey : `${email.idempotencyKey}:also`;
-    const r = await postOne(deps, { ...email, idempotencyKey, to: { ...email.to, email: addresses[i] } });
-    if (!best || (!WENT.has(best.status) && WENT.has(r.status))) best = r;
-  }
-  return best as PostResult;
+  const [first, second] = await memberDelivery(deps, email);
+  if (second === undefined && first === email.to?.email) return postOne(deps, email);
+  // Never more than two: the main address and the one extra address the member chose (`both`).
+  const one = await postOne(deps, { ...email, to: { ...email.to, email: first } });
+  if (second === undefined) return one;
+  // The first keeps the caller's key, so a retried post is still one email; the second needs its own.
+  const idempotencyKey = `${email.idempotencyKey}:also`;
+  const two = await postOne(deps, { ...email, idempotencyKey, to: { ...email.to, email: second } });
+  return !WENT.has(one.status) && WENT.has(two.status) ? two : one;
 }
 
 /** What a caller reads as "the member will get it", for the answer `post()` gives when one email became two. */
@@ -510,15 +509,16 @@ const WENT: ReadonlySet<string> = new Set(["sent", "queued", "rehearsed", "dupli
  * A fault reading the choice never stops an email: it goes where it was
  * addressed, which is where it always went.
  */
-async function memberDelivery(deps: PostOfficeDeps, email: OutgoingEmail): Promise<string[]> {
+async function memberDelivery(deps: PostOfficeDeps, email: OutgoingEmail): Promise<readonly [string, string?]> {
   const given = email.to?.email;
   const userId = email.to?.userId;
   if (!userId || email.kind === "essential" || !given) return [given];
   try {
     const facts = await deliveryFactsOf(deps.getPool(), userId);
     if (!facts || emailKeyOf(facts.main) !== emailKeyOf(given)) return [given];
-    const to = deliveryAddresses(facts);
-    return to.length === 1 && emailKeyOf(to[0]) === emailKeyOf(given) ? [given] : to;
+    const [main, other] = deliveryAddresses(facts);
+    if (other === undefined) return emailKeyOf(main) === emailKeyOf(given) ? [given] : [main];
+    return [main, other];
   } catch (err) {
     console.error(`[comms] the delivery choice for ${userId} could not be read, so the email goes to the address it named`, err);
     return [given];
