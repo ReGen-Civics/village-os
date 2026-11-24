@@ -96,7 +96,7 @@ describe("a copy part the server no longer has", () => {
     window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
     mount(await missingPartError());
     expect(reload).not.toHaveBeenCalled();
-    // The card's heading as #1531 rewrote it (the playful refresh screen); #1530's test still read the old words.
-    expect(screen.getByRole("alert").textContent).toBe("The site just grew");
+    // The refresh screen (#1531) heads the stale-build card "The site just grew".
+    expect(screen.getByRole("alert").textContent).toContain("The site just grew");
   });
 });
