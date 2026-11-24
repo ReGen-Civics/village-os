@@ -2499,6 +2499,45 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * BREATHE (.m-breathe, .m-breathe-ring): idle life on the one next act. Scale
+ * 1 to 1.025 over --m-breath, slower than a resting breath so it calms. It
+ * breathes three times (about twenty seconds) and then RESTS at its still
+ * frame, the rule for ambient motion, with no script to count. Put it on a
+ * wrapper when the element already animates (the refresh mark unfurls first);
+ * the ring version draws on ::before, so keep it off .m-touch elements.
+ *
+ * ARRIVE (.m-arrive): Germinate on a clock, for something that replaces the
+ * page in place (a form's thank-you), where there is no scroll to tie it to.
+ * Same keyframes, so it also starts at 40% and never at nothing.
+ */
+@keyframes m-breathe {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.025; }
+}
+@keyframes m-breathe-ring {
+  0%, 100% { opacity: 0; scale: 0.98; }
+  50% { opacity: 0.5; scale: 1.04; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .m-breathe {
+    animation: m-breathe var(--m-breath) var(--m-ease-sway) 600ms 3;
+  }
+  .m-breathe-ring::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: inherit;
+    border: 1.5px solid var(--sheet-notice, var(--ring));
+    opacity: 0;
+    pointer-events: none;
+    animation: m-breathe-ring var(--m-breath) var(--m-ease-sway) 1.2s 3;
+  }
+  .m-arrive {
+    animation: m-germinate var(--m-settle) var(--m-ease) both;
+  }
+}
+
+/*
  * The role selection journey (/roles/select): lift on hover, a pop when a card
  * is chosen, a rise between steps, and a small burst of sparks. Only transform
  * and opacity move, all of it sits inside no-preference, and the global

@@ -367,11 +367,7 @@ export default function LoveLetter() {
       <Layout>
         <section className={`${WORLD} py-16 sm:py-24`}>
           <div className="container max-w-2xl mx-auto">
-            <m.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
+            <div className="m-arrive text-center">
               {/* Aligned: seeds carried out from the heart and settling, once. The heart itself holds still,
                   because the words below it are being read. Reduce motion: the seeds already landed. */}
               <div className="relative mx-auto mb-6 flex h-40 w-40 justify-center" data-aligned-moment={still ? "still" : "live"}>
@@ -426,7 +422,7 @@ export default function LoveLetter() {
                 Return Home
                 <ArrowRight className="w-5 h-5" />
               </a>
-            </m.div>
+            </div>
           </div>
         </section>
       </Layout>
