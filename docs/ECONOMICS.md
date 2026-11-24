@@ -1278,8 +1278,8 @@ different file and outside this count.
 `POST /api/wallet/send` is the one worth reading slowly, because the truncation
 it was reported to have dropped is still there. The route runs
 `Math.trunc(Number(amount) || 0)` today, and that is correct, because what
-arrives is ALREADY MINOR: `SendTokensCard.tsx` calls `toMinorUnits` beside an
-input whose step is the token's own smallest unit, so a `toLedgerUnits` at the
+arrives is ALREADY MINOR: the pay page (`client/src/pages/Pay.tsx`) calls
+`amountToMinor` beside a pad that takes no finer step than the token's own unit, so a `toLedgerUnits` at the
 route would post ten thousand times what was typed. The defect that closed was
 the one where a member typed 0.5 and the route truncated a HUMAN number to 0 and
 refused it. What fixed it was moving the conversion to the client, not a change

@@ -151,7 +151,7 @@ type Deps = Pick<
  * village sell it for": the last price it posted. A village that means to stop
  * offering that number clears the price or sets its own rate.
  */
-const EXCHANGE_PRICE_CURRENCY = "USD";
+export const EXCHANGE_PRICE_CURRENCY = "USD";
 
 /** What one redemption looks like to a person, with every amount human. */
 function forReading(row: {

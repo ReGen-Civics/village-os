@@ -95,7 +95,8 @@ const PAGES = [
   // The Treasury (2026-11-15): the hand mint and the pay queues for a holder who is not an admin.
   "client/src/pages/Treasury.tsx",
   // The review page as cards (2026-11-16): where every change an agent proposes is decided.
-  "client/src/pages/ProposedChanges.tsx",
+  "client/src/pages/ProposedChanges.tsx",  // The send and receive page (2026-11-23, credits lane 3): born inside the rule.
+  "client/src/pages/Pay.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
@@ -138,6 +139,12 @@ const JOURNEY = [
   "client/src/components/alignment/LeavingEnds.tsx",
   "client/src/components/alignment/AlignmentReview.tsx",
   "client/src/components/alignment/AlignmentMarks.tsx",
+  // The send and receive page's parts, and the profile's door to it (2026-11-23).
+  "client/src/components/pay/PaySteps.tsx",
+  "client/src/components/pay/ReceivePanel.tsx",
+  "client/src/components/pay/ScanLink.tsx",
+  "client/src/components/pay/QrCode.tsx",
+  "client/src/components/pay/PayDoor.tsx",
   "client/src/components/alignment/AlignmentCard.tsx",
   "client/src/components/alignment/RegisterEntry.tsx",
   "client/src/components/alignment/AlignButton.tsx",

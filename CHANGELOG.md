@@ -61,6 +61,25 @@ Nothing. It stays off until you turn on `ledger.org_redemption_open` (Admin, Gam
 
 Yes, by adding only. Migration 0420 adds the table `org_redemptions` and the ledger account `sys:org-redemption-hold`. Nothing existing changes, so going back to 1.3.57 or earlier leaves the new table unused.
 
+## 1.3.57 (2026-11-24)
+
+### What changed for your village
+
+- **A page to pay and receive credits, at `/pay`.** Members pay each other by searching a name or @handle, from a row of people they paid lately, or by scanning someone's code or opening their request link. They type the amount on a pad in credits, check who, how much, the note and what they will have left, then get a receipt. Receive shows the member's own code and a link that fills in their name and, if they like, an amount and what it is for. A phone shares the link through its share sheet; a computer copies it.
+- **Credits shown in your own money.** Beside every credit amount a member reads the same value in the currency they chose to see money in, or the village's own currency, at what the village has set one credit to be worth. Members spend credits and never cash them out here, and credits never expire, so the page has no cash-out button and no expiry.
+- **Search shows little and lists nobody.** It is for members, needs two letters, matches the start of a handle or of a word in a name, and shows at most six people, by name and handle only. Somebody who is not a member yet is paid by their link or code.
+- **Ventures appear once venture payments are on.** With `ledger.org_accounts_open` on, a venture can be found by its name, paid by its link and shows in the recent row, except to the people who run it. Off, nothing about ventures appears.
+- **The profile's send-by-email form is replaced** by a door to the new page on the Treasury tab, and its Send button opens the page too.
+- **The app downloads a little less.** The build now groups small lazy chunks, which frees about 124 KB of the published files. Nothing looks or works differently.
+
+### What you must do
+
+Nothing to keep things as they are. To show a money value beside credits, set what a credit is worth in Admin, settings: `redemption.currencies` (for example USD), `redemption.rate_source` set to "set" and `redemption.rate_per_token` (for example 1). For colones beside dollars the village also needs a CRC rate in its daily rates, which the public rate feed does not carry.
+
+### Does it touch your data
+
+No. Payments are written to the ledger the same way the old form wrote them, and no table changes.
+
 ## 1.3.56 (2026-11-23)
 
 ### What changed for your village

@@ -87,7 +87,7 @@ vi.mock("@/components/ProfileSheet", () => ({ default: () => null }));
 vi.mock("@/components/ProfileHero", () => ({ default: () => null }));
 vi.mock("@/components/OnchainCard", () => ({ default: () => null }));
 vi.mock("@/components/WalletCard", () => ({ default: () => null }));
-vi.mock("@/components/SendTokensCard", () => ({ default: () => null }));
+vi.mock("@/components/pay/PayDoor", () => ({ default: () => null }));
 vi.mock("@/components/profile/MaturityLadder", () => ({ default: () => null }));
 vi.mock("@/components/profile/PowersMap", () => ({ default: () => null }));
 vi.mock("@/components/profile/PathsPanel", () => ({ default: () => null }));

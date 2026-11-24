@@ -255,7 +255,7 @@ identity, because `userIdForHandle` and `loadProfile` both carry `is_example = 0
 
 - `client/src/pages/Profile.tsx`. The member's own sheet, composed of `ProfileHero` (party and
   moons), the next-step card, `PathsPanel`, `MaturityLadder`, `PowersMap`, the contributions list,
-  `ProfileJourney`, `ProfileSheet`, `WalletCard`, `SendTokensCard`, `OnchainCard`,
+  `ProfileJourney`, `ProfileSheet`, `WalletCard`, `PayDoor` (the door to `/pay`), `OnchainCard`,
   `NotifyPrefsPanel` (which carries the export and delete buttons) and `YourAgentPanel`. Its header
   comment states the rule the page keeps: every figure comes off a payload, and a count with no
   payload behind it is not rendered.
