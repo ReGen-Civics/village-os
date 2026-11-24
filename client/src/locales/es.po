@@ -21007,17 +21007,17 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "Terms we offer"
 msgstr "Términos que ofrecemos"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/VentureAccountsCard.tsx
-msgctxt "treasury queue"
-msgid "What actually went out, if different"
-msgstr "Lo que salió de verdad, si es distinto"
-
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/PaySteps.tsx
 msgctxt "pay page"
 msgid "Amount pad"
 msgstr "Teclado del monto"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "What actually went out, if different"
+msgstr "Lo que salió de verdad, si es distinto"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Move to its own change request"

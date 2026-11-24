@@ -107,7 +107,7 @@ subtlety in this system; see section 7.
 <!-- generated:triggers start -->
 A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is UNIQUE, so the shape of the key is what decides whether a second attempt pays again.
 
-`keys` in `server/lib/economy.ts` builds 13 of them. The angle brackets are that builder's own parameter names.
+`keys` in `server/lib/economy.ts` builds 16 of them. The angle brackets are that builder's own parameter names.
 
 | Builder | What the builder returns |
 | --- | --- |
@@ -124,6 +124,9 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `keys.equityClaim` | `equity-claim:<esc(v)>:<esc(claimRowId)>` |
 | `keys.redemptionHold` | `redemption:<esc(v)>:<esc(redemptionId)>:hold` |
 | `keys.redemptionBurn` | `redemption:<esc(v)>:<esc(redemptionId)>:burn` |
+| `keys.orgRedemptionHold` | `org-redemption:<esc(v)>:<esc(redemptionId)>:hold` |
+| `keys.orgRedemptionBurn` | `org-redemption:<esc(v)>:<esc(redemptionId)>:burn` |
+| `keys.orgRedemptionRelease` | `org-redemption:<esc(v)>:<esc(redemptionId)>:release` |
 
 **A builder's output is not always the key.** The token slug used to be appended to it at the two mint call sites rather than built in, which printed a shape here that the ledger never held; it is a builder parameter now, and both tables agree because of it. Most of the economy still does not use a builder at all. So the table below is read from the CALL SITES: every `idempotencyKey` written under `server/`, resolved through templates, builders, conditionals, local constants and local helpers into the string the ledger receives.
 
@@ -159,6 +162,9 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `ord:<orderId>:leg1` | `server/index.ts`, `server/lib/exchange.ts` |
 | `ord:<orderId>:reversal-leg1` | `server/index.ts` |
 | `ord:sp-<Date.now()>-<Math.random().toString(36).slice(2, 6)>:leg1` | `server/routes/stays.ts` |
+| `org-redemption:<esc(v)>:<esc(redemptionId)>:burn` | `server/lib/orgRedemptions.ts` |
+| `org-redemption:<esc(v)>:<esc(redemptionId)>:hold` | `server/lib/orgRedemptions.ts` |
+| `org-redemption:<esc(v)>:<esc(redemptionId)>:release` | `server/lib/orgRedemptions.ts` |
 | `org-send:<fromUserId>:<nonce>` | `server/lib/orgAccounts.ts` |
 | `pp:<purchaseId>:grant:evt_<id>` | `server/index.ts` |
 | `pp:<purchaseId>:grant:inv_<String(invoiceId)>` | `server/index.ts` |
@@ -185,7 +191,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `xstock-<Date.now()>-<Math.random().toString(36).slice(2, 8)>` | `server/index.ts` |
 | `xstock:<slug>:<body>` | `server/index.ts` |
 
-55 distinct shapes across 62 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
+58 distinct shapes across 65 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
 <!-- generated:triggers end -->
 
 ---
@@ -393,6 +399,7 @@ A faucet's NEGATIVE balance is the issued supply of its token. These system acco
 | `sys:library-escrow` | a loan deposit, until the loan settles |
 | `sys:library-pool` | the usage fee a settled loan released |
 | `sys:library-sink` | library credit an admin burned |
+| `sys:org-redemption-hold` | credits held against a venture's open redemption, until the Treasury confirms or it goes back |
 | `sys:redeemed` | tokens a confirmed redemption retired, and it only ever receives |
 | `sys:redemption-hold` | tokens held against a redemption somebody has open |
 | `sys:treasury` | where a spent credit lands, unless the token names its own sink |
@@ -400,7 +407,7 @@ A faucet's NEGATIVE balance is the issued supply of its token. These system acco
 | `sys:voice-decay` | all the voice that has waned in this village, and it only ever receives |
 | `sys:voice-settled` | voice whose claim Hypha confirmed |
 
-13 of them, read from every `INSERT` into `ledger_accounts` under `drizzle/` and never from a list kept here: this table named four for as long as the migrations seeded more, and a reader asking where value sits was told about less of it than exists.
+14 of them, read from every `INSERT` into `ledger_accounts` under `drizzle/` and never from a list kept here: this table named four for as long as the migrations seeded more, and a reader asking where value sits was told about less of it than exists.
 
 Sources that may drive a NON-faucet account below zero, and only with `allowNegative` set: `stay_night`, `payment_reversal`, `reversal`.
 <!-- generated:faucets end -->
