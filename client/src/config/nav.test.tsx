@@ -242,7 +242,7 @@ describe("design pass D-27: a shorter bar for a visitor, the same doors", () => 
     running.modules = [];
   });
 
-  function shell(who: { id: string; name: string; role?: string } | null) {
+  function shell(who: { id: string; name: string; role?: string; membershipGranted?: boolean } | null) {
     authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
     render(
       <Router>
@@ -261,8 +261,13 @@ describe("design pass D-27: a shorter bar for a visitor, the same doors", () => 
     expect(before).toBe(0);
   });
 
+  it("keeps the Module Library off a signed-in applicant's bar", () => {
+    shell({ id: "u-ana", name: "Ana Applicant", role: "member" });
+    expect(linksTo("/modules").length).toBe(0);
+  });
+
   it("keeps the Module Library on a member's bar, and adds no second door under About (control)", () => {
-    shell({ id: "u-wren", name: "Wren Ash", role: "member" });
+    shell({ id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true });
     const before = linksTo("/modules").length;
     expect(before).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole("button", { name: /About/i })[0]!);
