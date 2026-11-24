@@ -140,12 +140,20 @@ export async function markOutboxSent(db: Queryable, id: number): Promise<void> {
   await db.query("UPDATE `member_task_outbox` SET `status` = 'sent', `sent_at` = NOW(), `attempts` = `attempts` + 1, `last_error` = NULL WHERE `id` = ?", [id]);
 }
 
+/**
+ * When a row has been given up on. `next_at` is a TIMESTAMP, whose range ends
+ * in January 2038, so the old '2099-01-01' was refused by the database and the
+ * bridge job crashed on every give-up ("Incorrect datetime value", 24 Nov 2026).
+ * The last day of 2037 is past any retry and inside the column's range.
+ */
+export const OUTBOX_GIVE_UP_AT = "2037-12-31 00:00:00";
+
 /** Backs off 5, 10, 20... minutes up to a day. After 20 tries it stays failed for a steward to see. */
 export async function markOutboxFailed(db: Queryable, id: number, attempts: number, error: string): Promise<void> {
   const minutes = Math.min(24 * 60, 5 * 2 ** Math.min(attempts, 9));
   const giveUp = attempts + 1 >= 20;
   await db.query(
-    `UPDATE \`member_task_outbox\` SET \`status\` = 'failed', \`attempts\` = \`attempts\` + 1, \`last_error\` = ?, \`next_at\` = ${giveUp ? "'2099-01-01 00:00:00'" : "(NOW() + INTERVAL ? MINUTE)"} WHERE \`id\` = ?`,
+    `UPDATE \`member_task_outbox\` SET \`status\` = 'failed', \`attempts\` = \`attempts\` + 1, \`last_error\` = ?, \`next_at\` = ${giveUp ? `'${OUTBOX_GIVE_UP_AT}'` : "(NOW() + INTERVAL ? MINUTE)"} WHERE \`id\` = ?`,
     giveUp ? [error.slice(0, 300), id] : [error.slice(0, 300), minutes, id],
   );
 }

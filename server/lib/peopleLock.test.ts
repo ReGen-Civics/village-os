@@ -9,6 +9,7 @@ import {
   ballotCardForViewer,
   ballotForViewer,
   compileRoster,
+  forgetCachedRosters,
   hiddenFromStranger,
   peopleLockMiddleware,
   peopleTier,
@@ -192,5 +193,88 @@ describe("peopleLockMiddleware", () => {
       const sent = await run({ locked: true, poolFails: true, path, body: "unused" });
       expect(sent.status, `${path} must still fail closed`).toBe(503);
     }
+  });
+});
+
+describe("\"Show my first name to visitors\" turned off, while the village's people are public", () => {
+  const fakePool = {
+    query: async (sql: string) =>
+      sql.includes("FROM `users`")
+        ? [ROSTER.filter((p) => p.id).map((p) => ({ id: p.id, name: p.name, handle: p.handle, email: p.email }))]
+        : [ROSTER.filter((p) => !p.id).map((p) => ({ display_name: p.name }))],
+  } as any;
+
+  function middleware(hidden: Set<string>, opts: { signedIn?: boolean; onAuth?: () => void; now?: () => number } = {}) {
+    return peopleLockMiddleware({
+      authedUser: async () => {
+        opts.onAuth?.();
+        return opts.signedIn ? { id: "u" } : null;
+      },
+      getPool: () => fakePool,
+      boolVar: (k) => k === "org.public_people",
+      hidingFirstName: async () => hidden,
+      now: opts.now,
+    });
+  }
+
+  async function send(mw: ReturnType<typeof middleware>, body: unknown): Promise<unknown> {
+    let out: unknown;
+    const res: any = {
+      send(b: unknown) { out = b; return res; },
+      status() { return res; },
+      json(b: unknown) { out = b; return res; },
+    };
+    await mw({ method: "GET", path: "/api/game/pulse", url: "/api/game/pulse" } as any, res, () => {});
+    res.send(body);
+    return out;
+  }
+
+  const SENTENCE = '{"line":"Isadora joined the Kitchen, and Caspian thanked Isadora Penhallow","by":"isadora-penhallow"}';
+
+  it("a stranger reads A member for that member only, in a field or a sentence, with no handle", async () => {
+    const out = await send(middleware(new Set(["user-111-aaa"])), SENTENCE);
+    expect(out).toBe('{"line":"A member joined the Kitchen, and Caspian thanked a member","by":""}');
+    expect(String(out)).not.toMatch(/Isadora|Penhallow|isadora/);
+  });
+
+  it("CONTROL: with nobody opted out a stranger reads first names as today, and the sign-in question is never asked", async () => {
+    let asked = 0;
+    const out = await send(middleware(new Set(), { onAuth: () => (asked += 1) }), SENTENCE);
+    expect(out).toBe(SENTENCE);
+    expect(asked).toBe(0);
+  });
+
+  it("CONTROL: a signed-in member reads the name, whatever the member chose", async () => {
+    expect(await send(middleware(new Set(["user-111-aaa"]), { signedIn: true }), SENTENCE)).toBe(SENTENCE);
+  });
+
+  it("fails closed for a stranger when it cannot read who opted out, and lets a member through", async () => {
+    const failing = (signedIn: boolean) =>
+      peopleLockMiddleware({
+        authedUser: async () => (signedIn ? { id: "u" } : null),
+        getPool: () => fakePool,
+        boolVar: (k) => k === "org.public_people",
+        hidingFirstName: async () => {
+          throw new Error("down");
+        },
+      });
+    const run = async (signedIn: boolean) => {
+      const seen: { status?: number; passed?: boolean } = {};
+      const res: any = { status(n: number) { seen.status = n; return res; }, json() { return res; }, send() { return res; } };
+      await failing(signedIn)({ method: "GET", path: "/api/game/pulse", url: "/api/game/pulse" } as any, res, () => { seen.passed = true; });
+      return seen;
+    };
+    expect((await run(false)).status).toBe(503);
+    expect(await run(true)).toEqual({ passed: true });
+  });
+
+  it("a change is honoured on the next request once the privacy route forgets the cache", async () => {
+    const hidden = new Set<string>();
+    const mw = middleware(hidden, { now: () => 0 });
+    expect(await send(mw, '"Isadora"')).toBe('"Isadora"');
+    hidden.add("user-111-aaa");
+    // Inside the cache's lifetime the old answer would still serve; forgetting it makes the choice immediate.
+    forgetCachedRosters();
+    expect(await send(mw, '"Isadora"')).toBe('"A member"');
   });
 });

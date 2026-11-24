@@ -115,6 +115,11 @@ export function roleCard(
     reviewAfterDays: role.reviewAfterDays ?? null,
     // When the first review happens, in the village's words (`org.role_card_first_review`); empty keeps the days.
     firstReview: stringVar("org.role_card_first_review").trim() || null,
+    // Who the village hopes will apply (`org.role_card_nationality`, the lead, 24 Nov 2026), on every listed role that
+    // takes applications, coming soon and future ventures included because people apply early to those. Empty: no row.
+    ...(isListed(role) && (open || role.comingSoon === true || role.futureVenture === true) && stringVar("org.role_card_nationality").trim()
+      ? { nationality: stringVar("org.role_card_nationality").trim() }
+      : {}),
     // The commitment the role asks (joining lane PR 3): energy and attention, never hours. A planning signal read by no pay code.
     // 0383: the stored value wins; a role with none still reads its terms on offer.
     commitmentPct: role.commitmentPct ?? publicTermsOf(role.termsOffer).commitmentPct,
