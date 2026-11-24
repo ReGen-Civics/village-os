@@ -1768,6 +1768,441 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * ============================================================================
+ * THE MODE PALETTES: the one place the platform's light and dark colours live
+ * ============================================================================
+ *
+ * To change how light or dark mode looks, change a line here and nothing else.
+ * Every mode rule below reads these names, the first-paint script in
+ * client/index.html is held to the two grounds by colourMode.test.ts, and
+ * client/src/lib/modePalettes.test.ts measures every pair a page draws (text
+ * on each surface, the main act, edges, the band, the logo, the sand dialogue)
+ * against WCAG AA. Run it after an edit: a colour that stops reading fails it.
+ *
+ * A village changes its own palette without code: Admin, Look, the day-* and
+ * night-* tokens (shared/brandTokens.ts), each of which takes the place of the
+ * line here with the same name. These lines are the platform's defaults.
+ *
+ * Light, "Golden Hour"; dark, "Canopy at Night" (the lead, 24 Nov 2026).
+ */
+:root {
+  /* LIGHT: Golden Hour */
+  --pal-day-ground: #f3ebdd;           /* the page */
+  --pal-day-panel: #fffaf1;            /* panels and cards */
+  --pal-day-panel-raised: #efe0c6;     /* tiles inside a panel */
+  --pal-day-ink: #2b2720;              /* text */
+  --pal-day-ink-dim: #5f584a;          /* quiet text */
+  --pal-day-edge: #8b785a;             /* edges and fields */
+  --pal-day-accent: #0e5b60;           /* the main act, links, focus */
+  --pal-day-accent-shadow: #083a3d;    /* the accent in shadow (rings) */
+  --pal-day-accent-highlight: #7fb4b6; /* the accent lit (rings) */
+  --pal-day-heading: #0e5b60;          /* page titles */
+  --pal-day-living: #15604a;           /* held, done */
+  --pal-day-warn: #9b3b2a;             /* errors */
+  --pal-day-band: #ead7b4;             /* the header band */
+  --pal-day-band-ink: #2b2720;         /* text on the band */
+  --pal-day-logo: #0e5b60;             /* the logo, repainted on the band */
+  --pal-day-rule: #b0813c;             /* fine gold rules */
+  --pal-day-rule-soft: #c9ad7b;        /* the rule across a panel's top */
+  --pal-day-sky: #ead7b4;              /* the sky at the top of a page */
+  --pal-day-sun: rgb(255 236 196 / 0.95);
+  --pal-day-shadow: 0 1px 2px rgb(43 39 32 / 0.06), 0 14px 32px -18px rgb(122 90 34 / 0.28);
+  --pal-day-thanks: #8e3552;           /* gratitude, as text (the dashboard) */
+  --pal-day-session: #55489a;          /* a live session, as text (the dashboard) */
+
+  /* DARK: Canopy at Night */
+  --pal-night-ground: #14362b;
+  --pal-night-panel: #0f2c23;
+  --pal-night-panel-raised: #1b4335;
+  --pal-night-ink: #f3ede0;
+  --pal-night-ink-dim: #c4d6cc;
+  --pal-night-edge: #7fa393;
+  --pal-night-accent: #e0c79a;
+  --pal-night-accent-shadow: #7a5a22;
+  --pal-night-accent-highlight: #f1dda6;
+  --pal-night-living: #9fc0b2;
+  --pal-night-warn: #eea58a;
+  --pal-night-band: #0c241c;
+  --pal-night-rule: rgb(224 199 154 / 0.5);
+  --pal-night-wash: rgb(176 129 60 / 0.2);
+  --pal-night-shadow: 0 2px 4px rgb(0 0 0 / 0.3), 0 18px 40px -22px rgb(0 0 0 / 0.8);
+}
+
+/*
+ * THE PICKED LOOK FOR EACH MODE (the lead, 24 Nov 2026: light "Golden Hour",
+ * dark "Canopy at Night"; docs/DESIGN_RULE.md has the ratios).
+ *
+ * Everything below hangs on `data-mode`, so nothing moves until a mode is set.
+ * Values are knobs a village sets from its brand theme (the day-* and sheet-*
+ * game tokens in shared/brandTokens.ts); the literals are the platform's.
+ *
+ * --village-display is the village's own display face, read at the root where
+ * --font-display is still the village's: `.sheet-night` redeclares it, and a
+ * custom property cannot read its parent's value on the element that
+ * redeclares it. Both modes draw headings in it.
+ */
+:root {
+  --village-display: var(--font-display, "Marcellus", Georgia, "Times New Roman", serif);
+}
+:root[data-mode] {
+  --band: var(--day-band, var(--pal-day-band));
+  --band-ink: var(--day-band-ink, var(--pal-day-band-ink));
+  --band-rule: var(--day-rule, var(--pal-day-rule));
+  --band-active: var(--day-accent, var(--pal-day-accent));
+  --band-bar: var(--day-panel, var(--pal-day-panel));
+}
+:root[data-mode="dark"] {
+  --band: var(--night-band, var(--pal-night-band));
+  --band-ink: var(--night-ink, var(--pal-night-ink));
+  --band-rule: var(--night-rule, var(--pal-night-rule));
+  --band-active: var(--night-accent, var(--pal-night-accent));
+  --band-bar: var(--night-band, var(--pal-night-band));
+}
+:root[data-mode="dark"] .sheet-night {
+  --font-display: var(--sheet-font-display, var(--village-display));
+}
+
+/* The header's band and the phone's tab bar take the mode's band. */
+:root[data-mode] header > nav.bg-teal-deep {
+  background-color: color-mix(in srgb, var(--band) 95%, transparent);
+  color: var(--band-ink);
+  box-shadow: 0 1px 0 var(--band-rule), 0 10px 30px -24px rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(12px);
+}
+:root[data-mode] header > nav.bg-teal-deep :is(.text-white, a, button) {
+  color: var(--band-ink);
+}
+:root[data-mode] header > nav.bg-teal-deep [class*="border-white"] {
+  border-color: color-mix(in srgb, var(--band-ink) 35%, transparent);
+}
+:root[data-mode] header > nav.bg-teal-deep [class*="bg-white/"] {
+  background-color: color-mix(in srgb, var(--band-ink) 8%, transparent);
+}
+:root[data-mode] header .bg-teal-band\/95 {
+  background-color: var(--band-bar);
+  color: var(--band-ink);
+}
+:root[data-mode] [data-mobile-tabbar] {
+  background: color-mix(in srgb, var(--band-bar) 97%, transparent);
+  border-top-color: var(--band-rule);
+}
+:root[data-mode] [data-mobile-tabbar] :is(a, button) {
+  color: var(--band-ink);
+}
+:root[data-mode] [data-mobile-tabbar] [aria-current="page"] {
+  color: var(--band-active);
+}
+:root[data-mode] [data-mobile-tabbar] .bg-amber {
+  background-color: var(--band-active);
+}
+:root[data-mode] [data-mobile-tabbar] .bg-white\/15 {
+  background-color: color-mix(in srgb, var(--band-active) 14%, transparent);
+}
+
+/* The page's light: a warm sky by day, the goldwash over the canopy by night. */
+:root[data-mode="light"] .sheet-night.min-h-screen {
+  background-image:
+    radial-gradient(34rem 18rem at 82% 3rem, var(--day-sun, var(--pal-day-sun)), transparent 70%),
+    linear-gradient(180deg, var(--day-sky, var(--pal-day-sky)) 0, color-mix(in srgb, var(--day-sky, var(--pal-day-sky)) 45%, var(--day-ground, var(--pal-day-ground))) 9rem, var(--day-ground, var(--pal-day-ground)) 26rem);
+}
+:root[data-mode="dark"] .sheet-night.min-h-screen {
+  background-image: radial-gradient(120% 75% at 50% 0%, var(--night-wash, var(--pal-night-wash)), transparent 55%);
+}
+
+/* By day the page titles are the ocean, and a panel carries a champagne rule
+   across its top, after the formal documents' accent rules. */
+:root[data-mode="light"] .sheet-night :is(h1, h2):is(.text-foreground, .text-card-foreground) {
+  color: var(--day-heading, var(--pal-day-heading));
+}
+:root[data-mode="light"] .sheet-night .rounded-2xl.border.bg-card:not(.border-2) {
+  border-top: 3px solid var(--day-rule-soft, var(--pal-day-rule-soft));
+}
+
+/*
+ * THE DAY WORLD: `.sheet-night` in light mode (light and dark modes, 24 Nov 2026).
+ *
+ * The visitor's mode is `data-mode` on <html> (client/src/lib/colourMode.ts,
+ * set before the first paint by client/index.html). In light mode every page
+ * drawn in the sheet's look takes this palette instead of the night, with no
+ * component edit, because those pages name only the semantic tokens.
+ *
+ * Same shape as the night: each value is `var(--day-<role>, <default>)`, so a
+ * village re-tints its day from its brand theme and changes nothing else. The
+ * defaults are the platform's, measured for WCAG AA on all three surfaces in
+ * the options review (docs/DESIGN_RULE.md lists the ratios).
+ *
+ * The attribute selector outranks `.sheet-night` alone, so the night block
+ * above stays the look for a page with no mode set, exactly as before modes.
+ */
+:root[data-mode="light"] .sheet-night {
+  --background: var(--day-ground, var(--pal-day-ground));
+  --foreground: var(--day-ink, var(--pal-day-ink));
+  --card: var(--day-panel, var(--pal-day-panel));
+  --card-foreground: var(--day-ink, var(--pal-day-ink));
+  --popover: var(--day-panel, var(--pal-day-panel));
+  --popover-foreground: var(--day-ink, var(--pal-day-ink));
+  --muted: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --muted-foreground: var(--day-ink-dim, var(--pal-day-ink-dim));
+  --border: var(--day-edge, var(--pal-day-edge));
+  --input: var(--day-edge, var(--pal-day-edge));
+  --ring: var(--day-accent, var(--pal-day-accent));
+  --sheet-notice: var(--day-accent, var(--pal-day-accent));
+  --sheet-earned-deep: var(--day-accent-shadow, var(--pal-day-accent-shadow));
+  --sheet-earned-lit: var(--day-accent-highlight, var(--pal-day-accent-highlight));
+  --sheet-open: var(--day-living, var(--pal-day-living));
+  --destructive: var(--day-warn, var(--pal-day-warn));
+  --destructive-foreground: var(--day-panel, var(--pal-day-panel));
+  --color-coral: var(--day-warn, var(--pal-day-warn));
+  --font-display: var(--day-font-display, var(--village-display));
+  color-scheme: light;
+}
+:root[data-mode="light"] .sheet-night .shadow-sm {
+  box-shadow: var(--day-shadow, var(--pal-day-shadow));
+}
+:root[data-mode="light"]:has(main .sheet-night.min-h-screen),
+:root[data-mode="light"]:has(main .sheet-night.min-h-screen) body {
+  background-color: var(--day-ground, var(--pal-day-ground));
+}
+
+/*
+ * THE NIGHT, SITE-WIDE: dark mode promotes the sheet's night palette to the
+ * whole page, the move the `.sheet-night` comment above always allowed for.
+ * Pages not yet drawn in the sheet's look follow through the frozen-vocabulary
+ * rules below, which read `[data-mode="dark"]` as well as the village's own
+ * dark scheme. Admin keeps its own ruling and is skipped, as there.
+ */
+/*
+ * Admin stays light by ruling (2026-09-04; the coordinator kept it for modes,
+ * 24 Nov 2026). The night is promoted on <body>, not <html>, so the root still
+ * holds the village's light tokens: --light-* copies them there, and
+ * `.admin-root` takes them back below. A copy on the root is the only way to
+ * reach them, because an element that redeclares a token cannot read its
+ * parent's value of it. A dark-scheme village's root is already its night, so
+ * there theme.css's own `.admin-root` block (its light derivation) does this.
+ */
+:root {
+  --light-background: var(--background);
+  --light-foreground: var(--foreground);
+  --light-card: var(--card);
+  --light-card-foreground: var(--card-foreground);
+  --light-popover: var(--popover);
+  --light-popover-foreground: var(--popover-foreground);
+  --light-muted: var(--muted);
+  --light-muted-foreground: var(--muted-foreground);
+  --light-border: var(--border);
+  --light-input: var(--input);
+  --light-ring: var(--ring);
+  --light-primary: var(--primary);
+  --light-primary-foreground: var(--primary-foreground);
+  --light-sage: var(--color-sage);
+  --light-coral: var(--color-coral);
+  --light-amber-ink: var(--color-amber-ink);
+  --light-gold: var(--color-gold);
+  --light-notice: var(--sheet-notice, var(--color-amber-ink));
+}
+:root[data-mode="dark"]:not([data-scheme="dark"]) .admin-root:not(.sheet-night) {
+  --background: var(--light-background);
+  --foreground: var(--light-foreground);
+  --card: var(--light-card);
+  --card-foreground: var(--light-card-foreground);
+  --popover: var(--light-popover);
+  --popover-foreground: var(--light-popover-foreground);
+  --muted: var(--light-muted);
+  --muted-foreground: var(--light-muted-foreground);
+  --border: var(--light-border);
+  --input: var(--light-input);
+  --ring: var(--light-ring);
+  --primary: var(--light-primary);
+  --primary-foreground: var(--light-primary-foreground);
+  --color-sage: var(--light-sage);
+  --color-coral: var(--light-coral);
+  --color-amber-ink: var(--light-amber-ink);
+  --color-gold: var(--light-gold);
+  --sheet-notice: var(--light-notice);
+  color-scheme: light;
+  color: var(--foreground);
+}
+:root[data-mode="dark"] body {
+  /* The night's own inputs, from the palette (or the village's night-* tokens).
+     Redeclared here, under the root where theme.css derives them from the
+     seed, so every night surface (the sheet, the gold rings, the seat foil)
+     draws in the dark mode's palette with no other edit. */
+  --sheet-ground: var(--night-ground, var(--pal-night-ground));
+  --sheet-panel: var(--night-panel, var(--pal-night-panel));
+  --sheet-panel-raised: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-line: color-mix(in srgb, var(--sheet-edge) 45%, var(--sheet-panel));
+  --sheet-edge: var(--night-edge, var(--pal-night-edge));
+  --sheet-ink: var(--night-ink, var(--pal-night-ink));
+  --sheet-ink-dim: var(--night-ink-dim, var(--pal-night-ink-dim));
+  --sheet-earned: var(--night-accent, var(--pal-night-accent));
+  --sheet-earned-highlight: var(--night-accent-highlight, var(--pal-night-accent-highlight));
+  --sheet-earned-shadow: var(--night-accent-shadow, var(--pal-night-accent-shadow));
+  --sheet-earned-wash: color-mix(in srgb, var(--sheet-earned) 14%, transparent);
+  --sheet-earned-wash-soft: color-mix(in srgb, var(--sheet-earned) 6%, transparent);
+  --sheet-earned-highlight-wash: color-mix(in srgb, var(--sheet-earned-highlight) 10%, transparent);
+  --sheet-earned-highlight-wash-soft: color-mix(in srgb, var(--sheet-earned-highlight) 2%, transparent);
+  --sheet-living: var(--night-living, var(--pal-night-living));
+  --sheet-warn: var(--night-warn, var(--pal-night-warn));
+  --sheet-shadow: var(--pal-night-shadow);
+  /* The status inks and the brand fill: on a light village these keep their
+     light-page values (dark inks, a canopy fill), which vanish on the night
+     ground (QA audit, 24 Nov 2026: amber-ink 2.67:1, text-primary 1.02:1). */
+  --color-sage: var(--sheet-living);
+  --color-coral: var(--sheet-warn);
+  --color-amber-ink: var(--sheet-earned);
+  --color-gold: var(--sheet-earned);
+  --sheet-notice: var(--sheet-earned);
+  --sheet-open: var(--sheet-living);
+  --primary: var(--sheet-earned);
+  --primary-foreground: var(--sheet-ground);
+  /* And the page's tokens, read off them. */
+  --background: var(--sheet-ground);
+  --foreground: var(--sheet-ink);
+  --card: var(--sheet-panel);
+  --card-foreground: var(--sheet-ink);
+  --popover: var(--sheet-panel);
+  --popover-foreground: var(--sheet-ink);
+  --muted: var(--sheet-panel-raised);
+  --muted-foreground: var(--sheet-ink-dim);
+  --border: var(--sheet-edge);
+  --input: var(--sheet-edge);
+  --ring: var(--sheet-earned);
+  color-scheme: dark;
+}
+:root[data-mode="light"] {
+  background-color: var(--day-ground, var(--pal-day-ground));
+}
+:root[data-mode="dark"],
+:root[data-mode="dark"]:has(main .sheet-night.min-h-screen),
+:root[data-mode="dark"] body,
+:root[data-mode="dark"]:has(main .sheet-night.min-h-screen) body {
+  background-color: var(--night-ground, var(--pal-night-ground));
+  color: var(--night-ink, var(--pal-night-ink));
+}
+
+/* Frozen light-page vocabulary the dark mode meets (QA audit, 24 Nov 2026):
+   the brand's middle tone as text, and a gold fill whose text names the page's
+   ink, which in dark mode is light. */
+:root[data-mode="dark"] :is(.text-teal-light, .text-sage):not(.admin-root *) {
+  color: var(--sheet-living);
+}
+/* The brand's band colour as text (the welcome's "See the open quests" on a
+   white button the dark remap turns to a night panel): read as the page's ink. */
+:root[data-mode="dark"] .text-teal-band:not(.admin-root *) {
+  color: var(--foreground);
+}
+/* Tailwind inlines these two inks as literals (@theme inline), so the
+   variables redeclared on <body> cannot reach the utility: named here. */
+:root[data-mode="dark"] :is(.text-amber-ink, .text-gold):not(.admin-root *) {
+  color: var(--sheet-earned);
+}
+:root[data-mode="dark"] .text-coral:not(.admin-root *) {
+  color: var(--sheet-warn);
+}
+:root[data-mode="dark"] :is(.bg-amber, .bg-secondary, .bg-notice, .bg-cream).text-foreground:not(.admin-root *) {
+  color: var(--sheet-ground);
+}
+/* The shortcuts button is the brand's canopy, the same as the night ground: a
+   hairline gives it its edge back. */
+:root[data-mode="dark"] [data-mobile-fab] button[aria-haspopup] {
+  outline: 1px solid var(--band-rule);
+  outline-offset: 1px;
+}
+
+/*
+ * THE PROFILE DASHBOARD IN EACH MODE (QA audit, signed in, 24 Nov 2026). Its
+ * purses and panels are night colours by default (--color-dash-* reads the
+ * --sheet-dash-* knobs), so in light mode its gold text sat on cream at 1.18:1
+ * and its raised panels stayed dark under dark ink. Each knob reads the
+ * palette here, and a filled gold button takes the ground as its ink.
+ */
+:root[data-mode="light"] .sheet-night,
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+  /* (The second selector: a dialog is sand in dark mode, so it draws the day's dashboard too.) */
+  --sheet-dash-gold: var(--day-accent, var(--pal-day-accent));
+  --sheet-dash-gold-lit: var(--day-accent, var(--pal-day-accent));
+  --sheet-dash-gold-edge: var(--day-rule-soft, var(--pal-day-rule-soft));
+  --sheet-dash-gold-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-cash: var(--day-living, var(--pal-day-living));
+  --sheet-dash-cash-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-voice: var(--day-living, var(--pal-day-living));
+  --sheet-dash-thanks: var(--pal-day-thanks);
+  --sheet-dash-thanks-ink: var(--day-ground, var(--pal-day-ground));
+  --sheet-dash-session: var(--pal-day-session);
+  --sheet-dash-raised: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-warm: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-warm-edge: var(--day-rule-soft, var(--pal-day-rule-soft));
+  --sheet-dash-next: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-track: color-mix(in srgb, var(--day-edge, var(--pal-day-edge)) 35%, var(--day-panel, var(--pal-day-panel)));
+  --sheet-dash-chip: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --sheet-dash-edge: color-mix(in srgb, var(--day-edge, var(--pal-day-edge)) 55%, var(--day-panel, var(--pal-day-panel)));
+}
+:root[data-mode="dark"] .sheet-night {
+  --sheet-dash-gold: var(--night-accent, var(--pal-night-accent));
+  --sheet-dash-gold-lit: var(--night-accent-highlight, var(--pal-night-accent-highlight));
+  --sheet-dash-gold-ink: var(--night-ground, var(--pal-night-ground));
+  --sheet-dash-raised: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-warm: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-next: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-track: color-mix(in srgb, var(--night-edge, var(--pal-night-edge)) 35%, var(--night-panel, var(--pal-night-panel)));
+  --sheet-dash-chip: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-dash-edge: color-mix(in srgb, var(--night-edge, var(--pal-night-edge)) 55%, var(--night-panel, var(--pal-night-panel)));
+}
+/* The rites packet is laid on a dark table in both modes (rites.css,
+   .packapp): on it, text takes the night's inks whatever the mode. */
+:root[data-mode="light"] .rites .packapp.app {
+  --foreground: var(--night-ink, var(--pal-night-ink));
+  --muted-foreground: var(--night-ink-dim, var(--pal-night-ink-dim));
+  --border: var(--night-edge, var(--pal-night-edge));
+  color: var(--foreground);
+  color-scheme: dark;
+}
+/* A chart colour used as text on a light sheet (the hidden map's "vouched"):
+   chart-3 is a pale tone drawn for fills, 2.13:1 on the day ground. */
+:root[data-mode="light"] .sheet-night .text-chart-3 {
+  color: var(--sheet-open);
+}
+/* The rites world's "success" (its "live" mark, its ticks) is the chart's pale
+   tone, drawn for the night; by day it is the living green. */
+:root[data-mode="light"] .rites {
+  --success: var(--sheet-open);
+}
+/* The rites' gold button runs from the brand's soft tone to its fill. In dark
+   mode the fill is the night's accent, and a village whose soft tone is dark
+   drew the "Print" button near-black under its ground-coloured label. */
+:root[data-mode="dark"] .rites .btn.gold {
+  background: linear-gradient(180deg, var(--sheet-earned-highlight), var(--sheet-earned));
+  color: var(--sheet-ground);
+}
+
+/*
+ * DIALOGUE IS SAND, IN BOTH MODES (the lead, 24 Nov 2026: "the dialogue boxes
+ * in dark mode give them a similar sand color as the light mode").
+ *
+ * A dialog, an alert, and anything marked `data-dialogue` (a conversation with
+ * the guide) is a lit page held up in the night: in dark mode it takes the day
+ * palette's sand and ink, so it reads the same in either mode. Every value is
+ * a `--dialogue-*` knob, falling back to the village's day palette.
+ */
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+  --background: var(--dialogue-ground, var(--day-ground, var(--pal-day-ground)));
+  --foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --card: var(--dialogue-panel, var(--day-ground, var(--pal-day-ground)));
+  --card-foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --popover: var(--dialogue-panel, var(--day-ground, var(--pal-day-ground)));
+  --popover-foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --muted: var(--dialogue-raised, var(--day-panel-raised, var(--pal-day-panel-raised)));
+  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, var(--pal-day-ink-dim)));
+  --border: var(--dialogue-edge, var(--day-edge, var(--pal-day-edge)));
+  --input: var(--dialogue-edge, var(--day-edge, var(--pal-day-edge)));
+  --ring: var(--dialogue-accent, var(--day-accent, var(--pal-day-accent)));
+  --sheet-notice: var(--dialogue-accent, var(--day-accent, var(--pal-day-accent)));
+  --destructive: var(--day-warn, var(--pal-day-warn));
+  color-scheme: light;
+  color: var(--foreground);
+}
+
+/*
  * THE DARK SCHEME (gap G1, `theme.mode: "dark"`).
  *
  * A village that chooses a dark page gets the night layer promoted to :root by
@@ -1781,46 +2216,48 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * village's dark colours with no component edit.
  *
  * Nothing here applies without the mark, so a light village reads exactly what
- * it read before. Admin is light by ruling (2026-09-04): theme.css puts the
+ * it read before. Since light and dark modes (24 Nov 2026) the visitor's own
+ * dark mode (`data-mode="dark"`) is a mark too, and a visitor who chose light
+ * (`data-mode="light"`) is never remapped, whatever the village's scheme. Admin is light by ruling (2026-09-04): theme.css puts the
  * light palette back on `.admin-root`, and every rule below skips it.
  * `bg-teal-deep` keeps carrying white text: --tone-brand stays dark enough for
  * it in both schemes, and only its use AS TEXT moves to --tone-brand-text.
  */
-:root[data-scheme="dark"] :is(.bg-white, .bg-gray-50, .bg-cream):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-white, .bg-gray-50, .bg-cream):not(.admin-root *) {
   background-color: var(--card);
 }
-:root[data-scheme="dark"] :is(.bg-gray-100, .bg-cream-dark, .bg-aqua-light):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-gray-100, .bg-cream-dark, .bg-aqua-light):not(.admin-root *) {
   background-color: var(--muted);
 }
-:root[data-scheme="dark"] :is(.bg-white\/95, .bg-white\/90):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-white\/95, .bg-white\/90):not(.admin-root *) {
   background-color: color-mix(in srgb, var(--card) 92%, transparent);
 }
-:root[data-scheme="dark"] :is(.bg-white\/80, .bg-white\/70, .bg-white\/60):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-white\/80, .bg-white\/70, .bg-white\/60):not(.admin-root *) {
   background-color: color-mix(in srgb, var(--card) 75%, transparent);
 }
-:root[data-scheme="dark"] :is(.bg-sage-light, .bg-green-light):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-sage-light, .bg-green-light):not(.admin-root *) {
   background-color: color-mix(in srgb, var(--color-sage) 14%, var(--card));
 }
-:root[data-scheme="dark"] .bg-amber-light:not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) .bg-amber-light:not(.admin-root *) {
   background-color: color-mix(in srgb, var(--color-amber-ink) 14%, var(--card));
 }
-:root[data-scheme="dark"] :is(.hover\:bg-gray-50, .hover\:bg-gray-100, .hover\:bg-white):hover:not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.hover\:bg-gray-50, .hover\:bg-gray-100, .hover\:bg-white):hover:not(.admin-root *) {
   background-color: var(--muted);
 }
-:root[data-scheme="dark"] :is(.text-gray-900, .text-gray-800, .text-gray-700):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.text-gray-900, .text-gray-800, .text-gray-700):not(.admin-root *) {
   color: var(--foreground);
 }
-:root[data-scheme="dark"] :is(.text-gray-600, .text-gray-500, .text-gray-400, .text-gray-300):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.text-gray-600, .text-gray-500, .text-gray-400, .text-gray-300):not(.admin-root *) {
   color: var(--muted-foreground);
 }
-:root[data-scheme="dark"] :is(.border-gray-100, .border-gray-200, .border-gray-300):not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.border-gray-100, .border-gray-200, .border-gray-300):not(.admin-root *) {
   border-color: var(--border);
 }
-:root[data-scheme="dark"] .text-teal-deep:not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) .text-teal-deep:not(.admin-root *) {
   color: var(--tone-brand-text, var(--foreground));
 }
 /* Depth on a dark ground, as `.sheet-night .shadow-sm` above has it. */
-:root[data-scheme="dark"] .shadow-sm:not(.admin-root *) {
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) .shadow-sm:not(.admin-root *) {
   box-shadow: var(--sheet-shadow, 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 40px -22px rgb(0 0 0 / 0.9));
 }
 
@@ -2407,4 +2844,31 @@ html:has(#sera-changes [data-sera-strip-on]) {
     bottom: auto;
     width: 14rem;
   }
+}
+
+
+/*
+ * THE LOGO, REPAINTED FOR THE LIGHT BAND (the lead, 24 Nov 2026: "do it
+ * automatically"). A logo drawn for a dark band (Amora's is gold line work)
+ * fades on the light one, so in light mode the mark is redrawn in the band's
+ * ink: the logo's own shape is the mask, the ink fills it, and the picture
+ * underneath keeps its box and its alt text but is not painted. Any village's
+ * logo, no asset of its own needed. The ink is --day-logo, then the page
+ * titles' colour, which clears the 3:1 a graphic needs on the band.
+ */
+.village-logo {
+  position: relative;
+  display: inline-flex;
+}
+:root[data-mode="light"] .village-logo[data-mask] > img {
+  opacity: 0;
+}
+:root[data-mode="light"] .village-logo[data-mask]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--day-logo, var(--pal-day-logo));
+  -webkit-mask: var(--logo-src) center / contain no-repeat;
+  mask: var(--logo-src) center / contain no-repeat;
+  pointer-events: none;
 }

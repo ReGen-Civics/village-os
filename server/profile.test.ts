@@ -47,6 +47,14 @@ describe("profile privacy", () => {
     expect(PRIVACY_DEFAULTS.showHome).toBe(false);
   });
 
+  it("shows a member's first name to visitors unless they turn it off (the lead, 24 Nov 2026)", () => {
+    // ON by default: the visitor tier served first names before the flag existed, so the default moves nobody.
+    expect(PRIVACY_DEFAULTS.showFirstNameToVisitors).toBe(true);
+    expect(resolvePrivacy({ showRoles: false }).showFirstNameToVisitors).toBe(true);
+    expect(resolvePrivacy({ showFirstNameToVisitors: "false" }).showFirstNameToVisitors).toBe(true);
+    expect(resolvePrivacy({ showFirstNameToVisitors: false }).showFirstNameToVisitors).toBe(false);
+  });
+
   it("ignores junk rather than coercing it", () => {
     // "false" is truthy, and 0 is falsy. Coercing either is how a member's
     // stated answer becomes its opposite.

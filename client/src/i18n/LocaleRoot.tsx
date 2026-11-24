@@ -30,8 +30,9 @@ export function LocaleRoot({ children, fallback = null }: { children: ReactNode;
   const config = useGameConfig();
   const saved = user?.prefs?.locale ?? null;
   const villageDefault = config?.defaultLocale ?? null;
+  const offered = config?.offeredLocales ?? null;
   return (
-    <LocaleProvider sources={{ saved, villageDefault }} fallback={fallback} onChoose={saveForMember}>
+    <LocaleProvider sources={{ saved, villageDefault, offered }} fallback={fallback} onChoose={saveForMember}>
       {children}
     </LocaleProvider>
   );

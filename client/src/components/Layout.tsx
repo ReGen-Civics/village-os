@@ -4,12 +4,10 @@ import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "luci
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
+import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import NotificationBell from "@/components/NotificationBell";
-import NotificationToasts from "@/components/NotificationToasts";
-import RewardMoment from "@/components/RewardMoment";
-import SeasonSummaryOffer from "@/components/seasonSummary/SeasonSummaryOffer";
 import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import MessageCountBadge from "@/components/messages/MessageCountBadge";
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
@@ -19,6 +17,7 @@ import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
@@ -48,6 +47,7 @@ export default function Layout({ children }: LayoutProps) {
   // the logo boxes reserve their height (64px header / 90px footer) so the
   // page never shifts on first paint, and outside links simply don't render.
   const cfg = useGameConfig();
+  const logoMask = useLogoMask(cfg?.images?.logo);
   // The footer's sign-off is the village's own words (Admin, Pages, Whole site),
   // served inside the config. Unknown until the config answers.
   const signoff = cfg ? (cfg.site?.footerSignoff ?? SITE_FOOTER_SIGNOFF) : undefined;
@@ -237,17 +237,15 @@ export default function Layout({ children }: LayoutProps) {
               after it. */}
           <Link
             href="/"
-            aria-label={villageName ? `${villageName} home` : "Home"}
+            aria-label={villageName ? t({ message: `${villageName} home`, context: "Layout, aria-label" }) : t({ message: "Home", context: "Layout, aria-label" })}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             style={{ minHeight: "64px" }}
           >
             {cfg?.images?.logo ? (
-              <img
-                src={cfg.images.logo}
-                alt={altOr(cfg.images.logoAlt, villageName || "Village logo")}
-                style={{ height: "64px", width: "auto" }}
-                draggable={false}
-              />
+              /* `.village-logo`: in light mode index.css repaints the mark in the band's ink, through its own shape as a mask (useLogoMask). */
+              <span className="village-logo" {...logoMask}>
+                <img src={cfg.images.logo} alt={altOr(cfg.images.logoAlt, villageName || "Village logo")} style={{ height: "64px", width: "auto" }} draggable={false} />
+              </span>
             ) : villageName ? (
               /* A flex item of the link above, which is already `items-center`
                  inside a 64px box, so the wordmark sits on the same baseline
@@ -295,7 +293,7 @@ export default function Layout({ children }: LayoutProps) {
             )}
 
             {/* The language selector (spec i18n US2; mock approved by Rye 2026-11-06). */}
-            <LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -394,7 +392,7 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
             {user && <NotificationBell memberId={user.id} />}
             {/* Icon-only, so it needs a spoken name and a state a screen
                 reader can hear — otherwise it announces as bare "button". */}
@@ -580,7 +578,7 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Your Journey */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4">Your Journey</h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Your Journey</Trans></h2>
               <ul className="space-y-0">
                 {storyShown("/investor") && (
                   <li>
@@ -626,7 +624,7 @@ export default function Layout({ children }: LayoutProps) {
                 )}
                 <li hidden={!showsHref("/gratitude")}>
                   <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    {tokenName} Wall
+                    <Trans context="Layout, Link">{tokenName} Wall</Trans>
                   </Link>
                 </li>
                 {/* Work with us: the four ways to build, top of /roles, and the partner form (the lead, 23 Nov 2026). */}
@@ -637,21 +635,21 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Governance & Structure */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4">Governance</h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Governance</Trans></h2>
               <ul className="space-y-0">
                 <li>
                   <Link href="/governance" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    How we work together
+                    <Trans context="Layout, Link">How we work together</Trans>
                   </Link>
                 </li>
                 <li>
                   <Link href="/circles" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Circles
+                    <Trans context="Layout, Link">Circles</Trans>
                   </Link>
                 </li>
                 <li>
                   <Link href="/roles" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Roles & Leadership
+                    <Trans context="Layout, Link">Roles & Leadership</Trans>
                   </Link>
                 </li>
                 {storyShown("/how-we-create") && (
@@ -682,18 +680,18 @@ export default function Layout({ children }: LayoutProps) {
                     a fresh fork. /exit-policy is core and always reachable. */}
                 <li hidden={newcomer /* the rules are for members (the lead, 24 Nov 2026); the page stays reachable */}>
                   <Link href="/game-mechanics" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Game Mechanics
+                    <Trans context="Layout, Link">Game Mechanics</Trans>
                   </Link>
                 </li>
                 <li>
                   <Link href="/exit-policy" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Leaving Well
+                    <Trans context="Layout, Link">Leaving Well</Trans>
                   </Link>
                 </li>
                 {networkModule && showsHref("/network") && (
                   <li>
                     <Link href="/network" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Village Network
+                      <Trans context="Layout, Link">Village Network</Trans>
                     </Link>
                   </li>
                 )}
@@ -702,7 +700,7 @@ export default function Layout({ children }: LayoutProps) {
                 {healthModule && (
                   <li>
                     <Link href="/village-health" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Village Health
+                      <Trans context="Layout, Link">Village Health</Trans>
                     </Link>
                   </li>
                 )}
@@ -717,7 +715,7 @@ export default function Layout({ children }: LayoutProps) {
                 {user && showsHref("/review") && (
                   <li>
                     <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Review Queue
+                      <Trans context="Layout, Link">Review Queue</Trans>
                     </Link>
                   </li>
                 )}
@@ -726,7 +724,7 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Resources */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4">Resources</h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Resources</Trans></h2>
               <ul className="space-y-0">
                 {storyShown("/co-creators-guide") && (
                   <li>
@@ -737,18 +735,18 @@ export default function Layout({ children }: LayoutProps) {
                 )}
                 <li>
                   <Link href="/feedback" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Report a Bug / Share an Idea
+                    <Trans context="Layout, Link">Report a Bug / Share an Idea</Trans>
                   </Link>
                 </li>
                 <li>
                   <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    Quest Board
+                    <Trans context="Layout, Link">Quest Board</Trans>
                   </Link>
                 </li>
                 {commerceModule && (
                   <li>
                     <Link href="/contribute" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Contribute
+                      <Trans context="Layout, Link">Contribute</Trans>
                     </Link>
                   </li>
                 )}
@@ -759,28 +757,28 @@ export default function Layout({ children }: LayoutProps) {
                 {crowdpoolModule && showsHref("/campaigns") && (
                   <li>
                     <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Pooling Resources
+                      <Trans context="Layout, Link">Pooling Resources</Trans>
                     </Link>
                   </li>
                 )}
                 {staysModule && (
                   <li>
                     <Link href="/stay" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Stay With Us
+                      <Trans context="Layout, Link">Stay With Us</Trans>
                     </Link>
                   </li>
                 )}
                 {toolsModule && showsHref("/tools") && (
                   <li>
                     <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Village Tools
+                      <Trans context="Layout, Link">Village Tools</Trans>
                     </Link>
                   </li>
                 )}
                 {mapModule && showsHref("/places") && (
                   <li>
                     <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      Places, Photographed
+                      <Trans context="Layout, Link">Places, Photographed</Trans>
                     </Link>
                   </li>
                 )}
@@ -810,7 +808,7 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Connect */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4">Connect</h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Connect</Trans></h2>
               <ul className="space-y-0">
                 {siteUrl && (
                   <li>
@@ -820,7 +818,7 @@ export default function Layout({ children }: LayoutProps) {
                       rel="noopener noreferrer"
                       className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center"
                     >
-                      Main Website
+                      <Trans context="Layout, a">Main Website</Trans>
                     </a>
                   </li>
                 )}
@@ -832,7 +830,7 @@ export default function Layout({ children }: LayoutProps) {
                       rel="noopener noreferrer"
                       className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center"
                     >
-                      Events
+                      <Trans context="Layout, a">Events</Trans>
                     </a>
                   </li>
                 )}
@@ -865,7 +863,7 @@ export default function Layout({ children }: LayoutProps) {
                 )}
                 <li>
                   <Link href="/profile" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    My Village Profile
+                    <Trans context="Layout, Link">My Village Profile</Trans>
                   </Link>
                 </li>
               </ul>
@@ -878,8 +876,8 @@ export default function Layout({ children }: LayoutProps) {
                 that drops small text under AA. Fine print gets its quietness
                 from size here, not from lightness. */}
             <p className="text-white text-sm">
-              © {new Date().getFullYear()}{villageName ? ` ${villageName}.` : ""} All rights reserved.
-            </p>
+              <Trans context="Layout, p">© {new Date().getFullYear()}{villageName ? ` ${villageName}.` : ""} All rights reserved.
+            </Trans></p>
             <div className="flex items-center gap-2 text-white text-sm">
               <TreePine className="w-4 h-4" />
               <span>{signoff === undefined ? "\u00a0" : `${signoff ? `${signoff} ` : ""}ReGenCivics.Earth`}</span>
@@ -902,9 +900,7 @@ export default function Layout({ children }: LayoutProps) {
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
-      {user && <NotificationToasts />}
-      {user && <RewardMoment />}
-      {user && <SeasonSummaryOffer /> /* idea 4: once, after a season turns */}
+      {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
     </div>
   );
 }
@@ -984,7 +980,7 @@ function NavDropdown({
                     {/* Same badge the bar used to carry, in the ink the white
                         sheet needs: amber-200 on white measured below 2:1. */}
                     {lifecycleOf(item.module) === "preview" && (
-                      <span className="ml-1.5 text-[9px] bg-amber/30 text-gold px-1 py-0.5 rounded uppercase align-middle">preview</span>
+                      <span className="ml-1.5 text-[9px] bg-amber/30 text-gold px-1 py-0.5 rounded uppercase align-middle"><Trans context="Layout, span">preview</Trans></span>
                     )}
                   </span>
                   {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
