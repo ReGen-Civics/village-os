@@ -16,7 +16,7 @@ import { Users } from "lucide-react";
 import InfoTip from "@/components/InfoTip";
 import { CrowdpoolStyles, MiniRing, phaseLabel, pledgedIsFloor, pooledLine, timeAgo } from "@/components/crowdpool/PoolPieces";
 import BreathingLoader from "@/components/natural/BreathingLoader";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
 import { H1, LEDE, NOTE, WORLD } from "@/components/journey/look";
 
@@ -82,25 +82,25 @@ export default function Crowdpool() {
       <div className={WORLD}>
       <section className="py-8 md:py-12">
         <div className="container max-w-3xl text-center">
-          <h1 className={`${H1} mb-3`}>Pooling Resources</h1>
+          <h1 className={`${H1} mb-3`}><Trans context="Crowdpool, h1">Pooling Resources</Trans></h1>
           {/* R47: the Trail line leads and the tooltip defines the word. The
               ring line is the Lore, last and quiet. */}
           <p className={`${LEDE} mx-auto`}>
             Open a ring to see what its{" "}
-            <InfoTip tip="A crowdpool gathers pledges of money, goods, tools and hands for one build. Nothing moves through this page; every claim finishes on the hub's own page.">crowdpool</InfoTip>{" "}
+            <InfoTip tip="A crowdpool gathers pledges of money, goods, tools and hands for one build. Nothing moves through this page; every claim finishes on the hub's own page."><Trans context="Crowdpool, InfoTip">crowdpool</Trans></InfoTip>{" "}
             still needs.
           </p>
           <p className={`${NOTE} mt-2 text-sm italic`}>
-            Each ring fills as the pool does, and the pool becomes walls.
-          </p>
+            <Trans context="Crowdpool, p">Each ring fills as the pool does, and the pool becomes walls.
+          </Trans></p>
         </div>
       </section>
       <section className="pb-16 pt-2">
         <div className="container max-w-3xl space-y-4">
           {cards === null && (
             <div className="cp-board p-8 flex flex-col items-center gap-2">
-              <BreathingLoader label="Reading the ledger" size={48} />
-              <p className="cp-smallcaps text-sm">Reading the ledger…</p>
+              <BreathingLoader label={t({ message: "Reading the ledger", context: "Crowdpool, label" })} size={48} />
+              <p className="cp-smallcaps text-sm"><Trans context="Crowdpool, p">Reading the ledger…</Trans></p>
             </div>
           )}
           {cards !== null && cards.length === 0 && (
@@ -146,8 +146,8 @@ export default function Crowdpool() {
               <div key={c.key} className="cp-board p-5">
                 <p className="cp-smallcaps text-sm mb-1">{c.key}</p>
                 <p className="text-sm" style={{ color: "#e4d3ae" }}>
-                  This raising didn't load. Reload to try again.
-                </p>
+                  <Trans context="Crowdpool, p">This raising didn't load. Reload to try again.
+                </Trans></p>
               </div>
             ),
           )}

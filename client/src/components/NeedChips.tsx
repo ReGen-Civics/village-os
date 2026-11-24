@@ -24,6 +24,7 @@
  * fact this component cannot know.
  */
 import { HUMAN_NEEDS_BY_ID, type NeedWeight } from "@shared/needs";
+import { Trans } from "@lingui/react/macro";
 
 /** One row of `need_links`, joined to the need it points at. */
 export interface NeedTag {
@@ -56,7 +57,7 @@ export default function NeedChips({
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       {primary.length > 0 && (
-        <span className="text-sm text-muted-foreground">Meets:</span>
+        <span className="text-sm text-muted-foreground"><Trans context="NeedChips, span">Meets:</Trans></span>
       )}
       {primary.map((t) => (
         <span
@@ -68,7 +69,7 @@ export default function NeedChips({
         </span>
       ))}
       {partial.length > 0 && (
-        <span className="text-sm text-muted-foreground">Helps with:</span>
+        <span className="text-sm text-muted-foreground"><Trans context="NeedChips, span">Helps with:</Trans></span>
       )}
       {partial.map((t) => (
         <span

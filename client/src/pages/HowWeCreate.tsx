@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useVillageLinks } from "@/lib/gameApi";
 import { useHypha } from "@/modules/ModuleProvider";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { HyphaAdminNote } from "@/components/HyphaAdminNote";
 import { HOW_WE_CREATE_PAGE } from "@shared/pageContent/howWeCreate";
@@ -26,6 +26,7 @@ import {
   Compass,
 } from "lucide-react";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { Trans } from "@lingui/react/macro";
 
 /*
  * Every word on this page is the village's own, from Admin, Pages, How We
@@ -80,6 +81,7 @@ export default function HowWeCreate() {
   // A link to a story page switched off on its own in Admin, Pages is left out.
   const pageOff = useStoryPageOffAlone();
   const hypha = useHypha();
+  const langOf = usePageLang(HOW_WE_CREATE_PAGE);
   const page = usePageContent(HOW_WE_CREATE_PAGE);
   if (!page) {
     // Nothing until the saved words arrive, so the defaults never flash first.
@@ -282,10 +284,10 @@ export default function HowWeCreate() {
                 viewport={{ once: true }}
               >
                 <Scale className="w-12 h-12 text-open mx-auto mb-4" />
-                <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
+                <h2 lang={langOf("hypha.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {hyphaSection.fields.heading}
                 </h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
+                <p lang={langOf("hypha.intro")} className="text-muted-foreground max-w-2xl mx-auto">
                   <Emphasized text={hyphaSection.fields.intro} />
                 </p>
               </m.div>
@@ -318,7 +320,7 @@ export default function HowWeCreate() {
                             <p className="text-muted-foreground text-sm mb-3">
                               <Emphasized text={option.description} />
                             </p>
-                            {option.best && <p className="text-xs text-open font-medium">Best for: {option.best}</p>}
+                            {option.best && <p className="text-xs text-open font-medium"><Trans context="HowWeCreate, p">Best for: {option.best}</Trans></p>}
                           </div>
                         </div>
                       </m.div>
@@ -336,9 +338,9 @@ export default function HowWeCreate() {
               >
                 <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-open flex-shrink-0" />
-                  <span className="min-w-0 break-words">{hyphaSection.fields.boxHeading}</span>
+                  <span lang={langOf("hypha.boxHeading")} className="min-w-0 break-words">{hyphaSection.fields.boxHeading}</span>
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p lang={langOf("hypha.boxBody")} className="text-muted-foreground text-sm leading-relaxed">
                   <Emphasized text={hyphaSection.fields.boxBody} />
                 </p>
               </m.div>

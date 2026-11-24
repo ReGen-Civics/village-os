@@ -30,7 +30,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Hand, Mail } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
 import { SHEET_WORDS } from "@shared/roleSheet";
 import { openProposalHref } from "@shared/openProposals";
@@ -290,13 +290,13 @@ export default function SeatAction({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={3}
-            aria-label={`A few words for ${name}`}
-            placeholder={`A few words for ${name}…`}
+            aria-label={t({ message: `A few words for ${name}`, context: "SeatAction, aria-label" })}
+            placeholder={t({ message: `A few words for ${name}…`, context: "SeatAction, placeholder" })}
             className={FIELD}
           />
           <p className="text-[11px] text-muted-foreground">
-            They'll receive this by email, with YOUR email address as the reply-to, so replying reaches you directly.
-          </p>
+            <Trans context="SeatAction, p">They'll receive this by email, with YOUR email address as the reply-to, so replying reaches you directly.
+          </Trans></p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -304,8 +304,8 @@ export default function SeatAction({
               disabled={!message.trim()}
               className={GOLD}
             >
-              Send
-            </button>
+              <Trans context="SeatAction, button">Send
+            </Trans></button>
             <button type="button" onClick={() => setComposing(false)} className={QUIET}>
               {SHEET_WORDS.cancel}
             </button>

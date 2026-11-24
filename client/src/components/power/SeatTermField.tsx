@@ -21,6 +21,7 @@ import { useEffect, useId, useState, type ReactNode } from "react";
 import { useSeason } from "@/lib/gameApi";
 import type { Capability } from "@shared/capabilities";
 import { pickerBounds, previewSeatTerm, voteStartsAt } from "./seatTermPreview";
+import { Trans } from "@lingui/react/macro";
 
 const STEWARD_VETO: Capability = "steward.veto";
 
@@ -103,14 +104,14 @@ export default function SeatTermField({
         className={look.input}
       />
       <div id={lineId} aria-live="polite" className="mt-1 space-y-1">
-        {capAtSeasonEnd && <p className={look.line}>A steward role ends with the season at the latest.</p>}
+        {capAtSeasonEnd && <p className={look.line}><Trans context="SeatTermField, p">A steward role ends with the season at the latest.</Trans></p>}
         {preview?.state === "ok" && (
           <p className={look.line}>
             {preview.line}{" "}
             {value ? (
               <button type="button" onClick={() => onChange("")} className="underline underline-offset-2">
-                End it with the season instead
-              </button>
+                <Trans context="SeatTermField, button">End it with the season instead
+              </Trans></button>
             ) : capAtSeasonEnd ? (
               "Pick a date to end it sooner."
             ) : (

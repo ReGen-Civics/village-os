@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useVillageContent } from "@/hooks/useVillageContent";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { RIGHTS_RESIDENT_PAGE } from "@shared/pageContent/rights";
 import { fillVars } from "@shared/pageContent/resolve";
@@ -53,6 +53,7 @@ export default function ResidentRights() {
   // Null until the saved words have arrived: the hero keeps its space and
   // stays invisible meanwhile, so a visitor never reads the platform's
   // defaults and then watches them change.
+  const langOf = usePageLang(RIGHTS_RESIDENT_PAGE);
   const page = usePageContent(RIGHTS_RESIDENT_PAGE);
   // A link to a story page switched off on its own in Admin, Pages is left out.
   const pageOff = useStoryPageOffAlone();
@@ -121,10 +122,10 @@ export default function ResidentRights() {
             className={`${CARD_FEATURED} text-center break-words`}
           >
             <Home className="w-10 h-10 text-notice mx-auto mb-4" aria-hidden="true" />
-            <h2 className="font-display text-2xl font-semibold text-foreground mb-3">
+            <h2 lang={langOf("ownership.heading")} className="font-display text-2xl font-semibold text-foreground mb-3">
               {ownership.fields.heading}
             </h2>
-            <p className="text-muted-foreground leading-relaxed max-w-xl mx-auto">
+            <p lang={langOf("ownership.body")} className="text-muted-foreground leading-relaxed max-w-xl mx-auto">
               <Emphasized text={ownership.fields.body} />
             </p>
           </m.div>
@@ -137,13 +138,13 @@ export default function ResidentRights() {
       <section className="py-20 bg-background">
         <div className="container max-w-4xl">
           <div className="text-center mb-12 break-words">
-            <span className={`${EYEBROW} text-sm`}>
+            <span lang={langOf("rights.eyebrow")} className={`${EYEBROW} text-sm`}>
               {rightsSection.fields.eyebrow}
             </span>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
+            <h2 lang={langOf("rights.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
               {rightsSection.fields.heading}
             </h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            <p lang={langOf("rights.intro")} className="text-muted-foreground mt-3 max-w-xl mx-auto">
               <Emphasized text={rightsSection.fields.intro} />
             </p>
           </div>
@@ -183,13 +184,13 @@ export default function ResidentRights() {
       <section className="py-20 bg-muted">
         <div className="container max-w-4xl">
           <div className="text-center mb-12 break-words">
-            <span className={`${EYEBROW} text-sm`}>
+            <span lang={langOf("responsibilities.eyebrow")} className={`${EYEBROW} text-sm`}>
               {responsibilities.fields.eyebrow}
             </span>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
+            <h2 lang={langOf("responsibilities.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mt-2">
               {responsibilities.fields.heading}
             </h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            <p lang={langOf("responsibilities.intro")} className="text-muted-foreground mt-3 max-w-xl mx-auto">
               <Emphasized text={responsibilities.fields.intro} />
             </p>
           </div>
@@ -238,7 +239,7 @@ export default function ResidentRights() {
               <span className={`${RING} size-10 flex-shrink-0`} aria-hidden="true">
                 <RefreshCw className="w-5 h-5" />
               </span>
-              <h2 className="min-w-0 font-display text-2xl font-semibold text-foreground">
+              <h2 lang={langOf("finances.heading")} className="min-w-0 font-display text-2xl font-semibold text-foreground">
                 {finances.fields.heading}
               </h2>
             </div>
@@ -257,13 +258,13 @@ export default function ResidentRights() {
       <section className="py-20 bg-muted">
         <div className="container max-w-3xl">
           <div className="text-center mb-12 break-words">
-            <span className={`${EYEBROW} text-sm`}>
+            <span lang={langOf("progression.eyebrow")} className={`${EYEBROW} text-sm`}>
               {progression.fields.eyebrow}
             </span>
-            <h2 className="font-display text-3xl font-semibold text-foreground mt-2">
+            <h2 lang={langOf("progression.heading")} className="font-display text-3xl font-semibold text-foreground mt-2">
               {progression.fields.heading}
             </h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            <p lang={langOf("progression.intro")} className="text-muted-foreground mt-3 max-w-xl mx-auto">
               <Emphasized text={progression.fields.intro} />
             </p>
           </div>
@@ -300,7 +301,7 @@ export default function ResidentRights() {
             })}
           </div>
           {progression.fields.footnote && (
-            <p className="text-xs text-muted-foreground text-center mt-4 break-words">
+            <p lang={langOf("progression.footnote")} className="text-xs text-muted-foreground text-center mt-4 break-words">
               {progression.fields.footnote}
             </p>
           )}
@@ -312,10 +313,10 @@ export default function ResidentRights() {
       {cta && !cta.hidden && (
       <section className="py-16 bg-background">
         <div className="container max-w-2xl text-center break-words">
-          <h2 className="font-display text-2xl font-semibold text-foreground mb-4">
+          <h2 lang={langOf("cta.heading")} className="font-display text-2xl font-semibold text-foreground mb-4">
             {cta.fields.heading}
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p lang={langOf("cta.body")} className="text-muted-foreground mb-8">
             <Emphasized text={cta.fields.body} />
           </p>
           {/* Each door is ONE link. A <button> inside a <Link> is a control

@@ -10,6 +10,7 @@ import { authToken } from "@/lib/gameApi";
 import { CalendarPlus, Copy, RefreshCw } from "lucide-react";
 import CommunityCalendarCard from "./CommunityCalendarCard";
 import WeeklyBrief from "./WeeklyBrief";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -23,6 +24,7 @@ interface FeedState {
 }
 
 export default function CalendarFeedCard({ signedIn }: { signedIn: boolean }) {
+  const { t } = useLingui();
   const [state, setState] = useState<FeedState | null>(null);
   const [minted, setMinted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -82,38 +84,38 @@ export default function CalendarFeedCard({ signedIn }: { signedIn: boolean }) {
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
         <span className="flex items-center gap-2 font-medium text-foreground">
-          <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+          <Trans context="CalendarFeedCard, span"><CalendarPlus className="h-4 w-4" aria-hidden="true" />
           Subscribe from your own calendar
-        </span>
+        </Trans></span>
         <span className="text-xs text-muted-foreground">{open ? "Hide" : "Show"}</span>
       </button>
       {open && (
         <div className="px-4 pb-4 text-sm space-y-4">
           <p className="text-muted-foreground">
-            Google Calendar, Apple Calendar and Outlook all take a calendar by address. Add one of these and the
+            <Trans context="CalendarFeedCard, p">Google Calendar, Apple Calendar and Outlook all take a calendar by address. Add one of these and the
             village calendar stays a mirror in the app you already open, updated as things change.
-          </p>
+          </Trans></p>
           <div>
-            <p className="font-medium text-foreground mb-1">Public feed</p>
-            <p className="text-xs text-muted-foreground mb-1.5">What a visitor sees: gatherings, festivals, the sky and the village's marks.</p>
+            <p className="font-medium text-foreground mb-1"><Trans context="CalendarFeedCard, p">Public feed</Trans></p>
+            <p className="text-xs text-muted-foreground mb-1.5"><Trans context="CalendarFeedCard, p">What a visitor sees: gatherings, festivals, the sky and the village's marks.</Trans></p>
             <div className="flex items-center gap-2">
               <code className="flex-1 min-w-0 truncate text-xs bg-muted rounded px-2 py-1.5">{state?.publicUrl ?? "Loading..."}</code>
-              <button type="button" onClick={() => state && copy(state.publicUrl)} className="p-1.5 rounded-lg border border-border hover:bg-muted" aria-label="Copy the public feed address">
+              <button type="button" onClick={() => state && copy(state.publicUrl)} className="p-1.5 rounded-lg border border-border hover:bg-muted" aria-label={t({ message: "Copy the public feed address", context: "CalendarFeedCard, aria-label" })}>
                 <Copy className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
           {signedIn && (
             <div>
-              <p className="font-medium text-foreground mb-1">Your private feed</p>
+              <p className="font-medium text-foreground mb-1"><Trans context="CalendarFeedCard, p">Your private feed</Trans></p>
               <p className="text-xs text-muted-foreground mb-1.5">
-                Adds what only you may see: your loans due, your circle's items, your answers. The address is a key.
+                <Trans context="CalendarFeedCard, p">Adds what only you may see: your loans due, your circle's items, your answers. The address is a key.
                 It is shown once; anyone holding it reads your feed, so revoke it if it leaks. A new password ends it too, so make a new one after a reset.
-              </p>
+              </Trans></p>
               {minted && (
                 <div className="flex items-center gap-2 mb-2">
                   <code className="flex-1 min-w-0 truncate text-xs bg-muted rounded px-2 py-1.5">{minted}</code>
-                  <button type="button" onClick={() => copy(minted)} className="p-1.5 rounded-lg border border-border hover:bg-muted" aria-label="Copy your private feed address">
+                  <button type="button" onClick={() => copy(minted)} className="p-1.5 rounded-lg border border-border hover:bg-muted" aria-label={t({ message: "Copy your private feed address", context: "CalendarFeedCard, aria-label" })}>
                     <Copy className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -127,11 +129,11 @@ export default function CalendarFeedCard({ signedIn }: { signedIn: boolean }) {
                 {state?.hasToken && (
                   <button type="button" onClick={revoke} disabled={busy}
                     className="px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive/50 text-destructive disabled:opacity-50">
-                    Revoke
-                  </button>
+                    <Trans context="CalendarFeedCard, button">Revoke
+                  </Trans></button>
                 )}
                 {state?.hasToken && !minted && (
-                  <span className="text-xs text-muted-foreground">You have an address in use{state.createdAt ? ` since ${new Date(state.createdAt).toLocaleDateString()}` : ""}. Making a new one retires it.</span>
+                  <span className="text-xs text-muted-foreground"><Trans context="CalendarFeedCard, span">You have an address in use{state.createdAt ? ` since ${new Date(state.createdAt).toLocaleDateString()}` : ""}. Making a new one retires it.</Trans></span>
                 )}
               </div>
             </div>

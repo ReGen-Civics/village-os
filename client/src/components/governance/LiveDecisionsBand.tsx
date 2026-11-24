@@ -26,6 +26,7 @@ import VoteClock from "./VoteClock";
 import { VoteResultMini } from "./VoteResult";
 import { subjectNoun } from "./wizardConfig";
 import { fetchBallots, type BallotCard } from "./governanceApi";
+import { Trans } from "@lingui/react/macro";
 
 const SHOWN = 3;
 
@@ -55,7 +56,7 @@ export default function LiveDecisionsBand() {
       <div className="container mx-auto max-w-5xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-display text-2xl font-bold text-teal-deep">What the village is deciding now</h2>
+            <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="LiveDecisionsBand, h2">What the village is deciding now</Trans></h2>
             <p className="mt-1 text-sm text-stone-700 leading-relaxed">
               {!user
                 ? "Sign in to see the votes running today."
@@ -69,16 +70,16 @@ export default function LiveDecisionsBand() {
               href="/decisions"
               className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-teal-deep px-4 text-sm font-semibold text-teal-deep hover:bg-teal-deep/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2"
             >
-              Every decision
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              <Trans context="LiveDecisionsBand, Link">Every decision
+              <ArrowRight className="w-4 h-4" aria-hidden="true" /></Trans>
             </Link>
             <Link
               href="/propose"
               className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2"
             >
-              <PenLine className="w-4 h-4" aria-hidden="true" />
+              <Trans context="LiveDecisionsBand, Link"><PenLine className="w-4 h-4" aria-hidden="true" />
               Start a proposal
-            </Link>
+            </Trans></Link>
           </div>
         </div>
 
@@ -105,8 +106,8 @@ export default function LiveDecisionsBand() {
                     imply is that a practice vote decides something. */}
                 {!b.binding && (
                   <span className="mt-1 text-xs text-stone-600 leading-relaxed">
-                    Nothing changes by itself when this one closes.
-                  </span>
+                    <Trans context="LiveDecisionsBand, span">Nothing changes by itself when this one closes.
+                  </Trans></span>
                 )}
                 <span className="mt-2">
                   <VoteClock closesAt={b.closesAt} />

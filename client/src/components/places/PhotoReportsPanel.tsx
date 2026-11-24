@@ -29,6 +29,7 @@ import {
   type PlacePhotoReport,
   type ReportStatus,
 } from "@shared/placePhotos";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const TAP = "min-h-[44px]";
 const BTN =
@@ -47,6 +48,7 @@ const TABS: { key: ReportStatus; label: string }[] = [
 ];
 
 export default function PhotoReportsPanel() {
+  const { t } = useLingui();
   const [status, setStatus] = useState<ReportStatus>("open");
   const [reports, setReports] = useState<PlacePhotoReport[] | null>(null);
   const [say, setSay] = useState("");
@@ -89,13 +91,13 @@ export default function PhotoReportsPanel() {
   };
 
   return (
-    <section aria-label="Reports about photographs" className="rounded-xl border border-border bg-card p-4 space-y-4">
-      <h2 className="font-serif text-xl">Reports about photographs</h2>
+    <section aria-label={t({ message: "Reports about photographs", context: "PhotoReportsPanel, aria-label" })} className="rounded-xl border border-border bg-card p-4 space-y-4">
+      <h2 className="font-serif text-xl"><Trans context="PhotoReportsPanel, h2">Reports about photographs</Trans></h2>
       <p className="text-sm text-muted-foreground">
-        Closing a card tells the member who raised it that somebody read it. Taking a photograph down closes every open
+        <Trans context="PhotoReportsPanel, p">Closing a card tells the member who raised it that somebody read it. Taking a photograph down closes every open
         report on it at once.
-      </p>
-      <div role="tablist" aria-label="Report status" className="flex flex-wrap gap-2">
+      </Trans></p>
+      <div role="tablist" aria-label={t({ message: "Report status", context: "PhotoReportsPanel, aria-label" })} className="flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -111,7 +113,7 @@ export default function PhotoReportsPanel() {
       </div>
       <p role="status" aria-live="polite" className="text-sm text-teal-deep min-h-[20px]">{say}</p>
       {reports === null ? (
-        <BreathingLoader label="Reading the queue" />
+        <BreathingLoader label={t({ message: "Reading the queue", context: "PhotoReportsPanel, label" })} />
       ) : reports.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyQueueLine(status)}</p>
       ) : (
@@ -120,39 +122,39 @@ export default function PhotoReportsPanel() {
             <li key={r.id} className="rounded-lg border border-border p-3 flex gap-3">
               <div className="w-24 shrink-0">
                 {!r.photoUrl ? (
-                  <p className="text-xs text-muted-foreground">This photograph has been taken down. Its file is gone.</p>
+                  <p className="text-xs text-muted-foreground"><Trans context="PhotoReportsPanel, p">This photograph has been taken down. Its file is gone.</Trans></p>
                 ) : r.photoHidden ? (
-                  <CuratorImage src={r.photoUrl} alt={r.photoAltText ?? "The reported photograph"} ratio={1} className="rounded" />
+                  <CuratorImage src={r.photoUrl} alt={r.photoAltText ?? t({ message: "The reported photograph", context: "PhotoReportsPanel, alt" })} ratio={1} className="rounded" />
                 ) : (
-                  <Image src={r.photoUrl} alt={r.photoAltText ?? "The reported photograph"} ratio={1} className="rounded" />
+                  <Image src={r.photoUrl} alt={r.photoAltText ?? t({ message: "The reported photograph", context: "PhotoReportsPanel, alt" })} ratio={1} className="rounded" />
                 )}
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="font-semibold text-sm">{reportHeadline(r)}</p>
                 {r.reason && <p className="text-sm">{r.reason}</p>}
                 <p className="text-xs text-muted-foreground">
-                  Raised by {r.reporter} on {new Date(r.at).toLocaleDateString()}
-                  {r.photoHidden ? ". It is hidden right now." : ""}
+                  <Trans context="PhotoReportsPanel, p">Raised by {r.reporter} on {new Date(r.at).toLocaleDateString()}
+                  {r.photoHidden ? ". It is hidden right now." : ""}</Trans>
                 </p>
                 {r.structureKey && (
                   <Link
                     href={`/places/${encodeURIComponent(r.structureKey)}`}
                     className="text-sm text-teal-deep underline inline-block py-1.5"
                   >
-                    Open this place
-                  </Link>
+                    <Trans context="PhotoReportsPanel, Link">Open this place
+                  </Trans></Link>
                 )}
                 {r.resolvedBy && (
-                  <p className="text-xs text-muted-foreground">Closed by {r.resolvedBy}</p>
+                  <p className="text-xs text-muted-foreground"><Trans context="PhotoReportsPanel, p">Closed by {r.resolvedBy}</Trans></p>
                 )}
                 {canAct(r) && (
                   <div className="flex flex-wrap gap-2 pt-1">
                     <button type="button" onClick={() => close(r.id, "resolved", "Marked handled.")} className={BTN}>
-                      <Check className="w-3.5 h-3.5" aria-hidden="true" /> Handled
-                    </button>
+                      <Trans context="PhotoReportsPanel, button"><Check className="w-3.5 h-3.5" aria-hidden="true" /> Handled
+                    </Trans></button>
                     <button type="button" onClick={() => close(r.id, "dismissed", "Dismissed.")} className={BTN}>
-                      <X className="w-3.5 h-3.5" aria-hidden="true" /> Dismiss
-                    </button>
+                      <Trans context="PhotoReportsPanel, button"><X className="w-3.5 h-3.5" aria-hidden="true" /> Dismiss
+                    </Trans></button>
                   </div>
                 )}
               </div>
