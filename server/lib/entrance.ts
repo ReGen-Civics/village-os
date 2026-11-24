@@ -30,7 +30,7 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import { guardedFetchJson } from "./toolcheck";
-import { apiBehindEntrance, brochureKeysFor, ENTRANCE_PASS_HEADER, ENTRY_COOKIE, ENTRY_DAYS, EVENT_PASS_COOKIE, EVENT_PASS_DAYS, EVENT_PASS_PARAM } from "../../shared/entrance";
+import { apiBehindEntrance, brochureKeysFor, ENTRANCE_PASS_HEADER, GATE_HINT_COOKIE, ENTRY_COOKIE, ENTRY_DAYS, EVENT_PASS_COOKIE, EVENT_PASS_DAYS, EVENT_PASS_PARAM } from "../../shared/entrance";
 
 export const ENTRY_MS = ENTRY_DAYS * 24 * 60 * 60 * 1000;
 const KNOWN_TTL_MS = 5 * 60 * 1000;
@@ -208,6 +208,16 @@ export function pickKeys(body: unknown, keep: readonly string[]): Record<string,
 export function entranceMiddleware(deps: EntranceGateDeps, entered: (req: Request) => Promise<boolean>) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
+    if (!req.path.startsWith("/api/")) {
+      // A page (no file extension): say whether the village keeps an entrance, for the client's gate to read at once.
+      if (!/\.[A-Za-z0-9]+$/.test(req.path)) {
+        const on = deps.boolVar("entrance.required");
+        const has = (cookieValue(req, GATE_HINT_COOKIE) ?? "") === "1";
+        if (on && !has) res.append("Set-Cookie", `${GATE_HINT_COOKIE}=1; Path=/; SameSite=Lax; Max-Age=${ENTRY_MS / 1000}`);
+        else if (!on && has) res.append("Set-Cookie", `${GATE_HINT_COOKIE}=; Path=/; SameSite=Lax; Max-Age=0`);
+      }
+      return next();
+    }
     if (!apiBehindEntrance(req.path, req.query as Record<string, unknown>)) return next();
     if (!deps.boolVar("entrance.required")) return next();
     try {
