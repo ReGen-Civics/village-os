@@ -190,10 +190,10 @@ export default function ContributorRoutes({
         {heading ? <Heading id={headingId} className="mb-2 font-display text-lg leading-tight text-foreground sm:mb-3 sm:text-2xl">{heading}</Heading> : null}
         <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           {routes.map((r) => (
-            <li key={r} className="min-w-0" data-route={r}>
+            <li key={r} className="m-germ min-w-0" data-route={r}>
               {go(
                 r,
-                "group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
+                "m-touch group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
                 <>
                   {/* The arrow sits on the verb's first line when a long verb wraps (QA, 23 Nov 2026). */}
                   <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
@@ -216,7 +216,7 @@ export default function ContributorRoutes({
         {heading ? <Heading id={headingId} className={headingAs === "h2" ? EYEBROW : LABEL}>{heading}</Heading> : null}
         <ul className="grid gap-3">
           {routes.map((r) => (
-            <li key={r} data-route={r}>
+            <li key={r} className="m-germ" data-route={r}>
               {go(
                 r,
                 `jw-btn min-h-14 ${DOOR}`,
@@ -243,7 +243,7 @@ export default function ContributorRoutes({
       {heading ? <Heading id={headingId} className="mb-4 font-display text-2xl leading-tight text-foreground sm:text-3xl">{heading}</Heading> : null}
       <ul className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
         {routes.map((r) => (
-          <li key={r} className={`${TILE} flex flex-col gap-3`} data-route={r}>
+          <li key={r} className={`m-germ ${TILE} flex flex-col gap-3`} data-route={r}>
             {/* The verb first, so a phone reader scanning four tall cards sees which is which. */}
             <Title className="font-display text-xl leading-tight text-foreground">{words[r].verb}</Title>
             <p className="text-base leading-relaxed text-foreground">{words[r].line}</p>

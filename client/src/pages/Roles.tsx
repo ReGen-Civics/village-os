@@ -144,7 +144,7 @@ interface RoleCardProps {
   sheet: SheetSource;
 }
 
-function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleCardProps) {
+function RoleCard({ role, expanded, onToggle, canTagNeeds, sheet }: RoleCardProps) {
   // Whose words the vendor panel shows. Taken from the listing rather than
   // written here, because another fork's connector is a different service
   // and a literal would be this platform naming one of them.
@@ -165,13 +165,10 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
   const holders = (role.holders ?? []).filter(Boolean);
   const [fullOpen, setFullOpen] = useState(false);
   return (
-    <m.div
-      data-role-row={role.id}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.04 }}
-    >
+    // Germinates on scroll in CSS (index.css, LIVING MOTION). It was framer's
+    // whileInView from opacity 0, which kept every row blank until the lazy
+    // engine had loaded and an observer had fired.
+    <div className="m-germ" data-role-row={role.id}>
       <button
         id={headerId}
         onClick={onToggle}
@@ -304,7 +301,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
           </m.div>
         )}
       </AnimatePresence>
-    </m.div>
+    </div>
   );
 }
 

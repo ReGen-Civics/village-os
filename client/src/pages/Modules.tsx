@@ -21,6 +21,7 @@
 import InfoTip from "@/components/InfoTip";
 import { Trans } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
+import { H1, LINK, WORLD } from "@/components/journey/look";
 import ModuleCard from "@/components/modules/ModuleCard";
 import ModuleShelf from "@/components/modules/ModuleShelf";
 import PoolStatement from "@/components/modules/PoolStatement";
@@ -37,9 +38,9 @@ import { useMemo, useState } from "react";
 
 function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-teal-deep/40 bg-teal-deep/5 p-4 flex flex-col min-w-0 break-words">
+    <div className="rounded-xl border border-dashed border-notice/50 bg-notice/10 p-4 flex flex-col min-w-0 break-words">
       <div className="flex items-center gap-2 mb-2">
-        <Hammer className="w-5 h-5 text-teal-deep" aria-hidden="true" />
+        <Hammer className="w-5 h-5 text-notice" aria-hidden="true" />
         <h3 className="font-semibold text-foreground">
           Build one, get paid in{" "}
           <InfoTip tip="$ReGen is the network's own token. The builders' pool pays module builders in it, each lunar cycle, sized by how many members open their module.">$ReGen</InfoTip>
@@ -55,7 +56,7 @@ function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string 
           href={guideUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
+          className={`${LINK} text-sm min-h-[44px] inline-flex items-center`}
         >
           Read the builder guide ↗
         </a>
@@ -63,13 +64,13 @@ function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string 
           href={poolUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
+          className={`${LINK} text-sm min-h-[44px] inline-flex items-center`}
         >
           See the builders' pool ↗
         </a>
         <a
           href={`#${BUILDER_JOURNEY_ID}`}
-          className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
+          className={`${LINK} text-sm min-h-[44px] inline-flex items-center`}
         >
           <Trans context="module library, builder card link to the builder section">The five steps, and what to hand your agent ↓</Trans>
         </a>
@@ -83,7 +84,7 @@ function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string 
  * a thumb does not miss; two filters per row within thumb reach.
  */
 const SELECT =
-  "text-base min-h-[44px] flex-1 min-w-[45%] sm:flex-none sm:min-w-0 sm:text-sm border border-border rounded-lg px-2.5 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep/40";
+  "text-base min-h-[44px] flex-1 min-w-[45%] sm:flex-none sm:min-w-0 sm:text-sm border border-border rounded-lg px-2.5 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40";
 
 export function ShelfToolbar({
   f,
@@ -108,7 +109,7 @@ export function ShelfToolbar({
         onChange={(e) => set({ query: e.target.value })}
         placeholder="Search the library"
         aria-label="Search the library"
-        className="w-full sm:flex-1 sm:w-auto sm:min-w-[200px] px-3 py-2 text-base min-h-[44px] border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
+        className="w-full sm:flex-1 sm:w-auto sm:min-w-[200px] px-3 py-2 text-base min-h-[44px] border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
       />
       {showState && (
         <select value={f.state} onChange={(e) => set({ state: e.target.value as ShelfFilters["state"] })} className={SELECT} aria-label="Show">
@@ -143,7 +144,7 @@ export function ShelfToolbar({
       {isFiltered(f) && (
         <>
           <span className="text-sm text-muted-foreground">{count} of {total}</span>
-          <button onClick={() => set(NO_FILTERS)} className="text-sm font-medium text-teal-deep underline min-h-[44px] px-2">
+          <button onClick={() => set(NO_FILTERS)} className={`${LINK} text-sm min-h-[44px] px-2`}>
             Clear
           </button>
         </>
@@ -172,10 +173,12 @@ export default function Modules() {
 
   return (
     <Layout>
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
       {/* Inherited by every heading, card and term below: a long word a village gives a shelf or a module wraps instead of widening the page. */}
       <div className="container max-w-5xl py-8 sm:py-12 [overflow-wrap:anywhere]">
         <header className="mb-6">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">Module Library</h1>
+          <h1 className={H1}>Module Library</h1>
           {/* The cards themselves are single links, so the pill mechanics
               live up here where a tooltip trigger is legal HTML. */}
           <p className="text-muted-foreground mt-2 max-w-2xl leading-relaxed">
@@ -240,6 +243,7 @@ export default function Modules() {
             <PoolStatement />
           </>
         )}
+      </div>
       </div>
     </Layout>
   );
