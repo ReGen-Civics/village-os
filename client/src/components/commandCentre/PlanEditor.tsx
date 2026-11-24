@@ -45,6 +45,9 @@ import {
 } from "@/lib/planEdits";
 import { Trans, useLingui } from "@lingui/react/macro";
 
+/** The token a plan's text uses for the village's name, shown literally inside a translated sentence. */
+const villageWord = "{village}";
+
 interface EditorProps {
   plan: Plan;
   onChange: (plan: Plan) => void;
@@ -285,7 +288,7 @@ export function PlanWeeksEditor({
         </div>
         <p className="text-xs text-stone-500 mt-2">
           <Trans context="PlanEditor, p">The build side's name shows on the owner pill, this legend and each
-          row's dropdown. Write {"{village}"} in any text below for your
+          row's dropdown. Write {villageWord} in any text below for your
           village's name.
         </Trans></p>
       </div>

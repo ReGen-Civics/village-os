@@ -43939,8 +43939,8 @@ msgstr "Diga lo que busca con sus propias palabras. La aldea escucha mejor de lo
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, p"
-msgid "The build side's name shows on the owner pill, this legend and each row's dropdown. Write {village} in any text below for your village's name."
-msgstr "El nombre del lado de construcción aparece en la etiqueta de responsable, en esta leyenda y en el menú de cada fila. Escriba {village} en cualquier texto de abajo para el nombre de su aldea."
+msgid "The build side's name shows on the owner pill, this legend and each row's dropdown. Write {villageWord} in any text below for your village's name."
+msgstr "El nombre del lado de construcción aparece en la etiqueta de responsable, en esta leyenda y en el menú de cada fila. Escriba {villageWord} en cualquier texto de abajo para el nombre de su aldea."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraBridgeBoard.tsx
