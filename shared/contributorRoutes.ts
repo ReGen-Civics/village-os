@@ -14,9 +14,8 @@ export const CONTRIBUTOR_ROUTES = ["team", "venture", "partner", "quest"] as con
 export type ContributorRoute = (typeof CONTRIBUTOR_ROUTES)[number];
 
 /**
- * ONE REPLY PROMISE (the lead, 23 Nov 2026): the four ways say the same number of days as the application's thank-you
- * page, from the village variable that already held it, `org.applicant_reply_days` (default 7). A second variable for
- * the four ways (14 days) was dropped before it shipped, so the two promises can never disagree on one screen.
+ * THE OLD PROMISE IN DAYS, `org.applicant_reply_days` (default 7). Nobody is told days any more (the lead, 24 Nov
+ * 2026); the number survives only as a floor under the moon cycles (`effectiveReplyMoons`, below).
  */
 export const CONTRIBUTOR_REPLY_DAYS_VARIABLE = "org.applicant_reply_days";
 export const CONTRIBUTOR_REPLY_DAYS_DEFAULT = 7;
@@ -31,8 +30,8 @@ export function replyDaysOf(raw: unknown): number {
  * WHEN A PROPOSER HEARS BACK, SAID ONLY ONCE THEY HAVE SENT (the lead, 24 Nov 2026): "remove that they'll hear within
  * 7 days! That's not true! Let's say for all proposals they'll hear within 1 moon cycle and only at submission". The
  * window is the village's own, in moons, `org.reply_window_moons` (default 1), served on /api/game/config as
- * `replyWindowMoons`. Nothing before submission promises a reply. `org.applicant_reply_days` still dates the
- * application's own steps and letters.
+ * `replyWindowMoons`. Nothing before submission promises a reply. The application's own steps, its letters and its
+ * status page say the same window (server/lib/foundingFirst.ts replyMoonsFor).
  */
 export const REPLY_WINDOW_MOONS_VARIABLE = "org.reply_window_moons";
 export const REPLY_WINDOW_MOONS_DEFAULT = 1;
@@ -41,6 +40,23 @@ export const REPLY_WINDOW_MOONS_DEFAULT = 1;
 export function replyMoonsOf(raw: unknown): number {
   const n = typeof raw === "number" ? raw : typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN;
   return Number.isInteger(n) && n >= 1 && n <= 6 ? n : REPLY_WINDOW_MOONS_DEFAULT;
+}
+
+/** One moon cycle, new moon to new moon, in days (the synodic month). */
+export const MOON_CYCLE_DAYS = 29.53;
+
+/**
+ * THE WINDOW EVERY PROPOSER IS TOLD, application included (the lead, 24 Nov 2026: "for all proposals they'll hear
+ * within 1 moon cycle"): the village's moons, `org.reply_window_moons`, and never fewer moons than the days a village
+ * once set in `org.applicant_reply_days`, rounded up to whole cycles. That keeps a village that had promised a long
+ * wait (45 days, say) from being made to promise a shorter one (two moons, never one). The default 7 days is inside
+ * one cycle, so a village that never touched either says one moon cycle.
+ */
+export function effectiveReplyMoons(moonsRaw: unknown, daysRaw: unknown): number {
+  const moons = replyMoonsOf(moonsRaw);
+  const days = typeof daysRaw === "number" ? daysRaw : typeof daysRaw === "string" && daysRaw.trim() !== "" ? Number(daysRaw) : NaN;
+  const fromDays = Number.isInteger(days) && days >= 1 && days <= 60 ? Math.ceil(days / MOON_CYCLE_DAYS) : 1;
+  return Math.min(6, Math.max(moons, fromDays));
 }
 
 /** The routes in order, less any the caller leaves out ("the other three" beside a role). */

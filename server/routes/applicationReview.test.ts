@@ -808,7 +808,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect((await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id)).body.stamped).toBe(false);
       expect(updates()).toHaveLength(1);
       expect(updates()[0]).toMatchObject({ kind: "essential", idempotencyKey: `open-proposal:${id}:update:first_reply`, to: { email: "fr-person@example.test" }, subject: "We have taken up your proposal" });
-      expect(updates()[0].text).toContain("We reply within 7 days.");
+      expect(updates()[0].text).toContain("You'll hear from us within one moon cycle.");
       // No account yet: email only, nothing on any profile.
       expect(state.notices.filter((n) => n.type === "applicant_update")).toEqual([]);
     });
@@ -840,18 +840,29 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(updates()).toHaveLength(1);
     });
 
-    it("the status page promises the number of days the village set, 7 until it sets one", async () => {
+    it("the status page promises the village's moon cycles, one until it sets more, and never fewer than days it once set (the lead, 24 Nov 2026)", async () => {
       const { id, confirm } = await confirmed("days@example.test");
       const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
-      expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.replyDays).toBe(7);
-      await q("INSERT INTO game_variables (config_key, value) VALUES ('org.applicant_reply_days', '3') ON DUPLICATE KEY UPDATE value = VALUES(value)");
-      await loadVariables(pool);
-      try {
-        expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.replyDays).toBe(3);
-        // The email that carries the link says it too.
-      } finally {
-        await q("DELETE FROM game_variables WHERE config_key = 'org.applicant_reply_days'");
+      const moons = async () => (await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.replyMoons;
+      expect(await moons()).toBe(1);
+      const set = async (key: string, value: string | null) => {
+        if (value === null) await q("DELETE FROM game_variables WHERE config_key = ?", [key]);
+        else await q("INSERT INTO game_variables (config_key, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", [key, value]);
         await loadVariables(pool);
+      };
+      try {
+        await set("org.reply_window_moons", "2");
+        expect(await moons()).toBe(2);
+        await set("org.reply_window_moons", null);
+        // A village that had promised 45 days is never made to promise less: two cycles.
+        await set("org.applicant_reply_days", "45");
+        expect(await moons()).toBe(2);
+        // CONTROL: a short promise in days still reads one cycle.
+        await set("org.applicant_reply_days", "3");
+        expect(await moons()).toBe(1);
+      } finally {
+        await set("org.applicant_reply_days", null);
+        await set("org.reply_window_moons", null);
       }
     });
   });

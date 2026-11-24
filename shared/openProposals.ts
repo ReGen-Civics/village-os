@@ -550,8 +550,8 @@ export interface StepAfterSubmit {
  * confirmed page (`steps` on the confirm route's answer, drawn by
  * components/fireflyPath/Thresholds.tsx).
  */
-export function stepsAfterSubmit(lang: ApplicantLanguage | null | undefined, replyDays: number | null): StepAfterSubmit[] {
-  return applicantSteps(lang, replyDays);
+export function stepsAfterSubmit(lang: ApplicantLanguage | null | undefined, replyMoons: number | null): StepAfterSubmit[] {
+  return applicantSteps(lang, replyMoons);
 }
 
 /** The steps as lines of an email: "Name: when". */
@@ -564,10 +564,10 @@ export function stepsAsLines(steps: readonly StepAfterSubmit[]): string {
  * `kind: "application"` (the form for a listed role) says application; a proposal for a new role keeps its own words.
  */
 /**
- * `replyDays` (the lead, 20 Nov 2026, idea 18): when given, the letter says when we reply, from the village's own
- * `org.applicant_reply_days` (null: the founding team comes first, said in words). Never a typed number.
+ * `replyMoons` (the lead, 24 Nov 2026: "within 1 moon cycle"): when given, the letter says when we reply, in the
+ * village's own moon cycles (`effectiveReplyMoons`; null: the founding team comes first, said in words). Never a typed number.
  */
-export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean; replyDays?: number | null }): { subject: string; text: string } {
+export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean; replyMoons?: number | null }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const a = i.kind === "application" ? APPLY_EMAIL_WORDS[isApplicantLanguage(i.lang) ? i.lang : "en"] : null;
   const roles = w.list(i.roleNames) || w.aRole;
@@ -583,7 +583,7 @@ export function confirmLetter(i: { firstName: string | null; village: string; ro
       "",
       a && i.kept ? a.keptValidFor(OPEN_CONFIRM_HOURS) : w.confirm.validFor(OPEN_CONFIRM_HOURS),
       "",
-      ...(i.replyDays !== undefined ? [w.replyPromise(i.replyDays), ""] : []),
+      ...(i.replyMoons !== undefined ? [w.replyPromise(i.replyMoons), ""] : []),
       w.confirm.aiDrafts,
       "",
     ].join("\n"),

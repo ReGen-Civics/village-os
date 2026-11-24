@@ -4,10 +4,11 @@
  * While `org.founding_team` features its roles, every other listed role can be
  * applied for, and its applicant is told the reply waits until the founding
  * team is in place (shared/foundingTeam.ts `opensAfterFounding`). The reply
- * promise then reads `null` instead of the village's days.
+ * promise then reads `null` instead of the village's moon cycles.
  */
 import type { Pool } from "mysql2/promise";
 import { foundingRoles, opensAfterFounding } from "../../shared/foundingTeam";
+import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, REPLY_WINDOW_MOONS_VARIABLE, effectiveReplyMoons } from "../../shared/contributorRoutes";
 import { listOrgRoles, type OrgRole } from "./orgChart";
 import { boolVar, numberVar, stringVar } from "./variables";
 
@@ -22,7 +23,15 @@ export async function afterFounding(pool: Pool, roleIds: readonly string[]): Pro
   return opensAfterFounding(foundingIdsOf(await listOrgRoles(pool)), roleIds);
 }
 
-/** The reply promise for these roles: the village's days, or `null` while they open after the founding team. */
-export async function replyDaysFor(pool: Pool, roleIds: readonly string[]): Promise<number | null> {
-  return (await afterFounding(pool, roleIds)) ? null : numberVar("org.applicant_reply_days");
+/**
+ * The window every proposer is told, in moon cycles (the lead, 24 Nov 2026): `org.reply_window_moons`, never fewer
+ * cycles than the days a village set in `org.applicant_reply_days` (shared/contributorRoutes.ts effectiveReplyMoons).
+ */
+export function replyMoonsNow(): number {
+  return effectiveReplyMoons(numberVar(REPLY_WINDOW_MOONS_VARIABLE), numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE));
+}
+
+/** The reply promise for these roles: the village's moon cycles, or `null` while they open after the founding team. */
+export async function replyMoonsFor(pool: Pool, roleIds: readonly string[]): Promise<number | null> {
+  return (await afterFounding(pool, roleIds)) ? null : replyMoonsNow();
 }

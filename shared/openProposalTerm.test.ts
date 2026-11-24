@@ -54,15 +54,16 @@ describe("the words", () => {
     expect(OPEN_AI_DRAFTS).toMatch(/no AI takes part in choosing/);
   });
 
-  it("says when we reply, from the days it is given (idea 18, 20 Nov 2026), in the reader's language", () => {
-    const at = (replyDays: number | null | undefined, lang?: "es") => confirmLetter({ firstName: null, village: "Willowmere", roleNames: ["Cook"], link: "https://x", replyDays, lang }).text;
-    expect(at(5)).toContain("We reply within 5 days.");
-    expect(at(9)).toContain("We reply within 9 days.");
-    expect(at(5, "es")).toContain("Respondemos en un plazo de 5 días.");
+  it("says when we reply, in the moon cycles it is given (the lead, 24 Nov 2026), in the reader's language", () => {
+    const at = (replyMoons: number | null | undefined, lang?: "es") => confirmLetter({ firstName: null, village: "Willowmere", roleNames: ["Cook"], link: "https://x", replyMoons, lang }).text;
+    expect(at(1)).toContain("You'll hear from us within one moon cycle.");
+    expect(at(2)).toContain("You'll hear from us within 2 moon cycles.");
+    expect(at(1, "es")).toContain("Tendrás noticias nuestras dentro de un ciclo lunar.");
+    expect(at(1)).not.toMatch(/days/);
     // The founding team first: the wait said in words, never a number.
     expect(at(null)).toContain("We're filling our founding team first");
     // CONTROL: a caller that sends no days gets no promise.
-    expect(at(undefined)).not.toContain("We reply within");
+    expect(at(undefined)).not.toContain("moon cycle");
   });
 
   it("keeps a season proposal's words as they were", () => {

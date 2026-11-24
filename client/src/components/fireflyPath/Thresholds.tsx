@@ -30,7 +30,7 @@ import { LOCALE_STORAGE_KEY, useLocale } from "@/i18n/LocaleProvider";
 import { storedText } from "@/lib/safeStorage";
 import { isApplicantLanguage } from "@shared/applicantWords";
 import { OPEN_CONFIRM_HOURS, type StepAfterSubmit } from "@shared/openProposals";
-import { confirmBy, inboxFor, replyBy } from "./stones";
+import { confirmBy, inboxFor, replyByMoons } from "./stones";
 import { AnotherRoleDoor } from "./RestoredNote";
 import { applyWordT } from "./applyWordsT";
 
@@ -45,7 +45,7 @@ export interface SentNote {
   message: string;
   to: string;
   at: Date;
-  replyDays: number | null;
+  replyMoons: number | null;
   /** The roles applied for open after the founding team (Rye, 14 Nov 2026): the reply waits, and the page says so. */
   afterFounding?: boolean;
   /** The role applied for is coming soon (Rye, 16 Nov 2026): the confirmation repeats that interviews may take a while. */
@@ -178,9 +178,9 @@ function useThresholdReplyPromise(): string {
  * the village's own window in moon cycles, `org.reply_window_moons` (useReplyPromise). Nothing when the server sent
  * no days: a role after the founding team says its own wait.
  */
-export function ReplyPromise({ days }: { days: number | null }) {
+export function ReplyPromise({ moons }: { moons: number | null }) {
   const promise = useThresholdReplyPromise();
-  if (!days) return null;
+  if (!moons) return null;
   return (
     <p className="font-semibold text-foreground" data-reply-promise="">
       {promise}
@@ -194,7 +194,7 @@ export function ConfirmProposal() {
   const whatComesNext = useWhatComesNext();
   const locale = useLocale();
   const gone = t({ message: `That link has run out or was already used. Send your application again, and open the new link within ${OPEN_CONFIRM_HOURS} hours.`, context: "founding application confirm" });
-  const [said, setSaid] = useState<{ ok: boolean; message: string; statusPath?: string | null; replyDays?: number | null; steps?: StepAfterSubmit[] } | null>(null);
+  const [said, setSaid] = useState<{ ok: boolean; message: string; statusPath?: string | null; replyMoons?: number | null; steps?: StepAfterSubmit[] } | null>(null);
   const [met, setMet] = useState(false);
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -205,10 +205,10 @@ export function ConfirmProposal() {
         const statusPath = typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null;
         // The page speaks the language they proposed in, unless this browser has already chosen one.
         if (r.ok && isApplicantLanguage(data?.locale) && data.locale !== i18n.locale && !storedText("local", LOCALE_STORAGE_KEY) && locale.supported.includes(data.locale)) locale.setLocale(data.locale);
-        const replyDays = typeof data?.replyDays === "number" ? data.replyDays : null;
+        const replyMoons = typeof data?.replyMoons === "number" ? data.replyMoons : null;
         // The steps after submit, in their language, when the server carries them (the slot in shared/openProposals.ts).
         const steps: StepAfterSubmit[] = Array.isArray(data?.steps) ? data.steps.filter((x: any) => x && typeof x.name === "string" && typeof x.when === "string").slice(0, 8) : [];
-        setSaid({ ok: r.ok, message: typeof data?.message === "string" ? data.message : typeof data?.error === "string" ? data.error : gone, statusPath, replyDays, steps });
+        setSaid({ ok: r.ok, message: typeof data?.message === "string" ? data.message : typeof data?.error === "string" ? data.error : gone, statusPath, replyMoons, steps });
       })
       .catch(() => setSaid({ ok: false, message: gone }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -239,7 +239,7 @@ export function ConfirmProposal() {
       </Shell>
     );
   }
-  const by = said.replyDays ? replyBy(new Date(), said.replyDays) : null;
+  const by = said.replyMoons ? replyByMoons(new Date(), said.replyMoons) : null;
   const byWords = by ? whenWords(by, false) : "";
   return (
     <Shell wide>
@@ -250,7 +250,7 @@ export function ConfirmProposal() {
           </div>
           <ConfirmedHeading title={t({ message: "Confirmed", context: "open proposal confirm" })} />
           <p className={`${LEDE} mx-auto lg:mx-0`}>{t({ message: "Your application is with us now. We read every word, and we write to you by email.", context: "founding application confirm" })}</p>
-          <ReplyPromise days={said.replyDays ?? null} />
+          <ReplyPromise moons={said.replyMoons ?? null} />
           <ol className="grid gap-2 text-left text-sm text-foreground" data-dated-steps="">
             {said.steps?.length
               ? said.steps.map((step) => (
@@ -319,7 +319,7 @@ function KeptThreshold({ sent, roles, onAnother }: { sent: SentNote; roles: Comp
           </div>
           <ConfirmedHeading title={t({ message: "We have your application", context: "open proposal kept" })} />
           <p className={LEDE}>{sent.message}</p>
-          <ReplyPromise days={sent.replyDays} />
+          <ReplyPromise moons={sent.replyMoons} />
           <LazyStateNote role={sent} />
           {sent.statusPath && (
             <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">
@@ -357,7 +357,7 @@ function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: S
   const whatComesNext = useWhatComesNext();
   const inbox = inboxFor(sent.to);
   const until = confirmBy(sent.at, OPEN_CONFIRM_HOURS);
-  const reply = sent.replyDays ? replyBy(until, sent.replyDays) : null;
+  const reply = sent.replyMoons ? replyByMoons(until, sent.replyMoons) : null;
   const inboxName = inbox?.name ?? "";
   const untilWords = whenWords(until, true);
   const replyWords = reply ? whenWords(reply, false) : "";
@@ -371,7 +371,7 @@ function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: S
           </div>
           <ConfirmedHeading title={t({ message: "Check your email", context: "open proposal sent" })} />
           <p className={LEDE}>{sent.message}</p>
-          <ReplyPromise days={sent.replyDays} />
+          <ReplyPromise moons={sent.replyMoons} />
           <LazyStateNote role={sent} />
           {sent.afterFounding && !sent.comingSoon && !sent.futureVenture && (
             <p className="text-sm text-foreground" data-after-founding="">

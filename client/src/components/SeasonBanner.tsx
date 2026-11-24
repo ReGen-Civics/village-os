@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { useSeason } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { civilDayWords } from "@shared/seasonPlans";
+import { useNewcomer } from "@/lib/newcomer";
 
 /**
  * "Plan your season", while the window is open (season plans RC1). Members
@@ -26,6 +27,9 @@ function PlanLine({ window }: { window: { seasonName: string; closesOn: string }
 export default function SeasonBanner() {
   const season = useSeason();
   const { user } = useAuth();
+  // The count of season goals met is the village's own working number, the same kind as the commons block the
+  // landing dropped (24 Nov 2026): a visitor or someone the village has not admitted yet does not see it; a member does.
+  const newcomer = useNewcomer();
   if (!season) return null;
   const plan = user && season.planWindow?.state === "open" ? <PlanLine window={season.planWindow} /> : null;
 
@@ -71,8 +75,8 @@ export default function SeasonBanner() {
           <Sun className="w-4 h-4" /> {active.name}
         </span>
         {active.focus && <span className="text-white text-sm">{active.focus}</span>}
-        {goals.length > 0 && (
-          <span className="text-white text-xs">
+        {goals.length > 0 && !newcomer && (
+          <span className="text-white text-xs" data-season-goals-met="">
             {met} of {goals.length} season goal{goals.length === 1 ? "" : "s"} met
           </span>
         )}

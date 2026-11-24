@@ -19,15 +19,16 @@ describe("an application for a role that opens after the founding team (Rye, 14 
       const later = LANGUAGES[lang].replyPromise(null);
       expect(later.length).toBeGreaterThan(20);
       expect(later).not.toMatch(/\d/);
-      expect(later).not.toBe(LANGUAGES[lang].replyPromise(7));
+      expect(later).not.toBe(LANGUAGES[lang].replyPromise(1));
     }
     expect(LANGUAGES.en.replyPromise(null)).toMatch(/founding team first/);
-    expect(LANGUAGES.en.replyPromise(7)).toBe("We reply within 7 days.");
+    expect(LANGUAGES.en.replyPromise(1)).toBe("You'll hear from us within one moon cycle.");
+    expect(LANGUAGES.es.replyPromise(2)).toBe("Tendrás noticias nuestras dentro de 2 ciclos lunares.");
   });
   it("its letter says the same", () => {
-    const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Riverbend", roleNames: ["Village Cook"], replyDays: null });
+    const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Riverbend", roleNames: ["Village Cook"], replyMoons: null });
     expect(letter.text).toContain(LANGUAGES.en.replyPromise(null));
-    expect(letter.text).not.toMatch(/within \d/);
+    expect(letter.text).not.toMatch(/within \d|moon cycle/);
   });
 });
 
@@ -50,7 +51,7 @@ describe("every applicant line exists in every language", () => {
 
 describe("each template, built in each language", () => {
   const kinds: ApplicantUpdateKind[] = ["confirmed", "first_reply", "conversation", "consent", "terms", "adopted", "declined"];
-  const base = { firstName: "Ana", village: "Test Village", roleNames: ["Gate Keeper", "Well Keeper"], replyDays: 3 };
+  const base = { firstName: "Ana", village: "Test Village", roleNames: ["Gate Keeper", "Well Keeper"], replyMoons: 3 };
   const lead = (lang: ApplicantLanguage) => (lang === "es" ? "Hola Ana," : "Hi Ana,");
   for (const lang of APPLICANT_LANGUAGES) {
     it(`${lang}: the letters and the updates read as that language, with the roles and the note`, () => {
@@ -240,10 +241,10 @@ describe("the status page's words (statusView)", () => {
     expect(own.text).toContain("Book a time with Ops Role (Ana, Ben) for your first conversation: \nAna: https://cal.example.test/ana\nBen: https://cal.example.test/ben");
     expect(own.text, "the role's link gives way to the people's own").not.toContain("cal.example.test/ops");
     // The opened later conversation's letter carries its own role's link, or our letter with times.
-    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Hiring Role", minutes: 20, bookingUrl: "https://cal.example.test/hiring" }).text).toContain("Book a time with Hiring Role: https://cal.example.test/hiring");
-    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Hiring Role", minutes: 20 }).text).toContain("We'll write to you with times.");
+    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyMoons: 7, withRole: "Hiring Role", minutes: 20, bookingUrl: "https://cal.example.test/hiring" }).text).toContain("Book a time with Hiring Role: https://cal.example.test/hiring");
+    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyMoons: 7, withRole: "Hiring Role", minutes: 20 }).text).toContain("We'll write to you with times.");
     // Named with its holders, each person's link under the line.
-    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Finance Steward (Ana, Ben)", minutes: 20, bookingLinks: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] }).text).toContain(
+    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyMoons: 7, withRole: "Finance Steward (Ana, Ben)", minutes: 20, bookingLinks: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] }).text).toContain(
       "a conversation with Finance Steward (Ana, Ben), about 20 minutes. Book a time with Finance Steward (Ana, Ben): \nAna: https://cal.example.test/ana\nBen: https://cal.example.test/ben",
     );
   });

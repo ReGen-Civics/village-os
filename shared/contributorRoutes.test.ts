@@ -37,3 +37,19 @@ describe("a partner proposal", () => {
     expect(partnerProblems({ ...ok, email: "ana", serves: [], wish: " " })).toEqual(["email", "serves", "wish"]);
   });
 });
+
+describe("the reply window in moon cycles (the lead, 24 Nov 2026)", () => {
+  it("is the village's moons, one by default, and never fewer cycles than days it once set", async () => {
+    const { effectiveReplyMoons } = await import("./contributorRoutes");
+    expect(effectiveReplyMoons(undefined, undefined)).toBe(1);
+    expect(effectiveReplyMoons(1, 7)).toBe(1);
+    expect(effectiveReplyMoons(2, 7)).toBe(2);
+    expect(effectiveReplyMoons(1, 30)).toBe(2);
+    expect(effectiveReplyMoons(1, 45)).toBe(2);
+    expect(effectiveReplyMoons(1, 60)).toBe(3);
+    expect(effectiveReplyMoons(6, 60)).toBe(6);
+    // CONTROL: nonsense reads as the defaults, never as zero.
+    expect(effectiveReplyMoons(0, -3)).toBe(1);
+    expect(effectiveReplyMoons("x", "y")).toBe(1);
+  });
+});

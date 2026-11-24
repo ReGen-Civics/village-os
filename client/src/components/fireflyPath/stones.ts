@@ -11,6 +11,7 @@
  *
  * No React here, so a test can read every rule without drawing a page.
  */
+import { MOON_CYCLE_DAYS } from "@shared/contributorRoutes";
 
 export const STONES = ["know", "about", "value", "terms", "first", "review"] as const;
 export type Stone = (typeof STONES)[number];
@@ -127,6 +128,12 @@ export function enterWalksOn(target: EventTarget | null): boolean {
 /** The time a confirmation link stops working, counted from when the proposal was sent. */
 export function confirmBy(sentAt: Date, hours: number): Date {
   return new Date(sentAt.getTime() + hours * 60 * 60_000);
+}
+
+/** The day the village has said it will have written by, counted from a moment in moon cycles (a cycle is MOON_CYCLE_DAYS). */
+export function replyByMoons(from: Date, moons: number): Date | null {
+  if (!Number.isFinite(moons) || moons <= 0) return null;
+  return replyBy(from, Math.round(moons * MOON_CYCLE_DAYS));
 }
 
 /** The day the village has said it will have written by, counted from a moment in days. */

@@ -30,7 +30,7 @@ describe("withoutStatusLink", () => {
 });
 
 describe("the status link in a letter", () => {
-  const i = { firstName: "Ana", village: "V", roleNames: ["Gate"], replyDays: 3 };
+  const i = { firstName: "Ana", village: "V", roleNames: ["Gate"], replyMoons: 3 };
   it("a letter given a link carries it, in either language, and the first-email pointer is gone", () => {
     for (const lang of ["en", "es"] as const) {
       for (const kind of ["conversation", "terms"] as const) {

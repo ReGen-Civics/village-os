@@ -295,7 +295,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(hits).toHaveLength(0); // proposing changed nothing live
 
     const page = await call("GET", "/api/admin/proposals");
-    expect(page.body.changes.map((c: any) => c.targetLabel)).toEqual(["Home page", "Steward FAQ", "Days we promise to reply to a role proposal"]);
+    expect(page.body.changes.map((c: any) => c.targetLabel)).toEqual(["Home page", "Steward FAQ", "Longest reply in days a proposer was ever promised (a floor for the moon cycles)"]);
     expect(page.body.changes[0].live).toEqual({ hero: { headline: "Welcome home", badge: "Open" } });
     expect(page.body.changes[0].byKind).toBe("agent");
 

@@ -618,8 +618,8 @@ export const DECLINED_PAGE_WORDS = {
   again: "Or propose again next season.",
 } as const;
 
-/** The reply promise on the status page: one sentence, the number from the village's setting. */
-export const replyPromise = (days: number, lang?: ApplicantLanguage): string => wordsIn(lang).replyPromise(days);
+/** The reply promise on the status page: one sentence, the moon cycles from the village's setting. */
+export const replyPromise = (moons: number, lang?: ApplicantLanguage): string => wordsIn(lang).replyPromise(moons);
 
 // ── Updates about a proposal, to the person who made it ─────────────────────
 
@@ -644,7 +644,7 @@ export const UPDATE_EMAILS: Record<ApplicantUpdateKind, boolean> = {
 /** One update's title (the email's subject and the profile's headline) and its text. A decider's note rides under the text. */
 export function applicantUpdate(
   kind: ApplicantUpdateKind,
-  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyDays: number | null; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; bookingLinks?: readonly BookingLink[]; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
+  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyMoons: number | null; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; bookingLinks?: readonly BookingLink[]; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
 ): { title: string; text: string } {
   const w = wordsIn(i.lang);
   const u = w.update;
@@ -653,9 +653,9 @@ export function applicantUpdate(
   const withNote = (text: string) => [text, ...noteLines(i.lang, i.note)].join("\n");
   switch (kind) {
     case "confirmed":
-      return { title: u.confirmedTitle(i.village), text: u.confirmed(roles, w.replyPromise(i.replyDays)) };
+      return { title: u.confirmedTitle(i.village), text: u.confirmed(roles, w.replyPromise(i.replyMoons)) };
     case "first_reply":
-      return { title: u.firstReplyTitle, text: body([u.firstReply(roles), w.replyPromise(i.replyDays)]) };
+      return { title: u.firstReplyTitle, text: body([u.firstReply(roles), w.replyPromise(i.replyMoons)]) };
     case "conversation":
       return { title: u.conversationTitle, text: body([u.conversation(roles, i.withRole ?? null, i.minutes ?? null, bookingLinksText(i.bookingLinks ?? []) ?? i.bookingUrl ?? null)]) };
     case "consent":

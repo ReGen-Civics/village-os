@@ -54,7 +54,7 @@ const ADOPTED = {
   booking: null,
   mode: "block",
   outcome: "adopted",
-  replyDays: 7,
+  replyMoons: 1,
   locale: "en",
 };
 

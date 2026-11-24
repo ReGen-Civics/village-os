@@ -528,7 +528,7 @@ export default function ProposeARole() {
         message: kept ? t({ message: `We have your application. Our confirmation email didn't go out, so we'll write to you at ${sentTo} soon.`, context: "founding application kept" }) : t({ message: `Check ${sentTo}. We sent a link to confirm it's you. Your application reaches us once you open it.`, context: "founding application sent" }),
         to: sentTo,
         at: new Date(),
-        replyDays: typeof data?.replyDays === "number" ? data.replyDays : null, afterFounding: data?.afterFounding === true,
+        replyMoons: typeof data?.replyMoons === "number" ? data.replyMoons : null, afterFounding: data?.afterFounding === true,
         // Coming soon (Rye, 16 Nov 2026): the confirmation repeats that interviews may take a while to start.
         comingSoon: role?.comingSoon === true,
         futureVenture: role?.futureVenture === true,
