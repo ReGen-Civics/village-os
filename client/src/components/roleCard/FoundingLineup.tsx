@@ -30,7 +30,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { LayoutList, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
-import { applyByWords, frontKind, pillKind, volunteerLine } from "./frontWords";
+import { applyByParts, frontKind, pillKind, volunteerLine } from "./frontWords";
 import { cardPay, NO_VILLAGE_PAY, type VillagePay } from "@shared/roleCardSections";
 import { useShareNames } from "@/components/ContributionWord";
 import { roleCardView } from "@shared/roleCardView";
@@ -146,7 +146,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
               // The front's kind (its pill) and pay split, never an amount, and the last day to apply (the lead, 23 Nov 2026).
               const kind = frontKind(r.seat, r.sections);
-              const applyBy = applyByWords(i18n, r.sections?.applyBy);
+              const applyBy = applyByParts(i18n, r.sections?.applyBy);
               return (
                 <FoundingRow
                   key={id}
