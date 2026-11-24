@@ -6,10 +6,30 @@ import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConse
 import InvestorSummary from "@/components/InvestorSummary";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  CARD,
+  CARD_FEATURED,
+  CHIP,
+  CHIP_SOFT,
+  EYEBROW,
+  FIELD,
+  HINT,
+  LABEL,
+  LEDE,
+  NOTE,
+  RING,
+  TICK,
+  TILE,
+  WORLD,
+} from "@/components/journey/look";
+import { SeedOfLife } from "@/components/journey/nature";
 import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent";
 import { buttonAction, percent, stepPoints, type TargetContext } from "@/lib/journeyPage";
 import { INVESTOR_FIGURE_IDS, INVESTOR_JOURNEY, JOURNEY_LEGACY_STEP_IDS } from "@shared/pageContent/journeys";
 import { useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -40,7 +60,16 @@ import {
 /*
  * EVERY WORD ON THIS PAGE IS THE VILLAGE'S OWN, from Admin, Pages, Investor
  * journey (shared/pageContent/journeys.ts). What stays here is the look: the
- * icons and colours, handed out by position, and the forms' machinery.
+ * icons, handed out by position, and the forms' machinery.
+ *
+ * THE NIGHT WORLD (investor remake, 24 Nov 2026). The page stands in the
+ * sheet's world like the landing, /roles and the steward and resident paths
+ * (docs/DESIGN_RULE.md): semantic tokens, the display face, panels, gold for
+ * the one main act. It used to be the app's light ground with brand-ink
+ * gradients, the one door from the landing that still looked like another
+ * site. Phone first: one column, the picture above the words, each person's
+ * story a short row. From `lg` up the picture stands beside the words and the
+ * journey's heading stays in view beside its steps.
  */
 
 /** Icons for the steps, in order; a longer list starts again from the top. */
@@ -56,28 +85,24 @@ const STEP_ICONS = [Sparkles, FileText, Calendar, Heart];
  * the first time somebody opened this page, and no screen anywhere could change
  * them.
  *
- * What stays here is the tile's icon and colour. Its heading and the sentence
- * explaining the figure are the page's words; what a figure IS comes from the
- * village, through Admin, Settings. A village that has stated none of them
- * gets the honest sentence rather than an empty grid, and never a default: a
- * number nobody typed is a claim nobody made.
+ * What stays here is the tile's icon. Its heading and the sentence explaining
+ * the figure are the page's words; what a figure IS comes from the village,
+ * through Admin, Settings. A village that has stated none of them gets the
+ * honest sentence rather than an empty grid, and never a default: a number
+ * nobody typed is a claim nobody made.
  */
-const METRIC_LOOKS: Record<(typeof INVESTOR_FIGURE_IDS)[number], { icon: typeof TrendingUp; color: string }> = {
-  appreciation: { icon: TrendingUp, color: "bg-teal-deep/10 text-teal-deep" },
-  appraisal: { icon: Building, color: "bg-gold/10 text-gold" },
-  projectedReturn: { icon: BarChart3, color: "bg-coral/10 text-coral" },
-  targetRaise: { icon: Zap, color: "bg-sage/10 text-sage" },
+const METRIC_LOOKS: Record<(typeof INVESTOR_FIGURE_IDS)[number], { icon: typeof TrendingUp }> = {
+  appreciation: { icon: TrendingUp },
+  appraisal: { icon: Building },
+  projectedReturn: { icon: BarChart3 },
+  targetRaise: { icon: Zap },
 };
 
-/** Icon and gradient for each person card, handed out in order. */
-const PERSONA_LOOKS = [
-  { icon: MapPin, color: "from-teal-deep to-teal-deep-dark" },
-  { icon: Users, color: "from-gold to-coral" },
-  { icon: Heart, color: "from-sage to-teal-deep" },
-  { icon: Sparkles, color: "from-coral to-gold" },
-  { icon: TrendingUp, color: "from-teal-deep to-sage" },
-  { icon: Building, color: "from-gold to-teal-deep" },
-];
+/** The icon for each person card, handed out in order. */
+const PERSONA_ICONS = [MapPin, Users, Heart, Sparkles, TrendingUp, Building];
+
+/** A section's heading on the night ground: the display face, never bold on the sheet. */
+const SECTION_H2 = "font-display text-3xl leading-tight text-foreground sm:text-4xl break-words";
 
 const PACK_FORM = "pack-form";
 const CALL_FORM = "call-form";
@@ -90,9 +115,14 @@ export default function InvestorJourney() {
   const steps = page?.steps.lists.items ?? null;
   const phases = page?.phases;
   const closing = page?.closing;
+  const casePoints = page && !page.case.hidden ? page.case.lists.points : [];
+  const risks = page && !page.risks.hidden && (page.risks.fields.intro || page.risks.lists.items.length) ? page.risks : null;
+  // The "not an offer" line: under the hero's buttons and in both forms, never twice on the page itself.
+  const notice = page && !page.notice.hidden ? page.notice.fields.body : "";
   const accreditationOn = !!page && !page.accreditation.hidden;
   const brand = useBrandImages();
   const settings = useVillageSettings();
+  const { t } = useLingui();
   // NULL IS "NOT LOADED YET", NEVER "NOTHING STATED". Without this line the
   // page tells every visitor "this village has not published any figures" for
   // the length of one fetch, including on a village that has published four,
@@ -107,6 +137,9 @@ export default function InvestorJourney() {
     }),
   );
   const progress = useJourneyProgress("amora-investor-progress", steps, JOURNEY_LEGACY_STEP_IDS.investor);
+  const walkedCount = progress.doneCount;
+  const stepCount = progress.total;
+  const countLine = t({ message: `${walkedCount} of ${stepCount} steps completed`, context: "investor path ticked off" });
   const [expandedStep, setExpandedStep] = useState<number | null>(0);
   const [showPackForm, setShowPackForm] = useState(false);
   const [showCallForm, setShowCallForm] = useState(false);
@@ -204,475 +237,446 @@ export default function InvestorJourney() {
   // Until the saved words arrive the hero keeps its space and stays
   // invisible, so a visitor never reads the defaults and watches them change.
   const waiting = hero ? "" : " invisible";
+  const heroArt = brand.investorHero;
 
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          {/* THE HERO RENDERS ONLY WHEN THERE IS ONE.
-              This was a bare <img> whose src came from the brand overlay with a
-              hardcoded fallback behind it, so it always had a URL. The fallback
-              pointed at one village's WordPress site and every one of those URLs
-              now 404s, which is why the live page renders a torn image. With the
-              fallback gone the src would simply be empty, and an <img src=""> is
-              a broken image too. No picture is the honest state, and the gradient
-              below carries the section on its own. */}
-          {brand.investorHero ? (
-            <m.img
-              src={brand.investorHero}
-              alt={altOr(brand.investorHeroAlt, "The land and the buildings on it")}
-              className="w-full h-full object-cover"
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 1.5 }}
-            />
-          ) : null}
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/60" />
-        </div>
-
-        <div className="container relative z-10">
-          <div className="relative max-w-2xl">
-            {/* THE COPY SITS ON AN OPAQUE BAND, as on Home and Master Plan. A
-                photograph under text cannot promise a ratio: the paragraph read
-                3.59:1 over this one at 393px, and the eyebrow cleared only
-                because of what today's picture happens to hold. With no picture
-                the band is the colour it sits on. heroCopy.contrast.test.tsx */}
-            <div
-              aria-hidden="true"
-              className="absolute -inset-x-5 -inset-y-6 sm:-inset-x-8 sm:-inset-y-10 rounded-3xl bg-background"
-            />
+      {/* The sheet's world (docs/DESIGN_RULE.md), as the landing and the other paths are. */}
+      <div className={WORLD}>
+      {/* Hero. The picture is a framed card beside the words from lg up and
+          above them on a phone, the way the landing's path cards carry it, so
+          no sentence sits on a photograph. */}
+      <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 lg:py-20">
+        <div className={`container relative z-10 grid gap-8 lg:items-center ${heroArt ? "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14" : ""}`}>
+          <div className="relative order-2 max-w-2xl lg:order-1">
+            {/* THE COPY SITS ON AN OPAQUE BAND, as on Home and Master Plan. It
+                matches the ground, so it is invisible here; it is what keeps
+                the copy's ratio whatever a village later paints behind it.
+                heroCopy.contrast.test.tsx */}
+            <div aria-hidden="true" className="absolute -inset-x-4 -inset-y-5 rounded-2xl bg-background" />
             <m.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="relative flex items-center gap-3 mb-6"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="relative mb-5 flex items-center gap-3"
             >
-              <m.div
-                className="w-12 h-12 shrink-0 rounded-xl bg-gold flex items-center justify-center"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <TrendingUp className="w-6 h-6 text-white" />
-              </m.div>
-              {/* amber-ink, index.css's amber for text on light grounds: gold is 4.07:1 on the band. */}
-              <span className={`text-amber-ink font-medium tracking-wide uppercase text-sm min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
+              {/* A gold ring, the way the sheet carries its icons. It used to rock forever beside the text. */}
+              <span className={RING} aria-hidden="true">
+                <TrendingUp className="size-5" />
+              </span>
+              <span className={`${EYEBROW} min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
             </m.div>
 
             {/* 36px under 360px wide: at 48px "Regeneration" is one unbreakable word
-                that inked to x=336 at 320px, past the 304px column and the section's
-                overflow-hidden edge, so its end was cut off. From 360px up, unchanged.
-                break-words is for a village's own longer word at the field's limit. */}
+                that inked to x=336 at 320px, past the 304px column. From 360px up,
+                the display size. break-words is for a village's own longer word. */}
             <m.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className={`relative font-display text-4xl min-[360px]:text-5xl md:text-6xl font-semibold text-foreground mb-6 break-words${waiting}`}
+              transition={{ duration: 0.45, delay: 0.05 }}
+              className={`relative mb-5 font-display text-4xl leading-tight text-foreground min-[360px]:text-5xl lg:text-6xl break-words${waiting}`}
             >
               <Highlighted
-                text={hero?.headline || " "}
+                text={hero?.headline || " "}
                 phrase={hero?.highlight ?? ""}
-                render={(phrase) => <span className="text-teal-deep italic">{phrase}</span>}
+                render={(phrase) => <span className="italic text-notice">{phrase}</span>}
               />
             </m.h1>
 
             <m.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className={`relative text-xl text-muted-foreground leading-relaxed mb-8 break-words${waiting}`}
+              transition={{ duration: 0.45, delay: 0.1 }}
+              className={`relative mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl break-words${waiting}`}
             >
               <Emphasized text={hero?.intro ?? ""} />
             </m.p>
 
             <m.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="relative flex flex-wrap gap-4"
+              transition={{ duration: 0.45, delay: 0.15 }}
+              className="relative flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap"
             >
               {/* The first button opens the page's own pack form by default,
                   posting to this village's own server: the lead is captured,
                   it reaches the right village, and the request passes through
                   the accreditation step the journey already had. */}
               {heroPrimary && (
-                <JourneyLink action={heroPrimary.action} onForm={openForm} className="btn-village flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
+                <JourneyLink action={heroPrimary.action} onForm={openForm} className={BTN_PRIMARY}>
+                  <FileText className="size-5" aria-hidden="true" />
                   {heroPrimary.label}
                 </JourneyLink>
               )}
               {heroSecondary && (
-                <JourneyLink
-                  action={heroSecondary.action}
-                  onForm={openForm}
-                  className="px-6 py-3 bg-white/90 text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-white transition-all flex items-center gap-2"
-                >
-                  <Calendar className="w-5 h-5" />
+                <JourneyLink action={heroSecondary.action} onForm={openForm} className={`${BTN_SECONDARY} bg-card`}>
+                  <Calendar className="size-5" aria-hidden="true" />
                   {heroSecondary.label}
                 </JourneyLink>
               )}
             </m.div>
+            {notice ? (
+              <p className="relative mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground break-words">{notice}</p>
+            ) : null}
           </div>
+
+          {/* THE PICTURE RENDERS ONLY WHEN THERE IS ONE. It came from a
+              hardcoded fallback on one village's old site that now 404s; no
+              picture is the honest state, and the words stand alone. */}
+          {heroArt ? (
+            <m.figure
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="order-1 overflow-hidden rounded-2xl border border-notice/50 bg-card shadow-sm lg:order-2"
+            >
+              <img
+                src={heroArt}
+                alt={altOr(brand.investorHeroAlt, "The land and the buildings on it")}
+                className="h-52 w-full object-cover min-[420px]:h-64 sm:h-80 lg:h-[30rem]"
+                style={brand.investorHeroFocus ? { objectPosition: brand.investorHeroFocus } : undefined}
+              />
+            </m.figure>
+          ) : null}
         </div>
       </section>
 
-      {/* Financial Metrics Section */}
-      {figures && !figures.hidden && (
-      <section className="py-20 bg-background border-t border-b border-muted">
+      {/* Why this village: the village's own reasons, numbered. Not drawn until it writes one. */}
+      {page && casePoints.length > 0 && (
+      <section className="pb-12 sm:pb-16">
         <div className="container">
-          <m.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
-              {figures.fields.heading}
-            </h2>
-            {/* R56: state what is true and get out of the way. A village with
-                no figures yet is early, and saying so beats an empty grid. The
-                line telling the village where to enter them belongs in Admin,
-                never on its public page. */}
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-              {!loaded ? " " : financialMetrics.length ? figures.fields.intro : figures.fields.empty}
-            </p>
-            {financialMetrics.length && figures.fields.disclaimer ? (
-              <p className="text-xs text-muted-foreground italic max-w-2xl mx-auto">
-                {figures.fields.disclaimer}
+          <div className="mb-6 max-w-2xl sm:mb-8">
+            <h2 className={`${SECTION_H2} mb-3`}>{page.case.fields.heading}</h2>
+            {page.case.fields.intro ? (
+              <p className={LEDE}>
+                <Emphasized text={page.case.fields.intro} />
               </p>
             ) : null}
-          </m.div>
-
-          {loaded && financialMetrics.length ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {financialMetrics.map((metric, index) => (
-              <m.div
-                key={metric.key}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className={`${metric.color} rounded-xl p-8 shadow-sm transition-all min-w-0`}
-              >
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <h3 className="font-display text-lg font-semibold text-foreground min-w-0 break-words">
-                    {metric.title}
-                  </h3>
-                  <metric.icon className="w-6 h-6 shrink-0 opacity-90" />
-                </div>
-                <div className="mb-2">
-                  <div className="font-display text-4xl font-semibold text-foreground break-words">
-                    {metric.value}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-medium mt-1">
-                    {metric.note}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed break-words">
-                  {metric.detail}
-                </p>
-              </m.div>
-            ))}
           </div>
-          ) : null}
+          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+            {casePoints.map((point, index) => (
+              <li key={`${index}-${point.title}`} className="flex min-w-0 gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-col sm:p-6">
+                <span className={`${RING} font-display text-lg`} aria-hidden="true">{index + 1}</span>
+                <div className="min-w-0">
+                  <h3 className="font-display text-lg text-card-foreground break-words sm:text-xl">{point.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words sm:text-base">
+                    <Emphasized text={point.detail} />
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      )}
+
+      {/* Key numbers. A panel either way: the figures on tiles, or the
+          village's one honest sentence in the panel they would fill. */}
+      {figures && !figures.hidden && (
+      <section className="pb-12 sm:pb-16">
+        <div className="container">
+          {loaded && financialMetrics.length ? (
+            <div className={CARD}>
+              <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10">
+                <div className="mb-6 lg:mb-0">
+                  <h2 className={SECTION_H2}>{figures.fields.heading}</h2>
+                  <p className={`${NOTE} mt-3`}>{figures.fields.intro}</p>
+                  {figures.fields.disclaimer ? (
+                    <p className="mt-4 text-xs italic leading-relaxed text-muted-foreground">{figures.fields.disclaimer}</p>
+                  ) : null}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {financialMetrics.map((metric) => (
+                    <div key={metric.key} className={`${TILE} min-w-0`}>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <h3 className="min-w-0 font-display text-lg text-foreground break-words">{metric.title}</h3>
+                        <span className={`${RING} size-9`} aria-hidden="true">
+                          <metric.icon className="size-4" />
+                        </span>
+                      </div>
+                      <div className="font-display text-3xl text-notice break-words sm:text-4xl">{metric.value}</div>
+                      <div className="mt-1 text-xs font-medium text-muted-foreground">{metric.note}</div>
+                      <p className={`${HINT} mt-3 leading-relaxed break-words`}>{metric.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={`${CARD} flex items-start gap-4`}>
+              <span className={RING} aria-hidden="true">
+                <BarChart3 className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-display text-2xl text-card-foreground break-words">{figures.fields.heading}</h2>
+                {/* R56: state what is true and get out of the way. A village with
+                    no figures yet is early, and saying so beats an empty grid. The
+                    line telling the village where to enter them belongs in Admin,
+                    never on its public page. */}
+                <p className={`${NOTE} mt-1.5`}>{!loaded ? " " : figures.fields.empty}</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
       )}
 
       <InvestorSummary />
 
-      {/* Who invests in this village */}
+      {/* Who invests in this village. A short row each on a phone, a card each from sm up. */}
       {personas && !personas.hidden && (
-      <section className="py-20 bg-cream">
+      <section className="border-t border-border/60 py-14 sm:py-20">
         <div className="container">
-          <m.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
-              {personas.fields.heading}
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+          <div className="mb-8 max-w-2xl sm:mb-10">
+            <h2 className={`${SECTION_H2} mb-3`}>{personas.fields.heading}</h2>
+            <p className={LEDE}>
               <Emphasized text={personas.fields.intro} />
             </p>
-          </m.div>
+          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5">
             {personas.lists.items.map((persona, index) => {
-              const look = PERSONA_LOOKS[index % PERSONA_LOOKS.length];
+              const Icon = PERSONA_ICONS[index % PERSONA_ICONS.length];
               return (
-              <m.div
-                key={`${index}-${persona.title}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className={`bg-gradient-to-br ${look.color} rounded-xl p-8 shadow-sm text-white transition-all min-w-0`}
-              >
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
-                  <look.icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-xl font-semibold mb-2 break-words">
-                  {persona.title}
-                </h3>
-                <p className="text-white leading-relaxed break-words">
-                  {persona.subtitle}
-                </p>
-              </m.div>
+                <li
+                  key={`${index}-${persona.title}`}
+                  className="flex min-w-0 items-start gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-notice/60 sm:flex-col sm:p-6"
+                >
+                  <span className={RING} aria-hidden="true">
+                    <Icon className="size-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-lg text-card-foreground break-words sm:text-xl">{persona.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words sm:text-base">{persona.subtitle}</p>
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       </section>
       )}
 
       <WhyCostaRica />
 
-      {/* Interactive Journey Steps */}
+      {/* The journey. From lg up its heading and the seed stay in view beside the steps. */}
       {page && steps && (
-      <section className="py-20 bg-background">
-        <div className="container">
-          <div className="max-w-3xl mx-auto">
-            <m.div
-              className="text-center mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
-                {page.steps.fields.heading}
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                <Emphasized text={page.steps.fields.intro} />
-              </p>
-
-              {/* Progress Bar */}
-              <div className="relative h-3 bg-muted rounded-full overflow-hidden mb-2">
-                <m.div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-coral to-gold rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress.progress}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {progress.doneCount} of {progress.total} steps completed
-              </p>
-            </m.div>
-
-            <div className="space-y-4">
-              {steps.map((step, index) => {
-                const isCompleted = progress.isDone(step);
-                const isExpanded = expandedStep === index;
-                const StepIcon = STEP_ICONS[index % STEP_ICONS.length];
-                const action = buttonAction(step.actionLabel, step.actionTarget, targets);
-
-                return (
-                  <m.div
-                    key={`${index}-${step.title}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
-                      isCompleted ? "border-l-4 border-sage" : "border-l-4 border-transparent"
-                    }`}
-                  >
-                    <div
-                      className="p-6 cursor-pointer"
-                      onClick={() => setExpandedStep(isExpanded ? null : index)}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Checkbox */}
-                        {/* Named and typed the way the steward, resident and prosperity
-                            journeys already do it. This one was the outlier:
-                            sixteen bare icon buttons whose only child is an svg,
-                            so a screen reader announced "button" and this was the
-                            ONLY keyboard path to mark an investor stage done. */}
-                        <button
-                          type="button"
-                          role="checkbox"
-                          aria-checked={isCompleted}
-                          aria-label={`${step.title}: mark as ${isCompleted ? "not done" : "done"}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            progress.toggle(step);
-                          }}
-                          className="flex-shrink-0 -mx-2.5 -mt-1.5 -mb-2.5 inline-flex size-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <m.div
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            {isCompleted ? (
-                              <CheckCircle2 className="w-6 h-6 text-sage" />
-                            ) : (
-                              <Circle className="w-6 h-6 text-muted-foreground hover:text-teal-deep transition-colors" />
-                            )}
-                          </m.div>
-                        </button>
-
-                        {/* Icon */}
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isCompleted ? "bg-sage/10" : "bg-teal-deep/10"
-                        }`}>
-                          <StepIcon className={`w-6 h-6 ${isCompleted ? "text-sage" : "text-teal-deep"}`} />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="inline-block px-2 py-1 bg-teal-deep/10 text-teal-deep text-xs font-semibold rounded-full break-words">
-                              Stage: {step.stage}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <h3 className={`font-display text-xl font-semibold min-w-0 break-words ${
-                              isCompleted ? "text-muted-foreground line-through" : "text-foreground"
-                            }`}>
-                              {step.title}
-                            </h3>
-                            <m.div
-                              className="shrink-0"
-                              animate={{ rotate: isExpanded ? 180 : 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                            </m.div>
-                          </div>
-                          <p className="text-muted-foreground mt-1 break-words">
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Expanded Details */}
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <m.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-6 pb-6 pt-2 ml-16">
-                            <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                              <h4 className="font-medium text-foreground mb-3">What you'll accomplish:</h4>
-                              <ul className="space-y-2">
-                                {stepPoints(step).map((detail, i) => (
-                                  <m.li
-                                    key={i}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="flex items-center gap-2 text-sm text-muted-foreground min-w-0 break-words"
-                                  >
-                                    <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-teal-deep" />
-                                    <span className="min-w-0 break-words">{detail}</span>
-                                  </m.li>
-                                ))}
-                              </ul>
-                            </div>
-                            {action && (
-                              <JourneyLink
-                                action={action.action}
-                                onForm={openForm}
-                                className="inline-flex min-h-11 items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-full text-sm font-medium hover:bg-teal-deep-dark transition-colors"
-                              >
-                                {action.label}
-                                {leavesSite(action.action) ? <ExternalLink className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                              </JourneyLink>
-                            )}
-                          </div>
-                        </m.div>
-                      )}
-                    </AnimatePresence>
-                  </m.div>
-                );
-              })}
+      <section className="py-14 sm:py-20">
+        <div className="container grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <h2 className={`${SECTION_H2} mb-3`}>{page.steps.fields.heading}</h2>
+            <p className={`${LEDE} mb-6`}>
+              <Emphasized text={page.steps.fields.intro} />
+            </p>
+            {/* Progress grows as a Seed of Life, one circle per step ticked; never a filling bar. */}
+            <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+              <SeedOfLife
+                total={Math.min(Math.max(stepCount, 1), 19)}
+                walked={Math.min(walkedCount, 19)}
+                label={countLine}
+                size="md"
+              />
+              <p className={HINT}>{countLine}</p>
             </div>
           </div>
+
+          <ol className="space-y-3">
+            {steps.map((step, index) => {
+              const isCompleted = progress.isDone(step);
+              const isExpanded = expandedStep === index;
+              const StepIcon = STEP_ICONS[index % STEP_ICONS.length];
+              const action = buttonAction(step.actionLabel, step.actionTarget, targets);
+
+              return (
+                <li
+                  key={`${index}-${step.title}`}
+                  className={`overflow-hidden rounded-2xl border bg-card shadow-sm transition-colors ${
+                    isCompleted ? "border-notice/70" : "border-border hover:border-notice/50"
+                  }`}
+                >
+                  <div
+                    className="cursor-pointer p-4 sm:p-5"
+                    onClick={() => setExpandedStep(isExpanded ? null : index)}
+                  >
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      {/* Named and typed the way the steward, resident and prosperity
+                          journeys already do it. This one was the outlier:
+                          sixteen bare icon buttons whose only child is an svg,
+                          so a screen reader announced "button" and this was the
+                          ONLY keyboard path to mark an investor stage done. */}
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={isCompleted}
+                        aria-label={`${step.title}: mark as ${isCompleted ? "not done" : "done"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          progress.toggle(step);
+                        }}
+                        className="-mx-2.5 -mt-1.5 -mb-2.5 inline-flex size-11 flex-shrink-0 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="size-6 text-notice" />
+                        ) : (
+                          <Circle className="size-6 text-muted-foreground transition-colors hover:text-notice" />
+                        )}
+                      </button>
+
+                      <span
+                        aria-hidden="true"
+                        className={`hidden size-10 flex-shrink-0 items-center justify-center rounded-full border bg-muted min-[400px]:inline-flex ${
+                          isCompleted ? "border-notice text-notice" : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        <StepIcon className="size-5" />
+                      </span>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex items-center justify-between gap-3">
+                          <span className={`${CHIP_SOFT} break-words`}>
+                            Stage: {step.stage}
+                          </span>
+                          <m.span
+                            className="shrink-0"
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown className="size-5 text-muted-foreground" aria-hidden="true" />
+                          </m.span>
+                        </div>
+                        <h3 className={`font-display text-xl break-words ${
+                          isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                        }`}>
+                          {step.title}
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words sm:text-base">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <m.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-5 sm:px-5 sm:pl-[4.75rem]">
+                          <div className={`${TILE} mb-4`}>
+                            <h4 className="mb-3 text-sm font-semibold text-foreground">What you'll accomplish:</h4>
+                            <ul className="grid gap-2 sm:grid-cols-2">
+                              {stepPoints(step).map((detail, i) => (
+                                <li key={i} className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground break-words">
+                                  <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-open" />
+                                  <span className="min-w-0 break-words">{detail}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          {action && (
+                            <JourneyLink action={action.action} onForm={openForm} className={`${BTN_PRIMARY} text-sm`}>
+                              {action.label}
+                              {leavesSite(action.action) ? <ExternalLink className="size-4" aria-hidden="true" /> : <ArrowRight className="size-4" aria-hidden="true" />}
+                            </JourneyLink>
+                          )}
+                        </div>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </section>
       )}
 
-      {/* Development Phases. Not drawn until the village lists a phase: a
+      {/* The village's phases. Not drawn until the village lists a phase: a
           heading over an empty band would say the village plans nothing. */}
       {phases && !phases.hidden && phases.lists.items.length > 0 && (
-      <section className="py-20 bg-teal-deep text-white">
+      <section className="border-t border-border/60 py-14 sm:py-20">
         <div className="container">
-          <m.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4 break-words">
-              {phases.fields.heading}
-            </h2>
-            <p className="text-white max-w-2xl mx-auto">
+          <div className="mb-8 max-w-2xl">
+            <h2 className={`${SECTION_H2} mb-3`}>{phases.fields.heading}</h2>
+            <p className={LEDE}>
               <Emphasized text={phases.fields.intro} />
             </p>
-          </m.div>
+          </div>
 
-          <div className="max-w-3xl mx-auto">
-            <div className="space-y-4">
-              {phases.lists.items.map((phase, index) => {
-                const filled = percent(phase.progress);
-                return (
-                <m.div
-                  key={`${index}-${phase.name}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ x: 8 }}
-                  className="bg-white/10 rounded-lg p-4 backdrop-blur-sm"
-                >
-                  {/* The status keeps to the name's line while the name has 9rem
-                      there, and drops below it when it does not: a long status
-                      at 320px left the name a sliver. */}
-                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-2">
-                    <div className="flex items-center gap-4 min-w-0 basis-36 grow">
-                      <Building className="w-5 h-5 shrink-0 text-gold" />
-                      <div className="min-w-0">
-                        <div className="font-semibold break-words">{phase.name}</div>
-                        <div className="text-sm text-white break-words">{phase.units}</div>
-                      </div>
-                    </div>
-                    {phase.status && (
-                    <span className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-                      phase.status === phases.fields.activeStatus ? "bg-gold text-white" : "bg-white/20 text-white"
-                    }`}>
-                      {phase.status}
+          <ul className="grid gap-3 md:grid-cols-2">
+            {phases.lists.items.map((phase, index) => {
+              const filled = percent(phase.progress);
+              const active = phase.status === phases.fields.activeStatus;
+              return (
+              <li key={`${index}-${phase.name}`} className={`${TILE} bg-card`}>
+                {/* The status keeps to the name's line while the name has 9rem
+                    there, and drops below it when it does not: a long status
+                    at 320px left the name a sliver. */}
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <div className="flex min-w-0 grow basis-36 items-center gap-3">
+                    <span className={`${RING} size-9`} aria-hidden="true">
+                      <Building className="size-4" />
                     </span>
-                    )}
+                    <div className="min-w-0">
+                      <div className="font-display text-lg text-foreground break-words">{phase.name}</div>
+                      <div className="text-sm text-muted-foreground break-words">{phase.units}</div>
+                    </div>
                   </div>
-                  {/* Progress bar */}
-                  <div
-                    className="h-1.5 bg-white/10 rounded-full overflow-hidden"
-                    role="progressbar"
-                    aria-label={phase.name}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={filled}
-                  >
-                    <m.div
-                      className="h-full bg-gradient-to-r from-gold to-coral rounded-full"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${filled}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1, delay: index * 0.2 }}
-                    />
-                  </div>
-                </m.div>
-                );
-              })}
+                  {phase.status && (
+                  <span className={active ? CHIP : CHIP_SOFT}>
+                    {phase.status}
+                  </span>
+                  )}
+                </div>
+                {/* The village's own figure for how far this phase has come. */}
+                <div
+                  className="h-1.5 overflow-hidden rounded-full bg-muted"
+                  role="progressbar"
+                  aria-label={phase.name}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={filled}
+                >
+                  <div className="h-full rounded-full bg-notice" style={{ width: `${filled}%` }} />
+                </div>
+              </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+      )}
+
+      {/* What could go wrong, said plainly, before the questions. */}
+      {risks && (
+      <section className="py-14 sm:py-20">
+        <div className="container">
+          <div className={CARD}>
+            <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10">
+              <div className="mb-6 lg:mb-0">
+                <h2 className={`${SECTION_H2} mb-3`}>{risks.fields.heading}</h2>
+                {risks.fields.intro ? (
+                  <p className={NOTE}>
+                    <Emphasized text={risks.fields.intro} />
+                  </p>
+                ) : null}
+              </div>
+              {risks.lists.items.length > 0 && (
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {risks.lists.items.map((risk, index) => (
+                    <li key={`${index}-${risk.title}`} className={`${TILE} min-w-0`}>
+                      <h3 className="font-display text-lg text-foreground break-words">{risk.title}</h3>
+                      <p className={`${HINT} mt-1.5 leading-relaxed break-words`}>
+                        <Emphasized text={risk.detail} />
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -681,47 +685,33 @@ export default function InvestorJourney() {
 
       {page && <FaqSection pathway="investor" heading={page.faq.fields.heading} />}
 
-      {/* CTA */}
+      {/* The closing invitation: the one panel on the page that says "start here". */}
       {closing && !closing.hidden && (
-      <section className="py-20 bg-gradient-to-br from-gold/10 to-coral/10">
+      <section className="py-14 sm:py-20">
         <div className="container">
-          <m.div
-            className="max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-          >
-            <m.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Sparkles className="w-12 h-12 text-teal-deep mx-auto mb-6" />
-            </m.div>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
-              {closing.fields.heading}
-            </h2>
-            <p className="text-muted-foreground mb-8">
+          <div className={`${CARD_FEATURED} mx-auto max-w-2xl text-center`}>
+            <span className={`${RING} mx-auto mb-5 size-12`} aria-hidden="true">
+              <Sparkles className="size-6" />
+            </span>
+            <h2 className={`${SECTION_H2} mb-4`}>{closing.fields.heading}</h2>
+            <p className={`${NOTE} mx-auto mb-8 max-w-xl`}>
               <Emphasized text={closing.fields.body} />
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-col justify-center gap-3 min-[420px]:flex-row min-[420px]:flex-wrap">
               {closingPrimary && (
-                <JourneyLink action={closingPrimary.action} onForm={openForm} className="btn-village flex items-center gap-2">
+                <JourneyLink action={closingPrimary.action} onForm={openForm} className={BTN_PRIMARY}>
                   {closingPrimary.label}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="size-5" aria-hidden="true" />
                 </JourneyLink>
               )}
               {closingSecondary && (
-                <JourneyLink
-                  action={closingSecondary.action}
-                  onForm={openForm}
-                  className="px-6 py-3 bg-white/90 text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-white transition-all flex items-center gap-2"
-                >
+                <JourneyLink action={closingSecondary.action} onForm={openForm} className={BTN_SECONDARY}>
                   {closingSecondary.label}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="size-4" aria-hidden="true" />
                 </JourneyLink>
               )}
             </div>
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -730,21 +720,24 @@ export default function InvestorJourney() {
       <AnimatePresence>
         {formSuccess && (
           <m.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 bg-sage text-white px-6 py-3 rounded-full shadow-lg z-50"
+            exit={{ opacity: 0, y: -12 }}
+            role="status"
+            className="fixed inset-x-4 top-4 z-50 rounded-xl border border-notice/60 bg-card px-5 py-3 text-foreground shadow-sm sm:left-auto sm:right-4 sm:max-w-sm"
           >
             {formSuccess}
           </m.div>
         )}
       </AnimatePresence>
+      </div>
 
-      {/* Investor Pack Form Modal */}
+      {/* Investor Pack Form Modal. The dialog is portalled out of the world,
+          so it carries the sheet's class itself, as BadgeRoster's does. */}
       <Dialog open={showPackForm} onOpenChange={(o) => { if (!o) setShowPackForm(false); }}>
-        <DialogContent className="bg-card rounded-2xl p-8 shadow-xl sm:max-w-md">
+        <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl font-semibold text-foreground">
+            <DialogTitle className="font-display text-2xl text-card-foreground">
               Request Investor Pack
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -753,51 +746,51 @@ export default function InvestorJourney() {
           </DialogHeader>
           <form onSubmit={handlePackFormSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+              <label className={`${LABEL} mb-1.5 block`}>Name</label>
               <input
                 type="text"
                 value={packFormData.name}
                 onChange={(e) => setPackFormData({ ...packFormData, name: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+              <label className={`${LABEL} mb-1.5 block`}>Email</label>
               <input
                 type="email"
                 value={packFormData.email}
                 onChange={(e) => setPackFormData({ ...packFormData, email: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Investment Range</label>
+              <label className={`${LABEL} mb-1.5 block`}>Investment Range</label>
               <input
                 type="text"
                 placeholder={page?.packForm.fields.rangeHint || undefined}
                 value={packFormData.investmentRange}
                 onChange={(e) => setPackFormData({ ...packFormData, investmentRange: e.target.value })}
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Message (optional)</label>
+              <label className={`${LABEL} mb-1.5 block`}>Message (optional)</label>
               <textarea
                 value={packFormData.message}
                 onChange={(e) => setPackFormData({ ...packFormData, message: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep resize-none"
+                className={`${FIELD} resize-none`}
               />
             </div>
             {accreditationOn && (
-            <label className="flex items-start gap-3 text-sm text-foreground bg-muted/40 rounded-lg p-3 cursor-pointer">
+            <label className={`${TILE} flex cursor-pointer items-start gap-3 text-sm text-foreground`}>
               <input
                 type="checkbox"
                 checked={packFormData.accredited}
                 onChange={(e) => setPackFormData({ ...packFormData, accredited: e.target.checked })}
-                className="mt-0.5 h-4 w-4 rounded border-muted text-teal-deep focus:ring-teal-deep"
+                className={TICK}
               />
               <span className="leading-snug break-words">
                 {page?.accreditation.fields.statement}
@@ -805,11 +798,9 @@ export default function InvestorJourney() {
             </label>
             )}
             <PathConsentBox checked={packConsent} onChange={setPackConsent} />
-            <button
-              type="submit"
-              className="w-full bg-teal-deep text-white py-2 rounded-lg font-medium hover:bg-teal-deep-dark transition-colors flex items-center justify-center gap-2 pointer-coarse:min-h-11"
-            >
-              <Send className="w-4 h-4" />
+            {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
+            <button type="submit" className={`${BTN_PRIMARY} w-full`}>
+              <Send className="size-4" aria-hidden="true" />
               Send Request
             </button>
           </form>
@@ -818,9 +809,9 @@ export default function InvestorJourney() {
 
       {/* Schedule Call Form Modal */}
       <Dialog open={showCallForm} onOpenChange={(o) => { if (!o) setShowCallForm(false); }}>
-        <DialogContent className="bg-card rounded-2xl p-8 shadow-xl sm:max-w-md">
+        <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl font-semibold text-foreground">
+            <DialogTitle className="font-display text-2xl text-card-foreground">
               Schedule a Call
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -829,50 +820,48 @@ export default function InvestorJourney() {
           </DialogHeader>
           <form onSubmit={handleCallFormSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+              <label className={`${LABEL} mb-1.5 block`}>Name</label>
               <input
                 type="text"
                 value={callFormData.name}
                 onChange={(e) => setCallFormData({ ...callFormData, name: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+              <label className={`${LABEL} mb-1.5 block`}>Email</label>
               <input
                 type="email"
                 value={callFormData.email}
                 onChange={(e) => setCallFormData({ ...callFormData, email: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Preferred Time</label>
+              <label className={`${LABEL} mb-1.5 block`}>Preferred Time</label>
               <input
                 type="text"
                 placeholder={page?.callForm.fields.timeHint || undefined}
                 value={callFormData.preferredTime}
                 onChange={(e) => setCallFormData({ ...callFormData, preferredTime: e.target.value })}
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                className={FIELD}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Message (optional)</label>
+              <label className={`${LABEL} mb-1.5 block`}>Message (optional)</label>
               <textarea
                 value={callFormData.message}
                 onChange={(e) => setCallFormData({ ...callFormData, message: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 bg-muted rounded-lg border border-muted text-foreground focus:outline-none focus:ring-2 focus:ring-teal-deep resize-none"
+                className={`${FIELD} resize-none`}
               />
             </div>
             <PathConsentBox checked={callConsent} onChange={setCallConsent} />
-            <button
-              type="submit"
-              className="w-full bg-teal-deep text-white py-2 rounded-lg font-medium hover:bg-teal-deep-dark transition-colors flex items-center justify-center gap-2 pointer-coarse:min-h-11"
-            >
-              <Send className="w-4 h-4" />
+            {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
+            <button type="submit" className={`${BTN_PRIMARY} w-full`}>
+              <Send className="size-4" aria-hidden="true" />
               Request Call
             </button>
           </form>
