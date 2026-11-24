@@ -193,7 +193,7 @@ export default function GuideChat({
           placeholder={`Tell ${assistantName} about your idea…`}
           aria-label={t({ message: `Message to ${assistantName}`, context: "guide chat: the message box, for a screen reader" })}
           rows={1}
-          className="flex-1 resize-none px-3 py-2 text-sm border border-border bg-background text-foreground rounded-xl outline-none focus:border-ring max-h-32"
+          className="flex-1 resize-none px-3 py-2 text-sm border border-border bg-background text-foreground rounded-xl outline-none focus:border-ring focus-visible:ring-2 focus-visible:ring-ring max-h-32"
         />
         <button onClick={send} aria-label="Send message" disabled={thinking || !input.trim()} className="shrink-0 w-10 h-10 rounded-xl bg-notice text-background flex items-center justify-center hover:bg-notice/90 disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
           <Send className="w-4 h-4" />
