@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 285 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 64 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 324 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-349 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 72 text, 13 longtext.
+351 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 52 boolean, 37 choice, 73 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and
 | Village map | 12 | 9 | 3 |
 | The village's people | 25 | 24 | 1 |
 | Companions | 3 | 3 | 0 |
-| The founding team | 29 | 29 | 0 |
+| The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Messages | 2 | 2 | 0 |
@@ -80,7 +80,7 @@ Each dial also says WHEN a change lands. 322 of them as soon as it is saved, and
 | Hidden map | 11 | 11 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
-| Language | 1 | 1 | 0 |
+| Language | 2 | 2 | 0 |
 
 ## Every dial by name
 
@@ -343,6 +343,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Lines every role card shows under what the village needs | `org.role_card_shared` | The founding team | longtext | blank | the whole village |
 | The sessions every role attends | `org.role_card_rhythm` | The founding team | longtext | blank | the whole village |
 | When a role's first review happens | `org.role_card_first_review` | The founding team | text | blank | the whole village |
+| Nationality line on every open role | `org.role_card_nationality` | The founding team | text | blank | the whole village |
 | The first steps once someone is selected | `org.role_card_onboarding` | The founding team | longtext | blank | the whole village |
 | Tooltips for your own words on the role cards | `org.role_card_word_tips` | The founding team | longtext | blank | the whole village |
 | Other ways to join: the resident path tile | `org.other_ways_seeder_title` | The founding team | text | `Become a Founding Seeder` | the whole village |
@@ -396,7 +397,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Cooling-off before a key lands with nobody to co-sign | `platform.cosign_cooling_hours` | Platform | integer | `48` | the founder or an admin |
 | How long a key waits for its co-sign | `platform.cosign_expiry_hours` | Platform | integer | `72` | the founder or an admin |
 | The guide's helper in Admin | `platform.admin_helper` | Platform | boolean | `true` | the founder or an admin |
-| Accounts that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
+| Addresses that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
 | The solar event that opens the village year | `calendar.year_anchor` | Calendar | choice | `december_solstice` | the whole village |
 | Hemisphere | `calendar.hemisphere` | Calendar | choice | `north` | the whole village |
 | Mark the cross-quarter days | `calendar.cross_quarters` | Calendar | boolean | `false` | the whole village |
@@ -437,6 +438,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
 | How long a live session runs unless its opener says otherwise | `sessions.default_minutes` | Live Sessions | integer | `60` | the whole village |
 | Default language | `village.default_locale` | Language | choice | `en` | the whole village |
+| Offer Español | `village.offer_locale.es` | Language | boolean | `true` | the whole village |
 
 ## Membership
 
@@ -4273,7 +4275,7 @@ Which roles give their holders a companion that speaks for the role. Write all f
 
 ## The founding team
 
-29 dials. 29 for the whole village.
+30 dials. 30 for the whole village.
 
 ### When a moon counts as far from what was agreed
 
@@ -4535,6 +4537,20 @@ Read after First review on every role card, for example: at the first new moon c
 | Fact | Value |
 | --- | --- |
 | Key | `org.role_card_first_review` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Nationality line on every open role
+
+Shown under Nationality on every open role card, coming soon and venture cards too. Put a | between two lines, for example: Citizens of this country (preferred) | Other nationalities (possible). Empty, no Nationality row.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_nationality` |
 | Type | text, free text, one line |
 | Default | blank |
 | Range | no bounds are set |
@@ -5362,9 +5378,9 @@ Lets admins ask the village guide for help inside Admin: finding a page or setti
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
 
-### Accounts that hear about crashes
+### Addresses that hear about crashes
 
-The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.
+Email addresses that hear about crashes. An admin or founder's address also gets the notice in the app; an address with no account gets the email only. Blank tells every admin and founder. Separate addresses with commas, at most 10. A member's address is skipped, and a list with no address left to reach tells every admin and founder.
 
 | Fact | Value |
 | --- | --- |
@@ -6035,7 +6051,7 @@ The length a new live session starts with when whoever opens it names none. The 
 
 ## Language
 
-1 dial. 1 for the whole village.
+2 dials. 2 for the whole village.
 
 ### Default language
 
@@ -6056,6 +6072,20 @@ What it may be set to:
 - `en` English.
 - `es` Español.
 
+### Offer Español
+
+Whether visitors and members can read this village in Español. Off removes it from the language picker; anyone who had chosen it reads the village's default language instead.
+
+| Fact | Value |
+| --- | --- |
+| Key | `village.offer_locale.es` |
+| Type | boolean, on or off |
+| Default | `true` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
 ## What this file is made from
 
 The generator reads these and fails loudly if any of them moves:
@@ -6074,6 +6104,7 @@ The generator reads these and fails loudly if any of them moves:
 - `shared/gameVariables.ts`
 - `shared/governanceEngine.ts`
 - `shared/governingPurpose.ts`
+- `shared/i18nLocales.ts`
 - `shared/mintCapWords.ts`
 - `shared/moonSettlement.ts`
 - `shared/needs.ts`

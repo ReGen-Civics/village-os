@@ -37,6 +37,7 @@ import { useModule, useModules } from "@/modules/ModuleProvider";
 import type { PlacePhoto } from "@shared/placePhotos";
 import { useLingui } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
+import { H1, LINK, WORLD } from "@/components/journey/look";
 
 interface IndexPage {
   photos: PlacePhoto[];
@@ -121,15 +122,17 @@ function PhotographsPage() {
   if (locked) {
     return (
       <Layout>
+        <div className={WORLD}>
         <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
-          <h1 className="font-serif text-3xl">Every photograph</h1>
+          <h1 className={H1}>Every photograph</h1>
           <p className="rounded-xl border border-border bg-card p-6">
             This village keeps its pictures to members.{" "}
-            <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className="text-teal-deep underline">
+            <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className={LINK}>
               Sign in
             </Link>{" "}
             to read them.
           </p>
+        </div>
         </div>
       </Layout>
     );
@@ -141,9 +144,11 @@ function PhotographsPage() {
 
   return (
     <Layout>
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words, as /places. */}
+      <div className={WORLD}>
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
         <header className="space-y-2">
-          <h1 className="font-serif text-3xl">Every photograph</h1>
+          <h1 className={H1}>Every photograph</h1>
           <p className="text-muted-foreground">
             Every picture anybody has added to this village, newest first, whatever place it is filed under. Each one
             carries the name of whoever took it and the month it was taken.
@@ -153,7 +158,7 @@ function PhotographsPage() {
             me". It goes dark straight away, the file stops answering, and the curators get your request.
           </p>
           <nav aria-label="Places">
-            <Link href="/places" className="text-sm text-teal-deep underline inline-block py-1.5 min-h-[44px]">
+            <Link href="/places" className={`${LINK} text-sm inline-flex items-center min-h-11`}>
               Browse by place instead
             </Link>
           </nav>
@@ -166,7 +171,7 @@ function PhotographsPage() {
             server's own refusal, so the two never say different things. */}
         {head && !head.signedIn && (
           <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-            <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className="text-teal-deep underline">
+            <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className={LINK}>
               Sign in
             </Link>{" "}
             to ask for a photograph of you to come down. A request needs an account, because one press from a signed
@@ -174,10 +179,10 @@ function PhotographsPage() {
           </p>
         )}
 
-        <p role="status" aria-live="polite" className="text-sm text-teal-deep min-h-[20px]">{say}</p>
+        <p role="status" aria-live="polite" className="text-sm text-foreground min-h-[20px]">{say}</p>
 
         {failed ? (
-          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p role="alert" className="rounded-xl border border-destructive/60 bg-card p-4 text-sm text-foreground">
             The photographs did not load. Reload the page to try again.
           </p>
         ) : !pages ? (
@@ -209,6 +214,7 @@ function PhotographsPage() {
             )}
           </>
         )}
+      </div>
       </div>
     </Layout>
   );

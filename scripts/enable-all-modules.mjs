@@ -113,6 +113,12 @@ export const TARGETS = [
   // Public: a visitor reads the places' public tier, and only while the org
   // chart is public (`map.public_structure`). Village content, no member data.
   ["places", "public"],
+  // HELD on the session-card terms: member-pii (each pin is tied to the member
+  // who logged it, carries a location and photos that may show people) and no
+  // Module Library Contract clause 13 review is on record for it. Once it
+  // closes and Rye signs off, this line becomes ["hidden-map", "members"],
+  // never public: the registry's `widest: "members"` refuses that anyway.
+  ["hidden-map", "held", "security review pending (Module Library Contract clause 13)"],
   // HELD on the session-card terms: member-pii (a proposal carries its crew's
   // words) and not yet through the Module Library Contract clause 13 review.
   ["season-places", "held", "security review pending (Module Library Contract clause 13)"],

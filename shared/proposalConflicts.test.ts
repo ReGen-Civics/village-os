@@ -135,3 +135,27 @@ describe("the order", () => {
     expect([...rows].sort(oldestFirst).map((r) => r.id)).toEqual(["z", "a", "b", "c"]);
   });
 });
+
+describe("content translations: one field each (Spanish drafts, 24 Nov 2026)", () => {
+  const T = { method: "PUT", path: "/api/admin/content-translations" };
+  const tr = (ref: string, field: string, locale = "es") => fp("setting", T, { kind: "page_section", ref, field, locale, text: "x" });
+
+  it("two fields of one page in one language do not collide", () => {
+    expect(overlaps(tr("page-home", "hero.title"), tr("page-home", "hero.subline"))).toBe(false);
+  });
+  it("the same field collides, and a nested address collides with its parent", () => {
+    expect(overlaps(tr("page-home", "hero.title"), tr("page-home", "hero.title"))).toBe(true);
+    expect(overlaps(tr("page-home", "steps.items.2"), tr("page-home", "steps.items.2.title"))).toBe(true);
+  });
+  it("another page or another language is another document", () => {
+    expect(overlaps(tr("page-home", "hero.title"), tr("page-team", "hero.title"))).toBe(false);
+    expect(overlaps(tr("page-home", "hero.title"), tr("page-home", "hero.title", "pt"))).toBe(false);
+  });
+  it("a waiting translation is not made stale by an accepted one of a different field", () => {
+    const a = tr("page-home", "hero.title");
+    expect(a).toEqual({ doc: "content-translations:page_section:page-home:es", whole: false, fields: ["hero.title"] });
+  });
+  it("any other PUT setting still writes its whole document", () => {
+    expect(fp("setting", { method: "PUT", path: "/api/admin/brand" }, { name: "x" })?.whole).toBe(true);
+  });
+});
