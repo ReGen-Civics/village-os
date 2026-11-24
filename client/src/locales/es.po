@@ -7,62 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen: the one button, reloads the page"
-msgid "Refresh the page"
-msgstr "Recarga la página"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen when offline: the eyebrow"
-msgid "No connection"
-msgstr "Sin conexión"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a deploy: the eyebrow"
-msgid "A fresh version is here"
-msgstr "Ya llegó una versión nueva"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgid "The site just grew"
-msgstr "El sitio acaba de crecer"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgid "Nothing is broken. One refresh brings you the new version."
-msgstr "Nada está roto. Una recarga te trae la versión nueva."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the eyebrow"
-msgid "A small stumble"
-msgstr "Un pequeño tropiezo"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the heading"
-msgid "This page didn't load"
-msgstr "Esta página no cargó"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgid "A refresh usually brings it back."
-msgstr "Una recarga casi siempre la trae de vuelta."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: leave for the home page"
-msgid "Go to the home page"
-msgstr "Ir a la página de inicio"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgid "Details for a bug report"
-msgstr "Detalles para un informe de error"
-
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
@@ -790,6 +734,12 @@ msgstr "Una vez que me aprueben para un rol, me alinearé con el acuerdo de conf
 #: client/src/components/journey/TestRun.tsx
 msgid "What this run looked at"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button while it sends"
+msgid "Sending"
+msgstr "Enviando"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -2447,6 +2397,12 @@ msgstr ""
 msgid "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site, when it has no name yet"
+msgid "Learn about the village"
+msgstr "Conoce la aldea"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -3208,6 +3164,12 @@ msgctxt "voice invite"
 msgid "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
 msgstr "Tu navegador no escribió ninguna palabra esta vez. Escribe unas líneas sobre lo que dijiste, o déjalo vacío: tu grabación es suficiente."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "Pooling resources"
+msgstr "Juntar recursos"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgctxt "full access, who set it when the name is unknown"
@@ -3316,6 +3278,12 @@ msgstr ""
 #~ msgctxt "founding application refusal"
 #~ msgid "Keep each recording under 5 minutes."
 #~ msgstr "Que cada grabación dure menos de 5 minutos."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen when offline: the eyebrow"
+msgid "No connection"
+msgstr "Sin conexión"
 
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -4835,9 +4803,9 @@ msgid "That did not save. Your changes are still here."
 msgstr ""
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons lede"
-msgid "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
-msgstr "Las metas de esta temporada, sostenidas por todo el pueblo. Cada círculo es una meta, y el musgo crece en ella cuando la alcanzamos juntos."
+#~ msgctxt "landing commons lede"
+#~ msgid "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
+#~ msgstr "Las metas de esta temporada, sostenidas por todo el pueblo. Cada círculo es una meta, y el musgo crece en ella cuando la alcanzamos juntos."
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "It goes on the calendar's list as a draft that recurs every new moon. Nothing is published until you publish it."
@@ -4979,6 +4947,12 @@ msgstr "Para el {day}"
 msgctxt "next step box, when the quest starts"
 msgid "Starts {at}"
 msgstr "Empieza {at}"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "The people who look after new businesses here read every request. We will write to the email you gave."
+msgstr "Quienes cuidan los nuevos negocios aquí leen cada solicitud. Te escribiremos al correo que nos diste."
 
 #: client/src/components/gratitude/WallEntryCard.tsx
 msgctxt "thanks thread: who thanked whom"
@@ -5148,6 +5122,12 @@ msgstr ""
 msgid "From the week of {0}"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the heading"
+msgid "This page didn't load"
+msgstr "Esta página no cargó"
+
 #: client/src/components/hiddenMap/OpeningMoment.tsx
 msgid "Now open to you"
 msgstr ""
@@ -5263,6 +5243,12 @@ msgstr ""
 msgctxt "admin compare"
 msgid "Saved splits"
 msgstr "Repartos guardados"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the build field's hint"
+msgid "A business, a service, a craft: a few lines is plenty."
+msgstr "Un negocio, un servicio, un oficio: bastan unas líneas."
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
@@ -6010,6 +5996,13 @@ msgstr ""
 msgctxt "pricing desk"
 msgid "Likely {0} to {1}"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it."
+msgstr "Aquí se reunirán las fotografías de los lugares de la tierra a medida que los miembros las añadan, cada una con el nombre de quien la tomó."
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Your selection holds three. Take one off to select another."
@@ -7553,6 +7546,12 @@ msgctxt "budget upload preview"
 msgid "These rows cannot be saved as written. The other rows can be saved, or fix these and preview again:"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ComingSoonPanel.tsx
+msgctxt "an area the village has not filled yet: the eyebrow over its name"
+msgid "Coming soon"
+msgstr "Próximamente"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "a change request you started"
 msgid "Yours"
@@ -8381,6 +8380,11 @@ msgctxt "founding team, no role open"
 msgid "Choose a role to read it in full."
 msgstr "Elige un rol para leerlo completo."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "Nothing is broken. One refresh brings you the new version."
+msgstr "Nada está roto. Una recarga te trae la versión nueva."
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Filed. The village renews filed roles together."
 msgstr ""
@@ -8527,6 +8531,12 @@ msgstr "Tu avance en los {0} pasos"
 msgctxt "partner form: sent"
 msgid "Your proposal is with us"
 msgstr "Tu propuesta está con nosotros"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the list of fields to fix"
+msgid "A few things to fix before it can go:"
+msgstr "Faltan algunos detalles antes de enviarla:"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -9544,6 +9554,12 @@ msgctxt "price popup choice"
 msgid "Propose my own compensation"
 msgstr "Proponer mi propia compensación"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the optional note"
+msgid "Anything else"
+msgstr "Algo más"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: signed out door"
 msgid "Sign in"
@@ -9608,9 +9624,9 @@ msgid "The list holds {most}, the most it takes"
 msgstr "La lista tiene {most}, el máximo que admite"
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons door"
-msgid "See the roles that tend these goals"
-msgstr "Ver los roles que cuidan estas metas"
+#~ msgctxt "landing commons door"
+#~ msgid "See the roles that tend these goals"
+#~ msgstr "Ver los roles que cuidan estas metas"
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -10129,6 +10145,12 @@ msgstr "Marcada como ejemplo"
 #: client/src/pages/RoleDraft.tsx
 msgid "Apply with my {pickCount} picks"
 msgstr "Postular con mis {pickCount} elecciones"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar"
+msgid "Roles"
+msgstr "Roles"
 
 #: client/src/components/admin/AdminHeader.tsx
 msgid "This device only. Admin stays light for everyone else."
@@ -10792,6 +10814,12 @@ msgstr ""
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgid "We emailed you this link too. Keep it to yourself: it is how we know it is you."
 msgstr "También te enviamos este enlace por correo. Guárdalo para ti: es la forma en que sabemos que eres tú."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your email"
+msgstr "Tu correo"
 
 #. placeholder {0}: goals.length + 1
 #: client/src/components/governance/GoalsList.tsx
@@ -11748,9 +11776,9 @@ msgid "Talk to {label}"
 msgstr "Habla con {label}"
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons heading"
-msgid "The commons"
-msgstr "Lo común"
+#~ msgctxt "landing commons heading"
+#~ msgid "The commons"
+#~ msgstr "Lo común"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application compensation"
@@ -11916,6 +11944,12 @@ msgstr ""
 msgctxt "signing key"
 msgid "Asked for a co-sign. Another admin replaces the key from this card."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button"
+msgid "Send my request"
+msgstr "Enviar mi solicitud"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "while you wait"
@@ -13111,6 +13145,12 @@ msgctxt "founding application, save and finish later: while saving"
 msgid "Saving"
 msgstr "Guardando"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it."
+msgstr "Cuando la aldea abra su primera recaudación, su anillo aparecerá aquí, y podrás ver lo que aún necesita y aportar."
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload error"
 msgid "Choose a sheet or paste its cells first."
@@ -14106,9 +14146,9 @@ msgid "Save the menu"
 msgstr ""
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act"
-msgid "Explore the map"
-msgstr "Explora el mapa"
+#~ msgctxt "landing hero second act"
+#~ msgid "Explore the map"
+#~ msgstr "Explora el mapa"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera answers"
@@ -14446,6 +14486,12 @@ msgstr ""
 msgctxt "when the purpose statement was written"
 msgid "Written on {0}"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Say what you would like to build."
+msgstr "Cuéntanos qué te gustaría construir."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal why starter"
@@ -15970,6 +16016,12 @@ msgctxt "pay page, receipt"
 msgid "What it is for"
 msgstr "Para qué es"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: leave for the home page"
+msgid "Go to the home page"
+msgstr "Ir a la página de inicio"
+
 #: client/src/components/roleCard/PieceSuggestionsReview.tsx
 msgctxt "open proposal: suggestions lede"
 msgid "Their own words, beside each piece of the role card they are about. Nothing here is scored or summarised."
@@ -16533,8 +16585,8 @@ msgid "Back from a redemption"
 msgstr "Devuelto de un canje"
 
 #: client/src/components/ErrorBoundary.tsx
-msgid "We just updated the site"
-msgstr "Acabamos de actualizar el sitio"
+#~ msgid "We just updated the site"
+#~ msgstr "Acabamos de actualizar el sitio"
 
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: the consent tick"
@@ -16677,6 +16729,12 @@ msgstr ""
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Keep the note under 2,000 characters."
+msgstr "Mantén la nota por debajo de 2.000 caracteres."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
@@ -18195,6 +18253,12 @@ msgstr "Quedan {0} caracteres en esta respuesta."
 #~ msgid "This season's goals"
 #~ msgstr "Las metas de esta temporada"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a deploy: the eyebrow"
+msgid "A fresh version is here"
+msgstr "Ya llegó una versión nueva"
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 #: client/src/components/canvas/RecordReadingForm.tsx
 msgid "Why, in one sentence"
@@ -18514,6 +18578,13 @@ msgstr "El contrato fija el pago. Como contratista puede proponer más o menos q
 msgctxt "price popup title"
 msgid "Your compensation"
 msgstr "Tu compensación"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages, the door meanwhile"
+msgid "Open the map"
+msgstr "Abrir el mapa"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
@@ -19866,6 +19937,12 @@ msgctxt "proposed changes"
 msgid "Sign in to review proposed changes"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "What you would like to build"
+msgstr "Qué te gustaría construir"
+
 #: client/src/components/admin/MenuPanel.tsx
 msgid "The menu did not save."
 msgstr ""
@@ -20780,6 +20857,12 @@ msgctxt "admin compare"
 msgid "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
 msgstr "Puedes comparar hasta {MAX_COMPARE} a la vez. Desmarca una para añadir otra."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site"
+msgid "Learn about {villageName}"
+msgstr "Conoce {villageName}"
+
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
 msgstr ""
@@ -21424,6 +21507,12 @@ msgstr ""
 msgctxt "profile, door to the pay page"
 msgid "Your code"
 msgstr "Tu código"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: an optional field"
+msgid "(optional)"
+msgstr "(opcional)"
 
 #: client/src/components/roots/RootTags.tsx
 msgctxt "roots on a role or quest, the list's name"
@@ -22963,6 +23052,11 @@ msgctxt "circle hearth, we meet"
 msgid "{0} of us said we will be there."
 msgstr "{0} de nosotros dijimos que estaremos allí."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "A refresh usually brings it back."
+msgstr "Una recarga casi siempre la trae de vuelta."
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application know us"
 msgid "Tick the ones you have done"
@@ -23096,6 +23190,12 @@ msgstr "Listo"
 #~ msgctxt "terms commitment: the most the role pays at the chosen commitment"
 #~ msgid "{0} at this commitment"
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Añade un correo al que podamos escribirte."
 
 #: client/src/components/canvas/CanvasView.tsx
 #: client/src/components/companion/CompanionPanel.tsx
@@ -23244,6 +23344,13 @@ msgstr ""
 msgctxt "admin protocols editor"
 msgid "Move step {n} up"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the land"
+msgstr "Fotografías de la tierra"
 
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms setting"
@@ -23876,6 +23983,12 @@ msgstr "Proponer un rol nuevo"
 msgctxt "open proposal: the pay ask"
 msgid "Why this compensation"
 msgstr "Por qué esta compensación"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your name"
+msgstr "Tu nombre"
 
 #. placeholder {0}: NOUN_SLOTS[slot].one
 #: client/src/components/admin/VocabularyPanel.tsx
@@ -24520,6 +24633,12 @@ msgstr ""
 msgid "Back to the circle"
 msgstr "Volver al círculo"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "No account needed. It takes a minute."
+msgstr "No necesitas una cuenta. Toma un minuto."
+
 # needs-native-review: new words, 23 Nov 2026
 #. placeholder {0}: data.roles.length
 #. placeholder {1}: data.roles.reduce((n, r) => n + (r.own?.pct ?? 0), 0)
@@ -24542,6 +24661,11 @@ msgstr ""
 msgctxt "label of the closing policy choice"
 msgid "Which policy"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "Details for a bug report"
+msgstr "Detalles para un informe de error"
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgctxt "role draft carry"
@@ -25273,9 +25397,9 @@ msgid "Once you are approved into a role, you align with the village's confident
 msgstr "Cuando te aprueban para un rol, te alineas con el acuerdo de confidencialidad de la aldea (NDA) antes de ver cualquier registro confidencial."
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons eyebrow"
-msgid "What we tend together"
-msgstr "Lo que cuidamos juntos"
+#~ msgctxt "landing commons eyebrow"
+#~ msgid "What we tend together"
+#~ msgstr "Lo que cuidamos juntos"
 
 #. placeholder {0}: dayWords(mine.weekOf)
 #. placeholder {0}: dayWords(p.line.weekOf)
@@ -25420,6 +25544,12 @@ msgstr "Hablar en voz alta puede usar la voz en línea de tu navegador (Google o
 msgid "That could not be published"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add your name."
+msgstr "Escribe tu nombre."
+
 #: client/src/components/fireflyPath/ReviewPromises.tsx
 #: client/src/components/fireflyPath/StartConversation.tsx
 msgctxt "founding application review"
@@ -25542,6 +25672,12 @@ msgstr ""
 #~ msgid "The monthly amount you would ask"
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "A small stumble"
+msgstr "Un pequeño tropiezo"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
 msgid "Check your email"
@@ -25604,8 +25740,8 @@ msgid "Apply"
 msgstr ""
 
 #: client/src/components/ErrorBoundary.tsx
-msgid "Tap reload to get the new version."
-msgstr "Toca recargar para tener la versión nueva."
+#~ msgid "Tap reload to get the new version."
+#~ msgstr "Toca recargar para tener la versión nueva."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles"
@@ -26081,6 +26217,12 @@ msgstr ""
 #~ msgctxt "founding team: every open role's dated outcomes on one timeline"
 #~ msgid "The team's deliverables"
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "Your request is on its way"
+msgstr "Tu solicitud va en camino"
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -26901,6 +27043,12 @@ msgctxt "protocols page"
 msgid "Kept on your phone. It sends when you're back in signal."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "No se envió. Inténtalo de nuevo en unos minutos."
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "The protocols did not load. Check your signal and try again."
@@ -27361,6 +27509,11 @@ msgctxt "a button that downloads the workbook as a file"
 msgid "Save as Markdown"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "The site just grew"
+msgstr "El sitio acaba de crecer"
+
 #: client/src/pages/StewardJourney.tsx
 #~ msgctxt "steward front door"
 #~ msgid "See the quests"
@@ -27407,9 +27560,9 @@ msgid "Usual times: {windowList}"
 msgstr "Horarios habituales: {windowList}"
 
 #: client/src/components/ErrorBoundary.tsx
-msgctxt "update card: reload the page"
-msgid "Reload"
-msgstr "Recargar"
+#~ msgctxt "update card: reload the page"
+#~ msgid "Reload"
+#~ msgstr "Recargar"
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -27660,6 +27813,12 @@ msgstr "Compañero<0/>unido"
 msgctxt "time zone field"
 msgid "That did not save. Try again."
 msgstr "No se guardó. Inténtalo de nuevo."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen: the one button, reloads the page"
+msgid "Refresh the page"
+msgstr "Recarga la página"
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Proposing a change puts it to a village vote, and this village has not turned governance on yet. Whoever keeps the exit policy can change these words, so say what you would change to them."
@@ -28466,162 +28625,6 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site"
-msgid "Learn about {villageName}"
-msgstr "Conoce {villageName}"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Home.tsx
-msgctxt "landing hero second act: the village's main site, when it has no name yet"
-msgid "Learn about the village"
-msgstr "Conoce la aldea"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/mobile/MobileTabBar.tsx
-msgctxt "bottom tab bar"
-msgid "Roles"
-msgstr "Roles"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ComingSoonPanel.tsx
-msgctxt "an area the village has not filled yet: the eyebrow over its name"
-msgid "Coming soon"
-msgstr "Próximamente"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Places.tsx
-msgctxt "coming soon: the places and photographs pages"
-msgid "Photographs of the land"
-msgstr "Fotografías de la tierra"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Places.tsx
-msgctxt "coming soon: the places and photographs pages"
-msgid "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it."
-msgstr "Aquí se reunirán las fotografías de los lugares de la tierra a medida que los miembros las añadan, cada una con el nombre de quien la tomó."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Places.tsx
-msgctxt "coming soon: the places and photographs pages, the door meanwhile"
-msgid "Open the map"
-msgstr "Abrir el mapa"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Crowdpool.tsx
-msgctxt "coming soon: the crowdpool page"
-msgid "Pooling resources"
-msgstr "Juntar recursos"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/Crowdpool.tsx
-msgctxt "coming soon: the crowdpool page"
-msgid "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it."
-msgstr "Cuando la aldea abra su primera recaudación, su anillo aparecerá aquí, y podrás ver lo que aún necesita y aportar."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: a field to fix"
-msgid "Add your name."
-msgstr "Escribe tu nombre."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: a field to fix"
-msgid "Add an email address we can write to."
-msgstr "Añade un correo al que podamos escribirte."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: a field to fix"
-msgid "Say what you would like to build."
-msgstr "Cuéntanos qué te gustaría construir."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: a field to fix"
-msgid "Keep the note under 2,000 characters."
-msgstr "Mantén la nota por debajo de 2.000 caracteres."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: sent"
-msgid "Your request is on its way"
-msgstr "Tu solicitud va en camino"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: sent"
-msgid "The people who look after new businesses here read every request. We will write to the email you gave."
-msgstr "Quienes cuidan los nuevos negocios aquí leen cada solicitud. Te escribiremos al correo que nos diste."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: an optional field"
-msgid "(optional)"
-msgstr "(opcional)"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form"
-msgid "No account needed. It takes a minute."
-msgstr "No necesitas una cuenta. Toma un minuto."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: the list of fields to fix"
-msgid "A few things to fix before it can go:"
-msgstr "Faltan algunos detalles antes de enviarla:"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form"
-msgid "Your name"
-msgstr "Tu nombre"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form"
-msgid "Your email"
-msgstr "Tu correo"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form"
-msgid "What you would like to build"
-msgstr "Qué te gustaría construir"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: the build field's hint"
-msgid "A business, a service, a craft: a few lines is plenty."
-msgstr "Un negocio, un servicio, un oficio: bastan unas líneas."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: the optional note"
-msgid "Anything else"
-msgstr "Algo más"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: sending failed"
-msgid "That didn't send. Try again in a few minutes."
-msgstr "No se envió. Inténtalo de nuevo en unos minutos."
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: the button while it sends"
-msgid "Sending"
-msgstr "Enviando"
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/prosperity/PacketRequestForm.tsx
-msgctxt "prosperity packet form: the button"
-msgid "Send my request"
-msgstr "Enviar mi solicitud"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/pages/Home.tsx
