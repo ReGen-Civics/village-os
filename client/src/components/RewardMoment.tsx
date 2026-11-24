@@ -36,6 +36,7 @@ import { holdFloor } from "@/lib/onceDialogs";
 import { formatMoney } from "@shared/money";
 import type { RewardMomentView } from "@shared/rewardMoment";
 import { rewardAnnouncement, rewardHeadline, rewardSentence } from "@/lib/rewardMoment";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const GOLD = "var(--reward-gold, #f3d891)";
 const GOLD_INK = "var(--reward-gold-ink, #e3c26f)";
@@ -64,6 +65,7 @@ async function send(path: string, init?: RequestInit): Promise<any> {
 }
 
 export default function RewardMoment() {
+  const { t } = useLingui();
   const [view, setView] = useState<RewardMomentView | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
@@ -144,7 +146,7 @@ export default function RewardMoment() {
           ref={closeRef}
           type="button"
           onClick={close}
-          aria-label="Close"
+          aria-label={t({ message: "Close", context: "RewardMoment, aria-label" })}
           className="absolute right-2 top-2 rounded-full p-2 pointer-coarse:min-h-11 pointer-coarse:min-w-11"
           style={{ color: MIST }}
         >
@@ -152,7 +154,7 @@ export default function RewardMoment() {
         </button>
 
         <p className="relative text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
-          Just landed
+          <Trans context="RewardMoment, p">Just landed</Trans>
         </p>
 
         <div
@@ -209,7 +211,7 @@ export default function RewardMoment() {
           className="relative mt-6 min-h-11 rounded-2xl px-7 text-base font-semibold"
           style={{ background: "var(--reward-button, #d9b45a)", color: "var(--reward-button-ink, #1a1408)" }}
         >
-          Thank you
+          <Trans context="RewardMoment, button">Thank you</Trans>
         </button>
       </div>
     </div>

@@ -10209,10 +10209,11 @@ msgctxt "founding application"
 msgid "Apply for a different role"
 msgstr "Postular a otro rol"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/NotificationBell.tsx
 msgctxt "notification bell"
 msgid "Waits on you"
-msgstr ""
+msgstr "Espera por usted"
 
 #. placeholder {0}: data.pct
 #. placeholder {1}: moneyWords(r.atCommitment, r.full.currency)
@@ -11964,10 +11965,11 @@ msgctxt "hidden map, logging a place"
 msgid "About 1 km"
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
 msgctxt "config card: ask the server again"
 msgid "Try again"
-msgstr ""
+msgstr "Intentar de nuevo"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/KnowUsWays.tsx
@@ -15795,9 +15797,10 @@ msgctxt "launch guide tab"
 msgid "Organizing"
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
 msgid "We couldn't reach the village just now"
-msgstr ""
+msgstr "No pudimos comunicarnos con la aldea en este momento"
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing this village means"
@@ -20065,9 +20068,10 @@ msgstr "Hasta ahora hemos alcanzado {reached} de {total} metas."
 msgid "This block's public line is hidden for now."
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
 msgid "Check your connection, then try again."
-msgstr ""
+msgstr "Revise su conexión y vuelva a intentarlo."
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -22754,10 +22758,11 @@ msgctxt "a suggestion is being adopted"
 msgid "Adopting"
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
 msgctxt "config card: asking the server again"
 msgid "Trying again..."
-msgstr ""
+msgstr "Intentando de nuevo..."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season."
@@ -28744,3 +28749,321 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, p"
+msgid "{0} has turned"
+msgstr "{0} ha cambiado"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, button"
+msgid "Mark all read"
+msgstr "Marcar todo como leído"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, a"
+msgid "Main Website"
+msgstr "Sitio principal"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner"
+msgid "Publishing your first real {noun} clears them for good."
+msgstr "Cuando publique su primer {noun} real, desaparecen para siempre."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Pooling Resources"
+msgstr "Recursos en común"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, a"
+msgid "Events"
+msgstr "Eventos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Game Mechanics"
+msgstr "Cómo funciona el juego"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Leaving Well"
+msgstr "Salir bien"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, aria-label"
+msgid "Notifications"
+msgstr "Avisos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Your Journey"
+msgstr "Su camino"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, aria-label"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Report a Bug / Share an Idea"
+msgstr "Reportar un error o compartir una idea"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Resources"
+msgstr "Recursos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, p"
+msgid "What you earned, what you carried and your badges, on one card you can share."
+msgstr "Lo que ganó, lo que sostuvo y sus insignias, en una tarjeta que puede compartir."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Close shortcuts"
+msgstr "Cerrar atajos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Health"
+msgstr "Salud de la aldea"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "notification bell: an unread row"
+msgid "New"
+msgstr "Nuevo"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, p"
+msgid "Just landed"
+msgstr "Recién llegado"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "Newest {0}"
+msgstr "Lo más reciente: {0}"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Open shortcuts"
+msgstr "Abrir atajos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Circles"
+msgstr "Círculos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, p"
+msgid "Reading the village."
+msgstr "Leyendo la aldea."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, aria-label"
+msgid "Home"
+msgstr "Inicio"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner, one example"
+msgid "Nobody here made it. It shows what this module is for, and nothing you do to it takes effect."
+msgstr "Nadie aquí lo hizo. Muestra para qué sirve este módulo, y nada de lo que haga con él tiene efecto."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, p"
+msgid "Nothing yet. Go be seen."
+msgstr "Nada todavía. Salga y déjese ver."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, p"
+msgid "This is a standing example."
+msgstr "Este es un ejemplo permanente."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Quest Board"
+msgstr "Tablero de misiones"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, Link"
+msgid "See my season"
+msgstr "Ver mi temporada"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Places, Photographed"
+msgstr "Lugares, en fotos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, span"
+msgid "preview"
+msgstr "vista previa"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Tools"
+msgstr "Herramientas de la aldea"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "{0} unread"
+msgstr "{0} sin leer"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Governance"
+msgstr "Gobernanza"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Shortcuts"
+msgstr "Atajos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Review Queue"
+msgstr "Cola de revisión"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, span"
+msgid "example"
+msgstr "ejemplo"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Connect"
+msgstr "Contacto"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationToasts.tsx
+msgctxt "NotificationToasts, aria-label"
+msgid "Dismiss this"
+msgstr "Descartar"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, p"
+msgid "© {0}{1} All rights reserved."
+msgstr "© {0}{1} Todos los derechos reservados."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner, several examples"
+msgid "Nobody here made them. They show what this module is for, and nothing you do to one takes effect."
+msgstr "Nadie aquí los hizo. Muestran para qué sirve este módulo, y nada de lo que haga con uno tiene efecto."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, aria-label"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, p"
+msgid "These are standing examples."
+msgstr "Estos son ejemplos permanentes."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "{tokenName} Wall"
+msgstr "Muro de {tokenName}"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, Link"
+msgid "<0/>Choose what reaches you, and how"
+msgstr "<0/>Elija qué le llega y cómo"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, button"
+msgid "Thank you"
+msgstr "Gracias"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "My Village Profile"
+msgstr "Mi perfil en la aldea"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Stay With Us"
+msgstr "Hospédese con nosotros"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Roles & Leadership"
+msgstr "Roles y liderazgo"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, aria-label"
+msgid "{villageName} home"
+msgstr "Inicio de {villageName}"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "Notifications"
+msgstr "Avisos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Contribute"
+msgstr "Contribuir"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Network"
+msgstr "Red de aldeas"
