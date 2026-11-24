@@ -142,17 +142,22 @@ function RelatedRolesField({ value, roles, onChange }: { value: string[]; roles:
             const role = nameOf(id);
             return (
               <li key={id} className="flex flex-wrap items-center gap-2" data-editor-related-role={id}>
-                <span className="w-6 text-sm text-muted-foreground">{i + 1}</span>
-                <span className="min-w-0 flex-1 break-words text-sm text-foreground">{role}</span>
-                <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} up`, context: "role editor: related roles" })} disabled={i === 0} onClick={() => move(i, -1)}>
-                  <ArrowUp className="size-4" />
-                </button>
-                <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} down`, context: "role editor: related roles" })} disabled={i === value.length - 1} onClick={() => move(i, 1)}>
-                  <ArrowDown className="size-4" />
-                </button>
-                <button type="button" className={SECONDARY} aria-label={t({ message: `Remove ${role}`, context: "role editor: related roles" })} onClick={() => onChange(value.filter((x) => x !== id))}>
-                  <Trash2 className="size-4" />
-                </button>
+                {/* The name keeps a readable width; on a phone the three buttons wrap under it. */}
+                <span className="flex min-w-0 grow basis-48 items-center gap-2">
+                  <span className="w-6 shrink-0 text-sm text-muted-foreground">{i + 1}</span>
+                  <span className="min-w-0 break-words text-sm text-foreground">{role}</span>
+                </span>
+                <span className="flex gap-2">
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} up`, context: "role editor: related roles" })} disabled={i === 0} onClick={() => move(i, -1)}>
+                    <ArrowUp className="size-4" />
+                  </button>
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} down`, context: "role editor: related roles" })} disabled={i === value.length - 1} onClick={() => move(i, 1)}>
+                    <ArrowDown className="size-4" />
+                  </button>
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Remove ${role}`, context: "role editor: related roles" })} onClick={() => onChange(value.filter((x) => x !== id))}>
+                    <Trash2 className="size-4" />
+                  </button>
+                </span>
               </li>
             );
           })}
