@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { contrastRatio, deriveTheme, GAME_TOKENS, LIGHT_STATUS_INKS, OVERRIDE_SLOTS, sanitizeGameTokens, sanitizeOverrides } from "../../shared/brandTokens";
 import { buildThemeCss, darkScheme, installBackground, installThemeColour, withScheme } from "./themeCss";
+import { MODE_PALETTE } from "../../shared/modePalette";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -47,9 +48,13 @@ describe("a village that sets neither mode nor overrides", () => {
   it("leaves the shell and the install manifest exactly as they were", () => {
     const shell = '<html lang="en"><meta name="theme-color" content="#0d1411" /><style>html{background-color:#0d1411;color-scheme:dark}</style>';
     expect(withScheme(shell, darkScheme({ seed: "#16342a", character: "woven" }))).toBe(shell);
-    expect(installBackground({ seed: "#16342a" })).toBe("#ffffff");
-    expect(installThemeColour({ seed: "#16342a" })).toBe(buildThemeCss({ seed: "#16342a" }).match(/--tone-brand: (#[0-9a-f]{6})/)![1]);
-    expect(installBackground(null)).toBe("#ffffff");
+    // A light village installs onto light mode's ground and band, the default a first visit opens in.
+    expect(installBackground({ seed: "#16342a" })).toBe(MODE_PALETTE.dayGround);
+    expect(installThemeColour({ seed: "#16342a" })).toBe(MODE_PALETTE.dayBand);
+    expect(installBackground(null)).toBe(MODE_PALETTE.dayGround);
+    // A village's own day palette wins.
+    expect(installBackground({ seed: "#16342a", tokens: { "day-ground": "#fafafa", "day-band": "#eeeeee" } })).toBe("#fafafa");
+    expect(installThemeColour({ seed: "#16342a", tokens: { "day-ground": "#fafafa", "day-band": "#eeeeee" } })).toBe("#eeeeee");
   });
 });
 
