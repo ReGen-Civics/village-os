@@ -87,6 +87,8 @@ const PAGES = [
   "client/src/pages/VerifyEmail.tsx",
   "client/src/pages/SetPassword.tsx",
   "client/src/pages/Register.tsx",
+  "client/src/pages/Login.tsx",
+  "client/src/pages/ForgotPassword.tsx",
   "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",

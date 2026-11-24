@@ -109,7 +109,9 @@ describe("Login", () => {
     renderLogin();
     const createAccount = screen.getByRole("link", { name: /create an account/i });
     const classes = createAccount.className.split(/\s+/);
-    expect(classes).toContain("text-amber-ink");
+    // Since the public launch QA (24 Nov 2026) the page stands in the sheet's night world and the
+    // link is the sheet's second act (look.ts BTN_SECONDARY): moonlight ink on the night panel.
+    expect(classes).toContain("text-foreground");
     expect(classes).not.toContain("text-amber");
   });
 });

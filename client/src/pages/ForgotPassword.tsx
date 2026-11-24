@@ -3,6 +3,7 @@ import { useState } from "react";
 import { m } from "framer-motion";
 import { Mail, CheckCircle2 } from "lucide-react";
 import { failureWords } from "@/lib/failureWords";
+import { BTN_PRIMARY, CARD, FIELD, LABEL, LINK, WORLD } from "@/components/journey/look";
 
 /**
  * Account recovery, member-side. The server answers identically whether or
@@ -43,29 +44,29 @@ export default function ForgotPassword() {
 
   return (
     <Layout>
-      <section className="py-24 bg-gradient-to-b from-teal/10 to-background min-h-[70vh]">
+      <section className={`${WORLD} py-24`}>
         <div className="container">
           <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-md mx-auto bg-card border border-border rounded-2xl shadow-sm p-8"
+            className={`${CARD} max-w-md mx-auto`}
           >
             {sent ? (
               <div className="text-center">
-                <CheckCircle2 className="w-12 h-12 text-teal-deep mx-auto mb-4" />
+                <CheckCircle2 className="w-12 h-12 text-open mx-auto mb-4" aria-hidden="true" />
                 <h1 className="font-display text-2xl font-bold text-foreground mb-2">Check your email</h1>
                 <p className="text-muted-foreground">
                   If an account exists for that address, a link to set a new password is on its
                   way. It expires in an hour and works once.
                 </p>
-                <a href={signIn} className="inline-block mt-6 text-teal-deep font-semibold hover:underline">
+                <a href={signIn} className={`${LINK} mt-6 inline-flex min-h-11 items-center`}>
                   Back to sign in
                 </a>
               </div>
             ) : (
               <>
                 <div className="text-center mb-6">
-                  <Mail className="w-12 h-12 text-teal-deep mx-auto mb-4" />
+                  <Mail className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
                   <h1 className="font-display text-2xl font-bold text-foreground mb-2">
                     Set a new password
                   </h1>
@@ -75,7 +76,7 @@ export default function ForgotPassword() {
                 </div>
                 <form onSubmit={submit} className="space-y-4">
                   <div>
-                    <label htmlFor="forgot-email" className="block text-sm font-medium text-foreground mb-2">
+                    <label htmlFor="forgot-email" className={`${LABEL} mb-2 block`}>
                       Email
                     </label>
                     <input
@@ -86,25 +87,25 @@ export default function ForgotPassword() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                      className={`${FIELD} w-full px-4 py-3`}
                       required
                     />
                   </div>
                   {error && (
-                    <p role="alert" className="text-sm text-red-600">
+                    <p role="alert" className="text-sm text-destructive">
                       {error}
                     </p>
                   )}
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full bg-teal-deep text-white font-semibold py-3 rounded-lg hover:bg-teal-deep-dark hover:shadow-lg transition-[background-color,box-shadow] disabled:opacity-50"
+                    className={`${BTN_PRIMARY} w-full py-3`}
                   >
                     {busy ? "Sending…" : "Send the link"}
                   </button>
                 </form>
                 <div className="mt-6 text-center">
-                  <a href={signIn} className="text-sm text-teal-deep hover:underline">
+                  <a href={signIn} className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
                     Back to sign in
                   </a>
                 </div>

@@ -93,7 +93,7 @@ export default function GoogleSignInButton({ next, label, invite }: Props) {
       */}
       <a
         href={href}
-        className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border border-border rounded-lg font-semibold text-foreground hover:shadow-md transition-shadow"
+        className="jw-btn w-full flex min-h-11 items-center justify-center gap-3 px-6 py-3 bg-card border border-border rounded-lg font-semibold text-foreground hover:bg-muted"
       >
         <GoogleMark />
         {label ?? "Continue with Google"}
