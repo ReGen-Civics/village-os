@@ -512,6 +512,10 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
   keptValidFor(hours: number): string;
   statusSubject: string;
   statusText(link: string, replyPromise: string): string;
+  /** The button in the confirmation email's HTML part (server/lib/letterHtml.ts). The link stays in the text as well. */
+  confirmButton: string;
+  /** The button in the status email's HTML part. */
+  statusButton: string;
 }> = {
   en: {
     subject: (v) => `Confirm your application to ${v}`,
@@ -521,6 +525,8 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     keptValidFor: (h) => `The link works for ${h} hours. If you didn't apply, you can ignore this email.`,
     statusSubject: "Where your application is",
     statusText: (link, promise) => `Your application is with us. Follow where it is, who acts next and by when:\n\n${link}\n\n${promise} Keep this link to yourself: it is how we know it is you.`,
+    confirmButton: "Confirm it's me",
+    statusButton: "Follow your application",
   },
   es: {
     subject: (v) => `Confirma tu solicitud a ${v}`,
@@ -530,6 +536,8 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     keptValidFor: (h) => `El enlace funciona durante ${h} horas. Si no postulaste, puedes ignorar este correo.`,
     statusSubject: "Dónde está tu solicitud",
     statusText: (link, promise) => `Tu solicitud está con nosotros. Sigue dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarda este enlace para ti: es la forma en que sabemos que eres tú.`,
+    confirmButton: "Confirmar que soy yo", // needs-native-review
+    statusButton: "Seguir tu solicitud", // needs-native-review
   },
 };
 

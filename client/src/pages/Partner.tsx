@@ -15,6 +15,7 @@ import { useState } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
+import { useThanksInView } from "@/lib/thanksInView";
 import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, TICK, WORLD } from "@/components/journey/look";
 import { sendProposal } from "@/lib/proposals";
 import ContributorRoutes, { useReplyPromise, useRouteWords } from "@/components/ContributorRoutes";
@@ -38,6 +39,8 @@ export default function Partner() {
   const [form, setForm] = useState<PartnerProposal>(EMPTY);
   const [hp, setHp] = useState(""); // honeypot: real people never fill this
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
+  // On a phone the thank-you would open scrolled past its own end (lib/thanksInView.ts).
+  const thanks = useThanksInView(state === "sent");
   const [tried, setTried] = useState(false);
   const [sendFailed, setSendFailed] = useState(false);
   // Once a send has been tried, the list follows the form as it is fixed.
@@ -92,7 +95,7 @@ export default function Partner() {
           <div className="container grid max-w-3xl gap-8">
             <div className={`${CARD} grid gap-4`} role="status" data-partner-sent="">
               <CheckCircle2 className="size-10 text-notice" aria-hidden="true" />
-              <h1 className="font-display text-3xl text-foreground">{t({ message: "Your proposal is with us", context: "partner form: sent" })}</h1>
+              <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl text-foreground focus:outline-none">{t({ message: "Your proposal is with us", context: "partner form: sent" })}</h1>
               <p className={LEDE}>{t({ message: "The people who hold partnerships read every proposal. We write to the email you gave.", context: "partner form: sent" })}</p>
               <p className="font-semibold text-foreground" data-route-promise="">{promise}</p>
             </div>
