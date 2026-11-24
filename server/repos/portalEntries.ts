@@ -53,10 +53,11 @@ const rowOf = (r: RowDataPacket): PortalEntry => ({
   syncedAt: r.synced_at == null ? null : new Date(r.synced_at).toISOString(),
   syncError: r.sync_error == null ? null : String(r.sync_error),
   verifiedAt: r.verified_at == null ? null : new Date(r.verified_at).toISOString(),
+  invited: r.invite_id != null,
   codeRequired: Number(r.code_required) === 1,
 });
 
-const LIST_COLUMNS = "id, name, email, whatsapp, link, updates, next_path, locale, human, created_at, interest, synced_at, sync_error, verified_at, code_required";
+const LIST_COLUMNS = "id, name, email, whatsapp, link, updates, next_path, locale, human, created_at, interest, synced_at, sync_error, verified_at, code_required, invite_id";
 
 /** The newest entries first, tests left out. `updatesOnly` is the list of people who asked for updates; `interest` narrows to one answer. */
 export async function listPortalEntries(db: Pool, opts: { limit: number; updatesOnly?: boolean; interest?: Interest | null }): Promise<PortalEntry[]> {
@@ -215,4 +216,9 @@ export async function entryLook(db: Pool, id: string): Promise<EntryLook | null>
 /** The address is proved: the time, and the account it already had, if any. */
 export async function markEntryVerified(db: Pool, id: string, at: Date, userId: string | null): Promise<void> {
   await db.query("UPDATE portal_entries SET verified_at = COALESCE(verified_at, ?), user_id = COALESCE(?, user_id) WHERE id = ?", [at, userId, id]);
+}
+
+/** "Invite to join": the invitation made for this entry, recorded against it. */
+export async function markEntryInvited(db: Pool, id: string, inviteId: string): Promise<void> {
+  await db.query("UPDATE portal_entries SET invite_id = ? WHERE id = ?", [inviteId, id]);
 }

@@ -279,6 +279,10 @@ export interface EntranceStatus {
   eventPass?: string | null;
   /** True when this device passed by its entry alone (not a member, an agent or our automation): its page views are kept. */
   visitor?: boolean;
+  /** Who the privacy line names for seeing or deleting what is kept (dial `entrance.privacy_contact`); "" means the village's contact address. */
+  privacyContact?: string;
+  /** Whether entering sends a code (the village can send email), so the privacy line says so. */
+  codes?: boolean;
   /** The short look and its code, while this device's entry has one; null otherwise. */
   look?: LookStatus | null;
 }
@@ -304,6 +308,8 @@ export interface PortalEntry {
   journey?: VisitorJourney;
   /** When the visitor proved they read the address (the code or Google), or null. */
   verifiedAt?: string | null;
+  /** Whether an admin has made an invitation for this visitor ("Invite to join"). */
+  invited?: boolean;
   /** Whether the entry asked for a code at all (made while the village could send email). */
   codeRequired?: boolean;
   /** The pages they opened after entering, newest first (Admin only). */

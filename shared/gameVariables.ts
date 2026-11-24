@@ -2893,6 +2893,16 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    key: "entrance.privacy_contact",
+    category: "The village's people",
+    label: "Portal entrance: who to write to about what is kept",
+    description:
+      "The email address the entrance's privacy line names, for a visitor who wants to see what is kept about them or have it deleted. Leave it blank to name the village's contact address.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
     key: "entrance.look_minutes",
     category: "The village's people",
     label: "Portal entrance: minutes to look around before the code",

@@ -60802,18 +60802,6 @@ msgstr "¿Quisiste decir"
 
 #: client/src/pages/Entrance.tsx
 #, needs-native-review
-msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened, the code by email and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. We email you a 6-digit code to confirm your address. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Te enviamos por correo un código de 6 dígitos para confirmar tu dirección. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened, the code by email and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. We email you a 6-digit code to confirm your address. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Te enviamos por correo un código de 6 dígitos para confirmar tu dirección. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
 msgctxt "portal entrance: told up front that a code was emailed, before the keep-in-touch question"
 msgid "We have sent a 6-digit code to {sentTo}. Have a look around. You will need the code to keep exploring."
 msgstr "Enviamos un código de 6 dígitos a {sentTo}. Echa un vistazo. Necesitarás el código para seguir explorando."
@@ -60907,3 +60895,57 @@ msgstr "Sin verificar"
 msgctxt "admin portal visitors: entered while no code could be sent"
 msgid "Not checked"
 msgstr "Sin comprobar"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
+msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+msgstr "Hola; guardamos lo que escribes aquí - para que quede guardado para ti - y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, the code by email, shown only while the village sends codes"
+msgid "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+msgstr "Te enviamos un código por correo para confirmar tu dirección - lo necesitas si quieres avanzar en el proceso y seguir en contacto."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, the email list"
+msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
+msgstr "Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact"
+msgid "To see it or have it deleted, write to {contact}."
+msgstr "Para verlo o pedir que lo borremos, escribe a {contact}."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, how to see or delete it, when the village has no contact address"
+msgid "To see it or have it deleted, ask anyone at the village."
+msgstr "Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: invite to join done"
+msgid "An invitation for {0} is ready. Copy the link and send it to them yourself: nothing has been emailed."
+msgstr "La invitación para {0} está lista. Copia el enlace y envíaselo tú: no se ha enviado ningún correo."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: a second invitation link"
+msgid "Invite again"
+msgstr "Invitar de nuevo"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: make an invitation link for a verified visitor"
+msgid "Invite to join"
+msgstr "Invitar a unirse"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the link just made"
+msgid "Invitation link, to copy"
+msgstr "Enlace de invitación, para copiar"

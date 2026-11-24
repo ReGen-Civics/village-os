@@ -46,7 +46,7 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
     app.use(express.json());
     register(app, {
       getPool: () => pool,
-      authedUser: async () => (member ? { id: "u-member" } : null),
+      authedUser: async () => (member ? { id: "u-member", tokenVersion: 0 } : null),
       boolVar: (k) => k === "entrance.required",
       stringVar: () => "",
       numberVar: (k) => (k === "entrance.views_keep_days" ? 30 : 0),
@@ -326,5 +326,36 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
     expect(row.human).toBe("google");
     expect(row.verified_at).not.toBeNull();
     expect(Number(row.code_required)).toBe(0);
+  });
+
+  it("tells the entrance who the privacy line names and whether a code is sent", async () => {
+    mailOn = true;
+    const st = (await (await call("/api/entrance")).json()) as { privacyContact: string; codes: boolean };
+    expect(st).toMatchObject({ privacyContact: "", codes: true });
+    mailOn = false;
+  });
+
+  it("invites a verified visitor with no account by the platform's own link, shown once and kept nowhere", async () => {
+    await read("INSERT INTO users (id, name, email, password_hash) VALUES ('u-member', 'Steward Test', 'steward@example.test', 'x')");
+    member = true;
+    canModerate = true;
+    const list = (await (await call("/api/admin/entrance/entries")).json()) as { entries: any[] };
+    const verified = list.entries.find((e) => e.email === "gee@example.org");
+    const unverified = list.entries.find((e) => e.email === "slow@example.org");
+    const withAccount = list.entries.find((e) => e.email === "member@example.org");
+    expect((await call(`/api/admin/entrance/entries/${unverified.id}/invite`, { method: "POST" })).status).toBe(409);
+    expect((await call(`/api/admin/entrance/entries/${withAccount.id}/invite`, { method: "POST" })).status).toBe(409);
+    const made = await call(`/api/admin/entrance/entries/${verified.id}/invite`, { method: "POST" });
+    expect(made.status).toBe(200);
+    const body = (await made.json()) as { path: string; expiresInDays: number };
+    expect(body.path).toMatch(/invite/);
+    expect(body.expiresInDays).toBe(14);
+    const after = (await (await call("/api/admin/entrance/entries")).json()) as { entries: any[] };
+    expect(after.entries.find((e) => e.email === "gee@example.org").invited).toBe(true);
+    // The link is the platform's own: kept only as a hash, made on the steward's vouch.
+    const rows = await read("SELECT inviter_user_id FROM member_invites");
+    expect(rows.map((r) => r.inviter_user_id)).toEqual(["u-member"]);
+    expect(JSON.stringify(after)).not.toContain(body.path.split("=").pop());
+    member = false;
   });
 });

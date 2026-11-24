@@ -15,6 +15,9 @@
  *                                               who asked for updates)
  *   GET    /api/admin/entrance/entries.csv      the same, as a spreadsheet
  *   DELETE /api/admin/entrance/entries?email=   forget one person's entries, on their request
+ *   POST   /api/admin/entrance/entries/:id/invite  "Invite to join": the platform's own invitation link
+ *                                               for a verified visitor with no account, shown once to
+ *                                               copy; nothing is emailed
  *
  * `register` installs the gate as well, in front of every later route, which is why it is called
  * right after the people lock in server/index.ts.
@@ -44,7 +47,9 @@ import { ensureContact } from "../lib/comms/contacts";
 import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import { registerJob } from "../lib/scheduler";
-import { entryLook, markEntryVerified, type EntryLook } from "../repos/portalEntries";
+import { entryLook, markEntryInvited, markEntryVerified, type EntryLook } from "../repos/portalEntries";
+import { makeInvite } from "./invites";
+import { INVITE_DAYS, invitePath } from "../lib/invites";
 import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, sweepPortalViews, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
 import { csvCell } from "./commsPeople";
@@ -165,7 +170,8 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       const e = id ? await entryLook(deps.getPool(), id) : null;
       if (e && e.codeRequired && !e.verified) look = { needsCode: true, startedAt: e.createdAt, pages: e.views, lookMs: lookMs(), lookPages: lookPages(), sentTo: e.email };
     }
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look };
+    const privacyContact = deps.stringVar("entrance.privacy_contact").trim();
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look, privacyContact, codes: deps.mail.ready() };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });
@@ -449,6 +455,26 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     await deletePortalCodesFor(deps.getPool(), key);
     const removed = await deletePortalEntriesFor(deps.getPool(), key);
     res.json({ ok: true, removed, ...(listProblem ? { listProblem } : {}) });
+  });
+
+  // "Invite to join" (the lead, 24 Nov 2026: visitors hold no accounts; one click makes them a member's
+  // invitation). The platform's own link, made on the admin's own vouch exactly as POST /api/invites
+  // makes it, recorded against the entry, and shown once for the admin to copy and send themselves.
+  app.post("/api/admin/entrance/entries/:id/invite", async (req, res) => {
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    if (!(await guardCapability(req, res, "member.vouch"))) return;
+    const user = await deps.authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required" });
+    const entry = await portalEntryById(deps.getPool(), String(req.params.id ?? ""));
+    if (!entry || entry.isTest) return res.status(404).json({ error: "not_found", message: "There is no visitor by that entry." });
+    if (!entry.verifiedAt) return res.status(409).json({ error: "not_verified", message: "Only a visitor whose address is verified can be invited." });
+    if (await deps.accounts.byEmail(entry.email).catch(() => null)) {
+      return res.status(409).json({ error: "has_account", message: "This address already has an account. Use Make member instead." });
+    }
+    const made = await makeInvite(deps.getPool(), String(user.id), Number(user.tokenVersion ?? 0));
+    if (!made.ok) return res.status(made.status).json({ error: made.error, message: made.error });
+    await markEntryInvited(deps.getPool(), entry.id, made.id);
+    res.json({ ok: true, path: invitePath(made.token), expiresInDays: INVITE_DAYS });
   });
 
   // Send everyone who asked for updates and has not reached the email list yet (a first setup, or a failed call).

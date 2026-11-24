@@ -4,12 +4,14 @@
 -- THE CONTRACT IS shared/entrance.ts; the SQL is server/repos/portalEntries.ts and
 -- server/repos/portalCodes.ts, and the routes sit in server/routes/entrance.ts.
 --
--- On `portal_entries`, three new columns:
+-- On `portal_entries`, four new columns:
 --   code_required  1 when the entry was made while the village could send email, so its visitor has
 --                  a short look and then needs the code; 0 for an entry made without a mail provider,
 --                  a release smoke's entry, or one made from Google (already verified)
 --   user_id        the account this address already had, when there was one, or NULL
 --   verified_at    when the visitor proved they read the address (the code, or Google), or NULL
+--   invite_id      the invitation an admin made for this verified visitor ("Invite to join"), or NULL;
+--                  the link itself is shown once to the admin and never kept
 --
 -- `portal_codes`, one row per code sent:
 --   id          `pc-` and 20 hex characters
@@ -22,13 +24,14 @@
 --   used_at     when a correct code was taken, or NULL; a used code never works again
 --   created_at  when it was sent, from Node's clock
 --
--- PRIVATE, read only by the entrance's own routes. EXPAND ONLY: three new columns the previous
+-- PRIVATE, read only by the entrance's own routes. EXPAND ONLY: four new columns the previous
 -- release never names (it writes portal_entries with an INSERT that names its own columns, so the
 -- DEFAULT applies), and a new table.
 ALTER TABLE `portal_entries`
   ADD COLUMN `code_required` tinyint(1) NOT NULL DEFAULT 0,
   ADD COLUMN `user_id` varchar(64) NULL,
-  ADD COLUMN `verified_at` timestamp(3) NULL;
+  ADD COLUMN `verified_at` timestamp(3) NULL,
+  ADD COLUMN `invite_id` varchar(64) NULL;
 CREATE TABLE IF NOT EXISTS `portal_codes` (
   `id` varchar(32) NOT NULL,
   `entry_id` varchar(32) NOT NULL,
