@@ -1940,6 +1940,128 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * LIVING MOTION (motion lane, 24 Nov 2026): the platform's motion vocabulary,
+ * drawn from how living things grow. The lane's prototype holds every movement
+ * in both modes with its still form; this block is the foundation and the
+ * first two movements.
+ *
+ * THE TOKENS. Every motion reads these, so a village can re-tune its pace in
+ * one place. --m-ease is the brand ease; --m-ease-sprout is a living overshoot
+ * of about four percent, for leaves and buds only; --m-ease-sway is for loops,
+ * so they never visibly start or stop. Nothing arriving travels further than
+ * --m-rise, because small travel is what keeps motion from causing nausea.
+ *
+ * GERMINATE (.m-germ): a card or section coming into frame rises a little and
+ * grows into place. It is tied to SCROLL POSITION, through a view timeline,
+ * never to a timer, so:
+ *   - anything already on screen at load is at rest: the hero and everything
+ *     above the fold are never animated;
+ *   - a fast scroll never finds a blank, because the frame is a function of
+ *     where the card is, and it starts at 40% opacity, never at nothing;
+ *   - it costs no script at all. A browser without view timelines (Firefox
+ *     today) skips the @supports block and shows the card at rest, as does
+ *     "reduce motion", as does a page whose scripts failed.
+ * Put it on a WRAPPER (the <li>, the row), never on the card that carries a
+ * hover lift: it animates the individual translate and scale properties and
+ * holds them while in effect, which would pin a lift on the same element.
+ * The range ends 140px into the entry, so a card whose top is 140px inside
+ * the viewport is finished whatever its height: a tall card never reads faded.
+ * The viewport here is the one the html element's scroll-padding leaves (the
+ * phone tab bar's height, above), because view-timeline-inset defaults to it:
+ * on a phone a card starts growing as it clears the tab bar, never behind it.
+ * Measured in Chromium at 390px: 95% opacity 67px above the bar, whole by 130px.
+ *
+ * TOUCH (.m-touch): one hover and press language for cards and doors. Hover
+ * lifts 2px with a soft shadow (only where a pointer can hover); a press sinks
+ * 1px and a pool of light spreads from the exact point of touch, the way a
+ * stone answers on still water (lib/touchLight.ts sets the point). Focus rings
+ * are never animated. It uses ::before, because the coarse-pointer tap target
+ * above owns ::after on links and buttons.
+ *
+ * Only translate, scale and opacity move. All of it sits inside
+ * prefers-reduced-motion: no-preference, under the global rule above.
+ * client/src/lib/livingMotion.test.ts holds those promises.
+ */
+:root {
+  --m-touch: 140ms;
+  --m-settle: 420ms;
+  --m-grow: 900ms;
+  --m-bloom: 1600ms;
+  --m-breath: 7s;
+  --m-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --m-ease-sprout: cubic-bezier(0.3, 1.25, 0.5, 1);
+  --m-ease-sway: cubic-bezier(0.45, 0, 0.55, 1);
+  --m-rise: 14px;
+}
+@keyframes m-germinate {
+  from {
+    opacity: 0.4;
+    translate: 0 var(--m-rise);
+    scale: 0.985;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+    scale: none;
+  }
+}
+@keyframes m-touch-light {
+  from { opacity: 1; scale: 0.96; }
+  to { opacity: 0; scale: 1; }
+}
+@keyframes m-touch-relight {
+  from { opacity: 1; scale: 0.96; }
+  to { opacity: 0; scale: 1; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .m-germ {
+      animation: m-germinate linear both;
+      animation-timing-function: var(--m-ease);
+      animation-timeline: view();
+      animation-range: entry 0% entry 140px;
+    }
+  }
+}
+.m-touch {
+  position: relative;
+}
+.m-touch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--m-x, 50%) var(--m-y, 50%), color-mix(in srgb, var(--sheet-notice, var(--ring)) 26%, transparent), transparent 62%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .m-touch {
+    transition:
+      translate var(--m-touch) var(--m-ease),
+      scale var(--m-touch) var(--m-ease),
+      box-shadow 240ms var(--m-ease),
+      border-color 200ms ease,
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  @media (hover: hover) {
+    .m-touch:hover {
+      translate: 0 -2px;
+      box-shadow: 0 14px 26px -18px color-mix(in srgb, var(--foreground) 55%, transparent);
+    }
+  }
+  .m-touch:active {
+    translate: 0 1px;
+    scale: 0.985;
+    box-shadow: none;
+    transition-duration: 80ms;
+  }
+  .m-touch[data-m-press="a"]::before { animation: m-touch-light 700ms var(--m-ease); }
+  .m-touch[data-m-press="b"]::before { animation: m-touch-relight 700ms var(--m-ease); }
+}
+
+/*
  * The role selection journey (/roles/select): lift on hover, a pop when a card
  * is chosen, a rise between steps, and a small burst of sparks. Only transform
  * and opacity move, all of it sits inside no-preference, and the global

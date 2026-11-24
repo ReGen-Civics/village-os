@@ -86,7 +86,7 @@ export default function SeasonGoals() {
             {shown.map((g, i) => (
               <li
                 key={g.id}
-                className={`flex min-h-[4.5rem] items-center gap-4 rounded-xl border bg-muted p-4 transition-colors ${active === i ? "border-notice" : "border-border"}`}
+                className={`m-germ flex min-h-[4.5rem] items-center gap-4 rounded-xl border bg-muted p-4 transition-colors ${active === i ? "border-notice" : "border-border"}`}
                 data-done={g.done || undefined}
                 onPointerEnter={() => setActive(i)}
                 onPointerLeave={() => setActive(null)}
