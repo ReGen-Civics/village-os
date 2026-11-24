@@ -54,6 +54,24 @@ const PHONE = /^\+?[\d\s().-]{6,}$/;
 const WA_LINK = /^https:\/\/wa\.me\/\d{6,20}(?:\?\S*)?$/i;
 
 /**
+ * THE NUMBER AS A PHONE COPIES IT (applicant reviewer, 24 Nov 2026: "I cannot join the waitlist"). A number copied
+ * from WhatsApp or a phone's contacts carries invisible direction marks (U+202A, U+202C, U+200E), a non-breaking
+ * hyphen (U+2011) or full-width digits, and the plain pattern refused every one of them with "Write the WhatsApp
+ * number with its country code", while the number on screen looked exactly right. They are read as what they show:
+ * the marks dropped, every dash a hyphen, every space a space, the digits plain. A wa.me link pasted without its
+ * https:// is read with it.
+ */
+export function cleanWhatsapp(raw: string): string {
+  const plain = String(raw ?? "")
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g, "")
+    .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+  return /^(?:www\.)?wa\.me\//i.test(plain) ? `https://${plain.replace(/^www\./i, "")}` : plain;
+}
+
+/**
  * One sign-up, read. `isComingSoon` says whether a role id is a live
  * coming-soon role, so a sign-up names only roles the page offers.
  */
@@ -61,7 +79,7 @@ export function readWaitlistSignUp(raw: unknown, isComingSoon: (roleId: string) 
   const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const email = typeof o.email === "string" ? o.email.trim() : "";
   if (addressProblem(email)) return { ok: false, field: "email", problem: WAITLIST_PROBLEMS.email };
-  const wa = typeof o.whatsapp === "string" ? o.whatsapp.trim() : "";
+  const wa = typeof o.whatsapp === "string" ? cleanWhatsapp(o.whatsapp) : "";
   if (wa && (wa.length > WAITLIST_LIMITS.whatsappChars || !(PHONE.test(wa) || WA_LINK.test(wa)))) return { ok: false, field: "whatsapp", problem: WAITLIST_PROBLEMS.whatsapp };
   const ids = Array.isArray(o.roleIds) ? Array.from(new Set(o.roleIds.filter((x): x is string => typeof x === "string").map((x) => x.trim()).filter(Boolean))) : [];
   if (ids.length > WAITLIST_LIMITS.roles) return { ok: false, field: "roleIds", problem: WAITLIST_PROBLEMS.tooManyRoles };

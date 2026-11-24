@@ -139,17 +139,35 @@ export async function writeProposalFiles(root: string, proposalId: string, files
   const checked = await checkProposalFiles(files);
   if (!checked.ok) throw new Error(checked.error);
   if (!files.length) return [];
-  const dir = folderOf(root, proposalId);
+  return writeCheckedFilesInto(folderOf(root, proposalId), files, checked.kinds, "pf");
+}
+
+/**
+ * Write checked files into `dir`, each `<prefix>-<16 hex>.<kind>`, through the same copy a sent application's files
+ * take. A saved, unsent application keeps its files this way too (server/routes/applicationDrafts.ts).
+ */
+export async function writeCheckedFilesInto(dir: string, files: readonly UploadedFile[], kinds: readonly ProposalFile["kind"][], prefix: string): Promise<ProposalFile[]> {
   await fs.promises.mkdir(dir, { recursive: true });
   const out: ProposalFile[] = [];
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    const kind = checked.kinds[i];
-    const id = `pf-${crypto.randomBytes(8).toString("hex")}`;
+    const kind = kinds[i];
+    const id = `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
     const kept = await keepPart(f, path.join(dir, `${id}.${kind}`));
     out.push({ id, kind, name: safeFileName(f.originalname, kind), size: kept.size, sha256: kept.sha256 });
   }
   return out;
+}
+
+/** One kept file's bytes from `dir`, when they are still the bytes that were kept; else null. */
+export async function readKeptFile(dir: string, file: { id: string; kind: string; sha256: string }): Promise<Buffer | null> {
+  let bytes: Buffer;
+  try {
+    bytes = await fs.promises.readFile(path.join(dir, `${file.id}.${file.kind}`));
+  } catch {
+    return null;
+  }
+  return crypto.createHash("sha256").update(bytes).digest("hex") === file.sha256 ? bytes : null;
 }
 
 /** The bytes of one kept file, when they are still the bytes that were kept; else null. */

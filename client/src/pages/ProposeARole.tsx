@@ -92,6 +92,7 @@ import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { ReviewPromises } from "@/components/fireflyPath/ReviewPromises";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
+import { serverExtrasOf, useSaveLater } from "@/components/fireflyPath/useSaveLater";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
 import { remembersByDefault } from "@/components/fireflyPath/applyRemember";
 import { needsSafetyNet, type SendFailure } from "@/components/fireflyPath/applySendFailure";
@@ -105,6 +106,9 @@ const ShapeTheRole = lazy(() => import("@/components/roleCard/ShapeTheRole"));
 const SafetyNet = lazy(() => import("@/components/fireflyPath/SafetyNet"));
 // "Start a conversation", the two-minute way in (the lead, 20 Nov 2026): loaded only when asked for.
 const StartConversation = lazy(() => import("@/components/fireflyPath/StartConversation"));
+// Save and finish later (the lead, 24 Nov 2026): loaded after the first view, with its resumed line.
+const SaveLater = lazy(() => import("@/components/fireflyPath/SaveLater"));
+const ResumedNote = lazy(() => import("@/components/fireflyPath/SaveLater").then((m) => ({ default: m.ResumedNote })));
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -197,9 +201,11 @@ export default function ProposeARole() {
   const [pane, setPane] = useState(0);
   /** The draft for this role has been read back (or there was none), so saving may begin. */
   const [draftFor, setDraftFor] = useState<string | null>(null);
-  const [restored, setRestored] = useState<false | "draft" | "carry">(false);
+  const [restored, setRestored] = useState<false | "draft" | "carry" | "server">(false);
   /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Ticked to start (the lead, 19 Nov 2026), unless this browser unticked it before. */
   const [remember, setRemember] = useState(remembersByDefault);
+  /** Save and finish later (the lead, 24 Nov 2026): the draft a resume link opened, and the last save (fireflyPath/useSaveLater.ts). */
+  const later = useSaveLater(link);
   /** The words of the application just sent, held in this page only, so "Apply for another role too" works with nothing kept on the device. */
   const carriedHere = useRef<ApplyCarry | null>(null);
   /** What to put the cursor on after the next draw: the step's heading, or a field with a problem. */
@@ -237,6 +243,13 @@ export default function ProposeARole() {
       .catch(() => setForm({ kind: "failed" }));
   }, [link, formTries]);
 
+  // A resume link names its own role: the form opens on it once both have arrived, early when it was applied for early.
+  useEffect(() => {
+    const o = later.opened?.opened;
+    if (form.kind !== "open" || !o || !form.roles.some((r) => r.id === o.roleId) || roleId === o.roleId || draftFor === o.roleId) return;
+    setRoleId(o.roleId); setExtras([]); setGone(false); if (serverExtrasOf(o.draft).early) setEarly(true);
+  }, [form, later.opened, roleId, draftFor]);
+
   // R-Ikigai answers the person ticked on the draft board become their own words in "Why you", once, and only into an empty field.
   useEffect(() => {
     const read = readStoredJson("local", IKIGAI_KEY);
@@ -253,15 +266,16 @@ export default function ProposeARole() {
 
   // THE SAVED DRAFT, read back once the role is known: the words, the step they were on. Never references or files.
   useEffect(() => {
-    if (form.kind !== "open" || !roleId || draftFor === roleId) return;
-    if (!early && form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is untouched until they apply early
-    const read = readStoredJson("local", draftKey(roleId, link));
+    if (form.kind !== "open" || !roleId || draftFor === roleId || later.opening) return;
+    const server = later.opened && later.opened.opened.roleId === roleId ? later.opened : null; // a resume link's draft comes before this device's
+    if (!early && !server && form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is untouched until they apply early
+    const read = server ? { status: "value" as const, value: server.opened.draft } : readStoredJson("local", draftKey(roleId, link));
     const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
     // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
     const stored = own ? null : readCarry(link, roleId, LAST_STONE);
     const carry = own ? null : (stored ?? (carriedHere.current ? carryAsDraft(carriedHere.current, roleId, new Date(), LAST_STONE) : null));
     // Something this device already keeps reads as ticked, so they see what is kept and can forget it.
-    if (own || stored) setRemember(true);
+    if ((own && !server) || stored) setRemember(true);
     const d = own ?? carry?.draft ?? null;
     if (carry) {
       // Straight on from a sent one, the page still holds the last role's answers: those, files, consents and agreements start fresh.
@@ -287,10 +301,11 @@ export default function ProposeARole() {
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
       setReached(d.reached);
-      setRestored(own ? "draft" : "carry");
+      setRestored(server ? "server" : own ? "draft" : "carry");
+      if (server) { const x = serverExtrasOf(server.opened.draft); setFiles(server.files); setAbout((a) => ({ ...a, references: x.references, consent: x.consent })); setAgreed(x.agreed); setStone(Math.min(LAST_STONE, server.opened.step)); }
     }
     if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the box starts as remembersByDefault set it (19 Nov 2026); the card's slider and split (17 Nov 2026)
-  }, [form, roleId, link, draftFor, early]);
+  }, [form, roleId, link, draftFor, early, later.opening, later.opened]);
 
   /** The draft as toDraft writes it, from what the page holds now. */
   const draftNow = () => toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date());
@@ -503,7 +518,7 @@ export default function ProposeARole() {
         return;
       }
       // Sent, and only now: the draft has done its work, and their own words wait for a next role (fireflyPath/applyCarry.ts).
-      removeStored("local", draftKey(roleId, link));
+      removeStored("local", draftKey(roleId, link)); later.discard();
       const carryFields = { name, email, about, selfKnowledge, links, knowUs, items, marks, transcript: voice.transcript };
       carriedHere.current = toCarry(carryFields, new Date());
       if (remember) writeCarry(link, carryFields);
@@ -573,7 +588,7 @@ export default function ProposeARole() {
     else if (step === -1 && stone > 0) back();
   };
 
-  if (form.kind === "loading") {
+  if (form.kind === "loading" || later.opening) {
     return (
       <Shell>
         <BreathingLoader label={t({ message: "Opening the application", context: "founding application" })} showLabel />
@@ -744,7 +759,7 @@ export default function ProposeARole() {
         )}
         <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} brief={stone > 0} />
         {stone === 0 && <LimitsAtTop className="mt-3" />}
-        {restored && <RestoredNote kind={restored} />}
+        {restored === "server" ? <Suspense fallback={null}><ResumedNote /></Suspense> : restored && <RestoredNote kind={restored} />}
         {stone === 0 && form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
         {stone === 0 && <button type="button" onClick={() => setTalk(true)} className="ml-4 min-h-11 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" data-start-conversation-door="">{t({ message: "Short on time? Start a conversation", context: "founding application: the short way in" })}</button>}
       </header>
@@ -961,6 +976,7 @@ export default function ProposeARole() {
               <input type="text" name="hp" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
             </div>
 
+            <Suspense fallback={null}><SaveLater state={later.state} email={email} onSave={() => void later.save({ roleId: role.id, step: stone, draft: { ...draftNow(), server: { references: about.references, consent: about.consent, agreed, early } }, email, name, locale: i18n.locale, files })} /></Suspense>
             {stone < LAST_STONE && <ProblemsList atButton problems={problems} labels={labels} stone={stone} onShow={show} />}
             <StoneBar close={stone < LAST_STONE && problems.length > 0} keyboard={keyboard} stone={stone} last={LAST_STONE} nextName={nextName} sending={sending} onBack={back} onNext={next} />
           </form>

@@ -60,7 +60,7 @@ const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanio
 let org: any;
 let founding: any;
 
-/** A desktop: the founding team opens on its first role's card. */
+/** A desktop: the founding team still opens with every card closed (the lead, 24 Nov 2026). */
 const wide = () => vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
 
 beforeEach(() => {
@@ -125,10 +125,23 @@ const renderRoles = (at = "/roles") => {
 const frame = (id: string) => document.querySelector(`[data-role-frame="${id}"]`) as HTMLElement;
 
 describe("the full role cards, back on /roles", () => {
-  it("opens the first founding role's full card on a desktop, inside its own frame, with the one-minute summary and the founding sections", async () => {
+  it("starts with every founding card closed, on a desktop and on a phone (the lead, 24 Nov 2026)", async () => {
+    for (const desk of [false, true]) {
+      if (desk) wide();
+      renderRoles();
+      await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
+      await waitFor(() => expect(frame("finance")).toBeTruthy());
+      expect(document.querySelectorAll("[data-full-role-card]")).toHaveLength(0);
+      for (const id of ["finance", "land"]) expect((frame(id).querySelector(`[data-founding-role="${id}"]`) as HTMLElement).getAttribute("aria-expanded")).toBe("false");
+      cleanup();
+    }
+  });
+
+  it("opens a founding role's full card inside its own frame when a reader chooses it, with the one-minute summary", async () => {
     wide();
     renderRoles();
-    await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
+    await waitFor(() => expect(frame("finance")).toBeTruthy());
+    fireEvent.click(frame("finance").querySelector('[data-founding-role="finance"]') as HTMLElement);
     const card = await waitFor(() => {
       const el = frame("finance")?.querySelector('[data-full-role-card="finance"]') as HTMLElement | null;
       if (!el) throw new Error("no card yet");
@@ -141,11 +154,16 @@ describe("the full role cards, back on /roles", () => {
     // Nothing on /roles sends the reader away to read a role.
     expect(document.querySelector("[data-role-card]")).toBeNull();
     expect(document.querySelector("[data-read-role]")).toBeNull();
+    // Choosing it again closes it, on a desktop too.
+    fireEvent.click(frame("finance").querySelector('[data-founding-role="finance"]') as HTMLElement);
+    await waitFor(() => expect(document.querySelectorAll("[data-full-role-card]")).toHaveLength(0));
   });
 
   it("moves the card into the frame of the role a reader opens, and nowhere else", async () => {
     wide();
     renderRoles();
+    await waitFor(() => expect(frame("finance")).toBeTruthy());
+    fireEvent.click(frame("finance").querySelector('[data-founding-role="finance"]') as HTMLElement);
     await waitFor(() => expect(frame("finance")?.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
     fireEvent.click(frame("land").querySelector('[data-founding-role="land"]') as HTMLElement);
     await waitFor(() => expect(frame("land").querySelector('[data-full-role-card="land"]')).toBeTruthy());
@@ -156,6 +174,8 @@ describe("the full role cards, back on /roles", () => {
   it("keeps the roles a lead will build inside that lead's frame, never between two roles", async () => {
     wide();
     renderRoles();
+    await waitFor(() => expect(frame("finance")).toBeTruthy());
+    fireEvent.click(frame("finance").querySelector('[data-founding-role="finance"]') as HTMLElement);
     const builds = await waitFor(() => {
       const el = document.querySelector("[data-lead-builds]") as HTMLElement | null;
       if (!el) throw new Error("not yet");

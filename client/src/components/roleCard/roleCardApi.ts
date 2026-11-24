@@ -26,6 +26,8 @@ export interface FoundingTeamAnswer {
   team: FilledTeamRole[];
   /** How full each role is, by id (Rye, 14 Nov 2026): what its holders give against what it needs. */
   fill: Record<string, RoleFill>;
+  /** Land tours and potlucks are running (`org.tours_resumed`, shared/toursPaused.ts); false while paused or unread. */
+  toursResumed?: boolean;
   /**
    * True when the read itself failed (a 500, a 429, no connection). The answer
    * is still the section off, so no page waits on it, but a page that leads
@@ -99,7 +101,7 @@ export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
       const read = readSections(d?.sections?.[id]);
       if (read.ok) sections[id] = read.value;
     }
-    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team), fill: fillOf(d?.fill) };
+    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team), fill: fillOf(d?.fill), toursResumed: d?.toursResumed === true };
   } catch {
     return FAILED;
   }

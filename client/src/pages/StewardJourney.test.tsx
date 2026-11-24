@@ -34,7 +34,8 @@ vi.mock("@/hooks/useVillageContent", () => ({
 vi.mock("@/hooks/useVillageName", () => ({ useVillageName: () => "Hollow Oak" }));
 vi.mock("@/hooks/useTokenNames", () => ({ useTokenName: (fallback: string) => fallback }));
 // The founding roles the band names: the same read as the Roles page's founding section.
-const founding = vi.hoisted(() => ({ answer: { on: false, roleIds: [] as string[], names: {} as Record<string, string> } }));
+// Land tours and potlucks running unless a test pauses them (shared/toursPaused.ts).
+const founding = vi.hoisted(() => ({ answer: { on: false, roleIds: [] as string[], names: {} as Record<string, string>, toursResumed: true as boolean } }));
 vi.mock("@/components/roleCard/roleCardApi", () => ({
   readFoundingTeam: () => Promise.resolve({ ...founding.answer, sections: {}, showPayRanges: false, villagePay: { shape: [], atRisk: "", note: "" } }),
 }));
@@ -51,7 +52,7 @@ const show = () =>
 beforeEach(() => {
   auth.admin = false;
   stored.doc = null;
-  founding.answer = { on: false, roleIds: [], names: {} };
+  founding.answer = { on: false, roleIds: [], names: {}, toursResumed: true };
   vi.stubGlobal("IntersectionObserver", class { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } });
   vi.stubGlobal("fetch", vi.fn());
 });
@@ -90,6 +91,16 @@ describe("/steward", () => {
     expect(within(list).getAllByRole("checkbox")).toHaveLength(3);
     expect(list).toHaveTextContent(/Come to an open call.*Walk the land with us.*Share a meal with the village/);
     expect(screen.getAllByText(/you can still apply, especially if we invited you/).length).toBeGreaterThan(0);
+  });
+
+  it("while land tours and potlucks are paused, the first steps show only the call, and the rest come back once they resume (the lead, 24 Nov 2026)", async () => {
+    founding.answer = { ...founding.answer, toursResumed: false };
+    show();
+    await screen.findByText("Get to know us");
+    const list = document.querySelector("#first-steps ol") as HTMLElement;
+    await waitFor(() => expect(within(list).getAllByRole("checkbox")).toHaveLength(1));
+    expect(list).toHaveTextContent(/Come to an open call/);
+    expect(list).not.toHaveTextContent(/Walk the land|Share a meal/);
   });
 
   it("opens a first step to its button, and an external link opens safely", async () => {
@@ -183,7 +194,7 @@ describe("/steward", () => {
 
   it("names the founding roles open now, live, as links to their cards, wherever {foundingRoles} is written", async () => {
     stored.doc = { foundingTeam: { body: "We are building the team. The roles open now are {foundingRoles}. Read each card." } };
-    founding.answer = { on: true, roleIds: ["land", "cook"], names: { land: "Land Lead", cook: "Village Cook" } };
+    founding.answer = { on: true, roleIds: ["land", "cook"], names: { land: "Land Lead", cook: "Village Cook" }, toursResumed: true };
     show();
     await screen.findByText("The team that builds Hollow Oak");
     const band = document.getElementById("founding-team")!;
@@ -195,7 +206,7 @@ describe("/steward", () => {
     ]);
     // Control: a role the village opens later is named with no edit to the words.
     cleanup();
-    founding.answer = { on: true, roleIds: ["land", "cook", "well"], names: { land: "Land Lead", cook: "Village Cook", well: "Water Keeper" } };
+    founding.answer = { on: true, roleIds: ["land", "cook", "well"], names: { land: "Land Lead", cook: "Village Cook", well: "Water Keeper" }, toursResumed: true };
     show();
     expect(await screen.findByText(/are the Land Lead, the Village Cook and the Water Keeper\./)).toBeInTheDocument();
   });

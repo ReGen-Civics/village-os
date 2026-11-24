@@ -23,6 +23,7 @@
  * answer back with `knowUsLinksOf`, which never throws.
  */
 import { safeHref } from "./otherWays";
+import { TOURS_RESUMED_KEY, toursResumedOf } from "./toursPaused";
 
 /** The links, each a village setting under "The founding team" in shared/gameVariables.ts. */
 export const KNOW_US_LINK_KEYS = {
@@ -110,7 +111,9 @@ export function nextOfWay(events: readonly KnowUsEvent[], way: KnowUsWay, now: D
 }
 
 /** The links from the village's settings and its upcoming public events. */
-export function knowUsLinksFrom(get: (key: KnowUsLinkKey) => string, events: readonly KnowUsEvent[], now: Date): KnowUsLinks {
+export function knowUsLinksFrom(get: (key: KnowUsLinkKey | typeof TOURS_RESUMED_KEY) => string, events: readonly KnowUsEvent[], now: Date): KnowUsLinks {
+  // Land tours and potlucks paused (shared/toursPaused.ts): neither act shows until the village turns them back on.
+  const resumed = toursResumedOf(get(TOURS_RESUMED_KEY));
   const act = (way: KnowUsWay, key: KnowUsLinkKey): KnowUsAct => {
     const next = nextOfWay(events, way, now);
     return { href: next?.href ?? linkOf(get(key)), next };
@@ -118,8 +121,8 @@ export function knowUsLinksFrom(get: (key: KnowUsLinkKey) => string, events: rea
   return {
     recording: linkOf(get(KNOW_US_LINK_KEYS.recording)),
     call: act("call", KNOW_US_LINK_KEYS.call),
-    tour: act("tour", KNOW_US_LINK_KEYS.tour),
-    potluck: act("potluck", KNOW_US_LINK_KEYS.potluck),
+    tour: resumed ? act("tour", KNOW_US_LINK_KEYS.tour) : NONE,
+    potluck: resumed ? act("potluck", KNOW_US_LINK_KEYS.potluck) : NONE,
     stewardPath: linkOf(get(KNOW_US_LINK_KEYS.stewardPath)) ?? STEWARD_PATH_FALLBACK,
   };
 }
