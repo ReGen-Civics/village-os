@@ -725,6 +725,11 @@ msgstr "Once approved into a role, I will align with the village's confidentiali
 msgid "What this run looked at"
 msgstr "What this run looked at"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button while it sends"
+msgid "Sending"
+msgstr "Sending"
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Co-sign the new key"
@@ -1990,6 +1995,11 @@ msgctxt "conversation guide: a question made from a quality the card hopes for"
 msgid "How did this quality show in the conversation: {0}?"
 msgstr "How did this quality show in the conversation: {0}?"
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: failed"
+msgid "That did not save. Please try again."
+msgstr "That did not save. Please try again."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "I can't come after all"
@@ -2335,6 +2345,11 @@ msgstr "Decided"
 msgid "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 msgstr "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site, when it has no name yet"
+msgid "Learn about the village"
+msgstr "Learn about the village"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "Their answer: {answer}"
@@ -2511,6 +2526,11 @@ msgstr "Compensation"
 msgctxt "approval inbox"
 msgid "What a connector proposed and only a person may do. Read each one before you answer it."
 msgstr "What a connector proposed and only a person may do. Read each one before you answer it."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the email was refused"
+msgid "Write an email address, like name@example.org."
+msgstr "Write an email address, like name@example.org."
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "The village is deciding a change to this right now."
@@ -3078,6 +3098,11 @@ msgctxt "voice invite"
 msgid "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
 msgstr "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
 
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "Pooling resources"
+msgstr "Pooling resources"
+
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgctxt "full access, who set it when the name is unknown"
 msgid "a person"
@@ -3188,6 +3213,11 @@ msgstr "Which events count"
 #~ msgctxt "founding application refusal"
 #~ msgid "Keep each recording under 5 minutes."
 #~ msgstr "Keep each recording under 5 minutes."
+
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen when offline: the eyebrow"
+msgid "No connection"
+msgstr "No connection"
 
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -4669,9 +4699,9 @@ msgid "That did not save. Your changes are still here."
 msgstr "That did not save. Your changes are still here."
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons lede"
-msgid "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
-msgstr "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
+#~ msgctxt "landing commons lede"
+#~ msgid "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
+#~ msgstr "This season's goals, held by the whole village. Each circle is one goal, and moss spreads into it when we reach it together."
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "It goes on the calendar's list as a draft that recurs every new moon. Nothing is published until you publish it."
@@ -4808,6 +4838,11 @@ msgstr "By {day}"
 msgctxt "next step box, when the quest starts"
 msgid "Starts {at}"
 msgstr "Starts {at}"
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "The people who look after new businesses here read every request. We will write to the email you gave."
+msgstr "The people who look after new businesses here read every request. We will write to the email you gave."
 
 #: client/src/components/gratitude/WallEntryCard.tsx
 msgctxt "thanks thread: who thanked whom"
@@ -4974,6 +5009,11 @@ msgstr "Nobody has backed this yet."
 msgid "From the week of {0}"
 msgstr "From the week of {0}"
 
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the heading"
+msgid "This page didn't load"
+msgstr "This page didn't load"
+
 #: client/src/components/hiddenMap/OpeningMoment.tsx
 msgid "Now open to you"
 msgstr "Now open to you"
@@ -5084,6 +5124,11 @@ msgstr "What was proposed"
 msgctxt "admin compare"
 msgid "Saved splits"
 msgstr "Saved splits"
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the build field's hint"
+msgid "A business, a service, a craft: a few lines is plenty."
+msgstr "A business, a service, a craft: a few lines is plenty."
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
@@ -5825,6 +5870,12 @@ msgctxt "pricing desk"
 msgid "Likely {0} to {1}"
 msgstr "Likely {0} to {1}"
 
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it."
+msgstr "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it."
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Your selection holds three. Take one off to select another."
 msgstr "Your selection holds three. Take one off to select another."
@@ -6498,6 +6549,11 @@ msgstr "When shaping starts (leave empty to keep the round in Seed)"
 #~ msgid "When tension between people needs repair, these are the steps this village wrote for it:"
 #~ msgstr "When tension between people needs repair, these are the steps this village wrote for it:"
 
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the link to the setting"
+msgid "Name your guide"
+msgstr "Name your guide"
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: what the details are for"
 msgid "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off."
@@ -6776,6 +6832,11 @@ msgctxt "open proposal attachments"
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Keep it to yourself: anyone with the link can open your saved answers. We keep it for {days} days after your last save, and nothing reaches the team until you send."
+msgstr "Keep it to yourself: anyone with the link can open your saved answers. We keep it for {days} days after your last save, and nothing reaches the team until you send."
+
 #. placeholder {0}: voiceLength(recorder.left)
 #: client/src/components/voice/VoiceClips.tsx
 #: client/src/components/voice/VoiceInvite.tsx
@@ -6821,6 +6882,11 @@ msgstr "Weekend afternoons"
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "It goes to {powerHolder} instead."
 msgstr "It goes to {powerHolder} instead."
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: a file failed"
+msgid "A file did not save. Check it and try again."
+msgstr "A file did not save. Check it and try again."
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "badge on a role offered as a venture to build and run, applied for with a pitch"
@@ -7327,6 +7393,11 @@ msgstr "The key is stored unsealed, so it travels in every database dump. Set VI
 msgctxt "budget upload preview"
 msgid "These rows cannot be saved as written. The other rows can be saved, or fix these and preview again:"
 msgstr "These rows cannot be saved as written. The other rows can be saved, or fix these and preview again:"
+
+#: client/src/components/ComingSoonPanel.tsx
+msgctxt "an area the village has not filled yet: the eyebrow over its name"
+msgid "Coming soon"
+msgstr "Coming soon"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "a change request you started"
@@ -8135,6 +8206,10 @@ msgctxt "founding team, no role open"
 msgid "Choose a role to read it in full."
 msgstr "Choose a role to read it in full."
 
+#: client/src/components/ErrorBoundary.tsx
+msgid "Nothing is broken. One refresh brings you the new version."
+msgstr "Nothing is broken. One refresh brings you the new version."
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Filed. The village renews filed roles together."
 msgstr "Filed. The village renews filed roles together."
@@ -8244,6 +8319,11 @@ msgstr "What {companionName} will do with it"
 msgid "Only events titled with \"{0}\" count."
 msgstr "Only events titled with \"{0}\" count."
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the link was emailed"
+msgid "We emailed this link to {to}."
+msgstr "We emailed this link to {to}."
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "All Voice"
@@ -8270,6 +8350,11 @@ msgstr "Your progress through the {0} steps"
 msgctxt "partner form: sent"
 msgid "Your proposal is with us"
 msgstr "Your proposal is with us"
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the list of fields to fix"
+msgid "A few things to fix before it can go:"
+msgstr "A few things to fix before it can go:"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -9256,6 +9341,11 @@ msgctxt "price popup choice"
 msgid "Propose my own compensation"
 msgstr "Propose my own compensation"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the optional note"
+msgid "Anything else"
+msgstr "Anything else"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: signed out door"
 msgid "Sign in"
@@ -9318,9 +9408,9 @@ msgid "The list holds {most}, the most it takes"
 msgstr "The list holds {most}, the most it takes"
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons door"
-msgid "See the roles that tend these goals"
-msgstr "See the roles that tend these goals"
+#~ msgctxt "landing commons door"
+#~ msgid "See the roles that tend these goals"
+#~ msgstr "See the roles that tend these goals"
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -9834,6 +9924,11 @@ msgstr "Marked as an example"
 msgid "Apply with my {pickCount} picks"
 msgstr "Apply with my {pickCount} picks"
 
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar"
+msgid "Roles"
+msgstr "Roles"
+
 #: client/src/components/admin/AdminHeader.tsx
 msgid "This device only. Admin stays light for everyone else."
 msgstr "This device only. Admin stays light for everyone else."
@@ -10124,6 +10219,11 @@ msgstr "Use this photo"
 msgctxt "funding rounds"
 msgid "Share or read ideas"
 msgstr "Share or read ideas"
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the WhatsApp number was refused"
+msgid "Write the WhatsApp number with its country code, like +506 8888 8888, or leave it empty."
+msgstr "Write the WhatsApp number with its country code, like +506 8888 8888, or leave it empty."
 
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor: how to write the deliverables"
@@ -10473,6 +10573,11 @@ msgstr "Why not, in one line"
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgid "We emailed you this link too. Keep it to yourself: it is how we know it is you."
 msgstr "We emailed you this link too. Keep it to yourself: it is how we know it is you."
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your email"
+msgstr "Your email"
 
 #. placeholder {0}: goals.length + 1
 #: client/src/components/governance/GoalsList.tsx
@@ -11399,9 +11504,9 @@ msgid "Talk to {label}"
 msgstr "Talk to {label}"
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons heading"
-msgid "The commons"
-msgstr "The commons"
+#~ msgctxt "landing commons heading"
+#~ msgid "The commons"
+#~ msgstr "The commons"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application compensation"
@@ -11564,6 +11669,11 @@ msgctxt "signing key"
 msgid "Asked for a co-sign. Another admin replaces the key from this card."
 msgstr "Asked for a co-sign. Another admin replaces the key from this card."
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: the button"
+msgid "Send my request"
+msgstr "Send my request"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "while you wait"
 msgid "How we live together"
@@ -11575,9 +11685,9 @@ msgid "No two of them offered the same piece of work."
 msgstr "No two of them offered the same piece of work."
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Explore the Steward path first"
-msgstr "Explore the Steward path first"
+#~ msgctxt "founding application know us fork"
+#~ msgid "Explore the Steward path first"
+#~ msgstr "Explore the Steward path first"
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Nobody holds the {chosenName} role today, so a request would reach nobody. <0>Give the role a holder under Power groups</0>, or name a contact outside the village."
@@ -12720,6 +12830,16 @@ msgctxt "label before a season week's showcase question"
 msgid "The week asks: "
 msgstr "The week asks: "
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: while saving"
+msgid "Saving"
+msgstr "Saving"
+
+#: client/src/pages/Crowdpool.tsx
+msgctxt "coming soon: the crowdpool page"
+msgid "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it."
+msgstr "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it."
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload error"
 msgid "Choose a sheet or paste its cells first."
@@ -13697,9 +13817,9 @@ msgid "Save the menu"
 msgstr "Save the menu"
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero second act"
-msgid "Explore the map"
-msgstr "Explore the map"
+#~ msgctxt "landing hero second act"
+#~ msgid "Explore the map"
+#~ msgstr "Explore the map"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera answers"
@@ -14035,6 +14155,11 @@ msgctxt "when the purpose statement was written"
 msgid "Written on {0}"
 msgstr "Written on {0}"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Say what you would like to build."
+msgstr "Say what you would like to build."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal why starter"
 #~ msgid "What brought me here:"
@@ -14078,6 +14203,11 @@ msgstr "Language: {current} ({code})"
 #~ msgctxt "role in one minute: a fact"
 #~ msgid "Price"
 #~ msgstr "Price"
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email failed"
+msgid "We could not email the link just now. Copy it to keep it."
+msgstr "We could not email the link just now. Copy it to keep it."
 
 #: client/src/pages/rites/ComeAboard.tsx
 #: client/src/pages/rites/Door.tsx
@@ -14295,9 +14425,19 @@ msgctxt "admin sounds: while a sound uploads"
 msgid "Uploading…"
 msgstr "Uploading…"
 
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: what others read until the guide is named"
+msgid "Visitors and members see “{shared}” until you name it. Only founders see this note."
+msgstr "Visitors and members see “{shared}” until you name it. Only founders see this note."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
 msgstr "Propose a change to what closing means"
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: copy the link"
+msgid "Copy link"
+msgstr "Copy link"
 
 #. placeholder {0}: role?.name ?? ""
 #: client/src/components/admin/CompareTab.tsx
@@ -15005,6 +15145,11 @@ msgstr "The terms"
 #~ msgid "Credits"
 #~ msgstr "Credits"
 
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the heading"
+msgid "Your village guide has no name yet"
+msgstr "Your village guide has no name yet"
+
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Set by the village"
 msgstr "Set by the village"
@@ -15483,6 +15628,11 @@ msgctxt "pay page, receipt"
 msgid "What it is for"
 msgstr "What it is for"
 
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: leave for the home page"
+msgid "Go to the home page"
+msgstr "Go to the home page"
+
 #: client/src/components/roleCard/PieceSuggestionsReview.tsx
 msgctxt "open proposal: suggestions lede"
 msgid "Their own words, beside each piece of the role card they are about. Nothing here is scored or summarised."
@@ -15604,6 +15754,11 @@ msgstr "Decides"
 msgctxt "shape the role"
 msgid "Open the role card"
 msgstr "Open the role card"
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email limit"
+msgid "We have emailed this link a few times today, so we did not send it again. Copy it to keep it."
+msgstr "We have emailed this link a few times today, so we did not send it again. Copy it to keep it."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -16031,8 +16186,8 @@ msgid "Back from a redemption"
 msgstr "Back from a redemption"
 
 #: client/src/components/ErrorBoundary.tsx
-msgid "We just updated the site"
-msgstr "We just updated the site"
+#~ msgid "We just updated the site"
+#~ msgstr "We just updated the site"
 
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: the consent tick"
@@ -16172,6 +16327,11 @@ msgstr "Kind of work for {0}"
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 msgstr "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Keep the note under 2,000 characters."
+msgstr "Keep the note under 2,000 characters."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
 msgid "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them."
@@ -16192,6 +16352,11 @@ msgstr "On your mind: {village} gets a dedicated work block once a week"
 msgctxt "role editor, ideal background hint"
 msgid "One line each, written openly: ideally, or experience we'd love to see. Up to {0} lines."
 msgstr "One line each, written openly: ideally, or experience we'd love to see. Up to {0} lines."
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: saved, with the time"
+msgid "Saved at {time}"
+msgstr "Saved at {time}"
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "Open a circle to see its roles. Open a role to edit all of it."
@@ -17166,6 +17331,11 @@ msgstr "Use this"
 msgid "A different value for one of the changes. The author may take it in."
 msgstr "A different value for one of the changes. The author may take it in."
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: link copied"
+msgid "Copied"
+msgstr "Copied"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Add an interviewer"
@@ -17631,6 +17801,11 @@ msgstr "{0} characters left in this answer."
 #~ msgid "This season's goals"
 #~ msgstr "This season's goals"
 
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a deploy: the eyebrow"
+msgid "A fresh version is here"
+msgstr "A fresh version is here"
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 #: client/src/components/canvas/RecordReadingForm.tsx
 msgid "Why, in one sentence"
@@ -17946,6 +18121,12 @@ msgstr "The contract sets the pay. As a contractor they may propose more or less
 msgctxt "price popup title"
 msgid "Your compensation"
 msgstr "Your compensation"
+
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages, the door meanwhile"
+msgid "Open the map"
+msgstr "Open the map"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
@@ -19272,6 +19453,11 @@ msgctxt "proposed changes"
 msgid "Sign in to review proposed changes"
 msgstr "Sign in to review proposed changes"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "What you would like to build"
+msgstr "What you would like to build"
+
 #: client/src/components/admin/MenuPanel.tsx
 msgid "The menu did not save."
 msgstr "The menu did not save."
@@ -19491,6 +19677,11 @@ msgstr "In a draft, not live yet: {n} changes"
 msgctxt "founding application first moon: a step"
 msgid "In your first moon, you and the circle reshape your deliverables timeline together."
 msgstr "In your first moon, you and the circle reshape your deliverables timeline together."
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the button"
+msgid "Save and finish later"
+msgstr "Save and finish later"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -20154,6 +20345,11 @@ msgctxt "admin compare"
 msgid "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
 msgstr "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
 
+#: client/src/pages/Home.tsx
+msgctxt "landing hero second act: the village's main site"
+msgid "Learn about {villageName}"
+msgstr "Learn about {villageName}"
+
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
 msgstr "Vouch: this is real"
@@ -20504,6 +20700,11 @@ msgstr "{0}, outside the village"
 msgid "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: no email yet"
+msgid "Add your email on the About you step and save again, and we will email you the link too."
+msgstr "Add your email on the About you step and save again, and we will email you the link too."
+
 #: client/src/components/roleCard/focusLine.ts
 msgctxt "role card focus line, from 50%"
 msgid "Focused: {village} is a main part of your work, about half your week"
@@ -20786,6 +20987,11 @@ msgstr "Label face, as a font stack"
 msgctxt "profile, door to the pay page"
 msgid "Your code"
 msgstr "Your code"
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: an optional field"
+msgid "(optional)"
+msgstr "(optional)"
 
 #: client/src/components/roots/RootTags.tsx
 msgctxt "roots on a role or quest, the list's name"
@@ -22284,6 +22490,10 @@ msgctxt "circle hearth, we meet"
 msgid "{0} of us said we will be there."
 msgstr "{0} of us said we will be there."
 
+#: client/src/components/ErrorBoundary.tsx
+msgid "A refresh usually brings it back."
+msgstr "A refresh usually brings it back."
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application know us"
 msgid "Tick the ones you have done"
@@ -22420,6 +22630,11 @@ msgstr "Done"
 #~ msgctxt "terms commitment: the most the role pays at the chosen commitment"
 #~ msgid "{0} at this commitment"
 #~ msgstr "{0} at this commitment"
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Add an email address we can write to."
 
 #: client/src/components/canvas/CanvasView.tsx
 #: client/src/components/companion/CompanionPanel.tsx
@@ -22566,6 +22781,12 @@ msgstr "It comes back for review on {reviewDay}."
 msgctxt "admin protocols editor"
 msgid "Move step {n} up"
 msgstr "Move step {n} up"
+
+#: client/src/pages/Photographs.tsx
+#: client/src/pages/Places.tsx
+msgctxt "coming soon: the places and photographs pages"
+msgid "Photographs of the land"
+msgstr "Photographs of the land"
 
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms setting"
@@ -23068,6 +23289,11 @@ msgctxt "commitment split: the parts are whole"
 msgid "The parts add up to 100%."
 msgstr "The parts add up to 100%."
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: too big"
+msgid "This application is too long to save. Shorten the longest answer and try again."
+msgstr "This application is too long to save. Shorten the longest answer and try again."
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Changed"
@@ -23177,6 +23403,11 @@ msgctxt "open proposal: the pay ask"
 msgid "Why this compensation"
 msgstr "Why this compensation"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "Your name"
+msgstr "Your name"
+
 #. placeholder {0}: NOUN_SLOTS[slot].one
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: a noun field"
@@ -23230,6 +23461,11 @@ msgstr "{0} inside the band"
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Anybody in the village can suggest a change to it under Say."
 msgstr "Anybody in the village can suggest a change to it under Say."
+
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} of {stepCount} steps completed"
 
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
@@ -23554,6 +23790,11 @@ msgctxt "heading over a module's settings"
 msgid "Its settings"
 msgstr "Its settings"
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Your private link to finish later"
+msgstr "Your private link to finish later"
+
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
 msgid "Preparing"
@@ -23798,6 +24039,11 @@ msgstr "Phone tab {0}"
 msgid "Back to the circle"
 msgstr "Back to the circle"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form"
+msgid "No account needed. It takes a minute."
+msgstr "No account needed. It takes a minute."
+
 #. placeholder {0}: data.roles.length
 #. placeholder {1}: data.roles.reduce((n, r) => n + (r.own?.pct ?? 0), 0)
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -23819,6 +24065,10 @@ msgstr "Withdrawn. It stops counting and stays on the record."
 msgctxt "label of the closing policy choice"
 msgid "Which policy"
 msgstr "Which policy"
+
+#: client/src/components/ErrorBoundary.tsx
+msgid "Details for a bug report"
+msgstr "Details for a bug report"
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgctxt "role draft carry"
@@ -24096,6 +24346,11 @@ msgstr "Earlier {agent} arrivals, now listed above"
 msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Open to every circle"
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: no role chosen"
+msgid "Choose at least one role that is coming soon."
+msgstr "Choose at least one role that is coming soon."
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgctxt "no intake role chosen"
@@ -24532,9 +24787,9 @@ msgid "Once you are approved into a role, you align with the village's confident
 msgstr "Once you are approved into a role, you align with the village's confidentiality agreement (NDA), before you see any confidential records."
 
 #: client/src/components/VillagePulse.tsx
-msgctxt "landing commons eyebrow"
-msgid "What we tend together"
-msgstr "What we tend together"
+#~ msgctxt "landing commons eyebrow"
+#~ msgid "What we tend together"
+#~ msgstr "What we tend together"
 
 #. placeholder {0}: dayWords(mine.weekOf)
 #. placeholder {0}: dayWords(p.line.weekOf)
@@ -24674,6 +24929,11 @@ msgstr "Speaking aloud may use your browser's online voice (Google or Microsoft)
 msgid "That could not be published"
 msgstr "That could not be published"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: a field to fix"
+msgid "Add your name."
+msgstr "Add your name."
+
 #: client/src/components/fireflyPath/ReviewPromises.tsx
 #: client/src/components/fireflyPath/StartConversation.tsx
 msgctxt "founding application review"
@@ -24794,6 +25054,11 @@ msgstr "We'd agree {0}"
 #~ msgid "The monthly amount you would ask"
 #~ msgstr "The monthly amount you would ask"
 
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "A small stumble"
+msgstr "A small stumble"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
 msgid "Check your email"
@@ -24855,8 +25120,8 @@ msgid "Apply"
 msgstr "Apply"
 
 #: client/src/components/ErrorBoundary.tsx
-msgid "Tap reload to get the new version."
-msgstr "Tap reload to get the new version."
+#~ msgid "Tap reload to get the new version."
+#~ msgstr "Tap reload to get the new version."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles"
@@ -25317,6 +25582,11 @@ msgstr "Practise it first (nothing is recorded)"
 #~ msgid "The team's deliverables"
 #~ msgstr "The team's deliverables"
 
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sent"
+msgid "Your request is on its way"
+msgstr "Your request is on its way"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "A person confirms"
@@ -25632,9 +25902,9 @@ msgid "Clear my selection"
 msgstr "Clear my selection"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Already feel like a strong fit? Carry on with your application."
-msgstr "Already feel like a strong fit? Carry on with your application."
+#~ msgctxt "founding application know us fork"
+#~ msgid "Already feel like a strong fit? Carry on with your application."
+#~ msgstr "Already feel like a strong fit? Carry on with your application."
 
 #: client/src/components/protocols/InstallCard.tsx
 msgctxt "protocols install card"
@@ -25713,6 +25983,11 @@ msgstr "This comes from the village's conflict agreement now, with the care and 
 msgctxt "open proposal side by side"
 msgid "No goal for {roleName}"
 msgstr "No goal for {roleName}"
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: rate limited"
+msgid "That is a lot of saves from here in a short while. Please wait a little and try again."
+msgstr "That is a lot of saves from here in a short while. Please wait a little and try again."
 
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"
@@ -25849,6 +26124,11 @@ msgctxt "role editor"
 msgid "Always background-checked, whatever the references say (roles that hold money or work near children)"
 msgstr "Always background-checked, whatever the references say (roles that hold money or work near children)"
 
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: draft gone"
+msgid "This saved application is no longer kept. Save again to start a new link."
+msgstr "This saved application is no longer kept. Save again to start a new link."
+
 #. placeholder {0}: dayWords(a.raisedOn)
 #: client/src/components/priorities/RaisedAsksCard.tsx
 msgctxt "an ask raised with a role, the day it was raised"
@@ -25896,6 +26176,11 @@ msgstr "Close"
 #: client/src/components/journey/TestRun.tsx
 msgid "<0>{0}</0>: {1}, about {2} times"
 msgstr "<0>{0}</0>: {1}, about {2} times"
+
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, opened from a save and finish later link"
+msgid "Your application is saved. Pick up where you left off."
+msgstr "Your application is saved. Pick up where you left off."
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "What the document does not answer yet"
@@ -26104,6 +26389,11 @@ msgstr "The membership letter didn't load. Reload the page to read it and align.
 msgctxt "protocols page"
 msgid "Kept on your phone. It sends when you're back in signal."
 msgstr "Kept on your phone. It sends when you're back in signal."
+
+#: client/src/components/prosperity/PacketRequestForm.tsx
+msgctxt "prosperity packet form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "That didn't send. Try again in a few minutes."
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -26499,9 +26789,9 @@ msgid "Apply again"
 msgstr "Apply again"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Completely new here?"
-msgstr "Completely new here?"
+#~ msgctxt "founding application know us fork"
+#~ msgid "Completely new here?"
+#~ msgstr "Completely new here?"
 
 #: client/src/components/pay/ReceivePanel.tsx
 msgctxt "pay page, receive"
@@ -26551,6 +26841,10 @@ msgctxt "a button that downloads the workbook as a file"
 msgid "Save as Markdown"
 msgstr "Save as Markdown"
 
+#: client/src/components/ErrorBoundary.tsx
+msgid "The site just grew"
+msgstr "The site just grew"
+
 #: client/src/pages/StewardJourney.tsx
 #~ msgctxt "steward front door"
 #~ msgid "See the quests"
@@ -26596,9 +26890,9 @@ msgid "Usual times: {windowList}"
 msgstr "Usual times: {windowList}"
 
 #: client/src/components/ErrorBoundary.tsx
-msgctxt "update card: reload the page"
-msgid "Reload"
-msgstr "Reload"
+#~ msgctxt "update card: reload the page"
+#~ msgid "Reload"
+#~ msgstr "Reload"
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -26837,6 +27131,11 @@ msgstr "Companion<0/>bonded"
 msgctxt "time zone field"
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
+
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen: the one button, reloads the page"
+msgid "Refresh the page"
+msgstr "Refresh the page"
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Proposing a change puts it to a village vote, and this village has not turned governance on yet. Whoever keeps the exit policy can change these words, so say what you would change to them."

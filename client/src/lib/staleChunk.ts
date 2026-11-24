@@ -19,8 +19,17 @@
  *
  * This module is on the first page on purpose (main.tsx and the error
  * boundary import it): code that recovers from a missing chunk cannot itself
- * live in a chunk. It is a few hundred bytes and imports nothing.
+ * live in a chunk. It is a few hundred bytes and imports only the list of
+ * words it matches (shared/staleBuild.ts), which is as small.
+ *
+ * A COPY PART IS A CHUNK HERE (2026-11-24). A lazy page fetches its long
+ * English (a "copy part", client/src/i18n/copySplit.ts) before its chunk runs,
+ * and parts are replaced by every release exactly as chunks are. A missing part
+ * fails with `copy part <name>: 404`, which this file did not recognise, so a
+ * tab open across a deploy showed the plain error page and sent a crash report
+ * the server emailed to every admin. It now takes the same one reload.
  */
+import { STALE_BUILD_MESSAGES } from "@shared/staleBuild";
 
 /** The marker: when this tab last reloaded itself for a missing chunk. */
 export const RELOAD_MARKER = "village.stale-chunk-reload";
@@ -34,24 +43,18 @@ export const RELOAD_MARKER = "village.stale-chunk-reload";
 export const RELOAD_WINDOW_MS = 2 * 60 * 1000;
 
 /**
- * The words each engine uses for a dynamic module that did not arrive. Matched
- * loosely on the message, because that is all a cross-engine error shares.
+ * The words each engine uses for a dynamic module that did not arrive, and the
+ * words our own copy-part fetch uses for a part this server does not have
+ * (client/src/i18n/i18n.ts): both are a page that outlived a deploy. The list
+ * lives in shared/staleBuild.ts, because the crash route reads the same one.
  */
-const CHUNK_FAILURES = [
-  /Failed to fetch dynamically imported module/i, // Chromium
-  /Importing a module script failed/i, // Safari, iOS
-  /error loading dynamically imported module/i, // Firefox
-  /Unable to preload CSS/i, // Vite's own preload helper
-  /Loading (?:CSS )?chunk [\w-]+ failed/i,
-];
-
 export function isChunkLoadError(err: unknown): boolean {
   if (!err) return false;
   const name = typeof err === "object" && "name" in err ? String((err as { name: unknown }).name) : "";
   if (name === "ChunkLoadError") return true;
   const message =
     typeof err === "string" ? err : typeof err === "object" && "message" in err ? String((err as { message: unknown }).message) : "";
-  return CHUNK_FAILURES.some((re) => re.test(message));
+  return STALE_BUILD_MESSAGES.some((re) => re.test(message));
 }
 
 /** The slice of sessionStorage this needs, so a test can hand in its own. */

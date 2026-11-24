@@ -616,11 +616,13 @@ const FIXED: Record<string, number> = {
   "client/src/pages/FirstWalk.tsx": 2,
   "client/src/pages/Forum.tsx": 1,
   "client/src/pages/GameMechanics.tsx": 5,
-  "client/src/pages/GoodNeighbor.tsx": 1,
+  // GoodNeighbor.tsx's one left this list on 2026-11-24 (public launch QA): the page stands in the sheet's
+  // world (docs/DESIGN_RULE.md), its main act the sheet's gold, no longer white on the brand.
   // Home.tsx's one left this list on 2026-11-12: the landing stands in the sheet's world
   // (go-live pass, D-01), its acts the sheet's gold and edge, no longer white on the brand. 51.
   "client/src/pages/Housing.tsx": 2,
-  "client/src/pages/HowWeCreate.tsx": 1,
+  // HowWeCreate.tsx's one left this list on 2026-11-24 (public launch QA): the page stands in the sheet's
+  // world (docs/DESIGN_RULE.md), its main act the sheet's gold, no longer white on the brand.
   // LoveLetter.tsx's two left this list on 2026-11-10: the Love Letter stands in the sheet's world
   // (docs/DESIGN_RULE.md) and its buttons are the sheet's gold, no longer white on the brand. 57.
   // NotFound.tsx's one left this list on 2026-11-11: the 404 stands in the sheet's world
@@ -653,7 +655,8 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 53 since batch 155, when the resident path's step button moved into the sheet's world.
     // 52 since the 404 moved to the night world with a gold door (Phase B, lane B3).
     // 51 since the landing moved to the night world (go-live pass, D-01).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(51);
+    // 49 since How We Create and Good Neighbor moved to the night world (public launch QA, 24 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(49);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }

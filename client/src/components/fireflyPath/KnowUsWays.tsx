@@ -2,10 +2,13 @@
  * STEP 1'S ACTS: WAYS TO GET TO KNOW US, EACH ONE A LINK (Rye, 15 Nov 2026).
  *
  * Above the ticks: a warm push (most people have not done these yet, and that
- * is fine), a fork for someone completely new (the Steward path first) or
- * already sure (carry on), and one act per way: watch the last webinar recording,
- * join the next webinar call, book a land tour, come to the next potluck. The links
- * come from shared/knowUsLinks.ts; an act with no link is not drawn.
+ * is fine), and one act per way: watch the last webinar recording, join the next
+ * webinar call, book a land tour, come to the next potluck. The links come from
+ * shared/knowUsLinks.ts; an act with no link is not drawn, and the tour and the
+ * potluck are not drawn while the village has them paused (shared/toursPaused.ts).
+ *
+ * No fork back to the Steward path (the lead, 24 Nov 2026): "Explore the Steward
+ * path first" sent an applicant back to the page they had just read.
  *
  * Every link opens in a new tab, so the application's draft stays where it is.
  */
@@ -66,18 +69,6 @@ export function KnowUsWays({ links }: { links: KnowUsLinks | undefined }) {
           ))}
         </ul>
       )}
-      <ul className="grid gap-2 text-sm text-foreground sm:grid-cols-2" data-know-us-fork="">
-        <li className="rounded-xl border border-border p-3">
-          {t({ message: "Completely new here?", context: "founding application know us fork" })}{" "}
-          <a href={links.stewardPath} target="_blank" rel="noopener noreferrer" className={ACT} data-steward-path="">
-            {t({ message: "Explore the Steward path first", context: "founding application know us fork" })}
-            <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
-          </a>
-        </li>
-        <li className="rounded-xl border border-border p-3">
-          {t({ message: "Already feel like a strong fit? Carry on with your application.", context: "founding application know us fork" })}
-        </li>
-      </ul>
     </div>
   );
 }

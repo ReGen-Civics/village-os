@@ -37,6 +37,7 @@ describe("the words a new settings line gets", () => {
       "governance.weight_cap_cash_on",
       "governance.weight_cap_other",
       "governance.weight_cap_other_on",
+      "ops.crash_alert_recipients",
     ]);
     for (const key of membersOnly) {
       expect(publicSettingLabel(key), key).toBeNull();

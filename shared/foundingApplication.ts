@@ -17,6 +17,7 @@
 import { VILLAGE_WORDS } from "./applyLimits";
 import { KNOW_US_MAX, KNOW_US_TEXT_MAX } from "./openProposals";
 import { knowUsLinksOf, type KnowUsLinks } from "./knowUsLinks";
+import { TOURS_RESUMED_KEY, linesWhileToursPaused, toursResumedOf } from "./toursPaused";
 
 /** The application's own settings, each registered in shared/gameVariables.ts under "The founding team". */
 export const FOUNDING_KEYS = {
@@ -47,7 +48,7 @@ export const PAY_SHAPE_KEYS = {
   note: "org.pay_shape_note",
 } as const;
 
-export type FoundingKey = (typeof FOUNDING_KEYS)[keyof typeof FOUNDING_KEYS] | (typeof PAY_SHAPE_KEYS)[keyof typeof PAY_SHAPE_KEYS] | typeof UPDATED_NOTE_KEY;
+export type FoundingKey = (typeof FOUNDING_KEYS)[keyof typeof FOUNDING_KEYS] | (typeof PAY_SHAPE_KEYS)[keyof typeof PAY_SHAPE_KEYS] | typeof UPDATED_NOTE_KEY | typeof TOURS_RESUMED_KEY;
 
 /** One share of the whole: its name and percent. Never an amount. */
 export interface PayShare {
@@ -138,7 +139,8 @@ const words = (raw: unknown): string => String(typeof raw === "string" ? raw : "
 /** The setup from the village's settings, read through `get` (the setting's current value; "" for one the registry does not know). */
 export function foundingSetupFrom(get: (key: FoundingKey) => string): FoundingSetup {
   return {
-    knowUs: linesOf(get(FOUNDING_KEYS.knowUs), KNOW_US_MAX, KNOW_US_TEXT_MAX),
+    // Land tours and potlucks paused (shared/toursPaused.ts): only the webinar's line shows until the village turns them back on.
+    knowUs: linesWhileToursPaused(linesOf(get(FOUNDING_KEYS.knowUs), KNOW_US_MAX, KNOW_US_TEXT_MAX), toursResumedOf(get(TOURS_RESUMED_KEY))),
     knowUsNote: words(get(FOUNDING_KEYS.knowUsNote)),
     shares: payShapeOf(get(PAY_SHAPE_KEYS.shape)),
     atRisk: words(get(PAY_SHAPE_KEYS.atRisk)),

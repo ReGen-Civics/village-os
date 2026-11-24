@@ -30,7 +30,6 @@ vi.mock("@/components/Layout", () => ({
 }));
 vi.mock("@/components/BuildProgress", () => ({ default: () => null }));
 vi.mock("@/components/SeasonBanner", () => ({ default: () => null }));
-vi.mock("@/components/VillagePulse", () => ({ default: () => null }));
 vi.mock("@/components/MapPeek", () => ({ default: () => null }));
 vi.mock("@/lib/gameApi", () => ({
   useBrandImages: () => ({ hero: "" }),

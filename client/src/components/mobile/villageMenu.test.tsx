@@ -12,7 +12,7 @@ import { menuDocIsEmpty, menuDocOf, menuDocProblem } from "@shared/menuDoc";
 import { TAB_SLOTS } from "@/config/mobileNav";
 
 let menu: unknown = null;
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: 1, name: "Ora Vale", role: "member" }, logout: vi.fn() }) }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: 1, name: "Ora Vale", role: "member", membershipGranted: true }, logout: vi.fn() }) }));
 vi.mock("@/modules/ModuleProvider", () => ({
   useModules: () => ({ modules: [{ id: "forum", lifecycle: "public" }], loaded: true, failed: false }),
   moduleIsOn: (s: { modules: Array<{ id: string }> }, id: string) => s.modules.some((m) => m.id === id),

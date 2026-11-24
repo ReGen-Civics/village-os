@@ -30,6 +30,7 @@ import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
 import { villageWordsProblem } from "./applyLimits";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
+import { CRASH_ALERT_RECIPIENTS_KEY, crashAlertRecipientsProblem } from "./crashAlerts";
 import { GATHERING_LIMIT_DEFAULT, GATHERING_LIMIT_KEY, REVIEW_DAYS_DEFAULT, REVIEW_DAYS_KEY } from "./changeRequestLimits";
 
 export type VariableType = "integer" | "decimal" | "percentage" | "boolean" | "choice" | "text" | "longtext";
@@ -3195,11 +3196,22 @@ export const VARIABLES: VariableDef[] = [
     type: "text",
     default: "",
   },
+  // Land tours and potlucks paused (the lead, 24 Nov 2026, shared/toursPaused.ts). Off by default, so a paused
+  // gathering is never offered by mistake; a village turns it on when its tours and potlucks are running.
+  {
+    key: "org.tours_resumed",
+    category: "The founding team",
+    label: "Land tours and potlucks are running",
+    description:
+      "Off, the application's first step and the steward page's first steps show only the webinar or community call: every way, link or step that names a land tour, a visit to the land, a potluck or a shared meal is hidden. On, they all show again, as written. Nothing is deleted either way.",
+    type: "boolean",
+    default: "false",
+  },
   {
     key: "org.founding_steward_path_link",
     category: "The founding team",
     label: "Where someone completely new explores first",
-    description: "Step 1 says \"Completely new here? Explore the Steward path first\" with this link. A page of this site or an https address; empty means /steward.",
+    description: "Where the Steward path lives, carried with the application's links. The application's first step no longer offers it (the lead, 24 Nov 2026: it sent an applicant back to the page they had just read). A page of this site or an https address; empty means /steward.",
     type: "text",
     default: "",
   },
@@ -3994,6 +4006,35 @@ export const VARIABLES: VariableDef[] = [
       "Lets admins ask the village guide for help inside Admin: finding a page or setting, explaining a control, and proposing a settings change that an admin applies with a click. It reads settings, help text and the shape of the org chart only, never applications, proposals, people's details, terms or pay, and it does not help choose people for roles. It turns on by itself once the village connects an AI key: its own Anthropic key, or Sera when the org memory connection is set up. Turn this off to keep it off.",
     type: "boolean",
     default: "true",
+  },
+  /*
+   * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts, 2026-11-24). A crash
+   * alert went to every admin and founder, and an admin whose seat is not
+   * operational got crash emails that were never hers to act on. This narrows
+   * the alert to named accounts among them; blank keeps everyone.
+   *
+   * OPEN on purpose, though it sits under Platform: the value is set by a
+   * village proposal (`propose_setting`, approved through PUT
+   * /api/admin/variables), and a founder-held dial is refused there once the
+   * village holds `dial.set`. Opening it moves no power: it can only choose
+   * among accounts that already hear every crash, and a list that matches none
+   * of them falls back to all of them, so a typo can never mute the alarm.
+   *
+   * WITHHELD and MEMBERS ONLY because the value is a list of email addresses:
+   * no public mechanics door shows it, and Admin still reads it.
+   */
+  {
+    // Literal, so the generated docs can read it; shared/crashAlerts.test.ts holds it equal to CRASH_ALERT_RECIPIENTS_KEY.
+    key: "ops.crash_alert_recipients",
+    category: "Platform",
+    label: "Accounts that hear about crashes",
+    description:
+      "The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.",
+    type: "text",
+    default: "",
+    ring: "open",
+    withheld: true,
+    membersOnly: true,
   },
 
   /*
@@ -4961,6 +5002,11 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     // could not read would stretch the season before it over months, with
     // nothing saying why, so the whole list is refused here instead
     // (shared/villageSeasons.ts holds the grammar). Blank passes.
+    // Who hears about a crash is a list of addresses or it is blank (shared/crashAlerts.ts).
+    if (def.key === CRASH_ALERT_RECIPIENTS_KEY) {
+      const problem = crashAlertRecipientsProblem(raw);
+      if (problem) return problem;
+    }
     if (def.key === "calendar.seasons") {
       const problem = villageSeasonsProblem(raw);
       if (problem) return problem;

@@ -306,6 +306,55 @@ export const INVESTOR_JOURNEY: PageSpec = buildJourney({
     contactSubject: "Investment Commitment",
   },
   beforeSteps: [
+    /*
+     * THE CASE, THE NOTICE AND THE RISKS (investor remake, 24 Nov 2026). An
+     * investor page that invites people to talk about money needs three things
+     * the page did not have: the reasons in the village's own words, a plain
+     * line that the page is no offer of investment, and the risks said out loud.
+     * The case and the risk list start EMPTY and are not drawn until a village
+     * writes them: a reason nobody typed is a claim nobody made. The notice and
+     * the opening sentence on risk are true of every village still being built,
+     * so they start written, and a village rewrites them with its own counsel.
+     */
+    {
+      id: "case",
+      label: "Why this village",
+      shows: "Short points under the top of the page: what a capital partner should know first. Not drawn until you add a point.",
+      hideable: true,
+      fields: [
+        text("heading", "Heading", 40, "Why This Village"),
+        long("intro", "Sentence under the heading", 200, "What a capital partner should know about {village}, in plain words.", {
+          optional: true,
+          help: "Leave blank for none.",
+        }),
+      ],
+      lists: [
+        {
+          key: "points",
+          label: "Points",
+          help: "Up to six. Say only what is true today, and keep figures out unless your counsel agrees.",
+          itemLabel: "Point",
+          titleKey: "title",
+          maxItems: 6,
+          fields: [text("title", "Point", 48, ""), long("detail", "A line or two under it", 240, "")],
+          default: [],
+        },
+      ],
+    },
+    {
+      id: "notice",
+      label: "Not an offer",
+      shows: "A short line under the buttons at the top of the page and in both forms. Ask your counsel what yours should say.",
+      hideable: true,
+      fields: [
+        long(
+          "body",
+          "The line",
+          280,
+          "This page shares information and invites a conversation. It is not an offer to sell, or a request to buy, any investment or security. Any investment would be made only through formal documents, to people who qualify, where the law allows.",
+        ),
+      ],
+    },
     {
       id: "figures",
       label: "Key numbers",
@@ -404,6 +453,34 @@ export const INVESTOR_JOURNEY: PageSpec = buildJourney({
             text("status", "Status", 16, ""),
             text("progress", "Progress, 0 to 100", 5, "", { help: "A whole number. The bar fills this far." }),
           ],
+          default: [],
+        },
+      ],
+    },
+    {
+      id: "risks",
+      label: "Risks",
+      shows: "What could go wrong, said plainly, before the questions. Drawn while it has a sentence or a risk.",
+      hideable: true,
+      fields: [
+        text("heading", "Heading", 40, "What Could Go Wrong"),
+        long(
+          "intro",
+          "Sentence under the heading",
+          240,
+          "Every investment in a village that is still being built carries risk. You could lose some or all of the money you put in.",
+          { optional: true, help: "Leave blank for none." },
+        ),
+      ],
+      lists: [
+        {
+          key: "items",
+          label: "Risks",
+          help: "Up to eight. Name each one plainly.",
+          itemLabel: "Risk",
+          titleKey: "title",
+          maxItems: 8,
+          fields: [text("title", "Risk", 48, ""), long("detail", "What it means", 240, "")],
           default: [],
         },
       ],

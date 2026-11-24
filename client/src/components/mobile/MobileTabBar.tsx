@@ -17,13 +17,14 @@
  */
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
-import { BARE_ROUTES, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
+import { BARE_ROUTES, NEWCOMER_SLOT, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
 import { Compass } from "lucide-react";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
+import { useNewcomerShows } from "@/lib/newcomer";
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -57,6 +58,30 @@ export function villageSlots(tabs: readonly string[], labels: Readonly<Record<st
   return out;
 }
 
+/**
+ * A newcomer's bar (config/nav.ts, `newcomers`): a slot whose page is a member's
+ * working area, or an area not in use yet, becomes the roles, once; a second
+ * such slot keeps its place only if it is not already on the bar, else it goes
+ * to the platform's Home, so the bar always holds five distinct slots.
+ */
+export function newcomerSlots(slots: readonly TabSlot[], shown: (entry: NavLink) => boolean): TabSlot[] {
+  const out: TabSlot[] = [];
+  const taken = new Set(slots.map((s) => s.path ?? s.event ?? ""));
+  for (const s of slots) {
+    const entry = s.path ? ENTRY_BY_HREF.get(s.path) : undefined;
+    if (!entry?.newcomers || shown(entry)) {
+      out.push(s);
+      continue;
+    }
+    const swap = [NEWCOMER_SLOT, ...TAB_SLOTS].find((c) => c.path && !taken.has(c.path) && !ENTRY_BY_HREF.get(c.path)?.newcomers);
+    if (swap?.path) {
+      taken.add(swap.path);
+      out.push(swap);
+    }
+  }
+  return out;
+}
+
 export default function MobileTabBar() {
   const [location] = useLocation();
   const currentPath = normalisePath(location);
@@ -70,6 +95,7 @@ export default function MobileTabBar() {
     "/": t({ message: "Home", context: "bottom tab bar" }),
     "/quests": t({ message: "Quests", context: "bottom tab bar" }),
     "/circles": t({ message: "Circles", context: "bottom tab bar" }),
+    "/roles": t({ message: "Roles", context: "bottom tab bar" }),
     "open-mobile-menu": t({ message: "More", context: "bottom tab bar" }),
   };
 
@@ -78,7 +104,9 @@ export default function MobileTabBar() {
   // tab in that place, so the bar never offers a door that does not open.
   const menu = useVillageMenu();
   const modules = useModules();
-  const slots = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+  const { newcomer, shows } = useNewcomerShows();
+  const chosen = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+  const slots = newcomer ? newcomerSlots(chosen, shows) : chosen;
 
   // Sign-in and the other focused, signed-out screens render no bar at all.
   // See BARE_ROUTES for why bottom padding could not close this.

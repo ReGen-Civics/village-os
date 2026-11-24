@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { WORLD } from "@/components/journey/look";
 import { m } from "framer-motion";
 import { Users, ArrowRight, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
@@ -134,15 +135,17 @@ export default function Team() {
 
   return (
     <Layout>
-      <section className="py-24 bg-background">
+      {/* The night world (public launch, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
+      <section className="py-24">
         <div className="container">
           <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-            <div className="w-16 h-16 rounded-full bg-sage/10 flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-sage" />
+            <div className="w-16 h-16 rounded-full bg-open/10 flex items-center justify-center mx-auto mb-6">
+              <Users className="w-8 h-8 text-open" />
             </div>
             {/* The heading and the sentence under it used to name one village
                 and describe that village's founding team, so every fork of this
@@ -170,7 +173,7 @@ export default function Team() {
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 The full circle of roles, filled and open, lives on the{" "}
-                <Link href="/roles" className="text-sage font-medium hover:underline">Roles &amp; Circles page</Link>.
+                <Link href="/roles" className="text-open font-medium hover:underline">Roles &amp; Circles page</Link>.
               </p>
             </m.div>
 
@@ -201,7 +204,7 @@ export default function Team() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -6 }}
-                  className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-border"
+                  className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-sm transition-all border border-border"
                 >
                   {member.photo && (
                     <div className="h-64 overflow-hidden">
@@ -217,7 +220,7 @@ export default function Team() {
                     <h3 className="font-display text-xl font-bold text-foreground mb-1">
                       {member.name}
                     </h3>
-                    <p className="text-sage font-semibold text-sm mb-2">
+                    <p className="text-open font-semibold text-sm mb-2">
                       {member.role}
                     </p>
                     {member.circle && (
@@ -249,7 +252,7 @@ export default function Team() {
                 <Emphasized text={page.leadership.fields.openNote} />
               </p>
               )}
-              <Link href="/roles" className="inline-flex items-center gap-2 text-sage font-semibold hover:underline">
+              <Link href="/roles" className="inline-flex items-center gap-2 text-open font-semibold hover:underline">
                 {page.leadership.fields.openLink} <ArrowRight className="w-4 h-4" />
               </Link>
             </m.div>
@@ -265,7 +268,7 @@ export default function Team() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-amber/5 rounded-3xl p-6 sm:p-8 md:p-12 border border-amber/20 mb-20"
+            className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center mb-10">
               <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -285,7 +288,7 @@ export default function Team() {
                   transition={{ delay: index * 0.05 }}
                   className="flex gap-3 items-start"
                 >
-                  <span className="text-amber font-bold text-lg flex-shrink-0">✦</span>
+                  <span className="text-notice font-bold text-lg flex-shrink-0">✦</span>
                   <p className="text-muted-foreground min-w-0 break-words">{item.text}</p>
                 </m.div>
               ))}
@@ -304,7 +307,7 @@ export default function Team() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-teal-deep/5 rounded-3xl p-6 sm:p-8 md:p-12 border border-teal-deep/20 mb-20"
+            className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center">
               <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -335,7 +338,7 @@ export default function Team() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mt-16 bg-sage/5 p-6 sm:p-8 rounded-2xl border border-sage/20"
+            className="text-center mt-16 bg-card p-6 sm:p-8 rounded-2xl border border-border"
           >
             <h2 className="font-display text-2xl font-bold text-foreground mb-4 break-words">
               {page.cta.fields.heading}
@@ -345,7 +348,7 @@ export default function Team() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/#choose-path">
-                <span className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors font-medium cursor-pointer">
+                <span className="inline-flex items-center gap-2 px-6 py-3 bg-notice text-background rounded-xl hover:bg-notice/90 transition-colors font-medium cursor-pointer">
                   {page.cta.fields.pathLabel}
                   <ArrowRight className="w-4 h-4" />
                 </span>
@@ -366,6 +369,7 @@ export default function Team() {
           )}
         </div>
       </section>
+      </div>
     </Layout>
   );
 }

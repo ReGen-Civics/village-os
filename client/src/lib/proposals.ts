@@ -3,7 +3,7 @@
 import { authToken } from "./gameApi";
 import type { IdeaReceipt } from "@shared/questIdeas";
 
-export type ProposalKind = "work-with-us" | "quest-proposal" | "partner";
+export type ProposalKind = "work-with-us" | "quest-proposal" | "partner" | "prosperity-packet";
 
 /**
  * What the server said. `idea` is where a quest idea went: the review queue,

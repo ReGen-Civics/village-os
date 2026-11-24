@@ -304,7 +304,7 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(document.activeElement).toBe(slot));
   });
 
-  it("QA P1-01: on a wide screen the first role, already shown, still brings its card into view", async () => {
+  it("QA P1-01: on a wide screen every card starts closed, and opening one brings its card into view", async () => {
     vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
     const scroll = vi.fn();
     const proto = HTMLElement.prototype as any;
@@ -313,20 +313,29 @@ describe("Join the founding team", () => {
     try {
       renderRoles();
       const section = await screen.findByRole("region", { name: "Join the founding team" });
-      const slot = section.querySelector("[data-founding-card-slot]") as HTMLElement;
+      const buttons = within(section).getAllByRole("button").filter((b) => b.hasAttribute("data-founding-role"));
+      // Nothing opens by itself (the lead, 24 Nov 2026).
+      for (const b of buttons) expect(b.getAttribute("aria-expanded")).toBe("false");
+      const first = buttons.find((b) => b.getAttribute("data-founding-role") === "land")!;
+      const other = buttons.find((b) => b.getAttribute("data-founding-role") !== "land")!;
+      const slot = () => section.querySelector("[data-founding-card-slot]") as HTMLElement;
+      const proto2 = HTMLElement.prototype as any;
+      const rect = proto2.getBoundingClientRect;
       // Below the fold, as measured on desktop: 1944px down a 900px window.
-      slot.getBoundingClientRect = () => ({ top: 1944 }) as DOMRect;
-      const first = within(section).getAllByRole("button").find((b) => b.getAttribute("data-founding-role") === "land")!;
-      expect(first.getAttribute("aria-expanded")).toBe("true");
-      fireEvent.click(first);
-      await waitFor(() => expect(scroll).toHaveBeenCalled());
-      expect(first.getAttribute("aria-expanded")).toBe("true");
-      // Already on screen, the page stays where it is.
-      scroll.mockClear();
-      slot.getBoundingClientRect = () => ({ top: 10 }) as DOMRect;
-      fireEvent.click(first);
-      await waitFor(() => expect(document.activeElement).toBe(slot));
-      expect(scroll).not.toHaveBeenCalled();
+      proto2.getBoundingClientRect = () => ({ top: 1944 }) as DOMRect;
+      try {
+        fireEvent.click(first);
+        await waitFor(() => expect(scroll).toHaveBeenCalled());
+        expect(first.getAttribute("aria-expanded")).toBe("true");
+        // Already on screen, the page stays where it is.
+        scroll.mockClear();
+        proto2.getBoundingClientRect = () => ({ top: 10 }) as DOMRect;
+        fireEvent.click(other);
+        await waitFor(() => expect(document.activeElement).toBe(slot()));
+        expect(scroll).not.toHaveBeenCalled();
+      } finally {
+        proto2.getBoundingClientRect = rect;
+      }
     } finally {
       proto.scrollIntoView = before;
     }

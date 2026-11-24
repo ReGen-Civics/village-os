@@ -30,6 +30,8 @@ vi.mock("@/lib/gameApi", () => ({
   useGameConfig: () => useGameConfigMock(),
 }));
 
+// A member's bar: a newcomer's bar shows Roles in the token slot's place (the front door, 24 Nov 2026).
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u1", name: "Ora", role: "member", membershipGranted: true }, token: "t", loading: false }) }));
 import { useTokenName, useTokenNameLower, useValueTokenName } from "./useTokenNames";
 import MobileTabBar from "@/components/mobile/MobileTabBar";
 import { TAB_SLOTS } from "@/config/mobileNav";

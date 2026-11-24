@@ -26,6 +26,7 @@ import MyGuide, { useGuideState } from "@/components/guide/MyGuide";
 import { JOURNAL_ON_SERA, journalGuide, type GuideState } from "@shared/guideChoice";
 import { saveGuide } from "@/lib/guideApi";
 import { useLingui } from "@lingui/react/macro";
+import { guideLabelIn } from "@/lib/guideNameWords";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT } from "./ui";
 
 export const GUIDE_RESTING = "The guide is resting. Your journal works without it.";
@@ -234,7 +235,7 @@ export default function GuidePanel({
               key={messages.length}
               suggested={latest.suggestedTasks ?? []}
               done={latest.doneTasks ?? []}
-              guideName={latest.guide?.name ?? guideState?.options.find((o) => o.id === guideState.answering)?.name ?? "The guide"}
+              guideName={guideLabelIn(latest.guide?.name ?? guideState?.options.find((o) => o.id === guideState.answering)?.name ?? "The guide")}
             />
           )}
           {kept && <p role="status" className="text-sm text-open">Kept as your reflection. You can change it when you read the page back.</p>}
