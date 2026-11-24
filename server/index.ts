@@ -102,7 +102,7 @@ import { type FaqPathway, register as registerFaqRoutes } from "./routes/faqs";
 import { register as registerBrochurePagesRoutes } from "./routes/brochurePages";
 import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
-import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger } from "./routes/peopleLock";
+import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
 import { register as registerGratitudeVoiceRoutes } from "./routes/gratitudeVoices";
@@ -575,7 +575,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
-import { livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
+import { hidesFirstNameFromVisitors, livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingFirstName, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
 import { seedEconomy, suggestClassTags } from "./lib/economySeed";
@@ -13179,8 +13179,11 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   app.get("/api/village/powers", async (req, res) => {
     // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
     // which is all a row carries. A member who keeps their roles off their profile (showRoles false) is left out
-    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out.
-    const hiddenFromVisitors = (await authedUser(req)) ? new Set<string>() : await membersHidingRoles(getPool());
+    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out. A member who
+    // turned off "Show my first name to visitors" is "A member" to a visitor (VISITOR_NEUTRAL_NAME, lib/peopleLock.ts).
+    const visitor = !(await authedUser(req));
+    const hiddenFromVisitors = visitor ? await membersHidingRoles(getPool()) : new Set<string>();
+    const namelessToVisitors = visitor ? await membersHidingFirstName(getPool()) : new Set<string>();
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
@@ -13190,7 +13193,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
     );
     // Who holds each power today through a role, too (server/lib/villagePowers.ts), so a power a role
     // carries is never described as the admin panel's. Fixed order, no count: the R55 rules hold there.
-    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
+    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: namelessToVisitors.has(String(m.id)) ? VISITOR_NEUTRAL_NAME : firstName(m.name ?? "Member") }]));
     const orgNames = new Map((await listOrgRoles(getPool())).map((r) => [r.id, r.name]));
     const ladder = servedLadder(mergedConfig().project.commitmentName) as Array<{ id: string; name?: string }>;
     const unlock = stageUnlockOverridesFromVars();
@@ -19103,6 +19106,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!targetId) return res.status(404).json({ error: "Not found" });
     const loaded = await loadProfile(getPool(), villageId(), targetId);
     if (!loaded) return res.status(404).json({ error: "Not found" });
+    // A member who turned off "Show my first name to visitors" has no public sheet: a page reached by their handle
+    // that carried a portrait beside "A member" would still say who it is. Members read it as before.
+    if (!viewer && hidesFirstNameFromVisitors(loaded.privacy)) return res.status(404).json({ error: "Not found" });
 
     const { startsAt } = cycleWindow();
     const full = {
@@ -24604,8 +24610,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       listOrgAssignments(getPool(), lapseContext()),
       members.all(),
     ]);
+    // A stranger reads "A member" for whoever turned off "Show my first name to visitors" (VISITOR_NEUTRAL_NAME,
+    // lib/peopleLock.ts). `nameOf` serves the public holder row; a member's row needs a signed-in viewer.
+    const namelessToVisitors = viewer ? new Set<string>() : await membersHidingFirstName(getPool());
     const nameOf = (id: string) =>
-      firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
+      namelessToVisitors.has(String(id)) ? VISITOR_NEUTRAL_NAME : firstName((allMembers as any[]).find((u: any) => u.id === id)?.name ?? "Member");
 
     // ONE projection, shared with `/api/map` (shared/circleView.ts). The
     // hand-picked object this replaces dropped `color` and `icon`, so the
