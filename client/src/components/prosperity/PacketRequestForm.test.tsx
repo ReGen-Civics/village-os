@@ -41,7 +41,8 @@ describe("the packet request form", () => {
     await waitFor(() => expect(document.querySelector("[data-packet-sent]")).toBeTruthy());
     expect(sent).toEqual([{ type: "prosperity-packet", hp: "", data: { name: "Ana Lima", email: "ana@example.org", build: "A bakery with the village's grain", note: "We can start in spring." } }]);
     expect(screen.getByRole("status").textContent).toContain("Your request is on its way");
-    expect(document.activeElement).toBe(document.querySelector("[data-packet-sent]"));
+    // Focus moves in an effect after the sent state paints; wait for it rather than reading it in the same tick.
+    await waitFor(() => expect(document.activeElement).toBe(document.querySelector("[data-packet-sent]")));
     expect(document.querySelector("[data-packet-form]")).toBeNull();
   });
 

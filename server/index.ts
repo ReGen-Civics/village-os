@@ -90,7 +90,7 @@ import {
   type PowerHolder,
 } from "./lib/capabilityRegistry";
 import { partnerRecipients } from "./lib/partnerRouting";
-import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
+import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE, REPLY_WINDOW_MOONS_VARIABLE } from "../shared/contributorRoutes";
 import { PROSPERITY_PACKET_FORM, packetFrom, packetProblems } from "../shared/prosperityPacket";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
@@ -1183,7 +1183,7 @@ const DEFAULT_INVESTOR_SUMMARY = SITE_CONTENT.investorSummary;
 // values until they change them. This is what makes a new project live-editable
 // from the browser without a code deploy. Merged over GAME_CONFIG on read.
 const DEFAULT_BRAND = {
-  project: { name: "", tagline: "", memberName: "", catalystName: "", roleName: "", seatName: "", commitmentName: "", location: "", country: "", fiatCurrency: "", siteUrl: "", eventsUrl: "", contactEmail: "", footerBlurb: "" },
+  project: { name: "", tagline: "", memberName: "", catalystName: "", roleName: "", seatName: "", commitmentName: "", location: "", country: "", fiatCurrency: "", siteUrl: "", eventsUrl: "", contactEmail: "", footerBlurb: "", heroHeadline: "", heroBody: "" },
   currency: { name: "", nameLower: "", collectiveName: "" },
   images: { hero: "", investorHero: "", residentHero: "", stewardHero: "", prosperityHero: "", masterPlanHero: "", logo: "", heartLogo: "", favicon: "" },
   // Setup Wizard progress — projects tick these off as they make the site theirs.
@@ -2877,6 +2877,7 @@ function mergedConfig() {
       // enquiry to an address this village does not own.
       contactEmail: pick((brand.project as any).contactEmail, p.contactEmail),
       footerBlurb: overlayOrNone(brand.project, "footerBlurb", p.footerBlurb),
+      heroHeadline: pick((brand.project as any).heroHeadline, p.heroHeadline ?? ""), heroBody: pick((brand.project as any).heroBody, p.heroBody ?? ""), // the homepage's own words from Identity; blank keeps Pages, Home (the lead, 24 Nov 2026)
     },
     // THE TOKEN REGISTRY IS THE SINGLE SOURCE OF TRUTH FOR A TOKEN'S NAME
     // (Rye, 2026-08-14). Renaming Gratitude in the Mint has to change every
@@ -18250,6 +18251,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       applicantReplyDays: numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE), // the village's one reply promise, said by the application and the four ways in (shared/contributorRoutes.ts)
+      replyWindowMoons: numberVar(REPLY_WINDOW_MOONS_VARIABLE), // what a proposer is told once they have sent: within one moon cycle (the lead, 24 Nov 2026; shared/contributorRoutes.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });

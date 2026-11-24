@@ -124,6 +124,9 @@ export interface SetupStep {
 export const IDENTITY_WIZARD_FIELDS = [
   ["name", "Project name"],
   ["tagline", "Tagline"],
+  // The homepage's own words (the lead, 24 Nov 2026), beside the Tagline. Blank keeps Pages, Home.
+  ["heroHeadline", "Homepage headline (blank keeps the one in Pages, Home)"],
+  ["heroBody", "Homepage sentence under the headline (blank keeps the one in Pages, Home)"],
   ["memberName", "What a member is called"],
   ["catalystName", "What whoever runs this village is called"],
   // Both singular, because gameApi.ts derives the plural and the article. A

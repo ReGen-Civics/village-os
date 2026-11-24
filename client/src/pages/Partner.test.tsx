@@ -38,12 +38,22 @@ const fill = () => {
 };
 
 describe("the partner form", () => {
-  it("says what a partner brings and gets back, and when they hear, in the village's days", () => {
+  it("says what a partner brings and gets back, and promises no reply before it is sent (the lead, 24 Nov 2026)", () => {
     render(<Partner />);
     expect(screen.getByRole("heading", { level: 1, name: "Become a partner" })).toBeTruthy();
     expect(screen.getByText("No account needed.")).toBeTruthy();
     expect(screen.getByText("Local nonprofits can partner with the village too, including to share in its profits.")).toBeTruthy();
-    expect(document.querySelector("[data-route-promise]")?.textContent).toBe("You'll hear within 9 days.");
+    expect(document.querySelector("[data-route-promise]")).toBeNull();
+  });
+
+  it("says they will hear within one moon cycle once it is sent, and only then (the lead, 24 Nov 2026)", async () => {
+    render(<Partner />);
+    expect(document.querySelector("[data-route-promise]")).toBeNull();
+    fill();
+    fireEvent.click(screen.getByRole("button", { name: /Send your proposal/ }));
+    await waitFor(() => expect(document.querySelector("[data-partner-sent]")).toBeTruthy());
+    expect(Array.from(document.querySelectorAll("[data-route-promise]")).map((p) => p.textContent)).toEqual(["You'll hear from us within one moon cycle."]);
+    expect(document.body.textContent).not.toMatch(/within \d+ days/);
   });
 
   it("sends a partner proposal with every field, trimmed, and then offers the other three ways", async () => {

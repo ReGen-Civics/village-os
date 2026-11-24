@@ -18,6 +18,7 @@ import { LazyStateNote } from "@/components/ComingSoonLazy";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
+import { useGameConfig } from "@/lib/gameApi";
 import { ArrowRight, MailOpen, PenLine } from "lucide-react";
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, DOOR, EYEBROW, H1, HINT, LEDE, TILE, WORLD } from "@/components/journey/look";
@@ -153,23 +154,36 @@ function WhileYouWait() {
       {/* The other three ways to build, in the same panel (QA, 23 Nov 2026: one "While you wait", never two). No second
           reply promise: the page already says when we reply, from the same village number (ReplyPromise). */}
       <div className="mt-2 border-t border-border pt-4" data-wait-routes="">
-        <Suspense fallback={null}><ContributorRoutes variant="links" register="founding" except={["team"]} promise={false} heading={t({ message: "You can also", context: "after an application: the other ways to build, under While you wait" })} headingAs="h3" /></Suspense>
+        <Suspense fallback={null}><ContributorRoutes variant="links" register="founding" except={["team"]} heading={t({ message: "You can also", context: "after an application: the other ways to build, under While you wait" })} headingAs="h3" /></Suspense>
       </div>
     </nav>
   );
 }
 
 /**
- * WHEN WE REPLY (the lead, 20 Nov 2026, idea 18): "We reply within N days.", N from the village's own
- * `org.applicant_reply_days` as the server sent it (server/lib/foundingFirst.ts replyDaysFor), never typed here.
- * Nothing when the server sent none: a role after the founding team says its own wait.
+ * The same words as the four ways' `useReplyPromise` (components/ContributorRoutes.tsx), said here without importing
+ * that module, which this page loads lazily to keep the application's first view small.
+ */
+function useThresholdReplyPromise(): string {
+  const { t } = useLingui();
+  const n = useGameConfig()?.replyWindowMoons;
+  const moons = typeof n === "number" && Number.isInteger(n) && n >= 1 && n <= 6 ? n : 1;
+  return moons === 1
+    ? t({ message: "You'll hear from us within one moon cycle.", context: "after sending a proposal: when you hear back" })
+    : t({ message: `You'll hear from us within ${moons} moon cycles.`, context: "after sending a proposal: when you hear back, more than one moon" });
+}
+
+/**
+ * WHEN WE REPLY, ONCE THEY HAVE SENT (the lead, 24 Nov 2026: "for all proposals they'll hear within 1 moon cycle"):
+ * the village's own window in moon cycles, `org.reply_window_moons` (useReplyPromise). Nothing when the server sent
+ * no days: a role after the founding team says its own wait.
  */
 export function ReplyPromise({ days }: { days: number | null }) {
-  const { t } = useLingui();
+  const promise = useThresholdReplyPromise();
   if (!days) return null;
   return (
-    <p className="font-semibold text-foreground" data-reply-promise={days}>
-      {days === 1 ? t({ message: "We reply within 1 day.", context: "founding application, when we reply" }) : t({ message: `We reply within ${days} days.`, context: "founding application, when we reply" })}
+    <p className="font-semibold text-foreground" data-reply-promise="">
+      {promise}
     </p>
   );
 }
