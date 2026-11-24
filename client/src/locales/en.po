@@ -4297,6 +4297,12 @@ msgstr "No amount yet"
 msgid "No steward is sitting now, so there is nobody to name."
 msgstr "No steward is sitting now, so there is nobody to name."
 
+#. placeholder {0}: goals.length
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: how many of the season's goals the village has reached"
+msgid "{reached} of {0} reached"
+msgstr "{reached} of {0} reached"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Photo at the top of a run (optional)"
@@ -10535,6 +10541,11 @@ msgctxt "role draft stat"
 msgid "{openPlaces} of {seats} open"
 msgstr "{openPlaces} of {seats} open"
 
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: under the mode switch, the mode the page is in"
+msgid "Light"
+msgstr "Light"
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
 msgstr "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
@@ -10986,6 +10997,11 @@ msgctxt "proposed changes"
 msgid "Those could not be discarded. Reload and try again."
 msgstr "Those could not be discarded. Reload and try again."
 
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: heading over this season's goals"
+msgid "What we are tending"
+msgstr "What we are tending"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Leaning {low}"
@@ -11370,6 +11386,11 @@ msgstr "A required role is hidden from members who say they can give less. Nothi
 msgctxt "pay page"
 msgid "Pay someone here for a jar of honey, a haircut, an afternoon of help."
 msgstr "Pay someone here for a jar of honey, a haircut, an afternoon of help."
+
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: a season goal still being worked on"
+msgid "Growing"
+msgstr "Growing"
 
 #. placeholder {0}: next.title
 #: client/src/components/today/FirstFourteenDays.tsx
@@ -13188,6 +13209,11 @@ msgstr "For {role}: {0}"
 msgctxt "voice field purpose: objection ruling note"
 msgid "Why you ruled this objection the way you did, for the record."
 msgstr "Why you ruled this objection the way you did, for the record."
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: under the mode switch, the mode the page is in"
+msgid "Dark"
+msgstr "Dark"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tab"
@@ -17288,6 +17314,11 @@ msgstr "You are on the roll and have not voted yet."
 msgctxt "role editor: who can hold a role"
 msgid "A person or an agent"
 msgstr "A person or an agent"
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud"
+msgid "Switch to dark mode"
+msgstr "Switch to dark mode"
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -21730,6 +21761,11 @@ msgctxt "founding application review, several roles"
 msgid "Commitment: {eachRole}. {allPct}% in all"
 msgstr "Commitment: {eachRole}. {allPct}% in all"
 
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud"
+msgid "Switch to light mode"
+msgstr "Switch to light mode"
+
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint form, token picker"
 msgid "Token to mint"
@@ -22954,6 +22990,11 @@ msgctxt "admin helper panel"
 msgid "{guide}, your Admin helper"
 msgstr "{guide}, your Admin helper"
 
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: a season goal the village has reached"
+msgid "Reached"
+msgstr "Reached"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view: keyboard hint, desktop"
 msgid "The arrow keys walk the days. Home and End go to the first and last day of the moon."
@@ -23454,6 +23495,11 @@ msgstr "The venture you run"
 msgctxt "roles page, admins only: the waitlist"
 msgid "Only admins see this. Nothing is sent unless a person writes a letter and presses send."
 msgstr "Only admins see this. Nothing is sent unless a person writes a letter and presses send."
+
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: eyebrow over this season's goals"
+msgid "This season"
+msgstr "This season"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
