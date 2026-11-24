@@ -329,6 +329,7 @@ import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
+import { pathArtFocus } from "../shared/pathCardArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
 import { register as registerWalletRoutes } from "./routes/wallet";
@@ -2928,6 +2929,7 @@ function mergedConfig() {
       masterPlanHeroAlt: alt("masterPlanHeroAlt"),
       logoAlt: alt("logoAlt"),
       heartLogoAlt: alt("heartLogoAlt"),
+      ...pathArtFocus(brand.images as Record<string, unknown>), // each path card picture's optional focal point (shared/pathCardArt.ts)
     },
   };
 }
