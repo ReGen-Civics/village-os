@@ -284,6 +284,43 @@ describe.skipIf(!DB_CONFIGURED)("the members' powers page names who holds a powe
     const member = await call("GET", "/api/village/powers", undefined, cy.token);
     expect(member.json.powers.find((p: any) => p.capability === "story.tell").heldToday).toEqual(["Trained Practitioners (Cy)"]);
   });
+
+  it("a member who turns off \"Show my first name to visitors\" is \"A member\" to a visitor, and still named to a member", async () => {
+    const r = await call("POST", "/api/auth/register", { name: "Dove Quietwater", email: "dove-page@example.test", password: PW, paths: ["resident"] }, "");
+    expect(r.status, r.text).toBe(200);
+    const dove = { id: String(r.json?.user?.id ?? ""), token: String(r.json?.token ?? "") };
+    expect((await call("PUT", `/api/admin/players/${dove.id}/stage`, { stageId: "member" })).status).toBe(200);
+    expect((await call("POST", "/api/admin/roles/practitioners/holders", { userId: dove.id, action: "add" })).status).toBe(200);
+    const story = (body: any) => body.powers.find((p: any) => p.capability === "story.tell").heldToday as string[];
+    const [rows] = await pool.query<any[]>("SELECT handle FROM users WHERE id = ?", [dove.id]); // module-review-ok: the e2e harness reading its own scratch schema
+    const handle = String(rows[0]?.handle ?? "");
+    expect(handle).toBeTruthy();
+
+    // Absent means ON: Dove never touched the setting, and a visitor reads the first name and the profile.
+    expect((await call("GET", "/api/me/privacy", undefined, dove.token)).json.privacy.showFirstNameToVisitors).toBe(true);
+    expect(story((await call("GET", "/api/village/powers", undefined, "")).json)).toContain("Trained Practitioners (Dove)");
+    const shown = await call("GET", `/api/profiles/${handle}`, undefined, "");
+    expect(shown.status, shown.text).toBe(200);
+    expect(shown.json.name).toBe("Dove");
+
+    // Off: the visitor payload names nobody, carries no initial, and the profile is not found.
+    expect((await call("PUT", "/api/me/privacy", { showFirstNameToVisitors: false }, dove.token)).status).toBe(200);
+    const visitor = await call("GET", "/api/village/powers", undefined, "");
+    expect(visitor.status, visitor.text).toBe(200);
+    expect(story(visitor.json)).toContain("Trained Practitioners (A member)");
+    expect(story(visitor.json)).not.toContain("Trained Practitioners (Dove)");
+    expect(visitor.text).not.toMatch(/\bDove\b|Quietwater|\(D\.?\)/);
+    expect((await call("GET", `/api/profiles/${handle}`, undefined, "")).status).toBe(404);
+
+    // A member still reads Dove exactly as before, the profile included.
+    const member = await call("GET", "/api/village/powers", undefined, dove.token);
+    expect(story(member.json)).toContain("Trained Practitioners (Dove)");
+    expect((await call("GET", `/api/profiles/${handle}`, undefined, founderToken)).json.name).toBe("Dove Quietwater");
+
+    // On again: the visitor reads the first name on the very next request.
+    expect((await call("PUT", "/api/me/privacy", { showFirstNameToVisitors: true }, dove.token)).status).toBe(200);
+    expect(story((await call("GET", "/api/village/powers", undefined, "")).json)).toContain("Trained Practitioners (Dove)");
+  });
 });
 
 describe.skipIf(!DB_CONFIGURED)("operator powers: a holder reaches an admin route, and no admin loses one", () => {

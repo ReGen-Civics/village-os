@@ -7,6 +7,7 @@
  *   org.role_card_shared         lines above each card's "What {village} needs from you"
  *   org.role_card_rhythm         the sessions everyone attends, first under Rhythm
  *   org.role_card_first_review   when the first review happens (read by the card projection)
+ *   org.role_card_nationality    the Nationality row on every open role (read by the card projection)
  *   org.role_card_onboarding     "Once you're selected", where a card writes none of its own
  *   org.role_card_word_tips      the village's own words for a card's tooltips (shared/roleCardWordTips.ts)
  *

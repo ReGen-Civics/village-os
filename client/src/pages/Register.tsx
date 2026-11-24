@@ -46,6 +46,7 @@ function inviteFromAddress(): string {
  */
 function InvitationNeeded({ villageName, reason }: { villageName: string; reason?: string }) {
   const word = useAppWords();
+  const { t } = useLingui();
   return (
     <section aria-labelledby="invitation-needed" className={`${CARD} space-y-5`}>
       {reason && (
@@ -54,21 +55,21 @@ function InvitationNeeded({ villageName, reason }: { villageName: string; reason
         </p>
       )}
       <h2 id="invitation-needed" className={H2}>
-        {word("joining", "heading") ?? <>You need an invitation to join {villageName}</>}
+        {word("joining", "heading") ?? t({ message: `You need an invitation to join ${villageName}`, context: "register, invitation needed: the heading" })}
       </h2>
       <p className={LEDE}>
-        {word("joining", "withLink") ?? "Got an invitation link? Open it to create your account."}
+        {word("joining", "withLink") ?? t({ message: "Got an invitation link? Open it to create your account.", context: "register, invitation needed" })}
       </p>
       <p className={LEDE}>
         {word("joining", "withoutLink") ??
-          "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."}
+          t({ message: "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step.", context: "register, invitation needed" })}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <a
           href="/request-membership"
           className={BTN_PRIMARY}
         >
-          {word("joining", "askButton") ?? "Ask to join"}
+          {word("joining", "askButton") ?? t({ message: "Ask to join", context: "register, invitation needed: the button" })}
           <ArrowRight className="w-5 h-5" aria-hidden="true" />
         </a>
         <a
@@ -76,7 +77,7 @@ function InvitationNeeded({ villageName, reason }: { villageName: string; reason
           className={BTN_NOTICE}
         >
           <CalendarDays className="w-5 h-5" aria-hidden="true" />
-          See calls and events
+          {t({ message: "See calls and events", context: "register, invitation needed: the second button" })}
         </a>
       </div>
     </section>
@@ -225,7 +226,7 @@ export default function Register() {
                 </div>
               </div>
               <h1 className={`${H1} mb-2`}>
-                Join {villageName}
+                {t({ message: `Join ${villageName}`, context: "register: the page heading" })}
               </h1>
               {/* R47: only the reader who can act on it sees it. Somebody held
                   at the door needs an invitation first, and the card says so. */}
@@ -236,7 +237,7 @@ export default function Register() {
 
             {deciding ? (
               <p aria-live="polite" className={`${HINT} text-center`}>
-                Checking how to join...
+                {t({ message: "Checking how to join...", context: "register: while it checks the invitation" })}
               </p>
             ) : heldAtTheDoor ? (
               <InvitationNeeded villageName={villageName} reason={invite ? check?.error : undefined} />
@@ -455,9 +456,9 @@ export default function Register() {
             )}
 
             <div className="mt-8 text-center">
-              <p className={`${HINT} mb-4`}>Already have an account?</p>
+              <p className={`${HINT} mb-4`}>{t({ message: "Already have an account?", context: "register: for someone with an account" })}</p>
               <a href="/login" className={BTN_NOTICE}>
-                Sign in
+                {t({ message: "Sign in", context: "register: for someone with an account" })}
                 <ArrowRight className="size-5" aria-hidden="true" />
               </a>
             </div>
