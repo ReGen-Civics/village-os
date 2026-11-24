@@ -9,11 +9,11 @@
  * into short tiles (shared/rolePieces.ts) and never rewritten.
  *
  * Every word is the role editor's, read live; a piece the card has not written is not drawn. Each
- * concept once (QA2-16): the facts say the commitment, track, place and languages, so the details
+ * concept once (QA2-16): the facts say the commitment, track, place, nationality and languages, so the details
  * under "How you're chosen" leave them out.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { BadgeCheck, CalendarDays, Clock, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
+import { BadgeCheck, CalendarDays, Clock, Coins, Compass, DoorOpen, Flag, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
@@ -178,9 +178,12 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // Commitment and where come back as tiles beside track and languages (the Amora operations role, 20 Nov 2026,
   // reversing 1.3.38's "said once" on purpose): the seat column had two tiles and empty space under them. Each tile
   // reads the very line "The role in one minute" draws, so there is one source and nothing to keep twice.
-  const facts: Array<{ icon: LucideIcon; label: string; value: string; panel?: boolean }> = [
+  // Nationality (the lead, 24 Nov 2026) sits across both columns, one line each: "preferred" above "possible".
+  const nationality = rows.find((r) => r.id === "nationality")?.lines.join("\n") ?? "";
+  const facts: Array<{ icon: LucideIcon; label: string; value: string; panel?: boolean; wide?: boolean }> = [
     { panel: true, icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: p.oneMinute.commitment },
     { panel: true, icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: p.oneMinute.where },
+    { wide: true, icon: Flag, label: t({ message: "Nationality", context: "founding card fact" }), value: nationality },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") ? trackWords(i18n, row("track")) : "" },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },
   ].filter((f) => f.value);
@@ -188,7 +191,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // The details under "How you're chosen" leave out what the facts already say.
   const card = p.params?.card && typeof p.params.card === "object" ? p.params.card : null;
   // The pay is said once, on the Rewards piece (the lead, 19 Nov 2026), so "What it pays" is not said again here.
-  const chosenSeat = card ? { ...p.params, card: { ...card, commitmentPct: undefined, track: undefined, whereWorked: undefined, whereText: undefined, languages: undefined, ...(p.pay ? { publicPay: undefined } : {}) } } : p.params;
+  const chosenSeat = card ? { ...p.params, card: { ...card, commitmentPct: undefined, track: undefined, whereWorked: undefined, whereText: undefined, nationality: undefined, languages: undefined, ...(p.pay ? { publicPay: undefined } : {}) } } : p.params;
   const shared = p.shared ?? NO_SHARED;
 
 
@@ -418,12 +421,12 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
     shownFacts.length > 0 ? (
       <dl className="grid grid-cols-2 gap-2" data-testid="card-facts">
         {shownFacts.map((f) => (
-          <div key={f.label} className={`min-w-0 rounded-xl px-3 py-2.5 ${p.wide ? "bg-card" : "bg-muted/50"}`}>
+          <div key={f.label} className={`min-w-0 rounded-xl px-3 py-2.5 ${f.wide ? "col-span-2" : ""} ${p.wide ? "bg-card" : "bg-muted/50"}`}>
             <dt className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
               <f.icon className="size-3.5 shrink-0 text-notice" aria-hidden="true" />
               {f.label}
             </dt>
-            <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>
+            <dd className="mt-0.5 whitespace-pre-line break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>
           </div>
         ))}
       </dl>

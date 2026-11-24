@@ -17,11 +17,14 @@ export function JourneyLink({
   className,
   children,
   onForm,
+  formDisabled,
 }: {
   action: JourneyAction;
   className: string;
   children: ReactNode;
   onForm?: (form: string) => void;
+  /** A form that cannot be asked for yet (an empty investor pack): its button is drawn disabled, and the page says why. */
+  formDisabled?: (form: string) => boolean;
 }) {
   switch (action.kind) {
     case "route":
@@ -37,6 +40,13 @@ export function JourneyLink({
         </a>
       );
     case "form":
+      if (formDisabled?.(action.form)) {
+        return (
+          <button type="button" disabled aria-disabled="true" className={`${className} cursor-not-allowed opacity-50`}>
+            {children}
+          </button>
+        );
+      }
       return (
         <button type="button" onClick={() => onForm?.(action.form)} className={className}>
           {children}

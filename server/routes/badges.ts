@@ -64,8 +64,8 @@ import { recordEvent } from "../lib/events";
 import { EXAMPLE_REFUSAL_BODY, isExampleRow, isExampleUser, onRealItemPublished } from "../lib/examples";
 import { requireModule } from "../lib/modules";
 import { boolVar, numberVar } from "../lib/variables";
-import { firstNameOf, peopleTier } from "../lib/peopleLock";
-import { userIdForHandle } from "../lib/profile";
+import { firstNameOf, peopleTier, VISITOR_NEUTRAL_NAME } from "../lib/peopleLock";
+import { membersHidingFirstName, userIdForHandle } from "../lib/profile";
 import { badgeNoticeTitle } from "../../shared/doorsOpened";
 
 type Deps = Pick<
@@ -307,11 +307,15 @@ export function register(app: Express, deps: Deps): void {
       );
     }
     if (tier === "none") return res.json({ members: [] });
+    // A member who turned off "Show my first name to visitors" is "A member" to a stranger, with no handle.
+    const nameless = tier === "member" ? new Set<string>() : await membersHidingFirstName(getPool());
     res.json({
       members: rows.map((r) =>
         tier === "member"
           ? { id: r.id, name: r.name, handle: r.handle ?? null }
-          : { id: null, name: firstNameOf(r.name), handle: r.handle ?? null },
+          : nameless.has(String(r.id))
+            ? { id: null, name: VISITOR_NEUTRAL_NAME, handle: null }
+            : { id: null, name: firstNameOf(r.name), handle: r.handle ?? null },
       ),
     });
   });
