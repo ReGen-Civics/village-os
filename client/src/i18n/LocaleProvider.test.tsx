@@ -246,3 +246,27 @@ describe("LocaleProvider", () => {
     });
   });
 });
+
+describe("a village that switched a language off", () => {
+  it("never loads it, and a Spanish browser reads the village in English", async () => {
+    const fetchCatalog = vi.fn(async () => catalog({ "Hello there": "Hola" }));
+    render(
+      <LocaleProvider sources={{ browser: ["es-CR", "en"], villageDefault: null, offered: ["en"] }} fetchCatalog={fetchCatalog}>
+        <Hello />
+      </LocaleProvider>,
+    );
+    expect(await screen.findByText(/Hello there/)).toBeTruthy();
+    expect(fetchCatalog).not.toHaveBeenCalled();
+    expect(document.documentElement.lang).toBe("en");
+  });
+
+  it("offers what the village keeps on", async () => {
+    const fetchCatalog = vi.fn(async () => catalog({ "Hello there": "Hola" }));
+    render(
+      <LocaleProvider sources={{ browser: ["es-CR", "en"], villageDefault: null, offered: ["en", "es"] }} fetchCatalog={fetchCatalog}>
+        <Hello />
+      </LocaleProvider>,
+    );
+    expect(await screen.findByText(/Hola/)).toBeTruthy();
+  });
+});

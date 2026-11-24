@@ -1,6 +1,7 @@
 # i18n: the cheap half, specified but not built
 
-**Status: specification only. Nothing in this document is wired up yet.**
+**Status: historical. Lingui, the catalogs, the picker and per-village content
+translation have since been built; `docs/I18N.md` describes what is true now.**
 Written 2026-08-31 by the UI lane of the Season 2 fleet programme, on Rye's
 ruling R4: "Not at launch, but soon after. Land the cheap half now (message
 keys so new prose stops freezing into English-only history); full extraction

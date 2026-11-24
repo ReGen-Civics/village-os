@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { overlayPageRaw, overlaySeat, overlaySections, readPageTranslation, readRoleCardTranslation } from "./contentTranslationOverlay";
+import { fallbackLangOf } from "./contentTranslationOverlay";
 import type { ResolvedPage } from "./pageContent/types";
 import type { RoleCardSections } from "./roleCardSections";
 
@@ -41,5 +42,24 @@ describe("the role card overlay", () => {
     expect(readRoleCardTranslation({ seat: {} })).toBeNull();
     expect(readPageTranslation({ locale: "es" })).toBeNull();
     expect(readPageTranslation({ locale: "es", fields: { a: "x", b: 1 } })).toEqual({ locale: "es", fields: { a: "x" }, machine: [] });
+  });
+});
+
+describe("fallbackLangOf: a block still in English says so", () => {
+  const es = { fields: { "hero.title": "Bienvenida", "steps.items.0.title": "Venga" }, machine: [], locale: "es" };
+  it("marks an untranslated section and field with the source language", () => {
+    expect(fallbackLangOf(es, "es", "faq")).toBe("en");
+    expect(fallbackLangOf(es, "es", "hero.lede")).toBe("en");
+  });
+  it("leaves a translated field, or a section with any translated field, in the page's language", () => {
+    expect(fallbackLangOf(es, "es", "hero.title")).toBeUndefined();
+    expect(fallbackLangOf(es, "es", "hero")).toBeUndefined();
+    expect(fallbackLangOf(es, "es", "steps.items")).toBeUndefined();
+  });
+  it("adds nothing for a reader in the source language, and ignores another language's translation", () => {
+    expect(fallbackLangOf(es, "en", "faq")).toBeUndefined();
+    expect(fallbackLangOf(es, "en-GB", "faq")).toBeUndefined();
+    expect(fallbackLangOf(es, "pt", "hero.title")).toBe("en");
+    expect(fallbackLangOf(null, "es", "hero")).toBe("en");
   });
 });

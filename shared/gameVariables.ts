@@ -28,6 +28,7 @@ import { isAnchorDateAcceptable } from "./villageMoon";
 import { villageSeasonsProblem } from "./villageSeasons";
 import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
 import { villageWordsProblem } from "./applyLimits";
+import { autonym, LOCALES, offerLocaleKey } from "./i18nLocales";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
 import { CRASH_ALERT_RECIPIENTS_KEY, crashAlertRecipientsProblem } from "./crashAlerts";
@@ -4802,13 +4803,31 @@ VARIABLES.push({
     "The language a visitor sees when their browser asks for none this village offers. A member who picks a language keeps it, and a browser set to a language on offer gets that one first.",
   type: "choice",
   default: "en",
-  // Literal so the generated docs can read them; shared/i18nDefaultLocale.test.ts
-  // holds them equal to the offered languages, each named in its own language.
-  choices: [
-    { value: "en", label: "English" },
-    { value: "es", label: "Español" },
-  ],
+  // From the one registry (shared/i18nLocales.ts), each named in its own
+  // language. The docs generator imports this module, so it reads them too;
+  // shared/i18nDefaultLocale.test.ts holds them equal to the offered languages.
+  choices: LOCALES.map((l) => ({ value: l.tag, label: autonym(l.tag) })),
 });
+
+/**
+ * Each village chooses which of the platform's languages it offers (the lead,
+ * 24 Nov 2026: "the foundations for any other chosen languages"). One switch per
+ * language in the registry, on by default, so a language added to
+ * shared/i18nLocales.ts arrives with its switch and nothing else to write. The
+ * source language has none: it is what every untranslated word falls back to.
+ */
+VARIABLES.push(
+  ...LOCALES.filter((l) => l.tier !== "source").map(
+    (l): VariableDef => ({
+      key: offerLocaleKey(l.tag),
+      category: "Language",
+      label: `Offer ${autonym(l.tag)}`,
+      description: `Whether visitors and members can read this village in ${autonym(l.tag)}. Off removes it from the language picker; anyone who had chosen it reads the village's default language instead.`,
+      type: "boolean",
+      default: "true",
+    }),
+  ),
+);
 
 /** Lookup by key, for validation and defaults. */
 export const VARIABLES_BY_KEY: Record<string, VariableDef> = Object.fromEntries(
