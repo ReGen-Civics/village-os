@@ -11,6 +11,7 @@ import ForestScene from "./ForestScene";
 import SpringPacket from "./SpringPackets";
 import type { SeedState } from "./setupGameApi";
 import { commsIsOn, springBeats, springJournal, stoneWeather, type BeatId } from "./springModel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const ACCOUNT_KEY = "setup-game:resend-account";
 
@@ -68,6 +69,7 @@ function lines(current: BeatId | "done", comms: SettingsPayload | null, storm: b
 }
 
 export default function SpringPlot(props: SpringProps) {
+  const { t } = useLingui();
   const { comms, domain, seeds, guide, phase } = props;
   const [ticked, setTicked] = useState(readTick);
   const [revisit, setRevisit] = useState<BeatId | null>(null);
@@ -102,31 +104,31 @@ export default function SpringPlot(props: SpringProps) {
         <div className="sg-frame">
           <ForestScene s={scene} />
           <div className="sg-coords">
-            <span>{comms?.settings.domain || "your web address"} · water layer</span>
+            <span><Trans context="SpringPlot, span">{comms?.settings.domain || "your web address"} · water layer</Trans></span>
             <span>{props.village}</span>
           </div>
         </div>
         <div className="sg-weather sg-wood" aria-live="polite">
           {weather.storm ? (
             <>
-              <p>A storm came through. Come back in a few hours.</p>
+              <p><Trans context="SpringPlot, p">A storm came through. Come back in a few hours.</Trans></p>
               <small>
-                DNS: {weather.seen} of {weather.total || "the"} records seen. Press Check the sky to look again.
-              </small>
+                <Trans context="SpringPlot, small">DNS: {weather.seen} of {weather.total || "the"} records seen. Press Check the sky to look again.
+              </Trans></small>
             </>
           ) : done("nursery") ? (
             <>
-              <p>Clear skies. Bees about.</p>
-              <small>The latest test letter was reported delivered.</small>
+              <p><Trans context="SpringPlot, p">Clear skies. Bees about.</Trans></p>
+              <small><Trans context="SpringPlot, small">The latest test letter was reported delivered.</Trans></small>
             </>
           ) : (
             <>
-              <p>Clear skies.</p>
+              <p><Trans context="SpringPlot, p">Clear skies.</Trans></p>
               <small>{new Date().toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</small>
             </>
           )}
         </div>
-        <ol className="sg-track" aria-label="Plantings in this plot">
+        <ol className="sg-track" aria-label={t({ message: "Plantings in this plot", context: "SpringPlot, aria-label" })}>
           {beats.map((b) => (
             <li key={b.id} className={[b.done ? "done" : "", shown === b.id ? "now" : "", b.keystone ? "key" : ""].join(" ")}>
               <button type="button" disabled={!b.done} aria-current={current === b.id ? "step" : undefined} onClick={() => setRevisit(b.id)}>
@@ -143,7 +145,7 @@ export default function SpringPlot(props: SpringProps) {
             <div className="sg-av" aria-hidden="true" />
             <div>
               <div className="nm">{guide}</div>
-              <div className="rl">your village guide · advisor dock</div>
+              <div className="rl"><Trans context="SpringPlot, div">your village guide · advisor dock</Trans></div>
             </div>
             <span className="pill">{phase === "before-launch" ? "before launch" : "after launch"}</span>
           </div>
@@ -176,21 +178,21 @@ export default function SpringPlot(props: SpringProps) {
         />
         <div className="sg-side">
           <div className="sg-card">
-            <h3>Root cellar</h3>
+            <h3><Trans context="SpringPlot, h3">Root cellar</Trans></h3>
             <ul className="sg-cellar">
               <li>
-                resend_api_key{comms?.key.configured ? ` ····${comms.key.last4 ?? ""}` : ""}
-                <span>{comms?.key.configured ? `Planted${comms.key.source === "env" ? " on the hosting service" : ""}` : "Not planted yet"}</span>
+                <Trans context="SpringPlot, li">resend_api_key{comms?.key.configured ? ` ····${comms.key.last4 ?? ""}` : ""}
+                <span>{comms?.key.configured ? `Planted${comms.key.source === "env" ? " on the hosting service" : ""}` : "Not planted yet"}</span></Trans>
               </li>
               <li>
-                resend_webhook_secret
-                <span>{comms?.webhook.configured ? "Planted" : "Not planted yet"}</span>
+                <Trans context="SpringPlot, li">resend_webhook_secret
+                <span>{comms?.webhook.configured ? "Planted" : "Not planted yet"}</span></Trans>
               </li>
-              <li className="hint">Nothing comes back out of the cellar. The game sees names and the last four only.</li>
+              <li className="hint"><Trans context="SpringPlot, li">Nothing comes back out of the cellar. The game sees names and the last four only.</Trans></li>
             </ul>
           </div>
           <div className="sg-card">
-            <h3>Forest journal</h3>
+            <h3><Trans context="SpringPlot, h3">Forest journal</Trans></h3>
             <ul className="sg-journal">
               {journal.length ? (
                 journal.map((j) => (
@@ -201,14 +203,14 @@ export default function SpringPlot(props: SpringProps) {
                 ))
               ) : (
                 <li>
-                  <span className="sg-why">Nothing planted yet.</span>
+                  <span className="sg-why"><Trans context="SpringPlot, span">Nothing planted yet.</Trans></span>
                 </li>
               )}
             </ul>
           </div>
         </div>
         <div className="sg-card">
-          <h3>What you've grown</h3>
+          <h3><Trans context="SpringPlot, h3">What you've grown</Trans></h3>
           <div className="sg-badges">
             {badges.map(([label, got]) => (
               <span key={label} className={`sg-badge${got ? " got" : ""}`}>

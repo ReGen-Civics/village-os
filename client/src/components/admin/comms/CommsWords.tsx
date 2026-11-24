@@ -14,11 +14,13 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import WordsEditor from "./WordsEditor";
 import { fetchWordsList, type WordsList } from "./wordsApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The letters written in code, as they arrive. Loaded on its own, so Admin's chunk does not carry it. */
 const LetterSamples = lazy(() => import("./LetterSamples"));
 
 export default function CommsWords({ password }: { password: string }) {
+  const { t } = useLingui();
   const [list, setList] = useState<WordsList | null>(null);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
@@ -49,24 +51,24 @@ export default function CommsWords({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-gray-900">Words</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsWords, h2">Words</Trans></h2>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          The words of every email your village sends. Change any of them, see the email as it will arrive, and send it to yourself
+          <Trans context="CommsWords, p">The words of every email your village sends. Change any of them, see the email as it will arrive, and send it to yourself
           first. Every save is a new version, and any version can come back.
-        </p>
+        </Trans></p>
       </div>
 
       {list && !list.postalAddressSet && (
         <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Every email's footer carries your village's postal address, and none is set yet. Add it in Comms Settings.
-        </p>
+          <Trans context="CommsWords, p">Every email's footer carries your village's postal address, and none is set yet. Add it in Comms Settings.
+        </Trans></p>
       )}
       {error && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      {!list && !error && <p className="py-12 text-center text-sm text-gray-400">Loading...</p>}
+      {!list && !error && <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsWords, p">Loading...</Trans></p>}
 
       {list && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <nav aria-label="Emails" className="space-y-4">
+          <nav aria-label={t({ message: "Emails", context: "CommsWords, aria-label" })} className="space-y-4">
             {list.groups.map((group) => (
               <div key={group.id}>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.title}</p>
@@ -90,7 +92,7 @@ export default function CommsWords({ password }: { password: string }) {
                             {item.source === "village" ? `Yours, v${item.version}` : "Platform words"}
                           </span>
                           {item.upgradeAvailable && (
-                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-900">Improved version available</span>
+                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-900"><Trans context="CommsWords, span">Improved version available</Trans></span>
                           )}
                         </span>
                       </button>
@@ -105,7 +107,7 @@ export default function CommsWords({ password }: { password: string }) {
             {selected ? (
               <WordsEditor key={selected} password={password} templateKey={selected} onChanged={load} onDirty={setDirty} />
             ) : (
-              <p className="text-sm text-gray-500">Choose an email to read its words.</p>
+              <p className="text-sm text-gray-500"><Trans context="CommsWords, p">Choose an email to read its words.</Trans></p>
             )}
           </div>
         </div>

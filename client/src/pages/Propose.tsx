@@ -29,7 +29,7 @@ import { askedModuleId } from "@/components/modules/switchDoor";
 import { roleApplicationStart } from "@/components/governance/roleApplicationType";
 import { isDoor } from "@/components/governance/wizardDoor";
 import { doorBackOf } from "@shared/seatApplyLinks";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 
 /**
  * Where the door's back link goes: the `from` the role card or the board sent,
@@ -79,9 +79,9 @@ export default function Propose() {
             href="/decisions"
             className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <Trans context="Propose, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Every decision
-          </Link>
+          </Trans></Link>
         )}
 
         {door ? (
@@ -95,10 +95,10 @@ export default function Propose() {
           </>
         ) : (
           <>
-            <h1 className="mt-3 font-display text-3xl font-bold text-foreground sm:text-4xl">Start a proposal</h1>
+            <h1 className="mt-3 font-display text-3xl font-bold text-foreground sm:text-4xl"><Trans context="Propose, h1">Start a proposal</Trans></h1>
             <p className="mt-2 max-w-2xl text-muted-foreground leading-relaxed">
-              Nothing you write here is public until you publish it, and you can leave at any point and come back to the same step on any device.
-            </p>
+              <Trans context="Propose, p">Nothing you write here is public until you publish it, and you can leave at any point and come back to the same step on any device.
+            </Trans></p>
           </>
         )}
 
@@ -107,10 +107,10 @@ export default function Propose() {
             <ProposalWizard start={start} leaveTo={from?.href ?? "/decisions"} />
           ) : (
             <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
-              <h2 className="font-display text-2xl font-bold text-card-foreground">Sign in to write a proposal</h2>
+              <h2 className="font-display text-2xl font-bold text-card-foreground"><Trans context="Propose, h2">Sign in to write a proposal</Trans></h2>
               <p className="mx-auto mt-2 max-w-md text-muted-foreground leading-relaxed">
-                A proposal carries your name, so this part opens for members.
-              </p>
+                <Trans context="Propose, p">A proposal carries your name, so this part opens for members.
+              </Trans></p>
               {/* The one card of the four that SignInToSee could nearly
                   replace. It keeps its own because the back link to every
                   decision is this page's shape and a visitor who is not ready

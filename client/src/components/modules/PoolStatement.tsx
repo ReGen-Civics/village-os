@@ -20,6 +20,7 @@
  */
 import { useEffect, useState } from "react";
 import InfoTip from "@/components/InfoTip";
+import { Trans } from "@lingui/react/macro";
 
 interface PoolModule {
   id: string;
@@ -93,40 +94,40 @@ export default function PoolStatement() {
   return (
     <section className="mt-10 rounded-xl border border-border bg-card p-4 sm:p-6 min-w-0">
       <h2 className="text-lg font-semibold text-foreground">
-        The builders&rsquo; pool this cycle{" "}
+        <Trans context="PoolStatement, h2">The builders&rsquo; pool this cycle{" "}
         <InfoTip
           label="What this statement is"
           tip="Every module earns a share of the $ReGen pool from how many members open it. A module somebody outside the platform built is owed its share. A module the platform built earns its share the same way, and that share goes back into the pool to be given out again next cycle."
-        />
+        /></Trans>
       </h2>
       <p className="text-sm text-muted-foreground mt-1">
-        Cycle {data.cycle}. {num(data.activeMembers)} members opened a module.
-      </p>
+        <Trans context="PoolStatement, p">Cycle {data.cycle}. {num(data.activeMembers)} members opened a module.
+      </Trans></p>
       {!data.sealed && (
         <p className="text-sm text-muted-foreground mt-1">
-          This cycle is still open, so these numbers are still moving.
-        </p>
+          <Trans context="PoolStatement, p">This cycle is still open, so these numbers are still moving.
+        </Trans></p>
       )}
       <p className="text-xs text-muted-foreground mt-1">
-        This is what this village&rsquo;s own usage says. The pool is settled across every village at
+        <Trans context="PoolStatement, p">This is what this village&rsquo;s own usage says. The pool is settled across every village at
         once, so these shares are a reading and not a payment.
-      </p>
+      </Trans></p>
 
       <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 [overflow-wrap:anywhere] [&>*]:min-w-0">
         <div className="rounded-lg border border-border p-3">
-          <dt className="text-xs text-muted-foreground">The pool</dt>
+          <dt className="text-xs text-muted-foreground"><Trans context="PoolStatement, dt">The pool</Trans></dt>
           <dd className="text-xl font-semibold text-foreground">{num(data.totals.pool)}</dd>
         </div>
         <div className="rounded-lg border border-border p-3">
-          <dt className="text-xs text-muted-foreground">To builders</dt>
+          <dt className="text-xs text-muted-foreground"><Trans context="PoolStatement, dt">To builders</Trans></dt>
           <dd className="text-xl font-semibold text-foreground">{num(data.totals.distributed)}</dd>
         </div>
-        <div className="rounded-lg border border-teal-deep/30 bg-teal-deep/5 p-3">
-          <dt className="text-xs text-teal-deep">Back into the pool</dt>
-          <dd className="text-xl font-semibold text-teal-deep">{num(data.totals.recycled)}</dd>
+        <div className="rounded-lg border border-notice/40 bg-notice/10 p-3">
+          <dt className="text-xs text-notice"><Trans context="PoolStatement, dt">Back into the pool</Trans></dt>
+          <dd className="text-xl font-semibold text-notice">{num(data.totals.recycled)}</dd>
         </div>
         <div className="rounded-lg border border-border p-3">
-          <dt className="text-xs text-muted-foreground">Next cycle holds</dt>
+          <dt className="text-xs text-muted-foreground"><Trans context="PoolStatement, dt">Next cycle holds</Trans></dt>
           <dd className="text-xl font-semibold text-foreground">{num(data.totals.nextCyclePool)}</dd>
         </div>
       </dl>
@@ -145,19 +146,19 @@ export default function PoolStatement() {
 
       {used.length === 0 ? (
         <p className="text-sm text-muted-foreground mt-4">
-          No module has been opened this cycle, so the whole pool carries forward.
-        </p>
+          <Trans context="PoolStatement, p">No module has been opened this cycle, so the whole pool carries forward.
+        </Trans></p>
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                <th className="py-2 pr-3 font-medium">Module</th>
-                <th className="py-2 pr-3 font-medium">Built by</th>
-                <th className="py-2 pr-3 font-medium text-right">Members</th>
-                <th className="py-2 pr-3 font-medium text-right">Reach</th>
-                <th className="py-2 pr-3 font-medium text-right">Share</th>
-                <th className="py-2 font-medium">Where it goes</th>
+                <th className="py-2 pr-3 font-medium"><Trans context="PoolStatement, th">Module</Trans></th>
+                <th className="py-2 pr-3 font-medium"><Trans context="PoolStatement, th">Built by</Trans></th>
+                <th className="py-2 pr-3 font-medium text-right"><Trans context="PoolStatement, th">Members</Trans></th>
+                <th className="py-2 pr-3 font-medium text-right"><Trans context="PoolStatement, th">Reach</Trans></th>
+                <th className="py-2 pr-3 font-medium text-right"><Trans context="PoolStatement, th">Share</Trans></th>
+                <th className="py-2 font-medium"><Trans context="PoolStatement, th">Where it goes</Trans></th>
               </tr>
             </thead>
             <tbody>
@@ -171,7 +172,7 @@ export default function PoolStatement() {
                   <td className="py-2 pr-3 text-right tabular-nums text-foreground">{pct(m.reach)}</td>
                   <td className="py-2 pr-3 text-right tabular-nums text-foreground">{num(m.share)}</td>
                   <td
-                    className={`py-2 ${m.settlement === "recycled" ? "text-teal-deep" : "text-foreground"}`}
+                    className={`py-2 ${m.settlement === "recycled" ? "text-notice" : "text-foreground"}`}
                   >
                     {WHERE_IT_GOES[m.settlement]}
                   </td>
@@ -183,10 +184,10 @@ export default function PoolStatement() {
       )}
 
       <p className="text-xs text-muted-foreground mt-4">
-        Reach is the share of members who opened a module this cycle. Opening it again does not
+        <Trans context="PoolStatement, p">Reach is the share of members who opened a module this cycle. Opening it again does not
         count twice, and neither does writing in it, so a module earns by being opened by more
         people and never by asking more of the same ones.
-      </p>
+      </Trans></p>
     </section>
   );
 }

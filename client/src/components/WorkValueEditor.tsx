@@ -23,6 +23,7 @@
 import { useEffect, useState } from "react";
 import { currencyExponent } from "@/lib/workPay";
 import type { TokenAmount } from "@shared/workValue";
+import { Trans } from "@lingui/react/macro";
 
 /** One token the village lets work pay, as the options read sends it. */
 export interface PayOption {
@@ -210,8 +211,8 @@ export default function WorkValueEditor({
       </label>
       {draft.held && (
         <p className="text-sm text-muted-foreground">
-          Valued at {heldWords(draft.held)} before this village changed its currency. Left empty, that value stays as it is.
-          {currency ? ` Type a figure to value it in ${currency} instead.` : ""}
+          <Trans context="WorkValueEditor, p">Valued at {heldWords(draft.held)} before this village changed its currency. Left empty, that value stays as it is.
+          {currency ? ` Type a figure to value it in ${currency} instead.` : ""}</Trans>
         </p>
       )}
       <label className="block text-xs font-medium">
@@ -226,20 +227,20 @@ export default function WorkValueEditor({
         />
       </label>
       <p className="text-sm text-muted-foreground">
-        The village pays the cash itself. The platform writes down what is owed when the work is paid, the member claims it, and
+        <Trans context="WorkValueEditor, p">The village pays the cash itself. The platform writes down what is owed when the work is paid, the member claims it, and
         whoever keeps the books marks it paid.
-      </p>
+      </Trans></p>
       {draft.cashHeld && (
         <p className="text-sm text-muted-foreground">
-          Pays {heldWords(draft.cashHeld)} in cash, set before this village changed its currency. Left empty, that stays as it is.
-        </p>
+          <Trans context="WorkValueEditor, p">Pays {heldWords(draft.cashHeld)} in cash, set before this village changed its currency. Left empty, that stays as it is.
+        </Trans></p>
       )}
       {offered === null ? (
-        <p className="text-sm text-muted-foreground">Reading which tokens this village pays for work.</p>
+        <p className="text-sm text-muted-foreground"><Trans context="WorkValueEditor, p">Reading which tokens this village pays for work.</Trans></p>
       ) : offered.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          This village has no rule paying any token for this kind of work yet, so it pays in no tokens. A rule is added on the Mint panel.
-        </p>
+          <Trans context="WorkValueEditor, p">This village has no rule paying any token for this kind of work yet, so it pays in no tokens. A rule is added on the Mint panel.
+        </Trans></p>
       ) : (
         <fieldset className="space-y-1.5">
           <legend className="text-xs font-medium">
@@ -259,7 +260,7 @@ export default function WorkValueEditor({
               </span>
             </label>
           ))}
-          <p className="text-sm text-muted-foreground">A token left at 0 is not paid.</p>
+          <p className="text-sm text-muted-foreground"><Trans context="WorkValueEditor, p">A token left at 0 is not paid.</Trans></p>
         </fieldset>
       )}
     </div>

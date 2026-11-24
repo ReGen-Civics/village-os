@@ -26,6 +26,7 @@ import { useEffect, useMemo, useState } from "react";
 import CurrencyAnswerNote from "@/components/admin/CurrencyAnswerNote";
 import { API_BASE } from "@/components/admin/adminApi";
 import { FX_BASE, FX_QUOTES, displayCurrencyProblem } from "@shared/money";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const ANOTHER = "__another";
 
@@ -68,6 +69,7 @@ export default function VillageCurrencyField({
   platformDefault: string;
   onChange: (code: string) => void;
 }) {
+  const { t } = useLingui();
   const code = value.trim().toUpperCase();
   const choices = useMemo(() => currencyChoices(code), [code]);
   const listed = code === "" || choices.some((c) => c.code === code);
@@ -107,8 +109,8 @@ export default function VillageCurrencyField({
   return (
     <div className="md:col-span-2">
       <label className="text-xs font-medium text-gray-500 block mb-1" htmlFor="project-fiat-currency">
-        Currency your prices are in
-      </label>
+        <Trans context="VillageCurrencyField, label">Currency your prices are in
+      </Trans></label>
       <select
         id="project-fiat-currency"
         aria-describedby="project-fiat-currency-note"
@@ -132,7 +134,7 @@ export default function VillageCurrencyField({
         <input
           id="project-fiat-currency-other"
           type="text"
-          aria-label="Currency code, three letters"
+          aria-label={t({ message: "Currency code, three letters", context: "VillageCurrencyField, aria-label" })}
           aria-describedby="project-fiat-currency-note"
           // A bare role="alert" is announced once and is then unreachable;
           // aria-invalid exposes a state the red text cannot.
@@ -142,7 +144,7 @@ export default function VillageCurrencyField({
           // Uppercased on the way in, so "chf" and "CHF" cannot become two
           // different villages' worth of stored value.
           onChange={(e) => onChange(e.target.value.toUpperCase())}
-          placeholder="Three letters"
+          placeholder={t({ message: "Three letters", context: "VillageCurrencyField, placeholder" })}
           className="w-full mt-2 px-3 py-2 text-sm border border-gray-200 rounded-lg uppercase"
         />
       )}
@@ -156,14 +158,14 @@ export default function VillageCurrencyField({
         </p>
       ) : (
         <p id="project-fiat-currency-note" className="text-[11px] text-gray-400 mt-0.5">
-          {platformDefault ? `Platform default: ${platformDefault}. ` : ""}This sets what every price on the
+          <Trans context="VillageCurrencyField, p">{platformDefault ? `Platform default: ${platformDefault}. ` : ""}This sets what every price on the
           site is quoted in, and what a member sees before choosing their own display currency.
-        </p>
+        </Trans></p>
       )}
       {unsaved && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2" role="status">
-          Not saved yet. Press Save to keep {code ? picked : "no currency of your own"}.
-        </p>
+          <Trans context="VillageCurrencyField, p">Not saved yet. Press Save to keep {code ? picked : "no currency of your own"}.
+        </Trans></p>
       )}
       <CurrencyAnswerNote answered={!!code} />
     </div>

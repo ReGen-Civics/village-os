@@ -35,6 +35,7 @@ import { Heart } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { HUMAN_NEEDS, NEED_DEPTHS, NEED_DEPTH_LABELS, type NeedDepth } from "@shared/needs";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -103,6 +104,7 @@ type Draft = { depth: NeedDepth | ""; feeling: string; note: string };
 const emptyDraft = (): Draft => ({ depth: "", feeling: "", note: "" });
 
 export default function NeedCard() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [mine, setMine] = useState<MinePayload | null>(null);
   const [coverage, setCoverage] = useState<CoverageRow[]>([]);
@@ -233,24 +235,24 @@ export default function NeedCard() {
   return (
     <div className="bg-card text-card-foreground rounded-2xl shadow-lg p-8 border border-border">
       <h3 className="text-xl font-display font-bold text-card-foreground flex items-center gap-2 mb-2">
-        <Heart className="w-6 h-6" />
+        <Trans context="NeedCard, h3"><Heart className="w-6 h-6" />
         I feel ____ because I need ____.
-      </h3>
+      </Trans></h3>
       <p className="text-sm text-muted-foreground mb-3">
-        Pick the need, say the feeling, and say where you are with it. Deprived, Unmet, Alive,
+        <Trans context="NeedCard, p">Pick the need, say the feeling, and say where you are with it. Deprived, Unmet, Alive,
         Satisfied, Thriving.
-      </p>
+      </Trans></p>
 
       {/* The audience, before a single control. */}
       <p className="text-sm text-foreground bg-muted rounded-lg px-4 py-3 mb-6">
-        Only you can read this. The village sees how many members are doing well or badly on each
+        <Trans context="NeedCard, p">Only you can read this. The village sees how many members are doing well or badly on each
         need, never who. A count appears only once at least {mine.floor} members have answered.
-      </p>
+      </Trans></p>
 
       {shown.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          Your village has not said what it is for yet. Add a need below and it is still yours.
-        </p>
+          <Trans context="NeedCard, p">Your village has not said what it is for yet. Add a need below and it is still yours.
+        </Trans></p>
       )}
 
       <div className="space-y-6">
@@ -289,27 +291,27 @@ export default function NeedCard() {
 
                 <div className="grid sm:grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="text-xs font-medium text-muted-foreground">I feel</span>
+                    <span className="text-xs font-medium text-muted-foreground"><Trans context="NeedCard, span">I feel</Trans></span>
                     <input
                       type="text"
                       maxLength={mine.feelingMax}
                       value={draft.feeling}
                       onChange={(e) => setDraft(key, { feeling: e.target.value })}
                       className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground"
-                      placeholder="lonely, restless, held"
+                      placeholder={t({ message: "lonely, restless, held", context: "NeedCard, placeholder" })}
                     />
                   </label>
                   <label className="block">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Anything else you want to say (optional)
-                    </span>
+                      <Trans context="NeedCard, span">Anything else you want to say (optional)
+                    </Trans></span>
                     <input
                       type="text"
                       maxLength={mine.noteMax}
                       value={draft.note}
                       onChange={(e) => setDraft(key, { note: e.target.value })}
                       className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground"
-                      placeholder="In your own words"
+                      placeholder={t({ message: "In your own words", context: "NeedCard, placeholder" })}
                     />
                   </label>
                 </div>
@@ -328,8 +330,8 @@ export default function NeedCard() {
                         disabled={busy === key}
                         className="text-xs text-muted-foreground underline disabled:opacity-50"
                       >
-                        Take it back
-                      </button>
+                        <Trans context="NeedCard, button">Take it back
+                      </Trans></button>
                     )}
                     <button
                       type="button"
@@ -350,8 +352,8 @@ export default function NeedCard() {
       {unlisted.length > 0 && (
         <label className="block mt-6">
           <span className="text-xs font-medium text-muted-foreground">
-            Add a need of your own. Your village does not have to have taken it on.
-          </span>
+            <Trans context="NeedCard, span">Add a need of your own. Your village does not have to have taken it on.
+          </Trans></span>
           <select
             value=""
             onChange={(e) => {

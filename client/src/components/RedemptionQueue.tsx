@@ -25,6 +25,7 @@ import { authToken } from "@/lib/gameApi";
 import LongText from "@/components/LongText";
 import { formatHumanAmount } from "@/lib/tokenAmount";
 import { ClipboardCheck } from "lucide-react";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -61,6 +62,7 @@ const day = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long" });
 
 export default function RedemptionQueue() {
+  const { t } = useLingui();
   const [rows, setRows] = useState<QueueRow[] | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -140,12 +142,12 @@ export default function RedemptionQueue() {
     <div className="bg-card border border-border rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
         <ClipboardCheck className="w-4 h-4 text-teal-deep" />
-        <p className="font-semibold text-foreground text-sm">Redemptions waiting on you</p>
+        <p className="font-semibold text-foreground text-sm"><Trans context="RedemptionQueue, p">Redemptions waiting on you</Trans></p>
       </div>
       <p className="text-sm text-muted-foreground">
-        Confirm one only after the village has paid it. Confirming destroys the tokens and
+        <Trans context="RedemptionQueue, p">Confirm one only after the village has paid it. Confirming destroys the tokens and
         it cannot be undone.
-      </p>
+      </Trans></p>
 
       {notice && (
         <p role="status" className="text-sm text-teal-deep bg-teal-deep/10 rounded-lg px-4 py-2.5">
@@ -161,12 +163,12 @@ export default function RedemptionQueue() {
       {rows.map((r) => (
         <div key={r.id} className="border border-border rounded-lg px-4 py-3 space-y-2">
           <p className="text-sm text-foreground">
-            <span className="font-semibold">{r.memberName}</span> asked for{" "}
+            <Trans context="RedemptionQueue, p"><span className="font-semibold">{r.memberName}</span> asked for{" "}
             <span className="font-semibold">
               {formatHumanAmount(r.amount)} {r.tokenName}
             </span>{" "}
             to become {r.askedFor}, on {day(r.openedAt)}.
-            {r.expiresAt ? ` It runs out on ${day(r.expiresAt)}.` : ""}
+            {r.expiresAt ? ` It runs out on ${day(r.expiresAt)}.` : ""}</Trans>
           </p>
           {/* WHAT THE MEMBER AGREED TO, off the row and never off the live
               dials: a rate changed since they asked must not change what this
@@ -188,8 +190,8 @@ export default function RedemptionQueue() {
           {r.processText?.trim() && (
             <div className="border border-border rounded-lg px-3 py-2">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                The process this was asked under
-              </p>
+                <Trans context="RedemptionQueue, p">The process this was asked under
+              </Trans></p>
               <LongText text={r.processText} className="text-xs text-muted-foreground" />
             </div>
           )}
@@ -203,7 +205,7 @@ export default function RedemptionQueue() {
             maxLength={500}
             value={notes[r.id] ?? ""}
             onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })}
-            placeholder="Say why, in a sentence"
+            placeholder={t({ message: "Say why, in a sentence", context: "RedemptionQueue, placeholder" })}
             className="border border-border rounded-lg px-3 py-2 bg-background text-foreground w-full text-sm"
           />
           <div className="flex gap-2">
@@ -213,16 +215,16 @@ export default function RedemptionQueue() {
               onClick={() => decide(r.id, "confirm")}
               className="bg-teal-deep text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              They were paid. Destroy the tokens
-            </button>
+              <Trans context="RedemptionQueue, button">They were paid. Destroy the tokens
+            </Trans></button>
             <button
               type="button"
               disabled={busy || !(notes[r.id] ?? "").trim()}
               onClick={() => decide(r.id, "refuse")}
               className="border border-border text-foreground rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              Refuse, and give them back
-            </button>
+              <Trans context="RedemptionQueue, button">Refuse, and give them back
+            </Trans></button>
           </div>
         </div>
       ))}

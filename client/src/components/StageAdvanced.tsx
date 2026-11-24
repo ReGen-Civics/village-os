@@ -16,6 +16,7 @@ import { useMomentWindow } from "@/components/natural/moments";
 import { capabilityLabel } from "@shared/capabilities";
 import { youCanNow } from "@shared/doorsOpened";
 import { playMoment } from "@/lib/sound";
+import { useLingui } from "@lingui/react/macro";
 
 export interface StageAdvance {
   fromStage: string;
@@ -31,6 +32,7 @@ export interface StageAdvancedProps {
 }
 
 export default function StageAdvanced({ advance, onClose }: StageAdvancedProps) {
+  const { t } = useLingui();
   const doors = advance.unlocked.map((cap) => youCanNow(capabilityLabel(cap))).filter(Boolean);
   const showing = useMomentWindow(true);
 
@@ -43,7 +45,7 @@ export default function StageAdvanced({ advance, onClose }: StageAdvancedProps) 
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t({ message: "Close", context: "StageAdvanced, aria-label" })}
         className="absolute top-2 right-2 p-2 text-muted-foreground hover:text-foreground pointer-coarse:min-h-11 pointer-coarse:min-w-11"
       >
         <X className="w-4 h-4" />

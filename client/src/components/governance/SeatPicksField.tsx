@@ -15,7 +15,7 @@
  */
 import WorkPayBlock from "@/components/WorkPayBlock";
 import { useEffect, useRef, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import InfoTip from "@/components/InfoTip";
 import type { FieldSpec } from "./wizardConfig";
@@ -96,23 +96,23 @@ export default function SeatPicksField({
       <legend className="block text-sm font-semibold text-foreground">
         {field.label}
         {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
-        {field.required && <span className="sr-only"> (required)</span>}
+        {field.required && <span className="sr-only"> <Trans context="SeatPicksField, span">(required)</Trans></span>}
         {field.tip && <InfoTip tip={field.tip} label={`What ${field.label.toLowerCase()} means`} />}
       </legend>
       <p className="mt-0.5 text-xs text-muted-foreground" aria-live="polite">
-        {picked.length} of at most {max} picked.
-      </p>
+        <Trans context="SeatPicksField, p">{picked.length} of at most {max} picked.
+      </Trans></p>
       {dropped.length > 0 && (
         <p role="status" className="mt-1 text-sm text-destructive">
-          {dropped.join(", ")} {dropped.length === 1 ? "is" : "are"} full: every place is held, so it came off your list.
-        </p>
+          <Trans context="SeatPicksField, p">{dropped.join(", ")} {dropped.length === 1 ? "is" : "are"} full: every place is held, so it came off your list.
+        </Trans></p>
       )}
       {options === null ? (
-        <p className="mt-2 text-sm text-muted-foreground">Loading the roles</p>
+        <p className="mt-2 text-sm text-muted-foreground"><Trans context="SeatPicksField, p">Loading the roles</Trans></p>
       ) : listed.length === 0 && strays.length === 0 ? (
         <p className="mt-2 text-sm text-muted-foreground">
-          This village has no roles in its org chart yet, so there is nothing to apply for.
-        </p>
+          <Trans context="SeatPicksField, p">This village has no roles in its org chart yet, so there is nothing to apply for.
+        </Trans></p>
       ) : (
         <ul className="mt-2 space-y-1">
           {[...listed, ...strays].map((o) => {
@@ -145,7 +145,7 @@ export default function SeatPicksField({
                     )}
                   </span>
                   {full ? (
-                    <span className="text-xs text-muted-foreground">Full: every place is held</span>
+                    <span className="text-xs text-muted-foreground"><Trans context="SeatPicksField, span">Full: every place is held</Trans></span>
                   ) : (
                     o.hint && <span className="text-xs text-muted-foreground">{o.hint}</span>
                   )}

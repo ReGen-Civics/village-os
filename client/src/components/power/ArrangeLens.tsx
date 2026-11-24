@@ -27,6 +27,7 @@
  */
 import type { NestedLayout } from "@shared/mapLayout";
 import { MAP_CHROME } from "@shared/circleView";
+import { useLingui } from "@lingui/react/macro";
 
 type Circle = { id: string; parentCircleId?: string | null; layer?: string | null; isExample?: boolean };
 
@@ -105,6 +106,7 @@ export default function ArrangeLens({
   /** A drop target was clicked while a circle is carried. */
   onSlot?: (where: string) => void;
 }) {
+  const { t } = useLingui();
   const at = (id: string) => layout.circles.find((c) => c.id === id) ?? null;
   const carried = picked ? at(picked) : null;
   const into = picked && target && !target.startsWith("slot:") ? at(target) : null;
@@ -147,7 +149,7 @@ export default function ArrangeLens({
               cy={s.y}
               r={s.r}
               data-arrange-slot={s.key}
-              aria-label={s.kind === "middle" ? "The middle" : "A place in the ring"}
+              aria-label={s.kind === "middle" ? t({ message: "The middle", context: "ArrangeLens, aria-label" }) : t({ message: "A place in the ring", context: "ArrangeLens, aria-label" })}
               pointerEvents="all"
               fill={MAP_CHROME.ring}
               fillOpacity={hot ? 0.45 : 0.15}

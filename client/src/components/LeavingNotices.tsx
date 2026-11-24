@@ -16,6 +16,7 @@
 import { useEffect, useState } from "react";
 import { Repeat } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 /** One notice, as the server sends it (an exit domain that is never blocking). */
 export interface LeavingNotice {
@@ -58,9 +59,9 @@ export default function LeavingNotices({ notices }: { notices: readonly LeavingN
   return (
     <div data-leaving-notices="" className="mt-3 rounded-lg border border-border bg-background/60 p-3">
       <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-        <Repeat className="size-3.5 text-notice" aria-hidden="true" />
+        <Trans context="LeavingNotices, p"><Repeat className="size-3.5 text-notice" aria-hidden="true" />
         Recurring payments
-      </p>
+      </Trans></p>
       <ul className="mt-1 list-disc pl-5 text-xs text-foreground">
         {notices.map((n) => (
           <li key={n.domain}>{n.description}.</li>

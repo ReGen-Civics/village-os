@@ -20,6 +20,7 @@ import {
 import { deleteEntry, patchEntry, problemText } from "@/lib/journalApi";
 import GrowingTextarea from "./GrowingTextarea";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, CARD, metricName, signed, timeLabel } from "./ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** An entry as the history shows it, synced or still on the device. */
 export type HistoryItem =
@@ -42,6 +43,7 @@ export default function EntryCard({
   onChanged: (e: JournalEntry) => void;
   onDeleted: (id: string) => void;
 }) {
+  const { t } = useLingui();
   const e = item.entry;
   const synced = item.kind === "synced" ? item.entry : null;
   const [open, setOpen] = useState(false);
@@ -119,11 +121,11 @@ export default function EntryCard({
             <span className="text-sm text-muted-foreground">{timeLabel(e.writtenAt)}</span>
             {item.kind === "pending" && (
               <span className="rounded-full bg-amber-light px-2 py-0.5 text-xs font-semibold text-amber-ink">
-                Saved on this device
-              </span>
+                <Trans context="EntryCard, span">Saved on this device
+              </Trans></span>
             )}
             {isPrivate && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">Private</span>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground"><Trans context="EntryCard, span">Private</Trans></span>
             )}
           </span>
           {preview(e.answers) && <span className="mt-1 block text-sm text-muted-foreground">{preview(e.answers)}</span>}
@@ -148,7 +150,7 @@ export default function EntryCard({
             </ul>
           )}
 
-          {e.meta?.call && <p className="text-sm text-muted-foreground">Call: {e.meta.call}</p>}
+          {e.meta?.call && <p className="text-sm text-muted-foreground"><Trans context="EntryCard, p">Call: {e.meta.call}</Trans></p>}
 
           {editing ? (
             <div className="space-y-3">
@@ -172,8 +174,8 @@ export default function EntryCard({
               ))}
               <div>
                 <label htmlFor={`${bodyId}-r`} className="block text-sm font-semibold text-foreground">
-                  Reflection (optional)
-                </label>
+                  <Trans context="EntryCard, label">Reflection (optional)
+                </Trans></label>
                 <div className="mt-1">
                   <GrowingTextarea
                     id={`${bodyId}-r`}
@@ -190,8 +192,8 @@ export default function EntryCard({
                   {busy ? "Saving..." : "Save changes"}
                 </button>
                 <button type="button" className={BTN_SECONDARY} onClick={() => setEditing(null)} disabled={busy}>
-                  Cancel
-                </button>
+                  <Trans context="EntryCard, button">Cancel
+                </Trans></button>
               </div>
             </div>
           ) : (
@@ -206,12 +208,12 @@ export default function EntryCard({
               </dl>
               {reflection && (
                 <div className="rounded-xl border border-sage/40 bg-sage-light/40 p-3">
-                  <p className="text-xs font-semibold text-sage">Your confirmed reflection</p>
+                  <p className="text-xs font-semibold text-sage"><Trans context="EntryCard, p">Your confirmed reflection</Trans></p>
                   <p className="mt-1 whitespace-pre-wrap text-foreground">{reflection}</p>
                 </div>
               )}
               {item.kind === "pending" && item.lastError && (
-                <p className="text-sm text-muted-foreground">Last try: {item.lastError}</p>
+                <p className="text-sm text-muted-foreground"><Trans context="EntryCard, p">Last try: {item.lastError}</Trans></p>
               )}
               {synced && !confirmDelete && (
                 <div className="flex flex-wrap gap-2">
@@ -220,14 +222,14 @@ export default function EntryCard({
                     className={BTN_SECONDARY}
                     onClick={() => setEditing({ answers: synced.answers.map((a) => ({ ...a })), reflection: synced.reflection ?? "" })}
                   >
-                    Edit
-                  </button>
+                    <Trans context="EntryCard, button">Edit
+                  </Trans></button>
                   <button type="button" className={BTN_QUIET} onClick={() => void setPrivate(!isPrivate)} disabled={busy}>
                     {isPrivate ? "Share it with organisational memory" : "Keep it private"}
                   </button>
                   <button type="button" className={BTN_QUIET} onClick={() => setConfirmDelete(true)}>
-                    Forget this entry
-                  </button>
+                    <Trans context="EntryCard, button">Forget this entry
+                  </Trans></button>
                 </div>
               )}
               {synced && (
@@ -238,8 +240,8 @@ export default function EntryCard({
                 </p>
               )}
               {synced && confirmDelete && (
-                <div role="group" aria-label="Confirm forgetting this entry" className="rounded-xl bg-destructive/10 p-3">
-                  <p className="text-sm font-semibold text-destructive">Forget this entry for good? It cannot be brought back.</p>
+                <div role="group" aria-label={t({ message: "Confirm forgetting this entry", context: "EntryCard, aria-label" })} className="rounded-xl bg-destructive/10 p-3">
+                  <p className="text-sm font-semibold text-destructive"><Trans context="EntryCard, p">Forget this entry for good? It cannot be brought back.</Trans></p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -250,8 +252,8 @@ export default function EntryCard({
                       {busy ? "Forgetting..." : "Yes, forget it"}
                     </button>
                     <button type="button" className={BTN_SECONDARY} onClick={() => setConfirmDelete(false)} disabled={busy}>
-                      Keep it
-                    </button>
+                      <Trans context="EntryCard, button">Keep it
+                    </Trans></button>
                   </div>
                 </div>
               )}

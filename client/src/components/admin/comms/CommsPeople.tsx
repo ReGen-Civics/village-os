@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { MessageStatus, PermissionBasis, PermissionKind, SkipReason, SuppressionReason } from "@shared/comms/kinds";
 import { KIND_WORDS } from "@shared/comms/preferences";
 import { API_BASE, authHeaders, refusal } from "../adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface PersonRow {
   id: string;
@@ -126,6 +127,7 @@ const when = (epochSeconds: number | null | undefined): string =>
     : "";
 
 export default function CommsPeople({ password }: { password: string }) {
+  const { t } = useLingui();
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
@@ -229,10 +231,10 @@ export default function CommsPeople({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">People</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsPeople, h2">People</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Everybody the village writes to, what each person agreed to receive, and every email they were sent.
-        </p>
+          <Trans context="CommsPeople, p">Everybody the village writes to, what each person agreed to receive, and every email they were sent.
+        </Trans></p>
       </div>
 
       <form
@@ -246,16 +248,16 @@ export default function CommsPeople({ password }: { password: string }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          aria-label="Search by address or name"
-          placeholder="Search by address or name"
+          aria-label={t({ message: "Search by address or name", context: "CommsPeople, aria-label" })}
+          placeholder={t({ message: "Search by address or name", context: "CommsPeople, placeholder" })}
           className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-900"
         />
         <button type="submit" className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium">
-          Search
-        </button>
+          <Trans context="CommsPeople, button">Search
+        </Trans></button>
         <button type="button" onClick={() => void downloadCsv()} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm text-gray-700">
-          Download CSV
-        </button>
+          <Trans context="CommsPeople, button">Download CSV
+        </Trans></button>
       </form>
 
       {listError && (
@@ -273,11 +275,11 @@ export default function CommsPeople({ password }: { password: string }) {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600">
               <tr>
-                <th className="px-3 py-2 font-medium">Address</th>
-                <th className="px-3 py-2 font-medium">Name</th>
-                <th className="px-3 py-2 font-medium">First met</th>
-                <th className="px-3 py-2 font-medium">Emails</th>
-                <th className="px-3 py-2 font-medium">Stopped</th>
+                <th className="px-3 py-2 font-medium"><Trans context="CommsPeople, th">Address</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="CommsPeople, th">Name</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="CommsPeople, th">First met</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="CommsPeople, th">Emails</Trans></th>
+                <th className="px-3 py-2 font-medium"><Trans context="CommsPeople, th">Stopped</Trans></th>
               </tr>
             </thead>
             <tbody>
@@ -287,7 +289,7 @@ export default function CommsPeople({ password }: { password: string }) {
                     <button type="button" className="text-left text-gray-900 underline underline-offset-2" onClick={() => setOpenId(r.id)}>
                       {r.email}
                     </button>
-                    {r.userId && <span className="ml-2 text-xs text-gray-500">member</span>}
+                    {r.userId && <span className="ml-2 text-xs text-gray-500"><Trans context="CommsPeople, span">member</Trans></span>}
                   </td>
                   <td className="px-3 py-2 text-gray-700">{r.name ?? ""}</td>
                   <td className="px-3 py-2 text-gray-500">
@@ -301,15 +303,15 @@ export default function CommsPeople({ password }: { password: string }) {
           </table>
           <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 text-xs text-gray-500">
             <span>
-              {offset + 1} to {offset + rows.length} of {total}
+              <Trans context="CommsPeople, span">{offset + 1} to {offset + rows.length} of {total}</Trans>
             </span>
             <span className="flex gap-2">
               <button type="button" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE))} className="px-2 py-1 border border-gray-300 rounded disabled:opacity-40">
-                Previous
-              </button>
+                <Trans context="CommsPeople, button">Previous
+              </Trans></button>
               <button type="button" disabled={offset + rows.length >= total} onClick={() => setOffset(offset + PAGE)} className="px-2 py-1 border border-gray-300 rounded disabled:opacity-40">
-                Next
-              </button>
+                <Trans context="CommsPeople, button">Next
+              </Trans></button>
             </span>
           </div>
         </div>
@@ -322,14 +324,14 @@ export default function CommsPeople({ password }: { password: string }) {
       )}
 
       {detail && (
-        <section aria-label="Person" className="border border-gray-200 rounded-xl bg-white p-4 space-y-5">
+        <section aria-label={t({ message: "Person", context: "CommsPeople, aria-label" })} className="border border-gray-200 rounded-xl bg-white p-4 space-y-5">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{detail.person.email}</h3>
             <p className="text-sm text-gray-500">
-              {detail.person.name ? `${detail.person.name}. ` : ""}
+              <Trans context="CommsPeople, p">{detail.person.name ? `${detail.person.name}. ` : ""}
               {detail.member ? `Member: ${detail.member.name}. ` : "No account. "}
               First met through {detail.person.firstSource} on {day(detail.person.createdAt)}.
-              {detail.person.timezone ? ` Their time zone is ${detail.person.timezone}.` : ""}
+              {detail.person.timezone ? ` Their time zone is ${detail.person.timezone}.` : ""}</Trans>
             </p>
           </div>
 
@@ -340,12 +342,12 @@ export default function CommsPeople({ password }: { password: string }) {
           )}
 
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-900">Email to this address</h4>
+            <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsPeople, h4">Email to this address</Trans></h4>
             {held ? (
               <div className="space-y-2">
                 <p className="text-sm text-gray-700">
-                  Stopped: {words(SUPPRESSION_WORDS, held.reason)}, since {day(held.createdAt)}.
-                  {held.detail ? ` Note: ${held.detail}` : ""}
+                  <Trans context="CommsPeople, p">Stopped: {words(SUPPRESSION_WORDS, held.reason)}, since {day(held.createdAt)}.
+                  {held.detail ? ` Note: ${held.detail}` : ""}</Trans>
                 </p>
                 {complained && (
                   <label className="block text-sm text-gray-700">
@@ -371,12 +373,12 @@ export default function CommsPeople({ password }: { password: string }) {
                   }
                   className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-800 disabled:opacity-40"
                 >
-                  Lift the stop
-                </button>
+                  <Trans context="CommsPeople, button">Lift the stop
+                </Trans></button>
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-gray-700">Email can go to this address. Essential mail always goes.</p>
+                <p className="text-sm text-gray-700"><Trans context="CommsPeople, p">Email can go to this address. Essential mail always goes.</Trans></p>
                 <label className="block text-sm text-gray-700">
                   A note on why (optional)
                   <input
@@ -398,14 +400,14 @@ export default function CommsPeople({ password }: { password: string }) {
                   }
                   className="px-3 py-1.5 rounded-lg border border-red-300 bg-white text-sm text-red-700 disabled:opacity-40"
                 >
-                  Stop all email to this address
-                </button>
+                  <Trans context="CommsPeople, button">Stop all email to this address
+                </Trans></button>
               </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-900">What they agreed to</h4>
+            <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsPeople, h4">What they agreed to</Trans></h4>
             <table className="w-full text-sm">
               <tbody>
                 {detail.answers.map((a) => (
@@ -424,16 +426,16 @@ export default function CommsPeople({ password }: { password: string }) {
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-900">Journeys</h4>
+            <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsPeople, h4">Journeys</Trans></h4>
             {detail.journeys.length === 0 ? (
-              <p className="text-sm text-gray-500">On no journey.</p>
+              <p className="text-sm text-gray-500"><Trans context="CommsPeople, p">On no journey.</Trans></p>
             ) : (
               <ul className="space-y-1">
                 {detail.journeys.map((j) => (
                   <li key={j.id} className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
                     <span className="font-medium text-gray-900">{j.journeyKey}</span>
                     <span className="text-gray-500">
-                      {j.subjectRef}, since {day(j.enrolledAt)}, {j.state === "active" ? "on it" : `stopped (${j.stopReason ?? j.state})`}
+                      <Trans context="CommsPeople, span">{j.subjectRef}, since {day(j.enrolledAt)}, {j.state === "active" ? "on it" : `stopped (${j.stopReason ?? j.state})`}</Trans>
                     </span>
                     {j.state === "active" && (
                       <button
@@ -448,8 +450,8 @@ export default function CommsPeople({ password }: { password: string }) {
                         }
                         className="px-2 py-0.5 rounded border border-gray-300 bg-white text-xs text-gray-800 disabled:opacity-40"
                       >
-                        Stop
-                      </button>
+                        <Trans context="CommsPeople, button">Stop
+                      </Trans></button>
                     )}
                   </li>
                 ))}
@@ -458,18 +460,18 @@ export default function CommsPeople({ password }: { password: string }) {
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-900">Every email</h4>
+            <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsPeople, h4">Every email</Trans></h4>
             {detail.emails.length === 0 ? (
-              <p className="text-sm text-gray-500">Nothing has been written to this address yet.</p>
+              <p className="text-sm text-gray-500"><Trans context="CommsPeople, p">Nothing has been written to this address yet.</Trans></p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-left text-gray-600">
                     <tr>
-                      <th className="py-1 pr-3 font-medium">When</th>
-                      <th className="py-1 pr-3 font-medium">Subject</th>
-                      <th className="py-1 pr-3 font-medium">Kind</th>
-                      <th className="py-1 font-medium">What became of it</th>
+                      <th className="py-1 pr-3 font-medium"><Trans context="CommsPeople, th">When</Trans></th>
+                      <th className="py-1 pr-3 font-medium"><Trans context="CommsPeople, th">Subject</Trans></th>
+                      <th className="py-1 pr-3 font-medium"><Trans context="CommsPeople, th">Kind</Trans></th>
+                      <th className="py-1 font-medium"><Trans context="CommsPeople, th">What became of it</Trans></th>
                     </tr>
                   </thead>
                   <tbody>

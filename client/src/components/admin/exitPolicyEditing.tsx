@@ -11,6 +11,7 @@
  * guard asks for: an admin surface belongs in client/src/components/admin/.
  */
 import { useId } from "react";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * An ordered list of sentences, editable. Used by the exit policy for the two
@@ -52,17 +53,17 @@ export function StepListEditor({
             <textarea id={`step-${slug}-${i}`} rows={2} value={s} onChange={(e) => set(i, e.target.value)}
               className="flex-1 min-h-[44px] border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep" />
             <div className="flex flex-col gap-1 shrink-0">
-              <button type="button" className={btn} onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move step ${i + 1} up`}>Up</button>
-              <button type="button" className={btn} onClick={() => move(i, 1)} disabled={i === steps.length - 1} aria-label={`Move step ${i + 1} down`}>Down</button>
+              <button type="button" className={btn} onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move step ${i + 1} up`}><Trans context="exitPolicyEditing, button">Up</Trans></button>
+              <button type="button" className={btn} onClick={() => move(i, 1)} disabled={i === steps.length - 1} aria-label={`Move step ${i + 1} down`}><Trans context="exitPolicyEditing, button">Down</Trans></button>
             </div>
-            <button type="button" className={`${btn} text-red-600 border-red-200`} onClick={() => remove(i)} aria-label={`Remove step ${i + 1}`}>Remove</button>
+            <button type="button" className={`${btn} text-red-600 border-red-200`} onClick={() => remove(i)} aria-label={`Remove step ${i + 1}`}><Trans context="exitPolicyEditing, button">Remove</Trans></button>
           </li>
         ))}
       </ol>
       <button type="button" onClick={() => onChange([...steps, ""])}
         className="mt-2 min-h-[44px] px-3 text-xs rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-deep">
-        Add a step
-      </button>
+        <Trans context="exitPolicyEditing, button">Add a step
+      </Trans></button>
     </fieldset>
   );
 }

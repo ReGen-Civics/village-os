@@ -130,6 +130,7 @@ import RelationsEditor from "@/components/admin/RelationsEditor";
 import HousingAdminPanel from "@/components/HousingAdminPanel";
 import { CommsJourneys, CommsLetters, CommsOverview, CommsPeople, CommsSentMail, CommsSettings, CommsWords, EmailField } from "@/components/admin/comms";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * THE SERVER'S OWN SENTENCE, WHEN IT HAS ONE.
@@ -218,11 +219,11 @@ function ForumModerationTab({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-display font-bold text-gray-900">Moderation</h2>
+        <h2 className="text-2xl font-display font-bold text-gray-900"><Trans context="Admin, h2">Moderation</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          What the village has flagged, and what it has already hidden on its own.
+          <Trans context="Admin, p">What the village has flagged, and what it has already hidden on its own.
           Hiding is always reversible. Nothing here deletes anyone's words.
-        </p>
+        </Trans></p>
       </div>
 
       {/* The category list, which the forum has validated on every write and
@@ -246,11 +247,11 @@ function ForumModerationTab({ password }: { password: string }) {
         ))}
       </div>
 
-      {reports === null && <p className="text-sm text-gray-400">Loading…</p>}
+      {reports === null && <p className="text-sm text-gray-400"><Trans context="Admin, p">Loading…</Trans></p>}
       {reports?.length === 0 && (
         <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
-          Nothing {status}. A quiet queue is the good outcome.
-        </p>
+          <Trans context="Admin, p">Nothing {status}. A quiet queue is the good outcome.
+        </Trans></p>
       )}
 
       <div className="space-y-3">
@@ -260,9 +261,9 @@ function ForumModerationTab({ password }: { password: string }) {
               <div className="min-w-0">
                 <p className="font-medium text-gray-900 break-words">{r.threadTitle}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {r.severity === "hard" ? "Serious report" : "Flagged"} by {r.reporter} ·{" "}
+                  <Trans context="Admin, p">{r.severity === "hard" ? "Serious report" : "Flagged"} by {r.reporter} ·{" "}
                   {new Date(r.at).toLocaleDateString()}
-                  {r.replyId ? " · on a reply" : ""}
+                  {r.replyId ? " · on a reply" : ""}</Trans>
                 </p>
                 {r.reason && <p className="text-sm text-gray-600 mt-2 break-words">"{r.reason}"</p>}
                 {/* Who closed it and when. Written on every close since the
@@ -271,8 +272,8 @@ function ForumModerationTab({ password }: { password: string }) {
               </div>
               {r.alreadyHidden && (
                 <span className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
-                  Auto-hidden
-                </span>
+                  <Trans context="Admin, span">Auto-hidden
+                </Trans></span>
               )}
             </div>
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
@@ -282,16 +283,16 @@ function ForumModerationTab({ password }: { password: string }) {
                 rel="noreferrer"
                 className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50"
               >
-                Read it
-              </a>
+                <Trans context="Admin, a">Read it
+              </Trans></a>
               {r.alreadyHidden ? (
                 <button
                   disabled={busy === r.id}
                   onClick={() => act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, { action: "restore" }, "Back in the open", r.id)}
                   className="text-xs text-emerald-700 border border-emerald-200 rounded-lg px-2.5 py-1.5 hover:bg-emerald-50 disabled:opacity-40"
                 >
-                  Put it back
-                </button>
+                  <Trans context="Admin, button">Put it back
+                </Trans></button>
               ) : (
                 <button
                   disabled={busy === r.id}
@@ -302,16 +303,16 @@ function ForumModerationTab({ password }: { password: string }) {
                   }}
                   className="text-xs text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 hover:bg-red-50 disabled:opacity-40"
                 >
-                  Hide it
-                </button>
+                  <Trans context="Admin, button">Hide it
+                </Trans></button>
               )}
               <button
                 disabled={busy === r.id}
                 onClick={() => act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, { action: "lock" }, "Locked to new replies", r.id)}
                 className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
               >
-                Lock replies
-              </button>
+                <Trans context="Admin, button">Lock replies
+              </Trans></button>
               {status === "open" && (
                 <>
                   <button
@@ -319,15 +320,15 @@ function ForumModerationTab({ password }: { password: string }) {
                     onClick={() => act(`${API_BASE}/admin/forum/reports/${r.id}`, { status: "resolved" }, "Marked handled", r.id)}
                     className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
                   >
-                    Handled
-                  </button>
+                    <Trans context="Admin, button">Handled
+                  </Trans></button>
                   <button
                     disabled={busy === r.id}
                     onClick={() => act(`${API_BASE}/admin/forum/reports/${r.id}`, { status: "dismissed" }, "Dismissed", r.id)}
                     className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
                   >
-                    Nothing wrong here
-                  </button>
+                    <Trans context="Admin, button">Nothing wrong here
+                  </Trans></button>
                 </>
               )}
             </div>
@@ -393,9 +394,9 @@ function MessageReportsTab({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-display font-bold text-gray-900">Message Reports</h2>
+        <h2 className="text-2xl font-display font-bold text-gray-900"><Trans context="Admin, h2">Message Reports</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Lines members have flagged inside private conversations. {DISCLOSURE_NOTE}
+          <Trans context="Admin, p">Lines members have flagged inside private conversations. {DISCLOSURE_NOTE}</Trans>
         </p>
       </div>
 
@@ -416,7 +417,7 @@ function MessageReportsTab({ password }: { password: string }) {
         ))}
       </div>
 
-      {reports === null && <p className="text-sm text-gray-400">Loading…</p>}
+      {reports === null && <p className="text-sm text-gray-400"><Trans context="Admin, p">Loading…</Trans></p>}
       {reports?.length === 0 && (
         <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
           {emptyQueueLine(status)}
@@ -432,13 +433,13 @@ function MessageReportsTab({ password }: { password: string }) {
                 <div className="min-w-0">
                   <p className="font-medium text-gray-900 break-words">{reportPlace(r)}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Reported by {r.reporter} · {new Date(r.at).toLocaleDateString()}
+                    <Trans context="Admin, p">Reported by {r.reporter} · {new Date(r.at).toLocaleDateString()}</Trans>
                   </p>
                 </div>
                 {r.deleted && (
                   <span className="text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1 shrink-0">
-                    Deleted by its author
-                  </span>
+                    <Trans context="Admin, span">Deleted by its author
+                  </Trans></span>
                 )}
               </div>
 
@@ -452,8 +453,8 @@ function MessageReportsTab({ password }: { password: string }) {
 
               {r.reason && (
                 <p className="text-sm text-gray-600 mt-2 break-words">
-                  Why they flagged it: "{r.reason}"
-                </p>
+                  <Trans context="Admin, p">Why they flagged it: "{r.reason}"
+                </Trans></p>
               )}
 
               <ResolutionNote report={r} />
@@ -465,15 +466,15 @@ function MessageReportsTab({ password }: { password: string }) {
                     onClick={() => void resolve(r.id, "resolved", "Marked handled")}
                     className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
                   >
-                    Handled
-                  </button>
+                    <Trans context="Admin, button">Handled
+                  </Trans></button>
                   <button
                     disabled={busy === r.id}
                     onClick={() => void resolve(r.id, "dismissed", "Dismissed")}
                     className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
                   >
-                    Nothing wrong here
-                  </button>
+                    <Trans context="Admin, button">Nothing wrong here
+                  </Trans></button>
                 </div>
               )}
             </div>
@@ -504,7 +505,7 @@ function AdminNav({
   onSelect: (key: string) => void;
   open: boolean;
   setOpen: (v: boolean) => void;
-}) {
+}) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const choose = (key: string) => {
     onSelect(key);
     // Only the floating drawer gets out of the way; a docked rail stays put.
@@ -619,9 +620,9 @@ function AdminNav({
           onClick={dismissHint}
           className="fixed z-50 left-16 bottom-6 hidden max-w-[15rem] rounded-xl bg-gray-900 px-3 py-2.5 text-left text-xs leading-relaxed text-white shadow-xl lg:block"
         >
-          Hold an icon to see its name, or swipe right to slide the whole menu
+          <Trans context="Admin, button">Hold an icon to see its name, or swipe right to slide the whole menu
           out.
-          <span className="mt-1 block text-white/60">Tap to dismiss</span>
+          <span className="mt-1 block text-white/60">Tap to dismiss</span></Trans>
         </button>
       )}
       {tip && (
@@ -647,14 +648,14 @@ function AdminNav({
             setOpen(!open);
           }}
           aria-expanded={open}
-          aria-label={open ? "Collapse menu" : "Expand menu"}
-          title={open ? "Collapse menu" : "Expand menu"}
+          aria-label={open ? t({ message: "Collapse menu", context: "Admin, aria-label" }) : t({ message: "Expand menu", context: "Admin, aria-label" })}
+          title={open ? t({ message: "Collapse menu", context: "Admin, title" }) : t({ message: "Expand menu", context: "Admin, title" })}
           className={`flex items-center gap-2 mb-2 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-teal-deep transition-colors ${
             open ? "w-full px-4" : "w-full justify-center px-0"
           }`}
         >
           {open ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
-          {open && <span>Menu</span>}
+          {open && <span><Trans context="Admin, span">Menu</Trans></span>}
         </button>
 
         {groups.map((group) => (
@@ -742,7 +743,7 @@ function prettyType(t: string) {
 
 // ── Submissions Tab ───────────────────────────────────────────────────────────
 
-export function SubmissionsTab({ password }: { password: string }) {
+export function SubmissionsTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useSubmissionFilter();
   const [loading, setLoading] = useState(true);
@@ -773,7 +774,7 @@ export function SubmissionsTab({ password }: { password: string }) {
     <SubmissionDesk password={password} filter={filter} onFilter={setFilter} rows={visible} onChanged={load}>
       <OpenProposalsPanel password={password} />
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : problem ? (
         <AdminQueueState kind="error" message={problem} onRetry={load} />
       ) : visible.length === 0 ? (
@@ -798,7 +799,7 @@ export function SubmissionsTab({ password }: { password: string }) {
                   <span className="text-sm font-medium text-gray-900">
                     {s.data.name || s.data.firstName || s.data.email || "Anonymous"}
                   </span>
-                  {s.userId && <span className="text-xs text-emerald-600" title="Submitted while signed in">● member</span>}
+                  {s.userId && <span className="text-xs text-emerald-600" title="Submitted while signed in"><Trans context="Admin, span">● member</Trans></span>}
                   <span className="text-xs text-gray-400">
                     {new Date(s.submittedAt).toLocaleDateString("en-US", {
                       month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -814,7 +815,7 @@ export function SubmissionsTab({ password }: { password: string }) {
               {expanded === s.id && (
                 <div className="px-5 py-4 border-t border-gray-100 bg-gray-50">
                   <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <label className="text-xs font-medium text-gray-500">Status</label>
+                    <label className="text-xs font-medium text-gray-500"><Trans context="Admin, label">Status</Trans></label>
                     <select
                       value={s.status ?? "new"}
                       onChange={(e) => setStatus(s.id, e.target.value, s.type)}
@@ -826,7 +827,7 @@ export function SubmissionsTab({ password }: { password: string }) {
                     </select>
                     {s.userId && (
                       <span className="text-xs text-emerald-600">
-                        Signed-in member{s.userName ? ` · ${s.userName}` : ""}{s.rewarded ? " · welcomed into the game ✓" : ""}
+                        <Trans context="Admin, span">Signed-in member{s.userName ? ` · ${s.userName}` : ""}{s.rewarded ? " · welcomed into the game ✓" : ""}</Trans>
                       </span>
                     )}
                   </div>
@@ -850,7 +851,7 @@ export function SubmissionsTab({ password }: { password: string }) {
                                 onClick={async () => {
                                   const r = await fetch(`${API_BASE}/admin/submission-attachments/${encodeURIComponent(String(v))}`, { headers: authHeaders(password) }).catch(() => null);
                                   if (!r || !r.ok) {
-                                    toast.error("That file could not be opened. It may have been removed.");
+                                    toast.error(t({ message: "That file could not be opened. It may have been removed.", context: "Admin, toast" }));
                                     return;
                                   }
                                   saveBlob(String(s.data.attachmentName || v), await r.blob());
@@ -942,12 +943,12 @@ export function IntegrationsTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Integrations</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Integrations</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Third-party connections, one place. Keys are write-only: once saved,
+          <Trans context="Admin, p">Third-party connections, one place. Keys are write-only: once saved,
           the server shows only that a key exists and its last four characters.
           A key set here beats one from the hosting environment.
-        </p>
+        </Trans></p>
       </div>
       <SecretsKeyBanner status={data?.villageSecretsKey} />
       {keySaved && <div className="mb-6"><ConnectorSetupPanel moment="key" isAdmin password={password} person="admin" /></div>}
@@ -956,19 +957,19 @@ export function IntegrationsTab({ password }: { password: string }) {
       <Suspense fallback={null}>
         <VoiceTranscriptionPicker password={password} />
       </Suspense>
-      {loading && !data ? <div className="text-center py-12 text-gray-400">Loading…</div> : (
+      {loading && !data ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div> : (
         <div className="w-full space-y-5">
           {/* The one value that flows the OTHER way: what to paste into Stripe. */}
           <div className="bg-teal-deep/5 border border-teal-deep/20 rounded-xl p-4">
-            <p className="text-sm font-medium text-gray-900 mb-1">Your Stripe webhook URL</p>
+            <p className="text-sm font-medium text-gray-900 mb-1"><Trans context="Admin, p">Your Stripe webhook URL</Trans></p>
             <code className="text-xs bg-white border border-gray-200 rounded px-2 py-1 block overflow-x-auto">
               {data?.stripeWebhookUrl}
             </code>
             <p className="text-xs text-gray-500 mt-2">
-              In Stripe: Developers → Webhooks → Add endpoint → paste this URL,
+              <Trans context="Admin, p">In Stripe: Developers → Webhooks → Add endpoint → paste this URL,
               subscribe to all five events below, then copy the signing secret
               into the card below.
-            </p>
+            </Trans></p>
             <ul className="text-xs text-gray-500 mt-2 space-y-1">
               <li><code>checkout.session.completed</code>: a purchase is made</li>
               <li><code>checkout.session.async_payment_succeeded</code>: a bank
@@ -997,7 +998,7 @@ export function IntegrationsTab({ password }: { password: string }) {
                     {/* The licence pill, on the one card whose field IS the
                         entitlement. Every other key opens an account; this one
                         is what the village bought. */}
-                    {c.isLicence && <span className="ml-2 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full">licence</span>}
+                    {c.isLicence && <span className="ml-2 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full"><Trans context="Admin, span">licence</Trans></span>}
                   </p>
                   {/* A managed listing has no key of the village's to report, so
                       it reports the entitlement instead. Everything else
@@ -1008,13 +1009,13 @@ export function IntegrationsTab({ password }: { password: string }) {
                     </span>
                   ) : s?.configured ? (
                     <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
-                      Connected · ••••{s.last4}
-                      {s.source === "env" ? " · from host env" : s.setBy ? ` · set by ${s.setBy}` : ""}
+                      <Trans context="Admin, span">Connected · ••••{s.last4}
+                      {s.source === "env" ? " · from host env" : s.setBy ? ` · set by ${s.setBy}` : ""}</Trans>
                     </span>
                   ) : (
                     <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                      Not connected
-                    </span>
+                      <Trans context="Admin, span">Not connected
+                    </Trans></span>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mb-3">{c.unlocks}</p>
@@ -1035,18 +1036,18 @@ export function IntegrationsTab({ password }: { password: string }) {
                     be true at once. */}
                 {s?.unreadable ? (
                   <p className="text-xs text-red-600 mb-2">
-                    A key is saved here and this deployment cannot open it, so it
+                    <Trans context="Admin, p">A key is saved here and this deployment cannot open it, so it
                     is being treated as unset. VILLAGE_SECRETS_KEY is missing, or
                     it changed after this key was saved. Put the old value back,
                     or save this key again.
-                  </p>
+                  </Trans></p>
                 ) : s?.atRest === "plaintext" ? (
                   <p className="text-xs text-amber-700 mb-2">
-                    Saved in the clear, from before this platform encrypted these
+                    <Trans context="Admin, p">Saved in the clear, from before this platform encrypted these
                     keys. Any copy of the database carries it. Set
                     VILLAGE_SECRETS_KEY on this deployment and restart, and it is
                     encrypted on the next boot.
-                  </p>
+                  </Trans></p>
                 ) : null}
                 {c.credential && (
                   <div className="flex flex-wrap items-center gap-2">
@@ -1065,8 +1066,8 @@ export function IntegrationsTab({ password }: { password: string }) {
                         disabled={busy === c.key}
                         className="text-sm text-gray-500 bg-gray-100 rounded-lg px-3 py-2 font-medium"
                       >
-                        Clear
-                      </button>
+                        <Trans context="Admin, button">Clear
+                      </Trans></button>
                     )}
                   </div>
                 )}
@@ -1080,9 +1081,9 @@ export function IntegrationsTab({ password }: { password: string }) {
                 )}
                 {c.support?.party === "vendor" && (
                   <p className="text-xs text-gray-400 mt-2">
-                    Supported by {c.support.vendorName}:{" "}
+                    <Trans context="Admin, p">Supported by {c.support.vendorName}:{" "}
                     <a href={c.support.supportUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:underline">{c.support.supportUrl}</a>
-                    {c.support.supportEmail ? ` · ${c.support.supportEmail}` : ""}
+                    {c.support.supportEmail ? ` · ${c.support.supportEmail}` : ""}</Trans>
                   </p>
                 )}
                 {/* What it costs and who wrote it, on the card where a founder
@@ -1093,13 +1094,13 @@ export function IntegrationsTab({ password }: { password: string }) {
                     {c.billingUrl && (
                       <>
                         {" · "}
-                        <a href={c.billingUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:underline">Pricing ↗</a>
+                        <a href={c.billingUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:underline"><Trans context="Admin, a">Pricing ↗</Trans></a>
                       </>
                     )}
                   </p>
                 )}
-                {c.builtBy && <p className="text-xs text-gray-400 mt-1">Built by {c.builtBy}</p>}
-                {c.getAt && <p className="text-xs text-gray-400 mt-2">Get it at: {c.getAt}</p>}
+                {c.builtBy && <p className="text-xs text-gray-400 mt-1"><Trans context="Admin, p">Built by {c.builtBy}</Trans></p>}
+                {c.getAt && <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">Get it at: {c.getAt}</Trans></p>}
               </div>
             );
           })}
@@ -1161,7 +1162,7 @@ interface InvestorDoc {
  * (an absent key keeps its stored value), so saving here cannot blank the
  * steward and resident inboxes that this card deliberately does not show.
  */
-function InvestorInboxCard({ password }: { password: string }) {
+function InvestorInboxCard({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [investor, setInvestor] = useState("");
   const [business, setBusiness] = useState("");
   const [loading, setLoading] = useState(true);
@@ -1201,10 +1202,10 @@ function InvestorInboxCard({ password }: { password: string }) {
         setSaving(false);
         return;
       }
-      toast.success("Investor and business addresses saved");
+      toast.success(t({ message: "Investor and business addresses saved", context: "Admin, toast" }));
       load();
     } catch {
-      toast.error("That did not reach the server. Nothing changed.");
+      toast.error(t({ message: "That did not reach the server. Nothing changed.", context: "Admin, toast" }));
     }
     setSaving(false);
   };
@@ -1215,13 +1216,13 @@ function InvestorInboxCard({ password }: { password: string }) {
     <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
       <div className="flex items-start justify-between gap-4 mb-1">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Who receives investor requests</h3>
+          <h3 className="text-sm font-semibold text-foreground"><Trans context="Admin, h3">Who receives investor requests</Trans></h3>
           <p className="text-xs text-muted-foreground mt-1">
-            When somebody asks for the packet below, the documents go to them and
+            <Trans context="Admin, p">When somebody asks for the packet below, the documents go to them and
             the alert comes to you. These are the addresses it reaches. They are
             the same two inboxes as Comms Settings, so an edit in either place is
             the same edit.
-          </p>
+          </Trans></p>
         </div>
         <button
           onClick={save}
@@ -1233,28 +1234,28 @@ function InvestorInboxCard({ password }: { password: string }) {
       </div>
 
       {loading ? (
-        <p className="text-xs text-muted-foreground py-4">Loading the current addresses...</p>
+        <p className="text-xs text-muted-foreground py-4"><Trans context="Admin, p">Loading the current addresses...</Trans></p>
       ) : loadFailed ? (
         <p className="text-xs text-red-600 py-4">
-          The current addresses did not load. Reload the page before editing,
+          <Trans context="Admin, p">The current addresses did not load. Reload the page before editing,
           so a save here cannot overwrite an address you never saw.
-        </p>
+        </Trans></p>
       ) : (
         <div className="space-y-4 mt-4">
           {nobodyHome && (
             <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              No address is set. A visitor can still request the packet and still
+              <Trans context="Admin, p">No address is set. A visitor can still request the packet and still
               receives it, and nobody here is told the request happened.
-            </p>
+            </Trans></p>
           )}
           <EmailField
-            label="Investor requests"
+            label={t({ message: "Investor requests", context: "Admin, label" })}
             value={investor}
             onChange={setInvestor}
             hint="Receives investor enquiries, calls, and every request for the packet below."
           />
           <EmailField
-            label="Business enquiries"
+            label={t({ message: "Business enquiries", context: "Admin, label" })}
             value={business}
             onChange={setBusiness}
             hint="Receives business, contact and work-with-us enquiries."
@@ -1265,7 +1266,7 @@ function InvestorInboxCard({ password }: { password: string }) {
   );
 }
 
-function InvestorVaultTab({ password }: { password: string }) {
+function InvestorVaultTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [docs, setDocs] = useState<InvestorDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -1290,7 +1291,7 @@ function InvestorVaultTab({ password }: { password: string }) {
   const upload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      toast.error("Pick a file first");
+      toast.error(t({ message: "Pick a file first", context: "Admin, toast" }));
       return;
     }
     setUploading(true);
@@ -1305,13 +1306,13 @@ function InvestorVaultTab({ password }: { password: string }) {
         body: fd,
       });
       if (!res.ok) throw new Error("Upload failed");
-      toast.success("Document uploaded");
+      toast.success(t({ message: "Document uploaded", context: "Admin, toast" }));
       setName(""); setPageLink(""); setFile(null);
       const fileInput = document.getElementById("vault-file") as HTMLInputElement | null;
       if (fileInput) fileInput.value = "";
       load();
     } catch {
-      toast.error("Upload failed");
+      toast.error(t({ message: "Upload failed", context: "Admin, toast" }));
     }
     setUploading(false);
   };
@@ -1339,12 +1340,12 @@ function InvestorVaultTab({ password }: { password: string }) {
       toast.success(next ? "Added to the investor packet" : "Removed from the investor packet");
       load();
     } catch {
-      toast.error("That did not reach the server. Nothing changed.");
+      toast.error(t({ message: "That did not reach the server. Nothing changed.", context: "Admin, toast" }));
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this document permanently?")) return;
+    if (!confirm(t({ message: "Delete this document permanently?", context: "Admin, confirm" }))) return;
     try {
       const res = await fetch(`${API_BASE}/admin/investor-docs/${id}`, { method: "DELETE", headers: authHeaders(password) });
       if (!res.ok) {
@@ -1363,11 +1364,11 @@ function InvestorVaultTab({ password }: { password: string }) {
       if (body?.fileRemoved === false) {
         toast.error(String(body.warning ?? "The record is gone, and its file is still on the server."), { duration: 12000 });
       } else {
-        toast.success("Deleted");
+        toast.success(t({ message: "Deleted", context: "Admin, toast" }));
       }
       load();
     } catch {
-      toast.error("That did not reach the server. The document is still here.");
+      toast.error(t({ message: "That did not reach the server. The document is still here.", context: "Admin, toast" }));
     }
   };
 
@@ -1375,7 +1376,7 @@ function InvestorVaultTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Investor Vault</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Investor Vault</Trans></h2>
           {/*
             State what is true and then get out of the way. The old line said
             "Documents shared with investors after they request the packet",
@@ -1383,9 +1384,9 @@ function InvestorVaultTab({ password }: { password: string }) {
             public form. A count is a fact the founder can act on.
           */}
           <p className="text-sm text-gray-500 mt-1">
-            Everything you upload stays private. The public request form emails
+            <Trans context="Admin, p">Everything you upload stays private. The public request form emails
             only the documents you tick as in the packet.
-          </p>
+          </Trans></p>
           {!loading && (
             <p className="text-sm text-gray-500 mt-1">
               {docs.filter((d) => d.inPacket).length} of {docs.length} in the packet.
@@ -1406,7 +1407,7 @@ function InvestorVaultTab({ password }: { password: string }) {
       <form onSubmit={upload} className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">File</label>
+            <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">File</Trans></label>
             <input
               id="vault-file"
               type="file"
@@ -1415,23 +1416,23 @@ function InvestorVaultTab({ password }: { password: string }) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">Display Name (optional)</label>
+            <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Display Name (optional)</Trans></label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Investor Memo"
+              placeholder={t({ message: "Investor Memo", context: "Admin, placeholder" })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
             />
           </div>
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Site Page Link (optional)</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Site Page Link (optional)</Trans></label>
           <input
             type="text"
             value={pageLink}
             onChange={(e) => setPageLink(e.target.value)}
-            placeholder="/master-plan"
+            placeholder={t({ message: "/master-plan", context: "Admin, placeholder" })}
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
           />
         </div>
@@ -1445,11 +1446,11 @@ function InvestorVaultTab({ password }: { password: string }) {
       </form>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : docs.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>No documents in the vault yet.</p>
+          <p><Trans context="Admin, p">No documents in the vault yet.</Trans></p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1533,7 +1534,7 @@ function volumeSize(bytes: number): string {
   return `${bytes} bytes`;
 }
 
-function UploadedFilesTab({ password }: { password: string }) {
+function UploadedFilesTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [report, setReport] = useState<UploadsSweepReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -1550,7 +1551,7 @@ function UploadedFilesTab({ password }: { password: string }) {
       if (!res.ok) toast.error(data?.error ?? "The volume could not be read");
     } catch {
       setReport(null);
-      toast.error("The volume could not be read");
+      toast.error(t({ message: "The volume could not be read", context: "Admin, toast" }));
     }
     setLoading(false);
   }, [password]);
@@ -1577,7 +1578,7 @@ function UploadedFilesTab({ password }: { password: string }) {
         for (const k of data.kept ?? []) toast.error(`${k.name}: ${k.reason}`);
       }
     } catch {
-      toast.error("Nothing was removed");
+      toast.error(t({ message: "Nothing was removed", context: "Admin, toast" }));
     }
     setArmed(false);
     setBusy(false);
@@ -1590,61 +1591,61 @@ function UploadedFilesTab({ password }: { password: string }) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Uploaded Files</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Uploaded Files</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            Every file on this village's uploads volume, and what the database says about each one.
-          </p>
+            <Trans context="Admin, p">Every file on this village's uploads volume, and what the database says about each one.
+          </Trans></p>
         </div>
         <button
           onClick={load}
           disabled={loading || busy}
           className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Look again
-        </button>
+          <Trans context="Admin, button"><RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Look again
+        </Trans></button>
       </div>
 
       {loading || !report ? (
-        <div className="text-center py-12 text-gray-400">Looking...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Looking...</Trans></div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <div className="border border-gray-200 rounded-xl px-4 py-3">
               <div className="text-2xl font-bold text-gray-900">{report.volume.files}</div>
-              <div className="text-xs text-gray-500 mt-0.5">files, {volumeSize(report.volume.bytes)}</div>
+              <div className="text-xs text-gray-500 mt-0.5"><Trans context="Admin, div">files, {volumeSize(report.volume.bytes)}</Trans></div>
             </div>
             <div className="border border-gray-200 rounded-xl px-4 py-3">
               <div className="text-2xl font-bold text-gray-900">{report.tally.referenced.files}</div>
-              <div className="text-xs text-gray-500 mt-0.5">in use, {volumeSize(report.tally.referenced.bytes)}</div>
+              <div className="text-xs text-gray-500 mt-0.5"><Trans context="Admin, div">in use, {volumeSize(report.tally.referenced.bytes)}</Trans></div>
             </div>
             <div className="border border-gray-200 rounded-xl px-4 py-3">
               <div className="text-2xl font-bold text-gray-900">{report.tally.orphan.files}</div>
               <div className="text-xs text-gray-500 mt-0.5">
-                nothing points at, {volumeSize(report.tally.orphan.bytes)}
+                <Trans context="Admin, div">nothing points at, {volumeSize(report.tally.orphan.bytes)}</Trans>
               </div>
             </div>
             <div className="border border-gray-200 rounded-xl px-4 py-3">
               <div className="text-2xl font-bold text-gray-900">{report.tally.unknown.files}</div>
               <div className="text-xs text-gray-500 mt-0.5">
-                unidentified, {volumeSize(report.tally.unknown.bytes)}
+                <Trans context="Admin, div">unidentified, {volumeSize(report.tally.unknown.bytes)}</Trans>
               </div>
             </div>
           </div>
 
           <p className="text-xs text-gray-400 mb-6">
-            Read at {new Date(report.scannedAt).toLocaleString()} against {report.scan.columns} column(s) of{" "}
+            <Trans context="Admin, p">Read at {new Date(report.scannedAt).toLocaleString()} against {report.scan.columns} column(s) of{" "}
             {report.scan.tables} table(s), {report.scan.values} stored value(s). A file is left alone for its first{" "}
             {report.graceDays} days and for as long as any row points at it.{" "}
             {report.tally.recent.files > 0
               ? `${report.tally.recent.files} file(s) are inside that window today.`
-              : ""}
+              : ""}</Trans>
           </p>
 
           {!report.complete && (
             <div className="border border-amber-200 bg-amber-50 rounded-xl px-5 py-4 mb-6 text-sm text-amber-900">
-              {report.incompleteReason} Nothing can be removed until every table can be read, because a file is only
+              <Trans context="Admin, div">{report.incompleteReason} Nothing can be removed until every table can be read, because a file is only
               removable when nothing anywhere names it.
-            </div>
+            </Trans></div>
           )}
 
           {removedNames && (
@@ -1658,7 +1659,7 @@ function UploadedFilesTab({ password }: { password: string }) {
             </div>
           )}
 
-          <h3 className="text-sm font-bold text-gray-900 mb-1">Nothing points at these</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-1"><Trans context="Admin, h3">Nothing points at these</Trans></h3>
           {orphans.length === 0 ? (
             <p className="text-sm text-gray-500 mb-8">
               {/* Exactly what is true, and no more. "Everything here is in use"
@@ -1669,17 +1670,17 @@ function UploadedFilesTab({ password }: { password: string }) {
           ) : (
             <>
               <p className="text-sm text-gray-500 mb-3">
-                Removing them frees {volumeSize(report.tally.orphan.bytes)} and changes nothing a member or a visitor
+                <Trans context="Admin, p">Removing them frees {volumeSize(report.tally.orphan.bytes)} and changes nothing a member or a visitor
                 can see. It cannot be undone.
-              </p>
+              </Trans></p>
               <div className="space-y-2 mb-4">
                 {orphans.map((f) => (
                   <div key={f.name} className="border border-gray-200 rounded-xl px-4 py-3">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <span className="font-mono text-xs text-gray-900 break-all">{f.name}</span>
                       <span className="text-xs text-gray-500 shrink-0">
-                        {volumeSize(f.bytes)} · {f.ageDays} day(s) old
-                      </span>
+                        <Trans context="Admin, span">{volumeSize(f.bytes)} · {f.ageDays} day(s) old
+                      </Trans></span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{f.reason}</p>
                   </div>
@@ -1700,8 +1701,8 @@ function UploadedFilesTab({ password }: { password: string }) {
                       disabled={busy}
                       className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Keep them
-                    </button>
+                      <Trans context="Admin, button">Keep them
+                    </Trans></button>
                   </>
                 ) : (
                   <button
@@ -1709,8 +1710,8 @@ function UploadedFilesTab({ password }: { password: string }) {
                     disabled={busy || !report.complete}
                     className="flex items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark disabled:opacity-50 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" /> Remove these {orphans.length} file(s)
-                  </button>
+                    <Trans context="Admin, button"><Trash2 className="w-4 h-4" /> Remove these {orphans.length} file(s)
+                  </Trans></button>
                 )}
               </div>
             </>
@@ -1718,19 +1719,19 @@ function UploadedFilesTab({ password }: { password: string }) {
 
           {unknowns.length > 0 && (
             <>
-              <h3 className="text-sm font-bold text-gray-900 mb-1">These stay</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-1"><Trans context="Admin, h3">These stay</Trans></h3>
               <p className="text-sm text-gray-500 mb-3">
-                Nothing here can tell what these are, so nothing here will touch them. They are listed so somebody who
+                <Trans context="Admin, p">Nothing here can tell what these are, so nothing here will touch them. They are listed so somebody who
                 does know can decide.
-              </p>
+              </Trans></p>
               <div className="space-y-2">
                 {unknowns.map((f) => (
                   <div key={f.name} className="border border-gray-200 rounded-xl px-4 py-3">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <span className="font-mono text-xs text-gray-900 break-all">{f.name}</span>
                       <span className="text-xs text-gray-500 shrink-0">
-                        {volumeSize(f.bytes)} · {f.ageDays} day(s) old
-                      </span>
+                        <Trans context="Admin, span">{volumeSize(f.bytes)} · {f.ageDays} day(s) old
+                      </Trans></span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{f.reason}</p>
                   </div>
@@ -1759,7 +1760,7 @@ interface TrainingModule {
 
 const TRAINING_TYPES = ["Video", "Article", "Practice", "Workshop", "Live Session"];
 
-function TrainingModulesTab({ password }: { password: string }) {
+function TrainingModulesTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [mods, setMods] = useState<TrainingModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
@@ -1793,7 +1794,7 @@ function TrainingModulesTab({ password }: { password: string }) {
 
   const save = async () => {
     if (!draft.title || !draft.type) {
-      toast.error("Title and type are required");
+      toast.error(t({ message: "Title and type are required", context: "Admin, toast" }));
       return;
     }
     try {
@@ -1812,16 +1813,16 @@ function TrainingModulesTab({ password }: { password: string }) {
         });
         if (!res.ok) throw new Error();
       }
-      toast.success("Saved");
+      toast.success(t({ message: "Saved", context: "Admin, toast" }));
       cancelEdit();
       load();
     } catch {
-      toast.error("Save failed");
+      toast.error(t({ message: "Save failed", context: "Admin, toast" }));
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this module?")) return;
+    if (!confirm(t({ message: "Delete this module?", context: "Admin, confirm" }))) return;
     try {
       const res = await fetch(`${API_BASE}/admin/training-modules/${id}`, { method: "DELETE", headers: authHeaders(password) });
       if (!res.ok) {
@@ -1829,10 +1830,10 @@ function TrainingModulesTab({ password }: { password: string }) {
         toast.error(refusal(body, `The server refused that (${res.status}). The module is still here.`));
         return;
       }
-      toast.success("Deleted");
+      toast.success(t({ message: "Deleted", context: "Admin, toast" }));
       load();
     } catch {
-      toast.error("That did not reach the server. The module is still here.");
+      toast.error(t({ message: "That did not reach the server. The module is still here.", context: "Admin, toast" }));
     }
   };
 
@@ -1840,7 +1841,7 @@ function TrainingModulesTab({ password }: { password: string }) {
     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Title</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Title</Trans></label>
           <input
             type="text"
             value={draft.title ?? ""}
@@ -1849,7 +1850,7 @@ function TrainingModulesTab({ password }: { password: string }) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Type</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Type</Trans></label>
           <select
             value={draft.type ?? "Video"}
             onChange={(e) => setDraft({ ...draft, type: e.target.value })}
@@ -1860,7 +1861,7 @@ function TrainingModulesTab({ password }: { password: string }) {
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-gray-500 block mb-1">Description</label>
+        <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Description</Trans></label>
         <textarea
           value={draft.description ?? ""}
           rows={2}
@@ -1870,17 +1871,17 @@ function TrainingModulesTab({ password }: { password: string }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">URL</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">URL</Trans></label>
           <input
             type="text"
             value={draft.url ?? ""}
             onChange={(e) => setDraft({ ...draft, url: e.target.value })}
-            placeholder="https://..."
+            placeholder={t({ message: "https://...", context: "Admin, placeholder" })}
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Order</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Order</Trans></label>
           <input
             type="number"
             value={draft.order ?? 0}
@@ -1889,7 +1890,7 @@ function TrainingModulesTab({ password }: { password: string }) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1">Required to climb</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Required to climb</Trans></label>
           {/* The one lever that turns the Participant rung on and off. A member
               states for themselves what they have finished; the REQUIRED ones
               are what moves them onto the next rung. Absent reads as required,
@@ -1910,14 +1911,14 @@ function TrainingModulesTab({ password }: { password: string }) {
           onClick={save}
           className="flex items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark transition-colors"
         >
-          <Save className="w-4 h-4" /> Save
-        </button>
+          <Trans context="Admin, button"><Save className="w-4 h-4" /> Save
+        </Trans></button>
         <button
           onClick={cancelEdit}
           className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         >
-          Cancel
-        </button>
+          <Trans context="Admin, button">Cancel
+        </Trans></button>
       </div>
     </div>
   );
@@ -1926,28 +1927,28 @@ function TrainingModulesTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Training Modules</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Training Modules</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            The lessons both training pages show, on{" "}
+            <Trans context="Admin, p">The lessons both training pages show, on{" "}
             <a href="/training/steward" target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">/training/steward</a> and{" "}
             <a href="/training/resident" target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">/training/resident</a>.
             Each page's own words are in Pages, under Training: steward and Training: resident.
-          </p>
+          </Trans></p>
         </div>
         {editingId === null && (
           <button
             onClick={startNew}
             className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark transition-colors"
           >
-            Add Module
-          </button>
+            <Trans context="Admin, button">Add Module
+          </Trans></button>
         )}
       </div>
 
       {editingId === "new" && <div className="mb-6">{renderForm()}</div>}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-2">
           {mods.map((m) => editingId === m.id ? (
@@ -1969,8 +1970,8 @@ function TrainingModulesTab({ password }: { password: string }) {
                   onClick={() => startEdit(m)}
                   className="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Edit
-                </button>
+                  <Trans context="Admin, button">Edit
+                </Trans></button>
                 <button
                   onClick={() => remove(m.id)}
                   className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -1996,7 +1997,7 @@ const FAQ_PATHWAYS: { id: "investor" | "steward" | "resident" | "prosperity"; la
   { id: "prosperity", label: "Prosperity" },
 ];
 
-function FaqAdminTab({ password }: { password: string }) {
+function FaqAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [pathway, setPathway] = useState<"investor" | "steward" | "resident" | "prosperity">("investor");
   // `items` is the list as edited on screen; `saved` is what the server holds.
   // Edits, moves and deletions wait in the floating save bar (SaveBar.tsx).
@@ -2039,7 +2040,7 @@ function FaqAdminTab({ password }: { password: string }) {
   const faqChanges = Math.abs(items.length - saved.length) + items.filter((it, i) => JSON.stringify(it) !== JSON.stringify(saved[i])).length;
 
   const add = async () => {
-    if (!newQ.trim()) { toast.error("Question required"); return; }
+    if (!newQ.trim()) { toast.error(t({ message: "Question required", context: "Admin, toast" })); return; }
     try {
       const res = await fetch(`${API_BASE}/admin/faqs/${pathway}`, {
         method: "POST",
@@ -2048,20 +2049,20 @@ function FaqAdminTab({ password }: { password: string }) {
       });
       if (!res.ok) throw new Error();
       setNewQ(""); setNewA("");
-      toast.success("Added");
+      toast.success(t({ message: "Added", context: "Admin, toast" }));
       // Keep any edits waiting in the bar: take the fresh list as saved and add only what is new.
       const fresh: FaqItem[] = await fetch(`${API_BASE}/faqs/${pathway}`).then((r) => (r.ok ? r.json() : [])).catch(() => []);
       setSaved(fresh); setItems((cur) => [...cur, ...fresh.filter((f) => !cur.some((c) => c.id === f.id))]);
-    } catch { toast.error("Add failed"); }
+    } catch { toast.error(t({ message: "Add failed", context: "Admin, toast" })); }
   };
 
   // Deleting is its own act on its own route, answered, and leaves other edits waiting.
   const remove = async (id: string) => {
     if (!saved.some((it) => it.id === id)) { setItems((cur) => cur.filter((it) => it.id !== id)); return; }
-    if (!confirm("Delete this question?")) return;
+    if (!confirm(t({ message: "Delete this question?", context: "Admin, confirm" }))) return;
     const res = await fetch(`${API_BASE}/admin/faqs/${pathway}/${id}`, { method: "DELETE", headers: authHeaders(password) }).catch(() => null);
     if (!res?.ok) { toast.error(refusal(await res?.json().catch(() => null), "The question is still here.")); return; }
-    toast.success("Deleted");
+    toast.success(t({ message: "Deleted", context: "Admin, toast" }));
     setSaved((cur) => cur.filter((it) => it.id !== id)); setItems((cur) => cur.filter((it) => it.id !== id));
   };
   const edit = (id: string, patch: Partial<FaqItem>) => setItems((cur) => cur.map((it) => (it.id === id ? { ...it, ...patch } : it)));
@@ -2077,8 +2078,8 @@ function FaqAdminTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">FAQs</h2>
-        <p className="text-sm text-gray-500">Manage the Common Questions section shown on each journey page.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">FAQs</Trans></h2>
+        <p className="text-sm text-gray-500"><Trans context="Admin, p">Manage the Common Questions section shown on each journey page.</Trans></p>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-2 mb-6 border-b border-gray-200">
@@ -2102,13 +2103,13 @@ function FaqAdminTab({ password }: { password: string }) {
           type="text"
           value={newQ}
           onChange={(e) => setNewQ(e.target.value)}
-          placeholder="Question"
+          placeholder={t({ message: "Question", context: "Admin, placeholder" })}
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
         />
         <textarea
           value={newA}
           onChange={(e) => setNewA(e.target.value)}
-          placeholder="Answer"
+          placeholder={t({ message: "Answer", context: "Admin, placeholder" })}
           rows={3}
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40 resize-y"
         />
@@ -2116,14 +2117,14 @@ function FaqAdminTab({ password }: { password: string }) {
           onClick={add}
           className="flex items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add Question
-        </button>
+          <Trans context="Admin, button"><Plus className="w-4 h-4" /> Add Question
+        </Trans></button>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No questions yet.</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">No questions yet.</Trans></div>
       ) : (
         <div className="space-y-2">
           {items.map((item, idx) => (
@@ -2139,13 +2140,13 @@ function FaqAdminTab({ password }: { password: string }) {
                     </button>
                   </div>
                   <div className="flex-1 min-w-0 space-y-2">
-                    <input type="text" aria-label="Question" value={item.question} onChange={(e) => edit(item.id, { question: e.target.value })}
+                    <input type="text" aria-label={t({ message: "Question", context: "Admin, aria-label" })} value={item.question} onChange={(e) => edit(item.id, { question: e.target.value })}
                       className="w-full px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40" />
-                    <textarea aria-label="Answer" value={item.answer} rows={2} onChange={(e) => edit(item.id, { answer: e.target.value })}
+                    <textarea aria-label={t({ message: "Answer", context: "Admin, aria-label" })} value={item.answer} rows={2} onChange={(e) => edit(item.id, { answer: e.target.value })}
                       className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40 resize-y" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => remove(item.id)} aria-label="Remove this question" className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <button onClick={() => remove(item.id)} aria-label={t({ message: "Remove this question", context: "Admin, aria-label" })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -2186,7 +2187,7 @@ function daysSinceUpdate(m: Milestone): number | null {
  *  goes stale — surface it rather than waiting for someone to notice. */
 const STALE_AFTER_DAYS = 21;
 
-function MilestonesAdminTab({ password }: { password: string }) {
+function MilestonesAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [items, setItems] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -2220,11 +2221,11 @@ function MilestonesAdminTab({ password }: { password: string }) {
         toast.error(refusal(body, `The server refused that (${res.status}). The row is back to what it holds.`));
         load();
       }
-    } catch { toast.error("That did not reach the server. The row is back to what it holds."); load(); }
+    } catch { toast.error(t({ message: "That did not reach the server. The row is back to what it holds.", context: "Admin, toast" })); load(); }
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this milestone?")) return;
+    if (!confirm(t({ message: "Delete this milestone?", context: "Admin, confirm" }))) return;
     try {
       const res = await fetch(`${API_BASE}/admin/milestones/${id}`, { method: "DELETE", headers: authHeaders(password) });
       if (!res.ok) {
@@ -2232,13 +2233,13 @@ function MilestonesAdminTab({ password }: { password: string }) {
         toast.error(refusal(body, `The server refused that (${res.status}). The milestone is still here.`));
         return;
       }
-      toast.success("Deleted");
+      toast.success(t({ message: "Deleted", context: "Admin, toast" }));
       load();
-    } catch { toast.error("That did not reach the server. The milestone is still here."); }
+    } catch { toast.error(t({ message: "That did not reach the server. The milestone is still here.", context: "Admin, toast" })); }
   };
 
   const add = async () => {
-    if (!draft.title || !draft.phase) { toast.error("Title and phase required"); return; }
+    if (!draft.title || !draft.phase) { toast.error(t({ message: "Title and phase required", context: "Admin, toast" })); return; }
     try {
       const res = await fetch(`${API_BASE}/admin/milestones`, {
         method: "POST",
@@ -2246,11 +2247,11 @@ function MilestonesAdminTab({ password }: { password: string }) {
         body: JSON.stringify(draft),
       });
       if (!res.ok) throw new Error();
-      toast.success("Added");
+      toast.success(t({ message: "Added", context: "Admin, toast" }));
       setAdding(false);
       setDraft({ phase: "Phase 1", title: "", description: "", status: "upcoming" });
       load();
-    } catch { toast.error("Add failed"); }
+    } catch { toast.error(t({ message: "Add failed", context: "Admin, toast" })); }
   };
 
   // Group by phase
@@ -2268,19 +2269,19 @@ function MilestonesAdminTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Milestones</h2>
-          <p className="text-sm text-gray-500 mt-1">Edit the Build Progress tracker shown on the homepage.</p>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Milestones</Trans></h2>
+          <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Edit the Build Progress tracker shown on the homepage.</Trans></p>
         </div>
         {!adding && (
           <button onClick={() => setAdding(true)} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark">
-            Add Milestone
-          </button>
+            <Trans context="Admin, button">Add Milestone
+          </Trans></button>
         )}
       </div>
 
       {stale.length > 0 && (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <strong>{stale.length} milestone{stale.length === 1 ? "" : "s"} not updated in over {STALE_AFTER_DAYS} days:</strong>{" "}
+          <strong><Trans context="Admin, strong">{stale.length} milestone{stale.length === 1 ? "" : "s"} not updated in over {STALE_AFTER_DAYS} days:</Trans></strong>{" "}
           {stale.map((m) => m.title).join(", ")}. A quick note keeps the public tracker honest.
         </div>
       )}
@@ -2292,21 +2293,21 @@ function MilestonesAdminTab({ password }: { password: string }) {
               type="text"
               value={draft.phase ?? ""}
               onChange={(e) => setDraft({ ...draft, phase: e.target.value })}
-              placeholder="Phase (e.g. Phase 1)"
+              placeholder={t({ message: "Phase (e.g. Phase 1)", context: "Admin, placeholder" })}
               className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
             />
             <input
               type="text"
               value={draft.title ?? ""}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder="Title"
+              placeholder={t({ message: "Title", context: "Admin, placeholder" })}
               className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
             />
           </div>
           <textarea
             value={draft.description ?? ""}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-            placeholder="Description"
+            placeholder={t({ message: "Description", context: "Admin, placeholder" })}
             rows={2}
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y"
           />
@@ -2321,14 +2322,14 @@ function MilestonesAdminTab({ password }: { password: string }) {
             <option value="future">Future</option>
           </select>
           <div className="flex gap-2">
-            <button onClick={add} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm">Add</button>
-            <button onClick={() => setAdding(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+            <button onClick={add} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm"><Trans context="Admin, button">Add</Trans></button>
+            <button onClick={() => setAdding(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"><Trans context="Admin, button">Cancel</Trans></button>
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-6">
           {Object.entries(grouped).map(([phase, mils]) => (
@@ -2374,7 +2375,7 @@ function MilestonesAdminTab({ password }: { password: string }) {
                         value={m.completedDate ?? ""}
                         onChange={(e) => setItems((prev) => prev.map((x) => x.id === m.id ? { ...x, completedDate: e.target.value || null } : x))}
                         onBlur={(e) => update(m.id, { completedDate: e.target.value || null })}
-                        placeholder="YYYY-MM (if complete)"
+                        placeholder={t({ message: "YYYY-MM (if complete)", context: "Admin, placeholder" })}
                         className="min-h-11 w-full rounded border border-gray-200 px-2 py-1 text-sm"
                       />
                       <input
@@ -2382,7 +2383,7 @@ function MilestonesAdminTab({ password }: { password: string }) {
                         value={m.phase}
                         onChange={(e) => setItems((prev) => prev.map((x) => x.id === m.id ? { ...x, phase: e.target.value } : x))}
                         onBlur={(e) => update(m.id, { phase: e.target.value })}
-                        placeholder="Phase"
+                        placeholder={t({ message: "Phase", context: "Admin, placeholder" })}
                         className="min-h-11 w-full rounded border border-gray-200 px-2 py-1 text-sm"
                       />
                     </div>
@@ -2391,7 +2392,7 @@ function MilestonesAdminTab({ password }: { password: string }) {
                       value={m.updateNote}
                       onChange={(e) => setItems((prev) => prev.map((x) => x.id === m.id ? { ...x, updateNote: e.target.value } : x))}
                       onBlur={(e) => update(m.id, { updateNote: e.target.value })}
-                      placeholder="Status note (optional, shown on homepage)"
+                      placeholder={t({ message: "Status note (optional, shown on homepage)", context: "Admin, placeholder" })}
                       className="min-h-11 w-full rounded border border-gray-200 px-2 py-1 text-sm"
                     />
                     {(() => {
@@ -2436,7 +2437,7 @@ interface VisitConfig {
   logistics: { getting_there: string; accommodation: string; what_to_bring: string; contact_note: string };
 }
 
-function VisitAdminTab({ password }: { password: string }) {
+function VisitAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [cfg, setCfg] = useState<VisitConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2446,7 +2447,7 @@ function VisitAdminTab({ password }: { password: string }) {
     try {
       const res = await fetch(`${API_BASE}/admin/visit-config`, { headers: authHeaders(password) });
       setCfg(await res.json());
-    } catch { toast.error("Failed to load"); }
+    } catch { toast.error(t({ message: "Failed to load", context: "Admin, toast" })); }
     setLoading(false);
   }, [password]);
 
@@ -2466,7 +2467,7 @@ function VisitAdminTab({ password }: { password: string }) {
       // empty Error here turned that sentence into "Save failed", so an admin
       // met a wall with no reason on it and no way to guess the reason.
       if (!res.ok) throw new Error(await saveProblem(res));
-      toast.success("Saved");
+      toast.success(t({ message: "Saved", context: "Admin, toast" }));
     } catch (e) { toast.error(e instanceof Error && e.message ? e.message : "Save failed"); }
     setSaving(false);
   };
@@ -2481,19 +2482,19 @@ function VisitAdminTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Visit Program</h2>
-          <p className="text-sm text-gray-500 mt-1">Controls the /visit page.</p>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Visit Program</Trans></h2>
+          <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Controls the /visit page.</Trans></p>
         </div>
         <button onClick={save} disabled={saving || loading} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark disabled:opacity-50">
           {saving ? "Saving..." : "Save"}
         </button>
       </div>
       {loading || !cfg ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Hero Subtitle</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Hero Subtitle</Trans></label>
             <textarea
               value={cfg.hero_subtitle}
               onChange={(e) => setCfg({ ...cfg, hero_subtitle: e.target.value })}
@@ -2503,20 +2504,20 @@ function VisitAdminTab({ password }: { password: string }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Visit Types</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3"><Trans context="Admin, h3">Visit Types</Trans></h3>
             <div className="space-y-3">
               {cfg.visit_types.map((v, idx) => (
                 <div key={v.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
-                    <input type="text" value={v.title} onChange={(e) => updateVisitType(idx, { title: e.target.value })} placeholder="Title" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.duration} onChange={(e) => updateVisitType(idx, { duration: e.target.value })} placeholder="Duration" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.format} onChange={(e) => updateVisitType(idx, { format: e.target.value })} placeholder="Format" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.cost} onChange={(e) => updateVisitType(idx, { cost: e.target.value })} placeholder="Cost" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.title} onChange={(e) => updateVisitType(idx, { title: e.target.value })} placeholder={t({ message: "Title", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.duration} onChange={(e) => updateVisitType(idx, { duration: e.target.value })} placeholder={t({ message: "Duration", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.format} onChange={(e) => updateVisitType(idx, { format: e.target.value })} placeholder={t({ message: "Format", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.cost} onChange={(e) => updateVisitType(idx, { cost: e.target.value })} placeholder={t({ message: "Cost", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   </div>
-                  <textarea value={v.description} onChange={(e) => updateVisitType(idx, { description: e.target.value })} placeholder="Description" rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
+                  <textarea value={v.description} onChange={(e) => updateVisitType(idx, { description: e.target.value })} placeholder={t({ message: "Description", context: "Admin, placeholder" })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
                   <div className="grid grid-cols-2 gap-2">
-                    <input type="text" value={v.cta_label} onChange={(e) => updateVisitType(idx, { cta_label: e.target.value })} placeholder="CTA Label" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.cta_url} onChange={(e) => updateVisitType(idx, { cta_url: e.target.value })} placeholder="https://..., mailto:..., or /visit. Blank shows the contact form" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.cta_label} onChange={(e) => updateVisitType(idx, { cta_label: e.target.value })} placeholder={t({ message: "CTA Label", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                    <input type="text" value={v.cta_url} onChange={(e) => updateVisitType(idx, { cta_url: e.target.value })} placeholder={t({ message: "https://..., mailto:..., or /visit. Blank shows the contact form", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   </div>
                 </div>
               ))}
@@ -2524,7 +2525,7 @@ function VisitAdminTab({ password }: { password: string }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Logistics</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3"><Trans context="Admin, h3">Logistics</Trans></h3>
             <div className="space-y-3">
               {(["getting_there", "accommodation", "what_to_bring", "contact_note"] as const).map((k) => (
                 <div key={k}>
@@ -2557,7 +2558,7 @@ interface SummaryConfig {
   cta_url: string;
 }
 
-function InvestorSummaryAdminTab({ password }: { password: string }) {
+function InvestorSummaryAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [cfg, setCfg] = useState<SummaryConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2567,7 +2568,7 @@ function InvestorSummaryAdminTab({ password }: { password: string }) {
     try {
       const res = await fetch(`${API_BASE}/admin/investor-summary`, { headers: authHeaders(password) });
       setCfg(await res.json());
-    } catch { toast.error("Failed to load"); }
+    } catch { toast.error(t({ message: "Failed to load", context: "Admin, toast" })); }
     setLoading(false);
   }, [password]);
 
@@ -2586,7 +2587,7 @@ function InvestorSummaryAdminTab({ password }: { password: string }) {
       // refuses a CTA that would publish a vault document, and the admin has
       // to be able to read why.
       if (!res.ok) throw new Error(await saveProblem(res));
-      toast.success("Saved");
+      toast.success(t({ message: "Saved", context: "Admin, toast" }));
     } catch (e) { toast.error(e instanceof Error && e.message ? e.message : "Save failed"); }
     setSaving(false);
   };
@@ -2600,52 +2601,52 @@ function InvestorSummaryAdminTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Investor Financial Summary</h2>
-          <p className="text-sm text-gray-500 mt-1">Plain-language summary shown on /investor.</p>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Investor Financial Summary</Trans></h2>
+          <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Plain-language summary shown on /investor.</Trans></p>
         </div>
         <button onClick={save} disabled={saving || loading} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark disabled:opacity-50">
           {saving ? "Saving..." : "Save"}
         </button>
       </div>
       {loading || !cfg ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Headline</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Headline</Trans></label>
             <input type="text" value={cfg.headline} onChange={(e) => setCfg({ ...cfg, headline: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Intro</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Intro</Trans></label>
             <textarea value={cfg.intro} onChange={(e) => setCfg({ ...cfg, intro: e.target.value })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Details</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3"><Trans context="Admin, h3">Details</Trans></h3>
             <div className="space-y-3">
               {cfg.details.map((d, idx) => (
                 <div key={d.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
                   <div className="text-xs uppercase tracking-widest text-gray-400">{d.id}</div>
-                  <input type="text" value={d.label} onChange={(e) => updateDetail(idx, { label: e.target.value })} placeholder="Label" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  <input type="text" value={d.value} onChange={(e) => updateDetail(idx, { value: e.target.value })} placeholder="Value (large text)" className="w-full px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg" />
-                  <textarea value={d.note} onChange={(e) => updateDetail(idx, { note: e.target.value })} placeholder="Explanation note" rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
+                  <input type="text" value={d.label} onChange={(e) => updateDetail(idx, { label: e.target.value })} placeholder={t({ message: "Label", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                  <input type="text" value={d.value} onChange={(e) => updateDetail(idx, { value: e.target.value })} placeholder={t({ message: "Value (large text)", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg" />
+                  <textarea value={d.note} onChange={(e) => updateDetail(idx, { note: e.target.value })} placeholder={t({ message: "Explanation note", context: "Admin, placeholder" })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Disclaimer</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Disclaimer</Trans></label>
             <textarea value={cfg.disclaimer} onChange={(e) => setCfg({ ...cfg, disclaimer: e.target.value })} rows={3} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">CTA Label</label>
+              <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">CTA Label</Trans></label>
               <input type="text" value={cfg.cta_label} onChange={(e) => setCfg({ ...cfg, cta_label: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">CTA URL</label>
-              <input type="text" value={cfg.cta_url} onChange={(e) => setCfg({ ...cfg, cta_url: e.target.value })} placeholder="https://..., mailto:..., or /visit. Blank hides the button" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+              <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">CTA URL</Trans></label>
+              <input type="text" value={cfg.cta_url} onChange={(e) => setCfg({ ...cfg, cta_url: e.target.value })} placeholder={t({ message: "https://..., mailto:..., or /visit. Blank hides the button", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
             </div>
           </div>
         </div>
@@ -2671,17 +2672,17 @@ function QuestClaimsTab() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Quest Claims</h2>
-        <p className="text-sm text-gray-500 mt-1">Consent releases the reward. Value only moves with a human yes.</p>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Quest Claims</Trans></h2>
+        <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Consent releases the reward. Value only moves with a human yes.</Trans></p>
       </div>
       <div className="bg-white border border-gray-100 rounded-xl p-5">
         <p className="text-sm text-gray-700">
-          Finished work waiting for a witness is on the Review page, beside the other things a steward
+          <Trans context="Admin, p">Finished work waiting for a witness is on the Review page, beside the other things a steward
           decides. Stewards who are not admins can open it there.
-        </p>
+        </Trans></p>
         <a href="/review" className="inline-block mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">
-          Open Review
-        </a>
+          <Trans context="Admin, a">Open Review
+        </Trans></a>
       </div>
     </div>
   );
@@ -2736,7 +2737,7 @@ function QuestClaimsTab() {
  * application is real and usable and nobody has agreed to it yet, and that
  * difference is what the guide cites when she leans on it.
  */
-export function VillageBrainTab({ password }: { password: string }) {
+export function VillageBrainTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [sections, setSections] = useState<any[]>([]);
   const [record, setRecord] = useState<any[]>([]);
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -2759,7 +2760,7 @@ export function VillageBrainTab({ password }: { password: string }) {
       if (!res.ok) { toast.error(d?.error ?? "That did not save"); return null; }
       return d;
     } catch {
-      toast.error("That did not reach the server");
+      toast.error(t({ message: "That did not reach the server", context: "Admin, toast" }));
       return null;
     }
   };
@@ -2811,15 +2812,15 @@ export function VillageBrainTab({ password }: { password: string }) {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Reading what this village has said about itself.</div>;
+  if (loading) return <div className="text-sm text-gray-500"><Trans context="Admin, div">Reading what this village has said about itself.</Trans></div>;
   if (loadError) {
     return (
       <div className="bg-white rounded-xl border border-red-200 p-4">
-        <h3 className="font-semibold text-red-800">The brief did not load</h3>
+        <h3 className="font-semibold text-red-800"><Trans context="Admin, h3">The brief did not load</Trans></h3>
         <p className="text-sm text-gray-600 mt-1">{loadError}</p>
         <button onClick={() => void load()} className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 mt-3">
-          Try again
-        </button>
+          <Trans context="Admin, button">Try again
+        </Trans></button>
       </div>
     );
   }
@@ -2828,13 +2829,13 @@ export function VillageBrainTab({ password }: { password: string }) {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <h3 className="font-semibold text-gray-900">What this village is for</h3>
+        <h3 className="font-semibold text-gray-900"><Trans context="Admin, h3">What this village is for</Trans></h3>
         <p className="text-sm text-gray-600 mt-1">
-          The guide reads this before it suggests anything. It ranks it above the shipped
+          <Trans context="Admin, p">The guide reads this before it suggests anything. It ranks it above the shipped
           literature and below what is live in the game, and it names which section it drew on.
           When the guide answers in its own words, what it reads here goes to its model provider with the question.
           A member may export the canvas: that copy carries the confirmed sections open to members that a canvas block reads, and never people, legal, land, red lines or anything kept to admins.
-        </p>
+        </Trans></p>
         {blanks.length > 0 && (
           <p className="text-sm text-gray-600 mt-2">
             Still blank: {blanks.map((s) => s.id).join(", ")}. The guide will ask about these when a
@@ -2861,10 +2862,10 @@ export function VillageBrainTab({ password }: { password: string }) {
                   <h4 className="font-medium text-gray-900">{s.title}</h4>
                   <span className="text-xs text-gray-400">{s.id}</span>
                   {s.minimum && (
-                    <span className="text-xs bg-amber-50 text-amber-700 rounded px-1.5 py-0.5">essential</span>
+                    <span className="text-xs bg-amber-50 text-amber-700 rounded px-1.5 py-0.5"><Trans context="Admin, span">essential</Trans></span>
                   )}
                   {s.audience === "admin" && (
-                    <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">admins only</span>
+                    <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5"><Trans context="Admin, span">admins only</Trans></span>
                   )}
                   <span
                     className={`text-xs rounded px-1.5 py-0.5 ${
@@ -2908,10 +2909,10 @@ export function VillageBrainTab({ password }: { password: string }) {
                   disabled={busy === s.id}
                   className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 disabled:opacity-40"
                 >
-                  Save without confirming
-                </button>
+                  <Trans context="Admin, button">Save without confirming
+                </Trans></button>
               )}
-              {s.revision > 1 && <span className="text-xs text-gray-400">revision {s.revision}</span>}
+              {s.revision > 1 && <span className="text-xs text-gray-400"><Trans context="Admin, span">revision {s.revision}</Trans></span>}
             </div>
           </div>
         );
@@ -2929,7 +2930,7 @@ export function VillageBrainTab({ password }: { password: string }) {
  * role that gets created, so silence is refusal. A single Accept button on a
  * role quietly carrying `exchange.manage` is exactly how this goes wrong.
  */
-function DraftQueueTab({ password }: { password: string }) {
+function DraftQueueTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [drafts, setDrafts] = useState<any[]>([]);
   const [granted, setGranted] = useState<Record<string, string[]>>({});
   const [note, setNote] = useState<Record<string, string>>({});
@@ -2996,28 +2997,28 @@ function DraftQueueTab({ password }: { password: string }) {
       return { ...g, [id]: have.includes(cap) ? have.filter((c) => c !== cap) : [...have, cap] };
     });
 
-  if (loading) return <div className="text-sm text-gray-500">Loading what she has proposed.</div>;
+  if (loading) return <div className="text-sm text-gray-500"><Trans context="Admin, div">Loading what she has proposed.</Trans></div>;
   if (loadError) {
     return (
       <div className="bg-white rounded-xl border border-red-200 p-4">
-        <h3 className="font-semibold text-red-800">The queue did not load</h3>
+        <h3 className="font-semibold text-red-800"><Trans context="Admin, h3">The queue did not load</Trans></h3>
         <p className="text-sm text-gray-600 mt-1">
-          {loadError}. There may be drafts waiting; this is not an empty queue.
-        </p>
+          <Trans context="Admin, p">{loadError}. There may be drafts waiting; this is not an empty queue.
+        </Trans></p>
         <button onClick={() => void load()} className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 mt-3">
-          Try again
-        </button>
+          <Trans context="Admin, button">Try again
+        </Trans></button>
       </div>
     );
   }
   if (!drafts.length) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <h3 className="font-semibold text-gray-900">Nothing waiting</h3>
+        <h3 className="font-semibold text-gray-900"><Trans context="Admin, h3">Nothing waiting</Trans></h3>
         <p className="text-sm text-gray-600 mt-1">
-          Roles and circles your guide proposes land here for you to read before they exist.
+          <Trans context="Admin, p">Roles and circles your guide proposes land here for you to read before they exist.
           She never creates anything herself.
-        </p>
+        </Trans></p>
       </div>
     );
   }
@@ -3036,16 +3037,16 @@ function DraftQueueTab({ password }: { password: string }) {
             <p className="text-sm text-gray-700 mt-2">{d.payload?.description ?? d.payload?.purpose}</p>
             <p className="text-sm text-gray-600 mt-2 italic">{d.rationale}</p>
             {Array.isArray(d.cites) && d.cites.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">Drawn from: {d.cites.join(", ")}</p>
+              <p className="text-xs text-gray-500 mt-1"><Trans context="Admin, p">Drawn from: {d.cites.join(", ")}</Trans></p>
             )}
 
             {esc.length > 0 && (
               <div className="mt-3 border border-amber-200 bg-amber-50 rounded-lg p-3">
                 <p className="text-sm font-medium text-amber-900">
-                  This asks for {esc.length === 1 ? "a power" : "powers"} no existing role has.
+                  <Trans context="Admin, p">This asks for {esc.length === 1 ? "a power" : "powers"} no existing role has.
                   Tick each one you mean to grant. Anything you leave unticked is removed before
                   the role is created.
-                </p>
+                </Trans></p>
                 <div className="mt-2 space-y-2">
                   {esc.map((e) => (
                     <label key={e.capability} className="flex items-start gap-2 text-sm text-amber-900">
@@ -3056,8 +3057,8 @@ function DraftQueueTab({ password }: { password: string }) {
                         className="mt-0.5"
                       />
                       <span>
-                        Let a holder {e.consequence}
-                        <span className="text-xs text-amber-700"> ({e.capability})</span>
+                        <Trans context="Admin, span">Let a holder {e.consequence}
+                        <span className="text-xs text-amber-700"> ({e.capability})</span></Trans>
                       </span>
                     </label>
                   ))}
@@ -3076,7 +3077,7 @@ function DraftQueueTab({ password }: { password: string }) {
               <input
                 value={note[d.id] ?? ""}
                 onChange={(e) => setNote((n) => ({ ...n, [d.id]: e.target.value }))}
-                placeholder="Why not, so she learns"
+                placeholder={t({ message: "Why not, so she learns", context: "Admin, placeholder" })}
                 className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs flex-1 min-w-[180px]"
               />
               <button
@@ -3084,8 +3085,8 @@ function DraftQueueTab({ password }: { password: string }) {
                 disabled={busy === d.id}
                 className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 disabled:opacity-40"
               >
-                Reject
-              </button>
+                <Trans context="Admin, button">Reject
+              </Trans></button>
             </div>
           </div>
         );
@@ -3105,7 +3106,7 @@ function DraftQueueTab({ password }: { password: string }) {
  * refuses outright while anything is unsettled. That is the same settle-first
  * rule that already governs deleting a quest with claims in flight.
  */
-function SeasonPatternsTab({ password }: { password: string }) {
+function SeasonPatternsTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [org, setOrg] = useState<any>(null);
   const [plan, setPlan] = useState<any>(null);
@@ -3149,7 +3150,7 @@ function SeasonPatternsTab({ password }: { password: string }) {
     } finally { setBusy(false); }
   };
 
-  if (!data) return <div className="text-center py-12 text-gray-400">Loading…</div>;
+  if (!data) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div>;
 
   const members: any[] = data.members ?? [];
   const inCurrent = (kind: string, id: string) =>
@@ -3157,7 +3158,7 @@ function SeasonPatternsTab({ password }: { password: string }) {
   const governed = (kind: string, id: string) => members.some((m) => m.kind === kind && m.entityId === id);
 
   const toggle = async (kind: string, entityId: string, on: boolean) => {
-    if (!data.currentPatternId) return toast.error("This season carries no shape yet");
+    if (!data.currentPatternId) return toast.error(t({ message: "This season carries no shape yet", context: "Admin, toast" }));
     await call(`/admin/seasons/patterns/${data.currentPatternId}/members`, { kind, entityId },
       on ? "POST" : "DELETE");
     void load();
@@ -3171,20 +3172,20 @@ function SeasonPatternsTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Season Shapes</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Season Shapes</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          A shape is the working setup of a season: which circles, roles, badges
+          <Trans context="Admin, p">A shape is the working setup of a season: which circles, roles, badges
           and quests are live while it runs. Anything in no shape at all is
           permanent and a season turn never touches it.
-        </p>
+        </Trans></p>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
-        <h3 className="font-semibold text-gray-900 mb-2">Shapes</h3>
+        <h3 className="font-semibold text-gray-900 mb-2"><Trans context="Admin, h3">Shapes</Trans></h3>
         {(data.patterns ?? []).length === 0 && (
           <p className="text-sm text-gray-500 mb-3">
-            None yet. A village without shapes runs one continuous season, which is a fine place to start.
-          </p>
+            <Trans context="Admin, p">None yet. A village without shapes runs one continuous season, which is a fine place to start.
+          </Trans></p>
         )}
         <div className="flex flex-wrap gap-2 mb-3">
           {(data.patterns ?? []).map((p: any) => (
@@ -3197,25 +3198,25 @@ function SeasonPatternsTab({ password }: { password: string }) {
         <div className="flex gap-2 items-end">
           <label className="text-xs text-gray-500">New shape
             <input value={newName} onChange={(e) => setNewName(e.target.value)}
-              placeholder="Festival Season"
+              placeholder={t({ message: "Festival Season", context: "Admin, placeholder" })}
               className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm w-full mt-1" />
           </label>
           <button disabled={!newName.trim() || busy}
             onClick={async () => { const made = await call("/admin/seasons/patterns", { name: newName }); if (made) setNewName(""); void load(); }}
-            className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">Create</button>
+            className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"><Trans context="Admin, button">Create</Trans></button>
         </div>
         <p className="text-xs text-gray-400 mt-2">
-          A shape becomes a season's by setting its id on the season itself, in Admin, Season.
-        </p>
+          <Trans context="Admin, p">A shape becomes a season's by setting its id on the season itself, in Admin, Season.
+        </Trans></p>
       </div>
 
       {data.currentPatternId && (
         <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
-          <h3 className="font-semibold text-gray-900 mb-1">What this season carries</h3>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">What this season carries</Trans></h3>
           <p className="text-xs text-gray-500 mb-3">
-            Unticked and never ticked anywhere are different things. Something in
+            <Trans context="Admin, p">Unticked and never ticked anywhere are different things. Something in
             no shape at all is permanent; something in another shape is resting.
-          </p>
+          </Trans></p>
           <div className="grid sm:grid-cols-2 gap-1">
             {rows.map((r) => (
               <label key={`${r.kind}:${r.id}`} className="flex items-center gap-2 text-sm py-1">
@@ -3233,33 +3234,33 @@ function SeasonPatternsTab({ password }: { password: string }) {
       )}
 
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">
-        <h3 className="font-semibold text-gray-900 mb-1">Turn the season</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Turn the season</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          Nothing moves until you press Apply. Reassignment cadence is{" "}
+          <Trans context="Admin, p">Nothing moves until you press Apply. Reassignment cadence is{" "}
           <strong>{String(data.cadence ?? "season_turn").replace(/_/g, " ")}</strong>.
-        </p>
+        </Trans></p>
         <div className="flex gap-2 mb-3">
           <button disabled={busy}
             onClick={async () => setPlan(await call("/admin/seasons/roll", {}))}
-            className="text-sm border border-gray-200 rounded-lg px-4 py-2">Show me what would change</button>
+            className="text-sm border border-gray-200 rounded-lg px-4 py-2"><Trans context="Admin, button">Show me what would change</Trans></button>
           {plan && plan.changes?.length > 0 && plan.blocked?.length === 0 && (
             <button disabled={busy}
               onClick={async () => { const r = await call("/admin/seasons/roll", { apply: true }); if (r?.applied !== undefined) { toast.success(`${r.applied} change(s) applied`); setPlan(null); void load(); } }}
-              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">Apply</button>
+              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Apply</Trans></button>
           )}
         </div>
         {plan && (
           <div className="text-sm space-y-2">
             {plan.blocked?.length > 0 && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <p className="font-medium text-amber-900 mb-1">Settle these first</p>
+                <p className="font-medium text-amber-900 mb-1"><Trans context="Admin, p">Settle these first</Trans></p>
                 {plan.blocked.map((b: any) => (
                   <p key={b.entityId} className="text-amber-800 text-xs">{b.name}: {b.reason}</p>
                 ))}
               </div>
             )}
             {plan.changes?.length === 0 && plan.blocked?.length === 0 && (
-              <p className="text-gray-500">Nothing would change.</p>
+              <p className="text-gray-500"><Trans context="Admin, p">Nothing would change.</Trans></p>
             )}
             {plan.changes?.map((c: any) => (
               <p key={`${c.kind}:${c.entityId}`} className="text-gray-700 text-xs">
@@ -3268,30 +3269,30 @@ function SeasonPatternsTab({ password }: { password: string }) {
             ))}
             {plan.lapsing?.length > 0 && (
               <p className="text-xs text-gray-500">
-                {plan.lapsing.length} role(s) would reopen for reassignment.
-              </p>
+                <Trans context="Admin, p">{plan.lapsing.length} role(s) would reopen for reassignment.
+              </Trans></p>
             )}
           </div>
         )}
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">What the season taught</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">What the season taught</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          What this shape declared, against what the village actually used.
-        </p>
+          <Trans context="Admin, p">What this shape declared, against what the village actually used.
+        </Trans></p>
         <button disabled={busy}
           onClick={async () => setRetro(await call("/admin/seasons/retrospective", undefined, "GET"))}
-          className="text-sm border border-gray-200 rounded-lg px-4 py-2 mb-3">Read the season</button>
+          className="text-sm border border-gray-200 rounded-lg px-4 py-2 mb-3"><Trans context="Admin, button">Read the season</Trans></button>
         {retro && retro.tooQuietToRead && (
           <p className="text-sm text-gray-500">
-            Too little happened this season to read anything into. That is worth
+            <Trans context="Admin, p">Too little happened this season to read anything into. That is worth
             knowing on its own, and it is better than a number invented from four events.
-          </p>
+          </Trans></p>
         )}
         {retro && !retro.tooQuietToRead && (
           <div className="space-y-3">
-            {(retro.observations ?? []).length === 0 && <p className="text-sm text-gray-500">Nothing stood out.</p>}
+            {(retro.observations ?? []).length === 0 && <p className="text-sm text-gray-500"><Trans context="Admin, p">Nothing stood out.</Trans></p>}
             {(retro.observations ?? []).map((o: any) => (
               <div key={o.id} className="border-l-2 border-gray-200 pl-3">
                 <p className="text-sm font-medium text-gray-900">{o.name}</p>
@@ -3302,8 +3303,8 @@ function SeasonPatternsTab({ password }: { password: string }) {
             ))}
             {retro.proposed?.drop?.length > 0 && (
               <p className="text-xs text-gray-500 pt-2">
-                Next time this shape could drop {retro.proposed.drop.length} thing(s) nobody used.
-              </p>
+                <Trans context="Admin, p">Next time this shape could drop {retro.proposed.drop.length} thing(s) nobody used.
+              </Trans></p>
             )}
           </div>
         )}
@@ -3312,7 +3313,7 @@ function SeasonPatternsTab({ password }: { password: string }) {
   );
 }
 
-function CirclesMapTab({ password }: { password: string }) {
+function CirclesMapTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [off, setOff] = useState(false);
   const [circles, setCircles] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
@@ -3351,7 +3352,7 @@ function CirclesMapTab({ password }: { password: string }) {
     });
     const d = await res.json();
     if (!res.ok) return toast.error(refusal(d, "Create failed"));
-    toast.success("Circle created");
+    toast.success(t({ message: "Circle created", context: "Admin, toast" }));
     setNewCircle({ name: "", purpose: "" });
     // The village's first real circle retires the map's examples server-side.
     forgetExamplesCache("map");
@@ -3379,7 +3380,7 @@ function CirclesMapTab({ password }: { password: string }) {
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify({ circleId }),
     });
-    if (!res.ok) return toast.error("Assignment failed");
+    if (!res.ok) return toast.error(t({ message: "Assignment failed", context: "Admin, toast" }));
     // Progression's declared trigger is a real role edited into existence,
     // and this is the only role-mutation route in the admin.
     forgetExamplesCache("progression");
@@ -3389,8 +3390,8 @@ function CirclesMapTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Circles &amp; Map</h2>
-        <p className="text-sm text-gray-500">The How Power Is Held module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Circles &amp; Map</Trans></h2>
+        <p className="text-sm text-gray-500"><Trans context="Admin, p">The How Power Is Held module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</Trans></p>
       </div>
     );
   }
@@ -3398,18 +3399,18 @@ function CirclesMapTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Circles &amp; Map</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Circles &amp; Map</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          The village's shape: circles, which roles orbit them, and what the
+          <Trans context="Admin, p">The village's shape: circles, which roles orbit them, and what the
           concierge couldn't route (your role-creation demand signal).
-        </p>
+        </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
-            Pre-scale requirement: a per-member block list for the contact relay is
+            <Trans context="Admin, div">Pre-scale requirement: a per-member block list for the contact relay is
             not built yet. Watch the contact log below for misuse until it is.
-          </div>
+          </Trans></div>
 
           <div className="space-y-3">
             {circles.map((c) => (
@@ -3431,25 +3432,25 @@ function CirclesMapTab({ password }: { password: string }) {
                   <input
                     value={aliasDrafts[c.id] ?? ""}
                     onChange={(e) => setAliasDrafts((p) => ({ ...p, [c.id]: e.target.value }))}
-                    placeholder="add alias…"
+                    placeholder={t({ message: "add alias…", context: "Admin, placeholder" })}
                     className="text-[11px] border border-gray-200 rounded px-1.5 py-0.5 w-28"
                   />
-                  <button onClick={() => addAlias(c)} className="text-[11px] text-teal-deep font-medium">add</button>
+                  <button onClick={() => addAlias(c)} className="text-[11px] text-teal-deep font-medium"><Trans context="Admin, button">add</Trans></button>
                 </div>
               </div>
             ))}
             <div className="border border-dashed border-gray-300 rounded-xl p-4 flex flex-wrap gap-2 items-center">
               <input value={newCircle.name} onChange={(e) => setNewCircle({ ...newCircle, name: e.target.value })}
-                placeholder="New circle name" className="text-sm border border-gray-200 rounded-lg px-3 py-1.5" />
+                placeholder={t({ message: "New circle name", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5" />
               <input value={newCircle.purpose} onChange={(e) => setNewCircle({ ...newCircle, purpose: e.target.value })}
-                placeholder="Purpose" className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 flex-1 min-w-40" />
+                placeholder={t({ message: "Purpose", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 flex-1 min-w-40" />
               <button onClick={createCircle} disabled={!newCircle.name}
-                className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40">Create</button>
+                className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"><Trans context="Admin, button">Create</Trans></button>
             </div>
           </div>
 
           <div className="border border-gray-200 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 text-sm mb-2">Role → circle assignment</h3>
+            <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="Admin, h3">Role → circle assignment</Trans></h3>
             <div className="space-y-1.5">
               {roles.map((r: any) => (
                 <div key={r.id} className="flex items-center justify-between gap-2 text-sm">
@@ -3471,8 +3472,8 @@ function CirclesMapTab({ password }: { password: string }) {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="border border-gray-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 text-sm mb-2">Unrouted concierge asks</h3>
-              {unmatched.length === 0 ? <p className="text-xs text-gray-400">None. The map covers what people ask for.</p> : (
+              <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="Admin, h3">Unrouted concierge asks</Trans></h3>
+              {unmatched.length === 0 ? <p className="text-xs text-gray-400"><Trans context="Admin, p">None. The map covers what people ask for.</Trans></p> : (
                 <ul className="space-y-1 text-xs text-gray-600">
                   {unmatched.slice(0, 12).map((q: any) => (
                     <li key={q.id}>"{q.query}" <span className="text-gray-300">· {new Date(q.created_at).toLocaleDateString()}</span></li>
@@ -3481,8 +3482,8 @@ function CirclesMapTab({ password }: { password: string }) {
               )}
             </div>
             <div className="border border-gray-200 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 text-sm mb-2">Contact relay log</h3>
-              {contacts.length === 0 ? <p className="text-xs text-gray-400">No introductions yet.</p> : (
+              <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="Admin, h3">Contact relay log</Trans></h3>
+              {contacts.length === 0 ? <p className="text-xs text-gray-400"><Trans context="Admin, p">No introductions yet.</Trans></p> : (
                 <ul className="space-y-1 text-xs text-gray-600">
                   {contacts.slice(0, 12).map((ct: any) => (
                     <li key={ct.id}>
@@ -3509,7 +3510,7 @@ const EMPTY_TOOL = {
   category: "", icon: "", visibility: "members", roleIds: [] as string[], gettingStarted: "",
 };
 
-function ToolsAdminTab({ password }: { password: string }) {
+function ToolsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -3567,7 +3568,7 @@ function ToolsAdminTab({ password }: { password: string }) {
         return;
       }
     } catch {
-      toast.error("That did not reach the server. The tool is still on the hub.");
+      toast.error(t({ message: "That did not reach the server. The tool is still on the hub.", context: "Admin, toast" }));
       return;
     }
     load();
@@ -3593,7 +3594,7 @@ function ToolsAdminTab({ password }: { password: string }) {
         return;
       }
     } catch {
-      toast.error("That did not reach the server. The order is unchanged.");
+      toast.error(t({ message: "That did not reach the server. The order is unchanged.", context: "Admin, toast" }));
       return;
     }
     load();
@@ -3612,7 +3613,7 @@ function ToolsAdminTab({ password }: { password: string }) {
   };
 
   const statusDot = (t: any) => {
-    if (!t.lastCheckedAt) return <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" title="never checked" />;
+    if (!t.lastCheckedAt) return <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" title={t({ message: "never checked", context: "Admin, title" })} />;
     if (t.lastCheckStatus && t.lastCheckStatus < 400) return <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" title={`HTTP ${t.lastCheckStatus}`} />;
     return <span className="w-2 h-2 rounded-full bg-red-500 inline-block" title={`HTTP ${t.lastCheckStatus || "unreachable"}`} />;
   };
@@ -3620,11 +3621,11 @@ function ToolsAdminTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Tools</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Tools</Trans></h2>
         <p className="text-sm text-gray-500">
-          The Tools Hub module is off. Enable it (at least to Preview) in
+          <Trans context="Admin, p">The Tools Hub module is off. Enable it (at least to Preview) in
           Module Library (top of the {MODULES_GROUP_TITLE} group), then come back here to add tools.
-        </p>
+        </Trans></p>
       </div>
     );
   }
@@ -3633,18 +3634,18 @@ function ToolsAdminTab({ password }: { password: string }) {
     <div>
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Tools</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Tools</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            The village toolbox: links out to where things happen. The Hypha card is
+            <Trans context="Admin, p">The village toolbox: links out to where things happen. The Hypha card is
             managed by the DHO address setting, not here.
-          </p>
+          </Trans></p>
         </div>
         <button onClick={checkLinks} disabled={checking}
           className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-50 disabled:opacity-40">
           {checking ? "Checking…" : "Check links now"}
         </button>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           {/* The category list the tool form's picker reads. Validated on every
               write, refused by name when a tool names one that is missing, and
@@ -3654,10 +3655,10 @@ function ToolsAdminTab({ password }: { password: string }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide">
                 <tr>
-                  <th className="px-4 py-2.5">Tool</th>
-                  <th className="px-4 py-2.5">Audience</th>
-                  <th className="px-4 py-2.5">Opens (30d)</th>
-                  <th className="px-4 py-2.5">Link</th>
+                  <th className="px-4 py-2.5"><Trans context="Admin, th">Tool</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="Admin, th">Audience</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="Admin, th">Opens (30d)</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="Admin, th">Link</Trans></th>
                   <th className="px-4 py-2.5"></th>
                 </tr>
               </thead>
@@ -3677,13 +3678,13 @@ function ToolsAdminTab({ password }: { password: string }) {
                     <td className="px-4 py-2.5 text-right whitespace-nowrap">
                       <button onClick={() => move(t.id, -1)} disabled={i === 0} className="text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1">↑</button>
                       <button onClick={() => move(t.id, 1)} disabled={i === (data?.tools ?? []).length - 1} className="text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1">↓</button>
-                      <button onClick={() => { setEditingId(t.id); setForm({ ...EMPTY_TOOL, ...t }); }} className="text-xs text-teal-deep font-medium px-2">Edit</button>
-                      <button onClick={() => remove(t.id)} className="text-xs text-red-500 px-1">Remove</button>
+                      <button onClick={() => { setEditingId(t.id); setForm({ ...EMPTY_TOOL, ...t }); }} className="text-xs text-teal-deep font-medium px-2"><Trans context="Admin, button">Edit</Trans></button>
+                      <button onClick={() => remove(t.id)} className="text-xs text-red-500 px-1"><Trans context="Admin, button">Remove</Trans></button>
                     </td>
                   </tr>
                 ))}
                 {(data?.tools ?? []).length === 0 && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs">No tools yet. Add the first one below.</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs"><Trans context="Admin, td">No tools yet. Add the first one below.</Trans></td></tr>
                 )}
               </tbody>
             </table>
@@ -3693,11 +3694,11 @@ function ToolsAdminTab({ password }: { password: string }) {
             <h3 className="font-semibold text-gray-900 mb-3">{editingId ? `Edit: ${form.name}` : "Add a tool"}</h3>
             <div className="grid sm:grid-cols-2 gap-2.5">
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Name" className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
+                placeholder={t({ message: "Name", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
               <input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-                placeholder="One-line purpose" className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
+                placeholder={t({ message: "One-line purpose", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
               <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })}
-                placeholder="https:// link" className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2 font-mono" />
+                placeholder={t({ message: "https:// link", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2 font-mono" />
               <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
                 className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
                 <option value="">Category…</option>
@@ -3714,7 +3715,7 @@ function ToolsAdminTab({ password }: { password: string }) {
                 <option value="roles">Specific roles</option>
               </select>
               <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="Icon slug (e.g. MessageCircle)" className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
+                placeholder={t({ message: "Icon slug (e.g. MessageCircle)", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2" />
               {form.visibility === "roles" && (
                 <div className="sm:col-span-2 flex flex-wrap gap-2">
                   {roles.map((r) => (
@@ -3732,9 +3733,9 @@ function ToolsAdminTab({ password }: { password: string }) {
                 </div>
               )}
               <textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Longer description (optional)" rows={2} className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2" />
+                placeholder={t({ message: "Longer description (optional)", context: "Admin, placeholder" })} rows={2} className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2" />
               <input value={form.gettingStarted ?? ""} onChange={(e) => setForm({ ...form, gettingStarted: e.target.value })}
-                placeholder="Getting-started note (optional)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2" />
+                placeholder={t({ message: "Getting-started note (optional)", context: "Admin, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2 sm:col-span-2" />
             </div>
             <div className="flex gap-2 mt-3">
               <button onClick={save} disabled={!form.name || !form.purpose || !form.url || !form.category}
@@ -3744,8 +3745,8 @@ function ToolsAdminTab({ password }: { password: string }) {
               {editingId && (
                 <button onClick={() => { setEditingId(""); setForm(EMPTY_TOOL); }}
                   className="text-sm border border-gray-200 rounded-lg px-4 py-2 text-gray-600">
-                  Cancel
-                </button>
+                  <Trans context="Admin, button">Cancel
+                </Trans></button>
               )}
             </div>
           </div>
@@ -3763,7 +3764,7 @@ function ToolsAdminTab({ password }: { password: string }) {
  * path, the nightly-posting catch-up button, and the platform payment
  * surfaces (suspensions, recent charges, webhook log).
  */
-function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) {
+function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [payments, setPayments] = useState<any>(null);
   const [off, setOff] = useState(false);
@@ -3831,9 +3832,9 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
     payableTokens.map((t) => t.slug).find((slug) => acc.prices?.[slug]);
 
   const addRoom = async () => {
-    if (!roomForm.name.trim()) return toast.error("Name the room");
+    if (!roomForm.name.trim()) return toast.error(t({ message: "Name the room", context: "Admin, toast" }));
     const d = await post("/admin/stays/accommodations", roomForm);
-    if (d) { forgetExamplesCache("stays"); toast.success("Room added. Now post its prices"); setRoomForm({ name: "", description: "", capacity: 1 }); load(); }
+    if (d) { forgetExamplesCache("stays"); toast.success(t({ message: "Room added. Now post its prices", context: "Admin, toast" })); setRoomForm({ name: "", description: "", capacity: 1 }); load(); }
   };
 
   const savePrices = async (acc: any) => {
@@ -3874,7 +3875,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
       if (vm) prices.push({ tokenType: vSlug, audience: "member", amountMinor: vm });
     }
     const d = await post(`/admin/stays/accommodations/${acc.id}/prices`, { prices }, "PUT");
-    if (d) { toast.success("Prices posted"); setPriceDraft((p) => ({ ...p, [acc.id]: {} })); load(); }
+    if (d) { toast.success(t({ message: "Prices posted", context: "Admin, toast" })); setPriceDraft((p) => ({ ...p, [acc.id]: {} })); load(); }
   };
 
   const recordManual = async () => {
@@ -3899,50 +3900,50 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Stays & Payments</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Stays & Payments</Trans></h2>
         <p className="text-sm text-gray-500">
-          The Stays module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group, it is
+          <Trans context="Admin, p">The Stays module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group, it is
           funds-bearing, and the legal card will walk you through the posture),
           then come back here to post rooms and rates.
-        </p>
+        </Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Stays & Payments</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Stays & Payments</Trans></h2>
         <p className="text-sm text-gray-500 mb-4">
-          One credit hosts one night. Rates snapshot at activation; nightly
+          <Trans context="Admin, p">One credit hosts one night. Rates snapshot at activation; nightly
           credits post automatically after the configured hour, and the button
           below catches up on demand. Stays are never ended automatically.
-        </p>
+        </Trans></p>
         <TokenNamingLink what="Stay credits" onOpenTab={onOpenTab} />
         <button
           onClick={async () => { const d = await post("/admin/stays/post-nights"); if (d) { toast.success(`${d.posted} night(s) posted across ${d.swept} stay(s)`); load(); } }}
           className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
         >
-          Post nights now
-        </button>
+          <Trans context="Admin, button">Post nights now
+        </Trans></button>
       </div>
 
       {/* Rooms + posted prices */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Rooms & posted prices</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Rooms & posted prices</Trans></h3>
         <div className="space-y-4">
           {(data?.accommodations ?? []).map((a: any) => (
             <div key={a.id} className={`border rounded-lg p-4 ${a.active ? "border-gray-200" : "border-gray-100 opacity-60"}`}>
               <div className="flex items-center justify-between mb-2">
                 <p className="font-medium text-gray-900">
-                  {a.name} {!a.active && <span className="text-xs text-gray-400">(inactive)</span>}
+                  {a.name} {!a.active && <span className="text-xs text-gray-400"><Trans context="Admin, span">(inactive)</Trans></span>}
                   {a.isExample && <ExampleChip className="ml-2 align-middle" />}
                   {/* Capacity was recorded and never shown anywhere. A flag,
                       not a block: whoever activates a stay is the one who
                       knows whether the room is really full. */}
                   <span className={`ml-2 text-xs font-normal ${a.overCapacity ? "text-amber-700" : "text-gray-400"}`}>
-                    {a.activeStays ?? 0} of {a.capacity} {a.overCapacity ? "over capacity" : "in residence"}
+                    <Trans context="Admin, span">{a.activeStays ?? 0} of {a.capacity} {a.overCapacity ? "over capacity" : "in residence"}</Trans>
                   </span>
                 </p>
                 {/* Both write routes refuse an example room, and the price one
@@ -4007,14 +4008,14 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
               )}
               {a.isExample ? (
                 <p className="mt-2 text-xs text-amber-700">
-                  A standing example. Its posted rates are here to show what the
+                  <Trans context="Admin, p">A standing example. Its posted rates are here to show what the
                   module does, and nothing you do to them takes effect. Add your
                   own room to clear the examples.
-                </p>
+                </Trans></p>
               ) : (
                 <button onClick={() => savePrices(a)} className="mt-2 text-sm text-teal-deep font-medium hover:underline">
-                  Post prices
-                </button>
+                  <Trans context="Admin, button">Post prices
+                </Trans></button>
               )}
             </div>
           ))}
@@ -4038,19 +4039,19 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
               className={`${inputCls} w-full mt-1`}
             />
           </label>
-          <button onClick={addRoom} className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">Add room</button>
+          <button onClick={addRoom} className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Add room</Trans></button>
         </div>
       </div>
 
       {/* Stays pipeline */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Stays</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Stays</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400">
-              <th className="py-1 pr-3">Guest</th><th className="py-1 pr-3">Room</th><th className="py-1 pr-3">Status</th>
-              <th className="py-1 pr-3">Rate</th><th className="py-1 pr-3">Balance</th><th className="py-1 pr-3">Nights left</th>
-              <th className="py-1 pr-3">Autopay</th><th className="py-1" />
+              <th className="py-1 pr-3"><Trans context="Admin, th">Guest</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Room</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Rate</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Balance</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Nights left</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Autopay</Trans></th><th className="py-1" />
             </tr></thead>
             <tbody>
               {(data?.stays ?? []).map((s: any) => (
@@ -4101,22 +4102,22 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
                     )}
                     {s.status !== "ended" && s.status !== "cancelled" && (
                       <button onClick={async () => { if (!window.confirm("End this stay?")) return; const d = await post(`/admin/stays/${s.id}/end`); if (d) load(); }}
-                        className="text-xs text-gray-500 hover:text-red-600">End</button>
+                        className="text-xs text-gray-500 hover:text-red-600"><Trans context="Admin, button">End</Trans></button>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.stays ?? []).length === 0 && <p className="text-sm text-gray-400 py-3">No stays yet.</p>}
+          {(data?.stays ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No stays yet.</Trans></p>}
         </div>
       </div>
 
       {/* Grants + manual purchase */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="font-semibold text-gray-900 mb-1">Comp / adjust credits</h3>
-          <p className="text-xs text-gray-500 mb-3">Comp is a gift. Adjust is a correction (negative removes). Both land on the ledger, audited.</p>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Comp / adjust credits</Trans></h3>
+          <p className="text-xs text-gray-500 mb-3"><Trans context="Admin, p">Comp is a gift. Adjust is a correction (negative removes). Both land on the ledger, audited.</Trans></p>
           <div className="space-y-2">
             <select value={grant.userId} onChange={(e) => setGrant({ ...grant, userId: e.target.value })} className={`${inputCls} w-full`}>
               <option value="">Member…</option>
@@ -4127,16 +4128,16 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
                 <option value="comp">Comp</option>
                 <option value="adjust">Adjust</option>
               </select>
-              <input type="number" placeholder="Credits" value={grant.credits} onChange={(e) => setGrant({ ...grant, credits: e.target.value })} className={`${inputCls} w-24`} />
-              <input placeholder="Note" value={grant.note} onChange={(e) => setGrant({ ...grant, note: e.target.value })} className={`${inputCls} flex-1`} />
+              <input type="number" placeholder={t({ message: "Credits", context: "Admin, placeholder" })} value={grant.credits} onChange={(e) => setGrant({ ...grant, credits: e.target.value })} className={`${inputCls} w-24`} />
+              <input placeholder={t({ message: "Note", context: "Admin, placeholder" })} value={grant.note} onChange={(e) => setGrant({ ...grant, note: e.target.value })} className={`${inputCls} flex-1`} />
             </div>
             <button onClick={grantCredits} disabled={!grant.userId || !grant.credits}
-              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">Apply</button>
+              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"><Trans context="Admin, button">Apply</Trans></button>
           </div>
         </div>
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="font-semibold text-gray-900 mb-1">Record a manual payment</h3>
-          <p className="text-xs text-gray-500 mb-3">Cash, Zeffy, bank transfer. Credits are derived from nights × the room's posted rate. You record the money, the server does the math.</p>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Record a manual payment</Trans></h3>
+          <p className="text-xs text-gray-500 mb-3"><Trans context="Admin, p">Cash, Zeffy, bank transfer. Credits are derived from nights × the room's posted rate. You record the money, the server does the math.</Trans></p>
           <div className="space-y-2">
             <select value={manual.userId} onChange={(e) => setManual({ ...manual, userId: e.target.value })} className={`${inputCls} w-full`}>
               <option value="">Member…</option>
@@ -4147,24 +4148,24 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
                 <option value="">Room…</option>
                 {(data?.accommodations ?? []).map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
-              <input type="number" placeholder="Nights" value={manual.nights} onChange={(e) => setManual({ ...manual, nights: e.target.value })} className={`${inputCls} w-20`} />
-              <input type="number" step="0.01" placeholder="USD" value={manual.amountUsd} onChange={(e) => setManual({ ...manual, amountUsd: e.target.value })} className={`${inputCls} w-24`} />
+              <input type="number" placeholder={t({ message: "Nights", context: "Admin, placeholder" })} value={manual.nights} onChange={(e) => setManual({ ...manual, nights: e.target.value })} className={`${inputCls} w-20`} />
+              <input type="number" step="0.01" placeholder={t({ message: "USD", context: "Admin, placeholder" })} value={manual.amountUsd} onChange={(e) => setManual({ ...manual, amountUsd: e.target.value })} className={`${inputCls} w-24`} />
             </div>
             <button onClick={recordManual} disabled={!manual.userId || !manual.accommodationId || !manual.nights}
-              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">Record & grant</button>
+              className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"><Trans context="Admin, button">Record & grant</Trans></button>
           </div>
         </div>
       </div>
 
       {/* Purchases */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Purchases</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Purchases</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400">
-              <th className="py-1 pr-3">When</th><th className="py-1 pr-3">Member</th><th className="py-1 pr-3">Nights</th>
-              <th className="py-1 pr-3">Paid</th><th className="py-1 pr-3">Credits</th><th className="py-1 pr-3">Via</th>
-              <th className="py-1 pr-3">Status</th><th className="py-1" />
+              <th className="py-1 pr-3"><Trans context="Admin, th">When</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Nights</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Paid</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Credits</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Via</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th><th className="py-1" />
             </tr></thead>
             <tbody>
               {(data?.purchases ?? []).map((p: any) => (
@@ -4182,38 +4183,38 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
                         if (!window.confirm("Hold the credits back for a refund? You then refund the money where it was paid.")) return;
                         const d = await post(`/admin/stays/purchases/${p.id}/refund`);
                         if (d) { toast.success(d.nextStep); load(); }
-                      }} className="text-xs text-gray-500 hover:text-red-600">Refund…</button>
+                      }} className="text-xs text-gray-500 hover:text-red-600"><Trans context="Admin, button">Refund…</Trans></button>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400 py-3">No purchases yet.</p>}
+          {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No purchases yet.</Trans></p>}
         </div>
       </div>
 
       {/* Platform payments: suspensions + log */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">Payment guardrails</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Payment guardrails</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          Disputes and chargebacks suspend purchasing automatically, across every
+          <Trans context="Admin, p">Disputes and chargebacks suspend purchasing automatically, across every
           module. Lift a suspension once the situation is resolved.
-          {payments && !payments.stripeConfigured && " Stripe is NOT configured. Card checkout is off; manual payments still work."}
+          {payments && !payments.stripeConfigured && " Stripe is NOT configured. Card checkout is off; manual payments still work."}</Trans>
         </p>
         {(payments?.suspensions ?? []).filter((s: any) => !s.lifted_at).map((s: any) => (
           <div key={s.id} className="flex items-center justify-between border-t border-gray-50 py-2 text-sm">
             <span><b>{s.user_name ?? s.user_id}</b>: {s.reason}</span>
             <button onClick={async () => { const d = await post(`/admin/payments/suspensions/${s.id}/lift`); if (d) { toast.success("Lifted"); load(); } }}
-              className="text-xs text-teal-deep font-medium hover:underline">Lift</button>
+              className="text-xs text-teal-deep font-medium hover:underline"><Trans context="Admin, button">Lift</Trans></button>
           </div>
         ))}
         {(payments?.suspensions ?? []).filter((s: any) => !s.lifted_at).length === 0 && (
-          <p className="text-sm text-gray-400">No active suspensions.</p>
+          <p className="text-sm text-gray-400"><Trans context="Admin, p">No active suspensions.</Trans></p>
         )}
         {(payments?.log ?? []).length > 0 && (
           <details className="mt-3">
-            <summary className="text-xs text-gray-500 cursor-pointer">Webhook log (latest {payments.log.length})</summary>
+            <summary className="text-xs text-gray-500 cursor-pointer"><Trans context="Admin, summary">Webhook log (latest {payments.log.length})</Trans></summary>
             <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
               {payments.log.map((l: any) => (
                 <p key={l.id} className={`text-xs ${l.outcome === "ok" ? "text-gray-500" : "text-red-600"}`}>
@@ -4233,7 +4234,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
  * reasons shown, not hidden), append-only prices with a required note,
  * treasury stock under the shared mint cap, and the order book.
  */
-function ExchangeAdminTab({ password }: { password: string }) {
+function ExchangeAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -4273,29 +4274,29 @@ function ExchangeAdminTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Exchange</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Exchange</Trans></h2>
         <p className="text-sm text-gray-500">
-          The Exchange module is off. Turn it on in the Module Library (top of the
+          <Trans context="Admin, p">The Exchange module is off. Turn it on in the Module Library (top of the
           {MODULES_GROUP_TITLE} group; it is funds-bearing, so the legal card applies), then list tokens and post prices here.
-        </p>
+        </Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   const settingsBySlug = new Map((data?.settings ?? []).map((s: any) => [s.tokenSlug, s]));
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Exchange</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Exchange</Trans></h2>
         <p className="text-sm text-gray-500">
-          Recognition and Hypha tokens can never be listed; a token another
+          <Trans context="Admin, p">Recognition and Hypha tokens can never be listed; a token another
           module sells can't be listed twice. Prices are append-only and
           bounded per change; stock comes out of the same per-cycle mint cap
           as hand-mints. Swapping refuses more still: anything a faucet has
           paid a member is never swappable, whatever it was earned for.
-        </p>
+        </Trans></p>
       </div>
 
       {/* Gate B's switch. Internal trading is a decision each deployment makes
@@ -4303,16 +4304,16 @@ function ExchangeAdminTab({ password }: { password: string }) {
           and the acceptance is version-stamped by the server. */}
       <div className={`rounded-xl border p-5 ${data?.tradingEnabled ? "border-teal-deep/30 bg-teal-deep/5" : "border-gray-200 bg-gray-50"}`}>
         <h3 className="font-semibold text-gray-900 mb-1">
-          Token-for-token swapping is {data?.tradingEnabled ? "ON" : "OFF"}
+          <Trans context="Admin, h3">Token-for-token swapping is {data?.tradingEnabled ? "ON" : "OFF"}</Trans>
         </h3>
         {data?.tradingEnabled ? (
           <>
             <p className="text-xs text-gray-500 mb-3">
-              Members can trade one listed token for another at the posted prices,
+              <Trans context="Admin, p">Members can trade one listed token for another at the posted prices,
               within the caps set per token below. Accepted{" "}
               {data.legalAck?.acceptedAt ? new Date(data.legalAck.acceptedAt).toLocaleDateString() : "-"} by{" "}
               {data.legalAck?.acceptedBy ?? "-"} (card {data.legalAck?.cardVersion ?? "-"}).
-            </p>
+            </Trans></p>
             <button
               onClick={async () => {
                 if (!window.confirm("Turn swapping off? Members keep every token they hold; no new swaps can start.")) return;
@@ -4321,43 +4322,43 @@ function ExchangeAdminTab({ password }: { password: string }) {
               }}
               className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 font-medium"
             >
-              Turn swapping off
-            </button>
+              <Trans context="Admin, button">Turn swapping off
+            </Trans></button>
           </>
         ) : (
           <>
             {data?.legalAck?.cardVersion && data.legalAck.cardVersion !== data.legalCardVersion && (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
-                Swapping closed itself: this village accepted card {data.legalAck.cardVersion}, and
+                <Trans context="Admin, p">Swapping closed itself: this village accepted card {data.legalAck.cardVersion}, and
                 the current one is {data.legalCardVersion}. The terms below were amended. Read them
                 again and re-accept to reopen. Nobody's tokens were touched.
-              </p>
+              </Trans></p>
             )}
             <p className="text-xs text-gray-500 mb-2">
-              Before you turn this on, read what it means (card {data?.legalCardVersion}):
-            </p>
+              <Trans context="Admin, p">Before you turn this on, read what it means (card {data?.legalCardVersion}):
+            </Trans></p>
             <ul className="text-xs text-gray-600 space-y-1.5 mb-3 list-disc pl-4">
               <li>
-                Members will trade tokens with each other's village at prices your
+                <Trans context="Admin, li">Members will trade tokens with each other's village at prices your
                 stewards post. Depending on where you operate, that can be a
                 regulated activity. This is the point to ask a lawyer, not after.
-              </li>
+              </Trans></li>
               <li>
-                Tokens never convert back to money here. Fiat comes IN only; the
+                <Trans context="Admin, li">Tokens never convert back to money here. Fiat comes IN only; the
                 platform has no path out, by design, and adding one is not a setting.
-              </li>
+              </Trans></li>
               <li>
-                Anything a faucet has paid a member (recognition, rewards, minted
+                <Trans context="Admin, li">Anything a faucet has paid a member (recognition, rewards, minted
                 credits) can never be swapped, whatever else you list.
-              </li>
+              </Trans></li>
               <li>
-                Swaps are final. There is no reversal, no dispute queue, no chargeback;
+                <Trans context="Admin, li">Swaps are final. There is no reversal, no dispute queue, no chargeback;
                 the only way back is swapping again at the posted prices.
-              </li>
+              </Trans></li>
               <li>
-                Every token you open needs a per-cycle cap and a per-member cap. Zero
+                <Trans context="Admin, li">Every token you open needs a per-cycle cap and a per-member cap. Zero
                 means zero. Set them before you announce this to anyone.
-              </li>
+              </Trans></li>
             </ul>
             <button
               onClick={async () => {
@@ -4369,8 +4370,8 @@ function ExchangeAdminTab({ password }: { password: string }) {
               }}
               className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
             >
-              Accept and open swapping
-            </button>
+              <Trans context="Admin, button">Accept and open swapping
+            </Trans></button>
           </>
         )}
       </div>
@@ -4381,15 +4382,15 @@ function ExchangeAdminTab({ password }: { password: string }) {
       {data?.creditSale?.libraryOn && (
         <div className={`rounded-xl border p-5 ${data.creditSale.open ? "border-teal-deep/30 bg-teal-deep/5" : "border-amber-200 bg-amber-50/50"}`}>
           <h3 className="font-semibold text-gray-900 mb-1">
-            Selling library credits is {data.creditSale.open ? "OPEN" : "CLOSED"}
+            <Trans context="Admin, h3">Selling library credits is {data.creditSale.open ? "OPEN" : "CLOSED"}</Trans>
           </h3>
           {data.creditSale.open ? (
             <>
               <p className="text-xs text-gray-500 mb-3">
-                Library credits can be listed and sold for fiat like any credit token.
+                <Trans context="Admin, p">Library credits can be listed and sold for fiat like any credit token.
                 Accepted {data.creditSale.ack?.acceptedAt ? new Date(data.creditSale.ack.acceptedAt).toLocaleDateString() : "-"} by{" "}
                 {data.creditSale.ack?.acceptedBy ?? "-"} (card {data.creditSale.ack?.cardVersion}). Swapping stays sealed regardless.
-              </p>
+              </Trans></p>
               <button
                 onClick={async () => {
                   if (!window.confirm("Close credit sales? Existing holders keep every credit; the listing is refused from the next sale on.")) return;
@@ -4398,31 +4399,31 @@ function ExchangeAdminTab({ password }: { password: string }) {
                 }}
                 className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 font-medium"
               >
-                Close credit sales
-              </button>
+                <Trans context="Admin, button">Close credit sales
+              </Trans></button>
             </>
           ) : (
             <>
               <p className="text-xs text-gray-500 mb-2">
-                Before you open this, read what it changes (card {data.creditSale.cardVersion}):
-              </p>
+                <Trans context="Admin, p">Before you open this, read what it changes (card {data.creditSale.cardVersion}):
+              </Trans></p>
               <ul className="text-xs text-gray-600 space-y-1.5 mb-3 list-disc pl-4">
                 <li>
-                  Today every library credit is backed by a physical item someone brought
+                  <Trans context="Admin, li">Today every library credit is backed by a physical item someone brought
                   to the shelf. A SOLD credit is backed by money instead, and after the
                   sale, the two are indistinguishable claims on the same shelves.
-                </li>
+                </Trans></li>
                 <li>
-                  If more credits circulate than the shelves can honor, the promise
+                  <Trans context="Admin, li">If more credits circulate than the shelves can honor, the promise
                   behind every credit, including the earned ones, weakens. Stock
                   the treasury conservatively and watch the ledger's two provenances
                   (sys:library-mint = shelf-backed intake; sys:mint = sold stock).
-                </li>
+                </Trans></li>
                 <li>
-                  Prepaid credits can be a regulated product (gift-card and escheatment
+                  <Trans context="Admin, li">Prepaid credits can be a regulated product (gift-card and escheatment
                   law in some places). This is the point to ask a lawyer, not after.
-                </li>
-                <li>Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market.</li>
+                </Trans></li>
+                <li><Trans context="Admin, li">Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market.</Trans></li>
               </ul>
               <button
                 onClick={async () => {
@@ -4434,8 +4435,8 @@ function ExchangeAdminTab({ password }: { password: string }) {
                 }}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
               >
-                Accept and open credit sales
-              </button>
+                <Trans context="Admin, button">Accept and open credit sales
+              </Trans></button>
             </>
           )}
         </div>
@@ -4443,7 +4444,7 @@ function ExchangeAdminTab({ password }: { password: string }) {
 
       {/* Listings */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Listings</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Listings</Trans></h3>
         <div className="space-y-3">
           {(data?.listableTokens ?? []).map((t: any) => {
             const s: any = settingsBySlug.get(t.slug);
@@ -4469,8 +4470,8 @@ function ExchangeAdminTab({ password }: { password: string }) {
                       <p className="text-xs text-amber-700 mt-0.5">{t.reason}</p>
                     ) : (
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {price ? `${money(price.priceMinor)} each` : "no price posted"} · {stock} in stock
-                        {s?.purchasable ? " · LISTED" : " · not listed"}
+                        <Trans context="Admin, p">{price ? `${money(price.priceMinor)} each` : "no price posted"} · {stock} in stock
+                        {s?.purchasable ? " · LISTED" : " · not listed"}</Trans>
                       </p>
                     )}
                   </div>
@@ -4514,8 +4515,8 @@ function ExchangeAdminTab({ password }: { password: string }) {
                       }}
                       className="text-sm text-teal-deep font-medium hover:underline pb-2"
                     >
-                      Post price
-                    </button>
+                      <Trans context="Admin, button">Post price
+                    </Trans></button>
                   </div>
                 )}
                 {/* Swapping (v2). Refuses MORE than buying: a token any faucet
@@ -4523,7 +4524,7 @@ function ExchangeAdminTab({ password }: { password: string }) {
                 {!locked && (
                   <div className="mt-3 border-t border-gray-100 pt-3">
                     {data?.swapReasons?.[t.slug] ? (
-                      <p className="text-xs text-amber-700">Not swappable: {data.swapReasons[t.slug]}</p>
+                      <p className="text-xs text-amber-700"><Trans context="Admin, p">Not swappable: {data.swapReasons[t.slug]}</Trans></p>
                     ) : (
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-end gap-2">
@@ -4561,20 +4562,20 @@ function ExchangeAdminTab({ password }: { password: string }) {
                               }}
                               className="text-sm text-gray-600 bg-gray-100 rounded-lg px-3 py-1.5 font-medium"
                             >
-                              Close swapping
-                            </button>
+                              <Trans context="Admin, button">Close swapping
+                            </Trans></button>
                           )}
                         </div>
                         <p className="text-xs text-gray-400">
-                          0 means ZERO, never unlimited. A cap of 0 keeps this token from being
+                          <Trans context="Admin, p">0 means ZERO, never unlimited. A cap of 0 keeps this token from being
                           swapped out at all, even while it is open. The spread the village keeps
                           on every swap is one setting for all tokens, in basis points: Game
                           Mechanics → exchange.swap_spread_bps (0 = no spread). Rounding dust
                           always favours the treasury on top of it.
-                        </p>
+                        </Trans></p>
                         {s?.swappable && !s?.swapHaltedAt && (
                           <div className="flex flex-wrap items-end gap-2">
-                            <input placeholder="Reason (shown to members)" className={`${inputCls} flex-1 min-w-[180px]`}
+                            <input placeholder={t({ message: "Reason (shown to members)", context: "Admin, placeholder" })} className={`${inputCls} flex-1 min-w-[180px]`}
                               value={swapForm[t.slug]?.note ?? ""}
                               onChange={(e) => setSwapForm((p) => ({ ...p, [t.slug]: { ...(p[t.slug] ?? {}), note: e.target.value } }))} />
                             <button
@@ -4584,17 +4585,17 @@ function ExchangeAdminTab({ password }: { password: string }) {
                               }}
                               className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 font-medium"
                             >
-                              Pause swapping
-                            </button>
+                              <Trans context="Admin, button">Pause swapping
+                            </Trans></button>
                           </div>
                         )}
                         {s?.swapHaltedAt && (
                           <div className="space-y-2">
                             <p className="text-xs text-amber-700">
-                              PAUSED{s.swapHaltReason ? `: ${s.swapHaltReason}` : ""}
+                              <Trans context="Admin, p">PAUSED{s.swapHaltReason ? `: ${s.swapHaltReason}` : ""}</Trans>
                             </p>
                             <div className="flex flex-wrap items-end gap-2">
-                              <input placeholder="Why is it safe to resume? (a sentence)" className={`${inputCls} flex-1 min-w-[220px]`}
+                              <input placeholder={t({ message: "Why is it safe to resume? (a sentence)", context: "Admin, placeholder" })} className={`${inputCls} flex-1 min-w-[220px]`}
                                 value={swapForm[t.slug]?.note ?? ""}
                                 onChange={(e) => setSwapForm((p) => ({ ...p, [t.slug]: { ...(p[t.slug] ?? {}), note: e.target.value } }))} />
                               <button
@@ -4604,8 +4605,8 @@ function ExchangeAdminTab({ password }: { password: string }) {
                                 }}
                                 className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium"
                               >
-                                Resume
-                              </button>
+                                <Trans context="Admin, button">Resume
+                              </Trans></button>
                             </div>
                           </div>
                         )}
@@ -4621,12 +4622,12 @@ function ExchangeAdminTab({ password }: { password: string }) {
 
       {/* Stock */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">Stock the treasury</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Stock the treasury</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          sys:mint → sys:treasury, under the shared per-cycle mint cap
+          <Trans context="Admin, p">sys:mint → sys:treasury, under the shared per-cycle mint cap
           ({data?.mintCapPerCycle}). Sales come OUT of this stock. An empty
           treasury fails a sale loudly instead of minting quietly.
-        </p>
+        </Trans></p>
         <div className="flex flex-wrap items-end gap-2">
           <select value={stockForm.tokenSlug} onChange={(e) => setStockForm({ ...stockForm, tokenSlug: e.target.value })} className={inputCls}>
             <option value="">Token…</option>
@@ -4634,7 +4635,7 @@ function ExchangeAdminTab({ password }: { password: string }) {
               <option key={t.slug} value={t.slug}>{t.name}</option>
             ))}
           </select>
-          <input type="number" min={1} placeholder="Amount" value={stockForm.amount}
+          <input type="number" min={1} placeholder={t({ message: "Amount", context: "Admin, placeholder" })} value={stockForm.amount}
             onChange={(e) => setStockForm({ ...stockForm, amount: e.target.value })} className={`${inputCls} w-28`} />
           <button
             onClick={async () => {
@@ -4644,19 +4645,19 @@ function ExchangeAdminTab({ password }: { password: string }) {
             disabled={!stockForm.tokenSlug || !stockForm.amount}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
           >
-            Stock
-          </button>
+            <Trans context="Admin, button">Stock
+          </Trans></button>
         </div>
       </div>
 
       {/* Orders */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Orders</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Orders</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400">
-              <th className="py-1 pr-3">#</th><th className="py-1 pr-3">When</th><th className="py-1 pr-3">Member</th>
-              <th className="py-1 pr-3">Token</th><th className="py-1 pr-3">Qty</th><th className="py-1 pr-3">Paid</th><th className="py-1 pr-3">Status</th>
+              <th className="py-1 pr-3">#</th><th className="py-1 pr-3"><Trans context="Admin, th">When</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Token</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Qty</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Paid</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
             </tr></thead>
             <tbody>
               {(data?.orders ?? []).map((o: any) => (
@@ -4672,18 +4673,18 @@ function ExchangeAdminTab({ password }: { password: string }) {
                   </td>
                   {/* A swap's amount_minor is a VALUATION, not a charge. */}
                   <td className="py-2 pr-3">
-                    {o.kind === "swap" ? <span className="text-gray-400">{money(o.amount_minor)} of value</span> : money(o.amount_minor)}
+                    {o.kind === "swap" ? <span className="text-gray-400"><Trans context="Admin, span">{money(o.amount_minor)} of value</Trans></span> : money(o.amount_minor)}
                   </td>
                   <td className={`py-2 pr-3 ${["disputed", "reversed"].includes(o.status) ? "text-red-600 font-semibold" : ""}`}>{o.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.orders ?? []).length === 0 && <p className="text-sm text-gray-400 py-3">No orders yet.</p>}
+          {(data?.orders ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No orders yet.</Trans></p>}
         </div>
         {(data?.priceHistory ?? []).length > 0 && (
           <details className="mt-3">
-            <summary className="text-xs text-gray-500 cursor-pointer">Price history (append-only, latest {data.priceHistory.length})</summary>
+            <summary className="text-xs text-gray-500 cursor-pointer"><Trans context="Admin, summary">Price history (append-only, latest {data.priceHistory.length})</Trans></summary>
             <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
               {data.priceHistory.map((p: any) => (
                 <p key={p.id} className="text-xs text-gray-500">
@@ -4703,7 +4704,7 @@ function ExchangeAdminTab({ password }: { password: string }) {
  * earned engine's evaluate button. The firewalls answer in the UI with the
  * same words the API refuses with.
  */
-function BadgesAdminTab({ password }: { password: string }) {
+function BadgesAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   // Was a hand-typed list of twelve, three short of the registry, so
   // exchange.swap, health.record and mechanics.propose could not be granted
   // or denied from here at all. Reading the registry means a new capability
@@ -4759,7 +4760,7 @@ function BadgesAdminTab({ password }: { password: string }) {
     const d = await call("/admin/badges", body);
     if (d) {
       forgetExamplesCache("badges");
-    toast.success("Badge created");
+    toast.success(t({ message: "Badge created", context: "Admin, toast" }));
       setForm({ name: "", description: "", kind: "granted", capabilities: [], denies: [], metric: "quests_consented", threshold: "", stackable: false, maxStack: "1" });
       load();
     }
@@ -4771,42 +4772,42 @@ function BadgesAdminTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Badges</h2>
-        <p className="text-sm text-gray-500">The Badges module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Badges</Trans></h2>
+        <p className="text-sm text-gray-500"><Trans context="Admin, p">The Badges module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Badges & Skills</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Badges & Skills</Trans></h2>
           <p className="text-sm text-gray-500 max-w-xl">
-            Self and hypha badges gate nothing; only warnings may deny, and a
+            <Trans context="Admin, p">Self and hypha badges gate nothing; only warnings may deny, and a
             deny beats role and stage grants (admins excepted). A warning can
             never take away voting or vouching. A voice that was earned stays.
             Earned badges ride settled metrics only, and never applause into
             permissions.
-          </p>
+          </Trans></p>
         </div>
         <button
           onClick={async () => { const d = await call("/admin/badges/evaluate"); if (d) { toast.success(`${d.newTiers.length} new tier(s) across ${d.badgesEvaluated} earned badge(s)`); load(); } }}
           className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
         >
-          Evaluate earned badges
-        </button>
+          <Trans context="Admin, button">Evaluate earned badges
+        </Trans></button>
       </div>
 
       {/* Definitions */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Badge definitions</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Badge definitions</Trans></h3>
         <div className="space-y-2 mb-5">
           {(data?.badges ?? []).map((b: any) => (
             <BadgeDefinitionRow key={b.id} badge={b} call={call} onSaved={load} />
           ))}
-          {(data?.badges ?? []).length === 0 && <p className="text-sm text-gray-400">No badges yet.</p>}
+          {(data?.badges ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No badges yet.</Trans></p>}
         </div>
 
         <div className="border-t border-gray-100 pt-4 space-y-3">
@@ -4845,7 +4846,7 @@ function BadgesAdminTab({ password }: { password: string }) {
           )}
           {form.kind !== "self" && form.kind !== "hypha" && form.kind !== "warning" && (
             <div>
-              <p className="text-xs text-gray-500 mb-1">Grants capabilities</p>
+              <p className="text-xs text-gray-500 mb-1"><Trans context="Admin, p">Grants capabilities</Trans></p>
               <div className="flex flex-wrap gap-1.5">
                 {CAPS.map((c) => (
                   <button key={c} onClick={() => setForm({ ...form, capabilities: toggleIn(form.capabilities, c) })}
@@ -4858,7 +4859,7 @@ function BadgesAdminTab({ password }: { password: string }) {
           )}
           {form.kind === "warning" && (
             <div>
-              <p className="text-xs text-gray-500 mb-1">Denies capabilities (beats role and stage grants)</p>
+              <p className="text-xs text-gray-500 mb-1"><Trans context="Admin, p">Denies capabilities (beats role and stage grants)</Trans></p>
               {/*
                 0109, R65/R66: the voice keys are not offered here, because a
                 voice that was earned is never taken away. The server refuses
@@ -4877,18 +4878,18 @@ function BadgesAdminTab({ password }: { password: string }) {
           )}
           <button onClick={createBadge} disabled={!form.name.trim()}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-            Create badge
-          </button>
+            <Trans context="Admin, button">Create badge
+          </Trans></button>
         </div>
       </div>
 
       {/* Hand awards */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">Award a badge</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Award a badge</Trans></h3>
         <p className="text-xs text-gray-500 mb-3">
-          Granted, warning and hypha kinds only. Self is the member's act,
+          <Trans context="Admin, p">Granted, warning and hypha kinds only. Self is the member's act,
           earned is the engine's. Warnings require a note.
-        </p>
+        </Trans></p>
         <div className="flex flex-wrap items-end gap-2 mb-5">
           <select value={award.badgeId} onChange={(e) => setAward({ ...award, badgeId: e.target.value })} className={inputCls}>
             <option value="">Badge…</option>
@@ -4900,7 +4901,7 @@ function BadgesAdminTab({ password }: { password: string }) {
             <option value="">Member…</option>
             {players.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <input placeholder="Note (required for warnings)" value={award.note}
+          <input placeholder={t({ message: "Note (required for warnings)", context: "Admin, placeholder" })} value={award.note}
             onChange={(e) => setAward({ ...award, note: e.target.value })} className={`${inputCls} flex-1 min-w-[160px]`} />
           {/* Expiry was fully built server-side — the route parses expiresAt,
               the column stores it, a sweep lifts it — and no UI ever sent
@@ -4909,9 +4910,9 @@ function BadgesAdminTab({ password }: { password: string }) {
           <input
             type="number"
             min={1}
-            placeholder="Days"
-            title="Days until this lapses. Blank = permanent."
-            aria-label="Days until this award expires"
+            placeholder={t({ message: "Days", context: "Admin, placeholder" })}
+            title={t({ message: "Days until this lapses. Blank = permanent.", context: "Admin, title" })}
+            aria-label={t({ message: "Days until this award expires", context: "Admin, aria-label" })}
             value={award.days}
             onChange={(e) => setAward({ ...award, days: e.target.value })}
             className={`${inputCls} w-24`}
@@ -4930,16 +4931,16 @@ function BadgesAdminTab({ password }: { password: string }) {
             disabled={!award.badgeId || !award.userId}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
           >
-            Award
-          </button>
+            <Trans context="Admin, button">Award
+          </Trans></button>
         </div>
 
-        <h3 className="font-semibold text-gray-900 mb-2">Current awards</h3>
+        <h3 className="font-semibold text-gray-900 mb-2"><Trans context="Admin, h3">Current awards</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400">
-              <th className="py-1 pr-3">Member</th><th className="py-1 pr-3">Badge</th><th className="py-1 pr-3">Tier</th>
-              <th className="py-1 pr-3">By</th><th className="py-1 pr-3">Note</th><th className="py-1 pr-3">Expires</th><th className="py-1" />
+              <th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Badge</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Tier</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">By</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Note</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Expires</Trans></th><th className="py-1" />
             </tr></thead>
             <tbody>
               {(data?.awards ?? []).map((a: any) => (
@@ -4955,13 +4956,13 @@ function BadgesAdminTab({ password }: { password: string }) {
                       if (!window.confirm("Revoke this badge?")) return;
                       const d = await call(`/admin/badges/${a.badge_id}/award/${a.user_id}`, undefined, "DELETE");
                       if (d) load();
-                    }} className="text-xs text-gray-500 hover:text-red-600">Revoke</button>
+                    }} className="text-xs text-gray-500 hover:text-red-600"><Trans context="Admin, button">Revoke</Trans></button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.awards ?? []).length === 0 && <p className="text-sm text-gray-400 py-3">No awards yet.</p>}
+          {(data?.awards ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No awards yet.</Trans></p>}
         </div>
       </div>
     </div>
@@ -4973,7 +4974,7 @@ function BadgesAdminTab({ password }: { password: string }) {
  * the loan pipeline with its single terminal, and the invariants made
  * visible: escrow reconciliation and supply-vs-backing.
  */
-function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) {
+function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -5018,12 +5019,12 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Material Library</h2>
-        <p className="text-sm text-gray-500">The Material Library module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Material Library</Trans></h2>
+        <p className="text-sm text-gray-500"><Trans context="Admin, p">The Material Library module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   const liveLoans = (data?.loans ?? []).filter((l: any) => !l.settled_at);
   const doneLoans = (data?.loans ?? []).filter((l: any) => !!l.settled_at);
@@ -5031,54 +5032,54 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Material Library</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Material Library</Trans></h2>
         <p className="text-sm text-gray-500 max-w-2xl">
-          Intake is a mint: awards are capped per member per lunation and
+          <Trans context="Admin, p">Intake is a mint: awards are capped per member per lunation and
           high appraisals need a second steward. Every loan ends exactly once,
           through settle. Fees left blank use the computed defaults.
-        </p>
+        </Trans></p>
         <TokenNamingLink what="Library credits" onOpenTab={onOpenTab} />
       </div>
 
       {/* Invariants panel */}
       <div className="grid sm:grid-cols-3 gap-3">
         <div className={`rounded-xl border p-4 ${data?.reconciliation?.ok ? "border-emerald-200 bg-emerald-50/50" : "border-red-300 bg-red-50"}`}>
-          <p className="text-xs text-gray-500 mb-1">Escrow reconciliation</p>
+          <p className="text-xs text-gray-500 mb-1"><Trans context="Admin, p">Escrow reconciliation</Trans></p>
           <p className="text-sm font-semibold text-gray-900">
-            {data?.reconciliation?.actual} held / {data?.reconciliation?.expected} expected {data?.reconciliation?.ok ? "✓" : "✗ INVESTIGATE"}
+            <Trans context="Admin, p">{data?.reconciliation?.actual} held / {data?.reconciliation?.expected} expected {data?.reconciliation?.ok ? "✓" : "✗ INVESTIGATE"}</Trans>
           </p>
         </div>
         <div className={`rounded-xl border p-4 ${data?.supply?.flagged ? "border-red-300 bg-red-50" : "border-gray-200"}`}>
-          <p className="text-xs text-gray-500 mb-1">Credits vs backing</p>
+          <p className="text-xs text-gray-500 mb-1"><Trans context="Admin, p">Credits vs backing</Trans></p>
           <p className="text-sm font-semibold text-gray-900">
-            {data?.supply?.outstanding} issued / {data?.supply?.backing} on shelves
-            {data?.supply?.flagged && ": MORE CREDITS THAN SHELVES"}
+            <Trans context="Admin, p">{data?.supply?.outstanding} issued / {data?.supply?.backing} on shelves
+            {data?.supply?.flagged && ": MORE CREDITS THAN SHELVES"}</Trans>
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 p-4">
-          <p className="text-xs text-gray-500 mb-1">Usage-fee pool</p>
-          <p className="text-sm font-semibold text-gray-900">{data?.poolBalance} credit(s)</p>
+          <p className="text-xs text-gray-500 mb-1"><Trans context="Admin, p">Usage-fee pool</Trans></p>
+          <p className="text-sm font-semibold text-gray-900"><Trans context="Admin, p">{data?.poolBalance} credit(s)</Trans></p>
         </div>
       </div>
 
       {/* Intake */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Record an intake</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Record an intake</Trans></h3>
         <div className="grid sm:grid-cols-3 gap-2 mb-2">
-          <input placeholder="Item name" value={intake.name} onChange={(e) => setIntake({ ...intake, name: e.target.value })} className={inputCls} />
+          <input placeholder={t({ message: "Item name", context: "Admin, placeholder" })} value={intake.name} onChange={(e) => setIntake({ ...intake, name: e.target.value })} className={inputCls} />
           <select value={intake.donorUserId} onChange={(e) => setIntake({ ...intake, donorUserId: e.target.value })} className={inputCls}>
             <option value="">Donor…</option>
             {players.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <input type="number" min={1} placeholder="Appraisal (credits)" value={intake.appraisal} onChange={(e) => setIntake({ ...intake, appraisal: e.target.value })} className={inputCls} />
-          <input placeholder="Description" value={intake.description} onChange={(e) => setIntake({ ...intake, description: e.target.value })} className={`${inputCls} sm:col-span-2`} />
+          <input type="number" min={1} placeholder={t({ message: "Appraisal (credits)", context: "Admin, placeholder" })} value={intake.appraisal} onChange={(e) => setIntake({ ...intake, appraisal: e.target.value })} className={inputCls} />
+          <input placeholder={t({ message: "Description", context: "Admin, placeholder" })} value={intake.description} onChange={(e) => setIntake({ ...intake, description: e.target.value })} className={`${inputCls} sm:col-span-2`} />
           <select value={intake.categoryId} onChange={(e) => setIntake({ ...intake, categoryId: e.target.value })} className={inputCls}>
             <option value="">Category…</option>
             {(data?.categories ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
           {/* L6: a photo makes the shelf browsable. Paste a URL, or upload
               via any image field and paste the /api/uploads path it returns. */}
-          <input placeholder="Photo URL (optional)" value={intake.photoUrl}
+          <input placeholder={t({ message: "Photo URL (optional)", context: "Admin, placeholder" })} value={intake.photoUrl}
             onChange={(e) => setIntake({ ...intake, photoUrl: e.target.value })} className={`${inputCls} sm:col-span-2`} />
         </div>
         <button
@@ -5094,25 +5095,25 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
           disabled={!intake.name.trim() || !intake.donorUserId || !intake.appraisal}
           className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
         >
-          Record intake
-        </button>
+          <Trans context="Admin, button">Record intake
+        </Trans></button>
         <div className="mt-3 flex items-end gap-2">
-          <input placeholder="New category label" value={catLabel} onChange={(e) => setCatLabel(e.target.value)} className={inputCls} />
+          <input placeholder={t({ message: "New category label", context: "Admin, placeholder" })} value={catLabel} onChange={(e) => setCatLabel(e.target.value)} className={inputCls} />
           <button onClick={async () => { const d = await call("/admin/library/categories", { label: catLabel }); if (d) { setCatLabel(""); load(); } }}
             disabled={!catLabel.trim()} className="text-sm text-teal-deep font-medium hover:underline pb-2 disabled:opacity-40">
-            Add category
-          </button>
+            <Trans context="Admin, button">Add category
+          </Trans></button>
         </div>
       </div>
 
       {/* Items */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Shelves</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Shelves</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400">
-              <th className="py-1 pr-3">Item</th><th className="py-1 pr-3">Value</th><th className="py-1 pr-3">Status</th>
-              <th className="py-1 pr-3">Donor</th><th className="py-1" />
+              <th className="py-1 pr-3"><Trans context="Admin, th">Item</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Value</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
+              <th className="py-1 pr-3"><Trans context="Admin, th">Donor</Trans></th><th className="py-1" />
             </tr></thead>
             <tbody>
               {(data?.items ?? []).map((i: any) => (
@@ -5127,24 +5128,24 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
                   <td className="py-2 text-right space-x-2 whitespace-nowrap">
                     {i.status === "intake_pending" && (
                       <button onClick={async () => { const d = await call(`/admin/library/items/${i.id}/approve`); if (d) { toast.success(`Signed off: ${d.award} credit(s) awarded`); load(); } }}
-                        className="text-xs text-teal-deep font-medium hover:underline">Second sign-off</button>
+                        className="text-xs text-teal-deep font-medium hover:underline"><Trans context="Admin, button">Second sign-off</Trans></button>
                     )}
                     {i.status === "available" && (
                       <button onClick={async () => { if (!window.confirm("Write this item off the shelves?")) return; const d = await call(`/admin/library/items/${i.id}`, { status: "written_off" }, "PUT"); if (d) load(); }}
-                        className="text-xs text-gray-500 hover:text-red-600">Write off</button>
+                        className="text-xs text-gray-500 hover:text-red-600"><Trans context="Admin, button">Write off</Trans></button>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.items ?? []).length === 0 && <p className="text-sm text-gray-400 py-3">No items yet.</p>}
+          {(data?.items ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No items yet.</Trans></p>}
         </div>
       </div>
 
       {/* Loans */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Open loans</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Open loans</Trans></h3>
         <div className="space-y-3">
           {liveLoans.map((l: any) => (
             <div key={l.id} className="border border-gray-200 rounded-lg p-3">
@@ -5156,11 +5157,11 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
                 <div className="flex items-center gap-2">
                   {l.status === "reserved" && (
                     <button onClick={async () => { const d = await call(`/admin/library/loans/${l.id}/pickup`); if (d) { toast.success(`Picked up. Due ${d.dueOn}`); load(); } }}
-                      className="text-xs bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium">Mark picked up</button>
+                      className="text-xs bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium"><Trans context="Admin, button">Mark picked up</Trans></button>
                   )}
-                  <input type="number" min={0} placeholder="wear" value={settleDraft[l.id]?.wear ?? ""} title="Wear fee (blank = computed default)"
+                  <input type="number" min={0} placeholder={t({ message: "wear", context: "Admin, placeholder" })} value={settleDraft[l.id]?.wear ?? ""} title={t({ message: "Wear fee (blank = computed default)", context: "Admin, title" })}
                     onChange={(e) => setSettleDraft((s) => ({ ...s, [l.id]: { ...(s[l.id] ?? {}), wear: e.target.value } }))} className={`${inputCls} w-16`} />
-                  <input type="number" min={0} placeholder="dmg" value={settleDraft[l.id]?.damage ?? ""} title="Damage fee (blank = 0)"
+                  <input type="number" min={0} placeholder={t({ message: "dmg", context: "Admin, placeholder" })} value={settleDraft[l.id]?.damage ?? ""} title={t({ message: "Damage fee (blank = 0)", context: "Admin, title" })}
                     onChange={(e) => setSettleDraft((s) => ({ ...s, [l.id]: { ...(s[l.id] ?? {}), damage: e.target.value } }))} className={`${inputCls} w-16`} />
                   {(["closed", "expired", "disputed"] as const).map((o) => (
                     <button key={o}
@@ -5179,15 +5180,15 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
               </div>
             </div>
           ))}
-          {liveLoans.length === 0 && <p className="text-sm text-gray-400">Nothing out.</p>}
+          {liveLoans.length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing out.</Trans></p>}
         </div>
         {doneLoans.length > 0 && (
           <details className="mt-4">
-            <summary className="text-xs text-gray-500 cursor-pointer">Settled loans ({doneLoans.length})</summary>
+            <summary className="text-xs text-gray-500 cursor-pointer"><Trans context="Admin, summary">Settled loans ({doneLoans.length})</Trans></summary>
             <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
               {doneLoans.map((l: any) => (
                 <p key={l.id} className="text-xs text-gray-500">
-                  {l.user_name ?? l.user_id} · {l.item_name} → {l.status} · wear {l.wear_fee ?? 0} dmg {l.damage_fee ?? 0} · {l.settled_cycle_id}
+                  <Trans context="Admin, p">{l.user_name ?? l.user_id} · {l.item_name} → {l.status} · wear {l.wear_fee ?? 0} dmg {l.damage_fee ?? 0} · {l.settled_cycle_id}</Trans>
                 </p>
               ))}
             </div>
@@ -5203,7 +5204,7 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
  * automatic (it rides every cycle close); this tab records regeneration
  * facts — absolute counts, each entry audit-attributed.
  */
-function HealthAdminTab({ password }: { password: string }) {
+function HealthAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -5231,7 +5232,7 @@ function HealthAdminTab({ password }: { password: string }) {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(refusal(d, "failed"));
-      toast.success("Recorded on the land's ledger");
+      toast.success(t({ message: "Recorded on the land's ledger", context: "Admin, toast" }));
       setForm({ ...form, value: "", note: "" });
       forgetExamplesCache("health");
       load();
@@ -5246,7 +5247,7 @@ function HealthAdminTab({ password }: { password: string }) {
       "Why is this reading being withdrawn?\n\nIt stays on the record, marked as withdrawn, and stops counting toward the totals.",
     );
     if (note === null) return;
-    if (!note.trim()) { toast.error("A reason is required"); return; }
+    if (!note.trim()) { toast.error(t({ message: "A reason is required", context: "Admin, toast" })); return; }
     const res = await fetch(`${API_BASE}/admin/health/regen/${id}/retract`, {
       method: "POST",
       headers: authHeaders(password, { "Content-Type": "application/json" }),
@@ -5256,7 +5257,7 @@ function HealthAdminTab({ password }: { password: string }) {
       toast.error((await res.json().catch(() => ({})))?.error || "Could not withdraw it");
       return;
     }
-    toast.success("Withdrawn. It no longer counts toward the totals");
+    toast.success(t({ message: "Withdrawn. It no longer counts toward the totals", context: "Admin, toast" }));
     load();
   };
 
@@ -5265,17 +5266,17 @@ function HealthAdminTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Village Health</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Village Health</Trans></h2>
         <p className="text-sm text-gray-500">
-          The Village Health module is off. Snapshot collection runs anyway
+          <Trans context="Admin, p">The Village Health module is off. Snapshot collection runs anyway
           (every cycle close freezes its numbers); enable the module in
           Module Library (top of the {MODULES_GROUP_TITLE} group) when there is enough history
           to show, and to record regeneration entries here.
-        </p>
+        </Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   const metrics: any[] = data?.metrics ?? [];
   const selected = metrics.find((m) => m.key === form.metricKey);
@@ -5283,17 +5284,17 @@ function HealthAdminTab({ password }: { password: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Village Health: the land's ledger</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Village Health: the land's ledger</Trans></h2>
         <p className="text-sm text-gray-500 max-w-2xl">
-          Record regeneration as it happens: trees in the ground, water under
+          <Trans context="Admin, p">Record regeneration as it happens: trees in the ground, water under
           protection, hectares in restoration. Absolute counts: the numbers
           the dashboard tiles and the investor-facing impact feed show.
           Lunation snapshots are automatic at every cycle close.
-        </p>
+        </Trans></p>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Record an entry</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Record an entry</Trans></h3>
         <div className="flex flex-wrap items-end gap-2">
           <label className="text-xs text-gray-500">Metric
             <select value={form.metricKey} onChange={(e) => setForm({ ...form, metricKey: e.target.value, unit: "" })} className={`${inputCls} block mt-1`}>
@@ -5311,13 +5312,13 @@ function HealthAdminTab({ password }: { password: string }) {
           </label>
           <button onClick={record} disabled={!form.value}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-            Record
-          </button>
+            <Trans context="Admin, button">Record
+          </Trans></button>
         </div>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Totals & entries</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Totals & entries</Trans></h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {metrics.filter((m) => data?.totals?.[m.key]).map((m) => (
             <div key={m.key} className="border border-gray-200 rounded-lg px-3 py-2">
@@ -5333,10 +5334,10 @@ function HealthAdminTab({ password }: { password: string }) {
                 {new Date(e.recordedAt).toLocaleDateString()}: <b>{e.value} {e.unit}</b> {metrics.find((m) => m.key === e.metricKey)?.label?.toLowerCase() ?? e.metricKey}
                 {e.note ? <span className="text-gray-400"> · {e.note}</span> : null}
               </span>
-              <button onClick={() => retract(e.id)} className="text-xs text-gray-400 hover:text-red-600">Withdraw</button>
+              <button onClick={() => retract(e.id)} className="text-xs text-gray-400 hover:text-red-600"><Trans context="Admin, button">Withdraw</Trans></button>
             </div>
           ))}
-          {(data?.entries ?? []).length === 0 && <p className="text-sm text-gray-400">Nothing recorded yet.</p>}
+          {(data?.entries ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing recorded yet.</Trans></p>}
         </div>
       </div>
     </div>
@@ -5349,7 +5350,7 @@ function HealthAdminTab({ password }: { password: string }) {
  * named domains until clean), and the policy editor.
  */
 
-export function ExitsAdminTab({ password }: { password: string }) {
+export function ExitsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -5422,25 +5423,25 @@ export function ExitsAdminTab({ password }: { password: string }) {
   };
 
   const inputCls = "border border-gray-200 rounded-lg px-2 py-1.5 text-sm";
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   const openExit = state?.exit, formerIds = new Set((data?.exits ?? []).filter((e: any) => e.formerMember).map((e: any) => e.userId)); // E4: a former member is named so, and offered no second exit
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Departures</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Departures</Trans></h2>
         <p className="text-sm text-gray-500 max-w-2xl">
-          Exit is a process, never a delete. Blocking state settles through
+          <Trans context="Admin, p">Exit is a process, never a delete. Blocking state settles through
           its own domain (loans, stays, orders, debts); positive balances
           sweep by an explicit act; the tombstone comes last. Value rows are
           never deleted. The economy conserves through every departure.
-        </p>
+        </Trans></p>
       </div>
 
       {/* Member exit state */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">A member's open state</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">A member's open state</Trans></h3>
         <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)} className={`${inputCls} mb-3`}>
           <option value="">Pick a member…</option>
           {players.map((p: any) => <option key={p.id} value={p.id}>{formerIds.has(p.id) ? `${p.name} (former member)` : p.name}</option>)}
@@ -5476,32 +5477,32 @@ export function ExitsAdminTab({ password }: { password: string }) {
                 setInvoluntaryBusy(true);
                 const d = await call("/admin/exits", { userId: selectedUser, kind: "involuntary", note });
                 setInvoluntaryBusy(false);
-                if (d) { setInvoluntaryOpen(false); toast.success("Exit opened"); load(); loadState(selectedUser); }
+                if (d) { setInvoluntaryOpen(false); toast.success(t({ message: "Exit opened", context: "Admin, toast" })); load(); loadState(selectedUser); }
               }}
                   />
             <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
-              {!openExit && state.formerMember ? (<span data-former-member="" className="text-sm text-gray-600 self-center">They already left the village and are a former member, so there is no departure to open. Admitting them again is the only way back.</span>) : !openExit ? (
+              {!openExit && state.formerMember ? (<span data-former-member="" className="text-sm text-gray-600 self-center"><Trans context="Admin, span">They already left the village and are a former member, so there is no departure to open. Admitting them again is the only way back.</Trans></span>) : !openExit ? (
                 <>
                   <button onClick={async () => { const d = await call("/admin/exits", { userId: selectedUser, kind: "voluntary" }); if (d) { toast.success("Exit opened"); load(); loadState(selectedUser); } }}
-                    className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">Open exit</button>
+                    className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Open exit</Trans></button>
                   <button onClick={() => setInvoluntaryOpen(true)}
-                    className="text-sm border border-red-300 text-red-600 rounded-lg px-4 py-2 font-medium">Open involuntary…</button>
+                    className="text-sm border border-red-300 text-red-600 rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Open involuntary…</Trans></button>
                 </>
               ) : (
                 <>
                   <span className="text-xs text-gray-500 self-center">
-                    Exit {openExit.status} since {new Date(openExit.openedAt).toLocaleDateString()}
-                    {openExit.noticeEndsAt && ` · notice ends ${new Date(openExit.noticeEndsAt).toLocaleDateString()}`}
+                    <Trans context="Admin, span">Exit {openExit.status} since {new Date(openExit.openedAt).toLocaleDateString()}
+                    {openExit.noticeEndsAt && ` · notice ends ${new Date(openExit.noticeEndsAt).toLocaleDateString()}`}</Trans>
                   </span>
                   <button onClick={async () => { const d = await call(`/admin/exits/${openExit.id}/settle-balances`); if (d) { toast.success(`Swept: ${JSON.stringify(d.swept)}`); loadState(selectedUser); } }}
-                    className="text-sm border border-teal-deep text-teal-deep rounded-lg px-3 py-2 font-medium">Sweep balances</button>
+                    className="text-sm border border-teal-deep text-teal-deep rounded-lg px-3 py-2 font-medium"><Trans context="Admin, button">Sweep balances</Trans></button>
                   <button onClick={async () => {
                     if (!window.confirm("Resolve this exit? A member still holding tokens, or owed cash by the village, stays on as a former member, with their account and balances, and their membership and roles end. An account with nothing of value left becomes a tombstone: identity removed, contributions kept.")) return;
                     const d = await call(`/admin/exits/${openExit.id}/resolve`);
                     if (d) { toast.success(`${d.outcome === "former" ? "Resolved. Kept as a former member" : "Resolved. The account is a tombstone"}${d.vacatedRoles.length ? `. Roles opened: ${d.vacatedRoles.join(", ")}` : ""}`); setSelectedUser(""); load(); }
-                  }} className="text-sm bg-red-600 text-white rounded-lg px-3 py-2 font-medium">Resolve</button>
+                  }} className="text-sm bg-red-600 text-white rounded-lg px-3 py-2 font-medium"><Trans context="Admin, button">Resolve</Trans></button>
                   <button onClick={async () => { const d = await call(`/admin/exits/${openExit.id}/cancel`); if (d) { toast.success(d.message ?? "They're staying", d.message ? { duration: 15000 } : undefined); loadState(selectedUser); load(); } }}
-                    className="text-sm text-gray-500 hover:text-gray-900 px-2">They're staying</button>
+                    className="text-sm text-gray-500 hover:text-gray-900 px-2"><Trans context="Admin, button">They're staying</Trans></button>
                 </>
               )}
             </div>
@@ -5511,14 +5512,14 @@ export function ExitsAdminTab({ password }: { password: string }) {
 
       {/* Exit list */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Departure record</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Departure record</Trans></h3>
         <div className="space-y-1.5">
           {(data?.exits ?? []).map((e: any) => (
             <div key={e.id}>
               <p className="text-sm text-gray-600">
                 <b className="text-gray-900">{e.userName}</b>: {e.kind}, {e.status}{e.formerMember ? ", former member" : ""}
-                <span className="text-xs text-gray-400"> · opened {new Date(e.openedAt).toLocaleDateString()}{e.resolvedAt ? `, closed ${new Date(e.resolvedAt).toLocaleDateString()}` : ""}</span>
-                {e.agreementRef && <span className="text-xs text-teal-deep"> · agreement: {e.agreementRef}</span>}
+                <span className="text-xs text-gray-400"> <Trans context="Admin, span">· opened {new Date(e.openedAt).toLocaleDateString()}{e.resolvedAt ? `, closed ${new Date(e.resolvedAt).toLocaleDateString()}` : ""}</Trans></span>
+                {e.agreementRef && <span className="text-xs text-teal-deep"> <Trans context="Admin, span">· agreement: {e.agreementRef}</Trans></span>}
               </p>
               {/* THE REASON, WHICH NOTHING SHOWED. `resolution` has been on the
                   wire since the exits table existed; this record printed name,
@@ -5533,7 +5534,7 @@ export function ExitsAdminTab({ password }: { password: string }) {
               )}
             </div>
           ))}
-          {(data?.exits ?? []).length === 0 && <p className="text-sm text-gray-400">No departures yet, and the policy is already published. Good.</p>}
+          {(data?.exits ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No departures yet, and the policy is already published. Good.</Trans></p>}
         </div>
       </div>
 
@@ -5550,14 +5551,14 @@ export function ExitsAdminTab({ password }: { password: string }) {
         );
         return (
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="font-semibold text-gray-900 mb-1">The published policy</h3>
-          {exitFromProfile && <p className="mb-3 text-sm text-gray-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2">"How contributed value is honored" now holds your stewards' words for what happens when someone leaves, from your ReGen Civics profile. Move any part to the box it belongs in. Nothing is published until you press Publish.</p>}
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">The published policy</Trans></h3>
+          {exitFromProfile && <p className="mb-3 text-sm text-gray-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2"><Trans context="Admin, p">"How contributed value is honored" now holds your stewards' words for what happens when someone leaves, from your ReGen Civics profile. Move any part to the box it belongs in. Nothing is published until you press Publish.</Trans></p>}
           <p className="text-xs text-gray-500 mb-4">
-            Every field here is printed at /exit-policy, signed in or not, except the outside
+            <Trans context="Admin, p">Every field here is printed at /exit-policy, signed in or not, except the outside
             contact's name and how to reach them, which only members see. This is the highest-stakes copy on the site: it
             says what happens to a person, and to what they built, when they
             leave{policyDraft.placeholder ? ". The banner above it says these are still the platform's starting terms" : ""}.
-          </p>
+          </Trans></p>
 
           <div className="grid sm:grid-cols-2 gap-3 mb-4">
             <label className="text-xs text-gray-500">Notice period (days)
@@ -5568,24 +5569,24 @@ export function ExitsAdminTab({ password }: { password: string }) {
           </div>
 
           <label className="text-xs text-gray-500 block mb-4">
-            <span className="font-medium text-gray-700">How contributed value is honored</span>
+            <span className="font-medium text-gray-700"><Trans context="Admin, span">How contributed value is honored</Trans></span>
             {mark(stale.includes("How contributed value is honored"))}
             {/* The name is the term. Without an explicit one the wrapping
                 <label> handed a reader the term, the stale badge and the whole
                 hint as a single sentence. Badge and hint both stay, as
                 descriptions, in the order a reader would want them. */}
             <textarea rows={3} value={policyDraft.voluntary?.valuationMethod ?? ""}
-              aria-label="How contributed value is honored"
+              aria-label={t({ message: "How contributed value is honored", context: "Admin, aria-label" })}
               aria-describedby="exit-valuation-hint"
               onChange={(e) => setVol({ valuationMethod: e.target.value })}
               className={`${inputCls} w-full mt-1`} />
             <span id="exit-valuation-hint" className="block text-[11px] text-gray-400 mt-1">
-              What a departing member is owed for what they built, and how it is worked out.
-            </span>
+              <Trans context="Admin, span">What a departing member is owed for what they built, and how it is worked out.
+            </Trans></span>
           </label>
 
           <StepListEditor
-            label="The steps of a voluntary departure"
+            label={t({ message: "The steps of a voluntary departure", context: "Admin, label" })}
             hint="Printed as the numbered list under Choosing to leave."
             steps={Array.isArray(policyDraft.voluntary?.unwindSteps) ? policyDraft.voluntary.unwindSteps : []}
             onChange={(next) => setVol({ unwindSteps: next })}
@@ -5593,12 +5594,12 @@ export function ExitsAdminTab({ password }: { password: string }) {
           <p className="text-[11px] mb-4 -mt-2">{mark(stale.includes("The steps of a voluntary departure"))}</p>
 
           <label className="text-xs text-gray-500 block mb-4">
-            <span className="font-medium text-gray-700">If the village asks someone to leave</span>
+            <span className="font-medium text-gray-700"><Trans context="Admin, span">If the village asks someone to leave</Trans></span>
             {mark(stale.includes("If the village asks someone to leave"))}
             {/* Same shape as the field above: the term names the control, the
                 stale badge stops being read as part of that name. */}
             <textarea rows={3} value={policyDraft.involuntary?.process ?? ""}
-              aria-label="If the village asks someone to leave"
+              aria-label={t({ message: "If the village asks someone to leave", context: "Admin, aria-label" })}
               onChange={(e) => setInv({ process: e.target.value })}
               className={`${inputCls} w-full mt-1`} />
           </label>
@@ -5615,7 +5616,7 @@ export function ExitsAdminTab({ password }: { password: string }) {
             `grounds` in server/lib/exitPolicy.ts.
           */}
           <StepListEditor
-            label="Questions asked before an involuntary exit"
+            label={t({ message: "Questions asked before an involuntary exit", context: "Admin, label" })}
             hint="A steward answers each one yes, no, or does not apply when opening a departure. The answers go on the record."
             steps={Array.isArray(policyDraft.involuntary?.grounds) ? policyDraft.involuntary.grounds : []}
             onChange={(next) => setInv({ grounds: next })}
@@ -5637,7 +5638,7 @@ export function ExitsAdminTab({ password }: { password: string }) {
 
           {data?.conflictAgreementStored || data?.restorativeByVote ? <RestorativeInAgreement steps={policyDraft.restorative?.steps} byVote={!!data?.restorativeByVote} /> : (<>
           <StepListEditor
-            label="The restorative path"
+            label={t({ message: "The restorative path", context: "Admin, label" })}
             hint="Printed under Repair before departure. Its content reaches only the people in the room; these are the steps, never the content."
             steps={Array.isArray(policyDraft.restorative?.steps) ? policyDraft.restorative.steps : []}
             onChange={(next) => setRes({ steps: next })}
@@ -5657,20 +5658,20 @@ export function ExitsAdminTab({ password }: { password: string }) {
               <input type="checkbox" checked={!policyDraft.placeholder} disabled={stale.length > 0}
                 onChange={(e) => setPolicyDraft({ ...policyDraft, placeholder: !e.target.checked })}
                 className="mt-0.5 w-5 h-5 shrink-0 focus:outline-none focus:ring-2 focus:ring-teal-deep" />
-              <span>These terms were decided by the community, and the draft banner comes off /exit-policy.</span>
+              <span><Trans context="Admin, span">These terms were decided by the community, and the draft banner comes off /exit-policy.</Trans></span>
             </label>
             {stale.length > 0 && (
               <p className="text-[11px] text-amber-900 mt-2 pl-7">
-                Not yet available. {stale.join(", ")} {stale.length === 1 ? "is" : "are"} still
+                <Trans context="Admin, p">Not yet available. {stale.join(", ")} {stale.length === 1 ? "is" : "are"} still
                 word for word what the platform ships. Ticking this would publish the platform's
                 boilerplate as the village's settled exit terms. Write {stale.length === 1 ? "it" : "them"} in
                 the community's own words first.
-              </p>
+              </Trans></p>
             )}
           </div>
 
           <button onClick={async () => { const d = await call("/admin/exit-policy", policyDraft, "PUT", data?.policyVersion ? { "x-content-was": data.policyVersion } : {}); if (d) { toast.success("Policy published"); setExitFromProfile(false); load(); } }}
-            className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 min-h-[44px] font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep">Publish policy</button>
+            className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 min-h-[44px] font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep"><Trans context="Admin, button">Publish policy</Trans></button>
         </div>
         );
       })()}
@@ -5686,7 +5687,7 @@ export function ExitsAdminTab({ password }: { password: string }) {
  * the human body beside the untouchable AI body, publish to the forum,
  * accept or dismiss suggestions. Nothing here happens on its own.
  */
-function CallsAdminTab({ password }: { password: string }) {
+function CallsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -5785,12 +5786,12 @@ function CallsAdminTab({ password }: { password: string }) {
   if (off) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Call Automation</h2>
-        <p className="text-sm text-gray-500">The Call Automation module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2"><Trans context="Admin, h2">Call Automation</Trans></h2>
+        <p className="text-sm text-gray-500"><Trans context="Admin, p">The Call Automation module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first.</Trans></p>
       </div>
     );
   }
-  if (loading && !data) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading && !data) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
 
   // Recordings come back mapped (camelCase); syntheses and tasks are raw
   // rows. Read both spellings so the marker does not hinge on which payload
@@ -5802,26 +5803,26 @@ function CallsAdminTab({ password }: { password: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Call Automation</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1"><Trans context="Admin, h2">Call Automation</Trans></h2>
         <p className="text-sm text-gray-500 max-w-2xl">
-          The weekly call becomes assigned work. Suggestions survive only with
+          <Trans context="Admin, p">The weekly call becomes assigned work. Suggestions survive only with
           a verbatim quote and timestamp from the tape; publishing and every
           decision stay human.
-        </p>
+        </Trans></p>
         {/* The seeded recording, its synthesis and its tasks render here with
             every button a real one has, and each of those buttons 409s. Say
             so once at the top and mark the rows below. */}
         <ExamplesBanner moduleId="automation" noun="recording" layout="mt-3 max-w-2xl text-left" />
         {!data?.assistantConfigured && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 inline-block">
-            The assistant is not configured (ANTHROPIC_API_KEY). Ingestion and
+            <Trans context="Admin, p">The assistant is not configured (ANTHROPIC_API_KEY). Ingestion and
             transcripts work; synthesis will refuse honestly.
-          </p>
+          </Trans></p>
         )}
         {data && data.readyQueue >= data.maxReadyQueue && (
           <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2 inline-block">
-            Backpressure: {data.readyQueue} unpublished syntheses. Publish or clear before drafting more.
-          </p>
+            <Trans context="Admin, p">Backpressure: {data.readyQueue} unpublished syntheses. Publish or clear before drafting more.
+          </Trans></p>
         )}
       </div>
 
@@ -5829,7 +5830,7 @@ function CallsAdminTab({ password }: { password: string }) {
           transcribed. Always visible — a founder needs the URL to configure
           Riverside, and the secret state to know why nothing is arriving. */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-1">Riverside, automatic ingestion</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Riverside, automatic ingestion</Trans></h3>
         <p className="text-sm text-gray-500 mb-3 max-w-2xl">
           Point Riverside's webhook at this village and every finished call arrives here on its
           own, ready to transcribe and synthesize. In Riverside, add a webhook with this URL and
@@ -5851,35 +5852,35 @@ function CallsAdminTab({ password }: { password: string }) {
             }}
             className="text-xs text-teal-deep font-medium hover:underline"
           >
-            Copy
-          </button>
+            <Trans context="Admin, button">Copy
+          </Trans></button>
         </div>
         {data?.riversideSecretConfigured ? (
           <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 inline-block">
-            Shared secret is set. Deliveries carrying the matching
+            <Trans context="Admin, p">Shared secret is set. Deliveries carrying the matching
             x-riverside-secret header are ingested.
-          </p>
+          </Trans></p>
         ) : (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
-            No shared secret is set, so every delivery to this URL is being
+            <Trans context="Admin, p">No shared secret is set, so every delivery to this URL is being
             discarded. Set <span className="font-medium">Riverside webhook secret</span> under
             Integrations, then give Riverside the same value as the
             x-riverside-secret header.
-          </p>
+          </Trans></p>
         )}
       </div>
 
       {/* Ingest */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Add a recording</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Add a recording</Trans></h3>
         <div className="space-y-2">
           <div className="flex gap-2">
-            <input placeholder="Title (e.g. Circle Call, July 27)" value={form.title}
+            <input placeholder={t({ message: "Title (e.g. Circle Call, July 27)", context: "Admin, placeholder" })} value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })} className={`${inputCls} flex-1`} />
-            <input placeholder="URL (optional)" value={form.url}
+            <input placeholder={t({ message: "URL (optional)", context: "Admin, placeholder" })} value={form.url}
               onChange={(e) => setForm({ ...form, url: e.target.value })} className={`${inputCls} flex-1`} />
           </div>
-          <textarea rows={4} placeholder="Paste the transcript: VTT, SRT or plain text. Timestamped cues make the evidence rule sharper."
+          <textarea rows={4} placeholder={t({ message: "Paste the transcript: VTT, SRT or plain text. Timestamped cues make the evidence rule sharper.", context: "Admin, placeholder" })}
             value={form.transcript} onChange={(e) => setForm({ ...form, transcript: e.target.value })}
             className={`${inputCls} w-full font-mono text-xs`} />
           <button
@@ -5895,14 +5896,14 @@ function CallsAdminTab({ password }: { password: string }) {
             disabled={!form.title.trim()}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
           >
-            Ingest
-          </button>
+            <Trans context="Admin, button">Ingest
+          </Trans></button>
         </div>
       </div>
 
       {/* Recordings */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Recordings</h3>
+        <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Recordings</Trans></h3>
         <div className="space-y-1.5">
           {(data?.recordings ?? []).map((r: any) => (
             <button key={r.id} onClick={() => setSelected(selected === r.id ? "" : r.id)}
@@ -5916,7 +5917,7 @@ function CallsAdminTab({ password }: { password: string }) {
               </span>
             </button>
           ))}
-          {(data?.recordings ?? []).length === 0 && <p className="text-sm text-gray-400">Nothing ingested yet.</p>}
+          {(data?.recordings ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing ingested yet.</Trans></p>}
         </div>
       </div>
 
@@ -5930,11 +5931,11 @@ function CallsAdminTab({ password }: { password: string }) {
             </h3>
             {!exampleDetail && !detail.synthesis && detail.transcript && (
               <button onClick={async () => { const d = await call(`/admin/recordings/${detail.recording.id}/synthesize`); if (d) { toast.success(`${d.tasks} task(s) kept, ${d.dropped} dropped by the evidence rule`); load(); loadDetail(selected); } }}
-                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">Synthesize</button>
+                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Synthesize</Trans></button>
             )}
             {!exampleDetail && detail.synthesis && !detail.synthesis.published_at && (
               <button onClick={async () => { const d = await call(`/admin/syntheses/${detail.synthesis.id}/publish`); if (d) { toast.success(`Published: ${d.notified} role-holder(s) notified`); load(); loadDetail(selected); } }}
-                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">Publish to forum</button>
+                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"><Trans context="Admin, button">Publish to forum</Trans></button>
             )}
           </div>
 
@@ -5945,11 +5946,11 @@ function CallsAdminTab({ password }: { password: string }) {
           {detail.transcript ? (
             <details className="border border-gray-200 rounded-lg" open={!detail.synthesis}>
               <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-gray-900">
-                Transcript
+                <Trans context="Admin, summary">Transcript
                 <span className="ml-2 text-xs font-normal text-gray-400">
                   {(detail.transcript.segments ?? []).length} segment(s)
                   {detail.recording.durationS ? `, ${fmtTs(detail.recording.durationS * 1000)} long` : ""}
-                </span>
+                </span></Trans>
               </summary>
               <div className="max-h-72 space-y-2 overflow-y-auto px-4 pb-3">
                 {(detail.transcript.segments ?? []).length > 0 ? (
@@ -5965,26 +5966,26 @@ function CallsAdminTab({ password }: { password: string }) {
               </div>
             </details>
           ) : (
-            <p className="text-sm text-gray-400">No transcript yet. Paste one via the transcript endpoint or re-ingest with it.</p>
+            <p className="text-sm text-gray-400"><Trans context="Admin, p">No transcript yet. Paste one via the transcript endpoint or re-ingest with it.</Trans></p>
           )}
 
           {detail.synthesis && (
             <>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">AI body (write-once, untouchable)</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1"><Trans context="Admin, p">AI body (write-once, untouchable)</Trans></p>
                   <div className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3 whitespace-pre-wrap max-h-64 overflow-y-auto">
                     {detail.synthesis.ai_body}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Your edit (what actually publishes)</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1"><Trans context="Admin, p">Your edit (what actually publishes)</Trans></p>
                   <textarea rows={10} value={bodyDraft} onChange={(e) => setBodyDraft(e.target.value)}
                     disabled={!!detail.synthesis.published_at || exampleDetail}
                     className={`${inputCls} w-full`} />
                   {!detail.synthesis.published_at && !exampleDetail && (
                     <button onClick={async () => { const d = await call(`/admin/syntheses/${detail.synthesis.id}/body`, { body: bodyDraft }, "PUT"); if (d) { toast.success("Saved"); loadDetail(selected); } }}
-                      className="mt-1 text-sm text-teal-deep font-medium hover:underline">Save edit</button>
+                      className="mt-1 text-sm text-teal-deep font-medium hover:underline"><Trans context="Admin, button">Save edit</Trans></button>
                   )}
                 </div>
               </div>
@@ -5996,7 +5997,7 @@ function CallsAdminTab({ password }: { password: string }) {
                 <div className="grid md:grid-cols-2 gap-4">
                   {asArray(detail.synthesis.chapters).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">What the call covered</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2"><Trans context="Admin, p">What the call covered</Trans></p>
                       <ol className="space-y-1">
                         {asArray(detail.synthesis.chapters).map((c: any, i: number) => (
                           <li key={i} className="flex gap-2 text-sm text-gray-600">
@@ -6011,7 +6012,7 @@ function CallsAdminTab({ password }: { password: string }) {
                   )}
                   {asArray(detail.synthesis.decisions).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Decisions the call reached</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2"><Trans context="Admin, p">Decisions the call reached</Trans></p>
                       <ul className="space-y-1.5">
                         {asArray(detail.synthesis.decisions).map((d: any, i: number) => (
                           <li key={i} className="rounded-lg border border-purple-100 bg-purple-50 px-3 py-2 text-sm text-purple-900">
@@ -6028,7 +6029,7 @@ function CallsAdminTab({ password }: { password: string }) {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                   Suggested tasks, each one evidenced from the tape
                   {detail.synthesis.dropped_task_count > 0 && (
-                    <span className="text-amber-700"> · {detail.synthesis.dropped_task_count} suggestion(s) dropped for failing the evidence rule</span>
+                    <span className="text-amber-700"> <Trans context="Admin, span">· {detail.synthesis.dropped_task_count} suggestion(s) dropped for failing the evidence rule</Trans></span>
                   )}
                 </p>
                 <div className="space-y-2">
@@ -6046,19 +6047,19 @@ function CallsAdminTab({ password }: { password: string }) {
                           {t.status === "suggested" && !flagged(t) && !exampleDetail ? (
                             <>
                               <button onClick={async () => { const d = await call(`/admin/call-tasks/${t.id}/accept`); if (d) loadDetail(selected); }}
-                                className="text-xs text-emerald-700 font-medium hover:underline">Accept</button>
+                                className="text-xs text-emerald-700 font-medium hover:underline"><Trans context="Admin, button">Accept</Trans></button>
                               <button onClick={async () => { const d = await call(`/admin/call-tasks/${t.id}/dismiss`); if (d) loadDetail(selected); }}
-                                className="text-xs text-gray-400 hover:text-red-600">Dismiss</button>
+                                className="text-xs text-gray-400 hover:text-red-600"><Trans context="Admin, button">Dismiss</Trans></button>
                             </>
                           ) : (
                             <span className={`text-xs ${t.status === "accepted" ? "text-emerald-700" : "text-gray-400"}`}>{t.status}</span>
                           )}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 italic">“{t.quote}”, at {fmtTs(t.timestamp_ms)}</p>
+                      <p className="text-xs text-gray-500 mt-1 italic"><Trans context="Admin, p">“{t.quote}”, at {fmtTs(t.timestamp_ms)}</Trans></p>
                     </div>
                   ))}
-                  {detail.tasks.length === 0 && <p className="text-sm text-gray-400">No suggestions survived, or none were made.</p>}
+                  {detail.tasks.length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No suggestions survived, or none were made.</Trans></p>}
                 </div>
               </div>
             </>
@@ -6099,11 +6100,11 @@ function IntentsAdminTab({ password }: { password: string }) {
     })();
   }, [password]);
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-500"><Trans context="Admin, p">Loading…</Trans></p>;
   if (off) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <p className="text-sm text-gray-600">The Introductions module is off. Turn it on in the Module Library.</p>
+        <p className="text-sm text-gray-600"><Trans context="Admin, p">The Introductions module is off. Turn it on in the Module Library.</Trans></p>
       </div>
     );
   }
@@ -6125,13 +6126,13 @@ function IntentsAdminTab({ password }: { password: string }) {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
-        <h3 className="font-semibold text-gray-900">What people asked for and did not get</h3>
+        <h3 className="font-semibold text-gray-900"><Trans context="Admin, h3">What people asked for and did not get</Trans></h3>
         <p className="text-xs text-gray-500">
-          Active intents no introduction has touched in 14 days, by topic. This is the demand signal: the next role,
+          <Trans context="Admin, p">Active intents no introduction has touched in 14 days, by topic. This is the demand signal: the next role,
           quest or module lives in this list.
-        </p>
+        </Trans></p>
         {(demand?.unmatchedByTopic ?? []).length === 0 && (
-          <p className="text-sm text-gray-400">Nothing is waiting. Every active intent has seen a proposal.</p>
+          <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing is waiting. Every active intent has seen a proposal.</Trans></p>
         )}
         <div className="flex flex-wrap gap-2">
           {(demand?.unmatchedByTopic ?? []).map((t: any) => (
@@ -6144,19 +6145,19 @@ function IntentsAdminTab({ password }: { password: string }) {
           {(demand?.unmatched ?? []).map((i: any, idx: number) => (
             <li key={idx} className="py-2 text-sm text-gray-700">
               <span className="text-xs uppercase text-gray-400 mr-2">{i.kind}</span>
-              {i.text ?? <span className="italic text-gray-400">incognito: topics only ({(i.topics ?? []).join(", ") || "untagged"})</span>}
+              {i.text ?? <span className="italic text-gray-400"><Trans context="Admin, span">incognito: topics only ({(i.topics ?? []).join(", ") || "untagged"})</Trans></span>}
             </li>
           ))}
         </ul>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
-        <h3 className="font-semibold text-gray-900">The concierge's own gaps</h3>
+        <h3 className="font-semibold text-gray-900"><Trans context="Admin, h3">The concierge's own gaps</Trans></h3>
         {mapOff ? (
-          <p className="text-sm text-gray-400">The map is off, so there is no concierge log to read.</p>
+          <p className="text-sm text-gray-400"><Trans context="Admin, p">The map is off, so there is no concierge log to read.</Trans></p>
         ) : (
           <>
-            {(conciergeGaps ?? []).length === 0 && <p className="text-sm text-gray-400">No unmatched queries.</p>}
+            {(conciergeGaps ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No unmatched queries.</Trans></p>}
             <ul className="divide-y divide-gray-100">
               {(conciergeGaps ?? []).slice(0, 30).map((q: any) => (
                 <li key={q.id} className="py-2 text-sm text-gray-700">{q.query}</li>
@@ -6187,7 +6188,7 @@ function IntentsAdminTab({ password }: { password: string }) {
  * first, asks once in plain words, and then reports what actually happened,
  * which includes reporting a second press as the nothing that it is.
  */
-function CyclesTab({ password }: { password: string }) {
+function CyclesTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [openCycle, setOpenCycle] = useState<OpenCycle | null>(null);
   const [pending, setPending] = useState<PendingSettlement | null>(null);
   const [history, setHistory] = useState<any[] | null>(null);
@@ -6318,24 +6319,24 @@ function CyclesTab({ password }: { password: string }) {
     <div>
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Cycle Close</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Cycle Close</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            Settling a lunation records what the village acknowledged and releases the
+            <Trans context="Admin, p">Settling a lunation records what the village acknowledged and releases the
             value pool that follows it. A person does this, never a timer, so read the
             settlement below before you press anything.
-          </p>
+          </Trans></p>
         </div>
         <button
           onClick={() => void load()}
           className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:bg-gray-50 shrink-0"
         >
-          Re-read
-        </button>
+          <Trans context="Admin, button">Re-read
+        </Trans></button>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <BreathingLoader label="Reading the lunations" size={44} showLabel />
+          <BreathingLoader label={t({ message: "Reading the lunations", context: "Admin, label" })} size={44} showLabel />
         </div>
       ) : (
         <div className="space-y-6">
@@ -6366,38 +6367,38 @@ function CyclesTab({ password }: { password: string }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">The open lunation</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide"><Trans context="Admin, p">The open lunation</Trans></p>
               {openCycle ? (
                 <>
-                  <p className="text-lg font-semibold text-gray-900 mt-1">Lunation {openCycle.cycleNumber}</p>
+                  <p className="text-lg font-semibold text-gray-900 mt-1"><Trans context="Admin, p">Lunation {openCycle.cycleNumber}</Trans></p>
                   <p className="text-sm text-gray-600 mt-1">
-                    Opened {day(openCycle.startsAt)}, closes {day(openCycle.endsAt)}.
-                  </p>
+                    <Trans context="Admin, p">Opened {day(openCycle.startsAt)}, closes {day(openCycle.endsAt)}.
+                  </Trans></p>
                   <p className="text-sm text-gray-600">
-                    {openCycle.daysRemaining} {openCycle.daysRemaining === 1 ? "day" : "days"} left.
-                    {openCycle.moonPhaseName ? ` The moon is ${String(openCycle.moonPhaseName).toLowerCase()}.` : ""}
+                    <Trans context="Admin, p">{openCycle.daysRemaining} {openCycle.daysRemaining === 1 ? "day" : "days"} left.
+                    {openCycle.moonPhaseName ? ` The moon is ${String(openCycle.moonPhaseName).toLowerCase()}.` : ""}</Trans>
                   </p>
                   <p className="text-xs text-gray-400 mt-2">
-                    A lunation settles once it has ended. This one is still running.
-                  </p>
+                    <Trans context="Admin, p">A lunation settles once it has ended. This one is still running.
+                  </Trans></p>
                 </>
               ) : (
-                <p className="text-sm text-gray-500 mt-1">The open lunation could not be read.</p>
+                <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">The open lunation could not be read.</Trans></p>
               )}
             </div>
 
             <div className="border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">The value pool</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide"><Trans context="Admin, p">The value pool</Trans></p>
               {pending ? (
                 <>
                   <p className="text-lg font-semibold text-gray-900 mt-1">
                     {pending.pool.size.toLocaleString()} {pending.pool.tokenName}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
-                    Split across everyone acknowledged that lunation, in proportion to what
+                    <Trans context="Admin, p">Split across everyone acknowledged that lunation, in proportion to what
                     they received. Set by {"gratitude.pool_per_cycle"}, on its module card
                     under Modules.
-                  </p>
+                  </Trans></p>
                   {pending.pool.problem && (
                     <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
                       {pending.pool.problem}
@@ -6410,7 +6411,7 @@ function CyclesTab({ password }: { password: string }) {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-red-600 mt-1">The settlement preview could not be read.</p>
+                <p className="text-sm text-red-600 mt-1"><Trans context="Admin, p">The settlement preview could not be read.</Trans></p>
               )}
             </div>
           </div>
@@ -6436,12 +6437,12 @@ function CyclesTab({ password }: { password: string }) {
             a spinner and a guess, and it is the same sentence the job logs.
           */}
           <div className="border border-gray-200 rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">The village's own settlement</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide"><Trans context="Admin, p">The village's own settlement</Trans></p>
             <p className="text-sm text-gray-600 mt-2">
-              When this village settles by vote, the moon posts the proposal on its own and the
+              <Trans context="Admin, p">When this village settles by vote, the moon posts the proposal on its own and the
               value moves once the village passes it and the steward's window has run. Use these
               only to get past a moon the village voted down, or one nobody answered.
-            </p>
+            </Trans></p>
             <div className="flex flex-wrap gap-2 mt-3">
               <button
                 onClick={() => void askTheVillage()}
@@ -6465,8 +6466,8 @@ function CyclesTab({ password }: { password: string }) {
                   <>
                     {" "}
                     <a href={`/decisions/${proposal.ballotId}`} className="underline">
-                      Read the decision
-                    </a>
+                      <Trans context="Admin, a">Read the decision
+                    </Trans></a>
                     .
                   </>
                 )}
@@ -6475,7 +6476,7 @@ function CyclesTab({ password }: { password: string }) {
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">What a close would settle</h3>
+            <h3 className="font-semibold text-gray-900 mb-2"><Trans context="Admin, h3">What a close would settle</Trans></h3>
             {due.length === 0 ? (
               <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
                 {/* An empty list has two causes and they are not the same news.
@@ -6491,9 +6492,9 @@ function CyclesTab({ password }: { password: string }) {
                 {due.map((c) => (
                   <div key={c.id} className="border border-gray-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-gray-50 flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="font-medium text-gray-900">Lunation {c.cycleNumber}</p>
+                      <p className="font-medium text-gray-900"><Trans context="Admin, p">Lunation {c.cycleNumber}</Trans></p>
                       <p className="text-xs text-gray-500">
-                        {day(c.startsAt)} to {day(c.endsAt)} · {c.recipients} {c.recipients === 1 ? "member" : "members"} · {c.credited.toLocaleString()} {c.token}
+                        <Trans context="Admin, p">{day(c.startsAt)} to {day(c.endsAt)} · {c.recipients} {c.recipients === 1 ? "member" : "members"} · {c.credited.toLocaleString()} {c.token}</Trans>
                       </p>
                     </div>
                     {/*
@@ -6509,17 +6510,17 @@ function CyclesTab({ password }: { password: string }) {
                     )}
                     {c.fromPersistedSplit && (
                       <p className="text-xs text-amber-800 bg-amber-50 border-b border-amber-200 px-4 py-2">
-                        An earlier close already wrote this split. A retry pays from that record,
+                        <Trans context="Admin, p">An earlier close already wrote this split. A retry pays from that record,
                         and anything already paid pays once.
-                      </p>
+                      </Trans></p>
                     )}
                     <table className="w-full text-sm">
                       <thead className="text-left text-xs text-gray-500">
                         <tr className="border-t border-gray-100">
-                          <th className="px-4 py-2">Member</th>
-                          <th className="px-4 py-2">Received</th>
-                          <th className="px-4 py-2">From</th>
-                          <th className="px-4 py-2">Would be credited</th>
+                          <th className="px-4 py-2"><Trans context="Admin, th">Member</Trans></th>
+                          <th className="px-4 py-2"><Trans context="Admin, th">Received</Trans></th>
+                          <th className="px-4 py-2"><Trans context="Admin, th">From</Trans></th>
+                          <th className="px-4 py-2"><Trans context="Admin, th">Would be credited</Trans></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -6536,8 +6537,8 @@ function CyclesTab({ password }: { password: string }) {
                         {c.shares.length === 0 && (
                           <tr className="border-t border-gray-100">
                             <td colSpan={4} className="px-4 py-3 text-gray-500">
-                              Nobody was acknowledged in this lunation. Closing it only moves the clock on.
-                            </td>
+                              <Trans context="Admin, td">Nobody was acknowledged in this lunation. Closing it only moves the clock on.
+                            </Trans></td>
                           </tr>
                         )}
                       </tbody>
@@ -6550,13 +6551,13 @@ function CyclesTab({ password }: { password: string }) {
 
           {confirming ? (
             <div className="border-2 border-teal-deep rounded-xl p-4 bg-white">
-              <p className="font-semibold text-gray-900">Close what is due</p>
+              <p className="font-semibold text-gray-900"><Trans context="Admin, p">Close what is due</Trans></p>
               <ul className="mt-2 space-y-1">
                 {intent.map((line, i) => (
                   <li key={i} className="text-sm text-gray-700">{line}</li>
                 ))}
               </ul>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mt-4">And this happens with it</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide mt-4"><Trans context="Admin, p">And this happens with it</Trans></p>
               <ul className="mt-1 space-y-1 list-disc ml-5">
                 {CLOSE_CONSEQUENCES.map((line) => (
                   <li key={line} className="text-sm text-gray-600">{line}</li>
@@ -6575,8 +6576,8 @@ function CyclesTab({ password }: { password: string }) {
                   onClick={() => setConfirming(false)}
                   className="text-sm border border-gray-200 text-gray-600 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-40"
                 >
-                  Not yet
-                </button>
+                  <Trans context="Admin, button">Not yet
+                </Trans></button>
               </div>
               {blocked && (
                 <p className="text-xs text-red-700 mt-2">
@@ -6595,21 +6596,21 @@ function CyclesTab({ password }: { password: string }) {
               disabled={!pending}
               className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 hover:bg-teal-deep-dark disabled:opacity-40"
             >
-              Close what is due
-            </button>
+              <Trans context="Admin, button">Close what is due
+            </Trans></button>
           )}
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Settlements on record</h3>
+            <h3 className="font-semibold text-gray-900 mb-2"><Trans context="Admin, h3">Settlements on record</Trans></h3>
             {(history ?? []).length === 0 ? (
-              <p className="text-sm text-gray-500">No lunation has been settled yet.</p>
+              <p className="text-sm text-gray-500"><Trans context="Admin, p">No lunation has been settled yet.</Trans></p>
             ) : (
               <div className="space-y-3">
                 {(history ?? []).slice(0, 6).map((c: any) => (
                   <div key={c.id} className="border border-gray-200 rounded-xl px-4 py-3">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="font-medium text-gray-900">Lunation {c.cycleNumber}</p>
-                      <p className="text-xs text-gray-500">Closed {day(c.closedAt)}</p>
+                      <p className="font-medium text-gray-900"><Trans context="Admin, p">Lunation {c.cycleNumber}</Trans></p>
+                      <p className="text-xs text-gray-500"><Trans context="Admin, p">Closed {day(c.closedAt)}</Trans></p>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
                       {(c.totals ?? []).length} {(c.totals ?? []).length === 1 ? "member" : "members"} acknowledged
@@ -6626,9 +6627,9 @@ function CyclesTab({ password }: { password: string }) {
               </div>
             )}
             <p className="text-xs text-gray-400 mt-3">
-              This is the report the founders carry to Hypha, where the project's real
+              <Trans context="Admin, p">This is the report the founders carry to Hypha, where the project's real
               value is governed. It is public, and it carries first names only.
-            </p>
+            </Trans></p>
           </div>
         </div>
       )}
@@ -6657,29 +6658,29 @@ function LedgerTab({ password }: { password: string }) {
     <div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Ledger</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Ledger</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            The same checks the server proves before every boot, on demand. Faucet
+            <Trans context="Admin, p">The same checks the server proves before every boot, on demand. Faucet
             accounts run negative by design. Their negative balance is what they
             have issued, which is why everything still sums to zero.
-          </p>
+          </Trans></p>
         </div>
         <button onClick={load} className="admin-nowrap inline-flex min-h-11 shrink-0 items-center rounded-lg border border-gray-200 px-3 text-sm text-gray-700 hover:bg-gray-50">
-          Re-check
-        </button>
+          <Trans context="Admin, button">Re-check
+        </Trans></button>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : !data ? (
-        <p className="text-sm text-red-600">Could not load reconciliation.</p>
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : !data ? (
+        <p className="text-sm text-red-600"><Trans context="Admin, p">Could not load reconciliation.</Trans></p>
       ) : (
         <div className="space-y-6">
           {data.invariants?.ok ? (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              All invariants hold: per-token conservation ≡ 0, the balance cache matches
+              <Trans context="Admin, div">All invariants hold: per-token conservation ≡ 0, the balance cache matches
               the transfers, no Hypha token has ledger rows, and nothing but faucets is negative.
-            </div>
+            </Trans></div>
           ) : (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              <p className="font-semibold mb-1">Invariant violations. The server will refuse to boot like this:</p>
+              <p className="font-semibold mb-1"><Trans context="Admin, p">Invariant violations. The server will refuse to boot like this:</Trans></p>
               <ul className="list-disc ml-5 space-y-0.5">
                 {(data.invariants?.problems ?? []).map((p: string, i: number) => <li key={i}>{p}</li>)}
               </ul>
@@ -6687,14 +6688,14 @@ function LedgerTab({ password }: { password: string }) {
           )}
 
           <div className="border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">Tokens in motion</div>
+            <div className="px-4 py-2.5 bg-gray-50 text-xs text-gray-500 uppercase tracking-wide"><Trans context="Admin, div">Tokens in motion</Trans></div>
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-gray-500">
                 <tr className="border-t border-gray-100">
-                  <th className="px-4 py-2">Token</th>
-                  <th className="px-4 py-2">Transfers</th>
-                  <th className="px-4 py-2">Volume</th>
-                  <th className="px-4 py-2">Held by members</th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Token</Trans></th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Transfers</Trans></th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Volume</Trans></th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Held by members</Trans></th>
                 </tr>
               </thead>
               <tbody>
@@ -6707,21 +6708,21 @@ function LedgerTab({ password }: { password: string }) {
                   </tr>
                 ))}
                 {(data.tokens ?? []).length === 0 && (
-                  <tr><td colSpan={4} className="px-4 py-4 text-center text-gray-400 text-xs">No transfers yet.</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-4 text-center text-gray-400 text-xs"><Trans context="Admin, td">No transfers yet.</Trans></td></tr>
                 )}
               </tbody>
             </table>
           </div>
 
           <div className="border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">System accounts</div>
+            <div className="px-4 py-2.5 bg-gray-50 text-xs text-gray-500 uppercase tracking-wide"><Trans context="Admin, div">System accounts</Trans></div>
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-gray-500">
                 <tr className="border-t border-gray-100">
-                  <th className="px-4 py-2">Account</th>
-                  <th className="px-4 py-2">Token</th>
-                  <th className="px-4 py-2">Balance (ledger units)</th>{/* on purpose: this table is the conservation proof and the proof is over the INT column, so a Voice row reads 10000 for ten. Every MEMBER-facing surface divides, through client/src/lib/tokenAmount.ts */}
-                  <th className="px-4 py-2">Issued to date</th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Account</Trans></th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Token</Trans></th>
+                  <th className="px-4 py-2"><Trans context="Admin, th">Balance (ledger units)</Trans></th>{/* on purpose: this table is the conservation proof and the proof is over the INT column, so a Voice row reads 10000 for ten. Every MEMBER-facing surface divides, through client/src/lib/tokenAmount.ts */}
+                  <th className="px-4 py-2"><Trans context="Admin, th">Issued to date</Trans></th>
                 </tr>
               </thead>
               <tbody>
@@ -6729,7 +6730,7 @@ function LedgerTab({ password }: { password: string }) {
                   <tr key={`${s.id}-${s.tokenType ?? i}`} className="border-t border-gray-100">
                     <td className="px-4 py-2">
                       <span className="font-mono text-xs text-gray-700">{s.id}</span>
-                      {s.faucet && <span className="ml-2 text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full">faucet</span>}
+                      {s.faucet && <span className="ml-2 text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full"><Trans context="Admin, span">faucet</Trans></span>}
                       <div className="text-xs text-gray-400">{s.label}</div>
                     </td>
                     <td className="px-4 py-2 text-gray-600 font-mono text-xs">{s.tokenType ?? "-"}</td>
@@ -6764,7 +6765,7 @@ const CADENCES = [
   { value: "custom", label: "Custom / set by hand" },
 ];
 
-export function SeasonTab({ password }: { password: string }) {
+export function SeasonTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [cfg, setCfg] = useState<any>(null);
   // What the server holds; the floating save bar counts what differs from it.
   const [base, setBase] = useState<any>(null);
@@ -6795,7 +6796,7 @@ export function SeasonTab({ password }: { password: string }) {
     } catch { setSaving(false); return { ok: false, reason: "The seasons did not reach the server." }; }
   };
 
-  if (!cfg) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (!cfg) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
   const seasonChanges = changedKeys(base, cfg, ["cadence", "timezone"]).length + Math.abs((cfg.seasons ?? []).length - (base.seasons ?? []).length) +
     (cfg.seasons ?? []).filter((x: any, i: number) => JSON.stringify(x) !== JSON.stringify((base.seasons ?? [])[i])).length;
 
@@ -6816,24 +6817,24 @@ export function SeasonTab({ password }: { password: string }) {
     <div>
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Seasons</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Seasons</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            Name your seasons, say what each one is for, and set its goals. The banner shows
+            <Trans context="Admin, p">Name your seasons, say what each one is for, and set its goals. The banner shows
             whichever season covers today. Queue the next one and it hands over by itself.
-          </p>
+          </Trans></p>
         </div>
       </div>
 
       {cfg.needsNextSeason && (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <strong>No season covers today.</strong> The banner stays hidden until you add one,
+          <Trans context="Admin, div"><strong>No season covers today.</strong> The banner stays hidden until you add one,
           better than showing a season that has already turned.
-        </div>
+        </Trans></div>
       )}
 
       <div className="grid sm:grid-cols-2 gap-4 mb-6 max-w-xl">
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Rhythm</label>
+          <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Rhythm</Trans></label>
           <select
             value={cfg.cadence}
             onChange={(e) => setCfg({ ...cfg, cadence: e.target.value })}
@@ -6841,14 +6842,14 @@ export function SeasonTab({ password }: { password: string }) {
           >
             {CADENCES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
-          <p className="text-[11px] text-gray-400 mt-1">Used to suggest dates for the next season.</p>
+          <p className="text-[11px] text-gray-400 mt-1"><Trans context="Admin, p">Used to suggest dates for the next season.</Trans></p>
         </div>
         <SeasonTimezoneField
           value={cfg.timezone ?? ""}
           answered={!!cfg.timezoneAnswer}
           saving={saving}
           onChange={(timezone) => setCfg({ ...cfg, timezone })}
-          onConfirm={() => { void save({ confirmTimezone: true }).then((r) => { if (r.ok) toast.success("Seasons saved"); else toast.error(r.reason ?? "Save failed"); }); }}
+          onConfirm={() => { void save({ confirmTimezone: true }).then((r) => { if (r.ok) toast.success(t({ message: "Seasons saved", context: "Admin, toast" })); else toast.error(r.reason ?? "Save failed"); }); }}
         />
       </div>
 
@@ -6861,21 +6862,21 @@ export function SeasonTab({ password }: { password: string }) {
               <div className={`flex items-center justify-between px-4 py-2 text-xs font-semibold ${isCurrent ? "bg-teal-deep/10 text-teal-deep" : "bg-gray-50 text-gray-500"}`}>
                 <span>{isCurrent ? "Running now" : upcoming ? "Upcoming" : "Past"}</span>
                 <button onClick={() => setSeasons(seasons.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 font-medium">
-                  Remove
-                </button>
+                  <Trans context="Admin, button">Remove
+                </Trans></button>
               </div>
               <div className="p-4 space-y-3">
                 <div className="grid sm:grid-cols-3 gap-3">
-                  <input type="text" value={s.name} onChange={(e) => update(i, { name: e.target.value })} placeholder="Season name" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  <input type="text" value={s.theme} onChange={(e) => update(i, { theme: e.target.value })} placeholder="Theme" className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                  <input type="text" value={s.name} onChange={(e) => update(i, { name: e.target.value })} placeholder={t({ message: "Season name", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
+                  <input type="text" value={s.theme} onChange={(e) => update(i, { theme: e.target.value })} placeholder={t({ message: "Theme", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   <div className="grid grid-cols-2 gap-2">
                     <input type="date" value={s.startsOn} onChange={(e) => update(i, { startsOn: e.target.value })} className="px-2 py-2 text-sm border border-gray-200 rounded-lg" />
                     <input type="date" value={s.endsOn} onChange={(e) => update(i, { endsOn: e.target.value })} className="px-2 py-2 text-sm border border-gray-200 rounded-lg" />
                   </div>
                 </div>
-                <input type="text" value={s.focus} onChange={(e) => update(i, { focus: e.target.value })} placeholder="What this season is for (shown on the banner)" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" /><SeasonPlanWindowFields value={s.planWindow} onChange={(planWindow) => update(i, { planWindow })} />
+                <input type="text" value={s.focus} onChange={(e) => update(i, { focus: e.target.value })} placeholder={t({ message: "What this season is for (shown on the banner)", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" /><SeasonPlanWindowFields value={s.planWindow} onChange={(planWindow) => update(i, { planWindow })} />
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-1.5">Main goals</p>
+                  <p className="text-xs font-semibold text-gray-500 mb-1.5"><Trans context="Admin, p">Main goals</Trans></p>
                   <div className="space-y-1.5">
                     {(s.goals ?? []).map((g, gi) => (
                       <div key={gi} className="flex items-center gap-2">
@@ -6889,7 +6890,7 @@ export function SeasonTab({ password }: { password: string }) {
                           type="text"
                           value={g.text}
                           onChange={(e) => update(i, { goals: s.goals.map((x, xi) => xi === gi ? { ...x, text: e.target.value } : x) })}
-                          placeholder="What this season is trying to achieve"
+                          placeholder={t({ message: "What this season is trying to achieve", context: "Admin, placeholder" })}
                           className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg"
                         />
                         <button onClick={() => update(i, { goals: s.goals.filter((_, xi) => xi !== gi) })} className="text-gray-400 hover:text-red-600 shrink-0">
@@ -6902,8 +6903,8 @@ export function SeasonTab({ password }: { password: string }) {
                     onClick={() => update(i, { goals: [...(s.goals ?? []), { text: "", done: false }] })}
                     className="mt-2 inline-flex items-center gap-1 text-xs text-teal-deep font-medium hover:underline"
                   >
-                    <Plus className="w-3 h-3" /> Add goal
-                  </button>
+                    <Trans context="Admin, button"><Plus className="w-3 h-3" /> Add goal
+                  </Trans></button>
                 </div>
               </div>
             </div>
@@ -6944,7 +6945,7 @@ function BrandImageField({
    * which is worse than the missing control.
    */
   altUnavailable?: string;
-}) {
+}) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [uploading, setUploading] = useState(false);
   const [note, setNote] = useState("");
   const [showUrl, setShowUrl] = useState(false);
@@ -6982,11 +6983,11 @@ function BrandImageField({
       <div className="relative aspect-[16/9] w-full rounded-lg bg-gray-100 overflow-hidden border border-gray-200 mb-2">
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-[11px] text-gray-400">No image yet</div>}
+          : <div className="w-full h-full flex items-center justify-center text-[11px] text-gray-400"><Trans context="Admin, div">No image yet</Trans></div>}
         {uploading && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs text-gray-600">
-            Compressing…
-          </div>
+            <Trans context="Admin, div">Compressing…
+          </Trans></div>
         )}
       </div>
 
@@ -7029,7 +7030,7 @@ function BrandImageField({
             type="text"
             value={alt}
             onChange={(e) => onAltChange(e.target.value)}
-            placeholder="Describe what is in this picture"
+            placeholder={t({ message: "Describe what is in this picture", context: "Admin, placeholder" })}
             className="w-full mt-1 px-3 py-2 min-h-[44px] text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep"
           />
         </label>
@@ -7037,8 +7038,8 @@ function BrandImageField({
 
       {note && <p className="text-[11px] text-emerald-600 mt-1">{note}</p>}
       <p className="text-[11px] text-gray-400 mt-0.5">
-        Landscape works best. Big photos are resized and compressed automatically.
-      </p>
+        <Trans context="Admin, p">Landscape works best. Big photos are resized and compressed automatically.
+      </Trans></p>
     </div>
   );
 }
@@ -7047,7 +7048,7 @@ function BrandImageField({
 
 /* Exported for client/src/pages/Admin.setupWizard.test.tsx, which is the only
    caller outside this file. The Admin shell below still renders it directly. */
-export function SetupWizard({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) {
+export function SetupWizard({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [brand, setBrand] = useState<any>(null);
   const [defaults, setDefaults] = useState<any>(null);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -7062,7 +7063,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
       setBrand(data.brand); setSavedBrand(data.brand);
       setSavedCurrency(String(data.brand?.project?.fiatCurrency ?? ""));
       setDefaults(data.defaults);
-    } catch { toast.error("Failed to load setup"); }
+    } catch { toast.error(t({ message: "Failed to load setup", context: "Admin, toast" })); }
   }, [password]);
 
   useEffect(() => { load(); }, [load]);
@@ -7100,7 +7101,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
     void saveBrand("setup", { setup: next }).then((why) => { if (why) toast.error(why); });
   };
 
-  if (!brand || !defaults) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (!brand || !defaults) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
 
   /* Identity and Pictures are read from `brand`; the other four still come from
      the flags a founder ticks. See client/src/components/admin/setupProgress.ts. */
@@ -7167,30 +7168,30 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             : "Everything you need to turn this into your project's coordination game. Blank fields keep the platform default as the suggestion."}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          Identity and Pictures are counted from what you have saved here, so they go back to
+          <Trans context="Admin, p">Identity and Pictures are counted from what you have saved here, so they go back to
           unfinished if a field is ever emptied. The other four steps are yours to tick, and say only what you told them.
-        </p>
+        </Trans></p>
         {!setupComplete ? (
           <div className="flex items-center gap-3 mt-4">
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden max-w-xs">
               <div className="h-2 bg-teal-deep rounded-full transition-all" style={{ width: `${(doneCount / rows.length) * 100}%` }} />
             </div>
-            <span className="text-sm text-gray-500">{doneCount} / {rows.length} steps</span>
+            <span className="text-sm text-gray-500"><Trans context="Admin, span">{doneCount} / {rows.length} steps</Trans></span>
           </div>
         ) : (
           <button
             onClick={resetSetup}
             className="mt-3 text-xs text-gray-500 underline hover:text-gray-700"
           >
-            Re-run the setup walkthrough
-          </button>
+            <Trans context="Admin, button">Re-run the setup walkthrough
+          </Trans></button>
         )}
       </div>
 
       {/* A project from ReGen Civics brings its file here. Identity goes into the boxes below, unsaved (ProfileImportDoor.tsx). */}
       <ProfileImportDoor password={password} onOpenTab={onOpenTab} onIdentity={(p) => setBrand((b: any) => ({ ...b, project: { ...b.project, ...p } }))} />
 
-      <SetupSection {...step} id="identity" n={1} title="Identity" subtitle="What your project is called.">
+      <SetupSection {...step} id="identity" n={1} title={t({ message: "Identity", context: "Admin, title" })} subtitle="What your project is called.">
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           {/* catalystName is a LABEL and not a role: renaming it changes no permission (see client/src/lib/gameApi.ts).
               It is deliberately NOT one of the measured Identity fields in setupProgress.ts, because it ships with a
@@ -7219,19 +7220,19 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             One name, one place to set it. This line is the door.
           */}
           <div className="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
-            <p className="text-xs font-medium text-muted-foreground mb-0.5">What your tokens are called</p>
+            <p className="text-xs font-medium text-muted-foreground mb-0.5"><Trans context="Admin, p">What your tokens are called</Trans></p>
             <p className="text-xs text-muted-foreground">
-              Every token this village runs is named in one place, including the
+              <Trans context="Admin, p">Every token this village runs is named in one place, including the
               one members earn for recognition. A rename there follows to every
               page that says the word.
-            </p>
+            </Trans></p>
             <button
               type="button"
               onClick={() => onOpenTab("tokens")}
               className="mt-1.5 text-xs font-medium text-teal-deep underline"
             >
-              Open Tokens →
-            </button>
+              <Trans context="Admin, button">Open Tokens →
+            </Trans></button>
           </div>
           {brandField("project", "siteUrl", "Main website URL (blank = no outside links)", (defaults.project as any).siteUrl ?? "")}
           {brandField("project", "eventsUrl", "Events page URL (optional)", (defaults.project as any).eventsUrl ?? "")}
@@ -7242,7 +7243,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             writes it. The route merges rather than replaces, so an old stored
             value stays exactly where it is; nothing reads it, and this screen
             no longer adds to it. */}
-        <p className="text-xs text-gray-400 mt-2">Instantly updates the game layer (profile, recognition, season banner, pulse). Page marketing copy is edited under Content below.</p>
+        <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">Instantly updates the game layer (profile, recognition, season banner, pulse). Page marketing copy is edited under Content below.</Trans></p>
       </SetupSection>
 
       {/* 0219: the sentence every later change is judged against, and the one
@@ -7251,7 +7252,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
 
       <NeedsSetupStep {...step} onOpenTab={onOpenTab} summary={needsSetup.summary} />
 
-      <SetupSection {...step} id="images" n={3} title="Pictures" subtitle="Hero images across the site. Upload your own (we host and compress them) or point at a URL you already host.">
+      <SetupSection {...step} id="images" n={3} title={t({ message: "Pictures", context: "Admin, title" })} subtitle="Hero images across the site. Upload your own (we host and compress them) or point at a URL you already host.">
         <div className="grid md:grid-cols-3 gap-4 mb-4">
           {imageField("hero", "Homepage hero")}
           {imageField("investorHero", "Investor hero")}
@@ -7267,7 +7268,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             "A tab icon has no alt text. Browsers name the tab from the page title, so there is nothing here for a screen reader to read.",
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-2">The logo, footer mark and tab icon apply live, no deploy. Alt text ships with the pictures and is what a screen reader reads aloud in place of the image. What a shared link shows (its sentence and picture) is set in Make it yours, Pages, Whole site, and falls back to your Tagline and homepage picture.</p>
+        <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">The logo, footer mark and tab icon apply live, no deploy. Alt text ships with the pictures and is what a screen reader reads aloud in place of the image. What a shared link shows (its sentence and picture) is set in Make it yours, Pages, Whole site, and falls back to your Tagline and homepage picture.</Trans></p>
         {/* Typography lives with Pictures: both are "how the village looks".
             Self-contained component — see client/src/components/TypographyPanel.tsx. */}
         <LookPanel password={password} />
@@ -7278,18 +7279,18 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         <NoticeWordsPanel password={password} />
       </SetupSection>
 
-      <SetupSection {...step} id="numbers" n={4} title="Numbers" subtitle="The editable figures on your site.">
+      <SetupSection {...step} id="numbers" n={4} title={t({ message: "Numbers", context: "Admin, title" })} subtitle="The editable figures on your site.">
         <p className="text-sm text-gray-600 mb-3">
-          Village dues live in the Settings tab, and so do the land and money figures the
+          <Trans context="Admin, p">Village dues live in the Settings tab, and so do the land and money figures the
           investor page and the master plan show. Every one of them ships blank. A blank figure
           means the page shows no figure at all, so your site only ever states what you stated.
-        </p>
+        </Trans></p>
         <button onClick={() => onOpenTab("settings")} className="px-4 py-2 bg-white border border-gray-200 text-teal-deep rounded-lg text-sm font-medium hover:bg-gray-50">
-          Open Settings →
-        </button>
+          <Trans context="Admin, button">Open Settings →
+        </Trans></button>
       </SetupSection>
 
-      <SetupSection {...step} id="content" n={5} title="Content" subtitle="Rewrite the words, questions, milestones, and quests for your project.">
+      <SetupSection {...step} id="content" n={5} title={t({ message: "Content", context: "Admin, title" })} subtitle="Rewrite the words, questions, milestones, and quests for your project.">
         <div className="space-y-2">
           {SETUP_CONTENT_EDITORS.map((c) => (
             <div key={c.tab} className="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-2.5">
@@ -7298,8 +7299,8 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
                 <div className="text-xs text-gray-500 truncate">{contentEditorHint(c, wizard.brochureOn)}</div>
               </div>
               <button onClick={() => onOpenTab(c.tab)} className="shrink-0 px-3 py-1.5 text-xs font-medium text-teal-deep border border-gray-200 rounded-lg hover:bg-gray-50">
-                Open →
-              </button>
+                <Trans context="Admin, button">Open →
+              </Trans></button>
             </div>
           ))}
         </div>
@@ -7320,12 +7321,12 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         * three). The step stays because a missing step six reads as one
         * somebody forgot.
         */}
-      <SetupSection {...step} id="map" n={6} title="Map & styling" subtitle="How the Living Map draws your land. The editors live on the map itself.">
+      <SetupSection {...step} id="map" n={6} title={t({ message: "Map & styling", context: "Admin, title" })} subtitle="How the Living Map draws your land. The editors live on the map itself.">
         <p className="text-sm text-gray-600 mb-4">
-          Your colours, the welcome walk and the village's own words for roads, water and zones are all
+          <Trans context="Admin, p">Your colours, the welcome walk and the village's own words for roads, water and zones are all
           edited on the map. Open the land and use the Village Settings button on the map's dock: the map
           repaints as you save, so you see every change where it lands.
-        </p>
+        </Trans></p>
         <Link
           href={wizard.mapOn ? "/map" : "/modules/map"}
           className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-deep"
@@ -7334,36 +7335,36 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         </Link>
       </SetupSection>
 
-      <SetupSection {...step} id="technical" n={7} title="Go live" subtitle="One-time technical setup, for you, your developer or your own AI assistant.">
+      <SetupSection {...step} id="technical" n={7} title={t({ message: "Go live", context: "Admin, title" })} subtitle="One-time technical setup, for you, your developer or your own AI assistant.">
         <ol className="space-y-4 text-sm text-gray-700">
           <li>
-            <p className="font-medium text-gray-900">1. Run the published image</p>
-            <p className="text-gray-500 mb-1">On one computer, docker compose up -d from the starter kit. On a host such as Railway, a service running:</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">1. Run the published image</Trans></p>
+            <p className="text-gray-500 mb-1"><Trans context="Admin, p">On one computer, docker compose up -d from the starter kit. On a host such as Railway, a service running:</Trans></p>
             <pre className="bg-gray-900 text-green-300 text-xs rounded-lg p-3 overflow-x-auto">ghcr.io/regen-civics/village-os:&lt;version&gt;</pre>{/* brand-ok: the upstream platform's own repository or image address, never a village's brand */}
           </li>
           <li>
-            <p className="font-medium text-gray-900">2. Add a persistent data volume</p>
-            <p className="text-gray-500 mb-1">Photographs and documents live here. Without it, every deploy wipes them.</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">2. Add a persistent data volume</Trans></p>
+            <p className="text-gray-500 mb-1"><Trans context="Admin, p">Photographs and documents live here. Without it, every deploy wipes them.</Trans></p>
             <pre className="bg-gray-900 text-green-300 text-xs rounded-lg p-3 overflow-x-auto">railway volume add --mount-path /app/data</pre>
           </li>
           <li>
-            <p className="font-medium text-gray-900">3. Write the settings</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">3. Write the settings</Trans></p>
             <pre className="bg-gray-900 text-green-300 text-xs rounded-lg p-3 overflow-x-auto">{`node scripts/fork-init.mjs \\
   --village-name "Your Village" \\
   --admin-email you@example.org \\
   --domain your-domain`}</pre>
-            <p className="text-gray-500 mt-1">It writes .env with every secret generated. Copy the values into your host's variables yourself. The Resend email key can also go in later, under {CONNECTIONS_GROUP_TITLE}.</p>
+            <p className="text-gray-500 mt-1"><Trans context="Admin, p">It writes .env with every secret generated. Copy the values into your host's variables yourself. The Resend email key can also go in later, under {CONNECTIONS_GROUP_TITLE}.</Trans></p>
           </li>
           <li>
-            <p className="font-medium text-gray-900">4. Point your domain</p>
-            <p className="text-gray-500">Railway dashboard → your service → Settings → Networking → add your custom domain, then add the CNAME it gives you at your DNS host.</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">4. Point your domain</Trans></p>
+            <p className="text-gray-500"><Trans context="Admin, p">Railway dashboard → your service → Settings → Networking → add your custom domain, then add the CNAME it gives you at your DNS host.</Trans></p>
           </li>
           <li>
-            <p className="font-medium text-gray-900">5. Social image & favicon</p>
-            <p className="text-gray-500">Set the sentence and picture a shared link shows in Make it yours, Pages, Whole site. The tab icon is in Pictures. Both apply live, with no deploy.</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">5. Social image & favicon</Trans></p>
+            <p className="text-gray-500"><Trans context="Admin, p">Set the sentence and picture a shared link shows in Make it yours, Pages, Whole site. The tab icon is in Pictures. Both apply live, with no deploy.</Trans></p>
           </li>
           <li>
-            <p className="font-medium text-gray-900">6. Full reference</p>
+            <p className="font-medium text-gray-900"><Trans context="Admin, p">6. Full reference</Trans></p>
             <p className="text-gray-500">See <code>START_HERE.md</code> and <code>docs/PROVISIONING.md</code> in the Village OS repository, and <code>AGENTS.md</code> for your AI assistant.</p>
           </li>
         </ol>
@@ -7375,7 +7376,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
 
 // ── Settings: editable project numbers (village dues, etc.) ───────────────────
 
-function SettingsTab({ password }: { password: string }) {
+function SettingsTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [settings, setSettings] = useState<any>(null);
   /** What the server last had, so the save bar counts changes by value. */
   const [savedSettings, setSavedSettings] = useState<any>(null);
@@ -7384,7 +7385,7 @@ function SettingsTab({ password }: { password: string }) {
     fetch(`${API_BASE}/admin/settings`, { headers: authHeaders(password) })
       .then((r) => r.json())
       .then((s) => { setSettings(s); setSavedSettings(s); })
-      .catch(() => toast.error("Failed to load settings"));
+      .catch(() => toast.error(t({ message: "Failed to load settings", context: "Admin, toast" })));
   }, [password]);
   const save = async (): Promise<SaveResult> => {
     try {
@@ -7399,7 +7400,7 @@ function SettingsTab({ password }: { password: string }) {
     } catch { return { ok: false, reason: "The save could not reach the server." }; }
   };
 
-  if (!settings) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (!settings) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
 
   const dues = settings.villageDues ?? {};
   const setDues = (patch: any) => setSettings({ ...settings, villageDues: { ...dues, ...patch } });
@@ -7436,40 +7437,40 @@ function SettingsTab({ password }: { password: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Settings</h2>
-          <p className="text-sm text-gray-500 mt-1">The plain numbers on the site you can change any time, no code needed.</p>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Settings</Trans></h2>
+          <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">The plain numbers on the site you can change any time, no code needed.</Trans></p>
         </div>
         <SaveBar count={changedKeys(savedSettings, settings).length} onSave={save} onDiscard={() => setSettings(savedSettings)} what="the settings" />
       </div>
 
       <div className="border border-gray-200 rounded-xl p-5 max-w-xl">
-        <h3 className="font-semibold text-gray-900 mb-1">Village Dues</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Village Dues</Trans></h3>
         <p className="text-sm text-gray-500 mb-4">
-          Shown on the Resident page. Leave the amount blank while it's still to be confirmed and no figure appears on the site.
-        </p>
+          <Trans context="Admin, p">Shown on the Resident page. Leave the amount blank while it's still to be confirmed and no figure appears on the site.
+        </Trans></p>
         <div className="grid grid-cols-[1fr_90px_90px] gap-3 mb-3">
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">Amount</label>
+            <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Amount</Trans></label>
             <input
               type="number"
               min={0}
               value={dues.amount ?? ""}
               onChange={(e) => setDues({ amount: e.target.value })}
-              placeholder="e.g. 250"
+              placeholder={t({ message: "e.g. 250", context: "Admin, placeholder" })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">Currency</label>
+            <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Currency</Trans></label>
             <input
               type="text"
-              value={dues.currency ?? ""} placeholder={currencySymbol(fiatCurrency) || "Symbol"}
+              value={dues.currency ?? ""} placeholder={currencySymbol(fiatCurrency) || t({ message: "Symbol", context: "Admin, placeholder" })}
               onChange={(e) => setDues({ currency: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1">Per</label>
+            <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Per</Trans></label>
             <input
               type="text"
               value={dues.period ?? "month"}
@@ -7478,7 +7479,7 @@ function SettingsTab({ password }: { password: string }) {
             />
           </div>
         </div>
-        <label className="text-xs font-medium text-gray-500 block mb-1">Explanation note (shown under the figure)</label>
+        <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Explanation note (shown under the figure)</Trans></label>
         <textarea
           value={dues.note ?? ""}
           onChange={(e) => setDues({ note: e.target.value })}
@@ -7486,17 +7487,17 @@ function SettingsTab({ password }: { password: string }) {
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y mb-3"
         />
         <div className="text-sm text-gray-500">
-          Preview on site: <span className="font-semibold text-teal-deep">{preview}</span>
+          <Trans context="Admin, div">Preview on site: <span className="font-semibold text-teal-deep">{preview}</span></Trans>
         </div>
       </div>
 
       <div className="border border-gray-200 rounded-xl p-5 max-w-3xl mt-6">
-        <h3 className="font-semibold text-gray-900 mb-1">Land and money</h3>
+        <h3 className="font-semibold text-gray-900 mb-1"><Trans context="Admin, h3">Land and money</Trans></h3>
         <p className="text-sm text-gray-500 mb-4">
-          The figures the master plan and the investor page show. Leave one blank and that
+          <Trans context="Admin, p">The figures the master plan and the investor page show. Leave one blank and that
           tile does not appear, so the site never states a number you did not state. These are
           claims about your land, and a visitor will read them as yours.
-        </p>
+        </Trans></p>
         <div className="space-y-3">
           {landFields.map((f) => (
             <div key={f.key} className="grid grid-cols-[1fr_1fr] gap-3 items-end">
@@ -7513,7 +7514,7 @@ function SettingsTab({ password }: { password: string }) {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1">Small line under it</label>
+                <label className="text-xs font-medium text-gray-500 block mb-1"><Trans context="Admin, label">Small line under it</Trans></label>
                 <input
                   type="text"
                   value={facts[f.key]?.note ?? ""}
@@ -7535,7 +7536,7 @@ function SettingsTab({ password }: { password: string }) {
  * what arrives. Structural fields are immutable after creation (receipts
  * must stay true); activate/deactivate, description and ordering are live.
  */
-function ProductsAdminTab({ password }: { password: string }) {
+function ProductsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [f, setF] = useState<any>({ kind: "fee", name: "", description: "", amountMinor: "", minAmountMinor: "500", recurring: "none", provider: "stripe", tokenSlug: "", tokenAmount: "", zeffyUrl: "", manualInstructions: "", audience: "public", active: true });
@@ -7565,18 +7566,18 @@ function ProductsAdminTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Payments & Donations</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Payments & Donations</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Fees, donations, deposits, waitlist seats, recurring memberships and
+          <Trans context="Admin, p">Fees, donations, deposits, waitlist seats, recurring memberships and
           token packs, all sold through the same verified Stripe spine, or via
           your Zeffy form / manual arrangement (confirmed here on reconciliation).
           Money flows in only. The public page is /contribute.
-        </p>
+        </Trans></p>
       </div>
-      {loading && !data ? <div className="text-center py-12 text-gray-400">Loading…</div> : (
+      {loading && !data ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div> : (
         <div className="space-y-6 max-w-3xl">
           <div className="bg-white border border-gray-100 rounded-xl p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Products</h3>
+            <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Products</Trans></h3>
             <div className="space-y-2">
               {(data?.products ?? []).map((p: any) => (
                 <div key={p.id} className="border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
@@ -7600,7 +7601,7 @@ function ProductsAdminTab({ password }: { password: string }) {
                   </button>
                 </div>
               ))}
-              {(data?.products ?? []).length === 0 && <p className="text-sm text-gray-400">Nothing defined yet.</p>}
+              {(data?.products ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing defined yet.</Trans></p>}
             </div>
 
             <div className="border-t border-gray-100 mt-4 pt-4 grid grid-cols-2 gap-2">
@@ -7612,9 +7613,9 @@ function ProductsAdminTab({ password }: { password: string }) {
                 <option value="zeffy">Zeffy (fee-free link)</option>
                 <option value="manual">Manual (cash/bank)</option>
               </select>
-              <input placeholder="Name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={`${inputCls} col-span-2`} />
-              <input placeholder="Description (shown on /contribute)" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className={`${inputCls} col-span-2`} />
-              <input placeholder={f.kind === "donation" ? "Amount USD (blank = payer chooses)" : "Amount USD"} value={f.amountMinor}
+              <input placeholder={t({ message: "Name", context: "Admin, placeholder" })} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={`${inputCls} col-span-2`} />
+              <input placeholder={t({ message: "Description (shown on /contribute)", context: "Admin, placeholder" })} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className={`${inputCls} col-span-2`} />
+              <input placeholder={f.kind === "donation" ? t({ message: "Amount USD (blank = payer chooses)", context: "Admin, placeholder" }) : t({ message: "Amount USD", context: "Admin, placeholder" })} value={f.amountMinor}
                 onChange={(e) => setF({ ...f, amountMinor: e.target.value })} className={inputCls} />
               <select value={f.recurring} onChange={(e) => setF({ ...f, recurring: e.target.value })} className={inputCls}>
                 <option value="none">one-time</option><option value="month">monthly</option><option value="year">yearly</option>
@@ -7625,14 +7626,14 @@ function ProductsAdminTab({ password }: { password: string }) {
                     <option value="">Token…</option>
                     {(data?.listableTokens ?? []).filter((t: any) => !t.reason).map((t: any) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
                   </select>
-                  <input placeholder="Tokens granted" value={f.tokenAmount} onChange={(e) => setF({ ...f, tokenAmount: e.target.value })} className={inputCls} />
+                  <input placeholder={t({ message: "Tokens granted", context: "Admin, placeholder" })} value={f.tokenAmount} onChange={(e) => setF({ ...f, tokenAmount: e.target.value })} className={inputCls} />
                 </>
               )}
               {f.provider === "zeffy" && (
-                <input placeholder="Your Zeffy form URL" value={f.zeffyUrl} onChange={(e) => setF({ ...f, zeffyUrl: e.target.value })} className={`${inputCls} col-span-2`} />
+                <input placeholder={t({ message: "Your Zeffy form URL", context: "Admin, placeholder" })} value={f.zeffyUrl} onChange={(e) => setF({ ...f, zeffyUrl: e.target.value })} className={`${inputCls} col-span-2`} />
               )}
               {f.provider === "manual" && (
-                <input placeholder="Instructions shown to the payer" value={f.manualInstructions} onChange={(e) => setF({ ...f, manualInstructions: e.target.value })} className={`${inputCls} col-span-2`} />
+                <input placeholder={t({ message: "Instructions shown to the payer", context: "Admin, placeholder" })} value={f.manualInstructions} onChange={(e) => setF({ ...f, manualInstructions: e.target.value })} className={`${inputCls} col-span-2`} />
               )}
               <button
                 onClick={async () => {
@@ -7647,13 +7648,13 @@ function ProductsAdminTab({ password }: { password: string }) {
                 disabled={f.name.trim().length < 3}
                 className="col-span-2 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"
               >
-                Create product
-              </button>
+                <Trans context="Admin, button">Create product
+              </Trans></button>
             </div>
           </div>
 
           <div className="bg-white border border-gray-100 rounded-xl p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Purchases</h3>
+            <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Purchases</Trans></h3>
             <div className="space-y-1.5">
               {(data?.purchases ?? []).map((o: any) => (
                 <div key={o.id} className="text-sm text-gray-600 flex items-center justify-between gap-3 flex-wrap border-b border-gray-50 pb-1.5">
@@ -7669,12 +7670,12 @@ function ProductsAdminTab({ password }: { password: string }) {
                       onClick={async () => { if (await call(`/admin/products/purchases/${o.id}/confirm`, {})) { toast.success("Confirmed"); load(); } }}
                       className="text-xs text-teal-deep font-medium hover:underline"
                     >
-                      Confirm received
-                    </button>
+                      <Trans context="Admin, button">Confirm received
+                    </Trans></button>
                   )}
                 </div>
               ))}
-              {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400">No purchases yet.</p>}
+              {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No purchases yet.</Trans></p>}
             </div>
           </div>
         </div>
@@ -7689,7 +7690,7 @@ function ProductsAdminTab({ password }: { password: string }) {
  * controls whether the platform team ALSO sees a copy (content, never
  * names). Status is a five-state pipeline, same vocabulary as submissions.
  */
-function FeedbackAdminTab({ password }: { password: string }) {
+function FeedbackAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -7709,12 +7710,12 @@ function FeedbackAdminTab({ password }: { password: string }) {
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify({ status }),
     });
-    if (!res.ok) return toast.error("Could not update");
+    if (!res.ok) return toast.error(t({ message: "Could not update", context: "Admin, toast" }));
     // A member who reported something now hears about the move. Items from
     // the public form carry no account, so those stay quiet, and the founder
     // can see which happened.
     const data = await res.json().catch(() => ({}));
-    if (data?.notified) toast.success("Saved. The member who reported it has been told.");
+    if (data?.notified) toast.success(t({ message: "Saved. The member who reported it has been told.", context: "Admin, toast" }));
     load();
   };
 
@@ -7728,21 +7729,21 @@ function FeedbackAdminTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Feedback</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Feedback</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Bugs and ideas from your members.{" "}
+          <Trans context="Admin, p">Bugs and ideas from your members.{" "}
           {data?.relayOn
             ? "The platform relay is ON: a copy of each item (content only, never who) also reaches the team who maintain this software, so a fix can ship to every village."
             : data?.relayDialOn && data?.hubConfigured === false
             ? "The platform relay is switched on and this server has no hub address, so nothing is being sent. Everything stays local to this village until FEEDBACK_HUB_URL is set."
             : "The platform relay is OFF: everything stays local to this village."}{" "}
           The switch lives in Game Mechanics → platform.feedback_relay.
-        </p>
+        </Trans></p>
       </div>
       {loading && !data ? (
-        <div className="text-center py-12 text-gray-400">Loading…</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div>
       ) : (data?.items ?? []).length === 0 ? (
-        <p className="text-sm text-gray-400 py-8">Nothing yet. The door is at /feedback (also linked in the footer).</p>
+        <p className="text-sm text-gray-400 py-8"><Trans context="Admin, p">Nothing yet. The door is at /feedback (also linked in the footer).</Trans></p>
       ) : (
         <div className="space-y-3 max-w-3xl">
           {(data?.items ?? []).map((f: any) => (

@@ -44,6 +44,7 @@ import { Link } from "wouter";
 import { ArrowRight, CheckCircle2, Circle, MinusCircle } from "lucide-react";
 import type { LadderRung, PathLadder as PathLadderPayload } from "@shared/pathLadders";
 import { villageMoonLabel } from "@shared/villageMoon";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The three states a rung can be in, and what a reader who gets no icon hears.
@@ -108,8 +109,8 @@ export default function PathLadder({ ladder }: { ladder: PathLadderPayload }) {
   return (
     <div className="mt-4 rounded-lg border border-border bg-background p-3">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-        Where you stand
-      </p>
+        <Trans context="PathLadder, p">Where you stand
+      </Trans></p>
       {here ? (
         <>
           <p className="mt-1 font-semibold break-words text-foreground">{here.name}</p>
@@ -119,8 +120,8 @@ export default function PathLadder({ ladder }: { ladder: PathLadderPayload }) {
         /* Every rung is dark and at least one of them once held, which is a
            real answer and not a missing one. The rungs below say which. */
         <p className="mt-1 text-sm text-muted-foreground">
-          No rung on this ladder holds right now.
-        </p>
+          <Trans context="PathLadder, p">No rung on this ladder holds right now.
+        </Trans></p>
       )}
 
       <ol className="mt-3 space-y-2">

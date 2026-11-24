@@ -30,6 +30,7 @@ import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import InfoTip from "@/components/InfoTip";
 import { decimalsOf, formatTokenAmount } from "@/lib/tokenAmount";
 import { failureWords } from "@/lib/failureWords";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The one truth every token shares, behind a balance row: the ledger.
@@ -223,20 +224,20 @@ export default function Wallet() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">The Exchange</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Wallet, h1">The Exchange</Trans></h1>
           {/* R47: the Trail line leads. It used to define three token words
               in tooltips, by what each one does; it names the umbrella word
               now (R084, the 2026-10-22 token ruling). The roots line is the
               Lore, last and quiet. */}
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Buy {tokensWord} and check your balances. Everything you hold shows here and on{" "}
+            <Trans context="Wallet, p">Buy {tokensWord} and check your balances. Everything you hold shows here and on{" "}
             <a href="/profile#wallet" className="text-teal-deep font-medium hover:underline">your profile</a>.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="exchange" noun="listing" />
           <p className="mt-2 text-sm italic text-muted-foreground max-w-xl mx-auto">
-            One room, one ledger: every token the village lives by leaves its
+            <Trans context="Wallet, p">One room, one ledger: every token the village lives by leaves its
             thread here, the way roots share water under a forest floor.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -249,19 +250,19 @@ export default function Wallet() {
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <WalletIcon className="w-4 h-4 text-teal-deep" />
-                <p className="font-semibold text-foreground text-sm">Your balances</p>
+                <p className="font-semibold text-foreground text-sm"><Trans context="Wallet, p">Your balances</Trans></p>
               </div>
               {status === "loading" ? (
-                <p className="text-sm text-muted-foreground">Loading your balances…</p>
+                <p className="text-sm text-muted-foreground"><Trans context="Wallet, p">Loading your balances…</Trans></p>
               ) : status === "failed" ? (
                 <p className="text-sm text-muted-foreground">
                   Your balances didn't load.{" "}
                   <button type="button" onClick={load} className="text-teal-deep font-medium hover:underline">
-                    Retry
-                  </button>
+                    <Trans context="Wallet, button">Retry
+                  </Trans></button>
                 </p>
               ) : Object.keys(balances).length === 0 ? (
-                <p className="text-sm text-muted-foreground">No balances yet.</p>
+                <p className="text-sm text-muted-foreground"><Trans context="Wallet, p">No balances yet.</Trans></p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.entries(balances).map(([slug, bal]) => (
@@ -301,14 +302,14 @@ export default function Wallet() {
             <div className="flex items-center gap-2 mb-3">
               <Coins className="w-4 h-4 text-teal-deep" />
               <p className="font-semibold text-foreground text-sm">
-                Buy tokens
-                <InfoTip tip={`Money flows in and never back out: the village sells its own credit tokens and never buys them back. Nothing puts ${tokenName} up for sale.`} label="How buying works" />
+                <Trans context="Wallet, p">Buy tokens
+                <InfoTip tip={`Money flows in and never back out: the village sells its own credit tokens and never buys them back. Nothing puts ${tokenName} up for sale.`} label="How buying works" /></Trans>
               </p>
             </div>
             {status === "failed" ? (
-              <p className="text-sm text-muted-foreground">The listings didn't load. Reload to try again.</p>
+              <p className="text-sm text-muted-foreground"><Trans context="Wallet, p">The listings didn't load. Reload to try again.</Trans></p>
             ) : status === "ready" && (data?.listings ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No listings yet.</p>
+              <p className="text-sm text-muted-foreground"><Trans context="Wallet, p">No listings yet.</Trans></p>
             ) : null}
             <div className="space-y-3">
               {(data?.listings ?? []).map((l: any) => (
@@ -318,8 +319,8 @@ export default function Wallet() {
                     <p className="text-sm font-medium text-foreground">{l.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {l.priceMinor != null ? `${usd(l.priceMinor)} each` : "price coming soon"}
-                      {!l.inStock && <span className="text-amber-600"> · out of stock</span>}
-                      {l.stockCount != null && l.stockCount > 0 && <span> · {l.stockCount} in stock</span>}
+                      {!l.inStock && <span className="text-amber-600"> <Trans context="Wallet, span">· out of stock</Trans></span>}
+                      {l.stockCount != null && l.stockCount > 0 && <span> <Trans context="Wallet, span">· {l.stockCount} in stock</Trans></span>}
                     </p>
                   </div>
                   {/* An EXAMPLE listing offers Buy even where Stripe is not
@@ -335,8 +336,8 @@ export default function Wallet() {
                       />
                       <button onClick={() => buy(l.slug)}
                         className="inline-flex items-center gap-1.5 text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium">
-                        <CreditCard className="w-3.5 h-3.5" /> Buy
-                      </button>
+                        <Trans context="Wallet, button"><CreditCard className="w-3.5 h-3.5" /> Buy
+                      </Trans></button>
                     </div>
                   )}
                   {/* A REAL listing with no card processor shows a price and
@@ -344,7 +345,7 @@ export default function Wallet() {
                       of the three reasons it is, to the person who can fix
                       it and to the person who cannot. */}
                   {user && !l.isExample && l.priceMinor != null && l.inStock && !data?.stripeConfigured && (
-                    <span className="text-xs text-muted-foreground">Card payments aren't connected yet</span>
+                    <span className="text-xs text-muted-foreground"><Trans context="Wallet, span">Card payments aren't connected yet</Trans></span>
                   )}
                   {user && !l.isExample && l.priceMinor != null && l.inStock && data?.stripeConfigured && !data?.mine?.canBuy && (
                     <span className="text-xs text-muted-foreground">{buyOpensCaption}</span>
@@ -357,7 +358,7 @@ export default function Wallet() {
               ))}
             </div>
             {!user && (data?.listings ?? []).length > 0 && (
-              <p className="text-xs text-muted-foreground mt-3">Sign in to buy.</p>
+              <p className="text-xs text-muted-foreground mt-3"><Trans context="Wallet, p">Sign in to buy.</Trans></p>
             )}
           </div>
 
@@ -371,7 +372,7 @@ export default function Wallet() {
               the server refuses with, so the answer is never just absence. */}
           {user && data?.swap?.enabled && (data.swap.notSwappable ?? []).length > 0 && (
             <div className="bg-card border border-border rounded-xl p-5">
-              <p className="font-semibold text-foreground text-sm mb-2">Not everything trades</p>
+              <p className="font-semibold text-foreground text-sm mb-2"><Trans context="Wallet, p">Not everything trades</Trans></p>
               <ul className="space-y-1.5">
                 {data.swap.notSwappable.map((n: any) => (
                   <li key={n.slug} className="text-xs text-muted-foreground">
@@ -394,7 +395,7 @@ export default function Wallet() {
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <ReceiptText className="w-4 h-4 text-teal-deep" />
-                <p className="font-semibold text-foreground text-sm">Receipts</p>
+                <p className="font-semibold text-foreground text-sm"><Trans context="Wallet, p">Receipts</Trans></p>
               </div>
               <div className="space-y-1.5">
                 {data.mine.orders.map((o: any) => (
@@ -418,8 +419,8 @@ export default function Wallet() {
           {hypha.configured && (
             <div className="bg-card border border-border rounded-xl p-5">
               <p className="font-semibold text-foreground text-sm mb-1">
-                Hypha holdings
-                <InfoTip tip={`Hypha is the outside network where governance tokens and ${shareNames.equity} live. This page is a door to it; nothing here moves those holdings.`} label="What Hypha holdings are" />
+                <Trans context="Wallet, p">Hypha holdings
+                <InfoTip tip={`Hypha is the outside network where governance tokens and ${shareNames.equity} live. This page is a door to it; nothing here moves those holdings.`} label="What Hypha holdings are" /></Trans>
               </p>
               <p className="text-xs text-muted-foreground mb-3">
                 {/* The lead's ruling, 19 Nov 2026: the Hypha token is the village's contribution token itself, so it is
@@ -429,7 +430,7 @@ export default function Wallet() {
               </p>
               <a href={hypha.links?.treasury} target="_blank" rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-sm text-teal-deep font-medium hover:underline">
-                Open the Hypha treasury <ExternalLink className="w-3.5 h-3.5" />
+                <Trans context="Wallet, a">Open the Hypha treasury <ExternalLink className="w-3.5 h-3.5" /></Trans>
               </a>
             </div>
           )}

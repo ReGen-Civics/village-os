@@ -18,6 +18,7 @@ import GeneKeysComplements from "./GeneKeysComplements";
 import GeneKeysMoon from "./GeneKeysMoon";
 import { useMyGeneKeys } from "./useMyGeneKeys";
 import { BTN_GOLD, EYEBROW, HINT, NIGHT_CARD } from "./ui";
+import { Trans } from "@lingui/react/macro";
 
 /** The seal on the member's own portrait (ProfileHero). */
 export function MyGeneKeysSeal({ className }: { className?: string }) {
@@ -35,23 +36,23 @@ export function ProfileGeneKeysCard({ owner }: { owner: string | null }) {
     return (
       <section id="gene-keys" aria-labelledby="gene-keys-card-h" className={NIGHT_CARD}>
         <h2 id="gene-keys-card-h" className="flex items-center gap-2 font-display text-xl text-card-foreground">
-          <Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
+          <Trans context="ProfileGeneKeys, h2"><Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
           Get your Gene Keys
-        </h2>
+        </Trans></h2>
         <p className="mt-1 text-sm text-foreground">
-          See the two lines you carry and how you work best. Your lines help us find roles and teams that fit you.
-        </p>
-        <p className={`${HINT} mt-2`}>Your birth details never leave your device. Only your lines are kept.</p>
+          <Trans context="ProfileGeneKeys, p">See the two lines you carry and how you work best. Your lines help us find roles and teams that fit you.
+        </Trans></p>
+        <p className={`${HINT} mt-2`}><Trans context="ProfileGeneKeys, p">Your birth details never leave your device. Only your lines are kept.</Trans></p>
         <Link href="/profile/gene-keys" className={`${BTN_GOLD} mt-4`}>
-          Find my lines
-        </Link>
+          <Trans context="ProfileGeneKeys, Link">Find my lines
+        </Trans></Link>
       </section>
     );
   }
 
   return (
     <section id="gene-keys" aria-labelledby="gene-keys-card-h" className={NIGHT_CARD}>
-      <p className={EYEBROW}>Gene Keys {mine.profile}</p>
+      <p className={EYEBROW}><Trans context="ProfileGeneKeys, p">Gene Keys {mine.profile}</Trans></p>
       <h2 id="gene-keys-card-h" className="mb-4 font-display text-3xl text-card-foreground">
         {mine.names}
       </h2>
@@ -95,7 +96,7 @@ export function PersonGeneKeysCard({ handle, firstName }: { handle: string | nul
   if (!view) return null;
   return (
     <section aria-labelledby="person-gene-keys-h" className={NIGHT_CARD}>
-      <p className={EYEBROW}>Gene Keys {view.profile}</p>
+      <p className={EYEBROW}><Trans context="ProfileGeneKeys, p">Gene Keys {view.profile}</Trans></p>
       <h2 id="person-gene-keys-h" className="mb-4 font-display text-3xl text-card-foreground">
         {view.names}
       </h2>
@@ -130,8 +131,8 @@ export function ApplicantGeneKeys({ userId, firstName }: { userId: string; first
         <GeneKeysSeal view={view} whose={firstName} className="absolute inset-0" />
       </span>
       <p className="text-sm text-foreground">
-        <span className="font-semibold">{firstName}</span> carries {view.names} ({view.profile}) and works best as {withArticle(view.type)}.
-      </p>
+        <Trans context="ProfileGeneKeys, p"><span className="font-semibold">{firstName}</span> carries {view.names} ({view.profile}) and works best as {withArticle(view.type)}.
+      </Trans></p>
     </div>
   );
 }

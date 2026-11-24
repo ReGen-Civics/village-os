@@ -24,7 +24,7 @@ import {
 import { useStoryPageShown } from "@/lib/brochure";
 import { useHypha } from "@/modules/ModuleProvider";
 import { HyphaAdminNote } from "@/components/HyphaAdminNote";
-import { usePageContent } from "@/hooks/usePageContent";
+import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { useVetoHours } from "@/hooks/useVetoHours";
 import { Emphasized } from "@/components/PageText";
 import { fillVars } from "@shared/pageContent/resolve";
@@ -84,6 +84,7 @@ export default function Governance() {
   // Every word on this page is the village's own, from Admin, Pages, How We
   // Govern (shared/pageContent/governance.ts). Null until the saved words
   // have arrived, so the defaults never flash first.
+  const langOf = usePageLang(GOVERNANCE_PAGE);
   const page = usePageContent(GOVERNANCE_PAGE);
   // The steward's window is the village's setting, never a typed "three
   // days". Unreadable, it is said as the floor every village shares.
@@ -415,11 +416,11 @@ export default function Governance() {
         <div className="container max-w-3xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
             <Network className="w-6 h-6 text-teal-deep shrink-0" />
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep break-words min-w-0">
+            <h2 lang={langOf("hypha.heading")} className="font-display text-3xl md:text-4xl font-bold text-teal-deep break-words min-w-0">
               {hyphaSection.fields.heading}
             </h2>
           </div>
-          <p className="text-stone-700 leading-relaxed mb-4 break-words">
+          <p lang={langOf("hypha.body")} className="text-stone-700 leading-relaxed mb-4 break-words">
             <Emphasized text={hyphaSection.fields.body} />
           </p>
           {storyShown("/co-creators-guide") && (

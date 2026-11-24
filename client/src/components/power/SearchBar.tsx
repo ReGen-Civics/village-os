@@ -10,6 +10,7 @@ import { Compass, Search } from "lucide-react";
 import MicButton from "@/components/MicButton";
 import { authToken } from "@/lib/gameApi";
 import type { PowerCircle, PowerData, PowerSeat } from "./types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -191,6 +192,7 @@ export default function SearchBar({
   /** The concierge's answer, handed up so the page can show and act on it. */
   onAskResult?: (result: any) => void;
 }) {
+  const { t } = useLingui();
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
   const [askAnswer, setAskAnswer] = useState<any>(null);
@@ -235,7 +237,7 @@ export default function SearchBar({
             aria-expanded={hits.length > 0}
             aria-controls="power-search-hits"
             aria-activedescendant={hits.length ? `power-hit-${active}` : undefined}
-            aria-label="Find a role, a circle, or a person"
+            aria-label={t({ message: "Find a role, a circle, or a person", context: "SearchBar, aria-label" })}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -255,7 +257,7 @@ export default function SearchBar({
                 setQuery("");
               }
             }}
-            placeholder="Who does… kitchen, water, a name"
+            placeholder={t({ message: "Who does… kitchen, water, a name", context: "SearchBar, placeholder" })}
             className="w-full text-sm border border-border rounded-xl pl-9 pr-3 py-2.5 bg-card"
           />
         </div>
@@ -276,7 +278,7 @@ export default function SearchBar({
         <ul
           id="power-search-hits"
           role="listbox"
-          aria-label="Matches"
+          aria-label={t({ message: "Matches", context: "SearchBar, aria-label" })}
           className="absolute z-30 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden"
         >
           {hits.map((h, i) => (
@@ -326,8 +328,8 @@ export default function SearchBar({
               >
                 {askAnswer.match.name}
               </button>
-              {askAnswer.vacant && <span className="text-amber-700">, and nobody holds this yet. Apply for this role.</span>}
-              {askAnswer.contact && <span>, talk to {askAnswer.contact.name}.</span>}
+              {askAnswer.vacant && <span className="text-amber-700"><Trans context="SearchBar, span">, and nobody holds this yet. Apply for this role.</Trans></span>}
+              {askAnswer.contact && <span><Trans context="SearchBar, span">, talk to {askAnswer.contact.name}.</Trans></span>}
             </p>
           )}
           {askAnswer.match === null && !askAnswer.error && (

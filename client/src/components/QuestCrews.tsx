@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Copy, LogOut, Plus, Users } from "lucide-react";
 import { gameFetch } from "@/lib/gameApi";
 import { crewCodeFrom, inviteUrl } from "@/lib/crewLinks";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface CrewView {
   id: string;
@@ -33,6 +34,7 @@ export default function QuestCrews({
   questId: string;
   signedIn: boolean;
 }) {
+  const { t } = useLingui();
   const [crews, setCrews] = useState<CrewView[] | null>(null);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -124,13 +126,13 @@ export default function QuestCrews({
   return (
     <div className="bg-card border border-border rounded-2xl shadow-sm p-5">
       <h2 className="font-display text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-        <Users className="w-5 h-5 text-teal-deep" />
+        <Trans context="QuestCrews, h2"><Users className="w-5 h-5 text-teal-deep" />
         Walk it with a crew
-      </h2>
+      </Trans></h2>
       <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-        A crew is company for the same quest. Everyone still submits their own
+        <Trans context="QuestCrews, p">A crew is company for the same quest. Everyone still submits their own
         work and is consented to on it.
-      </p>
+      </Trans></p>
 
       {crews === null ? (
         <div className="h-10 rounded-lg bg-muted animate-pulse" aria-busy="true" />
@@ -148,7 +150,7 @@ export default function QuestCrews({
                     </p>
                   </div>
                   <span className="text-xs text-muted-foreground shrink-0">
-                    {crew.size} of {crew.maxSize}
+                    <Trans context="QuestCrews, span">{crew.size} of {crew.maxSize}</Trans>
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -159,22 +161,22 @@ export default function QuestCrews({
                         disabled={busy}
                         className="min-h-11 px-3 inline-flex items-center gap-1.5 rounded-lg border border-border text-sm font-semibold text-teal-deep hover:border-teal/40 transition-colors"
                       >
-                        <Copy className="w-4 h-4" />
+                        <Trans context="QuestCrews, button"><Copy className="w-4 h-4" />
                         Invite link
-                      </button>
+                      </Trans></button>
                       <button
                         onClick={() => leave(crew)}
                         disabled={busy}
                         className="min-h-11 px-3 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <Trans context="QuestCrews, button"><LogOut className="w-4 h-4" />
                         Leave
-                      </button>
+                      </Trans></button>
                     </>
                   ) : (
                     <p className="text-xs text-muted-foreground">
-                      Crews open by invitation. Ask someone inside for their link.
-                    </p>
+                      <Trans context="QuestCrews, p">Crews open by invitation. Ask someone inside for their link.
+                    </Trans></p>
                   )}
                 </div>
               </li>
@@ -183,21 +185,21 @@ export default function QuestCrews({
 
           {crews.length === 0 && !opening && (
             <p className="text-sm text-muted-foreground">
-              No crew on this quest yet. Start the first one.
-            </p>
+              <Trans context="QuestCrews, p">No crew on this quest yet. Start the first one.
+            </Trans></p>
           )}
 
           {opening ? (
             <div className="mt-4 flex flex-col gap-2">
               <label htmlFor="crew-name" className="text-sm font-medium text-foreground">
-                Name your crew
-              </label>
+                <Trans context="QuestCrews, label">Name your crew
+              </Trans></label>
               <input
                 id="crew-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={120}
-                placeholder="The Thursday Crew"
+                placeholder={t({ message: "The Thursday Crew", context: "QuestCrews, placeholder" })}
                 className="min-h-11 px-3 rounded-lg border border-border bg-background text-foreground"
               />
               <div className="flex gap-2">
@@ -206,14 +208,14 @@ export default function QuestCrews({
                   disabled={busy || !name.trim()}
                   className="min-h-11 px-4 rounded-lg bg-primary text-primary-foreground font-semibold disabled:opacity-50"
                 >
-                  Open the crew
-                </button>
+                  <Trans context="QuestCrews, button">Open the crew
+                </Trans></button>
                 <button
                   onClick={() => setOpening(false)}
                   className="min-h-11 px-4 rounded-lg text-muted-foreground font-medium"
                 >
-                  Cancel
-                </button>
+                  <Trans context="QuestCrews, button">Cancel
+                </Trans></button>
               </div>
             </div>
           ) : (
@@ -222,9 +224,9 @@ export default function QuestCrews({
               disabled={busy}
               className="mt-4 min-h-11 px-4 inline-flex items-center gap-2 rounded-lg border border-border font-semibold text-teal-deep hover:border-teal/40 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Trans context="QuestCrews, button"><Plus className="w-4 h-4" />
               Form a crew
-            </button>
+            </Trans></button>
           )}
         </>
       )}

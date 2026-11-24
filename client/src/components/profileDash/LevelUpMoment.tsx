@@ -116,8 +116,8 @@ export default function LevelUpMoment({
           onClick={onClose}
           className="min-h-[52px] rounded-2xl bg-dash-gold px-7 text-base font-semibold text-dash-gold-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          Back to my sheet
-        </button>
+          <Trans context="LevelUpMoment, button">Back to my sheet
+        </Trans></button>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ import {
   type GuestSetting,
   type ReminderSetting,
 } from "@shared/comms/gatheringSettings";
+import { Trans } from "@lingui/react/macro";
 
 /** The token to send: the admin's when the panel hands one in, else the signed-in member's. */
 const authHeaders = (token?: string): Record<string, string> => {
@@ -137,19 +138,19 @@ export default function GatheringEmailSettings({ eventId, token, manages }: { ev
       </button>
       {open && (
         <div className="mt-2 rounded-xl border border-border bg-card p-3 space-y-4 text-sm text-foreground">
-          {!view && !note && <p className="text-muted-foreground">Loading...</p>}
+          {!view && !note && <p className="text-muted-foreground"><Trans context="GatheringEmailSettings, p">Loading...</Trans></p>}
           {view && (
             <>
               <fieldset>
-                <legend className="font-medium">Reminders</legend>
+                <legend className="font-medium"><Trans context="GatheringEmailSettings, legend">Reminders</Trans></legend>
                 <div className="mt-1 space-y-1">
                   <label className="flex items-center gap-2">
                     <input type="radio" name={`rem-${eventId}`} checked={mode === "default"} onChange={() => setMode("default")} />
-                    <span>Village times: {villageTimes}</span>
+                    <span><Trans context="GatheringEmailSettings, span">Village times: {villageTimes}</Trans></span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="radio" name={`rem-${eventId}`} checked={mode === "custom"} onChange={() => setMode("custom")} />
-                    <span>Own times</span>
+                    <span><Trans context="GatheringEmailSettings, span">Own times</Trans></span>
                   </label>
                   {mode === "custom" && (
                     <div className="ml-6 flex flex-wrap gap-x-4 gap-y-1">
@@ -163,12 +164,12 @@ export default function GatheringEmailSettings({ eventId, token, manages }: { ev
                   )}
                   <label className="flex items-center gap-2">
                     <input type="radio" name={`rem-${eventId}`} checked={mode === "off"} onChange={() => setMode("off")} />
-                    <span>No reminders</span>
+                    <span><Trans context="GatheringEmailSettings, span">No reminders</Trans></span>
                   </label>
                 </div>
               </fieldset>
               <div>
-                <label className="block font-medium" htmlFor={`guests-${eventId}`}>Guests without an account</label>
+                <label className="block font-medium" htmlFor={`guests-${eventId}`}><Trans context="GatheringEmailSettings, label">Guests without an account</Trans></label>
                 <select
                   id={`guests-${eventId}`}
                   value={guests}
@@ -179,10 +180,10 @@ export default function GatheringEmailSettings({ eventId, token, manages }: { ev
                   <option value="on">On</option>
                   <option value="off">Off</option>
                 </select>
-                <p className="mt-0.5 text-xs text-muted-foreground">Guests can say yes to a free public gathering and confirm by email.</p>
+                <p className="mt-0.5 text-xs text-muted-foreground"><Trans context="GatheringEmailSettings, p">Guests can say yes to a free public gathering and confirm by email.</Trans></p>
               </div>
               <div>
-                <label className="block font-medium" htmlFor={`host-${eventId}`}>Host</label>
+                <label className="block font-medium" htmlFor={`host-${eventId}`}><Trans context="GatheringEmailSettings, label">Host</Trans></label>
                 <select
                   id={`host-${eventId}`}
                   value={host}
@@ -194,7 +195,7 @@ export default function GatheringEmailSettings({ eventId, token, manages }: { ev
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
-                <p className="mt-0.5 text-xs text-muted-foreground">The host is asked for the recap after it ends.</p>
+                <p className="mt-0.5 text-xs text-muted-foreground"><Trans context="GatheringEmailSettings, p">The host is asked for the recap after it ends.</Trans></p>
               </div>
               <SaveBar count={changed} onSave={save} onDiscard={() => view && take(view)} what="the gathering email settings" />
             </>

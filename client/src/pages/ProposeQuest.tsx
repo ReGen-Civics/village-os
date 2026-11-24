@@ -19,7 +19,7 @@ import { APPLY_TEXT } from "@shared/applyLimits";
 
 /** Each answer here (shared/applyLimits.ts): kept whole, counted under its box, and held at send when over. */
 const QUEST_PROSE_MAX = APPLY_TEXT.questProse;
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useReplyPromise } from "@/components/ContributorRoutes";
 import Sprout from "@/components/motion/Sprout";
 
@@ -159,12 +159,12 @@ export default function ProposeQuest() {
             <div className="m-arrive max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm">
               <Sprout size={72} className="mx-auto mb-6 text-open" />
               <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
-                Your Quest idea is saved, and held back from review.
-              </h1>
+                <Trans context="ProposeQuest, h1">Your Quest idea is saved, and held back from review.
+              </Trans></h1>
               <p className="text-muted-foreground mb-3">
-                It is in the {projectName} team's inbox. It is not in the queue a steward reads to put
+                <Trans context="ProposeQuest, p">It is in the {projectName} team's inbox. It is not in the queue a steward reads to put
                 Quests on the board.
-              </p>
+              </Trans></p>
               <p className="text-foreground mb-8">{HELD_WHY[idea.held](idea, projectName)}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <button
@@ -175,12 +175,12 @@ export default function ProposeQuest() {
                   }}
                   className={BTN_PRIMARY}
                 >
-                  Change it and send again
-                </button>
+                  <Trans context="ProposeQuest, button">Change it and send again
+                </Trans></button>
                 <Link href="/quests">
                   <a className={BTN_SECONDARY}>
-                    Back to the Quest Board
-                  </a>
+                    <Trans context="ProposeQuest, a">Back to the Quest Board
+                  </Trans></a>
                 </Link>
               </div>
             </div>
@@ -200,19 +200,19 @@ export default function ProposeQuest() {
             <div className="m-arrive max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm">
               <Sprout size={72} className="mx-auto mb-6 text-open" />
               <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
-                Your Quest idea is in.
-              </h1>
+                <Trans context="ProposeQuest, h1">Your Quest idea is in.
+              </Trans></h1>
               <p className="text-muted-foreground mb-8">
-                Thank you for bringing your gift. The {projectName} team will reach out
+                <Trans context="ProposeQuest, p">Thank you for bringing your gift. The {projectName} team will reach out
                 to explore it with you. Every Quest starts as someone caring enough to
                 imagine it.
-              </p>
+              </Trans></p>
               <p className="-mt-5 mb-8 font-semibold text-foreground" data-route-promise="">{replyPromise}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link href="/quests">
                   <a className={BTN_PRIMARY}>
-                    Back to the Quest Board
-                  </a>
+                    <Trans context="ProposeQuest, a">Back to the Quest Board
+                  </Trans></a>
                 </Link>
                 <button
                   onClick={() => {
@@ -229,8 +229,8 @@ export default function ProposeQuest() {
                   }}
                   className={BTN_SECONDARY}
                 >
-                  Propose another
-                </button>
+                  <Trans context="ProposeQuest, button">Propose another
+                </Trans></button>
               </div>
             </div>
           </div>
@@ -256,20 +256,20 @@ export default function ProposeQuest() {
           >
             <Link href="/quests">
               <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-                <ArrowLeft className="w-4 h-4" />
+                <Trans context="ProposeQuest, a"><ArrowLeft className="w-4 h-4" />
                 Back to the Quest Board
-              </a>
+              </Trans></a>
             </Link>
             <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
               <Lightbulb className="w-8 h-8 text-notice" />
             </div>
             <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl mb-4">
-              Propose a Quest
-            </h1>
+              <Trans context="ProposeQuest, h1">Propose a Quest
+            </Trans></h1>
             <p className="text-xl text-muted-foreground">
-              Tell us about the Quest you want to create. Anyone can propose one, and
+              <Trans context="ProposeQuest, p">Tell us about the Quest you want to create. Anyone can propose one, and
               the {projectName} team will reach out to explore it with you.
-            </p>
+            </Trans></p>
           </m.div>
         </div>
       </section>
@@ -284,7 +284,7 @@ export default function ProposeQuest() {
                 mode === "ai" ? "bg-notice text-background" : "bg-card border border-border text-muted-foreground hover:bg-muted"
               }`}
             >
-              <MessageCircle className="w-4 h-4" /> Talk it through with {assistantName}
+              <Trans context="ProposeQuest, button"><MessageCircle className="w-4 h-4" /> Talk it through with {assistantName}</Trans>
             </button>
             <button
               onClick={() => setMode("form")}
@@ -292,8 +292,8 @@ export default function ProposeQuest() {
                 mode === "form" ? "bg-notice text-background" : "bg-card border border-border text-muted-foreground hover:bg-muted"
               }`}
             >
-              <ClipboardList className="w-4 h-4" /> Fill the form yourself
-            </button>
+              <Trans context="ProposeQuest, button"><ClipboardList className="w-4 h-4" /> Fill the form yourself
+            </Trans></button>
           </div>
         </div>
       )}
@@ -343,7 +343,7 @@ export default function ProposeQuest() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="quest-name" className="block text-sm font-medium text-foreground mb-2">
-                  Your name <span className="text-destructive">*</span>
+                  <Trans context="ProposeQuest, label">Your name <span className="text-destructive">*</span></Trans>
                 </label>
                 <input
                   id="quest-name"
@@ -352,13 +352,13 @@ export default function ProposeQuest() {
                   required
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
-                  placeholder="Your full name"
+                  placeholder={t({ message: "Your full name", context: "ProposeQuest, placeholder" })}
                   className={field}
                 />
               </div>
               <div>
                 <label htmlFor="quest-email" className="block text-sm font-medium text-foreground mb-2">
-                  Email <span className="text-destructive">*</span>
+                  <Trans context="ProposeQuest, label">Email <span className="text-destructive">*</span></Trans>
                 </label>
                 <input
                   id="quest-email"
@@ -367,7 +367,7 @@ export default function ProposeQuest() {
                   required
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t({ message: "your@email.com", context: "ProposeQuest, placeholder" })}
                   className={field}
                 />
               </div>
@@ -375,21 +375,21 @@ export default function ProposeQuest() {
 
             <div>
               <label htmlFor="quest-title" className="block text-sm font-medium text-foreground mb-2">
-                Quest title <span className="text-muted-foreground font-normal">(optional)</span>
+                <Trans context="ProposeQuest, label">Quest title <span className="text-muted-foreground font-normal">(optional)</span></Trans>
               </label>
               <input
                 id="quest-title"
                 type="text"
                 value={form.title}
                 onChange={(e) => set("title", e.target.value)}
-                placeholder="Give your idea a short name"
+                placeholder={t({ message: "Give your idea a short name", context: "ProposeQuest, placeholder" })}
                 className={field}
               />
             </div>
 
             <div>
               <label htmlFor="quest-what" className="block text-sm font-medium text-foreground mb-2">
-                What do you want to do? <span className="text-destructive">*</span>
+                <Trans context="ProposeQuest, label">What do you want to do? <span className="text-destructive">*</span></Trans>
               </label>
               <VoiceArea value={form.whatYouWantToDo} onValue={(v) => set("whatYouWantToDo", v)} limit={QUEST_PROSE_MAX}
                 talk={{
@@ -404,7 +404,7 @@ export default function ProposeQuest() {
                 minRows={4}
                 value={form.whatYouWantToDo}
                 onChange={(v) => set("whatYouWantToDo", v)}
-                placeholder="Describe the Quest: what you'd create, and what it brings to the village."
+                placeholder={t({ message: "Describe the Quest: what you'd create, and what it brings to the village.", context: "ProposeQuest, placeholder" })}
                 className={field}
               />
               </VoiceArea>
@@ -412,8 +412,8 @@ export default function ProposeQuest() {
 
             <div>
               <label htmlFor="quest-bringing" className="block text-sm font-medium text-foreground mb-2">
-                What resources are you bringing?
-              </label>
+                <Trans context="ProposeQuest, label">What resources are you bringing?
+              </Trans></label>
               <VoiceArea value={form.resourcesBringing} onValue={(v) => set("resourcesBringing", v)} limit={QUEST_PROSE_MAX}>
               <GrowingField
                 id="quest-bringing"
@@ -421,7 +421,7 @@ export default function ProposeQuest() {
                 minRows={3}
                 value={form.resourcesBringing}
                 onChange={(v) => set("resourcesBringing", v)}
-                placeholder="Your skills, time, tools, materials, funding, relationships…"
+                placeholder={t({ message: "Your skills, time, tools, materials, funding, relationships…", context: "ProposeQuest, placeholder" })}
                 className={field}
               />
               </VoiceArea>
@@ -429,8 +429,8 @@ export default function ProposeQuest() {
 
             <div>
               <label htmlFor="quest-needed" className="block text-sm font-medium text-foreground mb-2">
-                What do you need from {projectName}?
-              </label>
+                <Trans context="ProposeQuest, label">What do you need from {projectName}?
+              </Trans></label>
               <VoiceArea value={form.resourcesNeeded} onValue={(v) => set("resourcesNeeded", v)} limit={QUEST_PROSE_MAX}>
               <GrowingField
                 id="quest-needed"
@@ -438,7 +438,7 @@ export default function ProposeQuest() {
                 minRows={3}
                 value={form.resourcesNeeded}
                 onChange={(v) => set("resourcesNeeded", v)}
-                placeholder="Land access, materials, budget, people, introductions, space…"
+                placeholder={t({ message: "Land access, materials, budget, people, introductions, space…", context: "ProposeQuest, placeholder" })}
                 className={field}
               />
               </VoiceArea>
@@ -446,8 +446,8 @@ export default function ProposeQuest() {
 
             <div>
               <label htmlFor="quest-compensation" className="block text-sm font-medium text-foreground mb-2">
-                What compensation, if any, do you want?
-              </label>
+                <Trans context="ProposeQuest, label">What compensation, if any, do you want?
+              </Trans></label>
               <VoiceArea value={form.compensation} onValue={(v) => set("compensation", v)} limit={QUEST_PROSE_MAX}>
               <GrowingField
                 id="quest-compensation"
@@ -463,8 +463,8 @@ export default function ProposeQuest() {
 
             <div>
               <label htmlFor="quest-timeline" className="block text-sm font-medium text-foreground mb-2">
-                Timeline &amp; payment milestones, if any
-              </label>
+                <Trans context="ProposeQuest, label">Timeline &amp; payment milestones, if any
+              </Trans></label>
               <VoiceArea value={form.timelineMilestones} onValue={(v) => set("timelineMilestones", v)} limit={QUEST_PROSE_MAX}>
               <GrowingField
                 id="quest-timeline"
@@ -472,7 +472,7 @@ export default function ProposeQuest() {
                 minRows={3}
                 value={form.timelineMilestones}
                 onChange={(v) => set("timelineMilestones", v)}
-                placeholder="Rough phases, dates, and any milestone-based payments you'd propose."
+                placeholder={t({ message: "Rough phases, dates, and any milestone-based payments you'd propose.", context: "ProposeQuest, placeholder" })}
                 className={field}
               />
               </VoiceArea>
@@ -491,9 +491,9 @@ export default function ProposeQuest() {
               {submitting ? "Sending…" : "Send your Quest proposal"}
             </button>
             <p className="text-xs text-muted-foreground text-center">
-              Your proposal goes straight to the {projectName} team. No idea is too small. The
+              <Trans context="ProposeQuest, p">Your proposal goes straight to the {projectName} team. No idea is too small. The
               village is built from them.
-            </p>
+            </Trans></p>
           </m.form>
         </div>
       </section>

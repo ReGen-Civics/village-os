@@ -126,7 +126,7 @@ export default function LookPanel({ password }: { password: string }) {
       const data = await res.json();
       setTheme(data.brand?.theme ?? {});
       setSaved(data.brand?.theme ?? {});
-    } catch { toast.error("Could not load the look settings"); }
+    } catch { toast.error(t({ message: "Could not load the look settings", context: "LookPanel, toast" })); }
   }, [password]);
   useEffect(() => { load(); }, [load]);
 
@@ -179,12 +179,12 @@ export default function LookPanel({ password }: { password: string }) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
-      <h3 className="font-semibold text-gray-900 mb-1">Look</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="LookPanel, h3">Look</Trans></h3>
       <p className="text-xs text-gray-500 mb-4">
-        Three decisions; everything else derives. Leave the colour empty to keep the platform's
+        <Trans context="LookPanel, p">Three decisions; everything else derives. Leave the colour empty to keep the platform's
         neutral look. Every derived pairing is contrast-checked, so your colour keeps its hue,
         legibility is non-negotiable.
-      </p>
+      </Trans></p>
       {/* THE ACCENT, the one optional fourth answer. The character turns the
           seed's hue a fixed step to find an accent, which suits most villages
           and cannot reach a brand whose accent is a different family from its
@@ -195,69 +195,69 @@ export default function LookPanel({ password }: { password: string }) {
 
       <div className="flex flex-wrap items-start gap-6 mb-5">
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1.5">Seed colour</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1.5"><Trans context="LookPanel, label">Seed colour</Trans></label>
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={/^#[0-9a-f]{6}$/i.test(theme.seed ?? "") ? theme.seed : "#6e7376" /* theme-ok: neutral colour-input default before a founder has picked a seed, never rendered as chrome */}
               onChange={(e) => setTheme({ ...theme, seed: e.target.value })}
-              aria-label="Seed colour"
+              aria-label={t({ message: "Seed colour", context: "LookPanel, aria-label" })}
               className="h-9 w-12 rounded border border-gray-200 cursor-pointer"
             />
             <input
               value={theme.seed ?? ""}
               onChange={(e) => setTheme({ ...theme, seed: e.target.value })}
-              placeholder="#157f7d" // theme-ok: format hint text in an empty field, never applied as a rendered colour
+              placeholder={t({ message: "#157f7d", context: "LookPanel, placeholder" })} // theme-ok: format hint text in an empty field, never applied as a rendered colour
               className="text-sm border border-gray-200 rounded-lg px-2.5 py-2 w-28 font-mono"
             />
             {theme.seed && (
               <button type="button" onClick={() => setTheme({ ...theme, seed: "" })}
-                className="text-xs text-muted-foreground underline underline-offset-2">clear</button>
+                className="text-xs text-muted-foreground underline underline-offset-2"><Trans context="LookPanel, button">clear</Trans></button>
             )}
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5" htmlFor="look-accent">Accent colour, if your guide names one</label>
+          <label className="block text-sm font-medium text-foreground mb-1.5" htmlFor="look-accent"><Trans context="LookPanel, label">Accent colour, if your guide names one</Trans></label>
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={/^#[0-9a-f]{6}$/i.test(theme.accent ?? "") ? theme.accent : "#6e7376" /* theme-ok: neutral colour-input default before a founder has picked an accent, never rendered as chrome */}
               onChange={(e) => setTheme({ ...theme, accent: e.target.value })}
-              aria-label="Accent colour"
+              aria-label={t({ message: "Accent colour", context: "LookPanel, aria-label" })}
               className="h-9 w-12 rounded border border-gray-200 cursor-pointer"
             />
             <input
               id="look-accent"
               value={theme.accent ?? ""}
               onChange={(e) => setTheme({ ...theme, accent: e.target.value })}
-              placeholder="optional"
+              placeholder={t({ message: "optional", context: "LookPanel, placeholder" })}
               className="text-sm border border-gray-200 rounded-lg px-2.5 py-2 w-28 font-mono"
             />
             {theme.accent && (
               <button type="button" onClick={() => setTheme({ ...theme, accent: "" })}
-                className="text-xs text-gray-400 underline underline-offset-2">clear</button>
+                className="text-xs text-gray-400 underline underline-offset-2"><Trans context="LookPanel, button">clear</Trans></button>
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1 max-w-[16rem]">
-            Blank lets your character choose one from the seed.
-          </p>
+            <Trans context="LookPanel, p">Blank lets your character choose one from the seed.
+          </Trans></p>
         </div>
         <div className="flex-1 min-w-[220px]">
-          <label className="block text-sm font-medium text-gray-900 mb-1.5">Your place, in one sentence</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1.5"><Trans context="LookPanel, label">Your place, in one sentence</Trans></label>
           <input
             value={theme.place ?? ""}
             onChange={(e) => setTheme({ ...theme, place: e.target.value.slice(0, 160) })}
-            placeholder="e.g. river valley among old oaks, temperate and misty"
+            placeholder={t({ message: "e.g. river valley among old oaks, temperate and misty", context: "LookPanel, placeholder" })}
             className="w-full text-sm border border-gray-200 rounded-lg px-2.5 py-2"
           />
           <p className="text-[11px] text-gray-400 mt-1">
-            Used to ground generated imagery when the design agency lands. Never shown publicly.
-          </p>
+            <Trans context="LookPanel, p">Used to ground generated imagery when the design agency lands. Never shown publicly.
+          </Trans></p>
         </div>
       </div>
 
-      <label className="block text-sm font-medium text-gray-900 mb-1.5">Character</label>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-5" role="radiogroup" aria-label="Character">
+      <label className="block text-sm font-medium text-gray-900 mb-1.5"><Trans context="LookPanel, label">Character</Trans></label>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-5" role="radiogroup" aria-label={t({ message: "Character", context: "LookPanel, aria-label" })}>
         {CHARACTER_CARDS.map((c) => {
           const active = theme.character === c.id;
           // Each card previews ITSELF: its radius, its palette applied to the
@@ -397,8 +397,8 @@ export default function LookPanel({ password }: { password: string }) {
               and "adjusted" spelled out — never a green tick it didn't earn. */}
           <p className="font-medium text-gray-900 mb-1">
             Contrast: {derived.contrast.pairs.length} pairs measured ·{" "}
-            {derived.contrast.status === "ok" && <span className="text-emerald-700">all pass as-is</span>}
-            {derived.contrast.status === "adjusted" && <span className="text-amber-700">passes, and your colour's lightness was adjusted to stay readable</span>}
+            {derived.contrast.status === "ok" && <span className="text-emerald-700"><Trans context="LookPanel, span">all pass as-is</Trans></span>}
+            {derived.contrast.status === "adjusted" && <span className="text-amber-700"><Trans context="LookPanel, span">passes, and your colour's lightness was adjusted to stay readable</Trans></span>}
             {derived.contrast.status === "fail" && (
               <span className="text-red-700">
                 {overrideCount ? <Trans>FAILING. A colour you set does not read on its partner; see the pairs marked fail</Trans> : <Trans>FAILING. This should not happen; please report it</Trans>}

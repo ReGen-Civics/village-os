@@ -115,7 +115,7 @@ export default function AgentsPanel({ password, players }: { password: string; p
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) return toast.error(refusal(d, "That list did not save."));
-      toast.success("Saved the agent paths.");
+      toast.success(t({ message: "Saved the agent paths.", context: "AgentsPanel, toast" }));
       void load();
     } finally {
       setSaving(false);
@@ -158,43 +158,43 @@ export default function AgentsPanel({ password, players }: { password: string; p
   const people = players.filter((p) => !agents.includes(p.id));
 
   return (
-    <section aria-label="Agent accounts" className="mt-8 space-y-4 border-t border-border pt-6">
+    <section aria-label={t({ message: "Agent accounts", context: "AgentsPanel, aria-label" })} className="mt-8 space-y-4 border-t border-border pt-6">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Agent accounts</h3>
+        <h3 className="text-lg font-semibold text-foreground"><Trans context="AgentsPanel, h3">Agent accounts</Trans></h3>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          An agent account is held by software, such as an Operations agent working through the village connector. It holds no role, and what it may call as an admin is the list below. Only a person marks an account or changes the list.
-        </p>
+          <Trans context="AgentsPanel, p">An agent account is held by software, such as an Operations agent working through the village connector. It holds no role, and what it may call as an admin is the list below. Only a person marks an account or changes the list.
+        </Trans></p>
       </div>
 
       <div className="space-y-2 rounded-xl border border-border bg-white p-4">
-        {agents.length === 0 && <p className="text-sm text-muted-foreground">No account is marked as an agent's.</p>}
+        {agents.length === 0 && <p className="text-sm text-muted-foreground"><Trans context="AgentsPanel, p">No account is marked as an agent's.</Trans></p>}
         {agents.map((id) => (
           <div key={id} className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm text-foreground">
-              {nameOf(id)} <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-foreground">Agent</span>
+              {nameOf(id)} <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-foreground"><Trans context="AgentsPanel, span">Agent</Trans></span>
             </span>
-            <button type="button" className={button} onClick={() => void mark(id, false)}>Mark as a person's account</button>
+            <button type="button" className={button} onClick={() => void mark(id, false)}><Trans context="AgentsPanel, button">Mark as a person's account</Trans></button>
           </div>
         ))}
         <div className="flex flex-wrap items-end gap-2 pt-2">
           <label className="w-full text-sm text-foreground sm:w-auto">
             Account
-            <select aria-label="Account to mark as an agent's" className={field} value={pick} onChange={(e) => setPick(e.target.value)}>
+            <select aria-label={t({ message: "Account to mark as an agent's", context: "AgentsPanel, aria-label" })} className={field} value={pick} onChange={(e) => setPick(e.target.value)}>
               <option value="" />
               {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
-          <button type="button" className={button} disabled={!pick} onClick={() => void mark(pick, true)}>Mark as an agent account</button>
+          <button type="button" className={button} disabled={!pick} onClick={() => void mark(pick, true)}><Trans context="AgentsPanel, button">Mark as an agent account</Trans></button>
         </div>
       </div>
 
       <AgentFullAccessPanel password={password} />
 
       <div className="space-y-3 rounded-xl border border-border bg-white p-4">
-        <p className="text-sm font-semibold text-foreground">Admin paths an agent may call</p>
+        <p className="text-sm font-semibold text-foreground"><Trans context="AgentsPanel, p">Admin paths an agent may call</Trans></p>
         <p className="text-sm text-muted-foreground">
-          A path missing from this list stays closed to agents. The paths are grouped by the part of the village they reach; open a group to see, change or remove its paths. For each write, say who confirms it: the agent itself, for routine Operations work, or a person, who makes the change in the app.
-        </p>
+          <Trans context="AgentsPanel, p">A path missing from this list stays closed to agents. The paths are grouped by the part of the village they reach; open a group to see, change or remove its paths. For each write, say who confirms it: the agent itself, for routine Operations work, or a person, who makes the change in the app.
+        </Trans></p>
         <PathTree
           draft={draft}
           fresh={fresh}
@@ -221,10 +221,10 @@ export default function AgentsPanel({ password, players }: { password: string; p
               setEditing((all) => new Set(all).add(at));
             }}
           >
-            Add a path
-          </button>
+            <Trans context="AgentsPanel, button">Add a path
+          </Trans></button>
           <button type="button" className={button} aria-expanded={pasteOpen} onClick={() => setPasteOpen((o) => !o)}><Trans context="agent paths">Paste a list</Trans></button>
-          <button type="button" className={button} onClick={() => resetDraft(paths.shipped.paths)}>Back to the shipped list</button>
+          <button type="button" className={button} onClick={() => resetDraft(paths.shipped.paths)}><Trans context="AgentsPanel, button">Back to the shipped list</Trans></button>
           <button type="button" className={primary} disabled={saving} onClick={() => void save()}>{saving ? "Saving" : "Save"}</button>
         </div>
         {pasteOpen && (
@@ -265,7 +265,7 @@ export default function AgentsPanel({ password, players }: { password: string; p
           </div>
         )}
         <div>
-          <p className="text-sm font-medium text-foreground">Always a person, whatever this list says</p>
+          <p className="text-sm font-medium text-foreground"><Trans context="AgentsPanel, p">Always a person, whatever this list says</Trans></p>
           <ul className="mt-1 list-disc pl-5 text-sm text-muted-foreground">
             {paths.alwaysAPerson.map((r) => <li key={r.key}>{r.words}</li>)}
           </ul>

@@ -53,6 +53,7 @@
  */
 import { Check, Lock, MessageCircleQuestion } from "lucide-react";
 import { TYPE_GROUPS, WIZARD_TYPE_CONFIGS, type WizardType } from "./wizardConfig";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function TypeCards({
   chosen,
@@ -75,8 +76,9 @@ export default function TypeCards({
   onChoose: (id: WizardType) => void;
   onPractice: (id: WizardType) => void;
 }) {
+  const { t } = useLingui();
   return (
-    <div role="group" aria-label="What kind of decision" className="space-y-6">
+    <div role="group" aria-label={t({ message: "What kind of decision", context: "TypeCards, aria-label" })} className="space-y-6">
       {TYPE_GROUPS.map((group) => {
         const types = WIZARD_TYPE_CONFIGS.filter((t) => t.group === group);
         if (types.length === 0) return null;
@@ -134,9 +136,9 @@ export default function TypeCards({
                       <span className="mt-0.5 block text-sm text-stone-600 leading-relaxed">{t.description}</span>
                       {practice && (
                         <span className="mt-1.5 block text-xs font-medium text-teal-deep">
-                          Ask the village about this one. A real vote, on the real roll, and nothing changes until the
+                          <Trans context="TypeCards, span">Ask the village about this one. A real vote, on the real roll, and nothing changes until the
                           village decides it should.
-                        </span>
+                        </Trans></span>
                       )}
                       {!live && (
                         <span className="mt-1.5 block text-xs font-medium text-stone-500">

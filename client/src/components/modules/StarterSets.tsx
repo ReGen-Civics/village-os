@@ -12,8 +12,10 @@ import { STARTER_SETS } from "@shared/moduleStarterSets";
 import { turnOnPlan, type LibraryViewer, type PlanModule } from "@shared/moduleSwitch";
 import TurnOnAction from "./TurnOnAction";
 import { readBasket, writeBasket } from "./planBasket";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer: LibraryViewer }) {
+  const { t } = useLingui();
   const byId = new Map(all.map((m) => [m.id, m]));
   const sets = STARTER_SETS.map((s) => ({ ...s, ids: s.moduleIds.filter((id) => byId.has(id)) })).filter(
     (s) => s.ids.length > 1,
@@ -22,8 +24,8 @@ export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer
   const seesState = viewer.mode !== "visitor";
   return (
     <section aria-labelledby="starter-sets" className="mb-10">
-      <h2 id="starter-sets" className="font-display text-xl font-bold text-foreground">Starter sets</h2>
-      <p className="text-sm text-muted-foreground mt-1">A few modules that are usually wanted together.</p>
+      <h2 id="starter-sets" className="font-display text-xl font-bold text-foreground"><Trans context="StarterSets, h2">Starter sets</Trans></h2>
+      <p className="text-sm text-muted-foreground mt-1"><Trans context="StarterSets, p">A few modules that are usually wanted together.</Trans></p>
       <div className="mt-3 grid gap-4 sm:grid-cols-3">
         {sets.map((s) => {
           const remaining = seesState ? turnOnPlan(s.ids, viewer.launched ? "members" : "preview", all) : [];
@@ -35,24 +37,24 @@ export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer
                 {s.ids.map((id, i) => (
                   <span key={id}>
                     {i > 0 && ", "}
-                    <Link href={`/modules/${id}`} className="text-teal-deep underline">
+                    <Link href={`/modules/${id}`} className="text-notice underline underline-offset-2 hover:text-foreground">
                       {byId.get(id)?.name ?? id}
                     </Link>
                   </span>
                 ))}
               </p>
-              {seesState && remaining.length === 0 && <p className="text-sm text-emerald-700">All on here.</p>}
+              {seesState && remaining.length === 0 && <p className="text-sm text-open"><Trans context="StarterSets, p">All on here.</Trans></p>}
               {remaining.length > 0 && (
                 <div className="mt-auto space-y-2">
-                  <TurnOnAction ids={s.ids} all={all} viewer={viewer} label="the set" />
+                  <TurnOnAction ids={s.ids} all={all} viewer={viewer} label={t({ message: "the set", context: "StarterSets, label" })} />
                   {viewer.canSwitch && !viewer.launched && (
                     <button
                       type="button"
                       onClick={() => writeBasket([...readBasket(), ...s.ids])}
                       className="min-h-[44px] px-4 rounded-lg border border-border bg-background text-sm font-medium"
                     >
-                      Add to my plan
-                    </button>
+                      <Trans context="StarterSets, button">Add to my plan
+                    </Trans></button>
                   )}
                 </div>
               )}

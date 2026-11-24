@@ -38,6 +38,7 @@ import TokenMeaningField from "./TokenMeaningField";
 import VillageTokensWordField from "./VillageTokensWordField";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { takePrefill } from "@/lib/profilePrefill";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * THE ONE PAGE WHERE A TOKEN IS NAMED.
@@ -52,6 +53,7 @@ import { takePrefill } from "@/lib/profilePrefill";
  * everything rather than flash a short registry.
  */
 export default function TokensTab({ password, lifecycles }: { password: string; lifecycles: Record<string, ModuleLifecycle> | null }) {
+  const { t } = useLingui();
   const [tokens, setTokens] = useState<any[]>([]);
   const [mintCap, setMintCap] = useState<number>(0);
   const [players, setPlayers] = useState<any[]>([]);
@@ -213,9 +215,9 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
         </p>
       )}
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Tokens</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="TokensTab, h2">Tokens</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Every token this village runs, and the one place any of them is named.
+          <Trans context="TokensTab, p">Every token this village runs, and the one place any of them is named.
           Renaming one here renames it everywhere it appears, wallet to public
           pages, and no other screen carries a second box for the same name. A
           token's <strong>slug</strong> is fixed from the day it is created:
@@ -232,24 +234,24 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
             nothing more. Balances, history and the ledger are untouched, so hiding one
             is reversible and takes nothing away from anybody who holds it. It does not
             stop a mint rule from paying. To stop issuance, pause the rule in the Mint.
-          </span>
+          </span></Trans>
         </p>
       </div>
       <VillageTokensWordField password={password} />
       <TokenJobsPanel password={password} />
       <OrgAccountsPanel password={password} />
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="TokensTab, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide">
                 <tr>
-                  <th className="px-4 py-2.5">Token</th>
-                  <th className="px-4 py-2.5">Kind</th>
-                  <th className="px-4 py-2.5">Where it is minted</th>
-                  <th className="px-4 py-2.5">Peer transfers</th>
-                  <th className="px-4 py-2.5">Shown to members</th>
-                  <th className="px-4 py-2.5">Issued to date</th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Token</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Kind</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Where it is minted</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Peer transfers</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Shown to members</Trans></th>
+                  <th className="px-4 py-2.5"><Trans context="TokensTab, th">Issued to date</Trans></th>
                 </tr>
               </thead>
               <tbody>
@@ -266,8 +268,8 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                             className="text-sm border border-gray-200 rounded-lg px-2 py-1 w-40"
                           />
                           <button onClick={rename} disabled={!renaming.name.trim()}
-                            className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40">Save</button>
-                          <button onClick={() => setRenaming(null)} className="text-xs text-gray-400">Cancel</button>
+                            className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"><Trans context="TokensTab, button">Save</Trans></button>
+                          <button onClick={() => setRenaming(null)} className="text-xs text-gray-400"><Trans context="TokensTab, button">Cancel</Trans></button>
                         </span>
                       ) : (
                         <>
@@ -279,7 +281,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                               is the registry telling the founder a lie. */}
                           {t.governance === "platform" && !t.isExample && (
                             <button onClick={() => setRenaming({ slug: t.slug, name: t.name })}
-                              className="ml-2 text-xs text-teal-deep underline">rename</button>
+                              className="ml-2 text-xs text-teal-deep underline"><Trans context="TokensTab, button">rename</Trans></button>
                           )}
                           {/* WHAT IT MEANS, in the village's own words (0283).
                               The platform used to write this sentence, and the
@@ -291,13 +293,13 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                               so it is the one field here that can never move,
                               and printing it small left that unsaid. */}
                           <p className="text-[11px] text-muted-foreground mt-0.5 opacity-80">
-                            slug <span className="font-mono text-muted-foreground">{t.slug}</span>, fixed for good
-                          </p>
+                            <Trans context="TokensTab, p">slug <span className="font-mono text-muted-foreground">{t.slug}</span>, fixed for good
+                          </Trans></p>
                           {tokenModuleIsOff(t, lifecycles) && (
                             <p className="text-[11px] text-amber-700 mt-0.5">
-                              The {tokenModule(t.slug)} module is off. Members cannot see this
+                              <Trans context="TokensTab, p">The {tokenModule(t.slug)} module is off. Members cannot see this
                               token, and every balance in it is still here.
-                            </p>
+                            </Trans></p>
                           )}
                         </>
                       )}
@@ -375,16 +377,16 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
           </div>
 
           <div className="border border-gray-200 rounded-xl p-5">
-            <h3 className="font-semibold text-gray-900 mb-1">Create a platform token</h3>
+            <h3 className="font-semibold text-gray-900 mb-1"><Trans context="TokensTab, h3">Create a platform token</Trans></h3>
             <p className="text-xs text-gray-500 mb-3">
-              Name tokens as you enable modules: stay credits, library credits, event
+              <Trans context="TokensTab, p">Name tokens as you enable modules: stay credits, library credits, event
               tickets. The slug is permanent: history is never re-denominated.
-            </p>
+            </Trans></p>
             <div className="flex flex-wrap items-center gap-2">
               <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                placeholder="slug (e.g. stay-credits)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 font-mono w-48" />
+                placeholder={t({ message: "slug (e.g. stay-credits)", context: "TokensTab, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2 font-mono w-48" />
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Display name" className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-48" />
+                placeholder={t({ message: "Display name", context: "TokensTab, placeholder" })} className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-48" />
               <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}
                 className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
                 <option value="credit">credit</option>
@@ -397,8 +399,8 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
               </label>
               <button onClick={create} disabled={!form.slug || !form.name}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-                Create
-              </button>
+                <Trans context="TokensTab, button">Create
+              </Trans></button>
             </div>
           </div>
 

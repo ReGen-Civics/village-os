@@ -21,6 +21,7 @@ import { lineWord, type GeneKeysView } from "@shared/geneKeys";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { readPeopleGeneKeys } from "@/lib/geneKeysApi";
 import { EYEBROW, HINT } from "./ui";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface CircleHolder {
   id: string;
@@ -36,6 +37,7 @@ const TYPE_PLURAL: Record<string, string> = {
 };
 
 export default function CircleLines({ holders }: { holders: CircleHolder[] }) {
+  const { t } = useLingui();
   const on = useModuleOn("gene-keys");
   const [people, setPeople] = useState<Record<string, GeneKeysView> | null>(null);
   const key = holders.map((h) => h.id).sort().join(",");
@@ -68,11 +70,11 @@ export default function CircleLines({ holders }: { holders: CircleHolder[] }) {
   const sleepers = shown.filter((h) => people[h.id].authority === "Emotional").length;
 
   return (
-    <section aria-label="This circle's six lines" className="sheet-night rounded-2xl border border-border bg-card p-5 text-card-foreground">
+    <section aria-label={t({ message: "This circle's six lines", context: "CircleLines, aria-label" })} className="sheet-night rounded-2xl border border-border bg-card p-5 text-card-foreground">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h4 className="font-display text-2xl text-foreground">Our six lines</h4>
+        <h4 className="font-display text-2xl text-foreground"><Trans context="CircleLines, h4">Our six lines</Trans></h4>
         <p className={HINT}>
-          {held} of 6 lines held{hidden > 0 ? ` · ${hidden} member${hidden === 1 ? " keeps their" : "s keep their"} lines private` : ""}
+          <Trans context="CircleLines, p">{held} of 6 lines held{hidden > 0 ? ` · ${hidden} member${hidden === 1 ? " keeps their" : "s keep their"} lines private` : ""}</Trans>
         </p>
       </div>
       <ol className="mt-3 flex flex-col-reverse">
@@ -99,17 +101,17 @@ export default function CircleLines({ holders }: { holders: CircleHolder[] }) {
                   ))
                 ) : (
                   <span className="rounded-full border-[1.5px] border-dashed border-notice px-3 py-1 text-sm text-notice">
-                    Open · who will hold it?
-                  </span>
+                    <Trans context="CircleLines, span">Open · who will hold it?
+                  </Trans></span>
                 )}
               </span>
             </li>
           );
         })}
       </ol>
-      <p className={`${HINT} mt-3`}>Lines read from the bottom up. A gap is an invitation for the circle to talk about who might hold it.</p>
+      <p className={`${HINT} mt-3`}><Trans context="CircleLines, p">Lines read from the bottom up. A gap is an invitation for the circle to talk about who might hold it.</Trans></p>
       <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-muted p-4 text-sm">
-        <p className={EYEBROW}>How this circle works best</p>
+        <p className={EYEBROW}><Trans context="CircleLines, p">How this circle works best</Trans></p>
         <p className="text-foreground">
           {Array.from(types.entries())
             .map(([t, c]) => `${c} ${c === 1 ? t : TYPE_PLURAL[t] ?? t}`)
@@ -117,25 +119,25 @@ export default function CircleLines({ holders }: { holders: CircleHolder[] }) {
         </p>
         {types.has("Generator") || types.has("Manifesting Generator") ? (
           <p className="text-foreground">
-            <span className="font-semibold text-notice">Bring options.</span> Generators do their best work responding to a clear offer.
-          </p>
+            <Trans context="CircleLines, p"><span className="font-semibold text-notice">Bring options.</span> Generators do their best work responding to a clear offer.
+          </Trans></p>
         ) : null}
         {types.has("Projector") ? (
           <p className="text-foreground">
-            <span className="font-semibold text-notice">Invite by name.</span> Projectors land best when someone asks for their gift.
-          </p>
+            <Trans context="CircleLines, p"><span className="font-semibold text-notice">Invite by name.</span> Projectors land best when someone asks for their gift.
+          </Trans></p>
         ) : null}
         {types.has("Manifestor") ? (
           <p className="text-foreground">
-            <span className="font-semibold text-notice">Expect a heads up.</span> Manifestors start things and tell the circle first.
-          </p>
+            <Trans context="CircleLines, p"><span className="font-semibold text-notice">Expect a heads up.</span> Manifestors start things and tell the circle first.
+          </Trans></p>
         ) : null}
         {sleepers > 1 ? (
           <p className="text-foreground">
-            <span className="font-semibold text-notice">Leave big choices open overnight.</span> {sleepers} of you sleep on them.
-          </p>
+            <Trans context="CircleLines, p"><span className="font-semibold text-notice">Leave big choices open overnight.</span> {sleepers} of you sleep on them.
+          </Trans></p>
         ) : null}
-        <p className="text-xs text-muted-foreground">Type and authority come from Human Design.</p>
+        <p className="text-xs text-muted-foreground"><Trans context="CircleLines, p">Type and authority come from Human Design.</Trans></p>
       </div>
     </section>
   );

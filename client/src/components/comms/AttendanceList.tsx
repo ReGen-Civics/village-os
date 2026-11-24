@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AttendanceView } from "@shared/comms/recap";
 import { authToken } from "@/lib/gameApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 // The Authorization header is attached HERE, in this declaration, so the auth
 // guard (scripts/check-auth-fetch.mjs) reads it one helper deep.
@@ -31,6 +32,7 @@ export default function AttendanceList({
   occurrenceKey: string;
   onSaved?: () => void;
 }) {
+  const { t } = useLingui();
   const [view, setView] = useState<AttendanceView | null>(null);
   const [came, setCame] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
@@ -78,10 +80,10 @@ export default function AttendanceList({
   const people = view.people.filter((p) => p.answer !== "declined");
 
   return (
-    <section aria-label="Who came" className="space-y-2">
-      <h4 className="text-sm font-semibold text-foreground">Who came</h4>
-      {!view.started && <p className="text-xs text-muted-foreground">Opens once the gathering begins.</p>}
-      {people.length === 0 && <p className="text-xs text-muted-foreground">Nobody said yes to this one.</p>}
+    <section aria-label={t({ message: "Who came", context: "AttendanceList, aria-label" })} className="space-y-2">
+      <h4 className="text-sm font-semibold text-foreground"><Trans context="AttendanceList, h4">Who came</Trans></h4>
+      {!view.started && <p className="text-xs text-muted-foreground"><Trans context="AttendanceList, p">Opens once the gathering begins.</Trans></p>}
+      {people.length === 0 && <p className="text-xs text-muted-foreground"><Trans context="AttendanceList, p">Nobody said yes to this one.</Trans></p>}
       {people.length > 0 && (
         <ul className="space-y-1">
           {people.map((p) => (
@@ -94,8 +96,8 @@ export default function AttendanceList({
                   onChange={(e) => setCame((c) => ({ ...c, [p.personKey]: e.target.checked }))}
                 />
                 <span>{p.name ?? (p.guest ? "A guest" : "A member who has since left")}</span>
-                {p.guest && <span className="text-xs text-muted-foreground">guest</span>}
-                {p.answer === "maybe" && <span className="text-xs text-muted-foreground">said maybe</span>}
+                {p.guest && <span className="text-xs text-muted-foreground"><Trans context="AttendanceList, span">guest</Trans></span>}
+                {p.answer === "maybe" && <span className="text-xs text-muted-foreground"><Trans context="AttendanceList, span">said maybe</Trans></span>}
               </label>
             </li>
           ))}
@@ -111,16 +113,16 @@ export default function AttendanceList({
             }
             className="px-3 py-1.5 text-xs font-medium rounded-lg bg-teal-deep text-white border border-teal-deep hover:bg-teal-deep-dark disabled:opacity-40"
           >
-            Save who came
-          </button>
+            <Trans context="AttendanceList, button">Save who came
+          </Trans></button>
           <button
             type="button"
             disabled={busy}
             onClick={() => save({ everyone: true })}
             className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-40"
           >
-            Everyone who said yes came
-          </button>
+            <Trans context="AttendanceList, button">Everyone who said yes came
+          </Trans></button>
           {note && (
             <span role="status" className="text-xs text-muted-foreground">
               {note}

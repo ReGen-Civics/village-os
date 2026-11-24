@@ -9,6 +9,7 @@ import { ClipboardList } from "lucide-react";
 import TurnOnAction from "./TurnOnAction";
 import { planSummary, useBasket, writeBasket, type BasketModule } from "./planBasket";
 import type { LibraryViewer } from "@shared/moduleSwitch";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const money = (amount: number, currency: string) => {
   try {
@@ -21,16 +22,17 @@ const money = (amount: number, currency: string) => {
 };
 
 export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; viewer: LibraryViewer }) {
+  const { t } = useLingui();
   const ids = useBasket();
   if (!viewer.canSwitch || viewer.launched || ids.length === 0) return null;
   const s = planSummary(ids, all);
   const pickedNames = ids.map((id) => all.find((m) => m.id === id)?.name ?? id);
   return (
-    <section aria-labelledby="plan-basket" className="mb-8 rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-4 sm:p-5">
+    <section aria-labelledby="plan-basket" className="mb-8 rounded-xl border border-notice/40 bg-notice/10 p-4 sm:p-5">
       <h2 id="plan-basket" className="flex items-center gap-2 font-semibold text-foreground">
-        <ClipboardList className="w-5 h-5 text-teal-deep" aria-hidden="true" />
+        <Trans context="PlanBasketPanel, h2"><ClipboardList className="w-5 h-5 text-notice" aria-hidden="true" />
         Your plan
-      </h2>
+      </Trans></h2>
       <ul className="mt-2 flex flex-wrap gap-2">
         {ids.map((id, i) => (
           <li key={id} className="inline-flex items-center gap-1 rounded-full border border-border bg-background pl-3 text-sm">
@@ -49,13 +51,13 @@ export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; 
       <div className="mt-3 space-y-1 text-sm text-muted-foreground">
         {s.pulledIn.length > 0 && <p>Also turns on, because the plan needs them: {s.pulledIn.map((m) => m.name).join(", ")}.</p>}
         {s.prices.length === 0 ? (
-          <p>No extra charge.</p>
+          <p><Trans context="PlanBasketPanel, p">No extra charge.</Trans></p>
         ) : (
           <>
             {s.prices.map((p) => (
               <p key={p.name}>{p.name}: {p.line}</p>
             ))}
-            {s.monthly && <p className="font-medium text-foreground">Together: {money(s.monthly.amount, s.monthly.currency)} a month.</p>}
+            {s.monthly && <p className="font-medium text-foreground"><Trans context="PlanBasketPanel, p">Together: {money(s.monthly.amount, s.monthly.currency)} a month.</Trans></p>}
           </>
         )}
         {s.fundsCard.length > 0 && (
@@ -66,7 +68,7 @@ export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; 
         ))}
         {s.needs.length > 0 && (
           <div>
-            <p className="font-medium text-foreground">What you will need</p>
+            <p className="font-medium text-foreground"><Trans context="PlanBasketPanel, p">What you will need</Trans></p>
             <ul className="list-disc pl-5">
               {s.needs.map((n, i) => (
                 <li key={`${n.moduleId}-${i}`}>{n.text}</li>
@@ -80,7 +82,7 @@ export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; 
           ids={ids}
           all={all}
           viewer={viewer}
-          label="the plan"
+          label={t({ message: "the plan", context: "PlanBasketPanel, label" })}
           onDone={() => writeBasket([])}
         />
         <button
@@ -88,8 +90,8 @@ export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; 
           onClick={() => writeBasket([])}
           className="min-h-[44px] px-4 rounded-lg border border-border bg-background text-sm font-medium"
         >
-          Clear the plan
-        </button>
+          <Trans context="PlanBasketPanel, button">Clear the plan
+        </Trans></button>
       </div>
     </section>
   );

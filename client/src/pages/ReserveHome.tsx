@@ -42,6 +42,7 @@ import { Home, ArrowLeft, Check, MapPin } from "lucide-react";
 import { hamletNumbers, homeChoices, preselectedHome, type PublicHome } from "@/lib/housingForm";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { Trans } from "@lingui/react/macro";
 
 /*
  * THE FOUR HOME TYPES THAT USED TO LIVE HERE ARE GONE (0131).
@@ -211,8 +212,8 @@ export default function ReserveHome() {
               <Check className="w-7 h-7 text-teal" />
             </div>
             <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-              Your reservation request is in
-            </h1>
+              <Trans context="ReserveHome, h1">Your reservation request is in
+            </Trans></h1>
             {/*
               This screen used to promise a person that someone would be in
               touch while the server told nobody: the intent landed in a table
@@ -222,17 +223,17 @@ export default function ReserveHome() {
               true and the confirmation line is checkable by the reader.
             */}
             <p className="text-muted-foreground mb-8">
-              We have your details and the home you have in mind. A copy is on its way to{" "}
+              <Trans context="ReserveHome, p">We have your details and the home you have in mind. A copy is on its way to{" "}
               {email}. Someone from the founding team will be in touch to walk you through the
               deposit and what happens next.
-            </p>
+            </Trans></p>
             {housingOn && (
               <Link
                 href="/housing"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-deep text-white font-medium"
               >
-                Back to housing options
-              </Link>
+                <Trans context="ReserveHome, Link">Back to housing options
+              </Trans></Link>
             )}
           </div>
         </section>
@@ -264,20 +265,20 @@ export default function ReserveHome() {
               <Home className="w-7 h-7 text-teal" />
             </div>
             <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-              The homes are not listed yet
-            </h1>
+              <Trans context="ReserveHome, h1">The homes are not listed yet
+            </Trans></h1>
             <p className="text-muted-foreground mb-8">
-              Nobody here has published what the homes are or what they cost, so there is
+              <Trans context="ReserveHome, p">Nobody here has published what the homes are or what they cost, so there is
               nothing to hold for you today. Come back, or reach the founding team through
               the housing page and tell them what you are looking for.
-            </p>
+            </Trans></p>
             {housingOn && (
               <Link
                 href="/housing"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-deep text-white font-medium"
               >
-                Back to housing
-              </Link>
+                <Trans context="ReserveHome, Link">Back to housing
+              </Trans></Link>
             )}
           </div>
         </section>
@@ -294,18 +295,18 @@ export default function ReserveHome() {
               href="/housing"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-6"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <Trans context="ReserveHome, Link"><ArrowLeft className="w-4 h-4" />
               Housing options
-            </Link>
+            </Trans></Link>
           )}
 
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Reserve your home
-          </h1>
+            <Trans context="ReserveHome, h1">Reserve your home
+          </Trans></h1>
           <p className="text-muted-foreground mb-8">
-            Tell us which home you want and where you want it. This holds your place in the
+            <Trans context="ReserveHome, p">Tell us which home you want and where you want it. This holds your place in the
             queue. The deposit comes after we have spoken.
-          </p>
+          </Trans></p>
 
           {hamlet && (
             <div className="mb-8 p-5 rounded-2xl bg-card shadow-sm">
@@ -315,12 +316,12 @@ export default function ReserveHome() {
               </div>
               {numbers.kind === "set" ? (
                 <p className="text-sm text-muted-foreground">
-                  {numbers.open} of {numbers.total} homes still open here.
-                </p>
+                  <Trans context="ReserveHome, p">{numbers.open} of {numbers.total} homes still open here.
+                </Trans></p>
               ) : numbers.kind === "example" ? (
                 <p className="text-sm text-muted-foreground">
-                  Example numbers. The founder has not set this hamlet yet.
-                </p>
+                  <Trans context="ReserveHome, p">Example numbers. The founder has not set this hamlet yet.
+                </Trans></p>
               ) : null}
             </div>
           )}
@@ -328,15 +329,15 @@ export default function ReserveHome() {
           <form onSubmit={submit} className="space-y-6">
             <fieldset>
               <legend className="font-display text-lg font-semibold text-foreground mb-3">
-                Which home?
-              </legend>
+                <Trans context="ReserveHome, legend">Which home?
+              </Trans></legend>
               {/* The village's own homes, named and sized in its own words.
                   A home with no size and no price cannot reach this list:
                   the server publishes a home type only once it has a name and
                   one of the two, so a button here always says something about
                   the home behind it. Blank fields draw nothing. */}
               {choices.kind === "unknown" ? (
-                <p className="text-sm text-muted-foreground">Loading the homes.</p>
+                <p className="text-sm text-muted-foreground"><Trans context="ReserveHome, p">Loading the homes.</Trans></p>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-3">
                   {choices.homes.map((home) => (
@@ -369,7 +370,7 @@ export default function ReserveHome() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-medium text-foreground mb-1">Your name</span>
+                <span className="block text-sm font-medium text-foreground mb-1"><Trans context="ReserveHome, span">Your name</Trans></span>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -378,7 +379,7 @@ export default function ReserveHome() {
                 />
               </label>
               <label className="block">
-                <span className="block text-sm font-medium text-foreground mb-1">Email</span>
+                <span className="block text-sm font-medium text-foreground mb-1"><Trans context="ReserveHome, span">Email</Trans></span>
                 <input
                   type="email"
                   value={email}
@@ -391,7 +392,7 @@ export default function ReserveHome() {
 
             <label className="block">
               <span className="block text-sm font-medium text-foreground mb-1">
-                Phone <span className="text-muted-foreground font-normal">(optional)</span>
+                <Trans context="ReserveHome, span">Phone <span className="text-muted-foreground font-normal">(optional)</span></Trans>
               </span>
               <input
                 value={phone}
@@ -402,8 +403,8 @@ export default function ReserveHome() {
 
             <label className="block">
               <span className="block text-sm font-medium text-foreground mb-1">
-                Anything we should know?
-              </span>
+                <Trans context="ReserveHome, span">Anything we should know?
+              </Trans></span>
               <VoiceArea value={notes} onValue={setNotes}>
               <textarea
                 value={notes}
@@ -426,8 +427,8 @@ export default function ReserveHome() {
               {sending ? "Sending" : "Request this home"}
             </button>
             <p className="text-xs text-muted-foreground text-center">
-              No payment is taken on this page.
-            </p>
+              <Trans context="ReserveHome, p">No payment is taken on this page.
+            </Trans></p>
 
             {/*
               Honeypot. Off screen, out of the tab order, hidden from assistive

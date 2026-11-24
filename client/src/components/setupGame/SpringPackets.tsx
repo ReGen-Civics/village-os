@@ -31,6 +31,7 @@ import {
   type SeedState,
 } from "./setupGameApi";
 import { suggestedDomain, type BeatId } from "./springModel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface PacketProps {
   beat: BeatId | "done";
@@ -135,13 +136,13 @@ const RESEND_KEYS = "https://resend.com/api-keys";
 function Facts({ w }: { w: Words }) {
   return (
     <dl className="sg-facts">
-      <dt>Grants</dt>
+      <dt><Trans context="SpringPackets, dt">Grants</Trans></dt>
       <dd>{w.grants}</dd>
-      <dt>Who</dt>
+      <dt><Trans context="SpringPackets, dt">Who</Trans></dt>
       <dd>{w.who}</dd>
-      <dt>Cost</dt>
+      <dt><Trans context="SpringPackets, dt">Cost</Trans></dt>
       <dd>{w.cost}</dd>
-      <dt>Undo</dt>
+      <dt><Trans context="SpringPackets, dt">Undo</Trans></dt>
       <dd>{w.undo}</dd>
     </dl>
   );
@@ -154,7 +155,7 @@ function Shell({ w, done, children }: { w: Words; done?: boolean; children: Reac
         <h2>{w.title}</h2>
         <span className={`sg-chip${done ? " done" : w.keystone ? " gold" : ""}`}>{done ? "Done" : w.kind}</span>
       </div>
-      <div className="sg-prov">Seed packet from the Email guild · {w.note}</div>
+      <div className="sg-prov"><Trans context="SpringPackets, div">Seed packet from the Email guild · {w.note}</Trans></div>
       <Facts w={w} />
       <div className="sg-pbody">{children}</div>
     </section>
@@ -196,25 +197,25 @@ export default function SpringPacket(props: PacketProps) {
     return (
       <section className="sg-packet" aria-live="polite">
         <div className="sg-phead">
-          <h2>The spring runs</h2>
-          <span className="sg-chip water">Water layer established</span>
+          <h2><Trans context="SpringPackets, h2">The spring runs</Trans></h2>
+          <span className="sg-chip water"><Trans context="SpringPackets, span">Water layer established</Trans></span>
         </div>
         <div className="sg-pbody">
           <dl className="sg-facts" style={{ padding: 0 }}>
-            <dt>Live check</dt>
-            <dd>The latest test letter was reported delivered{comms?.testEmail ? ` to ${comms.testEmail.toEmail}` : ""}.</dd>
-            <dt>Sender</dt>
+            <dt><Trans context="SpringPackets, dt">Live check</Trans></dt>
+            <dd><Trans context="SpringPackets, dd">The latest test letter was reported delivered{comms?.testEmail ? ` to ${comms.testEmail.toEmail}` : ""}.</Trans></dd>
+            <dt><Trans context="SpringPackets, dt">Sender</Trans></dt>
             <dd>{comms?.sender.line || "Not set"}</dd>
-            <dt>Harvest</dt>
-            <dd>Renew the key once a year.</dd>
+            <dt><Trans context="SpringPackets, dt">Harvest</Trans></dt>
+            <dd><Trans context="SpringPackets, dd">Renew the key once a year.</Trans></dd>
           </dl>
           <div className="sg-actions">
             <a className="sg-primary" href="/admin?tab=comms-letters">
-              Write your first letter
-            </a>
+              <Trans context="SpringPackets, a">Write your first letter
+            </Trans></a>
             <a className="sg-link" href="/admin?tab=comms-settings">
-              Open Comms Settings
-            </a>
+              <Trans context="SpringPackets, a">Open Comms Settings
+            </Trans></a>
           </div>
         </div>
       </section>
@@ -224,11 +225,11 @@ export default function SpringPacket(props: PacketProps) {
   if (revisit) {
     return (
       <Shell w={w} done>
-        <div className="sg-msg calm">This planting is done. The words above say what it grants and how to undo it.</div>
+        <div className="sg-msg calm"><Trans context="SpringPackets, div">This planting is done. The words above say what it grants and how to undo it.</Trans></div>
         <div className="sg-actions">
           <button type="button" className="sg-primary" onClick={props.onBack}>
-            Back to where we are
-          </button>
+            <Trans context="SpringPackets, button">Back to where we are
+          </Trans></button>
         </div>
       </Shell>
     );
@@ -253,37 +254,38 @@ function AccountBody({ onAccount }: PacketProps) {
     <>
       <ol className="sg-steps">
         <li>
-          Open{" "}
+          <Trans context="SpringPackets, li">Open{" "}
           <a href={RESEND_SIGNUP} target="_blank" rel="noreferrer">
             resend.com/signup
           </a>{" "}
           in a new tab.
-        </li>
-        <li>Sign up with a shared village address, such as ops@, that forwards to every founder.</li>
-        <li>Click the link Resend emails you, then come back here.</li>
+        </Trans></li>
+        <li><Trans context="SpringPackets, li">Sign up with a shared village address, such as ops@, that forwards to every founder.</Trans></li>
+        <li><Trans context="SpringPackets, li">Click the link Resend emails you, then come back here.</Trans></li>
       </ol>
       <label className="sg-check">
         <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-        <span>I checked the address bar. The page I signed up on was really resend.com.</span>
+        <span><Trans context="SpringPackets, span">I checked the address bar. The page I signed up on was really resend.com.</Trans></span>
       </label>
       <div className="sg-actions">
         <button type="button" className="sg-primary" onClick={onAccount}>
-          I have the account
-        </button>
+          <Trans context="SpringPackets, button">I have the account
+        </Trans></button>
       </div>
     </>
   );
 }
 
 function KeyBody({ comms, setComms }: PacketProps) {
+  const { t } = useLingui();
   const [value, setValue] = useState("");
   const { busy, error, doing } = useDoing();
   if (comms && !comms.secretsKeySet) {
     return (
       <div className="sg-msg gold">
-        The root cellar has no lock yet. Its lock is VILLAGE_SECRETS_KEY, set on the hosting service by whoever runs your hosting. Once it is
+        <Trans context="SpringPackets, div">The root cellar has no lock yet. Its lock is VILLAGE_SECRETS_KEY, set on the hosting service by whoever runs your hosting. Once it is
         there, this step opens.
-      </div>
+      </Trans></div>
     );
   }
   async function plant() {
@@ -299,24 +301,24 @@ function KeyBody({ comms, setComms }: PacketProps) {
     <>
       <ol className="sg-steps">
         <li>
-          On{" "}
+          <Trans context="SpringPackets, li">On{" "}
           <a href={RESEND_KEYS} target="_blank" rel="noreferrer">
             resend.com/api-keys
           </a>
           , press Create API Key.
-        </li>
-        <li>Name it for your village and choose Full access, so this screen can set up your domain for you.</li>
-        <li>Copy it. Resend shows it only once.</li>
+        </Trans></li>
+        <li><Trans context="SpringPackets, li">Name it for your village and choose Full access, so this screen can set up your domain for you.</Trans></li>
+        <li><Trans context="SpringPackets, li">Copy it. Resend shows it only once.</Trans></li>
       </ol>
-      <p className="sg-why">Paste it here, never into a chat with any AI. Anything pasted into a chat is treated as public.</p>
+      <p className="sg-why"><Trans context="SpringPackets, p">Paste it here, never into a chat with any AI. Anything pasted into a chat is treated as public.</Trans></p>
       <div className="sg-field">
-        <label htmlFor="sg-key">Cellar door</label>
+        <label htmlFor="sg-key"><Trans context="SpringPackets, label">Cellar door</Trans></label>
         <input
           id="sg-key"
           type="password"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Starts with re_"
+          placeholder={t({ message: "Starts with re_", context: "SpringPackets, placeholder" })}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
@@ -335,6 +337,7 @@ function KeyBody({ comms, setComms }: PacketProps) {
 }
 
 function TradeBody({ comms, setComms }: PacketProps) {
+  const { t } = useLingui();
   const [value, setValue] = useState("");
   const { busy, error, doing } = useDoing();
   const onHost = comms?.key.source === "env";
@@ -359,26 +362,26 @@ function TradeBody({ comms, setComms }: PacketProps) {
         <>
           <ol className="sg-steps">
             <li>
-              On{" "}
+              <Trans context="SpringPackets, li">On{" "}
               <a href={RESEND_KEYS} target="_blank" rel="noreferrer">
                 resend.com/api-keys
               </a>
               , press Create API Key.
-            </li>
-            <li>Name it for your village, choose Sending access, and pick your sending domain{comms?.settings.domain ? `, ${comms.settings.domain}` : ""}.</li>
-            <li>Copy it. Resend shows it only once.</li>
+            </Trans></li>
+            <li><Trans context="SpringPackets, li">Name it for your village, choose Sending access, and pick your sending domain{comms?.settings.domain ? `, ${comms.settings.domain}` : ""}.</Trans></li>
+            <li><Trans context="SpringPackets, li">Copy it. Resend shows it only once.</Trans></li>
             <li>{onHost ? "The key in use is set on the hosting service, so put the new one in RESEND_API_KEY there and come back." : "Paste it here, never into a chat with any AI."}</li>
-            <li>Send yourself a test letter in Comms Settings. When it arrives, delete the old full-access key on resend.com.</li>
+            <li><Trans context="SpringPackets, li">Send yourself a test letter in Comms Settings. When it arrives, delete the old full-access key on resend.com.</Trans></li>
           </ol>
           {!onHost && (
             <div className="sg-field">
-              <label htmlFor="sg-trade">Cellar door</label>
+              <label htmlFor="sg-trade"><Trans context="SpringPackets, label">Cellar door</Trans></label>
               <input
                 id="sg-trade"
                 type="password"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="Starts with re_"
+                placeholder={t({ message: "Starts with re_", context: "SpringPackets, placeholder" })}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onKeyDown={(e) => {
@@ -389,7 +392,7 @@ function TradeBody({ comms, setComms }: PacketProps) {
           )}
         </>
       ) : (
-        <p className="sg-why">Resend says what a key may do when asked. Nothing comes back out of the cellar, only its answer.</p>
+        <p className="sg-why"><Trans context="SpringPackets, p">Resend says what a key may do when asked. Nothing comes back out of the cellar, only its answer.</Trans></p>
       )}
       <ErrorLine text={error || (value.trim() && !value.trim().startsWith("re_") ? "Resend keys start with re_. Check you copied the whole key." : "")} />
       <div className="sg-actions">
@@ -413,7 +416,7 @@ function CopyRow({ label, value, seen }: { label: ReactNode; value: string; seen
       <div>
         <small>
           {label}
-          {seen ? <span className="sg-seen"> · seen</span> : null}
+          {seen ? <span className="sg-seen"> <Trans context="SpringPackets, span">· seen</Trans></span> : null}
         </small>
         <code>{value}</code>
       </div>
@@ -437,6 +440,7 @@ function CopyRow({ label, value, seen }: { label: ReactNode; value: string; seen
 }
 
 function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
+  const { t } = useLingui();
   const [name, setName] = useState(() => suggestedDomain(comms));
   const { busy, error, doing } = useDoing();
   const named = comms?.settings.domain ?? "";
@@ -452,10 +456,10 @@ function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
   if (!named) {
     return (
       <>
-        <p className="sg-why">Which web address do your letters come from? It is usually the one in your founders' own email addresses.</p>
+        <p className="sg-why"><Trans context="SpringPackets, p">Which web address do your letters come from? It is usually the one in your founders' own email addresses.</Trans></p>
         <div className="sg-field">
-          <label htmlFor="sg-domain">Your village's web address</label>
-          <input id="sg-domain" type="text" placeholder="yourvillage.org" value={name} onChange={(e) => setName(e.target.value)} />
+          <label htmlFor="sg-domain"><Trans context="SpringPackets, label">Your village's web address</Trans></label>
+          <input id="sg-domain" type="text" placeholder={t({ message: "yourvillage.org", context: "SpringPackets, placeholder" })} value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <ErrorLine text={error} />
         <div className="sg-actions">
@@ -477,8 +481,8 @@ function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
         <ErrorLine text={error} />
         <div className="sg-actions">
           <button type="button" className="sg-primary" disabled={busy} onClick={async () => after(await doing(() => confirmDomain(true), "That did not save."))}>
-            Resend says it is verified
-          </button>
+            <Trans context="SpringPackets, button">Resend says it is verified
+          </Trans></button>
         </div>
       </>
     );
@@ -487,9 +491,9 @@ function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
   return (
     <>
       <ol className="sg-steps">
-        <li>Sign in where {named} lives (Cloudflare, GoDaddy, Namecheap, Squarespace or another) and open its DNS settings.</li>
-        <li>Add each record below. Press Copy and paste the value.</li>
-        <li>Come back and press Check the sky. DNS can take a few hours.</li>
+        <li><Trans context="SpringPackets, li">Sign in where {named} lives (Cloudflare, GoDaddy, Namecheap, Squarespace or another) and open its DNS settings.</Trans></li>
+        <li><Trans context="SpringPackets, li">Add each record below. Press Copy and paste the value.</Trans></li>
+        <li><Trans context="SpringPackets, li">Come back and press Check the sky. DNS can take a few hours.</Trans></li>
       </ol>
       <div style={{ display: "grid", gap: 8 }}>
         {records.map((r, i) => (
@@ -509,7 +513,7 @@ function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
             }
           />
         ))}
-        {records.length === 0 ? <div className="sg-msg calm">Resend has not handed over the records yet. Press Check the sky.</div> : null}
+        {records.length === 0 ? <div className="sg-msg calm"><Trans context="SpringPackets, div">Resend has not handed over the records yet. Press Check the sky.</Trans></div> : null}
       </div>
       {domain?.error ? <div className="sg-msg">{domain.error}</div> : null}
       <ErrorLine text={error} />
@@ -523,6 +527,7 @@ function StonesBody({ comms, domain, setComms, setDomain }: PacketProps) {
 }
 
 function ReportsBody({ comms, setComms }: PacketProps) {
+  const { t } = useLingui();
   const [steps, setSteps] = useState<string[] | null>(null);
   const [secret, setSecret] = useState("");
   const { busy, error, doing } = useDoing();
@@ -549,19 +554,19 @@ function ReportsBody({ comms, setComms }: PacketProps) {
             ))}
           </ol>
           <div className="sg-field">
-            <label htmlFor="sg-whsec">The signing secret</label>
-            <input id="sg-whsec" type="password" autoComplete="off" placeholder="Starts with whsec_" value={secret} onChange={(e) => setSecret(e.target.value)} />
+            <label htmlFor="sg-whsec"><Trans context="SpringPackets, label">The signing secret</Trans></label>
+            <input id="sg-whsec" type="password" autoComplete="off" placeholder={t({ message: "Starts with whsec_", context: "SpringPackets, placeholder" })} value={secret} onChange={(e) => setSecret(e.target.value)} />
           </div>
         </>
       ) : (
-        <p className="sg-why">Reports arrive at {comms?.webhook.url || "this village's own address"}.</p>
+        <p className="sg-why"><Trans context="SpringPackets, p">Reports arrive at {comms?.webhook.url || "this village's own address"}.</Trans></p>
       )}
       <ErrorLine text={error} />
       <div className="sg-actions">
         {steps ? (
           <button type="button" className="sg-primary" disabled={busy || !secret.trim()} onClick={() => void paste()}>
-            Plant the secret
-          </button>
+            <Trans context="SpringPackets, button">Plant the secret
+          </Trans></button>
         ) : (
           <button type="button" className="sg-primary" disabled={busy} onClick={() => void connect()}>
             {busy ? "Connecting" : "Connect delivery reports"}
@@ -594,21 +599,21 @@ function SignBody({ comms, village, setComms }: PacketProps) {
   return (
     <>
       <div className="sg-field">
-        <label htmlFor="sg-sender-name">The name on every letter</label>
+        <label htmlFor="sg-sender-name"><Trans context="SpringPackets, label">The name on every letter</Trans></label>
         <input id="sg-sender-name" type="text" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="sg-field">
-        <label htmlFor="sg-sender-local">The address it comes from</label>
+        <label htmlFor="sg-sender-local"><Trans context="SpringPackets, label">The address it comes from</Trans></label>
         <input id="sg-sender-local" type="text" value={local} onChange={(e) => setLocal(e.target.value)} aria-describedby="sg-at-domain" />
         <span id="sg-at-domain" className="sg-why">
           @{domain || "your domain"}
         </span>
       </div>
       <div className="sg-field">
-        <label htmlFor="sg-postal">Postal address for the footer</label>
+        <label htmlFor="sg-postal"><Trans context="SpringPackets, label">Postal address for the footer</Trans></label>
         <textarea id="sg-postal" value={postal} onChange={(e) => setPostal(e.target.value)} />
       </div>
-      <p className="sg-why">Bulk email law asks for a real postal address in every letter's footer.</p>
+      <p className="sg-why"><Trans context="SpringPackets, p">Bulk email law asks for a real postal address in every letter's footer.</Trans></p>
       <ErrorLine text={error} />
       <div className="sg-actions">
         <button type="button" className="sg-primary" disabled={busy || !name.trim() || !local.trim() || !postal.trim() || !domain} onClick={() => void save()}>
@@ -648,7 +653,7 @@ function NurseryBody({ comms, setComms }: PacketProps) {
     <>
       {t ? (
         <div className="sg-msg calm">
-          Latest test letter to {t.toEmail}: {t.delivered ? "reported delivered." : `${t.status}. ${watching ? "Watching for Resend's delivery report." : ""}`}
+          <Trans context="SpringPackets, div">Latest test letter to {t.toEmail}: {t.delivered ? "reported delivered." : `${t.status}. ${watching ? "Watching for Resend's delivery report." : ""}`}</Trans>
         </div>
       ) : null}
       <ErrorLine text={error} />
@@ -687,7 +692,7 @@ function TransplantBody({ comms, phase, setComms }: PacketProps) {
           ? "Before launch, any founder can do this alone. After launch, switching a module on takes the power to switch modules, or a vote."
           : "Your village has launched. If you do not hold the power to switch modules, the Module Library will offer you a proposal instead."}
       </div>
-      <p className="sg-why">Comms is {comms?.lifecycle ?? "off"} right now.</p>
+      <p className="sg-why"><Trans context="SpringPackets, p">Comms is {comms?.lifecycle ?? "off"} right now.</Trans></p>
       <div className={`sg-readbar${filling ? " go" : ""}`} aria-hidden="true">
         <i />
       </div>
@@ -697,8 +702,8 @@ function TransplantBody({ comms, phase, setComms }: PacketProps) {
           {ready ? "Yes, open the post office" : "Take a moment to read the packet"}
         </button>
         <a className="sg-link" href="/modules/comms">
-          Open the Module Library instead
-        </a>
+          <Trans context="SpringPackets, a">Open the Module Library instead
+        </Trans></a>
       </div>
     </>
   );

@@ -18,6 +18,7 @@
 import { Check } from "lucide-react";
 import type { StepKey } from "./wizardConfig";
 import { walkFor } from "./wizardWalk";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function WizardStepper({
   typeId,
@@ -31,11 +32,12 @@ export default function WizardStepper({
   current: StepKey;
   onGoBack: (step: StepKey) => void;
 }) {
+  const { t } = useLingui();
   const walk = walkFor(typeId, answers);
   const at = Math.max(0, walk.findIndex((s) => s.key === current));
 
   return (
-    <nav aria-label="Steps in this proposal">
+    <nav aria-label={t({ message: "Steps in this proposal", context: "WizardStepper, aria-label" })}>
       {/* Desktop: the right rail. */}
       <ol className="hidden space-y-1 lg:block">
         {walk.map((step, i) => {
@@ -68,7 +70,7 @@ export default function WizardStepper({
                   className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {body}
-                  <span className="sr-only">, completed. Go back to it</span>
+                  <span className="sr-only"><Trans context="WizardStepper, span">, completed. Go back to it</Trans></span>
                 </button>
               ) : (
                 <span
@@ -88,7 +90,7 @@ export default function WizardStepper({
         <p className="text-sm font-semibold text-foreground">
           {walk[at]?.label}
           <span className="ml-2 font-normal text-muted-foreground">
-            step {at + 1} of {walk.length}
+            <Trans context="WizardStepper, span">step {at + 1} of {walk.length}</Trans>
           </span>
         </p>
         <ol className="mt-2 flex gap-1.5">

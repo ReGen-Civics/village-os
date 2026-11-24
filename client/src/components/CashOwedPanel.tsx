@@ -34,6 +34,7 @@ import {
   type CashQueueEntry,
 } from "@shared/cashOwed";
 import type { TrackRow } from "./TreasurySync";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The invoice track and the Sync (invoice rails), its own chunk: it reads the moon review's words. */
 const TreasurySync = lazy(() => import("./TreasurySync"));
@@ -47,6 +48,7 @@ const day = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "";
 
 export default function CashOwedPanel() {
+  const { t } = useLingui();
   const [entries, setEntries] = useState<CashOwedEntry[] | null>(null);
   const [queue, setQueue] = useState<{ unpaid: CashQueueEntry[]; paid: CashQueueEntry[] } | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -132,13 +134,13 @@ export default function CashOwedPanel() {
     <div id="cash-owed" className="scroll-mt-24 rounded-2xl bg-card p-6 shadow-lg sm:p-8 space-y-5">
       <div>
         <h3 className="flex items-center gap-2 font-display text-xl font-bold text-card-foreground">
-          <HandCoins className="h-6 w-6" aria-hidden="true" />
+          <Trans context="CashOwedPanel, h3"><HandCoins className="h-6 w-6" aria-hidden="true" />
           Cash
-        </h3>
+        </Trans></h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          The village pays cash itself. Each amount here was written down when the work was paid. Claim it when the
+          <Trans context="CashOwedPanel, p">The village pays cash itself. Each amount here was written down when the work was paid. Claim it when the
           village pays out, and whoever keeps the books marks it paid.
-        </p>
+        </Trans></p>
       </div>
 
       {notice && <p className="text-sm text-foreground">{notice}</p>}
@@ -152,7 +154,7 @@ export default function CashOwedPanel() {
 
       {mine.length > 0 && (
         <section aria-labelledby="cash-mine" className="space-y-3">
-          <h4 id="cash-mine" className="font-semibold text-card-foreground">Owed to you</h4>
+          <h4 id="cash-mine" className="font-semibold text-card-foreground"><Trans context="CashOwedPanel, h4">Owed to you</Trans></h4>
           <ul className="space-y-3">
             {mine.map((e) => (
               <li key={e.id} className="rounded-xl border border-border p-4">
@@ -161,11 +163,11 @@ export default function CashOwedPanel() {
                   <p className="text-xs text-muted-foreground">{CASH_STATE_WORDS[e.state]}</p>
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {CASH_WORK_WORDS[e.workKind]}: {e.workTitle}, owed since {day(e.owedAt)}
+                  <Trans context="CashOwedPanel, p">{CASH_WORK_WORDS[e.workKind]}: {e.workTitle}, owed since {day(e.owedAt)}</Trans>
                 </p>
                 {e.state === "paid" && (
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Paid {day(e.paidAt)}{e.paidNote ? `: ${e.paidNote}` : ""}
+                    <Trans context="CashOwedPanel, p">Paid {day(e.paidAt)}{e.paidNote ? `: ${e.paidNote}` : ""}</Trans>
                   </p>
                 )}
                 {e.state === "owed" && (
@@ -175,15 +177,15 @@ export default function CashOwedPanel() {
                     onClick={() => act(`/api/me/cash-owed/${e.id}/claim`, {}, "Claimed. Whoever keeps the books can see it now.")}
                     className="mt-3 min-h-9 rounded-full border border-border px-4 py-1.5 text-sm font-medium text-foreground disabled:opacity-40"
                   >
-                    Claim
-                  </button>
+                    <Trans context="CashOwedPanel, button">Claim
+                  </Trans></button>
                 )}
               </li>
             ))}
           </ul>
           {paidYears.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <p className="text-sm text-muted-foreground">For your taxes or books:</p>
+              <p className="text-sm text-muted-foreground"><Trans context="CashOwedPanel, p">For your taxes or books:</Trans></p>
               {paidYears.map((y) => (
                 <button
                   key={y}
@@ -191,7 +193,7 @@ export default function CashOwedPanel() {
                   onClick={() => void downloadYear(y)}
                   className="min-h-[44px] rounded-full border border-border px-4 text-sm font-medium text-foreground hover:bg-muted"
                 >
-                  Download cash received in {y}
+                  <Trans context="CashOwedPanel, button">Download cash received in {y}</Trans>
                 </button>
               ))}
             </div>
@@ -202,20 +204,20 @@ export default function CashOwedPanel() {
       {keepsBooks && (
         <section aria-labelledby="cash-books" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 id="cash-books" className="font-semibold text-card-foreground">What the village owes</h4>
+            <h4 id="cash-books" className="font-semibold text-card-foreground"><Trans context="CashOwedPanel, h4">What the village owes</Trans></h4>
             <a href="/cash-payouts" className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2">
-              Record a bank transfer
-            </a>
+              <Trans context="CashOwedPanel, a">Record a bank transfer
+            </Trans></a>
           </div>
           {queue!.unpaid.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing is waiting to be paid.</p>
+            <p className="text-sm text-muted-foreground"><Trans context="CashOwedPanel, p">Nothing is waiting to be paid.</Trans></p>
           ) : (
             <ul className="space-y-3">
               {queue!.unpaid.map((e) => (
                 <li key={e.id} className="rounded-xl border border-border p-4 space-y-2">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-semibold text-card-foreground">
-                      {formatMoney(e.amountMinor, e.currency)} to {e.memberName}
+                      <Trans context="CashOwedPanel, p">{formatMoney(e.amountMinor, e.currency)} to {e.memberName}</Trans>
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {e.state === "claimed" ? `Claimed ${day(e.claimedAt)}` : `Owed since ${day(e.owedAt)}`}
@@ -230,7 +232,7 @@ export default function CashOwedPanel() {
                       value={notes[e.id] ?? ""}
                       maxLength={CASH_PAID_NOTE_MAX}
                       onChange={(ev) => setNotes({ ...notes, [e.id]: ev.target.value })}
-                      placeholder="Bank transfer, 24 October"
+                      placeholder={t({ message: "Bank transfer, 24 October", context: "CashOwedPanel, placeholder" })}
                       className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                     />
                   </label>
@@ -240,20 +242,20 @@ export default function CashOwedPanel() {
                     onClick={() => act(`/api/cash-owed/${e.id}/paid`, { note: notes[e.id] ?? "" }, `Marked paid. ${e.memberName} has been told.`)}
                     className="min-h-9 rounded-full border border-border px-4 py-1.5 text-sm font-medium text-foreground disabled:opacity-40"
                   >
-                    Mark paid
-                  </button>
+                    <Trans context="CashOwedPanel, button">Mark paid
+                  </Trans></button>
                 </li>
               ))}
             </ul>
           )}
           {queue!.paid.length > 0 && (
             <details className="text-sm">
-              <summary className="cursor-pointer text-muted-foreground">Recent payments</summary>
+              <summary className="cursor-pointer text-muted-foreground"><Trans context="CashOwedPanel, summary">Recent payments</Trans></summary>
               <ul className="mt-2 space-y-1.5">
                 {queue!.paid.map((e) => (
                   <li key={e.id} className="text-muted-foreground">
-                    {formatMoney(e.amountMinor, e.currency)} to {e.memberName}, {e.workTitle}. Paid {day(e.paidAt)}
-                    {e.paidByName ? ` by ${e.paidByName}` : ""}{e.paidNote ? `: ${e.paidNote}` : ""}
+                    <Trans context="CashOwedPanel, li">{formatMoney(e.amountMinor, e.currency)} to {e.memberName}, {e.workTitle}. Paid {day(e.paidAt)}
+                    {e.paidByName ? ` by ${e.paidByName}` : ""}{e.paidNote ? `: ${e.paidNote}` : ""}</Trans>
                   </li>
                 ))}
               </ul>

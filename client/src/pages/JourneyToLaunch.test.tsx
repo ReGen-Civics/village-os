@@ -388,7 +388,9 @@ describe("the canvas view", () => {
     fireEvent.click(screen.getByRole("button", { name: "Canvas" }));
     await waitFor(() => expect(screen.getByTestId("canvas-radar")).toBeTruthy());
     await waitFor(() => expect(screen.getByText(/No season is loaded/)).toBeTruthy());
-    expect(calls.map((c) => c.url).sort()).toEqual(["/api/canvas", "/api/canvas/moon", "/api/canvas/season"]);
+    // The notebook panel below the canvas is lazy, and may or may not have loaded by now; its own reads are its suite's.
+    const NOTEBOOK_READS = ["/api/documents", "/api/canvas/exports/latest"];
+    expect(calls.map((c) => c.url).filter((u) => !NOTEBOOK_READS.includes(u)).sort()).toEqual(["/api/canvas", "/api/canvas/moon", "/api/canvas/season"]);
     for (const c of calls) expect(c.init.headers.Authorization, c.url).toBe("Bearer a-token");
     expect(screen.getByText("How this village governs itself")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /run the test/i }), "the test run steps aside").toBeNull();

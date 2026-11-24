@@ -29,6 +29,7 @@ import {
   writePath,
   type DocField,
 } from "./contentFields";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** Pages and Paths & Stages have their own editors; every other content tab is one stored section. */
 export default function ContentEditorTab(props: { password: string; sectionKey: string; sectionLabel: string }) {
@@ -42,6 +43,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
   sectionKey: string;
   sectionLabel: string;
 }) {
+  const { t } = useLingui();
   const [raw, setRaw] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -293,8 +295,8 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
         {f.label}
         {f.claim && (
           <span className="ml-2 text-[11px] font-normal rounded px-1.5 py-0.5 border border-amber-300 bg-amber-50 text-amber-800">
-            a claim about your jurisdiction
-          </span>
+            <Trans context="ContentEditorTab, span">a claim about your jurisdiction
+          </Trans></span>
         )}
       </label>
       {f.kind === "long" ? (
@@ -331,10 +333,10 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Edit: {sectionLabel}</h2>
+          <h2 className="text-xl font-bold text-gray-900"><Trans context="ContentEditorTab, h2">Edit: {sectionLabel}</Trans></h2>
           <p className="text-sm text-gray-500 mt-1">
-            Changes go live once you save them in the bar at the bottom.
-          </p>
+            <Trans context="ContentEditorTab, p">Changes go live once you save them in the bar at the bottom.
+          </Trans></p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -350,9 +352,9 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
 
       {handed && !saved && (
         <p className="mb-4 text-sm text-gray-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2">
-          The opening paragraph now holds what a member signs, from your ReGen Civics profile. Nothing is saved
+          <Trans context="ContentEditorTab, p">The opening paragraph now holds what a member signs, from your ReGen Civics profile. Nothing is saved
           until you press Save. Refresh to see the section as it is saved.
-        </p>
+        </Trans></p>
       )}
 
       {loadError && (
@@ -368,7 +370,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400"><Trans context="ContentEditorTab, div">Loading...</Trans></div>
       ) : (
         <>
           {/*
@@ -382,9 +384,9 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
           */}
           {spec && !docData && raw.trim() !== "" && (
             <p role="alert" className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              The JSON below has a syntax error, so the fields are hidden until it parses again.
+              <Trans context="ContentEditorTab, p">The JSON below has a syntax error, so the fields are hidden until it parses again.
               Nothing is lost: fix the JSON, or press refresh to reload what the server holds.
-            </p>
+            </Trans></p>
           )}
 
           {/* Field editor for document sections. No JSON in sight. */}
@@ -415,7 +417,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                title="Move up"
+                                title={t({ message: "Move up", context: "ContentEditorTab, title" })}
                                 disabled={i === 0}
                                 onClick={() => { const n = [...rows]; const [c] = n.splice(i, 1); n.splice(i - 1, 0, c); write(n); }}
                                 className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
@@ -424,7 +426,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                               </button>
                               <button
                                 type="button"
-                                title="Move down"
+                                title={t({ message: "Move down", context: "ContentEditorTab, title" })}
                                 disabled={i === rows.length - 1}
                                 onClick={() => { const n = [...rows]; const [c] = n.splice(i, 1); n.splice(i + 1, 0, c); write(n); }}
                                 className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
@@ -439,8 +441,8 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                                 }}
                                 className="text-xs text-muted-foreground hover:text-red-600"
                               >
-                                Remove
-                              </button>
+                                <Trans context="ContentEditorTab, button">Remove
+                              </Trans></button>
                             </div>
                           </div>
                           <div className="grid sm:grid-cols-2 gap-3">
@@ -466,8 +468,8 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
               })}
 
               <p className="text-xs text-muted-foreground">
-                Edits here go live once you press Save in the bar at the bottom.
-              </p>
+                <Trans context="ContentEditorTab, p">Edits here go live once you press Save in the bar at the bottom.
+              </Trans></p>
             </div>
           )}
 
@@ -482,7 +484,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                       <button
                         onClick={() => mutateCards((a) => { if (idx > 0) { const [c] = a.splice(idx, 1); a.splice(idx - 1, 0, c); } })}
                         disabled={idx === 0}
-                        title="Move up"
+                        title={t({ message: "Move up", context: "ContentEditorTab, title" })}
                         className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
@@ -490,7 +492,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                       <button
                         onClick={() => mutateCards((a) => { if (idx < a.length - 1) { const [c] = a.splice(idx, 1); a.splice(idx + 1, 0, c); } })}
                         disabled={idx === cardsData.length - 1}
-                        title="Move down"
+                        title={t({ message: "Move down", context: "ContentEditorTab, title" })}
                         className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
@@ -499,8 +501,8 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                         onClick={() => { if (window.confirm(`Remove "${card.name || "this entry"}"?`)) mutateCards((a) => a.splice(idx, 1)); }}
                         className="text-xs text-gray-400 hover:text-red-600"
                       >
-                        Remove
-                      </button>
+                        <Trans context="ContentEditorTab, button">Remove
+                      </Trans></button>
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -558,11 +560,11 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                 ))}
                 className="text-sm text-teal-deep font-medium hover:underline"
               >
-                + Add a team member
-              </button>
+                <Trans context="ContentEditorTab, button">+ Add a team member
+              </Trans></button>
               <p className="text-xs text-gray-400">
-                Edits here go live once you press Save in the bar at the bottom.
-              </p>
+                <Trans context="ContentEditorTab, p">Edits here go live once you press Save in the bar at the bottom.
+              </Trans></p>
             </div>
           )}
 

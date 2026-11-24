@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, authHeaders } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Granting a stage, shown as the ladder it is (Rye, 2026-10-30: "when you click
@@ -40,8 +41,8 @@ export function StageFloorPicker({
         {label ?? summary}
       </summary>
       <fieldset className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
-        <legend className="sr-only">Stage floor</legend>
-        <p className="px-1 pb-1 text-muted-foreground">A stage includes every stage below it.</p>
+        <legend className="sr-only"><Trans context="StageFloorPicker, legend">Stage floor</Trans></legend>
+        <p className="px-1 pb-1 text-muted-foreground"><Trans context="StageFloorPicker, p">A stage includes every stage below it.</Trans></p>
         {stages.map((s, i) => (
           <label key={s.id} className="flex min-h-9 items-center gap-2 rounded px-1 hover:bg-gray-50">
             <input type="checkbox" checked={i <= at} onChange={() => onChange(floorAfterToggle(stages, value, i))} />
@@ -50,8 +51,8 @@ export function StageFloorPicker({
         ))}
         {at >= 0 && (
           <button type="button" onClick={() => onChange(null)} className="mt-1 w-full rounded px-1 py-1 text-left text-red-600 hover:bg-red-50">
-            Remove the grant
-          </button>
+            <Trans context="StageFloorPicker, button">Remove the grant
+          </Trans></button>
         )}
       </fieldset>
     </details>
@@ -74,6 +75,7 @@ export function BulkStageGrant({
   password: string;
   onDone: () => void;
 }) {
+  const { t } = useLingui();
   const [floor, setFloor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const apply = async () => {
@@ -99,9 +101,9 @@ export function BulkStageGrant({
   };
   const at = floor === null ? -1 : stages.findIndex((s) => s.id === floor);
   return (
-    <div role="region" aria-label="Grant a stage to the selected players" className="sticky top-2 z-10 mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-teal-deep/30 bg-white px-4 py-3 shadow-sm">
-      <span className="text-sm font-medium">{ids.length} selected</span>
-      <StageFloorPicker stages={stages} value={floor} onChange={setFloor} label={at < 0 ? "Pick a stage floor" : `${stages[at]!.name} and below`} />
+    <div role="region" aria-label={t({ message: "Grant a stage to the selected players", context: "StageFloorPicker, aria-label" })} className="sticky top-2 z-10 mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-teal-deep/30 bg-white px-4 py-3 shadow-sm">
+      <span className="text-sm font-medium"><Trans context="StageFloorPicker, span">{ids.length} selected</Trans></span>
+      <StageFloorPicker stages={stages} value={floor} onChange={setFloor} label={at < 0 ? t({ message: "Pick a stage floor", context: "StageFloorPicker, label" }) : `${stages[at]!.name} and below`} />
       <button
         type="button"
         disabled={busy}
@@ -111,8 +113,8 @@ export function BulkStageGrant({
         {busy ? "Granting..." : floor === null ? "Remove their grants" : "Grant to selected"}
       </button>
       <button type="button" onClick={onDone} className="text-xs underline">
-        Clear selection
-      </button>
+        <Trans context="StageFloorPicker, button">Clear selection
+      </Trans></button>
     </div>
   );
 }

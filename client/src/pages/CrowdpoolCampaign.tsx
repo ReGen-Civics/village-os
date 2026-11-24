@@ -29,6 +29,7 @@ import {
   pooledLine, ringTip, timeAgo,
 } from "@/components/crowdpool/PoolPieces";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -95,6 +96,7 @@ function narrate(e: PoolEvent, tokenName: string): string {
 }
 
 export default function CrowdpoolCampaign() {
+  const { t } = useLingui();
   const tokenName = useTokenName("Recognition");
   const modules = useModules();
   const crowdpool = useModule("crowdpool");
@@ -171,9 +173,9 @@ export default function CrowdpoolCampaign() {
     return (
       <Layout>
         <div className="container py-16 text-center">
-          <h1 className="font-display text-3xl font-bold mb-3">Crowdpool</h1>
-          <p className="text-muted-foreground mb-6">No campaign is linked under that name.</p>
-          <Link href="/campaigns" className="underline">See the linked campaigns</Link>
+          <h1 className="font-display text-3xl font-bold mb-3"><Trans context="CrowdpoolCampaign, h1">Crowdpool</Trans></h1>
+          <p className="text-muted-foreground mb-6"><Trans context="CrowdpoolCampaign, p">No campaign is linked under that name.</Trans></p>
+          <Link href="/campaigns" className="underline"><Trans context="CrowdpoolCampaign, Link">See the linked campaigns</Trans></Link>
         </div>
       </Layout>
     );
@@ -205,22 +207,22 @@ export default function CrowdpoolCampaign() {
       <section className="py-6 md:py-10 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container max-w-5xl">
           <Link href="/campaigns" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
-            <ArrowLeft className="w-4 h-4" /> Pooling Resources
-          </Link>
+            <Trans context="CrowdpoolCampaign, Link"><ArrowLeft className="w-4 h-4" /> Pooling Resources
+          </Trans></Link>
 
           {!c && !unreachable && (
             <div className="cp-board p-8 flex flex-col items-center gap-2">
-              <BreathingLoader label="Reading the ledger" size={48} />
-              <p className="cp-smallcaps text-sm">Reading the ledger</p>
+              <BreathingLoader label={t({ message: "Reading the ledger", context: "CrowdpoolCampaign, label" })} size={48} />
+              <p className="cp-smallcaps text-sm"><Trans context="CrowdpoolCampaign, p">Reading the ledger</Trans></p>
             </div>
           )}
 
           {!c && unreachable && (
             <div className="cp-board p-8 text-center">
-              <p className="cp-smallcaps text-sm mb-2">The ledger sleeps</p>
+              <p className="cp-smallcaps text-sm mb-2"><Trans context="CrowdpoolCampaign, p">The ledger sleeps</Trans></p>
               <p className="text-sm" style={{ color: "#e4d3ae" }}>
-                This raising didn't load. Come back in a little while.
-              </p>
+                <Trans context="CrowdpoolCampaign, p">This raising didn't load. Come back in a little while.
+              </Trans></p>
             </div>
           )}
 
@@ -230,8 +232,8 @@ export default function CrowdpoolCampaign() {
               <div className="p-6 md:p-8">
                 {stale && (
                   <div className="cp-stale mb-5" role="status">
-                    The ledger sleeps. The hub last answered {timeAgo(lastSyncAt)}; these numbers are kept from then.
-                  </div>
+                    <Trans context="CrowdpoolCampaign, div">The ledger sleeps. The hub last answered {timeAgo(lastSyncAt)}; these numbers are kept from then.
+                  </Trans></div>
                 )}
                 {/*
                   * THE DEMO MARKER.
@@ -256,17 +258,17 @@ export default function CrowdpoolCampaign() {
                     aria-labelledby="demo-raising"
                     className="mb-5 rounded-lg border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100"
                   >
-                    <p id="demo-raising" className="font-medium">This is the hub's demonstration raising.</p>
+                    <p id="demo-raising" className="font-medium"><Trans context="CrowdpoolCampaign, p">This is the hub's demonstration raising.</Trans></p>
                     <p className="mt-1 leading-relaxed">
-                      Nobody in this village made it. The ring, the backers and the ledger below are
+                      <Trans context="CrowdpoolCampaign, p">Nobody in this village made it. The ring, the backers and the ledger below are
                       the hub's sample data, and nothing you do to it takes effect. A steward clears
                       it by unlinking the campaign in Village Settings.
-                    </p>
+                    </Trans></p>
                   </aside>
                 )}
                 <div className="grid md:grid-cols-[1fr_auto] gap-6 items-center">
                   <div>
-                    <div className="cp-smallcaps text-xs mb-1">A raising on the hub</div>
+                    <div className="cp-smallcaps text-xs mb-1"><Trans context="CrowdpoolCampaign, div">A raising on the hub</Trans></div>
                     <h1 className="font-display text-3xl md:text-4xl font-bold" style={{ color: "#f3e6c8" }}>
                       {c.title}
                       {c.isDemo && <ExampleChip className="ml-2 align-middle" />}
@@ -283,7 +285,7 @@ export default function CrowdpoolCampaign() {
                       <span className="inline-flex items-center gap-1.5">
                         <HandHeart className="w-4 h-4" style={{ color: "#c9a25e" }} />
                         {pooledLine(c.pledgedTotal, c.totalValue, c.currency, floor)}{" "}
-                        <InfoTip tip={ringTip(floor)}>pooled</InfoTip>
+                        <InfoTip tip={ringTip(floor)}><Trans context="CrowdpoolCampaign, InfoTip">pooled</Trans></InfoTip>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <Users className="w-4 h-4" style={{ color: "#c9a25e" }} />
@@ -309,18 +311,18 @@ export default function CrowdpoolCampaign() {
               {/* ── What this pool is, plainly ── */}
               <div className="px-6 md:px-8 pb-6">
                 <div className="cp-plaque p-4 text-sm leading-relaxed">
-                  <span className="cp-smallcaps-ink text-xs block mb-1">What this pool is</span>
+                  <Trans context="CrowdpoolCampaign, div"><span className="cp-smallcaps-ink text-xs block mb-1">What this pool is</span>
                   This is our village's raising on the hub, where a build gathers what it needs: goods, tools,
                   hands, know-how and funds. No money moves through this page. Crypto pledges are tracked on the
                   hub, and gifts or loans of ordinary money go through the partner funders below. Claim a need
                   here and you finish the claim on the hub's own page.
-                  {floorParagraph ? ` ${floorParagraph}` : ""}
+                  {floorParagraph ? ` ${floorParagraph}` : ""}</Trans>
                 </div>
               </div>
 
               {/* ── The growth strip ── */}
               <div className="px-6 md:px-8 pb-6">
-                <h2 className="cp-smallcaps text-sm mb-3">From blueprint to walls</h2>
+                <h2 className="cp-smallcaps text-sm mb-3"><Trans context="CrowdpoolCampaign, h2">From blueprint to walls</Trans></h2>
                 <GrowthStrip percentDelivered={c.percentDelivered} percentPledged={c.percentPledged} />
               </div>
             </div>
@@ -333,18 +335,18 @@ export default function CrowdpoolCampaign() {
           <div className="container max-w-5xl space-y-8">
             {/* ── The needs shelf ── */}
             <div>
-              <h2 className="font-display text-2xl font-bold mb-1">The needs shelf</h2>
+              <h2 className="font-display text-2xl font-bold mb-1"><Trans context="CrowdpoolCampaign, h2">The needs shelf</Trans></h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Each open need is a quest waiting to be written. The solid bar is what arrived; the faint bar is
+                <Trans context="CrowdpoolCampaign, p">Each open need is a quest waiting to be written. The solid bar is what arrived; the faint bar is
                 what someone has spoken for.
-              </p>
+              </Trans></p>
               <div className="grid md:grid-cols-2 gap-4">
                 {openNeeds.map((n) => {
                   const tint = capitalTint(n.capitalType);
                   const Glyph = kindGlyph(n.kind);
                   return (
                     <div key={n.id} className="cp-plaque cp-need" style={{ borderLeftColor: tint }}>
-                      {n.priorityPinned && <span className="cp-pin">first needed</span>}
+                      {n.priorityPinned && <span className="cp-pin"><Trans context="CrowdpoolCampaign, span">first needed</Trans></span>}
                       <div className="flex items-start gap-3">
                         <span
                           className="inline-flex items-center justify-center w-9 h-9 rounded-lg shrink-0"
@@ -356,7 +358,7 @@ export default function CrowdpoolCampaign() {
                           <h3 className="font-semibold text-sm leading-snug" style={{ color: "#241a10" }}>{n.name}</h3>
                           <p className="text-[11px] mt-0.5" style={{ color: tint }}>
                             {needLabel(n)},{" "}
-                            <InfoTip tip="The village counts more kinds of wealth than money: material, living, social, intellectual and more. Every need names the capital it calls for.">{n.capitalType} capital</InfoTip>
+                            <InfoTip tip="The village counts more kinds of wealth than money: material, living, social, intellectual and more. Every need names the capital it calls for."><Trans context="CrowdpoolCampaign, InfoTip">{n.capitalType} capital</Trans></InfoTip>
                             {n.groupClaimable ? ", many hands welcome" : ""}
                           </p>
                           {n.description && (
@@ -379,7 +381,7 @@ export default function CrowdpoolCampaign() {
                           )}
                           {n.needDeadline && (
                             <p className="text-[11px] mt-1.5" style={{ color: "#8a6a33" }}>
-                              Needed by {new Date(n.needDeadline).toLocaleDateString()}
+                              <Trans context="CrowdpoolCampaign, p">Needed by {new Date(n.needDeadline).toLocaleDateString()}</Trans>
                             </p>
                           )}
                           <a
@@ -389,11 +391,11 @@ export default function CrowdpoolCampaign() {
                             className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold rounded-lg px-3 py-1.5"
                             style={{ background: "#241a10", color: "#ecd08a" }}
                           >
-                            Claim this on the hub <ExternalLink className="w-3 h-3" />
+                            <Trans context="CrowdpoolCampaign, a">Claim this on the hub <ExternalLink className="w-3 h-3" /></Trans>
                           </a>
                           <p className="text-[10.5px] mt-1" style={{ color: "#8a6a33" }}>
-                            You finish the claim on the hub's page.
-                          </p>
+                            <Trans context="CrowdpoolCampaign, p">You finish the claim on the hub's page.
+                          </Trans></p>
                         </div>
                       </div>
                     </div>
@@ -401,8 +403,8 @@ export default function CrowdpoolCampaign() {
                 })}
                 {openNeeds.length === 0 && (
                   <div className="cp-plaque p-5 text-sm md:col-span-2" style={{ color: "#4a3a26" }}>
-                    Every need on the shelf has been met. The pool did its work.
-                  </div>
+                    <Trans context="CrowdpoolCampaign, div">Every need on the shelf has been met. The pool did its work.
+                  </Trans></div>
                 )}
               </div>
               {metNeeds.length > 0 && (
@@ -425,11 +427,11 @@ export default function CrowdpoolCampaign() {
             {/* ── Partner funders ── */}
             {c.partners.length > 0 && (
               <div>
-                <h2 className="font-display text-2xl font-bold mb-1">Partner funders</h2>
+                <h2 className="font-display text-2xl font-bold mb-1"><Trans context="CrowdpoolCampaign, h2">Partner funders</Trans></h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Ordinary money travels through partners, never through this page. Their own tallies, as the hub
+                  <Trans context="CrowdpoolCampaign, p">Ordinary money travels through partners, never through this page. Their own tallies, as the hub
                   last cached them.
-                </p>
+                </Trans></p>
                 <div className="grid md:grid-cols-2 gap-4">
                   {c.partners.map((p) => (
                     <div key={p.partner} className="cp-plaque p-4">
@@ -444,11 +446,11 @@ export default function CrowdpoolCampaign() {
                         <div className="cp-slots-delivered" style={{ width: `${p.percent}%`, background: "#a8862c" }} />
                       </div>
                       <p className="text-xs mt-2" style={{ color: "#4a3a26" }}>
-                        {money(p.raised, c.currency)} raised with {p.contributorCount === 1 ? "1 contributor" : `${p.contributorCount} contributors`}
+                        <Trans context="CrowdpoolCampaign, p">{money(p.raised, c.currency)} raised with {p.contributorCount === 1 ? "1 contributor" : `${p.contributorCount} contributors`}</Trans>
                       </p>
                       {p.cachedAt && (
                         <p className="text-[10.5px] mt-0.5" style={{ color: "#8a6a33" }}>
-                          Their numbers, kept {timeAgo(p.cachedAt)}
+                          <Trans context="CrowdpoolCampaign, p">Their numbers, kept {timeAgo(p.cachedAt)}</Trans>
                         </p>
                       )}
                       {/*
@@ -463,8 +465,8 @@ export default function CrowdpoolCampaign() {
                         */}
                       {p.status === "example" ? (
                         <p className="cp-note font-semibold">
-                          An example route, shown to explain how this works. It takes no money.
-                        </p>
+                          <Trans context="CrowdpoolCampaign, p">An example route, shown to explain how this works. It takes no money.
+                        </Trans></p>
                       ) : (
                       <a
                         href={p.url}
@@ -473,7 +475,7 @@ export default function CrowdpoolCampaign() {
                         className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold underline"
                         style={{ color: "#241a10" }}
                       >
-                        Open {p.label} <ExternalLink className="w-3 h-3" />
+                        <Trans context="CrowdpoolCampaign, a">Open {p.label} <ExternalLink className="w-3 h-3" /></Trans>
                       </a>
                       )}
                     </div>
@@ -484,16 +486,16 @@ export default function CrowdpoolCampaign() {
 
             {/* ── The Pool Ledger ── */}
             <div>
-              <h2 className="font-display text-2xl font-bold mb-1">The Pool Ledger</h2>
+              <h2 className="font-display text-2xl font-bold mb-1"><Trans context="CrowdpoolCampaign, h2">The Pool Ledger</Trans></h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Arrivals, as the hub's public feed tells them. Counts and names only; amounts stay in the pool.
-              </p>
+                <Trans context="CrowdpoolCampaign, p">Arrivals, as the hub's public feed tells them. Counts and names only; amounts stay in the pool.
+              </Trans></p>
               <div className="cp-board p-5">
                 {c.events.length === 0 && (
                   <p className="text-sm inline-flex items-center gap-2" style={{ color: "#e4d3ae" }}>
-                    <Sparkles className="w-4 h-4" style={{ color: "#c9a25e" }} />
+                    <Trans context="CrowdpoolCampaign, p"><Sparkles className="w-4 h-4" style={{ color: "#c9a25e" }} />
                     The ledger waits for its first arrival.
-                  </p>
+                  </Trans></p>
                 )}
                 <ul className="space-y-2.5">
                   {c.events.map((e) => (
@@ -514,10 +516,10 @@ export default function CrowdpoolCampaign() {
             {/* ── The village's other raisings ── */}
             {others.length > 0 && (
               <div>
-                <h2 className="font-display text-2xl font-bold mb-1">The village's other raisings</h2>
+                <h2 className="font-display text-2xl font-bold mb-1"><Trans context="CrowdpoolCampaign, h2">The village's other raisings</Trans></h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Every pool this village has linked. Each one keeps its own ring.
-                </p>
+                  <Trans context="CrowdpoolCampaign, p">Every pool this village has linked. Each one keeps its own ring.
+                </Trans></p>
                 <ul className="flex flex-wrap gap-2">
                   {others.map((s) => (
                     <li key={s.key}>
@@ -544,7 +546,7 @@ export default function CrowdpoolCampaign() {
                 className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 font-semibold text-sm"
                 style={{ background: "#241a10", color: "#ecd08a", border: "1px solid #c9a25e" }}
               >
-                Open this raising on the hub <ExternalLink className="w-4 h-4" />
+                <Trans context="CrowdpoolCampaign, a">Open this raising on the hub <ExternalLink className="w-4 h-4" /></Trans>
               </a>
             </div>
           </div>

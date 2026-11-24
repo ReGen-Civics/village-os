@@ -23,6 +23,7 @@ import {
   type CivilDay,
   type EventsPayload,
 } from "./calendarTime";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export type GridMode = "months" | "moons";
 
@@ -47,8 +48,9 @@ export interface MonthViewProps {
 
 /** Two stacked headers, same height, so both calendars carry equal weight. */
 export function StackedHeaders({ top, bottom, pill }: { top: string; bottom: string; pill?: string | null }) {
+  const { t } = useLingui();
   return (
-    <div className="grid grid-rows-2 rounded-xl border border-border overflow-hidden mb-3" role="group" aria-label="Month and moon">
+    <div className="grid grid-rows-2 rounded-xl border border-border overflow-hidden mb-3" role="group" aria-label={t({ message: "Month and moon", context: "MonthView, aria-label" })}>
       <div className="min-h-[44px] flex items-center justify-center px-3 bg-card border-b border-border text-foreground font-display text-lg text-center">
         {top}
       </div>
@@ -86,6 +88,7 @@ function CellItems({ list }: { list: CalendarItem[] }) {
 }
 
 export default function MonthView(p: MonthViewProps) {
+  const { t } = useLingui();
   // 0088: chips are a screen filter only; visibility was the server's call.
   const { filtered, present, off, toggle } = useLayerFilter(p.items);
   const byDay = itemsByDay(filtered, p.timezone);
@@ -131,7 +134,7 @@ export default function MonthView(p: MonthViewProps) {
             one cell reads in full ink. */}
         <div className={`text-[10px] leading-tight mt-0.5 ${selected ? "text-foreground" : "text-muted-foreground"}`}>
           {secondary}
-          {info?.newMoon && <span className="ml-1 font-medium text-foreground">new moon</span>}
+          {info?.newMoon && <span className="ml-1 font-medium text-foreground"><Trans context="MonthView, span">new moon</Trans></span>}
         </div>
         <CellItems list={list} />
       </button>
@@ -140,7 +143,7 @@ export default function MonthView(p: MonthViewProps) {
 
   if (p.mode === "moons") {
     const lw = lunarWeeks(p.cursor, p.anchor, p.timezone);
-    if (!lw) return <p className="text-sm text-muted-foreground">The lunar table does not cover this date.</p>;
+    if (!lw) return <p className="text-sm text-muted-foreground"><Trans context="MonthView, p">The lunar table does not cover this date.</Trans></p>;
     const label = moonLabel(lw.info.monthIndex, lw.info.cycleNumber, p.moonOneCycle, p.monthNames);
     const first = lw.days[0][0].day;
     const last = lw.days[lw.days.length - 1].slice(-1)[0].day;
@@ -156,9 +159,9 @@ export default function MonthView(p: MonthViewProps) {
         />
         <div className="flex items-start justify-between gap-2">
           <LayerChips present={present} off={off} toggle={toggle} />
-          <span className="ml-auto mb-2"><PrintButton label="Print this moon" /></span>
+          <span className="ml-auto mb-2"><PrintButton label={t({ message: "Print this moon", context: "MonthView, label" })} /></span>
         </div>
-        <p className="text-[10px] text-muted-foreground mb-1 text-center">Laid out by lunar day: the new moon is day 1, the full moon near day 15.</p>
+        <p className="text-[10px] text-muted-foreground mb-1 text-center"><Trans context="MonthView, p">Laid out by lunar day: the new moon is day 1, the full moon near day 15.</Trans></p>
         <div className="grid grid-cols-7 border-r border-b border-border rounded-lg overflow-hidden bg-card">
           {lw.days.flatMap((week) => week.map(({ day, lunarDay }) => cell(day, String(lunarDay), `${WEEKDAYS[day.weekday]} ${day.day} ${MONTHS[day.month - 1].slice(0, 3)}`, false, day.key)))}
           {/* pad the last row so the border grid stays square */}
@@ -181,7 +184,7 @@ export default function MonthView(p: MonthViewProps) {
       />
       <div className="flex items-start justify-between gap-2">
         <LayerChips present={present} off={off} toggle={toggle} />
-        <span className="ml-auto mb-2"><PrintButton label="Print this month" /></span>
+        <span className="ml-auto mb-2"><PrintButton label={t({ message: "Print this month", context: "MonthView, label" })} /></span>
       </div>
       <div className="grid grid-cols-7 text-[10px] text-muted-foreground mb-1">
         {WEEKDAYS.map((w) => <div key={w} className="text-center">{w}</div>)}

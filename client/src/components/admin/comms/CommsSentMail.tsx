@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import type { EmailKind, MessageStatus, SkipReason } from "@shared/comms/kinds";
 import { EMAIL_KINDS, MESSAGE_STATUSES } from "@shared/comms/kinds";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface MessageRow {
   id: string;
@@ -166,6 +167,7 @@ function query(filters: Filters, page: number): string {
 }
 
 export default function CommsSentMail({ password }: { password: string }) {
+  const { t } = useLingui();
   const [draft, setDraft] = useState<Filters>(NO_FILTERS);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [page, setPage] = useState(0);
@@ -244,7 +246,7 @@ export default function CommsSentMail({ password }: { password: string }) {
         toast.error(refusal(body, action === "retry" ? "It could not be tried again." : "It could not be cancelled."));
       }
     } catch {
-      toast.error("That did not reach the server. Check your connection, then try again.");
+      toast.error(t({ message: "That did not reach the server. Check your connection, then try again.", context: "CommsSentMail, toast" }));
     }
     setActing(false);
   };
@@ -272,10 +274,10 @@ export default function CommsSentMail({ password }: { password: string }) {
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-2xl">
-            <h2 className="text-xl font-semibold text-gray-900">Sent mail</h2>
+            <h2 className="text-xl font-semibold text-gray-900"><Trans context="CommsSentMail, h2">Sent mail</Trans></h2>
             <p className="mt-2 text-sm text-gray-600">
-              Every email the village writes is recorded here before it goes: password links, form replies, notices,
-              reminders and letters. Each one says what became of it. {keptFor(list?.retentionMonths)}
+              <Trans context="CommsSentMail, p">Every email the village writes is recorded here before it goes: password links, form replies, notices,
+              reminders and letters. Each one says what became of it. {keptFor(list?.retentionMonths)}</Trans>
             </p>
           </div>
           <button type="button" onClick={() => void load()} disabled={loading} className={button}>
@@ -285,7 +287,7 @@ export default function CommsSentMail({ password }: { password: string }) {
 
         <form onSubmit={apply} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label htmlFor="sent-status" className={label}>What became of it</label>
+            <label htmlFor="sent-status" className={label}><Trans context="CommsSentMail, label">What became of it</Trans></label>
             <select id="sent-status" className={field} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })}>
               <option value="">Any</option>
               {MESSAGE_STATUSES.map((s) => (
@@ -294,7 +296,7 @@ export default function CommsSentMail({ password }: { password: string }) {
             </select>
           </div>
           <div>
-            <label htmlFor="sent-kind" className={label}>Kind of email</label>
+            <label htmlFor="sent-kind" className={label}><Trans context="CommsSentMail, label">Kind of email</Trans></label>
             <select id="sent-kind" className={field} value={draft.kind} onChange={(e) => setDraft({ ...draft, kind: e.target.value })}>
               <option value="">Any</option>
               {EMAIL_KINDS.map((k) => (
@@ -303,7 +305,7 @@ export default function CommsSentMail({ password }: { password: string }) {
             </select>
           </div>
           <div>
-            <label htmlFor="sent-origin" className={label}>What wrote it</label>
+            <label htmlFor="sent-origin" className={label}><Trans context="CommsSentMail, label">What wrote it</Trans></label>
             <select id="sent-origin" className={field} value={draft.origin} onChange={(e) => setDraft({ ...draft, origin: e.target.value })}>
               <option value="">Anything</option>
               {(list?.origins ?? []).map((o) => (
@@ -312,24 +314,24 @@ export default function CommsSentMail({ password }: { password: string }) {
             </select>
           </div>
           <div>
-            <label htmlFor="sent-q" className={label}>Address contains</label>
-            <input id="sent-q" type="search" className={field} value={draft.q} placeholder="name@example.org" onChange={(e) => setDraft({ ...draft, q: e.target.value })} />
+            <label htmlFor="sent-q" className={label}><Trans context="CommsSentMail, label">Address contains</Trans></label>
+            <input id="sent-q" type="search" className={field} value={draft.q} placeholder={t({ message: "name@example.org", context: "CommsSentMail, placeholder" })} onChange={(e) => setDraft({ ...draft, q: e.target.value })} />
           </div>
           <div>
-            <label htmlFor="sent-from" className={label}>Written on or after</label>
+            <label htmlFor="sent-from" className={label}><Trans context="CommsSentMail, label">Written on or after</Trans></label>
             <input id="sent-from" type="date" className={field} value={draft.from} onChange={(e) => setDraft({ ...draft, from: e.target.value })} />
           </div>
           <div>
-            <label htmlFor="sent-to" className={label}>Written on or before</label>
+            <label htmlFor="sent-to" className={label}><Trans context="CommsSentMail, label">Written on or before</Trans></label>
             <input id="sent-to" type="date" className={field} value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} />
           </div>
           <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3">
             <button type="submit" className="rounded-lg bg-gray-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-gray-700">
-              Show
-            </button>
+              <Trans context="CommsSentMail, button">Show
+            </Trans></button>
             <button type="button" onClick={clear} className={button}>
-              Clear
-            </button>
+              <Trans context="CommsSentMail, button">Clear
+            </Trans></button>
           </div>
         </form>
       </div>
@@ -347,17 +349,17 @@ export default function CommsSentMail({ password }: { password: string }) {
             {pages > 1 && (
               <span className="flex items-center gap-2">
                 <button type="button" className={button} disabled={page === 0 || loading} onClick={() => setPage(page - 1)}>
-                  Newer
-                </button>
+                  <Trans context="CommsSentMail, button">Newer
+                </Trans></button>
                 <span>{`Page ${page + 1} of ${pages}`}</span>
                 <button type="button" className={button} disabled={page + 1 >= pages || loading} onClick={() => setPage(page + 1)}>
-                  Older
-                </button>
+                  <Trans context="CommsSentMail, button">Older
+                </Trans></button>
               </span>
             )}
           </div>
           {list.messages.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-gray-500">No email matches these filters.</p>
+            <p className="px-4 py-6 text-sm text-gray-500"><Trans context="CommsSentMail, p">No email matches these filters.</Trans></p>
           ) : (
             <ul className="divide-y divide-gray-100">
               {list.messages.map((m) => (
@@ -383,12 +385,12 @@ export default function CommsSentMail({ password }: { password: string }) {
       )}
 
       {openId && (
-        <section ref={detailRef} aria-label="The email" className="rounded-xl border border-gray-200 bg-white p-5">
+        <section ref={detailRef} aria-label={t({ message: "The email", context: "CommsSentMail, aria-label" })} className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <h3 className="text-lg font-semibold text-gray-900">{detail?.message.subject ?? "Reading this email"}</h3>
             <button type="button" className={button} onClick={() => { setOpenId(null); setDetail(null); }}>
-              Close
-            </button>
+              <Trans context="CommsSentMail, button">Close
+            </Trans></button>
           </div>
           {detailProblem && (
             <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -441,20 +443,20 @@ function EmailDetail({ answer, acting, onAct }: { answer: DetailAnswer; acting: 
         <div className="flex flex-wrap gap-2">
           {answer.canRetry && (
             <button type="button" className={button} disabled={acting} onClick={() => onAct("retry")}>
-              Try again
-            </button>
+              <Trans context="CommsSentMail, button">Try again
+            </Trans></button>
           )}
           {answer.canCancel && (
             <button type="button" className={button} disabled={acting} onClick={() => onAct("cancel")}>
-              Cancel this email
-            </button>
+              <Trans context="CommsSentMail, button">Cancel this email
+            </Trans></button>
           )}
         </div>
       )}
 
       {answer.reports.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-900">What the provider reported</h4>
+          <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsSentMail, h4">What the provider reported</Trans></h4>
           <ul className="mt-2 space-y-1 text-sm text-gray-700">
             {answer.reports.map((r) => (
               <li key={r.id}>{`${at(r.receivedAt)}: ${r.type.replace(/^email\./, "").replace(/_/g, " ")}${r.outcome ? ` (${r.outcome.replace(/_/g, " ")})` : ""}`}</li>
@@ -465,7 +467,7 @@ function EmailDetail({ answer, acting, onAct }: { answer: DetailAnswer; acting: 
 
       {m.attachments.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-900">Attached</h4>
+          <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsSentMail, h4">Attached</Trans></h4>
           <ul className="mt-2 space-y-1 text-sm text-gray-700">
             {m.attachments.map((a, i) => (
               <li key={`${a.filename}-${i}`}>{`${a.filename} (${a.contentType}, ${Math.max(1, Math.round(a.bytes / 1024))} KB)`}</li>
@@ -475,7 +477,7 @@ function EmailDetail({ answer, acting, onAct }: { answer: DetailAnswer; acting: 
       )}
 
       <div>
-        <h4 className="text-sm font-semibold text-gray-900">The words</h4>
+        <h4 className="text-sm font-semibold text-gray-900"><Trans context="CommsSentMail, h4">The words</Trans></h4>
         {m.wordsNote ? (
           <p className="mt-2 text-sm text-gray-600">{m.wordsNote}</p>
         ) : (

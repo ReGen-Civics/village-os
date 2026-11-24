@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Clock, Sparkles } from "lucide-react";
 import { CHIP, CHIP_SOFT, EYEBROW, LEDE, RING } from "@/components/journey/look";
+import { Trans } from "@lingui/react/macro";
 
 interface Milestone {
   id: string;
@@ -55,14 +56,14 @@ export default function BuildProgress() {
       <div className="container max-w-5xl">
         <div className="mb-10 max-w-2xl sm:mb-12">
           <p className={`${EYEBROW} mb-3`}>
-            Build Progress
-          </p>
+            <Trans context="BuildProgress, p">Build Progress
+          </Trans></p>
           <h2 className="mb-3 font-display text-3xl leading-tight text-foreground sm:text-4xl">
-            What's Built. What's Coming.
-          </h2>
+            <Trans context="BuildProgress, h2">What's Built. What's Coming.
+          </Trans></h2>
           <p className={LEDE}>
-            Real-time milestones from the team. Updated as the village comes online.
-          </p>
+            <Trans context="BuildProgress, p">Real-time milestones from the team. Updated as the village comes online.
+          </Trans></p>
         </div>
 
         <ol className="space-y-10">
@@ -94,7 +95,7 @@ export default function BuildProgress() {
                         </div>
                         <p className="text-sm leading-relaxed text-muted-foreground break-words">{m.description}</p>
                         {m.completedDate && m.status === "complete" && (
-                          <p className="mt-2 text-xs text-muted-foreground">Completed {m.completedDate}</p>
+                          <p className="mt-2 text-xs text-muted-foreground"><Trans context="BuildProgress, p">Completed {m.completedDate}</Trans></p>
                         )}
                         {m.updateNote && (
                           <p className="mt-3 inline-block rounded-lg border border-notice/40 bg-muted px-3 py-1.5 text-sm text-foreground">

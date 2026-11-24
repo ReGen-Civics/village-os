@@ -5,8 +5,10 @@
 import { useEffect, useState } from "react";
 import { TOUR_STEPS, bumpWeek, feelOn, setFeel, showEverything, simpleNav, weekCount, type FeelKey } from "./adminFeelState";
 import { readHandledCount } from "./handledToday";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export function TourCard({ wait = false }: { wait?: boolean }) {
+  const { t } = useLingui();
   const [step, setStep] = useState(0);
   const [open, setOpen] = useState(() => feelOn("tour") && storedTextSeen() === false);
   const [ready, setReady] = useState(!wait);
@@ -29,11 +31,11 @@ export function TourCard({ wait = false }: { wait?: boolean }) {
   if (!open || !feelOn("tour") || !ready) return null;
   const last = step >= TOUR_STEPS.length - 1;
   return (
-    <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4 text-gray-900" aria-label="Tour">
-      <p className="text-sm text-gray-600">Step {step + 1} of {TOUR_STEPS.length}</p>
+    <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4 text-gray-900" aria-label={t({ message: "Tour", context: "AdminFeel, aria-label" })}>
+      <p className="text-sm text-gray-600"><Trans context="AdminFeel, p">Step {step + 1} of {TOUR_STEPS.length}</Trans></p>
       <p className="mt-1 text-base">{TOUR_STEPS[step]}</p>
       <div className="mt-3 flex flex-wrap gap-2">
-        {!last && <button type="button" className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-3 text-sm text-white" onClick={() => setStep((n) => n + 1)}>Next</button>}
+        {!last && <button type="button" className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-3 text-sm text-white" onClick={() => setStep((n) => n + 1)}><Trans context="AdminFeel, button">Next</Trans></button>}
         <button type="button" className="inline-flex min-h-[44px] items-center rounded-lg border border-gray-300 px-3 text-sm" onClick={() => { markTourSeen(); setOpen(false); }}>{last ? "Done" : "Skip"}</button>
       </div>
     </section>
@@ -48,6 +50,7 @@ function markTourSeen() {
 }
 
 export function GentleQuests() {
+  const { t } = useLingui();
   const handled = readHandledCount(new Date());
   if (!feelOn("quests")) return null;
   const items = [
@@ -55,8 +58,8 @@ export function GentleQuests() {
     { id: "connections", label: "Look at your connections", done: false },
   ];
   return (
-    <section className="mt-4" aria-label="Gentle quests">
-      <h3 className="text-base font-semibold text-gray-900">If you want a small start</h3>
+    <section className="mt-4" aria-label={t({ message: "Gentle quests", context: "AdminFeel, aria-label" })}>
+      <h3 className="text-base font-semibold text-gray-900"><Trans context="AdminFeel, h3">If you want a small start</Trans></h3>
       <ul className="mt-2 space-y-1">
         {items.map((item) => (
           <li key={item.id} className="text-sm text-gray-800">{item.done ? "Done. " : ""}{item.label}</li>
@@ -68,7 +71,7 @@ export function GentleQuests() {
 
 export function AllClear({ show }: { show: boolean }) {
   if (!show || !feelOn("clear")) return null;
-  return <p className="mt-2 text-base text-gray-900">All clear for today.</p>;
+  return <p className="mt-2 text-base text-gray-900"><Trans context="AdminFeel, p">All clear for today.</Trans></p>;
 }
 
 export function WeekRecap() {
@@ -79,16 +82,17 @@ export function WeekRecap() {
     return () => window.removeEventListener("admin:handled", on);
   }, []);
   if (!feelOn("recap")) return null;
-  return <p className="mt-2 text-sm text-gray-700">This week on this device: {count} handled.</p>;
+  return <p className="mt-2 text-sm text-gray-700"><Trans context="AdminFeel, p">This week on this device: {count} handled.</Trans></p>;
 }
 
 export function FeelSettings({ role, onChanged }: { role: string | undefined; onChanged: () => void }) {
+  const { t } = useLingui();
   const [tick, setTick] = useState(0);
   const flip = (key: FeelKey, on: boolean) => { setFeel(key, on); setTick((n) => n + 1); };
   const limited = simpleNav(role);
   return (
-    <section className="mt-6 rounded-xl border border-gray-200 bg-white p-4" aria-label="On this device">
-      <h3 className="text-base font-semibold text-gray-900">On this device</h3>
+    <section className="mt-6 rounded-xl border border-gray-200 bg-white p-4" aria-label={t({ message: "On this device", context: "AdminFeel, aria-label" })}>
+      <h3 className="text-base font-semibold text-gray-900"><Trans context="AdminFeel, h3">On this device</Trans></h3>
       <ul className="mt-2 space-y-1">
         {(["tour", "quests", "clear", "recap"] as FeelKey[]).map((key) => (
           <li key={key}>

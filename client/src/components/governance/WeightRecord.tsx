@@ -40,6 +40,7 @@ import { History } from "lucide-react";
 import InfoTip from "@/components/InfoTip";
 import { weightText } from "./voteBars";
 import type { Standing, WeightRecord as WeightRecordData } from "./governanceApi";
+import { Trans } from "@lingui/react/macro";
 
 /** How many changes show before a member asks for the rest. */
 const FIRST_PAGE = 5;
@@ -96,12 +97,12 @@ export default function WeightRecord({
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-        <History className="w-4 h-4 text-notice" aria-hidden="true" />
+        <Trans context="WeightRecord, h3"><History className="w-4 h-4 text-notice" aria-hidden="true" />
         The weight record
         <InfoTip
           tip="Every change to anyone's voting weight is kept with its reason and its author, and every member can read it."
           label="What the weight record is"
-        />
+        /></Trans>
       </h3>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
         {record.mode === "custom"
@@ -122,7 +123,7 @@ export default function WeightRecord({
 
       {record.history.length > 0 && (
         <div className="mt-4 border-t border-border pt-3">
-          <h4 className="text-sm font-semibold text-foreground">Every change, and who made it</h4>
+          <h4 className="text-sm font-semibold text-foreground"><Trans context="WeightRecord, h4">Every change, and who made it</Trans></h4>
           <ul className="mt-2 space-y-2.5">
             {/* `shown` is always a prefix of `record.history`, so i indexes
                 `isMine` as well. */}
@@ -136,9 +137,9 @@ export default function WeightRecord({
                   {weightText(h.newWeight)}
                 </span>
                 <span className="text-muted-foreground">
-                  {" by "}
+                  <Trans context="WeightRecord, span">{" by "}
                   {h.by} on{" "}
-                  {new Date(h.at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                  {new Date(h.at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</Trans>
                 </span>
                 <p className="text-muted-foreground leading-relaxed">{h.note}</p>
               </li>
@@ -155,8 +156,8 @@ export default function WeightRecord({
             </button>
           )}
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Append-only. Nothing on this list can be edited or removed, by anyone.
-          </p>
+            <Trans context="WeightRecord, p">Append-only. Nothing on this list can be edited or removed, by anyone.
+          </Trans></p>
         </div>
       )}
     </section>

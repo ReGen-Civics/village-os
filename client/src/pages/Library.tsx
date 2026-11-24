@@ -18,6 +18,7 @@ import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameFor } from "@/hooks/useTokenNameFor";
 import { failureWords } from "@/lib/failureWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -31,6 +32,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function Library() {
+  const { t } = useLingui();
   const modules = useModules();
   const libraryModule = useModule("library");
   // The village's own word for its library token (R084), from the registry.
@@ -81,20 +83,20 @@ export default function Library() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Material Library</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Library, h1">Material Library</Trans></h1>
           {/* R47: the Trail line leads, naming the token as this village does
               (R084). Its tooltip said how the token is earned, which no
               shipped sentence says (the 2026-10-22 token ruling).
               The shelf line is the Lore, last and quiet. */}
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Borrow what you need with{" "}
+            <Trans context="Library, p">Borrow what you need with{" "}
             {libraryName}.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="library" noun="donation" />
           <p className="mt-2 text-sm italic text-muted-foreground max-w-xl mx-auto">
-            One shelf, many hands. What you no longer need becomes what a
+            <Trans context="Library, p">One shelf, many hands. What you no longer need becomes what a
             neighbor was missing.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -115,11 +117,11 @@ export default function Library() {
                 Your {libraryName}: <span className="font-bold">{formatTokenAmount(Number(data.mine.balance ?? 0), Number(data.mine.balanceDecimals ?? 0))}</span>
                 {Number(data.mine.lockedUnits ?? 0) > 0 && (
                   <span className="text-muted-foreground">
-                    {" "}to spend, {formatTokenAmount(Number(data.mine.totalUnits ?? 0), Number(data.mine.balanceDecimals ?? 0))} to your name
-                  </span>
+                    <Trans context="Library, span">{" "}to spend, {formatTokenAmount(Number(data.mine.totalUnits ?? 0), Number(data.mine.balanceDecimals ?? 0))} to your name
+                  </Trans></span>
                 )}
                 {data.mine.strikes > 0 && (
-                  <span className="text-xs text-amber-700 ml-2">({data.mine.strikes} no-show{data.mine.strikes > 1 ? "s" : ""})</span>
+                  <span className="text-xs text-amber-700 ml-2"><Trans context="Library, span">({data.mine.strikes} no-show{data.mine.strikes > 1 ? "s" : ""})</Trans></span>
                 )}
               </p>
               {/* WHY THE TWO NUMBERS DIFFER, one line per thing holding a
@@ -148,14 +150,14 @@ export default function Library() {
                         {(l.status === "reserved" || l.status === "pickup_pending") && (
                           <button onClick={() => call(`/api/library/loans/${l.id}/cancel`)}
                             className="text-xs text-muted-foreground hover:text-red-600 inline-flex items-center gap-1">
-                            <Undo2 className="w-3 h-3" /> Cancel
-                          </button>
+                            <Trans context="Library, button"><Undo2 className="w-3 h-3" /> Cancel
+                          </Trans></button>
                         )}
                         {l.status === "active" && (
                           <button onClick={() => call(`/api/library/loans/${l.id}/return`)}
                             className="text-xs text-teal-deep font-medium hover:underline inline-flex items-center gap-1">
-                            <RotateCcw className="w-3 h-3" /> I returned it
-                          </button>
+                            <Trans context="Library, button"><RotateCcw className="w-3 h-3" /> I returned it
+                          </Trans></button>
                         )}
                       </span>
                     </div>
@@ -187,12 +189,12 @@ export default function Library() {
                   <div className="mt-auto flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
                       value {i.creditValue} ·{" "}
-                      <InfoTip tip={`The deposit is set aside from your ${libraryName} while the item is out and returns when it does, minus any wear.`}>deposit</InfoTip>{" "}
+                      <InfoTip tip={`The deposit is set aside from your ${libraryName} while the item is out and returns when it does, minus any wear.`}><Trans context="Library, InfoTip">deposit</Trans></InfoTip>{" "}
                       {i.escrow}
                       {i.minStage && (
                         <>
                           {" "}·{" "}
-                          <InfoTip tip={`This item opens at the ${stageNameOf(i.minStage)} stage of the ${ladder}. See where you stand on your profile.`}>from {stageNameOf(i.minStage)}</InfoTip>
+                          <InfoTip tip={`This item opens at the ${stageNameOf(i.minStage)} stage of the ${ladder}. See where you stand on your profile.`}><Trans context="Library, InfoTip">from {stageNameOf(i.minStage)}</Trans></InfoTip>
                         </>
                       )}
                     </p>
@@ -200,11 +202,11 @@ export default function Library() {
                       <button
                         onClick={() => call(`/api/library/items/${i.id}/reserve`, undefined, i.id)}
                         disabled={!eligible}
-                        title={eligible ? `Sets aside ${i.escrow} ${libraryName} while you borrow` : "Not open to you yet"}
+                        title={eligible ? `Sets aside ${i.escrow} ${libraryName} while you borrow` : t({ message: "Not open to you yet", context: "Library, title" })}
                         className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
                       >
-                        Borrow
-                      </button>
+                        <Trans context="Library, button">Borrow
+                      </Trans></button>
                     )}
                   </div>
                   {refusedItem && refusedItem.id === i.id && (
@@ -218,11 +220,11 @@ export default function Library() {
               items used to render a blank grid with no explanation. */}
           {data && visibleItems.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-12">
-              <Package className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
+              <Trans context="Library, p"><Package className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
               No items on the shelf yet.
-            </p>
+            </Trans></p>
           )}
-          {!user && <p className="text-center text-xs text-muted-foreground">Sign in to borrow. To donate, talk to a steward.</p>}
+          {!user && <p className="text-center text-xs text-muted-foreground"><Trans context="Library, p">Sign in to borrow. To donate, talk to a steward.</Trans></p>}
         </div>
       </section>
     </Layout>

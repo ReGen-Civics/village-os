@@ -21,6 +21,7 @@ import { Link } from "wouter";
 import { readStored, writeStored } from "@/lib/safeStorage";
 import { doorsWalked, youCanNow, type DoorCapability } from "@shared/doorsOpened";
 import { BTN_GOLD, KICKER, LINK } from "./dashUi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const DISMISS_KEY = "profile.doorsPanel.dismissed";
 
@@ -33,6 +34,7 @@ export default function StagePanel({
   stages: ReadonlyArray<{ id: string }>;
   nextAction: { label: string; href: string } | null;
 }) {
+  const { t } = useLingui();
   const doors = doorsWalked(catalogue, stages).flatMap((g) => g.doors);
   const signature = doors.join("|");
   const headingId = useId();
@@ -59,7 +61,7 @@ export default function StagePanel({
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Hide until a new door opens"
+        aria-label={t({ message: "Hide until a new door opens", context: "StagePanel, aria-label" })}
         className="absolute right-3 top-3 hidden h-11 w-11 items-center justify-center rounded-lg text-2xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex"
       >
         <span aria-hidden="true">×</span>
@@ -68,10 +70,10 @@ export default function StagePanel({
       {doors.length > 0 ? (
         <div className="flex min-w-0 flex-[1_1_460px] flex-col gap-3">
           <div>
-            <p className={KICKER}>Doors open to you</p>
+            <p className={KICKER}><Trans context="StagePanel, p">Doors open to you</Trans></p>
             <h2 id={headingId} className="m-0 font-display text-[26px] leading-tight sm:text-[32px]">
-              What you can do here
-            </h2>
+              <Trans context="StagePanel, h2">What you can do here
+            </Trans></h2>
           </div>
           {/* One circle per door walked through, overlapping like the seed of life grows: the seed is the
               set of doors, never a position on a ladder. Drawn, then named in words beside it. */}
@@ -93,22 +95,22 @@ export default function StagePanel({
         <div className="flex w-full flex-[1_1_300px] items-center gap-3 rounded-xl border border-dash-gold-edge bg-dash-next p-3.5 sm:flex-col sm:items-stretch sm:gap-2.5 sm:p-5">
           <div className="min-w-0 flex-1">
             <p className={KICKER} id={doors.length === 0 ? headingId : undefined}>
-              Your next step
-            </p>
+              <Trans context="StagePanel, p">Your next step
+            </Trans></p>
             <p className="m-0 mt-0.5 text-base font-medium sm:font-display sm:text-[26px] sm:leading-tight">{nextAction.label}</p>
           </div>
           <Link href={nextAction.href} className={`${BTN_GOLD} shrink-0 self-center sm:self-start`}>
-            Go <span aria-hidden="true">→</span>
+            <Trans context="StagePanel, Link">Go <span aria-hidden="true">→</span></Trans>
           </Link>
           <p className="m-0 mt-1 hidden text-[13px] text-muted-foreground sm:block">
-            Other ways forward:{" "}
+            <Trans context="StagePanel, p">Other ways forward:{" "}
             <Link href="/propose-quest" className={LINK}>
               Propose a quest
             </Link>{" "}
             ·{" "}
             <Link href="/roles" className={LINK}>
               Apply for a role
-            </Link>
+            </Link></Trans>
           </p>
         </div>
       ) : null}
