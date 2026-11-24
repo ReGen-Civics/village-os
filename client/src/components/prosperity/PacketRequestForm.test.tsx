@@ -88,3 +88,19 @@ describe("the shared check the server runs too", () => {
     expect(packetProblems(packetFrom({ name: "Ana", email: "ana@example.org", build: "A bakery" }))).toEqual([]);
   });
 });
+
+describe("the email check", () => {
+  const email = (e: string) => packetProblems({ name: "Ana", email: e, build: "A bakery", note: "" }).includes("email");
+  it("takes an address and refuses what is not one", () => {
+    expect(email("ana@example.org")).toBe(false);
+    expect(email(" ana@example.org ")).toBe(false);
+    for (const bad of ["", "ana", "ana@", "@example.org", "ana@example", "ana@.org", "ana@example.", "a@b@example.org", "ana @example.org"]) expect(email(bad), bad).toBe(true);
+  });
+
+  it("answers at once on a long hostile string (CodeQL: no backtracking pattern over a stranger's text)", () => {
+    const hostile = "!@!." + "!.".repeat(50_000);
+    const t0 = Date.now();
+    expect(email(hostile)).toBe(true);
+    expect(Date.now() - t0).toBeLessThan(200);
+  });
+});

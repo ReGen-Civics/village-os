@@ -31,13 +31,25 @@ export const PACKET_LIMITS = { name: 120, email: 254, build: 2000, note: 2000 } 
 
 export type PacketProblem = "name" | "email" | "build" | "note";
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/**
+ * An address: one @ with something before it, a dot after it with something
+ * on both sides, no spaces, and no longer than the limit. Read by hand, in one
+ * pass: a pattern over a stranger's text must not be able to backtrack.
+ */
+function looksLikeEmail(raw: string): boolean {
+  const v = raw.trim();
+  if (!v || v.length > PACKET_LIMITS.email || /\s/.test(v)) return false;
+  const at = v.indexOf("@");
+  if (at < 1 || at !== v.lastIndexOf("@")) return false;
+  const dot = v.lastIndexOf(".");
+  return dot > at + 1 && dot < v.length - 1;
+}
 
 /** Every thing missing or wrong, in the form's order; [] when it can be sent. */
 export function packetProblems(p: PacketRequest): PacketProblem[] {
   const out: PacketProblem[] = [];
   if (!p.name.trim() || p.name.length > PACKET_LIMITS.name) out.push("name");
-  if (!EMAIL.test(p.email.trim()) || p.email.length > PACKET_LIMITS.email) out.push("email");
+  if (p.email.length > PACKET_LIMITS.email || !looksLikeEmail(p.email)) out.push("email");
   if (!p.build.trim() || p.build.length > PACKET_LIMITS.build) out.push("build");
   if (p.note.length > PACKET_LIMITS.note) out.push("note");
   return out;
