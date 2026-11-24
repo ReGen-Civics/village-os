@@ -375,6 +375,35 @@ describe.skipIf(!configured)("Edit this role", () => {
     });
   });
 
+  describe("the related roles a lead role will onboard (the lead, 24 Nov 2026)", () => {
+    it("saves real role ids in order, refuses the card's own role and an unknown id by name, and a removed role never blocks a later save", async () => {
+      const { id } = await seedRole();
+      const { id: a } = await seedRole();
+      const { id: b } = await seedRole();
+      holders = new Set(["holder-1"]);
+      const saved = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { relatedRoles: [b, a] } });
+      expect(saved.status).toBe(200);
+      expect(saved.json.state.sections.relatedRoles).toEqual([b, a]);
+      for (const list of [[id], [a, "rt-nowhere"], [a, a]]) {
+        const r = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { relatedRoles: list } });
+        expect(r.status, list.join(",")).toBe(400);
+        expect(r.json.fields).toEqual(["sections.relatedRoles"]);
+      }
+      // A related role removed since: the editor sends the list back as it read it, removed role and all, and the save lands.
+      await pool.query("DELETE FROM org_roles WHERE id = ?", [b]); // module-review-ok: a test removing the role it then saves around
+      const resent = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Calm"], relatedRoles: [b, a] } });
+      expect(resent.status).toBe(200);
+      expect(resent.json.state.sections.relatedRoles).toEqual([a]);
+      // And a save of other words alone (the agent connector's partial save) lands with the removed role taken out.
+      const { id: c } = await seedRole();
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { relatedRoles: [c, a] } })).status).toBe(200);
+      await pool.query("DELETE FROM org_roles WHERE id = ?", [c]); // module-review-ok: a test removing the role it then saves around
+      const words = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Calm", "Kind"] } });
+      expect(words.status).toBe(200);
+      expect(words.json.state.sections.relatedRoles).toEqual([a]);
+    });
+  });
+
   describe("history and revert", () => {
     beforeEach(() => {
       holders = new Set(["holder-1"]);

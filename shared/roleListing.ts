@@ -97,6 +97,29 @@ export function rolesLeadWillBuild<R extends { id: string; circleId?: string | n
   return roles.filter((r) => r.id !== leadRoleId && !!r.circleId && led.has(r.circleId) && r.comingSoon === true && r.futureVenture !== true && r.active !== false && r.isExample !== true);
 }
 
+/**
+ * THE RELATED ROLES A LEAD'S CARD NAMES (the lead, 24 Nov 2026): the card's own `relatedRoles` (shared/roleCardSections.ts),
+ * in its order, as the roles page draws them. Open, coming-soon and held roles from any circle all stay; a role the page
+ * draws nowhere is left out: one this reader's list does not hold, the lead itself, an example, a future venture, and an
+ * unlisted role (a coming-soon role shows while unlisted, as it always does, so it stays).
+ */
+export function relatedRolesShown<R extends { id: string; name?: unknown; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null; isExample?: boolean | null }>(
+  leadRoleId: string,
+  ids: readonly string[],
+  roles: readonly R[],
+): Array<{ id: string; name: string }> {
+  const byId = new Map(roles.map((r) => [r.id, r]));
+  const out: Array<{ id: string; name: string }> = [];
+  for (const id of ids) {
+    const r = byId.get(id);
+    if (!r || r.id === leadRoleId || r.isExample === true || r.futureVenture === true) continue;
+    if (r.listed === false && r.comingSoon !== true) continue;
+    if (out.some((o) => o.id === id)) continue;
+    out.push({ id: r.id, name: String(r.name ?? "") });
+  }
+  return out;
+}
+
 export function isComingSoon(role: { comingSoon?: boolean | null } | null | undefined): boolean {
   return role?.comingSoon === true;
 }

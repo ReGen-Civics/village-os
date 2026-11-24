@@ -45,7 +45,7 @@ import { pageContentProblem, pageSpecForSection } from "../../shared/pageContent
 import { readVillageDoc } from "../../shared/onboardingPath";
 import { parseRoleWords } from "../../shared/roleProposals";
 import { PARAMETER_KEYS, readParameter, readPayGroup, type ParameterKey } from "../../shared/roleParameters";
-import { readSections, type RoleCardSections } from "../../shared/roleCardSections";
+import { readSections, withoutGoneRelated, type RoleCardSections } from "../../shared/roleCardSections";
 import { splitDriftRefusal } from "./roleSplitDrift";
 import { isListed } from "../../shared/roleListing";
 import { allVariables } from "./variables";
@@ -157,7 +157,10 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       let nextSections: RoleCardSections | null = null;
       if (b.sections !== undefined) {
         const live = (await editorState(deps.pool, role)).sections;
-        const r = readSections(mergeOnto(live, b.sections));
+        // The related roles are role ids of this village, never the card's own (shared/roleCardSections.ts).
+        const realRoles = new Set(roles.filter((r) => !r.isExample).map((r) => r.id));
+        const isRole = (rid: string) => realRoles.has(rid);
+        const r = readSections(mergeOnto(withoutGoneRelated(live, isRole), b.sections), { roleId: role.id, isRole });
         if (!r.ok) return bad(r.problem, r.field);
         nextSections = r.value;
       }
