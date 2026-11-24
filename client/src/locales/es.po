@@ -11929,10 +11929,11 @@ msgctxt "role draft stat"
 msgid "{openPlaces} of {seats} open"
 msgstr "{openPlaces} de {seats} abiertos"
 
+# needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: under the mode switch, the mode the page is in"
 msgid "Light"
-msgstr ""
+msgstr "Claro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -14977,10 +14978,11 @@ msgctxt "voice field purpose: objection ruling note"
 msgid "Why you ruled this objection the way you did, for the record."
 msgstr "Por qué resolvió esta objeción como lo hizo, para el registro."
 
+# needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: under the mode switch, the mode the page is in"
 msgid "Dark"
-msgstr ""
+msgstr "Oscuro"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tab"
@@ -19650,10 +19652,11 @@ msgctxt "role editor: who can hold a role"
 msgid "A person or an agent"
 msgstr "Una persona o un agente"
 
+# needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: the mode switch, read aloud"
 msgid "Switch to dark mode"
-msgstr ""
+msgstr "Cambiar al modo oscuro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
@@ -24717,10 +24720,11 @@ msgctxt "founding application review, several roles"
 msgid "Commitment: {eachRole}. {allPct}% in all"
 msgstr "Compromiso: {eachRole}. {allPct}% en total"
 
+# needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: the mode switch, read aloud"
 msgid "Switch to light mode"
-msgstr ""
+msgstr "Cambiar al modo claro"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
