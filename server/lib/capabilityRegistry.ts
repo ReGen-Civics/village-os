@@ -183,8 +183,14 @@ export const POWERS: readonly PowerEntry[] = [
   {
     capability: "redemption.confirm",
     title: "Redemptions",
-    surface: "Agreeing that a member was paid off the platform, and destroying what they redeemed",
-    routes: ["/api/redemptions/:id/confirm", "/api/redemptions/:id/refuse"],
+    surface: "Agreeing that a member or a venture was paid off the platform, and destroying what they redeemed",
+    routes: [
+      "/api/redemptions/:id/confirm",
+      "/api/redemptions/:id/refuse",
+      "/api/admin/org-redemptions",
+      "/api/admin/org-redemptions/:id/confirm",
+      "/api/admin/org-redemptions/:id/refuse",
+    ],
   },
   {
     capability: "cash.pay",
