@@ -101,8 +101,9 @@ export default function MapPeek() {
               <div className="absolute inset-0 bg-gradient-to-br from-teal-deep/25 via-teal-deep/10 to-amber/20" />
             )}
 
-            {/* A scrim so the label stays legible over painted land. */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-5">
+            {/* A scrim so the label stays legible over painted land. Deeper at the label's
+                own height (QA audit, 24 Nov 2026: a pale sky under a thin scrim measured 2.5:1). */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/55 to-transparent p-5 pt-10">
               <span className="inline-flex items-center gap-2 text-white font-medium">
                 Open the Living Map
                 <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
