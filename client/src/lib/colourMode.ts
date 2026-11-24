@@ -28,12 +28,12 @@ export const DEFAULT_MODE: Mode = "light";
 
 /**
  * Whether modes are switched on for everybody: the header shows the switch,
- * and steps 2 and 3 above apply. Off while the page families move to tokens,
- * so production looks as it did until every family is ready; a stored choice
- * (step 1) still applies, which is how a tester previews it. The first-paint
- * script carries the same flag as `live`.
+ * and steps 2 and 3 above apply. On since 1.3.66, after the contrast audits of
+ * every public and signed-in page in both modes (24 Nov 2026). Off, a stored
+ * choice (step 1) still applies and nothing else does, which is how a tester
+ * previews a change. The first-paint script carries the same flag as `live`.
  */
-export const MODES_LIVE = false;
+export const MODES_LIVE = true;
 
 /**
  * Whether a first visit follows the device's light or dark setting. Off: the
