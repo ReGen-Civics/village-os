@@ -329,6 +329,52 @@ describe("one frame per role", () => {
     await waitFor(() => expect(document.getElementById("role-perma")?.querySelector("[data-waitlist-form]")).toBeTruthy());
   });
 
+  it("shows the card's own related roles in its order over the derived list: an open role and a role from another circle (the lead, 24 Nov 2026)", async () => {
+    // Cook is open and sits in the anchor circle, outside the Money Circle the finance lead leads; Ops is held.
+    founding.sections.finance = { ...SECTIONS, relatedRoles: ["cook", "perma", "ops"] };
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const line = frame("finance").querySelector("[data-roles-to-be-added]") as HTMLElement;
+    expect(Array.from(line.querySelectorAll("[data-role-to-be-added]")).map((b) => b.textContent)).toEqual(["Village Cook", "Permaculture Steward", "Operations Steward"]);
+    // The derived coming-soon role the card left out is not added back.
+    expect(line.querySelector('[data-role-to-be-added="dev"]')).toBeNull();
+    // The open role opens its own row on this page, as the other chips do.
+    fireEvent.click(line.querySelector('[data-role-to-be-added="cook"]') as HTMLElement);
+    await waitFor(() => expect(document.querySelector('[data-role-row="cook"] [aria-expanded="true"]')).toBeTruthy());
+  });
+
+  it("opens another founding role's card when the related list names it", async () => {
+    founding.sections.finance = { ...SECTIONS, relatedRoles: ["land"] };
+    wide();
+    renderRoles();
+    await waitFor(() => expect(frame("finance")?.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
+    fireEvent.click(frame("finance").querySelector('[data-role-to-be-added="land"]') as HTMLElement);
+    await waitFor(() => expect(frame("land").querySelector('[data-full-role-card="land"]')).toBeTruthy());
+  });
+
+  it("falls back to the derived list when the card's related roles are empty (control)", async () => {
+    founding.sections.finance = { ...SECTIONS, relatedRoles: [] };
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const line = frame("finance").querySelector("[data-roles-to-be-added]") as HTMLElement;
+    expect(Array.from(line.querySelectorAll("[data-role-to-be-added]")).map((b) => b.textContent)).toEqual(["Development Steward", "Permaculture Steward"]);
+  });
+
+  it("skips a named role the page draws nowhere: unlisted, an example, a venture, one it does not hold, and the lead itself", async () => {
+    org.roles.push(seat("hidden", "Hidden Steward", { listed: false }), seat("demo", "Demo Steward", { isExample: true }));
+    founding.sections.finance = { ...SECTIONS, relatedRoles: ["hidden", "demo", "guest", "ghost", "finance", "cook"] };
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const line = frame("finance").querySelector("[data-roles-to-be-added]") as HTMLElement;
+    expect(Array.from(line.querySelectorAll("[data-role-to-be-added]")).map((b) => b.getAttribute("data-role-to-be-added"))).toEqual(["cook"]);
+    // With every named role skipped, the line is not drawn at all; the derived list does not come back in its place.
+    cleanup();
+    founding.sections.finance = { ...SECTIONS, relatedRoles: ["hidden", "guest"] };
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    expect(frame("finance").querySelector("[data-roles-to-be-added]")).toBeNull();
+  });
+
   it("keeps a coming-soon role's Join the waitlist and Apply early, and the empty ventures line when none is flagged", async () => {
     org.roles = org.roles.filter((r: any) => r.id !== "guest");
     renderRoles();

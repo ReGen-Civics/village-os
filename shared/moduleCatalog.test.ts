@@ -272,6 +272,16 @@ describe("moduleCatalog", () => {
      *                           is a neutral answer under any sky, and a village
      *                           moves it by the dial or a vote (internal spec
      *                           i18n, US3).
+     *
+     * Judged on 2026-11-24, by credits lane 2 (a venture redeems, 0420):
+     *
+     *   ledger.org_redemption_currencies, ledger.org_redemption_rate
+     *                           matched on "currency" and "USD". The peg is a
+     *                           decision (the lead, 23 Nov 2026: one credit is
+     *                           one US dollar), the same under any sky, like
+     *                           the payment spine's `usd`. A village that pays
+     *                           in its own money as well lists it second, and
+     *                           the daily rate converts it.
      */
     expect(hits).toEqual([
       "calendar.cross_quarters",
@@ -288,6 +298,8 @@ describe("moduleCatalog", () => {
       "governance.hub_url",
       "governance.quorum_pct",
       "governance.window_role_seat",
+      "ledger.org_redemption_currencies",
+      "ledger.org_redemption_rate",
       "library.dispute_deadline_days",
       "map.concierge_enabled",
       "payments.donation_max_usd",

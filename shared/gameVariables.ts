@@ -542,6 +542,59 @@ export const VARIABLES: VariableDef[] = [
     type: "boolean",
     default: "false",
   },
+  /*
+   * A VENTURE REDEEMS ITS CREDITS (0420, the lead's decisions of 23 Nov 2026).
+   * Members never cash out; a venture does, and a redemption key holder (the
+   * Treasury role) confirms each one after paying it outside the platform.
+   * Four dials, the door shipping off until the village's legal review clears
+   * it. Read by server/lib/orgRedemptions.ts.
+   */
+  {
+    key: "ledger.org_redemption_open",
+    category: "Ledger",
+    label: "Ventures can redeem their credits",
+    description:
+      "When on, the people seated in a venture's role can ask to turn credits the venture holds into money. The credits are held at once, the Treasury pays the venture outside the platform and then confirms with the payment's reference, and only then are the credits destroyed. Nobody who runs the venture can confirm its redemption. Leave this off until your legal review says the village may pay out. Turning it off stops new requests; anything already waiting can still be confirmed, refused or cancelled.",
+    type: "boolean",
+    default: "false",
+    ring: "founder",
+  },
+  {
+    key: "ledger.org_redemption_moon_cap",
+    category: "Ledger",
+    label: "Most credits ventures may redeem per cycle",
+    description:
+      "Counted across every venture together, in whole credits, for each cycle: requests still waiting and confirmed ones count, refused and cancelled ones give their credits back and count for nothing. The count starts again at the new cycle. 0 means zero: no venture redeems anything. Start low while the village tries this out, and let whoever holds the village's legal and financial structure set the real number.",
+    type: "decimal",
+    default: "100",
+    min: 0,
+    max: 1000000000,
+    ring: "founder",
+    unit: "credits per cycle",
+  },
+  {
+    key: "ledger.org_redemption_rate",
+    category: "Ledger",
+    label: "What one credit is worth when a venture redeems",
+    description:
+      "In the first currency of the list below. A venture paid in another listed currency is converted at that day's rate, and the rate used is written on the redemption. 0 means there is no rate, and no venture can redeem. Works with: 'Currencies a venture may be paid in'.",
+    type: "decimal",
+    default: "1",
+    min: 0,
+    max: 1000000000,
+    ring: "founder",
+    unit: "per credit",
+  },
+  {
+    key: "ledger.org_redemption_currencies",
+    category: "Ledger",
+    label: "Currencies a venture may be paid in",
+    description:
+      "Three-letter codes separated by commas. The venture chooses one when it asks. The first one is the currency the rate above is written in.",
+    type: "text",
+    default: "USD",
+    ring: "founder",
+  },
   {
     /*
      * THE UNSPENT-CAP BONUS, AND IT BELONGS TO THE CAP MODE ALONE.
@@ -4933,6 +4986,13 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
      * village appears to pay in and no rate could ever be found for it. Blank
      * is the real default and means the project's own currency.
      */
+    if (def.key === "ledger.org_redemption_currencies") {
+      const codes = raw.split(",").map((c) => c.trim());
+      if (!raw.trim() || codes.some((c) => !/^[A-Za-z]{3}$/.test(c))) {
+        return "Must be three-letter currency codes separated by commas, such as USD or USD, EUR. The first is the one the rate is written in.";
+      }
+      if (new Set(codes.map((c) => c.toUpperCase())).size !== codes.length) return "Each currency can only be listed once.";
+    }
     if (def.key === "redemption.currencies" && raw.trim() !== "") {
       const codes = raw.split(",").map((c) => c.trim());
       if (codes.some((c) => !/^[A-Za-z]{3}$/.test(c))) {

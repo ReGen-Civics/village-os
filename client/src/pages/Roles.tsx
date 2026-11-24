@@ -49,7 +49,7 @@ import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@s
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
-import { heldButRecruiting, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
+import { heldButRecruiting, relatedRolesShown, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
@@ -521,6 +521,8 @@ export default function Roles() {
       window.location.hash = waitlistHash(id);
       return;
     }
+    // Another founding role, named in a card's related roles, opens its own card in the founding team, as its button does.
+    if (featuredShown.has(id)) return void document.querySelector<HTMLElement>(`button[data-founding-role="${CSS.escape(id)}"]`)?.click();
     setExpandedRole(id);
     requestAnimationFrame(() => document.querySelector(`[data-role-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: "start", behavior: prefersReducedMotion() ? "instant" : "smooth" }));
   };
@@ -539,7 +541,10 @@ export default function Roles() {
   const featuredHidden = featuredReach.beyond;
   const featuredVisible = showBeyond ? featured : featured.filter((f) => !featuredHidden.includes(f));
   // "Related roles this role will onboard:" in a lead role's row: the coming-soon roles of the circles it leads (the lead, 21 Nov 2026).
-  const toBeAdded: Record<string, Array<{ id: string; name: string }>> = Object.fromEntries(Object.entries(builds).map(([id, list]) => [id, list.filter((b) => !b.held).map((b) => ({ id: b.id, name: b.name }))]));
+  // A card naming its own related roles (the lead, 24 Nov 2026) shows that list instead, in order, from any circle (relatedRolesShown).
+  const named = (id: string) => featured.find((f) => String(f.seat.id) === id)?.sections?.relatedRoles ?? [];
+  const relatedPool = (roles ?? []).map((r) => ({ ...r.raw, id: r.id, name: r.name, isExample: r.isExample === true || r.raw?.isExample === true }));
+  const toBeAdded: Record<string, Array<{ id: string; name: string }>> = Object.fromEntries(Object.entries(builds).map(([id, list]) => [id, named(id).length ? relatedRolesShown(id, named(id), relatedPool) : list.filter((b) => !b.held).map((b) => ({ id: b.id, name: b.name }))]));
   // "N roles, one timeline" (the lead, 20 Nov 2026): the open founding roles' dated deliverables, one lane each.
   const withDates = featuredVisible.filter((f) => (f.sections?.deliverables?.length ?? 0) > 0);
   const teamRows = withDates.length >= 2 ? withDates.flatMap((f) => (f.sections?.deliverables ?? []).map((d) => ({ ...d, role: String(f.seat.name ?? "") }))) : [];

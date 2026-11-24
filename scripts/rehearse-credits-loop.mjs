@@ -24,11 +24,24 @@
  *      ordinary send, with a fresh nonce.
  *   6. As the person seated in the venture's role (optional): reads
  *      `/api/org-accounts/mine` and prints the balance and the last payments.
- *   7. Stops at redemption, which is credits lane 2 and not built yet.
+ *   7. With `--redeem N` (needs VILLAGE_RUNNER_TOKEN): the person who runs the
+ *      venture asks to redeem N whole credits in `--currency` (default the
+ *      village's first), paid to `--pay-to` (sealed; needs VILLAGE_SECRETS_KEY on
+ *      the server), or with `--pay-ref` a reference the Treasury looks up. The credits are held. If ventures
+ *      cannot redeem yet it stops, unless `--open-redemption` is passed, which
+ *      turns `ledger.org_redemption_open` on.
+ *   8. With VILLAGE_TREASURER_TOKEN and `--paid-ref <reference>`: a redemption
+ *      key holder who does not run the venture reads the queue and confirms
+ *      that request with the reference of the payment they made outside the
+ *      platform (and, with `--paid-amount` and `--paid-currency`, what actually
+ *      went out), and the held credits burn. The key holder must really hold
+ *      `redemption.confirm`; an admin cannot stand in. Without `--paid-ref` the request is
+ *      left waiting, so a person can pay it first. Prints the hold account
+ *      against the waiting requests, which should match.
  *
  * SIGN-IN TOKENS COME FROM THE ENVIRONMENT, never the command line, so they
  * stay out of shell history: VILLAGE_ADMIN_TOKEN, VILLAGE_PAYER_TOKEN and,
- * optionally, VILLAGE_RUNNER_TOKEN. Each is the bearer token a sign-in answers
+ * optionally, VILLAGE_RUNNER_TOKEN and VILLAGE_TREASURER_TOKEN. Each is the bearer token a sign-in answers
  * with (`POST /api/auth/login`).
  *
  * Usage:
@@ -36,6 +49,7 @@
  *   node scripts/rehearse-credits-loop.mjs --base https://staging.example.org \
  *     --confirm "<village name>" --role <orgRoleId> --token credits \
  *     --amount 5 [--mint 20] [--label "<name members read>"] [--open-door]
+ *     [--redeem 3 --pay-to "<account and name>" [--currency USD] [--open-redemption] [--paid-ref TX-1 [--paid-amount 10.40 --paid-currency USD]]]
  */
 import { randomUUID } from "node:crypto";
 
@@ -56,6 +70,14 @@ const label = flag("--label");
 const adminToken = process.env.VILLAGE_ADMIN_TOKEN ?? "";
 const payerToken = process.env.VILLAGE_PAYER_TOKEN ?? "";
 const runnerToken = process.env.VILLAGE_RUNNER_TOKEN ?? "";
+const treasurerToken = process.env.VILLAGE_TREASURER_TOKEN ?? "";
+const redeem = flag("--redeem") === undefined ? 0 : Number(flag("--redeem"));
+const payTo = flag("--pay-to") ?? "";
+const currency = flag("--currency") ?? "";
+const paidRef = flag("--paid-ref") ?? "";
+const payRef = flag("--pay-ref") ?? "";
+const paidAmount = flag("--paid-amount") ?? "";
+const paidCurrency = flag("--paid-currency") ?? "";
 
 function stop(message, code = 1) {
   console.log(message);
@@ -157,4 +179,32 @@ if (runnerToken) {
   console.log("6. No VILLAGE_RUNNER_TOKEN, so the venture's own view was not read.");
 }
 
-console.log("7. Stop: the venture redeeming is credits lane 2 and is not built yet.");
+// 7. The venture redeems.
+if (!(redeem > 0)) stop("7. No redemption asked for (--redeem N with --pay-to to try one). Done.", 0);
+if (!runnerToken) stop("7. Redeeming needs VILLAGE_RUNNER_TOKEN, the person seated in the venture's role.");
+const terms = await call("GET", "/api/org-redemptions/mine", undefined, runnerToken);
+must("Reading the redemption terms", terms);
+const t = terms.json.terms;
+console.log(`7. Ventures can redeem: ${t.open ? "yes" : "no"}. One credit is ${t.pegRate} ${t.pegCurrency}. Paid in ${t.currencies.join(" or ")}. This cycle's cap: ${t.capCredits} credits, ${t.leftCredits} left.`);
+if (!t.open) {
+  if (!has("--open-redemption")) stop("   Ventures cannot redeem yet. Pass --open-redemption to turn ledger.org_redemption_open on, or turn it on in Admin.");
+  const opened = await call("PUT", "/api/admin/variables/ledger.org_redemption_open", { value: "true" }, adminToken);
+  must("Turning ledger.org_redemption_open on", opened);
+  console.log("   Turned ledger.org_redemption_open on.");
+}
+const asked = await call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: slug, amount: redeem, currency: currency || t.currencies[0], ...(payTo ? { payTo } : { payRef }) }, runnerToken);
+must(`Asking to redeem ${redeem} ${slug}`, asked, (s) => s === 201);
+const r = asked.json.redemption;
+console.log(`   Asked: ${r.credits} ${r.tokenName} for ${r.grossText} at ${r.rateText} each${r.fxRate ? `, ${r.fxRate} ${r.currency} per ${r.pegCurrency} (${r.fxAsOf})` : ""}. Held until the Treasury answers. Id ${r.id}.`);
+
+// 8. The Treasury confirms, after paying outside the platform.
+if (!treasurerToken) stop("8. No VILLAGE_TREASURER_TOKEN, so the request is left waiting for the Treasury. Done.", 0);
+const queue = await call("GET", "/api/admin/org-redemptions", undefined, treasurerToken);
+must("Reading the Treasury's queue", queue);
+console.log(`8. The Treasury sees ${queue.json.waiting.length} waiting. Hold against waiting requests:`);
+for (const h of queue.json.reconciliation) console.log(`   ${h.token}: held ${h.heldUnits}, owed ${h.owedUnits}, drift ${h.driftUnits}`);
+if (!paidRef) stop("   No --paid-ref, so the request waits for a person to pay it and confirm. Done.", 0);
+const confirmed = await call("POST", `/api/admin/org-redemptions/${encodeURIComponent(r.id)}/confirm`, { paymentRef: paidRef, paidAmount, paidCurrency }, treasurerToken);
+must("Confirming the redemption", confirmed);
+const done = confirmed.json.redemption;
+console.log(`   Confirmed with reference ${done.paymentRef}: asked ${done.grossText}, paid ${done.paidText ?? done.grossText}. The ${r.credits} ${r.tokenName} are retired.`);

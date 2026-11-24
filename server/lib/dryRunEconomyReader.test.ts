@@ -655,7 +655,9 @@ describe.skipIf(!configured)("the seed fallback, and saying it is a seed", () =>
     // `sys:redemption-hold` and `sys:redeemed` arrived with
     // drizzle/0201_a_member_redeems_what_they_hold from the redemption lane, and
     // both belong in the snapshot by the rule above, because a redemption posts
-    // into one of them and then the other. If you are here
+    // into one of them and then the other. Three times: `sys:org-redemption-hold`
+    // arrived with drizzle/0420_a_venture_redeems_its_credits (credits lane 2),
+    // where a venture's redemption is held. If you are here
     // because you added an account, add it to the list and read the sentence
     // above to check the snapshot should carry it. It almost certainly should.
     expect(Object.keys(snapshot.balances).sort()).toEqual([
@@ -671,6 +673,7 @@ describe.skipIf(!configured)("the seed fallback, and saying it is a seed", () =>
       "sys:library-pool",
       "sys:library-sink",
       "sys:mint",
+      "sys:org-redemption-hold",
       "sys:redeemed",
       "sys:redemption-hold",
       "sys:treasury",

@@ -1020,6 +1020,7 @@ const VAULT_SENTENCES = {
   "sys:library-sink": "library credit an admin burned",
   "sys:redemption-hold": "tokens held against a redemption somebody has open",
   "sys:redeemed": "tokens a confirmed redemption retired, and it only ever receives",
+  "sys:org-redemption-hold": "credits held against a venture's open redemption, until the Treasury confirms or it goes back",
 };
 
 /**

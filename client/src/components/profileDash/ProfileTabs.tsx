@@ -40,6 +40,8 @@ export const TAB_OF_ANCHOR: Record<string, ProfileTab> = {
   wallet: "treasury",
   ledger: "treasury",
   redeem: "treasury",
+  ventures: "treasury",
+  "venture-redemptions": "treasury",
   "send-tokens": "treasury",
   "your-agent": "sheet",
   "my-needs": "sheet",
