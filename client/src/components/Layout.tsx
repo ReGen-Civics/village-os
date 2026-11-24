@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,7 +18,7 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-import MobileFab from "./mobile/MobileFab";
+const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
@@ -897,7 +897,7 @@ export default function Layout({ children }: LayoutProps) {
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
       <MobileTabBar />
-      <MobileFab />
+      <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a
