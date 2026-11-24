@@ -34,7 +34,7 @@
   --sg-paper-ink: #241a10;
   --sg-paper-ink-soft: #5c4a30;
   --sg-paper-edge: #8a6a33;
-  --sg-link: #2b5f6b;
+  --sg-link: #7fb4b6; /* on the night ground, 8.09:1; the seed packet keeps its own below (QA audit, 24 Nov 2026: #2b5f6b measured 2.62:1 here) */
   /* the scene */
   --sg-sky1: #0f1f19;
   --sg-sky2: #1c3526;
@@ -186,6 +186,7 @@
 
 /* the seed packet */
 .sg-packet {
+  --sg-link: #2b5f6b; /* a link on the paper: 6.05:1, 5.19:1 on its darker end */
   background: linear-gradient(var(--sg-paper1), var(--sg-paper2)); color: var(--sg-paper-ink); border: 1px solid var(--sg-paper-edge);
   border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 4px rgba(255, 255, 255, 0.25);
 }

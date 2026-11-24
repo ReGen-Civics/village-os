@@ -5,7 +5,7 @@ import { useShareNames } from "@/components/ContributionWord";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Lightbulb, ArrowLeft, CheckCircle2, Sparkles, MessageCircle, ClipboardList, Inbox } from "lucide-react";
+import { Lightbulb, ArrowLeft, Sparkles, MessageCircle, ClipboardList } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchConfigCached } from "@/lib/gameApi";
 import { useTokenInUse, useTokenNameFor } from "@/hooks/useTokenNameFor";
@@ -21,6 +21,7 @@ import { APPLY_TEXT } from "@shared/applyLimits";
 const QUEST_PROSE_MAX = APPLY_TEXT.questProse;
 import { useLingui, Trans } from "@lingui/react/macro";
 import { useReplyPromise } from "@/components/ContributorRoutes";
+import Sprout from "@/components/motion/Sprout";
 
 interface QuestProposal {
   title: string;
@@ -155,14 +156,8 @@ export default function ProposeQuest() {
       <div className={WORLD}>
         <section className="py-24 min-h-[60vh]">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm"
-            >
-              <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
-                <Inbox className="w-8 h-8 text-notice" aria-hidden="true" />
-              </div>
+            <div className="m-arrive max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm">
+              <Sprout size={72} className="mx-auto mb-6 text-open" />
               <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
                 <Trans context="ProposeQuest, h1">Your Quest idea is saved, and held back from review.
               </Trans></h1>
@@ -188,7 +183,7 @@ export default function ProposeQuest() {
                   </Trans></a>
                 </Link>
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       </div>
@@ -202,14 +197,8 @@ export default function ProposeQuest() {
       <div className={WORLD}>
         <section className="py-24 min-h-[60vh]">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm"
-            >
-              <div className="w-16 h-16 rounded-full bg-open/10 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-8 h-8 text-open" />
-              </div>
+            <div className="m-arrive max-w-xl mx-auto text-center bg-card border border-border rounded-2xl p-10 shadow-sm">
+              <Sprout size={72} className="mx-auto mb-6 text-open" />
               <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl font-bold text-foreground mb-3 focus:outline-none">
                 <Trans context="ProposeQuest, h1">Your Quest idea is in.
               </Trans></h1>
@@ -243,7 +232,7 @@ export default function ProposeQuest() {
                   <Trans context="ProposeQuest, button">Propose another
                 </Trans></button>
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       </div>

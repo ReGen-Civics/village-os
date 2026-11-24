@@ -216,6 +216,13 @@ msgctxt "roles page, role state"
 msgid "Open"
 msgstr "Abierto"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#. placeholder {0}: offer.season.name
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, p"
+msgid "{0} has turned"
+msgstr "{0} ha cambiado"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -521,6 +528,12 @@ msgstr "Agregar una foto"
 msgctxt "proposed changes: put back"
 msgid "Season goals carry links to quests and moon items, and putting the list back could cut them. Change the goals in Admin, Season."
 msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, button"
+msgid "Mark all read"
+msgstr "Marcar todo como leído"
 
 #: client/src/components/IdentityPackPanel.tsx
 msgid "e.g. warm, textured, hand-painted illustration, never photorealistic"
@@ -874,6 +887,12 @@ msgstr "Puesto"
 #: client/src/pages/HiddenMap.tsx
 msgid "Waiting for a second person"
 msgstr "Esperando a una segunda persona"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, a"
+msgid "Main Website"
+msgstr "Sitio principal"
 
 #: client/src/components/roleCard/FoundingTeam.tsx
 #~ msgctxt "founding team section, hiring first"
@@ -2155,6 +2174,12 @@ msgctxt "four ways to build: a partnership, in one line"
 msgid "You already run a project or business and want to help build the community, build the village, or help it thrive."
 msgstr "Ya diriges un proyecto o negocio y quieres ayudar a construir la comunidad, construir la aldea o ayudarla a prosperar."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner"
+msgid "Publishing your first real {noun} clears them for good."
+msgstr "Cuando publique su primer {noun} real, desaparecen para siempre."
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, roles added to one application"
@@ -2196,6 +2221,12 @@ msgstr "hecho"
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "It changes something everyone shares, such as a path, the water or a common building."
 msgstr "Cambia algo que todos comparten, como un camino, el agua o un edificio común."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Pooling Resources"
+msgstr "Recursos en común"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -2917,6 +2948,12 @@ msgctxt "circles map, today card"
 msgid "No circle meets today."
 msgstr "Hoy no se reúne ningún círculo."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, a"
+msgid "Events"
+msgstr "Eventos"
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: say your percent"
 msgid "Say it"
@@ -3075,6 +3112,12 @@ msgstr "Descárguelas para que nada se pierda."
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgid "Each block of the governance canvas asks how one part of this village is governed. A reading gives the block a level, from Absent to Thriving, and one sentence saying why. Every reading is kept, so the village can see where each block has moved."
 msgstr "Cada bloque del lienzo de gobernanza pregunta cómo se gobierna una parte de esta aldea. Una lectura le da al bloque un nivel, de Ausente a Floreciente, y una frase que explica por qué. Cada lectura se guarda, para que la aldea vea cómo ha cambiado cada bloque."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Game Mechanics"
+msgstr "Cómo funciona el juego"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
@@ -3338,6 +3381,12 @@ msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en u
 msgctxt "proposed changes"
 msgid "{label}, line {0}"
 msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Leaving Well"
+msgstr "Salir bien"
 
 #: client/src/components/path/YourPathCard.tsx
 msgctxt "your path, the profile card"
@@ -4370,6 +4419,12 @@ msgstr "{beyondCount} roles necesitan más tiempo del que tienes ahora."
 #~ msgid "Choose your commitment to see a suggested price."
 #~ msgstr "Elige tu compromiso para ver un precio sugerido."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, aria-label"
+msgid "Notifications"
+msgstr "Avisos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -4406,6 +4461,12 @@ msgstr "Explora los roles abiertos"
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "How we know it"
 msgstr "Cómo lo sabemos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Your Journey"
+msgstr "Su camino"
 
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -4465,6 +4526,12 @@ msgstr "Nos vemos allí. Tu círculo llena la semilla."
 msgctxt "venture redemption payment reference"
 msgid "Ref {0}"
 msgstr "Ref. {0}"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, aria-label"
+msgid "Not now"
+msgstr "Ahora no"
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "Hide how this was worked out"
@@ -4683,6 +4750,13 @@ msgstr "Todavía sin monto"
 #: client/src/components/governance/ExportByVote.tsx
 msgid "No steward is sitting now, so there is nobody to name."
 msgstr "No hay ningún custodio en funciones ahora, así que no hay a quién nombrar."
+
+# needs-native-review: first pass, merge, 24 Nov 2026
+#. placeholder {0}: goals.length
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: how many of the season's goals the village has reached"
+msgid "{reached} of {0} reached"
+msgstr "{reached} de {0} cumplidas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -5186,6 +5260,12 @@ msgstr "Árbol"
 msgid "{plantings} logged by members so far. Where they are opens with your map."
 msgstr "{plantings} registrados por miembros hasta ahora. Dónde están se abre con su mapa."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Report a Bug / Share an Idea"
+msgstr "Reportar un error o compartir una idea"
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "Keeping the village running"
@@ -5514,6 +5594,12 @@ msgstr "Eliminar"
 msgctxt "approval inbox"
 msgid "Decline"
 msgstr "Rechazar"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Resources"
+msgstr "Recursos"
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, uploads"
@@ -9931,6 +10017,12 @@ msgstr "Horas hasta que quien se comunica reciba respuesta"
 msgid "Proposed through the connector"
 msgstr "Propuesto por medio del conector"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, p"
+msgid "What you earned, what you carried and your badges, on one card you can share."
+msgstr "Lo que ganó, lo que sostuvo y sus insignias, en una tarjeta que puede compartir."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
@@ -10225,6 +10317,12 @@ msgctxt "hidden map, one place's details"
 msgid "Seed"
 msgstr "Semilla"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Close shortcuts"
+msgstr "Cerrar atajos"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks web: how to read it"
 msgid "Faces sit in alphabetical order, and nobody sees how many threads anyone holds."
@@ -10512,6 +10610,12 @@ msgstr "Enviar {amountText} {tokenName} a {name}"
 msgctxt "voice transcription refusal"
 msgid "We couldn't read one of your recordings. Record it again."
 msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Health"
+msgstr "Salud de la aldea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journey/EconomicsView.tsx
@@ -11316,6 +11420,12 @@ msgctxt "roles page, other ways to join"
 msgid "Volunteer or work-trade: tell us what you would like to give."
 msgstr "Voluntariado o intercambio de trabajo: cuéntanos qué te gustaría dar."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "notification bell: an unread row"
+msgid "New"
+msgstr "Nuevo"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, coming-soon roles under the picker"
@@ -11562,6 +11672,11 @@ msgstr "{title} funciona sin conexión"
 msgctxt "role draft stat"
 msgid "{openPlaces} of {seats} open"
 msgstr "{openPlaces} de {seats} abiertos"
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: under the mode switch, the mode the page is in"
+msgid "Light"
+msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
@@ -12074,6 +12189,12 @@ msgctxt "proposed changes"
 msgid "Those could not be discarded. Reload and try again."
 msgstr ""
 
+# needs-native-review: first pass, merge, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: heading over this season's goals"
+msgid "What we are tending"
+msgstr "Lo que estamos cuidando"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Leaning {low}"
@@ -12246,6 +12367,12 @@ msgstr "El nombre que usa"
 msgid "{0}: {1} received ({2} {tokenLower} + {3} acknowledgments) from {4} member(s)"
 msgstr "{0}: {1} recibidos ({2} {tokenLower} + {3} reconocimientos) de {4} miembro(s)"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, p"
+msgid "Just landed"
+msgstr "Recién llegado"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
 msgid "Term"
@@ -12261,6 +12388,13 @@ msgstr "Elige tu compromiso para ver una compensación sugerida"
 #: client/src/pages/ExitPolicy.tsx
 msgid "Begin your own departure"
 msgstr "Iniciar su propia salida"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#. placeholder {0}: timeAgo(row.at)
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "Newest {0}"
+msgstr "Lo más reciente: {0}"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Home.tsx
@@ -12484,6 +12618,12 @@ msgstr "Un rol obligatorio se oculta a quienes dicen que pueden dar menos. Nada 
 msgctxt "pay page"
 msgid "Pay someone here for a jar of honey, a haircut, an afternoon of help."
 msgstr "Paga a alguien de aquí por un frasco de miel, un corte de pelo, una tarde de ayuda."
+
+# needs-native-review: first pass, merge, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: a season goal still being worked on"
+msgid "Growing"
+msgstr "Creciendo"
 
 #. placeholder {0}: next.title
 #: client/src/components/today/FirstFourteenDays.tsx
@@ -13434,6 +13574,12 @@ msgctxt "signing key"
 msgid "This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and restart, and that start makes the key, sealed. Until then those pages answer 503."
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Open shortcuts"
+msgstr "Abrir atajos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgctxt "heading in the Say frame of the conflict block"
@@ -14098,6 +14244,12 @@ msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
 msgstr "Lee la misión de arriba y empieza por lo primero que puedas hacer hoy"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Circles"
+msgstr "Círculos"
+
 # needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
 #: client/src/pages/ForgotPassword.tsx
 msgctxt "forgot password: after sending"
@@ -14485,6 +14637,11 @@ msgctxt "voice field purpose: objection ruling note"
 msgid "Why you ruled this objection the way you did, for the record."
 msgstr "Por qué resolvió esta objeción como lo hizo, para el registro."
 
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: under the mode switch, the mode the page is in"
+msgid "Dark"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tab"
 msgid "Year"
@@ -14621,6 +14778,12 @@ msgstr "sin casilla marcada"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "I'd like to talk about the terms."
 #~ msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, p"
+msgid "Reading the village."
+msgstr "Leyendo la aldea."
 
 #: client/src/components/governance/TermsOnOfferField.tsx
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -14824,6 +14987,12 @@ msgstr "La compensación que fijan los términos del rol, acordada en conjunto."
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "What the pasted list does"
 msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, aria-label"
+msgid "Home"
+msgstr "Inicio"
 
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
@@ -15520,6 +15689,12 @@ msgctxt "sera answers"
 msgid "Tick all shown"
 msgstr "Marcar todos los que se muestran"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner, one example"
+msgid "Nobody here made it. It shows what this module is for, and nothing you do to it takes effect."
+msgstr "Nadie aquí lo hizo. Muestra para qué sirve este módulo, y nada de lo que haga con él tiene efecto."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload"
@@ -15832,6 +16007,12 @@ msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
 msgstr "Propón un nuevo rol"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, p"
+msgid "Nothing yet. Go be seen."
+msgstr "Nada todavía. Salga y déjese ver."
+
 #: client/src/components/ErrorBoundary.tsx
 msgid "Still stuck? Give this device a fresh start"
 msgstr "¿Sigue sin funcionar? Dale a este dispositivo un nuevo comienzo"
@@ -16122,6 +16303,12 @@ msgctxt "admin protocols editor"
 msgid "Who may tick it"
 msgstr "Quién puede marcarlo"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, p"
+msgid "This is a standing example."
+msgstr "Este es un ejemplo permanente."
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup nudge, several"
@@ -16376,6 +16563,12 @@ msgstr "Todavía no hay misiones publicadas. Publica la primera."
 #~ msgctxt "steward front door"
 #~ msgid "One moon"
 #~ msgstr "Una luna"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Quest Board"
+msgstr "Tablero de misiones"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice clip beside an answer"
@@ -17298,6 +17491,12 @@ msgctxt "price popup choice"
 msgid "Negotiate on the first call if chosen"
 msgstr "Negociarlo en la primera llamada si me eligen"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
+msgctxt "SeasonSummaryOffer, Link"
+msgid "See my season"
+msgstr "Ver mi temporada"
+
 #: client/src/i18n/LanguagePicker.tsx
 #, fuzzy
 msgctxt "language picker"
@@ -17488,6 +17687,12 @@ msgstr "Nombre"
 msgctxt "start a change request"
 msgid "Start it"
 msgstr "Comenzarla"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Places, Photographed"
+msgstr "Lugares, en fotos"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "They have not aligned with the membership letter yet."
@@ -18533,6 +18738,12 @@ msgctxt "connector setup panel, step three"
 msgid "Claude opens the village to sign you in. Say yes there."
 msgstr "Claude abre la aldea para que usted inicie sesión. Diga que sí ahí."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, span"
+msgid "preview"
+msgstr "vista previa"
+
 #: client/src/components/circles/CircleName.tsx
 msgctxt "circle name"
 msgid "Anchor circle"
@@ -18679,6 +18890,12 @@ msgctxt "priority board, choose the role that owns a new item"
 msgid "Owner role"
 msgstr "Rol responsable"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Tools"
+msgstr "Herramientas de la aldea"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
@@ -18689,6 +18906,13 @@ msgstr "Empieza con: {s}"
 msgctxt "rites"
 msgid "Begin"
 msgstr "Comenzar"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#. placeholder {0}: g.unread
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "{0} unread"
+msgstr "{0} sin leer"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
@@ -18822,6 +19046,12 @@ msgctxt "member door choice"
 msgid "Change any words, share it for feedback, then send it to the circle."
 msgstr "Cambie las palabras que quiera, compártalo para recibir comentarios y luego envíelo al círculo."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Governance"
+msgstr "Gobernanza"
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, opens a role's full card"
 msgid "Read the full card"
@@ -18949,6 +19179,11 @@ msgstr "Usted está en la lista y todavía no ha votado."
 msgctxt "role editor: who can hold a role"
 msgid "A person or an agent"
 msgstr "Una persona o un agente"
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud"
+msgid "Switch to dark mode"
+msgstr ""
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -19455,6 +19690,12 @@ msgstr "Usar esto"
 msgid "A different value for one of the changes. The author may take it in."
 msgstr "Un valor distinto para uno de los cambios. La persona autora puede incorporarlo."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/mobile/MobileFab.tsx
+msgctxt "MobileFab, aria-label"
+msgid "Shortcuts"
+msgstr "Atajos"
+
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/fireflyPath/SaveLater.tsx
 msgctxt "founding application, save and finish later: link copied"
@@ -19628,6 +19869,12 @@ msgstr "Elija el archivo que quiere traer."
 msgid "The name for the {0} group"
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Review Queue"
+msgstr "Cola de revisión"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
 msgid "Every page"
@@ -19690,6 +19937,12 @@ msgstr "¿Tienes un enlace de invitación? Ábrelo para crear tu cuenta."
 #~ msgctxt "landing hero, the founding team line"
 #~ msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
 #~ msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: kind of change"
@@ -20366,6 +20619,12 @@ msgctxt "role draft heading"
 msgid "Open roles"
 msgstr "Roles abiertos"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, span"
+msgid "example"
+msgstr "ejemplo"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment footnote"
@@ -20837,6 +21096,12 @@ msgctxt "sera changes"
 msgid "Back to all {headCount}"
 msgstr "Volver a los {headCount}"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Connect"
+msgstr "Contacto"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
@@ -20907,6 +21172,12 @@ msgstr ""
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "The village adopts these words as what closing means here."
 msgstr ""
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationToasts.tsx
+msgctxt "NotificationToasts, aria-label"
+msgid "Dismiss this"
+msgstr "Descartar"
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -21018,6 +21289,14 @@ msgstr "Los primeros pasos una vez que se elige a alguien, uno por línea. Vací
 msgctxt "companion welcome"
 msgid "Every member gets a companion. Yours is still an egg. Let's find out who's inside."
 msgstr "Cada persona del pueblo recibe un compañero. El tuyo todavía es un huevo. Veamos quién hay dentro."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#. placeholder {0}: new Date().getFullYear()
+#. placeholder {1}: villageName ? ` ${villageName}.` : ""
+#: client/src/components/Layout.tsx
+msgctxt "Layout, p"
+msgid "© {0}{1} All rights reserved."
+msgstr "© {0}{1} Todos los derechos reservados."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/CanvasPublicLines.tsx
@@ -21878,6 +22157,12 @@ msgctxt "sign in: the button while it works"
 msgid "Signing in…"
 msgstr "Iniciando sesión…"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "examples banner, several examples"
+msgid "Nobody here made them. They show what this module is for, and nothing you do to one takes effect."
+msgstr "Nadie aquí los hizo. Muestran para qué sirve este módulo, y nada de lo que haga con uno tiene efecto."
+
 #: client/src/components/admin/MenuPanel.tsx
 msgid "The menu did not save."
 msgstr ""
@@ -22034,6 +22319,12 @@ msgstr "Luna del lienzo, {0}"
 msgctxt "Decision Matrix column"
 msgid "Who approves it"
 msgstr "Quién lo aprueba"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, aria-label"
+msgid "Close"
+msgstr "Cerrar"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ReceivePanel.tsx
@@ -22369,6 +22660,12 @@ msgstr "Guardarla"
 msgctxt "a role choice"
 msgid "No role"
 msgstr "Ningún rol"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/ExamplesBanner.tsx
+msgctxt "ExamplesBanner, p"
+msgid "These are standing examples."
+msgstr "Estos son ejemplos permanentes."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -23329,6 +23626,12 @@ msgstr "Cambios"
 msgid "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
 msgstr "Cúbralos antes de publicar. Arrastre un recuadro sobre cada uno. Todo lo demás oculto en la foto se quita por usted."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "{tokenName} Wall"
+msgstr "Muro de {tokenName}"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/PayDoor.tsx
 msgctxt "profile, door to the pay page"
@@ -23375,6 +23678,12 @@ msgstr "Pasar a su propia solicitud de cambio"
 msgctxt "founding application, the total across roles"
 msgid "Across your {0} roles: {pctTotal}% commitment in all."
 msgstr "Entre sus {0} roles: {pctTotal}% de compromiso en total."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, Link"
+msgid "<0/>Choose what reaches you, and how"
+msgstr "<0/>Elija qué le llega y cómo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/RitesHub.tsx
@@ -23805,6 +24114,11 @@ msgstr "Ver llamadas y eventos"
 msgctxt "founding application review, several roles"
 msgid "Commitment: {eachRole}. {allPct}% in all"
 msgstr "Compromiso: {eachRole}. {allPct}% en total"
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud"
+msgid "Switch to light mode"
+msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
@@ -24684,6 +24998,12 @@ msgstr "Todavía no hay una tasa fija para esta moneda, así que esta línea no 
 msgid "You confirm your email within 48 hours."
 msgstr "Confirmas tu correo dentro de 48 horas."
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/RewardMoment.tsx
+msgctxt "RewardMoment, button"
+msgid "Thank you"
+msgstr "Gracias"
+
 #: client/src/components/roleCard/FoundingTeam.tsx
 msgctxt "founding team section, hiring first"
 msgid "We are filling these roles first. More roles open after them."
@@ -25161,6 +25481,12 @@ msgstr "Un compromiso ahora es firme de inmediato y reduce lo que el fondo paga 
 msgctxt "admin helper panel"
 msgid "{guide}, your Admin helper"
 msgstr ""
+
+# needs-native-review: first pass, merge, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: a season goal the village has reached"
+msgid "Reached"
+msgstr "Cumplida"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view: keyboard hint, desktop"
@@ -25711,6 +26037,12 @@ msgstr "El emprendimiento que usted lleva"
 msgctxt "roles page, admins only: the waitlist"
 msgid "Only admins see this. Nothing is sent unless a person writes a letter and presses send."
 msgstr "Solo las personas administradoras ven esto. No se envía nada a menos que alguien escriba una carta y pulse enviar."
+
+# needs-native-review: first pass, merge, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals: eyebrow over this season's goals"
+msgid "This season"
+msgstr "Esta temporada"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -26359,6 +26691,12 @@ msgstr "Compartir con la aldea"
 msgctxt "the season is loading"
 msgid "Reading the season."
 msgstr "Leyendo la temporada."
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "My Village Profile"
+msgstr "Mi perfil en la aldea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -27646,6 +27984,12 @@ msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "tu guía"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Stay With Us"
+msgstr "Hospédese con nosotros"
+
 #: client/src/components/rites/Letter.tsx
 msgctxt "rites"
 msgid "Opening the letter takes you to the village's welcome."
@@ -27848,6 +28192,12 @@ msgstr "Cuando te aprueban para un rol, te alineas con el acuerdo de confidencia
 #~ msgctxt "landing commons eyebrow"
 #~ msgid "What we tend together"
 #~ msgstr "Lo que cuidamos juntos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Roles & Leadership"
+msgstr "Roles y liderazgo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: dayWords(mine.weekOf)
@@ -29782,6 +30132,12 @@ msgstr "Agregar un archivo"
 msgid "Your own figure first, before you see the suggestion (optional)"
 msgstr ""
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, aria-label"
+msgid "{villageName} home"
+msgstr "Inicio de {villageName}"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/PinPanel.tsx
 #: client/src/pages/HiddenMap.tsx
@@ -31141,6 +31497,18 @@ msgctxt "module name"
 msgid "Rites"
 msgstr "Ritos"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/NotificationBell.tsx
+msgctxt "NotificationBell, span"
+msgid "Notifications"
+msgstr "Avisos"
+
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Contribute"
+msgstr "Contribuir"
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work board heading"
 msgid "Open work"
@@ -31272,6 +31640,12 @@ msgctxt "protocols page"
 msgid "Set this run aside"
 msgstr "Dejar esta ronda a un lado"
 
+# needs-native-review: first pass, shell, 24 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Village Network"
+msgstr "Red de aldeas"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stone"
 #~ msgid "About you"
@@ -31324,324 +31698,6 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
-msgctxt "SeasonSummaryOffer, p"
-msgid "{0} has turned"
-msgstr "{0} ha cambiado"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, button"
-msgid "Mark all read"
-msgstr "Marcar todo como leído"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, a"
-msgid "Main Website"
-msgstr "Sitio principal"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "examples banner"
-msgid "Publishing your first real {noun} clears them for good."
-msgstr "Cuando publique su primer {noun} real, desaparecen para siempre."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Pooling Resources"
-msgstr "Recursos en común"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, a"
-msgid "Events"
-msgstr "Eventos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Game Mechanics"
-msgstr "Cómo funciona el juego"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Leaving Well"
-msgstr "Salir bien"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, aria-label"
-msgid "Notifications"
-msgstr "Avisos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Your Journey"
-msgstr "Su camino"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
-msgctxt "SeasonSummaryOffer, aria-label"
-msgid "Not now"
-msgstr "Ahora no"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Report a Bug / Share an Idea"
-msgstr "Reportar un error o compartir una idea"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Resources"
-msgstr "Recursos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
-msgctxt "SeasonSummaryOffer, p"
-msgid "What you earned, what you carried and your badges, on one card you can share."
-msgstr "Lo que ganó, lo que sostuvo y sus insignias, en una tarjeta que puede compartir."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/mobile/MobileFab.tsx
-msgctxt "MobileFab, aria-label"
-msgid "Close shortcuts"
-msgstr "Cerrar atajos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Village Health"
-msgstr "Salud de la aldea"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "notification bell: an unread row"
-msgid "New"
-msgstr "Nuevo"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/RewardMoment.tsx
-msgctxt "RewardMoment, p"
-msgid "Just landed"
-msgstr "Recién llegado"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, span"
-msgid "Newest {0}"
-msgstr "Lo más reciente: {0}"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/mobile/MobileFab.tsx
-msgctxt "MobileFab, aria-label"
-msgid "Open shortcuts"
-msgstr "Abrir atajos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Circles"
-msgstr "Círculos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, p"
-msgid "Reading the village."
-msgstr "Leyendo la aldea."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, aria-label"
-msgid "Home"
-msgstr "Inicio"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "examples banner, one example"
-msgid "Nobody here made it. It shows what this module is for, and nothing you do to it takes effect."
-msgstr "Nadie aquí lo hizo. Muestra para qué sirve este módulo, y nada de lo que haga con él tiene efecto."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, p"
-msgid "Nothing yet. Go be seen."
-msgstr "Nada todavía. Salga y déjese ver."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "ExamplesBanner, p"
-msgid "This is a standing example."
-msgstr "Este es un ejemplo permanente."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Quest Board"
-msgstr "Tablero de misiones"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/seasonSummary/SeasonSummaryOffer.tsx
-msgctxt "SeasonSummaryOffer, Link"
-msgid "See my season"
-msgstr "Ver mi temporada"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Places, Photographed"
-msgstr "Lugares, en fotos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, span"
-msgid "preview"
-msgstr "vista previa"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Village Tools"
-msgstr "Herramientas de la aldea"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, span"
-msgid "{0} unread"
-msgstr "{0} sin leer"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Governance"
-msgstr "Gobernanza"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/mobile/MobileFab.tsx
-msgctxt "MobileFab, aria-label"
-msgid "Shortcuts"
-msgstr "Atajos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Review Queue"
-msgstr "Cola de revisión"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "How we work together"
-msgstr "Cómo trabajamos juntos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "ExamplesBanner, span"
-msgid "example"
-msgstr "ejemplo"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Connect"
-msgstr "Contacto"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationToasts.tsx
-msgctxt "NotificationToasts, aria-label"
-msgid "Dismiss this"
-msgstr "Descartar"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, p"
-msgid "© {0}{1} All rights reserved."
-msgstr "© {0}{1} Todos los derechos reservados."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "examples banner, several examples"
-msgid "Nobody here made them. They show what this module is for, and nothing you do to one takes effect."
-msgstr "Nadie aquí los hizo. Muestran para qué sirve este módulo, y nada de lo que haga con uno tiene efecto."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/RewardMoment.tsx
-msgctxt "RewardMoment, aria-label"
-msgid "Close"
-msgstr "Cerrar"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/ExamplesBanner.tsx
-msgctxt "ExamplesBanner, p"
-msgid "These are standing examples."
-msgstr "Estos son ejemplos permanentes."
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "{tokenName} Wall"
-msgstr "Muro de {tokenName}"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, Link"
-msgid "<0/>Choose what reaches you, and how"
-msgstr "<0/>Elija qué le llega y cómo"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/RewardMoment.tsx
-msgctxt "RewardMoment, button"
-msgid "Thank you"
-msgstr "Gracias"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "My Village Profile"
-msgstr "Mi perfil en la aldea"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Stay With Us"
-msgstr "Hospédese con nosotros"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Roles & Leadership"
-msgstr "Roles y liderazgo"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, aria-label"
-msgid "{villageName} home"
-msgstr "Inicio de {villageName}"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/NotificationBell.tsx
-msgctxt "NotificationBell, span"
-msgid "Notifications"
-msgstr "Avisos"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Contribute"
-msgstr "Contribuir"
-
-# needs-native-review: first pass, shell, 24 Nov 2026
-#: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Village Network"
-msgstr "Red de aldeas"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Feedback.tsx
