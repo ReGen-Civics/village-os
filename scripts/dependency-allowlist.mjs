@@ -31,7 +31,7 @@ export const ALLOWED_NEW_DEPENDENCIES = [
   // scripts and no dependencies of its own; pnpm audit --prod shows no
   // advisory. Only `lean-qr/nano` (about 4 KB) is imported, inside the lazy
   // /pay chunk; the scanner side uses the browser's BarcodeDetector and ships
-  // no decoder. Pending the coordinator's confirmation in the pull request.
+  // no decoder. Ruled accepted by the coordinator, 2026-11-24 (PR #1512).
   { name: "lean-qr", version: "2.7.4", section: "dependencies", purpose: "QR codes for request links on the /pay page (encoder only, lazy route chunk)", date: "2026-11-23" },
 ];
 
