@@ -65,6 +65,13 @@ export const TAB_SLOTS: TabSlot[] = [
 ];
 
 /**
+ * THE FRONT DOOR (24 Nov 2026): the slot a newcomer gets in place of one whose
+ * page is a member's working area (config/nav.ts, `newcomers`), so a visitor's
+ * bar offers the roles, the way in, where a member's offers Gratitude.
+ */
+export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Shield };
+
+/**
  * Routes that render no bottom bar and no FAB.
  *
  * A fixed bar owns the bottom 65px of the viewport at EVERY scroll position,
@@ -104,6 +111,8 @@ export type FabAction = {
    */
   anchorPath?: string;
   insteadOf?: { label: string; href: string; Icon: React.ComponentType<{ className?: string }> };
+  /** A member's working area: hidden from someone signed in whom the village has not admitted yet (config/nav.ts, `newcomers`). */
+  membersOnly?: true;
 };
 
 /**
@@ -126,6 +135,7 @@ export const FAB_ACTIONS: FabAction[] = [
     Icon: ListChecks,
     requiresAuth: true,
     module: "sessions",
+    membersOnly: true,
   },
   {
     // A member's conversations, and from inside them a new one: on /messages
@@ -137,6 +147,7 @@ export const FAB_ACTIONS: FabAction[] = [
     Icon: MessagesSquare,
     requiresAuth: true,
     module: "messaging",
+    membersOnly: true,
     anchorPath: "/messages",
     insteadOf: { label: "New conversation", href: "/messages?new=1", Icon: SquarePen },
   },
@@ -151,6 +162,7 @@ export const FAB_ACTIONS: FabAction[] = [
     Icon: MapPin,
     requiresAuth: true,
     module: "hidden-map",
+    membersOnly: true,
     anchorPath: "/hidden-map",
   },
   {
@@ -162,6 +174,7 @@ export const FAB_ACTIONS: FabAction[] = [
     Icon: Orbit,
     requiresAuth: true,
     module: "sessions",
+    membersOnly: true,
     // On the list or inside a room, the row would link to where they already are.
     anchorPath: "/sessions",
   },

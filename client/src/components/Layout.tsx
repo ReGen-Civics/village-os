@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,12 +18,13 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-import MobileFab from "./mobile/MobileFab";
+const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
 import { storyPageShown } from "@/lib/brochure";
 import { MachineTranslationNote } from "@/i18n/machineTranslation";
+import { useNewcomerShows } from "@/lib/newcomer";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -77,8 +78,11 @@ export default function Layout({ children }: LayoutProps) {
   // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden
   // flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
+  // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
+  const { shows: forNewcomer, showsHref } = useNewcomerShows();
   const visible = (item: NavLink) =>
     !menu.hidden.includes(item.href) &&
+    forNewcomer(item) &&
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.href)) &&
@@ -620,7 +624,7 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   </li>
                 )}
-                <li>
+                <li hidden={!showsHref("/gratitude")}>
                   <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     {tokenName} Wall
                   </Link>
@@ -686,7 +690,7 @@ export default function Layout({ children }: LayoutProps) {
                     Leaving Well
                   </Link>
                 </li>
-                {networkModule && (
+                {networkModule && showsHref("/network") && (
                   <li>
                     <Link href="/network" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Village Network
@@ -710,7 +714,7 @@ export default function Layout({ children }: LayoutProps) {
                     looking may not open it, so a member who follows this link
                     without the capability gets a sentence and never a blank
                     screen. */}
-                {user && (
+                {user && showsHref("/review") && (
                   <li>
                     <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Review Queue
@@ -752,7 +756,7 @@ export default function Layout({ children }: LayoutProps) {
                     each. The footer is the second door: it is on every page, it
                     survives a nav reshuffle, and it costs a fork nothing when
                     the module is off. */}
-                {crowdpoolModule && (
+                {crowdpoolModule && showsHref("/campaigns") && (
                   <li>
                     <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Pooling Resources
@@ -766,14 +770,14 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   </li>
                 )}
-                {toolsModule && (
+                {toolsModule && showsHref("/tools") && (
                   <li>
                     <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Village Tools
                     </Link>
                   </li>
                 )}
-                {mapModule && (
+                {mapModule && showsHref("/places") && (
                   <li>
                     <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       Places, Photographed
@@ -893,7 +897,7 @@ export default function Layout({ children }: LayoutProps) {
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
       <MobileTabBar />
-      <MobileFab />
+      <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a

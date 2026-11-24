@@ -52,6 +52,7 @@ import { useModules } from "@/modules/ModuleProvider";
 import { FAB_ACTIONS, FabTriggerIcon, type FabAction } from "@/config/mobileNav";
 import { useStoryPageShown } from "@/lib/brochure";
 import { haptic } from "@/lib/haptics";
+import { useNewcomer } from "@/lib/newcomer";
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 
 /**
@@ -77,14 +78,16 @@ type ResolvedAction = {
   event?: string;
 };
 
-function resolve(
+export function resolve(
   actions: FabAction[],
   currentPath: string,
   isAuthenticated: boolean,
   moduleOn: (id?: string) => boolean = () => true,
+  newcomer = false,
 ): ResolvedAction[] {
   const out: ResolvedAction[] = [];
   for (const a of actions) {
+    if (a.membersOnly && newcomer) continue;
     if (a.requiresAuth === true && !isAuthenticated) continue;
     if (a.requiresAuth === false && isAuthenticated) continue;
     if (!moduleOn(a.module)) continue;
@@ -110,6 +113,8 @@ export default function MobileFab() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { user } = useAuth();
+  // The front door (24 Nov 2026): a member's working areas stay out of a newcomer's shortcuts (lib/newcomer.ts).
+  const newcomer = useNewcomer();
   // The header menu's test (Layout.tsx `moduleOn`): a module is on for this
   // viewer when the viewer's manifest carries it, and, as `moduleIsOn` reads
   // it, its lifecycle is not off. Read defensively, since a catalog still in
@@ -130,6 +135,7 @@ export default function MobileFab() {
     currentPath,
     !!user,
     moduleOn,
+    newcomer,
   );
 
   const triggerRef = useRef<HTMLButtonElement>(null);

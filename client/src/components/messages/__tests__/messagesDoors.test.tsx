@@ -15,7 +15,7 @@ import { memoryLocation } from "wouter/memory-location";
 
 const session = vi.hoisted(() => ({
   token: "t" as string | null,
-  user: null as null | { id: string; name: string },
+  user: null as null | { id: string; name: string; membershipGranted?: boolean },
   modules: [] as { id: string; lifecycle: string }[],
 }));
 
@@ -51,7 +51,8 @@ const reply = (status: number, body: unknown) =>
 const fetchMock = vi.fn();
 beforeEach(() => {
   session.token = "t";
-  session.user = { id: "u-wren", name: "Wren" };
+  // A member: a newcomer is not offered Messages (the front door, 24 Nov 2026).
+  session.user = { id: "u-wren", name: "Wren", membershipGranted: true };
   session.modules = MESSAGING_ON;
   fetchMock.mockReset();
   // Anything the shell asks for on its own (the brochure switch, the config) gets an empty answer.

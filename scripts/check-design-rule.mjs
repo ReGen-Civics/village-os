@@ -86,6 +86,9 @@ const PAGES = [
   "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
+  "client/src/pages/Team.tsx",
+  "client/src/pages/GoodNeighbor.tsx",
+  "client/src/pages/HowWeCreate.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
   // Decider calm (Phase D, decision 4): every page where people decide stands in the night world.
@@ -117,8 +120,7 @@ const JOURNEY = [
   "client/src/components/calendar/MoonTurnings.tsx",
   "client/src/components/agent/ConnectorSetupPanel.tsx",
   "client/src/components/roleDraft/SeasonGoals.tsx",
-  // The commons (Phase D): the season's goals as circles with moss, on the landing, /roles and Your season.
-  "client/src/components/VillagePulse.tsx",
+  // The commons (Phase D): the season's goals as circles with moss, on Your season (it left the landing on 24 Nov 2026).
   "client/src/components/commons/Commons.tsx",
   "client/src/components/commons/CommonsPanel.tsx",
   "client/src/components/roleDraft/ArchetypeStep.tsx",

@@ -22,6 +22,8 @@ import PlaceCard, { type PlaceCardData } from "@/components/places/PlaceCard";
 import PhotoReportsPanel from "@/components/places/PhotoReportsPanel";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
+import { useLingui } from "@lingui/react/macro";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
 
 const jsonHeaders = (): Record<string, string> => {
   const t = authToken();
@@ -46,6 +48,7 @@ export default function Places() {
 }
 
 function PlacesPage() {
+  const { t } = useLingui();
   const [data, setData] = useState<ShelfPayload | null>(null);
   const [locked, setLocked] = useState(false);
 
@@ -98,9 +101,7 @@ function PlacesPage() {
         ) : !data ? (
           <BreathingLoader label="Opening the places" />
         ) : data.places.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            No photographs yet.
-          </p>
+          <ComingSoonPanel title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })} body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })} door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }} />
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none p-0">
             {data.places.map((p) => (

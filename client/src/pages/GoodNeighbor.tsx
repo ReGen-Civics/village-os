@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { WORLD } from "@/components/journey/look";
 import { useVillageLinks } from "@/lib/gameApi";
 import { usePageContent } from "@/hooks/usePageContent";
 import { fillPageWords } from "@/hooks/useGoodNeighborName";
@@ -27,14 +28,14 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
 
 /** Icons and tints for the criteria, handed out in order. The words are the village's (shared/pageContent/goodNeighbor.ts). */
 const CRITERION_LOOKS = [
-  { icon: Heart, color: "bg-primary/10", iconColor: "text-primary" },
-  { icon: MessageCircle, color: "bg-sage/20", iconColor: "text-sage" },
-  { icon: DollarSign, color: "bg-amber/20", iconColor: "text-amber-700" },
-  { icon: Users, color: "bg-teal/20", iconColor: "text-teal-700" },
-  { icon: Leaf, color: "bg-sage-light/40", iconColor: "text-sage" },
-  { icon: Globe, color: "bg-teal-light/30", iconColor: "text-teal-600" },
-  { icon: Shield, color: "bg-primary/5", iconColor: "text-primary" },
-  { icon: Baby, color: "bg-amber/10", iconColor: "text-amber-600" },
+  { icon: Heart, color: "bg-notice/10", iconColor: "text-notice" },
+  { icon: MessageCircle, color: "bg-open/10", iconColor: "text-open" },
+  { icon: DollarSign, color: "bg-notice/10", iconColor: "text-notice" },
+  { icon: Users, color: "bg-open/10", iconColor: "text-open" },
+  { icon: Leaf, color: "bg-open/10", iconColor: "text-open" },
+  { icon: Globe, color: "bg-notice/10", iconColor: "text-notice" },
+  { icon: Shield, color: "bg-muted", iconColor: "text-notice" },
+  { icon: Baby, color: "bg-open/10", iconColor: "text-open" },
 ];
 
 /**
@@ -75,19 +76,18 @@ export default function GoodNeighbor() {
   const { hero, values, criteria, dealbreakers, process, commitments, closing } = page;
   return (
     <Layout>
+      {/* The night world (public launch, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
       {/* Hero */}
-      <section className="relative py-24 bg-gradient-to-b from-sage/20 to-background overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-primary blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-sage blur-3xl" />
-        </div>
+      <section className="relative py-24 overflow-hidden">
+        {/* No glow behind the words (DESIGN_RULE: fireflies only around the next act); the blurred blobs went with the light ground. */}
         <div className="container relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {hero.fields.eyebrow && (
               <m.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="inline-block px-4 py-1.5 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6"
+                className="inline-block px-4 py-1.5 bg-notice/10 rounded-full text-notice text-sm font-medium mb-6"
               >
                 {hero.fields.eyebrow}
               </m.span>
@@ -130,7 +130,7 @@ export default function GoodNeighbor() {
 
       {/* What this village values */}
       {!values.hidden && (
-        <section className="py-16 bg-primary/5">
+        <section className="py-16 bg-muted">
           <div className="container">
             <div className="max-w-3xl mx-auto">
               <h2 className="font-display text-3xl font-bold text-foreground mb-8 text-center break-words">
@@ -152,7 +152,7 @@ export default function GoodNeighbor() {
       )}
 
       {/* The Criteria */}
-      <section className="py-24 bg-background">
+      <section className="py-24">
         <div className="container">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
@@ -184,14 +184,14 @@ export default function GoodNeighbor() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-1">
-                            <span className="text-xs font-mono text-muted-foreground">
+                            <span className="text-xs tabular-nums text-muted-foreground">
                               {String(index + 1).padStart(2, "0")}
                             </span>
                             <h3 className="font-display text-xl font-bold text-foreground min-w-0 break-words">
                               {criterion.title}
                             </h3>
                           </div>
-                          <p className="text-sm text-primary font-medium break-words">{criterion.subtitle}</p>
+                          <p className="text-sm text-notice font-medium break-words">{criterion.subtitle}</p>
                         </div>
                       </div>
 
@@ -203,7 +203,7 @@ export default function GoodNeighbor() {
                         <div className="space-y-2 mb-4">
                           {practices.map((practice, i) => (
                             <div key={i} className="flex items-start gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-notice mt-0.5 flex-shrink-0" />
                               <p className="text-sm text-muted-foreground min-w-0 break-words">{practice}</p>
                             </div>
                           ))}
@@ -260,7 +260,7 @@ export default function GoodNeighbor() {
 
       {/* How We Assess Fit */}
       {!process.hidden && (
-        <section className="py-20 bg-background">
+        <section className="py-20">
           <div className="container">
             <div className="max-w-3xl mx-auto">
               <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -278,8 +278,8 @@ export default function GoodNeighbor() {
                     viewport={{ once: true }}
                     className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-sm"
                   >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary font-bold text-sm">{i + 1}</span>
+                    <div className="w-10 h-10 rounded-full bg-notice/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-notice font-bold text-sm">{i + 1}</span>
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-foreground mb-1 break-words">{item.title}</h3>
@@ -297,7 +297,7 @@ export default function GoodNeighbor() {
 
       {/* What this village commits to you */}
       {!commitments.hidden && (
-        <section className="py-20 bg-primary/5">
+        <section className="py-20 bg-muted">
           <div className="container">
             <div className="max-w-3xl mx-auto">
               <h2 className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -309,7 +309,7 @@ export default function GoodNeighbor() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {commitments.lists.items.map((item, i) => (
                   <div key={i} className="flex items-start gap-3 bg-card rounded-lg p-4 shadow-sm min-w-0">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-notice mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-muted-foreground min-w-0 break-words">{item.text}</p>
                   </div>
                 ))}
@@ -321,7 +321,7 @@ export default function GoodNeighbor() {
 
       {/* Closing + CTA */}
       {!closing.hidden && (
-        <section className="py-24 bg-background">
+        <section className="py-24">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
               <m.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -340,7 +340,7 @@ export default function GoodNeighbor() {
                 <div className="flex flex-wrap justify-center gap-4">
                   {!pageOff("/love-letter") && (
                     <Link href="/love-letter">
-                      <a className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold text-lg hover:bg-primary-hover transition-all duration-200 flex items-center gap-2">
+                      <a className="px-8 py-4 bg-notice text-background rounded-xl font-semibold text-lg hover:bg-notice/90 transition-all duration-200 flex items-center gap-2">
                         {closing.fields.commitLabel}
                         <ArrowRight className="w-5 h-5" />
                       </a>
@@ -351,7 +351,7 @@ export default function GoodNeighbor() {
                       href={eventsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-8 py-4 bg-secondary text-secondary-foreground rounded-lg font-semibold text-lg hover:opacity-90 transition-all duration-200 flex items-center gap-2"
+                      className="px-8 py-4 bg-notice text-background rounded-lg font-semibold text-lg hover:opacity-90 transition-all duration-200 flex items-center gap-2"
                     >
                       <Calendar className="w-5 h-5" />
                       {closing.fields.eventsLabel}
@@ -363,6 +363,7 @@ export default function GoodNeighbor() {
           </div>
         </section>
       )}
+      </div>
     </Layout>
   );
 }
