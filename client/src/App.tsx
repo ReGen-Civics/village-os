@@ -1,4 +1,3 @@
-import { documentTitle } from "@shared/pageTitles";
 import { Toaster } from "@/components/ui/sonner";
 import BreakGlass from "@/components/BreakGlass";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -112,7 +111,20 @@ function PageTitle() {
     if (!village) return;
     // A story page this village does not serve answers not found, so its tab
     // names the village alone, the same as its share card (server/lib/pageMeta.ts).
-    document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment });
+    // The title table is fetched, never in the first page's scripts: the tab
+    // already waits on config, the server has written the same title into the
+    // HTML (server/lib/pageMeta.ts), and every route's first view is at its
+    // budget (scripts/route-first-view.json). A failed fetch keeps that title.
+    let live = true;
+    import("@shared/pageTitles").then(
+      ({ documentTitle }) => {
+        if (live) document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment });
+      },
+      () => {},
+    );
+    return () => {
+      live = false;
+    };
   }, [location, village, commitment, switches]);
 
   return null;
