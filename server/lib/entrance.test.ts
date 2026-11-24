@@ -126,6 +126,8 @@ describe("the gate, on a real server", () => {
         entered,
       ),
     );
+    app.get("/roles", (_req, res) => res.send("<html></html>"));
+    app.get("/assets/app.js", (_req, res) => res.send(""));
     app.get("/api/org", (_req, res) => res.json({ roles: [{ id: "r", card: { publicPay: { kind: "range" } } }] }));
     app.get("/api/org/founding-team", (_req, res) => res.json({ on: true, roleIds: ["r"], names: { r: "Role" }, sections: { r: { payCeiling: { amount: 1 } } }, team: [{ holders: ["Ana"] }] }));
     app.get("/api/game/config", (_req, res) => res.json({ project: { name: "V" } }));
@@ -210,6 +212,17 @@ describe("the gate, on a real server", () => {
   it("keeps a gathering's join link open to anybody holding it", async () => {
     required = true;
     expect((await get("/api/events/ev-2/join")).status).toBe(200);
+  });
+
+  it("hints the client on a page's own response whether the village keeps an entrance, and never on a file", async () => {
+    required = true;
+    const page = await get("/roles");
+    expect(page.headers.get("set-cookie")).toMatch(/^vos_gate=1; Path=\/; SameSite=Lax/);
+    expect((await get("/roles", { headers: { cookie: "vos_gate=1" } })).headers.get("set-cookie")).toBeNull();
+    expect((await get("/assets/app.js")).headers.get("set-cookie")).toBeNull();
+    required = false;
+    expect((await get("/roles", { headers: { cookie: "vos_gate=1" } })).headers.get("set-cookie")).toMatch(/^vos_gate=; .*Max-Age=0/);
+    expect((await get("/roles")).headers.get("set-cookie")).toBeNull();
   });
 
   it("stands nowhere while the village keeps no entrance", async () => {

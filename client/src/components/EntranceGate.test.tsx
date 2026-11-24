@@ -19,6 +19,7 @@ let status: unknown = { required: true, entered: false, siteKey: null };
 let asked = 0;
 
 beforeEach(() => {
+  document.cookie = "vos_gate=1; path=/";
   forgetEntranceStatus();
   auth.user = null;
   auth.loading = false;
@@ -130,5 +131,12 @@ describe("the entrance gate", () => {
     status = { required: true, entered: false, siteKey: "0x4AAA" };
     at("/circles");
     expect(await screen.findByTestId("entrance")).toHaveTextContent("entrance:/circles:0x4AAA");
+  });
+
+  it("asks nothing and draws the page at once when the server gave no hint of an entrance", async () => {
+    document.cookie = "vos_gate=; path=/; max-age=0";
+    at("/roles");
+    expect(screen.getByTestId("page")).toBeInTheDocument();
+    expect(asked).toBe(0);
   });
 });
