@@ -24,6 +24,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
+import { BTN_PRIMARY, LINK, WORLD } from "@/components/journey/look";
 import {
   ESSENTIAL_NOTE,
   KIND_WORDS,
@@ -70,7 +71,8 @@ const dateWords = (iso: string): string =>
 function Shell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Layout>
-      <section className="py-12 sm:py-20 bg-background min-h-[60vh]">
+      {/* The night world (public launch QA, 24 Nov 2026): every email's own pages in the sheet's look, same words. */}
+      <section className={`${WORLD} py-12 sm:py-20`}>
         <div className="container px-4">
           <div className="max-w-md mx-auto bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8">
             <h1 className="font-display text-2xl font-bold text-card-foreground mb-4">{title}</h1>
@@ -82,8 +84,7 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-const primaryButton =
-  "w-full min-h-11 rounded-xl bg-primary text-primary-foreground font-semibold px-4 py-2 disabled:opacity-50";
+const primaryButton = `${BTN_PRIMARY} w-full`;
 const quietButton =
   "w-full min-h-11 rounded-xl border border-border bg-card text-card-foreground font-medium px-4 py-2 disabled:opacity-50";
 
@@ -123,7 +124,7 @@ function KindSwitch({ k, busy, onChange }: { k: KindView; busy: boolean; onChang
         </span>
         <span
           aria-hidden="true"
-          className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${k.on ? "bg-primary" : "bg-muted-foreground/30"}`}
+          className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${k.on ? "bg-notice" : "bg-muted-foreground/30"}`}
         >
           <span
             className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow transition-transform ${k.on ? "translate-x-4" : "translate-x-0.5"}`}
@@ -325,7 +326,7 @@ export function EmailUnsubscribe() {
             </>
           )}
           {choices && (
-            <a href={choices} className="block text-sm text-primary underline underline-offset-2">
+            <a href={choices} className={`block text-sm ${LINK}`}>
               <Trans context="EmailPages, a">Choose which emails you get
             </Trans></a>
           )}
@@ -405,7 +406,7 @@ function ActionPanel({ token, description, onAnswered }: {
         </Trans></button>
       )}
       {preferences && (
-        <a href={`/email/preferences?t=${encodeURIComponent(preferences)}`} className="block text-sm text-primary underline underline-offset-2">
+        <a href={`/email/preferences?t=${encodeURIComponent(preferences)}`} className={`block text-sm ${LINK}`}>
           <Trans context="EmailPages, a">Your email choices
         </Trans></a>
       )}

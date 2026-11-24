@@ -18,7 +18,7 @@
 import type { Express } from "express";
 import { peopleLockMiddleware, type PeopleLockDeps } from "../lib/peopleLock";
 
-export { ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, peopleTier } from "../lib/peopleLock";
+export { ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, peopleTier, VISITOR_NEUTRAL_NAME } from "../lib/peopleLock";
 
 export function register(app: Express, deps: PeopleLockDeps): void {
   app.use(peopleLockMiddleware(deps));

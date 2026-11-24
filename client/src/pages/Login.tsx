@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { useGoogleSignInReturn } from "@/components/auth/useGoogleSignInReturn";
@@ -12,6 +13,7 @@ import { failureWords } from "@/lib/failureWords";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, FIELD, H1, LABEL, LINK, RING, WORLD } from "@/components/journey/look";
 
 export default function Login() {
+  const { t } = useLingui();
   const [, navigate] = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -35,7 +37,7 @@ export default function Login() {
       // bounce anyone offsite.
       navigate(afterSignIn(new URLSearchParams(window.location.search).get("next")));
     } catch (err) {
-      setError(failureWords(err, "Sign-in didn't work. Check your email and password."));
+      setError(failureWords(err, t({ message: "Sign-in didn't work. Check your email and password.", context: "sign in: when it fails" })));
     } finally {
       setLoading(false);
     }
@@ -70,9 +72,9 @@ export default function Login() {
                 fact here to build a greeting on, so the heading says what
                 the page is, which is also what the tab already says.
               */}
-              <h1 className={`${H1} mb-2`}>Sign in</h1>
+              <h1 className={`${H1} mb-2`}>{t({ message: "Sign in", context: "sign in: the page heading" })}</h1>
               <p className="text-muted-foreground">
-                Members sign in here.
+                {t({ message: "Members sign in here.", context: "sign in: under the heading" })}
               </p>
             </div>
 
@@ -90,7 +92,7 @@ export default function Login() {
               )}
               {googleReturn.status === "working" && (
                 <p role="status" className="text-sm text-muted-foreground">
-                  Finishing your Google sign-in.
+                  {t({ message: "Finishing your Google sign-in.", context: "sign in: while a Google sign-in finishes" })}
                 </p>
               )}
               {/*
@@ -117,7 +119,7 @@ export default function Login() {
                 every single member has to get through.
               */}
               <div>
-                <label htmlFor="login-email" className={`${LABEL} mb-2 block`}>Email</label>
+                <label htmlFor="login-email" className={`${LABEL} mb-2 block`}>{t({ message: "Email", context: "account forms: field label" })}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" aria-hidden="true" />
                   <input
@@ -135,7 +137,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label htmlFor="login-password" className={`${LABEL} mb-2 block`}>Password</label>
+                <label htmlFor="login-password" className={`${LABEL} mb-2 block`}>{t({ message: "Password", context: "account forms: field label" })}</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" aria-hidden="true" />
                   <input
@@ -154,13 +156,13 @@ export default function Login() {
               </div>
 
               <button disabled={loading} type="submit" className={`${BTN_PRIMARY} w-full py-3`}>
-                {loading ? "Signing in…" : "Sign in"}
+                {loading ? t({ message: "Signing in…", context: "sign in: the button while it works" }) : t({ message: "Sign in", context: "sign in: the button" })}
                 {!loading && <ArrowRight className="w-5 h-5" />}
               </button>
 
               <p className="text-center">
                 <a href="/forgot-password" className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
-                  Forgot your password?
+                  {t({ message: "Forgot your password?", context: "sign in: link" })}
                 </a>
               </p>
 
@@ -174,18 +176,18 @@ export default function Login() {
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-muted-foreground mb-4">New here?</p>
+              <p className="text-muted-foreground mb-4">{t({ message: "New here?", context: "sign in: for someone with no account" })}</p>
               <a href="/register" className={BTN_SECONDARY}>
-                Create an account
+                {t({ message: "Create an account", context: "sign in: for someone with no account" })}
                 <ArrowRight className="w-5 h-5" />
               </a>
               {/* The second way to ask to join (Rye, 2026-09-09): in a village
                   that joins by invitation, somebody here with no account and
                   no link is exactly who needs it. */}
               <p className="mt-4 text-sm text-muted-foreground">
-                No invitation yet?{" "}
+                {t({ message: "No invitation yet?", context: "sign in: for someone with no invitation" })}{" "}
                 <a href="/request-membership" className={LINK}>
-                  Ask to join
+                  {t({ message: "Ask to join", context: "sign in: for someone with no invitation" })}
                 </a>
               </p>
             </div>

@@ -1,5 +1,6 @@
 import { reportCrash } from "@/lib/crashReport";
 import { isChunkLoadError, isOnline, reloadOnceForStaleChunk } from "@/lib/staleChunk";
+import { useBrandImages } from "@/lib/gameApi";
 import { i18n } from "@lingui/core";
 import { Trans } from "@lingui/react/macro";
 import { RotateCcw } from "lucide-react";
@@ -71,11 +72,38 @@ const SPROUT = (
   </svg>
 );
 
+/**
+ * THE VILLAGE'S OWN MARK (the lead, 24 Nov 2026: "use an Amora logo for here
+ * instead"). The logo the village set in its brand (images.logo), else its
+ * heart logo, else the sprout above: white-label, so a village with no logo
+ * still gets a mark and no village ever shows another's. An image that does
+ * not load falls back to the sprout too, because this screen is often what a
+ * missing file looks like.
+ */
+function RefreshMark() {
+  const images = useBrandImages();
+  const [broken, setBroken] = useState(false);
+  const src = String(images.logo || images.heartLogo || "").trim();
+  if (!src || broken) return SPROUT;
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={72}
+      height={72}
+      decoding="async"
+      onError={() => setBroken(true)}
+      className="jw-unfurl mb-4 h-18 w-auto max-w-40 object-contain"
+    />
+  );
+}
+
 const LINK = "mt-5 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground";
 
 /**
  * The card every "please refresh" state shares: the night ground, one gold
- * panel, a sprout, the heading (role="alert", so a screen reader hears that the
+ * panel, the village's mark (RefreshMark), the heading (role="alert", so a screen reader hears that the
  * page changed), one big button, then whatever the state adds.
  */
 function RefreshCard({
@@ -98,7 +126,7 @@ function RefreshCard({
   return (
     <main className="relative sheet-night flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="flex w-full max-w-lg flex-col items-center rounded-2xl border-2 border-notice/60 bg-card p-6 text-center shadow-sm sm:p-10">
-        {SPROUT}
+        <RefreshMark />
         <p className="text-xs font-semibold uppercase tracking-widest text-notice">{eyebrow}</p>
         <h1 role="alert" className="mt-2 mb-3 font-display text-3xl leading-tight text-card-foreground sm:text-4xl">
           {heading}
@@ -169,7 +197,7 @@ export function StaleBuildCard() {
 function CrashCard({ stack }: { stack?: string }) {
   return (
     <RefreshCard
-      eyebrow={<Trans context="refresh screen after a crash: the eyebrow">A small stumble</Trans>}
+      eyebrow={<Trans context="refresh screen after a crash: the eyebrow">We're growing</Trans>}
       heading={<Trans context="refresh screen after a crash: the heading">This page didn't load</Trans>}
       body={<Trans>A refresh usually brings it back.</Trans>}
     >

@@ -474,6 +474,12 @@ msgstr "Tu proyecto o negocio, y lo que ofreces a la aldea."
 msgid "Change yours on your profile"
 msgstr "Cámbielo en su perfil"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/ContributionWord.tsx
 msgctxt "tooltip on the credits token's name"
@@ -702,6 +708,12 @@ msgstr "Abierto de nuevo"
 #~ msgctxt "admin role characters legend"
 #~ msgid "Characters {roleName} suits"
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the button"
+msgid "Ask to join"
+msgstr "Pide unirte"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/admin/QuestsTab.tsx
@@ -1129,6 +1141,12 @@ msgstr "Qué significan las marcas"
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "The village's own rows"
 msgstr "Las filas propias de la aldea"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: after sending, shared"
+msgid "Your village's team has it, and a copy reaches the platform team so a fix can land for every village. Your name travels to neither the platform nor anywhere else. It stays here."
+msgstr "El equipo de tu aldea ya lo tiene, y una copia llega al equipo de la plataforma para que el arreglo sirva a todas las aldeas. Tu nombre no viaja a la plataforma ni a ningún otro lugar. Se queda aquí."
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/roleCard/RoleOneMinute.tsx
@@ -2640,6 +2658,12 @@ msgstr "Su @usuario"
 msgid "Nobody holds the {careName} role today, so a private intake would reach nobody."
 msgstr "Nadie tiene el rol {careName} hoy, así que una solicitud privada no le llegaría a nadie."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: after sending"
+msgid "Received, thank you."
+msgstr "Recibido, gracias."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
@@ -2878,6 +2902,12 @@ msgstr "Dedicación"
 #~ msgid "They agreed to sign the Love Letter before seating, and the NDA once approved."
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: when it fails"
+msgid "Could not send that"
+msgstr "No se pudo enviar"
+
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -2900,6 +2930,12 @@ msgstr "Aporte: efectivo"
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Access to give or take back"
 msgstr "Acceso para dar o quitar"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button"
+msgid "Send the link"
+msgstr "Enviar el enlace"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -3084,6 +3120,12 @@ msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
 msgstr "Ver todas las metas"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/fireflyPath/SafetyNet.tsx
 msgctxt "application safety net"
@@ -3159,6 +3201,12 @@ msgstr "Cancelar"
 msgctxt "admin quest safety"
 msgid "Safety saved"
 msgstr "Seguridad guardada"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."
+msgstr "¿Aún no tienes enlace? Pide unirte y alguien de la aldea se pondrá en contacto. Una llamada comunitaria es un buen primer paso."
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
@@ -4887,6 +4935,12 @@ msgstr "Configuración de la aldea"
 #~ msgid "No role picked yet"
 #~ msgstr "Todavía no has elegido un rol"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the heading"
+msgid "Something broken? Something missing?"
+msgstr "¿Algo roto? ¿Algo que falta?"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
@@ -5372,6 +5426,12 @@ msgstr "En formación"
 msgctxt "commitment field: after saving"
 msgid "Saved. The open work and roles now fit this."
 msgstr "Guardado. El trabajo abierto y los roles ya se ajustan a esto."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "No invitation yet?"
+msgstr "¿Aún no tienes invitación?"
 
 #: client/src/components/path/NextAct.tsx
 msgctxt "your path, the next act"
@@ -5903,6 +5963,12 @@ msgstr "Crea un evento en el calendario"
 msgid "Asked of a role"
 msgstr "Pedido a un rol"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: detail label"
+msgid "How would it work, and who does it serve?"
+msgstr "¿Cómo funcionaría y a quién sirve?"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, eyebrow after a key"
@@ -6198,6 +6264,12 @@ msgstr "Apagado"
 msgctxt "role card: the lines every role shares, as a banner"
 msgid "The goal we share"
 msgstr "La meta que compartimos"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Already have an account?"
+msgstr "¿Ya tienes una cuenta?"
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
@@ -7638,6 +7710,12 @@ msgstr "Copias"
 msgid "This page isn't open yet."
 msgstr "Esta página todavía no está abierta."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: while it checks the invitation"
+msgid "Checking how to join..."
+msgstr "Revisando cómo unirte..."
+
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: the one act on the lead card"
 msgid "Take this on"
@@ -7956,6 +8034,12 @@ msgstr "Cómo se fija la compensación"
 #: client/src/pages/Roles.tsx
 #~ msgid "When a Tension Is Between People"
 #~ msgstr "Cuando una tensión es entre personas"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: the page heading"
+msgid "Join {villageName}"
+msgstr "Únete a {villageName}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ApprovedWritesPanel.tsx
@@ -8332,6 +8416,12 @@ msgstr "Cada reclamo que abre se completa con el consentimiento de siempre en el
 msgctxt "a proposal's saved split"
 msgid "What they hold in {0}"
 msgstr "Lo que tiene en {0}"
+
+# needs-native-review: new words, 24 Nov 2026 (the lead: "a small stumble is 'We're growing'")
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "We're growing"
+msgstr "Estamos creciendo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ConflictDoorFields.tsx
@@ -9145,6 +9235,12 @@ msgstr "Este círculo"
 #~ msgctxt "upcoming role card: the role will be paid, no amount"
 #~ msgid "Paid role"
 #~ msgstr "Rol remunerado"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile settings heading: what signed-out visitors see"
+msgid "Visitors"
+msgstr "Visitantes"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/ExportByVote.tsx
@@ -10187,6 +10283,18 @@ msgctxt "roles page, role link"
 msgid "Link to {seatName}"
 msgstr "Enlace a {seatName}"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: why Send waits"
+msgid "Add a little more detail, at least ten characters, so somebody can act on it."
+msgstr "Agrega un poco más de detalle, al menos diez caracteres, para que alguien pueda actuar."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: under the heading"
+msgid "Tell us the address you signed up with and we'll send you a link."
+msgstr "Dinos la dirección con la que te registraste y te enviaremos un enlace."
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "founding application, when we reply"
@@ -10203,6 +10311,12 @@ msgstr "Proponer una misión"
 msgctxt "partner form"
 msgid "What you offer"
 msgstr "Lo que ofreces"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the button while it works"
+msgid "Sending…"
+msgstr "Enviando…"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"
@@ -11219,6 +11333,12 @@ msgstr "Tipo"
 msgid "Its role comes with it, and leaving the circle out leaves it out too."
 msgstr "Su rol viene con él, y si deja fuera el círculo, el rol también queda fuera."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: when it fails"
+msgid "Sign-in didn't work. Check your email and password."
+msgstr "No se pudo iniciar sesión. Revisa tu correo y tu contraseña."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
@@ -11668,6 +11788,12 @@ msgstr "No llegó al servidor. Tu luz sigue igual."
 msgid "Minted: {remaining} left under this cycle's cap"
 msgstr "Emitidos: quedan {remaining} bajo el tope de este ciclo"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "Create an account"
+msgstr "Crea una cuenta"
+
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "venture redemption state"
@@ -11918,6 +12044,12 @@ msgstr "Su dueño pidió compartirlo."
 #~ msgid "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
 #~ msgstr "El rol admite {0} a la vez y {1} lo tienen ahora. Sumar {2} más necesita {3} lugares: cambia primero el número en el rol, en el Organigrama."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: why Send waits"
+msgid "Give it a short title first, at least four characters."
+msgstr "Primero ponle un título corto, de al menos cuatro caracteres."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/health/BrowserCrashesCard.tsx
 msgid "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
@@ -12044,6 +12176,12 @@ msgctxt "proposed changes: confirm a batch"
 msgid "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
 msgstr "{laterConflicts, plural, one {Un cambio posterior también edita uno de estos.} other {Un cambio posterior también edita # de estos.}}"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: title label"
+msgid "The idea, in one line"
+msgstr "La idea, en una línea"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/notebook/NotebookDocument.tsx
 msgctxt "canvas block picker, empty choice"
@@ -12143,6 +12281,12 @@ msgstr "Por qué este agente, en palabras de quien lo cuida"
 msgctxt "budget refused row"
 msgid "Row {0}, {1}: {2}"
 msgstr "Fila {0}, {1}: {2}"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: title label"
+msgid "What went wrong, in one line"
+msgstr "Qué salió mal, en una línea"
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 #~ msgctxt "shape the role lede"
@@ -12805,6 +12949,12 @@ msgstr "El año de la aldea"
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing counts as removed because of a check that failed. A role leaves the list only when {agent} archives it, or when it is missing from two full checks in a row."
 msgstr "Nada cuenta como eliminado por una revisión que falló. Un rol sale de la lista solo cuando {agent} lo archiva, o cuando falta en dos revisiones completas seguidas."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: title example"
+msgid "The quest page shows a blank box when…"
+msgstr "La página de misiones muestra un cuadro vacío cuando…"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: the send button"
@@ -14290,6 +14440,12 @@ msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
 msgstr "Lee la misión de arriba y empieza por lo primero que puedas hacer hoy"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "Check your email"
+msgstr "Revisa tu correo"
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Work out my Moon"
@@ -14527,6 +14683,12 @@ msgctxt "open work: gated quests explained once"
 msgid "Some of this work opens as you walk the {ladder} or step into a role. Each card says what opens it."
 msgstr "Parte de este trabajo se abre a medida que recorres el {ladder} o asumes un rol. Cada tarjeta dice qué lo abre."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no invitation"
+msgid "Ask to join"
+msgstr "Pide unirte"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #. placeholder {0}: dayWords(g.day, locale)
 #. placeholder {0}: dayWords(r.start, locale)
@@ -14600,6 +14762,12 @@ msgstr "La semana pregunta: "
 msgctxt "founding application, save and finish later: while saving"
 msgid "Saving"
 msgstr "Guardando"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: while a Google sign-in finishes"
+msgid "Finishing your Google sign-in."
+msgstr "Terminando tu inicio de sesión con Google."
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/pages/Crowdpool.tsx
@@ -14821,6 +14989,12 @@ msgstr "Rechazado. El tope recuperó su espacio"
 msgctxt "formation: the roles held now"
 msgid "Holding it now"
 msgstr "Quién lo sostiene hoy"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: where it goes, before the village name loads"
+msgid "your village"
+msgstr "tu aldea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasBlockFrames.tsx
@@ -15671,6 +15845,12 @@ msgstr "Rechazar"
 msgctxt "founding application refusal"
 msgid "This page isn't taking proposals right now."
 msgstr "Esta página no está recibiendo propuestas en este momento."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the kind"
+msgid "An idea"
+msgstr "Una idea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Ceremony.tsx
@@ -17096,6 +17276,12 @@ msgctxt "admin protocols editor"
 msgid "Nothing had changed."
 msgstr "No había cambiado nada."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: title example"
+msgid "It would help if…"
+msgstr "Ayudaría si…"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/applyWords.ts
 msgctxt "founding application intro"
@@ -17481,6 +17667,12 @@ msgstr "Organización"
 msgid "We couldn't reach the village just now"
 msgstr "No pudimos comunicarnos con la aldea en este momento"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register: for someone with an account"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing this village means"
@@ -17825,6 +18017,12 @@ msgctxt "companion welcome"
 msgid "Worked out on this device. Your birth date, time and place are never sent or kept. Only your Moon sign and nakshatra are saved."
 msgstr "Se calcula en este dispositivo. Tu fecha, hora y lugar de nacimiento nunca se envían ni se guardan. Solo se guardan tu signo lunar y tu nakshatra."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: for someone with no account"
+msgid "New here?"
+msgstr "¿Primera vez aquí?"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -18122,6 +18320,13 @@ msgstr "Actualizar nuestro rol con esto"
 msgctxt "open proposal sent"
 msgid "What comes next"
 msgstr "Lo que sigue"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Email"
+msgstr "Correo electrónico"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
@@ -18935,6 +19140,12 @@ msgctxt "admin character classes: the stock portraits heading"
 msgid "Faces"
 msgstr "Rostros"
 
+# needs-native-review: first pass, merge, 24 Nov 2026
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor page: under a disabled request-the-pack button"
+msgid "The investor pack is being prepared."
+msgstr "Estamos preparando el paquete para inversionistas."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, choose the role that owns a new item"
@@ -19233,6 +19444,12 @@ msgstr "Sin fecha de inicio"
 #~ msgid "Apply for the roles you drafted"
 #~ msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Show password"
+msgstr "Mostrar contraseña"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
 #~ msgid "Add a quest"
@@ -19391,6 +19608,12 @@ msgstr "Las palabras de la aldea"
 msgctxt "pay page, receive"
 msgid "Copying was blocked. Select the link above and copy it."
 msgstr "No se pudo copiar. Selecciona el enlace de arriba y cópialo."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: where it goes, shared"
+msgid "Where this goes: {village}'s team, plus a copy to the ReGen Civics platform team, so a bug fixed once is fixed for every village. What you write travels; who you are does not."
+msgstr "A dónde va esto: al equipo de {village}, y una copia al equipo de la plataforma ReGen Civics, para que un error arreglado una vez quede arreglado para todas las aldeas. Lo que escribes viaja; quién eres, no."
 
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription refusal"
@@ -19858,6 +20081,12 @@ msgstr "Para una decisión"
 msgid "You selected roles before you joined."
 msgstr "Elegiste roles antes de unirte."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the page heading"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
@@ -19944,6 +20173,12 @@ msgstr "Publicación y la puerta"
 #~ msgctxt "price popup lede"
 #~ msgid "As a contractor you can propose your own price. The contract decides the amount."
 #~ msgstr "Como contratista puedes proponer tu propio precio. El contrato decide el monto."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed"
+msgid "Got an invitation link? Open it to create your account."
+msgstr "¿Tienes un enlace de invitación? Ábrelo para crear tu cuenta."
 
 #. placeholder {0}: c.by
 #: client/src/pages/ProposedChanges.tsx
@@ -20205,6 +20440,12 @@ msgctxt "voice invite"
 msgid "About 30 seconds left in this recording."
 msgstr "Quedan unos 30 segundos de esta grabación."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: detail label"
+msgid "What did you do, what did you expect, what happened instead?"
+msgstr "¿Qué hiciste, qué esperabas y qué pasó en cambio?"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch fact"
@@ -20264,6 +20505,12 @@ msgstr "Adoptada."
 msgctxt "limit notice under a box"
 msgid "{0} characters left in this answer."
 msgstr "Quedan {0} caracteres en esta respuesta."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/ShowPasswordButton.tsx
+msgctxt "password field: the eye button"
+msgid "Hide password"
+msgstr "Ocultar contraseña"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application value"
@@ -20343,6 +20590,12 @@ msgstr "Código fuente de {villageName}"
 msgctxt "workbook cover title"
 msgid "Governance Canvas workbook"
 msgstr "Cuaderno del lienzo de gobernanza"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card fact"
+msgid "Nationality"
+msgstr "Nacionalidad"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraActs.tsx
@@ -20653,6 +20906,12 @@ msgctxt "coming soon: the places and photographs pages, the door meanwhile"
 msgid "Open the map"
 msgstr "Abrir el mapa"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the heading"
+msgid "You need an invitation to join {villageName}"
+msgstr "Necesitas una invitación para unirte a {villageName}"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
@@ -20942,6 +21201,12 @@ msgstr "Abriendo…"
 msgctxt "founding application, the send failed"
 msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
 msgstr "No pudimos enviar su solicitud. Revise su conexión y envíela de nuevo: todo lo que escribió sigue aquí en la página."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: after sending"
+msgid "Your village's team has it and will take it from here."
+msgstr "El equipo de tu aldea ya lo tiene y se encargará desde aquí."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/PinPanel.tsx
@@ -22171,6 +22436,12 @@ msgctxt "prosperity packet form"
 msgid "What you would like to build"
 msgstr "Qué te gustaría construir"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: the button while it works"
+msgid "Signing in…"
+msgstr "Iniciando sesión…"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/MenuPanel.tsx
 msgid "The menu did not save."
@@ -22207,6 +22478,12 @@ msgstr "Revise su conexión y vuelva a intentarlo."
 msgctxt "rites"
 msgid "Your card"
 msgstr "Su carta"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: between the two ways in"
+msgid "or"
+msgstr "o"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Protocols.tsx
@@ -23066,6 +23343,18 @@ msgctxt "pricing desk"
 msgid "The village adopts them by vote"
 msgstr "La aldea los adopta por votación"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: after sending"
+msgid "Send another"
+msgstr "Enviar otro"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: under the heading"
+msgid "Members sign in here."
+msgstr "Aquí inician sesión los miembros."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -23172,6 +23461,12 @@ msgctxt "proposed changes"
 msgid "Show everything ({0} unchanged)"
 msgstr "Mostrar todo ({0} sin cambios)"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: link back"
+msgid "Back to sign in"
+msgstr "Volver a iniciar sesión"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
 #~ msgstr "1 de los roles que elegiste ya no está abierto. Elige entre los roles de abajo."
@@ -23238,6 +23533,12 @@ msgstr "Un ejemplo, para leer y no para copiar"
 msgctxt "agent paths, a group's summary"
 msgid "{byPerson} a person confirms"
 msgstr "{byPerson} que confirma una persona"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the button"
+msgid "Send it"
+msgstr "Enviar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraMember.tsx
@@ -23911,6 +24212,12 @@ msgid "Your code"
 msgstr "Tu código"
 
 # needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+msgstr "Quienes visitan las páginas públicas ven tu nombre junto a lo que sostienes y das. Si lo desactivas, verán \"A member\" en su lugar."
+
+# needs-native-review: new words, 24 Nov 2026
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: an optional field"
 msgid "(optional)"
@@ -24092,6 +24399,12 @@ msgstr "Cancelar"
 msgctxt "rites"
 msgid "Save the first word"
 msgstr "Guardar la primera palabra"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed: the second button"
+msgid "See calls and events"
+msgstr "Ver llamadas y eventos"
 
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: the history"
@@ -26237,6 +26550,12 @@ msgctxt "pricing desk"
 msgid "Quest"
 msgstr "Misión"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "account forms: field label"
+msgid "Password"
+msgstr "Contraseña"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{who} pledged {much}, then withdrew it"
@@ -26264,6 +26583,12 @@ msgstr "{0, plural, one {# rol} other {# roles}}"
 msgctxt "admin helper panel"
 msgid "Connect Claude to turn on your helper"
 msgstr "Conecte Claude para activar su ayudante"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/profile/VisitorNameCard.tsx
+msgctxt "profile, show my first name to visitors"
+msgid "Show my first name to visitors"
+msgstr "Mostrar mi nombre a quienes visitan"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: what is on a day"
@@ -26875,6 +27200,12 @@ msgstr "Rol guía"
 #~ msgid "At {0}%, the role pays up to {1} (the full role: {2})."
 #~ msgstr "Al {0}%, el rol paga hasta {1} (el rol completo: {2})."
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: the heading"
+msgid "Set a new password"
+msgstr "Crea una contraseña nueva"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall eyebrow"
 msgid "Thanks between us"
@@ -26897,6 +27228,12 @@ msgstr "Sin indicar"
 msgctxt "role editor"
 msgid "Lowest amount"
 msgstr "Monto mínimo"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/Login.tsx
+msgctxt "sign in: link"
+msgid "Forgot your password?"
+msgstr "¿Olvidaste tu contraseña?"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/FoundingRoleCard.tsx
@@ -28532,12 +28869,6 @@ msgstr "Estaríamos de acuerdo con {0}"
 #~ msgid "The monthly amount you would ask"
 #~ msgstr ""
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the eyebrow"
-msgid "A small stumble"
-msgstr "Un pequeño tropiezo"
-
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
 msgid "Check your email"
@@ -29035,6 +29366,12 @@ msgstr "Revisar"
 msgctxt "open proposal: suggestions count, one"
 msgid "They suggested 1 change to the role card."
 msgstr "Sugirió 1 cambio a la ficha del rol."
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: when it fails"
+msgid "That didn't go through. Try again."
+msgstr "No se pudo enviar. Inténtalo de nuevo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/Diff.tsx
@@ -29674,6 +30011,12 @@ msgstr "Apelación: {appealShown}"
 #~ msgid "What you bring to this role"
 #~ msgstr "Lo que traes a este rol"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/components/auth/GoogleSignInButton.tsx
+msgctxt "sign in with google: the button"
+msgid "Continue with Google"
+msgstr "Continuar con Google"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Nothing has moved yet."
@@ -29954,6 +30297,12 @@ msgctxt "deliverables timeline: what a deliverable feeds"
 msgid "Feeds: {0}"
 msgstr "Alimenta: {0}"
 
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: under the heading"
+msgid "Both are gifts. A bug named is a bug on its way out; an idea written down is one the village can actually weigh."
+msgstr "Ambos son regalos. Un error nombrado ya va de salida; una idea escrita es una que la aldea de verdad puede considerar."
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "The roles you selected: {roleList}."
 msgstr "Los roles que elegiste: {roleList}."
@@ -30156,6 +30505,12 @@ msgstr "Restaurada. Vuelve a contar."
 msgctxt "pricing desk"
 msgid "Pay settings adopted"
 msgstr "Ajustes de pago adoptados"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: where it goes"
+msgid "Where this goes: {village}'s team, and nowhere else."
+msgstr "A dónde va esto: al equipo de {village}, y a ningún otro lugar."
 
 #: client/src/components/Layout.tsx
 #, fuzzy
@@ -30615,6 +30970,12 @@ msgstr "Horarios habituales: {windowList}"
 #~ msgctxt "update card: reload the page"
 #~ msgid "Reload"
 #~ msgstr "Recargar"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
+#: client/src/pages/ForgotPassword.tsx
+msgctxt "forgot password: after sending"
+msgid "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once."
+msgstr "Si existe una cuenta con esa dirección, ya va en camino un enlace para crear una contraseña nueva. Vence en una hora y sirve una sola vez."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/yourList/RoleHandoffs.tsx
@@ -31360,6 +31721,12 @@ msgstr "Sugerido {0}; propone {1}{2}.{3}"
 msgctxt "sera changes"
 msgid "To decide {nDecide}"
 msgstr "Por decidir: {nDecide}"
+
+# needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the kind"
+msgid "Something broke"
+msgstr "Algo se rompió"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx

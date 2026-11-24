@@ -75,6 +75,7 @@ import { isTombstone } from "../lib/oauthAccounts";
 import { numberVar } from "../lib/variables";
 import { replyMoonsNow } from "../lib/foundingFirst";
 import { escapeHtml } from "../lib/comms/mailer";
+import { plainLetterHtml } from "../lib/letterHtml";
 import type { Express } from "express";
 import type { PoolConnection } from "mysql2/promise";
 import { isVillageHeld, type Capability } from "../../shared/capabilities";
@@ -1025,7 +1026,7 @@ export function register(app: Express, deps: Deps): void {
         origin: "role_application.update",
         to: { email: String(who.email), ...(greetingName(String(who.name ?? "")) ? { name: greetingName(String(who.name ?? "")) as string } : {}) },
         subject: words.title,
-        html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${text.split("\n\n").map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`).join("")}</body></html>`,
+        html: plainLetterHtml(text), // every address a link (server/lib/letterHtml.ts)
         text,
       });
       if (sent.status !== "sending" && sent.status !== "sent" && sent.status !== "delivered" && sent.status !== "duplicate") console.warn(`[seat-applications] the terms email for ${a.id} did not go: ${sent.status}`);

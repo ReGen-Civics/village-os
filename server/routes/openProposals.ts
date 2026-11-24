@@ -106,6 +106,7 @@ import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
 import { inApplicationTransaction, liveSeatingsOf } from "../repos/seatApplications";
 import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
 import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
+import { plainLetterHtml } from "../lib/letterHtml";
 import { inviteById } from "../repos/memberInvites";
 import { dbDocument } from "../repos/store-db";
 import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposalDecide";
@@ -891,10 +892,7 @@ export function register(app: Express, deps: Deps): void {
       origin: "open_proposal.again",
       to: { email: a.email },
       subject: words.subject,
-      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${words.text
-        .split("\n\n")
-        .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-        .join("")}</body></html>`,
+      html: plainLetterHtml(words.text), // every address a link (server/lib/letterHtml.ts)
       text: words.text,
     }).catch((): PostResult => ({ status: "failed", messageId: null }));
     console.log(`[open-proposals] ${a.waiting.id} was sent again while it waits; nothing new kept (${sent.status})`);
@@ -968,10 +966,8 @@ export function register(app: Express, deps: Deps): void {
             origin: "open_proposal.status",
             to: { email: confirmed.proposal.email },
             subject: apply.statusSubject,
-            html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${text
-              .split("\n\n")
-              .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-              .join("")}</body></html>`,
+            // The status link as a button too, and every address a link (server/lib/letterHtml.ts).
+            html: plainLetterHtml(text, { action: { href: `${site()}${statusPath}`, label: apply.statusButton } }),
             text,
           });
         } catch (e) {
