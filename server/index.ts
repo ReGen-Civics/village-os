@@ -588,7 +588,7 @@ import { normalizeSeasonConfig, seasonRunningProblem } from "./lib/seasonCalenda
 import { completionsFor, completionsForMany, gatingModuleIds, trainingIsComplete, trainingProgress } from "./lib/trainingRecord";
 import { starterTrainingModules } from "./lib/trainingStarter";
 import { respondToTerminalError, installCrashHandlers, installShutdownHandlers, reachedSomebody, reportError, reportErrorWithin, wireErrorReporting } from "./lib/errors";
-import { crashAlertNotifier } from "./lib/crashAlerts";
+import { crashAlertMailer, crashAlertNotifier } from "./lib/crashAlerts";
 import { CRASH_ALERT_RECIPIENTS_KEY } from "../shared/crashAlerts";
 import {
   STAY_CREDIT,
@@ -4981,8 +4981,8 @@ async function startServer() {
    * was a log line in a stream with no reader.
    */
   wireErrorReporting({
-    // Crashes ride their own kind, to the accounts the village names (shared/crashAlerts.ts).
-    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY) }),
+    // Crashes ride their own kind, to the accounts the village names, and email any listed address with no account (shared/crashAlerts.ts).
+    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY), emailAddress: crashAlertMailer({ postOffice: commsPostOffice, origin: notifyDeps.origin, projectName: notifyDeps.projectName, brandColour: notifyDeps.brandColour }) }),
     instanceLabel: mergedConfig().project.name,
   });
   installCrashHandlers();
