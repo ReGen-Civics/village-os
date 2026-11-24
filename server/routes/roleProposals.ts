@@ -492,7 +492,10 @@ export function register(app: Express, deps: Deps): void {
    * reads, so the banner and the bell never disagree about why.
    */
   // The path's "propose for next season" step reads the banner's own answer (server/lib/pathFacts.ts).
+  // Only somebody the proposal routes would let in (member() above): an applicant's path never points at a refusal.
+  const mayPropose = async (m: any): Promise<boolean> => !!m && hasCapability("terms.read", await capabilityCtx(m));
   providePathFacts("proposeWindow", async (userId) => {
+    if (!(await mayPropose(await deps.members.byId(userId)))) return { proposeWindow: null };
     const due = await nudgesFor({ pool: getPool(), now: now(), timeZone: tz(), clock: clock(), seasons: seasons(), lapse: deps.lapse() }, userId);
     return { proposeWindow: due.length ? { href: PROPOSE_ENTRY_HREF, closesOn: null } : null };
   });
@@ -913,6 +916,7 @@ export function register(app: Express, deps: Deps): void {
       lapse: deps.lapse(),
       members: await deps.members.all(),
       isPresent: deps.isPresent,
+      mayPropose,
       notify,
     });
     if (r.sent) return `${r.sent} nudge(s) to propose roles`;

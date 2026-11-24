@@ -462,6 +462,13 @@ export interface NudgeDeps {
   lapse: LapseContext;
   members: ReadonlyArray<Record<string, any>>;
   isPresent(member: any): boolean;
+  /**
+   * Whether this account may propose roles at all (`terms.read`, the gate the
+   * proposal routes ask). An applicant the village has not admitted yet is
+   * present but may not, and a nudge to a door that answers "this opens at the
+   * member rung" is a dead end. Absent, everybody present is asked.
+   */
+  mayPropose?(member: any): Promise<boolean>;
   notify(input: NotifyInput): Promise<{ fresh?: boolean } | unknown>;
 }
 
@@ -517,6 +524,7 @@ export async function runProposalNudges(deps: NudgeDeps): Promise<{ sent: number
   let sent = 0;
   for (const m of deps.members) {
     if (!deps.isPresent(m)) continue;
+    if (deps.mayPropose && !(await deps.mayPropose(m))) continue;
     const userId = String(m.id);
     const due = dueNudges({ now: deps.now, timeZone: deps.timeZone, window: facts.window, proposals: facts.proposalsOf(userId), reviewDays: facts.reviewDaysOf(userId) });
     for (const n of due) {
