@@ -20,6 +20,7 @@ import { recordEvent } from "../lib/events";
 import { recipientFor } from "../lib/letterRecipient";
 import { isSuppressed } from "../lib/comms/suppressions";
 import { editWaitingLetter, listAllWaitingLetters, proposalById, resolveProposal, type StoredProposal } from "../repos/agentProposals";
+import { plainLetterHtml } from "../lib/letterHtml";
 import { SEND_WORDS, letterTitle, parseLetterEdit, splitLetterTitle } from "../../shared/agentProposals";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members"> & {
@@ -104,10 +105,7 @@ export function register(app: Express, deps: Deps): void {
       origin: "role.letter",
       to: { email: to.email, ...(firstName ? { name: firstName } : {}), ...(to.userId ? { userId: to.userId } : {}) },
       subject,
-      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${text
-        .split("\n\n")
-        .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-        .join("")}</body></html>`,
+      html: plainLetterHtml(text), // every address a link (server/lib/letterHtml.ts)
       text,
     });
     if (!WENT.has(sent.status)) return res.status(503).json({ error: "not_sent", message: SEND_WORDS.notSent });

@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.63 (2026-11-24)
+
+### What changed for your village
+
+- **An applicant's path no longer leads to a refusal.** "Propose your roles for next season" and its reminder bell now reach only people who can propose roles, which opens at the member rung.
+- **Live sessions say plainly that they are for members**, with no "Try again" button and no start form an applicant could not use.
+- **Module Library** sits in a member's header bar and no longer shows to applicants.
+- **After sending on a phone,** the quest, partner and venture forms bring their thank-you into view and a screen reader hears it.
+- **Pooling Resources (/campaigns)** in the house look.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.62 (2026-11-24)
 
 ### What changed for your village
