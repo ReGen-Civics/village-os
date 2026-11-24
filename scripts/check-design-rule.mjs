@@ -77,6 +77,7 @@ const PAGES = [
   "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
+  "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
   "client/src/pages/Approvals.tsx",

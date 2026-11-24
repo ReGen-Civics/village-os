@@ -4003,6 +4003,12 @@ msgstr "{beyondCount} roles necesitan más tiempo del que tienes ahora."
 #~ msgid "Choose your commitment to see a suggested price."
 #~ msgstr "Elige tu compromiso para ver un precio sugerido."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/SeasonalFestivals.tsx
+msgctxt "seasonal festivals page eyebrow"
+msgid "The village year"
+msgstr "El año de la aldea"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Not funded this round"

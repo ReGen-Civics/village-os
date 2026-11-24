@@ -9,7 +9,8 @@ import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
-import { CalendarDays, Sparkles } from "lucide-react";
+import { CalendarDays, Sprout } from "lucide-react";
+import { CARD, CARD_FEATURED, EYEBROW, H1, HINT, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import { useStoryPageShown } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
 
@@ -64,10 +65,15 @@ export default function SeasonalFestivals() {
 
   return (
     <Layout>
-      <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
-        <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Seasonal Festivals</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+      {/* The night world (public launch, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
+      <section className="pt-12 pb-4 sm:pt-16">
+        <div className="container max-w-2xl">
+          <p className={EYEBROW}>
+            <Trans context="seasonal festivals page eyebrow">The village year</Trans>
+          </p>
+          <h1 className={`${H1} mt-2`}>Seasonal Festivals</h1>
+          <p className={`${LEDE} mt-4`}>
             The village moves in seasons, each with its own energy, and each
             turned with a gathering. Festivals are how a season is opened,
             honored, and handed to the next.
@@ -75,20 +81,20 @@ export default function SeasonalFestivals() {
         </div>
       </section>
 
-      <section className="py-8 bg-background">
+      <section className="pt-6 pb-16">
         <div className="container max-w-2xl space-y-4">
           {/* The "Now" card's place while the season is read: an empty card
               of its measured height (282px at 390, 262px from 768 up). */}
           {!seasonRead && (
-            <div aria-hidden="true" className="bg-card border border-border rounded-xl min-h-[17.5rem] md:min-h-[16.5rem]" />
+            <div aria-hidden="true" className="bg-card border border-border rounded-2xl min-h-[17.5rem] md:min-h-[16.5rem]" />
           )}
           {season?.current && (
-            <div className="bg-card border border-teal-deep/30 rounded-xl p-5">
+            <div className={CARD_FEATURED}>
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-teal-deep" />
-                <p className="text-xs font-semibold uppercase tracking-widest text-teal-deep">Now</p>
+                <Sprout className="w-4 h-4 text-open" aria-hidden="true" />
+                <p className={EYEBROW}>Now</p>
               </div>
-              <p className="font-display text-xl font-bold text-foreground">{season.current.name}</p>
+              <p className="font-display text-2xl font-bold text-card-foreground">{season.current.name}</p>
               {/*
                 * `focus` is the season's description. This read `season.current.goal`
                 * for its whole life, a key SeasonEntry has never had (the fields are
@@ -96,33 +102,33 @@ export default function SeasonalFestivals() {
                 * page types the payload as `any`, which is why tsc never said so.
                 */}
               {season.current.focus && (
-                <p className="text-sm text-muted-foreground mt-1">{season.current.focus}</p>
+                <p className="text-base text-muted-foreground mt-1">{season.current.focus}</p>
               )}
               {currentGoals.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {currentGoals.map((g: any, i: number) => (
-                    <li key={i} className="text-sm text-muted-foreground">
+                    <li key={i} className="text-base text-muted-foreground">
                       {g.done ? "Done: " : ""}{g.text}
                     </li>
                   ))}
                 </ul>
               )}
               {currentGoals.length > 0 && stewardOn && (
-                <p className="text-sm text-foreground mt-3">
+                <p className="text-base text-foreground mt-3">
                   <Trans context="seasonal festivals: under this season's goals, the invitation to the steward path">
                     If you can help us meet these, consider the{" "}
-                    <Link href="/steward" className="text-teal-deep font-medium hover:underline">Village Steward path</Link>.
+                    <Link href="/steward" className={LINK}>Village Steward path</Link>.
                   </Trans>
                 </p>
               )}
-              <p className="text-xs text-muted-foreground mt-2">{span(season.current)}</p>
+              <p className={`${HINT} mt-2`}>{span(season.current)}</p>
             </div>
           )}
 
-          <div className="bg-card border border-border rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <CalendarDays className="w-4 h-4 text-teal-deep" />
-              <p className="font-semibold text-foreground text-sm">The year's turning</p>
+          <div className={CARD}>
+            <div className="flex items-center gap-2 mb-4">
+              <CalendarDays className="w-5 h-5 text-notice" aria-hidden="true" />
+              <h2 className="font-display text-2xl font-bold text-card-foreground">The year's turning</h2>
             </div>
             {/*
               * Filtered on `startsOn` alone. Requiring `endsOn` too dropped every
@@ -143,35 +149,36 @@ export default function SeasonalFestivals() {
                   .filter((s: any) => s.startsOn)
                   .sort((a: any, b: any) => a.startsOn.localeCompare(b.startsOn))
                   .map((s: any) => (
-                    <li key={s.id ?? s.name} className="border border-border rounded-lg px-4 py-3">
-                      <p className="text-sm font-medium text-foreground">{s.name}</p>
-                      {s.focus && <p className="text-xs text-muted-foreground mt-0.5">{s.focus}</p>}
-                      <p className="text-xs text-muted-foreground mt-1">{span(s)}</p>
+                    <li key={s.id ?? s.name} className={QUIET}>
+                      <p className="text-base font-medium text-foreground">{s.name}</p>
+                      {s.focus && <p className="text-sm text-muted-foreground mt-0.5">{s.focus}</p>}
+                      <p className="text-sm text-muted-foreground mt-1">{span(s)}</p>
                     </li>
                   ))}
               </ul>
             )}
-            <p className="text-xs text-muted-foreground mt-4">
+            <p className="text-sm leading-relaxed text-muted-foreground mt-5">
               Festival dates ride the season turnings above. To take part in
               shaping one, start at{" "}
-              <Link href="/quests" className="text-teal-deep font-medium hover:underline">Quests</Link>
+              <Link href="/quests" className={LINK}>Quests</Link>
               {workWithUsOn ? (
                 <>
                   {" "}or say hello through{" "}
-                  <Link href="/work-with-us" className="text-teal-deep font-medium hover:underline">Work With Us</Link>
+                  <Link href="/work-with-us" className={LINK}>Work With Us</Link>
                 </>
               ) : null}
               .
               {eventsModule && (
                 <>
                   {" "}Everything already dated sits on the{" "}
-                  <Link href="/events" className="text-teal-deep font-medium hover:underline">Village Calendar</Link>.
+                  <Link href="/events" className={LINK}>Village Calendar</Link>.
                 </>
               )}
             </p>
           </div>
         </div>
       </section>
+      </div>
     </Layout>
   );
 }
