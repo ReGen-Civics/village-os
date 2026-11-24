@@ -9,7 +9,7 @@ import { setupI18n } from "@lingui/core";
 import { cleanup, render } from "@testing-library/react";
 import { DEFAULT_SHARE_NAMES, type ShareNames } from "@shared/contributionToken";
 import { readApplyBy, readSections } from "@shared/roleCardSections";
-import { applyByWords, frontKind, payMixParts, payMixWords, pillKind, soonIsPaid, volunteerLine } from "./frontWords";
+import { applyByParts, applyByWords, frontKind, payMixParts, payMixWords, pillKind, soonIsPaid, volunteerLine } from "./frontWords";
 import FoundingTeam, { type FoundingRole } from "./FoundingTeam";
 import ComingSoonRoles from "./ComingSoonRoles";
 
@@ -65,6 +65,20 @@ describe("the front's words", () => {
     expect(applyByWords(i18n, undefined, "2026-11-23")).toBeNull();
   });
 
+  it("gives the stamp its pieces, and the days left only inside the last week", () => {
+    const far = applyByParts(i18n, "2026-12-15", "2026-11-24");
+    expect(far && { ...far }).toEqual({ eyebrow: "Apply by", day: "15", month: "Dec", weekday: "Tuesday", line: "Applications close Tue\u00a015\u00a0Dec", label: "Applications close Tuesday 15 December", daysLeft: 21, soon: null });
+    expect(applyByParts(i18n, "2026-11-30", "2026-11-24")?.soon).toBe("6 days left");
+    expect(applyByParts(i18n, "2026-11-30", "2026-11-23")?.soon).toBe("7 days left");
+    expect(applyByParts(i18n, "2026-11-30", "2026-11-22")?.soon).toBeNull();
+    expect(applyByParts(i18n, "2026-11-30", "2026-11-29")?.soon).toBe("1 day left");
+    expect(applyByParts(i18n, "2026-11-30", "2026-11-30")?.soon).toBe("Closes today");
+    // A day gone by, none, or one that does not read shows nothing.
+    expect(applyByParts(i18n, "2026-11-30", "2026-12-01")).toBeNull();
+    expect(applyByParts(i18n, "", "2026-11-23")).toBeNull();
+    expect(applyByParts(i18n, "30/11/2026", "2026-11-23")).toBeNull();
+  });
+
   it("reads an upcoming role as paid unless its track says otherwise", () => {
     expect(soonIsPaid({ card: {} })).toBe(true);
     expect(soonIsPaid({ card: { track: "contractor" } })).toBe(true);
@@ -118,10 +132,14 @@ describe("the team sheet's front", () => {
     // A segment only above 0%: the credits share is said, never drawn, at 0%.
     expect(segments("a")).toEqual([["cash", "60%"], ["equity", "40%"]]);
     expect(frame("a").querySelector('[data-pay-share-zero="credits"]')).toBeTruthy();
-    expect(frame("a").querySelector("[data-front-apply-by]")?.textContent).toBe("Apply by Mon 30 Nov");
+    // The last day to apply is a stamp now (the lead, 24 Nov 2026): a seal from 1024px, a ribbon on the painting below.
+    expect(frame("a").querySelector("[data-front-apply-by]")).toBeNull();
+    expect(frame("a").querySelector("[data-apply-stamp] .sr-only")?.textContent).toBe("Applications close Monday 30 November. 7 days left.");
+    expect(frame("a").querySelector("[data-apply-ribbon]")?.textContent).toContain("Applications close Mon\u00a030\u00a0Nov");
     expect(frame("b").querySelector("[data-status-pill]")?.textContent).toBe("Open paid role");
     expect(segments("b")).toEqual([["cash", "100%"]]);
-    expect(frame("b").querySelector("[data-front-apply-by]")).toBeNull();
+    expect(frame("b").querySelector("[data-apply-stamp]")).toBeNull();
+    expect(frame("b").querySelector("[data-apply-ribbon]")).toBeNull();
     expect(frame("c").querySelector("[data-status-pill]")?.textContent).toBe("Open role");
     expect(frame("c").querySelector("[data-front-kind]")?.textContent).toBe("Volunteer role");
     expect(frame("c").querySelector("[data-pay-split-mini]")).toBeNull();

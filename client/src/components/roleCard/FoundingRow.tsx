@@ -9,19 +9,22 @@
  *     cards draw theirs. The paintings are 720x960, so both crops stay sharp.
  *   - the status pill says the kind ("Open paid role", "Open role"), and the pay split shows as a thin bar with a
  *     one-line legend in place of the old "Open paid role ·" line (PaySplitMini.tsx); a volunteer role says so.
- *   - b2: the apply-by date on its own outlined tile in the village's true gold (the dash gold, never `notice`, which a
- *     village may tint the colour of its buttons), then circle, commitment and place on one line with their signs.
+ *   - b2: circle, commitment and place on one line with their signs. The apply-by date left its small gold tile for a
+ *     stamp (the lead, 24 Nov 2026, ApplyByStamp.tsx): a seal under "Read the card" from 1024px, and on the painting
+ *     below that, both in the village's true gold (the dash gold, never `notice`, which a village may tint the colour
+ *     of its buttons).
  *   - b1: the related roles as wrapping chips (lineupParts.tsx).
  */
 import type { ReactNode } from "react";
-import { ArrowRight, CalendarClock, Clock, MapPin, Users } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Users } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import type { ShareNames } from "@shared/contributionToken";
 import type { PayShare } from "@shared/roleCardSections";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import { Domains, FillMeter, OpenPill, ToBeAdded } from "./lineupParts";
-import { pillKind, type FrontKind } from "./frontWords";
+import { pillKind, type ApplyByParts, type FrontKind } from "./frontWords";
+import { ApplyByRibbon, ApplyByStamp, stampLook } from "./ApplyByStamp";
 import PaySplitMini from "./PaySplitMini";
 
 export interface FoundingRowProps {
@@ -36,7 +39,8 @@ export interface FoundingRowProps {
   shareNames: ShareNames;
   /** "Volunteer role", for a volunteer role. */
   volunteer: string | null;
-  applyBy: string | null;
+  /** The last day to apply in the stamp's pieces (frontWords.ts `applyByParts`); null for none or one gone by. */
+  applyBy: ApplyByParts | null;
   circle: string | null;
   commitment: string | null;
   where: string | null;
@@ -51,46 +55,43 @@ export interface FoundingRowProps {
 }
 
 /**
- * The facts grouped (b2): the apply-by date stands on its own outlined gold tile, the time a reader has, its date never
- * split across lines; circle, commitment and place follow as one quiet line, each with its own sign, at 14px.
+ * The facts grouped (b2): circle, commitment and place as one quiet line, each with its own sign, at 14px. The apply-by
+ * date is the stamp's now (ApplyByStamp.tsx).
  */
-export function FactsGrouped({ applyBy, circle, commitment, where }: { applyBy: string | null; circle: string | null; commitment: string | null; where: string | null }) {
+export function FactsGrouped({ circle, commitment, where }: { circle: string | null; commitment: string | null; where: string | null }) {
   const facts = [
     [Users, circle],
     [Clock, commitment],
     [MapPin, where],
   ].filter((f): f is [typeof Users, string] => !!f[1]);
-  if (facts.length === 0 && !applyBy) return null;
+  if (facts.length === 0) return null;
   return (
-    <div className="mt-3 grid gap-2">
-      {applyBy && (
-        <p className="inline-flex w-fit max-w-full items-center gap-2 rounded-lg border border-dash-gold/70 px-3 py-1.5 text-sm font-semibold text-dash-gold-lit" data-front-apply-by="">
-          <CalendarClock className="size-4 shrink-0" aria-hidden="true" />
-          <span className="whitespace-nowrap">{applyBy}</span>
-        </p>
-      )}
-      {facts.length > 0 && (
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-card-foreground" data-front-facts="">
-          {facts.map(([Icon, f]) => (
-            <li key={f} className="inline-flex items-center gap-1.5">
-              <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              {f}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-card-foreground" data-front-facts="">
+      {facts.map(([Icon, f]) => (
+        <li key={f} className="inline-flex items-center gap-1.5">
+          <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          {f}
+        </li>
+      ))}
+    </ul>
   );
 }
 
 export default function FoundingRow(p: FoundingRowProps) {
   const { t } = useLingui();
+  const look = stampLook();
   const frame = `rounded-2xl border-2 bg-card shadow-sm ${p.here && p.cardSlot ? "border-notice" : "border-notice/50"}`;
   return (
     <li className={`overflow-hidden ${frame}`} data-role-frame={p.id}>
       <div className={`grid sm:grid-cols-[13rem_minmax(0,1fr)] ${p.here ? "bg-notice/10" : ""}`}>
-        <div className="relative aspect-[4/3] border-b border-notice/30 sm:aspect-auto sm:min-h-full sm:border-b-0 sm:border-r">
-          <ArtImage portrait src={p.art} className="absolute inset-0" imgClassName="object-[50%_35%]" />
+        {/* Below 1024px the last day to apply rides with the painting: a ribbon across its top edge (above it, so the
+            whole subject stays in frame), or a seal on its bottom-right corner. */}
+        <div className="flex flex-col border-b border-notice/30 sm:min-h-full sm:border-b-0 sm:border-r">
+          {p.applyBy && look.phone === "ribbon" && <ApplyByRibbon parts={p.applyBy} className="lg:hidden" />}
+          <div className="relative aspect-[4/3] sm:aspect-auto sm:flex-1">
+            <ArtImage portrait src={p.art} className="absolute inset-0" imgClassName="object-[50%_35%]" />
+            {p.applyBy && look.phone === "corner" && <ApplyByStamp parts={p.applyBy} tilt={look.desk === "tilt"} size="sm" className="absolute bottom-4 right-3 lg:hidden" />}
+          </div>
         </div>
         <div className="grid min-w-0 gap-4 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <div className="min-w-0">
@@ -104,11 +105,12 @@ export default function FoundingRow(p: FoundingRowProps) {
                 {p.volunteer}
               </p>
             )}
-            <FactsGrouped applyBy={p.applyBy} circle={p.circle} commitment={p.commitment} where={p.where} />
+            <FactsGrouped circle={p.circle} commitment={p.commitment} where={p.where} />
             {p.fill && <FillMeter f={p.fill} />}
             <Domains seat={p.seat} />
             <ToBeAdded roles={p.toBeAdded} onOpen={p.onOpenAdded} />
           </div>
+          <div className="grid gap-10 lg:justify-items-center">
           <button
             type="button"
             onClick={p.onOpen}
@@ -121,6 +123,9 @@ export default function FoundingRow(p: FoundingRowProps) {
             <span className="sr-only">{`: ${p.name}`}</span>
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>
+          {/* From 1024px the card's right column is empty under the button: the seal stands there. */}
+          {p.applyBy && <ApplyByStamp parts={p.applyBy} tilt={look.desk === "tilt"} className="hidden lg:block" />}
+          </div>
         </div>
       </div>
       {p.here && p.cardSlot ? (
