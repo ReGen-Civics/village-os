@@ -13,12 +13,12 @@
  * Kept apart from pages/ProposeARole.tsx so the form stays one reading
  * (scripts/check-file-lines.mjs); the page re-exports ConfirmProposal.
  */
-import { useReplyPromise } from "@/lib/replyPromise";
 import type { ComponentProps } from "react";
 import { LazyStateNote } from "@/components/ComingSoonLazy";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
+import { useGameConfig } from "@/lib/gameApi";
 import { ArrowRight, MailOpen, PenLine } from "lucide-react";
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, DOOR, EYEBROW, H1, HINT, LEDE, TILE, WORLD } from "@/components/journey/look";
@@ -161,12 +161,25 @@ function WhileYouWait() {
 }
 
 /**
+ * The same words as the four ways' `useReplyPromise` (components/ContributorRoutes.tsx), said here without importing
+ * that module, which this page loads lazily to keep the application's first view small.
+ */
+function useThresholdReplyPromise(): string {
+  const { t } = useLingui();
+  const n = useGameConfig()?.replyWindowMoons;
+  const moons = typeof n === "number" && Number.isInteger(n) && n >= 1 && n <= 6 ? n : 1;
+  return moons === 1
+    ? t({ message: "You'll hear from us within one moon cycle.", context: "after sending a proposal: when you hear back" })
+    : t({ message: `You'll hear from us within ${moons} moon cycles.`, context: "after sending a proposal: when you hear back, more than one moon" });
+}
+
+/**
  * WHEN WE REPLY, ONCE THEY HAVE SENT (the lead, 24 Nov 2026: "for all proposals they'll hear within 1 moon cycle"):
  * the village's own window in moon cycles, `org.reply_window_moons` (useReplyPromise). Nothing when the server sent
  * no days: a role after the founding team says its own wait.
  */
 export function ReplyPromise({ days }: { days: number | null }) {
-  const promise = useReplyPromise();
+  const promise = useThresholdReplyPromise();
   if (!days) return null;
   return (
     <p className="font-semibold text-foreground" data-reply-promise="">

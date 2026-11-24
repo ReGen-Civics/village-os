@@ -18,7 +18,7 @@ import { APPLY_TEXT } from "@shared/applyLimits";
 /** Each answer here (shared/applyLimits.ts): kept whole, counted under its box, and held at send when over. */
 const QUEST_PROSE_MAX = APPLY_TEXT.questProse;
 import { useLingui } from "@lingui/react/macro";
-import { useReplyPromise } from "@/lib/replyPromise";
+import { useReplyPromise } from "@/components/ContributorRoutes";
 
 interface QuestProposal {
   title: string;

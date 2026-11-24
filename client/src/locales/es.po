@@ -28651,13 +28651,13 @@ msgid "A role on the team"
 msgstr "Un rol en el equipo"
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/lib/replyPromise.ts
+#: client/src/components/ContributorRoutes.tsx
 msgctxt "after sending a proposal: when you hear back"
 msgid "You'll hear from us within one moon cycle."
 msgstr "Tendrás noticias nuestras dentro de un ciclo lunar."
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/lib/replyPromise.ts
+#: client/src/components/ContributorRoutes.tsx
 msgctxt "after sending a proposal: when you hear back, more than one moon"
 msgid "You'll hear from us within {moons} moon cycles."
 msgstr "Tendrás noticias nuestras dentro de {moons} ciclos lunares."
