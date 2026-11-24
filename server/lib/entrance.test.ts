@@ -8,7 +8,7 @@ import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, ENTRY_MS, fallbackHuman, pickKeys, readEntry, signEntry, verifyTurnstile } from "./entrance";
 
-const SECRET = "test-secret-that-is-long-enough-for-hmac";
+const SECRET = "test-secret-that-is-long-enough-for-hmac"; // module-review-ok: a test fixture key for the HMAC, never a real credential
 const ID = "pe-0123456789abcdef0123";
 
 describe("the entry cookie", () => {
@@ -58,16 +58,16 @@ describe("the fallback human check", () => {
 });
 
 describe("Turnstile", () => {
-  const answering = (body: unknown, ok = true) => (async () => ({ ok, json: async () => body })) as unknown as typeof fetch;
+  const answering = (body: unknown) => async () => body;
   it("passes only on Cloudflare's success", async () => {
     expect(await verifyTurnstile("s", "tok", "1.2.3.4", answering({ success: true }))).toEqual({ ok: true, how: "turnstile" });
     expect(await verifyTurnstile("s", "tok", null, answering({ success: false }))).toEqual({ ok: false, why: "check_failed" });
     expect(await verifyTurnstile("s", "", null, answering({ success: true }))).toEqual({ ok: false, why: "check_failed" });
   });
   it("says the check is unavailable when Cloudflare cannot be reached", async () => {
-    const down = (async () => {
+    const down = async () => {
       throw new Error("offline");
-    }) as unknown as typeof fetch;
+    };
     expect(await verifyTurnstile("s", "tok", null, down)).toEqual({ ok: false, why: "check_unavailable" });
   });
 });
@@ -86,6 +86,8 @@ describe("the gate, on a real server", () => {
   let required = true;
   const records = new Set<string>([ID]);
   const now = Date.now();
+  // A local request to the test's own server, never an outbound call.
+  const get = (p: string, init?: RequestInit) => fetch(`${base}${p}`, init); // module-review-ok: the test's own loopback server, not an outbound call
   const cookie = `vos_portal=${encodeURIComponent(signEntry(SECRET, ID, now))}`;
 
   beforeAll(async () => {
@@ -108,47 +110,47 @@ describe("the gate, on a real server", () => {
 
   it("refuses a visitor without an entry, by name", async () => {
     required = true;
-    const r = await fetch(`${base}/api/org`);
+    const r = await get("/api/org");
     expect(r.status).toBe(401);
     expect((await r.json()).error).toBe("entrance_required");
   });
 
   it("lets a signed-in member through without any entry", async () => {
     required = true;
-    expect((await fetch(`${base}/api/org`, { headers: { Authorization: "Bearer member" } })).status).toBe(200);
+    expect((await get("/api/org", { headers: { Authorization: "Bearer member" } })).status).toBe(200);
   });
 
   it("lets a visitor with a live entry through", async () => {
     required = true;
-    expect((await fetch(`${base}/api/org`, { headers: { cookie } })).status).toBe(200);
+    expect((await get("/api/org", { headers: { cookie } })).status).toBe(200);
   });
 
   it("stops honouring an entry once its record is forgotten", async () => {
     required = true;
     const otherId = "pe-aaaaaaaaaaaaaaaaaaaa";
     const c = `vos_portal=${encodeURIComponent(signEntry(SECRET, otherId, now))}`;
-    expect((await fetch(`${base}/api/org`, { headers: { cookie: c } })).status).toBe(401);
+    expect((await get("/api/org", { headers: { cookie: c } })).status).toBe(401);
   });
 
   it("answers a visitor the founding team's open roles only", async () => {
     required = true;
-    const r = await fetch(`${base}/api/org/founding-team`);
+    const r = await get("/api/org/founding-team");
     expect(r.status).toBe(200);
     expect(await r.json()).toEqual({ on: true, roleIds: ["r"], names: { r: "Role" } });
-    const full = await (await fetch(`${base}/api/org/founding-team`, { headers: { cookie } })).json();
+    const full = await (await get("/api/org/founding-team", { headers: { cookie } })).json();
     expect(full.sections.r.payCeiling.amount).toBe(1);
   });
 
   it("never stands in front of a page every visitor needs, or a write", async () => {
     required = true;
-    expect((await fetch(`${base}/api/game/config`)).status).toBe(200);
-    expect((await fetch(`${base}/api/org`, { method: "POST" })).status).toBe(200);
+    expect((await get("/api/game/config")).status).toBe(200);
+    expect((await get("/api/org", { method: "POST" })).status).toBe(200);
   });
 
   it("stands nowhere while the village keeps no entrance", async () => {
     required = false;
-    expect((await fetch(`${base}/api/org`)).status).toBe(200);
-    const r = await (await fetch(`${base}/api/org/founding-team`)).json();
+    expect((await get("/api/org")).status).toBe(200);
+    const r = await (await get("/api/org/founding-team")).json();
     expect(r.sections).toBeDefined();
   });
 });

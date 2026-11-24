@@ -29,6 +29,7 @@
  */
 import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
+import { guardedFetchJson } from "./toolcheck";
 import { apiBehindEntrance, brochureKeysFor, ENTRY_COOKIE, ENTRY_DAYS } from "../../shared/entrance";
 
 export const ENTRY_MS = ENTRY_DAYS * 24 * 60 * 60 * 1000;
@@ -150,14 +151,16 @@ export type HumanVerdict = { ok: true; how: "turnstile" | "fallback" | "smoke" }
 
 const TURNSTILE_VERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
+/** One JSON POST to Cloudflare, through the house's guarded, pinned outbound door (server/lib/toolcheck.ts). */
+export type TurnstilePost = (url: string, body: Record<string, string>) => Promise<unknown>;
+
+const guardedPost: TurnstilePost = (url, body) => guardedFetchJson(url, 8000, { method: "POST", body });
+
 /** Ask Cloudflare whether a Turnstile answer is good. A provider we cannot reach is a refusal, said as such. */
-export async function verifyTurnstile(secret: string, token: string, ip: string | null, fetchImpl: typeof fetch = fetch): Promise<HumanVerdict> {
+export async function verifyTurnstile(secret: string, token: string, ip: string | null, post: TurnstilePost = guardedPost): Promise<HumanVerdict> {
   if (!token || token.length > 4096) return { ok: false, why: "check_failed" };
   try {
-    const body = new URLSearchParams({ secret, response: token });
-    if (ip) body.set("remoteip", ip);
-    const r = await fetchImpl(TURNSTILE_VERIFY, { method: "POST", body, signal: AbortSignal.timeout(8000) });
-    const j = (await r.json().catch(() => null)) as { success?: boolean } | null;
+    const j = (await post(TURNSTILE_VERIFY, { secret, response: token, ...(ip ? { remoteip: ip } : {}) })) as { success?: boolean } | null;
     return j?.success === true ? { ok: true, how: "turnstile" } : { ok: false, why: "check_failed" };
   } catch {
     return { ok: false, why: "check_unavailable" };

@@ -51,7 +51,6 @@ export interface EntranceRouteDeps {
   overLimit(bucket: string, max: number, windowMs: number): Promise<boolean>;
   guardCapability(req: Request, res: Response, cap: Capability): Promise<boolean>;
   now?: () => number;
-  fetchImpl?: typeof fetch;
 }
 
 const LIST_MAX = 5000;
@@ -103,7 +102,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     }
     let human: HumanVerdict;
     if (smoke) human = { ok: true, how: "smoke" };
-    else if (siteKey()) human = await verifyTurnstile(deps.turnstileSecret(), String(body.turnstileToken ?? ""), ip || null, deps.fetchImpl);
+    else if (siteKey()) human = await verifyTurnstile(deps.turnstileSecret(), String(body.turnstileToken ?? ""), ip || null);
     else human = fallbackHuman({ website: body.website, shownAt: body.shownAt }, MIN_FILL_MS, now());
     if (!human.ok) return res.status(human.why === "check_unavailable" ? 503 : 400).json({ error: human.why, message: HUMAN_WORDS[human.why] });
 
