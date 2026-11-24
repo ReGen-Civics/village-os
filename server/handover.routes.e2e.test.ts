@@ -443,8 +443,13 @@ describe.skipIf(!DB_CONFIGURED)("harm metric 3: editing a badge definition tells
 });
 
 describe.skipIf(!DB_CONFIGURED)("harm metric 4: a member reads the powers, in sentences, with no number", () => {
-  it("refuses a stranger and serves a member", async () => {
-    expect((await call("GET", "/api/village/powers", undefined, "")).status).toBe(401);
+  it("serves a stranger the same list a member reads (the lead, 24 Nov 2026), and serves a member", async () => {
+    const stranger = await call("GET", "/api/village/powers", undefined, "");
+    expect(stranger.status).toBe(200);
+    expect(Object.keys(stranger.json)).toEqual(["families", "guidance", "powers"]);
+    // First names only: no member's surname or email reaches a stranger.
+    expect(stranger.text).not.toContain("Brand");
+    expect(stranger.text).not.toContain("@example.test");
     const mine = await call("GET", "/api/village/powers", undefined, ottoToken);
     expect(mine.status).toBe(200);
     expect(Array.isArray(mine.json.powers)).toBe(true);
