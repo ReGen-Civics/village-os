@@ -50,8 +50,6 @@ type Deps = Pick<AppDeps, "authedUser" | "getPool" | "guardCapability" | "member
   redemptionKeyHolders: () => Promise<string[]>;
 };
 
-const NOTICE = "venture_redemption";
-
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, guardCapability, members, notify, notifyAdmins, overLimit, redemptionKeyHolders } = deps;
   const nameOf = async (id: string): Promise<string | null> => (await members.byId(id).catch(() => null))?.name ?? null;
@@ -121,11 +119,11 @@ export function register(app: Express, deps: Deps): void {
     const treasury = (await holders()).filter((id) => !operators.includes(id) && id !== String(user.id));
     if (treasury.length) {
       for (const id of treasury) {
-        await notify({ userId: id, type: NOTICE, title, link: "/profile#venture-redemptions", dedupeKey: `org-redemption:${out.row.id}:asked:${id}`, actorUserId: String(user.id) });
+        await notify({ userId: id, type: "venture_redemption", title, link: "/profile#venture-redemptions", dedupeKey: `org-redemption:${out.row.id}:asked:${id}`, actorUserId: String(user.id) });
       }
     } else {
       // Nobody holds the key yet, so the panel hears it. The venture's own people are left off.
-      await notifyAdmins(NOTICE, title, `org-redemption:${out.row.id}:asked`, "/profile#venture-redemptions", [...operators, String(user.id)], { actorUserId: String(user.id) });
+      await notifyAdmins("venture_redemption", title, `org-redemption:${out.row.id}:asked`, "/profile#venture-redemptions", [...operators, String(user.id)], { actorUserId: String(user.id) });
     }
     void recordEvent(pool, {
       kind: "audit",
@@ -198,7 +196,7 @@ export function register(app: Express, deps: Deps): void {
         ? `Payment reference: ${row.paymentRef ?? ""}. This records that the Treasury says it paid. If the money has not arrived, tell the Treasury.`
         : row.decisionNote;
     for (const id of await ventureSide(row, actor)) {
-      await notify({ userId: id, type: NOTICE, title, body, link: "/profile#ventures", dedupeKey: `org-redemption:${row.id}:${to}:${id}`, actorUserId: actor });
+      await notify({ userId: id, type: "venture_redemption", title, body, link: "/profile#ventures", dedupeKey: `org-redemption:${row.id}:${to}:${id}`, actorUserId: actor });
     }
     void recordEvent(getPool(), {
       kind: "audit",
