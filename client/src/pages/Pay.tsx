@@ -293,8 +293,9 @@ export default function Pay() {
                 {tabButton("pay", t({ context: "pay page tab", message: "Pay" }))}
                 {tabButton("receive", t({ context: "pay page tab", message: "Receive" }))}
               </div>
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-                <section aria-labelledby="pay-h" className={`${step === "confirm" ? CARD_FEATURED : CARD} ${tab === "pay" ? "" : "hidden lg:block"}`}>
+              {/* One minmax(0,1fr) column on a phone, and min-w-0 items, so the recent row scrolls inside its panel and never widens the page. */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+                <section aria-labelledby="pay-h" className={`min-w-0 ${step === "confirm" ? CARD_FEATURED : CARD} ${tab === "pay" ? "" : "hidden lg:block"}`}>
                   <h2 id="pay-h" className="sr-only">
                     {t({ context: "pay page tab", message: "Pay" })}
                   </h2>
@@ -364,7 +365,7 @@ export default function Pay() {
                     />
                   )}
                 </section>
-                <div className={tab === "receive" ? "" : "hidden lg:block"}>
+                <div className={`min-w-0 ${tab === "receive" ? "" : "hidden lg:block"}`}>
                   <ReceivePanel me={summary.me} token={token} target={money.target} rates={money.rates} locale={locale} origin={origin} />
                 </div>
               </div>
