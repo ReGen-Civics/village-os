@@ -25,6 +25,7 @@ import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
 import { storyPageShown } from "@/lib/brochure";
 import { MachineTranslationNote } from "@/i18n/machineTranslation";
 import { useNewcomerShows } from "@/lib/newcomer";
+import FooterBlurb from "@/components/FooterBlurb";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -573,9 +574,7 @@ export default function Layout({ children }: LayoutProps) {
                   />
                 </div>
               ) : null}
-              {cfg?.project?.footerBlurb && (
-                <p className="text-white text-sm leading-relaxed">{cfg.project.footerBlurb}</p>
-              )}
+              <FooterBlurb text={cfg?.project?.footerBlurb} />
             </div>
 
             {/* Your Journey */}

@@ -25,6 +25,8 @@
  * is a production write a person decides to make (coordinator, 15 Nov). Pay
  * words and binding pages are never drafted, whatever the switch says.
  */
+import { isVillageDocRef } from "../../shared/villageDocTranslation";
+import { noSharedCache, readerLocale, villageDocTranslation } from "../lib/contentTranslationRead";
 import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { CONTENT_KINDS, contentTranslationProblem, translatableLocales, type ContentKind } from "../../shared/contentTranslation";
@@ -36,7 +38,9 @@ import { approveDraft, removeTranslation, sourceHash, translationsFor, writeTran
 
 /** The power that writes the English, and so its translations. */
 export function powerFor(kind: ContentKind): Capability {
-  return kind === "page_section" ? "story.tell" : "org.decide";
+  // The village's own documents outside its pages (the homepage words in Identity, the visit page) are said in
+  // public like a page's words, so the same power writes them and their translations.
+  return kind === "page_section" || kind === "village_doc" ? "story.tell" : "org.decide";
 }
 
 export const MACHINE_DRAFT_SWITCH = "CONTENT_MACHINE_DRAFTS";
@@ -69,6 +73,8 @@ export interface ContentTranslationDeps {
   authedUser: (req: Request) => Promise<{ id: string } | null>;
   getPool: () => Pool;
   contentSection: (section: string) => unknown;
+  /** The village's documents outside its pages, by name ("brand", "visit-config"); absent, none takes a translation. */
+  villageDoc?: (ref: string) => unknown;
   /** The shared rate limiter (server/index.ts `overLimit`): true when the bucket is spent. */
   overLimit: (bucket: string, max: number, windowMs: number) => Promise<boolean>;
   /** The model's drafts by field, or null when it could not answer. Wired to callAssistant in index.ts. */
@@ -118,8 +124,22 @@ export async function savePersonTranslation(
 }
 
 export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, deps: ContentTranslationDeps): void {
-  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection });
+  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc: deps.villageDoc });
   const BASE = "/api/admin/content-translations";
+
+  /**
+   * The village's words outside its pages in the reader's language (shared/villageDocTranslation.ts): the
+   * homepage headline, sentence and footer line, and the visit page. Public, like the page read: fresh
+   * translations only, a machine draft named in `machine`, and an empty answer, never an error, when there
+   * is none.
+   */
+  app.get("/api/village-doc/:ref/translation", async (req, res) => {
+    const ref = String(req.params.ref ?? "");
+    const locale = readerLocale(req);
+    noSharedCache(res);
+    if (!locale || !isVillageDocRef(ref) || !deps.villageDoc) return res.json({ translation: null });
+    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, deps.villageDoc(ref), locale) });
+  });
 
   app.get(BASE, async (req, res) => {
     const k = keyOf(req.query as Record<string, unknown>, false);

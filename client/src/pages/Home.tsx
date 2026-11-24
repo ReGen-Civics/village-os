@@ -37,6 +37,7 @@ import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
+import { useVillageDoc } from "@/hooks/useVillageDocTranslation";
 
 
 
@@ -145,7 +146,8 @@ export default function Home() {
   const { t } = useLingui();
   // Blank hides both buttons rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
-  const project = useGameConfig()?.project;
+  // Identity's homepage words, in the reader's language where the village has translated them.
+  const project = useVillageDoc("brand", { project: useGameConfig()?.project }).project;
   const brand = useBrandImages();
   // Every word on this page is the village's own, from Admin, Pages, Home
   // (shared/pageContent/home.ts). Null until the saved words have arrived:

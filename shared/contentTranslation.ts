@@ -27,6 +27,7 @@
  *   role_card_sections   ref_key = org_roles.id
  *                        field   = "aiSupport" | "payNote" | "paySplitNote" (never "aiCompanion": it names the card's animal)
  *                                  | "idealBackground.<n>" | "qualities.<n>" | "payShape.<n>.label"
+ *   village_doc          ref_key = "brand" | "visit-config" (shared/villageDocTranslation.ts)
  *   page_section         ref_key = "page-<id>"
  *                        field   = "<sectionId>.<fieldKey>"
  *                                  | "<sectionId>.<listKey>.<rowId or index>.<fieldKey>"
@@ -40,8 +41,9 @@ import { GOOD_NEIGHBOR_PAGE_ID } from "./pageContent/goodNeighborName";
 import { pageSpecForSection, PAGE_SECTION_PREFIX } from "./pageContent";
 import type { FieldSpec } from "./pageContent/types";
 import { SECTION_LIMITS } from "./roleCardSections";
+import { isVillageDocRef, VILLAGE_DOC_FIELD_CHARS, villageDocFieldOk } from "./villageDocTranslation";
 
-export const CONTENT_KINDS = ["role_card", "role_card_sections", "page_section"] as const;
+export const CONTENT_KINDS = ["role_card", "role_card_sections", "page_section", "village_doc"] as const;
 export type ContentKind = (typeof CONTENT_KINDS)[number];
 
 /** ai_draft: a machine wrote it, readers see it marked. approved: a person with the power stands behind it. */
@@ -133,6 +135,12 @@ export function translationTarget(kind: string, refKey: string, field: string): 
       return { ok: true, cap: slack(SECTION_LIMITS.shareLabelChars), protection: "human_only" };
     }
     return { ok: false, reason: `A role card's founding sections have no translatable field "${field}".` };
+  }
+
+  if (kind === "village_doc") {
+    if (!isVillageDocRef(refKey)) return { ok: false, reason: `"${refKey}" is not one of the village's documents that take a translation.` };
+    if (!villageDocFieldOk(refKey, field)) return { ok: false, reason: `That document has no translatable field "${field}".` };
+    return { ok: true, cap: VILLAGE_DOC_FIELD_CHARS, protection: "open" };
   }
 
   // page_section
