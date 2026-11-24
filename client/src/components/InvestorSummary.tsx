@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BTN_PRIMARY, CARD, EYEBROW, LEDE, RING, TILE } from "@/components/journey/look";
 import {
   DollarSign,
   Shield,
@@ -55,64 +56,67 @@ export default function InvestorSummary() {
 
   if (!data) return null;
 
+  /*
+   * THE NIGHT WORLD'S TOKENS (investor remake, 24 Nov 2026). This band was a
+   * brand-teal block with white ink, the only one of its kind on the page.
+   * It sits on /investor inside the sheet's world, so it takes the semantic
+   * tokens (docs/DESIGN_RULE.md): a panel, tiles, gold rings, and the
+   * village's own words exactly as before.
+   */
   return (
-    <section className="bg-teal-band text-white py-20">
-      <div className="container max-w-5xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <span className="inline-block text-xs tracking-widest uppercase text-amber-on-band font-semibold mb-3">
-            Investment Summary
-          </span>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            {data.headline}
-          </h2>
-          <p className="text-white max-w-2xl mx-auto">{data.intro}</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {data.details.map((d) => {
-            const Icon = ICONS[d.icon] ?? Info;
-            const placeholder = d.value === "To be confirmed";
-            return (
-              <div
-                key={d.id}
-                className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber/15 text-amber-on-band flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs uppercase tracking-widest text-white font-semibold">
-                    {d.label}
-                  </span>
-                </div>
-                {/* A pending value stays italic but not faded - italics carry
-                    the "to be confirmed" meaning without costing contrast. */}
-                <div className={`text-xl font-display font-bold mb-2 text-white ${placeholder ? "italic" : ""}`}>
-                  {d.value}
-                </div>
-                <p className="text-sm text-white leading-relaxed">{d.note}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        {data.cta_url && data.cta_label && (
-          <div className="text-center mb-8">
-            <a
-              href={data.cta_url}
-              className="inline-flex items-center gap-2 bg-amber text-foreground font-semibold px-6 py-3 rounded-xl hover:bg-amber/90 transition-colors"
-            >
-              {data.cta_label}
-              <ArrowRight className="w-4 h-4" />
-            </a>
+    <section className="py-12 sm:py-16">
+      <div className="container">
+        <div className={CARD}>
+          <div className="mb-8 max-w-2xl">
+            <p className={`${EYEBROW} mb-3`}>
+              Investment Summary
+            </p>
+            <h2 className="mb-3 font-display text-3xl leading-tight text-card-foreground sm:text-4xl break-words">
+              {data.headline}
+            </h2>
+            <p className={LEDE}>{data.intro}</p>
           </div>
-        )}
 
-        {data.disclaimer && (
-          <p className="text-xs text-white max-w-3xl mx-auto text-center leading-relaxed">
-            {data.disclaimer}
-          </p>
-        )}
+          <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {data.details.map((d) => {
+              const Icon = ICONS[d.icon] ?? Info;
+              const placeholder = d.value === "To be confirmed";
+              return (
+                <div key={d.id} className={`${TILE} min-w-0`}>
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className={`${RING} size-9`} aria-hidden="true">
+                      <Icon className="size-4" />
+                    </span>
+                    <span className="min-w-0 text-xs font-semibold uppercase tracking-widest text-muted-foreground break-words">
+                      {d.label}
+                    </span>
+                  </div>
+                  {/* A pending value stays italic but not faded - italics carry
+                      the "to be confirmed" meaning without costing contrast. */}
+                  <div className={`mb-2 font-display text-xl text-foreground break-words ${placeholder ? "italic" : ""}`}>
+                    {d.value}
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground break-words">{d.note}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {data.cta_url && data.cta_label && (
+            <div className="mb-8">
+              <a href={data.cta_url} className={BTN_PRIMARY}>
+                {data.cta_label}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </a>
+            </div>
+          )}
+
+          {data.disclaimer && (
+            <p className="border-t border-border/60 pt-5 text-xs leading-relaxed text-muted-foreground">
+              {data.disclaimer}
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );

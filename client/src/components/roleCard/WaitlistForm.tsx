@@ -26,6 +26,16 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
   const [picked, setPicked] = useState<string[]>(chosen ? [chosen] : []);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [problem, setProblem] = useState<string | null>(null);
+  const [badField, setBadField] = useState<string | null>(null);
+  // The server's refusal, in the reader's language and on its field (applicant reviewer, 24 Nov 2026).
+  const fieldProblem = (field: unknown): string | null =>
+    field === "email"
+      ? t({ message: "Write an email address, like name@example.org.", context: "coming-soon waitlist: the email was refused" })
+      : field === "whatsapp"
+        ? t({ message: "Write the WhatsApp number with its country code, like +506 8888 8888, or leave it empty.", context: "coming-soon waitlist: the WhatsApp number was refused" })
+        : field === "roleIds"
+          ? t({ message: "Choose at least one role that is coming soon.", context: "coming-soon waitlist: no role chosen" })
+          : null;
 
   if (state === "done") {
     return (
@@ -44,12 +54,22 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     setProblem(null);
+    setBadField(null);
     setState("sending");
     try {
       const r = await gameFetch("/api/roles/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, whatsapp, roleIds: picked, consent }) });
       if (r.ok) return setState("done");
       const d = await r.json().catch(() => ({}));
-      setProblem(r.status === 429 ? t({ message: "Too many sign-ups from here just now. Please try again in an hour.", context: "coming-soon waitlist: rate limited" }) : String(d?.message ?? t({ message: "That did not save. Please try again.", context: "coming-soon waitlist: failed" })));
+      const onField = r.status === 400 ? fieldProblem(d?.field) : null;
+      if (onField) setBadField(String(d.field));
+      // On a phone the line under the form sits below the screen and the tab bar: the field that needs a look, or the
+      // line itself, comes into view, so a refusal is never a press that seemed to do nothing.
+      requestAnimationFrame(() => {
+        const target = document.getElementById(onField && d.field === "email" ? `${base}-email` : onField && d.field === "whatsapp" ? `${base}-wa` : `${base}-problem`);
+        target?.scrollIntoView?.({ block: "center" });
+        if (target instanceof HTMLInputElement) target.focus({ preventScroll: true });
+      });
+      setProblem(r.status === 429 ? t({ message: "Too many sign-ups from here just now. Please try again in an hour.", context: "coming-soon waitlist: rate limited" }) : (onField ?? t({ message: "That did not save. Please try again.", context: "coming-soon waitlist: failed" })));
     } catch {
       setProblem(t({ message: "That did not save. Please try again.", context: "coming-soon waitlist: failed" }));
     }
@@ -60,11 +80,11 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
     <form onSubmit={send} className="grid gap-3" data-waitlist-form="">
       <label className="grid gap-1">
         <span className={LABEL}>{t({ message: "Email", context: "coming-soon waitlist field" })}</span>
-        <input type="email" required autoComplete="email" className={FIELD} value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input id={`${base}-email`} type="email" required autoComplete="email" inputMode="email" className={FIELD} value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={badField === "email" || undefined} />
       </label>
       <label className="grid gap-1">
         <span className={LABEL}>{t({ message: "WhatsApp number (optional)", context: "coming-soon waitlist field" })}</span>
-        <input type="tel" autoComplete="tel" className={FIELD} value={whatsapp} maxLength={60} onChange={(e) => setWhatsapp(e.target.value)} />
+        <input id={`${base}-wa`} type="tel" autoComplete="tel" className={FIELD} value={whatsapp} maxLength={80} onChange={(e) => setWhatsapp(e.target.value)} aria-invalid={badField === "whatsapp" || undefined} />
       </label>
       {roles.length > 0 && (
         <fieldset className="grid gap-1.5">
@@ -83,7 +103,7 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
       </label>
       <p className={HINT}>{t({ message: "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off.", context: "coming-soon waitlist: what the details are for" })}</p>
       {problem && (
-        <p role="alert" className="text-sm text-destructive">
+        <p id={`${base}-problem`} role="alert" className="text-sm text-destructive">
           {problem}
         </p>
       )}

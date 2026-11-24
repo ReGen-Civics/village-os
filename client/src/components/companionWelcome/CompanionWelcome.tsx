@@ -45,6 +45,7 @@ import {
 import { Bubble, Egg, FOCUS, INPUT, MIC_LINE, Pet, SPEAK_LINE, TINT_OF, burst, chip, confetti, refocus, send, useInertOutside, useSpeech } from "./welcomeKit";
 import { LensSheet, type SheetId } from "./LensSheet";
 import { MoonPromise, NameBox } from "./WelcomeParts";
+import { guideLabelIn } from "@/lib/guideNameWords";
 import "./companionWelcome.css";
 
 const NAME_IDEAS = ["Pip", "Juniper", "Bramble", "Nova"];
@@ -112,7 +113,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
     return highWord;
   };
   const personal = companions.find((c) => c.scope === "personal") ?? null;
-  const engineName = personal?.chatEngine ?? t({ message: `your guide`, context: "companion welcome" });
+  const engineName = personal?.chatEngine ? guideLabelIn(personal.chatEngine) : t({ message: `your guide`, context: "companion welcome" });
   const roles = companions.filter((c) => c.scope === "role" && c.status !== "retired");
 
   const [beat, setBeat] = useState(Math.max(0, Math.min(WELCOME_BEATS.length - 1, startBeat)));

@@ -11,8 +11,9 @@
  *
  * THE TEAM AS POSITIONS (Rye, 14 Nov 2026, FoundingLineup.tsx): the open roles
  * are drawn as a team sheet by default, or as a formation, and the chosen
- * role's card opens below, piece by piece. A phone opens on the team alone,
- * one thing at a time; a desktop opens on the first role's card.
+ * role's card opens below, piece by piece. Every width opens on the team
+ * alone, every card closed (the lead, 24 Nov 2026: a card that opened by
+ * itself on desktop read as chosen for the reader).
  *
  * BACK ON /roles (the lead, 21 Nov 2026), as approved in 1.3.41, with the page's groups in their new order and each
  * role in its own frame (FoundingLineup.tsx). The view switch is the page's to hold (`useLineupView`), because the
@@ -138,15 +139,14 @@ export default function FoundingTeam({
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
   const Heading = lead ? "h1" : "h2";
   const wide = useWide();
-  // A phone opens on the list, one thing at a time; a desktop opens on the first role beside it.
+  // Every width opens on the list with every card closed (the lead, 24 Nov 2026); a reader opens one at a time.
   const [open, setOpen] = useState<string | null>(initialOpen);
   // The team sheet by default (Rye, 14 Nov); a reader's own choice is remembered on this device.
   const [ownView, setOwnView] = useLineupView();
   const view = givenView ?? ownView;
   const setView = onView ?? setOwnView;
-  // `open` is null until a reader chooses, and "" once a phone reader closes the open row.
-  const openFirst = wide;
-  const shown = open === null ? (openFirst ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
+  // `open` is null until a reader chooses, and "" once a reader closes the open row.
+  const shown = open || null;
   if (roles.length === 0) return null;
   const current = roles.find((r) => String(r.seat.id) === shown) ?? null;
 
@@ -160,7 +160,7 @@ export default function FoundingTeam({
           <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} sharePath={current.path} settings={current.settings} />
           {onOpenBuilt && <LeadBuilds leadName={String(current.seat.name ?? "")} roles={builds[String(current.seat.id)] ?? []} onOpen={onOpenBuilt} />}
         </>
-      ) : wide ? (
+      ) : wide && view === "formation" ? (
         <p className="rounded-2xl border border-dashed border-notice/40 p-8 text-muted-foreground">{t({ message: "Choose a role to read it in full.", context: "founding team, no role open" })}</p>
       ) : null}
     </div>
@@ -208,11 +208,11 @@ export default function FoundingTeam({
           shown={shown}
           cardId={`${headingId}-card`}
           onOpen={(id) => {
-            const closing = shown === id && !wide;
+            const closing = shown === id;
             setOpen(closing ? "" : id);
             if (closing) return;
-            // QA P1-01: on a wide screen the first role is shown by default, so its button must still bring the card
-            // into view. The scroll is skipped only when the card's top is already in the upper half of the screen.
+            // QA P1-01: the opened card is brought into view. The scroll is skipped only when the card's top is
+            // already in the upper half of the screen.
             requestAnimationFrame(() => {
               const card = document.getElementById(`${headingId}-card`);
               const top = card ? card.getBoundingClientRect().top : -1;

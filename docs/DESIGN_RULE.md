@@ -19,7 +19,7 @@ take `BTN_PRIMARY` and `BTN_SECONDARY` on every page that shows them), Admin's o
 `/request-membership`, the village calendar at `/events` with its moon spiral, strip of days and turnings,
 `/season-plans/mine`, with the commons it draws (`components/commons`), the
 gratitude wall at `/gratitude` with its threads, and the pages where people decide (`/review`, `/decisions`,
-`/decisions/:id`, with what they render: the vote, the roll, the round, the outcome and the review queue's cards). A page joins by being
+`/decisions/:id`, with what they render: the vote, the roll, the round, the outcome and the review queue's cards). The investor path `/investor` joined on 24 Nov 2026, with its investment summary and the landing's build progress. A page joins by being
 added to `JOURNEY` (and `PAGES`, for a page) in the script, once it passes.
 `node scripts/check-design-rule.mjs --report` lists what the rule would flag everywhere else.
 

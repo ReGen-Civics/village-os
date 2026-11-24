@@ -22,6 +22,7 @@
  */
 import { fetchGuide } from "@/lib/guideApi";
 import { guideNameAtSentenceStart } from "@shared/guideName";
+import { guideLabelIn } from "@/lib/guideNameWords";
 
 export type AiHelpStep = "words" | "season";
 
@@ -55,7 +56,7 @@ export async function aiHelpStatus(step: AiHelpStep): Promise<AiHelpStatus> {
   if (!answering) return NOT_CONFIGURED;
   return {
     configured: true,
-    guide: guideNameAtSentenceStart(answering.name),
+    guide: guideNameAtSentenceStart(guideLabelIn(answering.name)),
     bringIn: (text: string) => {
       for (const l of Array.from(listeners[step])) l(text);
     },

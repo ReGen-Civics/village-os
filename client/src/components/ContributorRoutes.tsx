@@ -26,7 +26,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useGameConfig } from "@/lib/gameApi";
 import { useStoryPageShown } from "@/lib/brochure";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
-import { replyMoonsOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
+import { routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
 
 /** The proposal page, as the village's story-page switch names it. */
@@ -51,19 +51,8 @@ export function useVentureHref(): string {
   return shown(VENTURE_PITCH_PAGE) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
 }
 
-/** The moon cycles a proposer is told they will hear back within, once they have sent (`org.reply_window_moons`). */
-export function useReplyMoons(): number {
-  return replyMoonsOf(useGameConfig()?.replyWindowMoons);
-}
-
-/** "You'll hear from us within one moon cycle.", said on a thank-you state only (the lead, 24 Nov 2026). */
-export function useReplyPromise(): string {
-  const { t } = useLingui();
-  const moons = useReplyMoons();
-  return moons === 1
-    ? t({ message: "You'll hear from us within one moon cycle.", context: "after sending a proposal: when you hear back" })
-    : t({ message: `You'll hear from us within ${moons} moon cycles.`, context: "after sending a proposal: when you hear back, more than one moon" });
-}
+/** When a proposer hears back, said on thank-you states only, lives in its own small module. */
+export { useReplyMoons, useReplyPromise } from "@/lib/replyPromise";
 
 interface RouteWords {
   verb: string;

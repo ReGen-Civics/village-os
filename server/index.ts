@@ -584,6 +584,8 @@ import { normalizeSeasonConfig, seasonRunningProblem } from "./lib/seasonCalenda
 import { completionsFor, completionsForMany, gatingModuleIds, trainingIsComplete, trainingProgress } from "./lib/trainingRecord";
 import { starterTrainingModules } from "./lib/trainingStarter";
 import { respondToTerminalError, installCrashHandlers, installShutdownHandlers, reachedSomebody, reportError, reportErrorWithin, wireErrorReporting } from "./lib/errors";
+import { crashAlertNotifier } from "./lib/crashAlerts";
+import { CRASH_ALERT_RECIPIENTS_KEY } from "../shared/crashAlerts";
 import {
   STAY_CREDIT,
   ensureStayToken,
@@ -4975,7 +4977,8 @@ async function startServer() {
    * was a log line in a stream with no reader.
    */
   wireErrorReporting({
-    notifyAdmins: (title, dedupeKey) => notifyAdmins("payments_alert", title, dedupeKey),
+    // Crashes ride their own kind, to the accounts the village names (shared/crashAlerts.ts).
+    notifyAdmins: crashAlertNotifier({ members: () => members.all(), notify, recipientsRaw: () => stringVar(CRASH_ALERT_RECIPIENTS_KEY) }),
     instanceLabel: mergedConfig().project.name,
   });
   installCrashHandlers();
@@ -17892,7 +17895,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
   registerGuideChoiceRoutes(app, { authedUser, members, overLimit, villageGuideName: () => String(getWorkWithUs().assistantName ?? "") });
   registerI18nRoutes(app, { catalogDir: path.resolve(__dirname, ...(process.env.NODE_ENV === "production" ? [] : ["..", "dist"]), "i18n"), pseudoAllowed: () => process.env.NODE_ENV !== "production", authedUser, members, overLimit });
-  registerClientCrashRoutes(app, { getPool, overLimit, clientIp, isAdmin, buildMarker: BUILD_MARKER });
+  registerClientCrashRoutes(app, { getPool, overLimit, clientIp, isAdmin, buildMarker: BUILD_MARKER, publicDir: path.resolve(__dirname, ...(process.env.NODE_ENV === "production" ? [] : ["..", "dist"]), "public") });
   registerCompanionRoutes(app, { authedUser, guardCapability, overLimit, members, getPool, village: () => ({ name: mergedConfig().project.name, guideName: guidePromptName(getWorkWithUs().assistantName), timeZone: getSeasonConfig().timezone }) });
   registerMemberAskRoutes(app, { authedUser, getPool, members, notify, overLimit, firstName });
   registerLiveSessionsRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, notify, notifyAdmins, circlesRepo, lapseContext, seasonState, notifyDeps, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName });

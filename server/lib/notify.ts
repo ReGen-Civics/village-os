@@ -128,7 +128,7 @@ export interface NotifyPrefs {
    * the report to the bell. EMAIL ONLY: the in-app row lands either way, so the
    * admin tab still shows what failed. Only the report gathered for whoever
    * handles operations rides this. The failures that cannot wait
-   * (`payments_alert`, `village_export`, `signing_key_rotated`) keep their own
+   * (`payments_alert`, `crash_alert`, `village_export`, `signing_key_rotated`) keep their own
    * fixed immediate cadence, and the steward window notices stay pinned above.
    */
   opsEmail: "daily" | "off";
@@ -387,6 +387,13 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
       return "immediate";
     case "payments_alert":
       return "immediate"; // ops: sig-fails and disputes cannot wait for a digest
+    // Something broke (server/lib/errors.ts). Immediate, like the money alerts
+    // it used to ride: a job that threw at 3am is worth knowing about before
+    // tomorrow's digest. Only the accounts `ops.crash_alert_recipients` names
+    // get one at all (shared/crashAlerts.ts), so this sends nothing to a seat
+    // that is not operational. The global `emailsOff` above still wins.
+    case "crash_alert":
+      return "immediate";
     // The whole village's database left through the admin-password export
     // (server/routes/villageExport.ts). Told the same hour: an admin or steward
     // who did not do it needs to know today, while changing the password helps.
@@ -399,7 +406,7 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
       return "immediate";
     // The failed-actions report, at most once a day. Daily and not immediate on
     // purpose: the failures that cannot wait already alert on their own
-    // (payments_alert for a refused signature or a dispute, reportError for a
+    // (payments_alert for a refused signature or a dispute, crash_alert from reportError for a
     // job that threw), and this is the one line that gathers everything else.
     // Without a case here it would be in-app only, and silently so. It rides
     // `opsEmail`, daily until the member chooses, so an admin or founder whose

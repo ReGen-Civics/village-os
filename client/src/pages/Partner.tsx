@@ -17,7 +17,8 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, TICK, WORLD } from "@/components/journey/look";
 import { sendProposal } from "@/lib/proposals";
-import ContributorRoutes, { useReplyPromise, useRouteWords } from "@/components/ContributorRoutes";
+import ContributorRoutes, { useRouteWords } from "@/components/ContributorRoutes";
+import { useReplyPromise } from "@/lib/replyPromise";
 import { CONTRIBUTOR_SOURCE, PARTNER_FORM, PARTNER_LIMITS, PARTNER_SERVES, partnerProblems, type PartnerProblem, type PartnerProposal, type PartnerServes } from "@shared/contributorRoutes";
 
 /** The element a problem's link moves to: the field, or the first box of the serves question. */

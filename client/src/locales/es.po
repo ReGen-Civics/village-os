@@ -2033,6 +2033,12 @@ msgctxt "conversation guide: a question made from a quality the card hopes for"
 msgid "How did this quality show in the conversation: {0}?"
 msgstr "¿Cómo se mostró esta cualidad en la conversación: {0}?"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: failed"
+msgid "That did not save. Please try again."
+msgstr "No se guardó. Inténtalo de nuevo."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "I can't come after all"
@@ -2567,6 +2573,12 @@ msgstr "Compensación"
 msgctxt "approval inbox"
 msgid "What a connector proposed and only a person may do. Read each one before you answer it."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the email was refused"
+msgid "Write an email address, like name@example.org."
+msgstr "Escribe un correo electrónico, como nombre@ejemplo.org."
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "The village is deciding a change to this right now."
@@ -6615,6 +6627,12 @@ msgstr ""
 msgid "When shaping starts (leave empty to keep the round in Seed)"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the link to the setting"
+msgid "Name your guide"
+msgstr "Ponle nombre a tu guía"
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: what the details are for"
 msgid "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off."
@@ -6901,6 +6919,12 @@ msgctxt "open proposal attachments"
 msgid "Remove {0}"
 msgstr "Quitar {0}"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Keep it to yourself: anyone with the link can open your saved answers. We keep it for {days} days after your last save, and nothing reaches the team until you send."
+msgstr "Guárdalo solo para ti: quien tenga el enlace puede abrir tus respuestas guardadas. Lo guardamos {days} días después de la última vez que guardes, y nada llega al equipo hasta que envíes."
+
 #. placeholder {0}: voiceLength(recorder.left)
 #: client/src/components/voice/VoiceClips.tsx
 #: client/src/components/voice/VoiceInvite.tsx
@@ -6946,6 +6970,12 @@ msgstr "Tardes de fin de semana"
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "It goes to {powerHolder} instead."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: a file failed"
+msgid "A file did not save. Check it and try again."
+msgstr "Un archivo no se guardó. Revísalo e inténtalo de nuevo."
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "badge on a role offered as a venture to build and run, applied for with a pitch"
@@ -8406,6 +8436,12 @@ msgstr "Lo que {companionName} hará con esto"
 #: client/src/components/sessions/OwnCalendarPanel.tsx
 msgid "Only events titled with \"{0}\" count."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the link was emailed"
+msgid "We emailed this link to {to}."
+msgstr "Te enviamos este enlace a {to}."
 
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
@@ -10342,6 +10378,12 @@ msgctxt "funding rounds"
 msgid "Share or read ideas"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the WhatsApp number was refused"
+msgid "Write the WhatsApp number with its country code, like +506 8888 8888, or leave it empty."
+msgstr "Escribe el número de WhatsApp con su código de país, como +506 8888 8888, o déjalo vacío."
+
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor: how to write the deliverables"
 msgid "One per line: start | end | title | workstream | what it feeds, with dates as year-month-day. A milestone has one date, or the same date twice; one that several roles share is drawn as a gate on the team's timeline. What it feeds, up to 80 characters, shows when someone taps the bar."
@@ -10480,6 +10522,12 @@ msgstr ""
 msgctxt "resident path ticked off"
 msgid "{walkedCount} of {stepCount} steps completed"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -11831,9 +11879,9 @@ msgid "No two of them offered the same piece of work."
 msgstr "Nadie ofreció la misma parte del trabajo que otra persona."
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Explore the Steward path first"
-msgstr "Explora primero el camino de Steward"
+#~ msgctxt "founding application know us fork"
+#~ msgid "Explore the Steward path first"
+#~ msgstr "Explora primero el camino de Steward"
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Nobody holds the {chosenName} role today, so a request would reach nobody. <0>Give the role a holder under Power groups</0>, or name a contact outside the village."
@@ -13006,6 +13054,12 @@ msgstr ""
 msgctxt "label before a season week's showcase question"
 msgid "The week asks: "
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: while saving"
+msgid "Saving"
+msgstr "Guardando"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload error"
@@ -14389,6 +14443,12 @@ msgstr "Idioma: {current} ({code})"
 #~ msgid "Price"
 #~ msgstr "Precio"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email failed"
+msgid "We could not email the link just now. Copy it to keep it."
+msgstr "No pudimos enviarte el enlace ahora. Cópialo para guardarlo."
+
 #: client/src/pages/rites/ComeAboard.tsx
 #: client/src/pages/rites/Door.tsx
 msgctxt "rites"
@@ -14610,9 +14670,21 @@ msgctxt "admin sounds: while a sound uploads"
 msgid "Uploading…"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: what others read until the guide is named"
+msgid "Visitors and members see “{shared}” until you name it. Only founders see this note."
+msgstr "Quienes visitan y los miembros ven “{shared}” hasta que le pongas nombre. Solo quienes fundaron la aldea ven esta nota."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: copy the link"
+msgid "Copy link"
+msgstr "Copiar enlace"
 
 # needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: role?.name ?? ""
@@ -15339,6 +15411,12 @@ msgstr "Las condiciones"
 #~ msgid "Credits"
 #~ msgstr "Créditos"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the heading"
+msgid "Your village guide has no name yet"
+msgstr "Tu guía de la aldea todavía no tiene nombre"
+
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Set by the village"
 msgstr ""
@@ -15963,6 +16041,12 @@ msgctxt "shape the role"
 msgid "Open the role card"
 msgstr "Abrir la ficha del rol"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: email limit"
+msgid "We have emailed this link a few times today, so we did not send it again. Copy it to keep it."
+msgstr "Ya te enviamos este enlace varias veces hoy, así que no lo enviamos de nuevo. Cópialo para guardarlo."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Show"
@@ -16565,6 +16649,12 @@ msgstr "En tu mente: {village} recibe un bloque de trabajo dedicado una vez por 
 msgctxt "role editor, ideal background hint"
 msgid "One line each, written openly: ideally, or experience we'd love to see. Up to {0} lines."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: saved, with the time"
+msgid "Saved at {time}"
+msgstr "Guardado a las {time}"
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "Open a circle to see its roles. Open a role to edit all of it."
@@ -17569,6 +17659,12 @@ msgstr "Usar esto"
 #: client/src/pages/ChangeRequests.tsx
 msgid "A different value for one of the changes. The author may take it in."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: link copied"
+msgid "Copied"
+msgstr "Copiado"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -19948,6 +20044,12 @@ msgctxt "founding application first moon: a step"
 msgid "In your first moon, you and the circle reshape your deliverables timeline together."
 msgstr "En tu primera luna, tú y el círculo dan nueva forma juntos al calendario de tus entregables."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: the button"
+msgid "Save and finish later"
+msgstr "Guardar y terminar después"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Choose what to fund"
@@ -20976,6 +21078,12 @@ msgstr ""
 #: client/src/pages/ExitPolicy.tsx
 msgid "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: no email yet"
+msgid "Add your email on the About you step and save again, and we will email you the link too."
+msgstr "Escribe tu correo en el paso Sobre ti y guarda de nuevo, y también te enviaremos el enlace."
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleCard/focusLine.ts
@@ -23601,6 +23709,12 @@ msgctxt "commitment split: the parts are whole"
 msgid "The parts add up to 100%."
 msgstr "Las partes suman 100%."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: too big"
+msgid "This application is too long to save. Shorten the longest answer and try again."
+msgstr "Esta solicitud es demasiado larga para guardarla. Acorta la respuesta más larga e inténtalo de nuevo."
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Changed"
@@ -24093,6 +24207,12 @@ msgstr "Aceptar y volver a preguntar"
 msgctxt "heading over a module's settings"
 msgid "Its settings"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later"
+msgid "Your private link to finish later"
+msgstr "Tu enlace privado para terminar después"
 
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
@@ -24648,6 +24768,12 @@ msgstr ""
 msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Abierta a todos los círculos"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: no role chosen"
+msgid "Choose at least one role that is coming soon."
+msgstr "Elige al menos un rol que abrirá pronto."
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgctxt "no intake role chosen"
@@ -26217,9 +26343,9 @@ msgid "Clear my selection"
 msgstr "Borrar mi selección"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Already feel like a strong fit? Carry on with your application."
-msgstr "¿Ya sientes que encajas bien? Sigue con tu solicitud."
+#~ msgctxt "founding application know us fork"
+#~ msgid "Already feel like a strong fit? Carry on with your application."
+#~ msgstr "¿Ya sientes que encajas bien? Sigue con tu solicitud."
 
 #: client/src/components/protocols/InstallCard.tsx
 msgctxt "protocols install card"
@@ -26301,6 +26427,12 @@ msgstr ""
 msgctxt "open proposal side by side"
 msgid "No goal for {roleName}"
 msgstr "Ninguna meta para “{roleName}”"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: rate limited"
+msgid "That is a lot of saves from here in a short while. Please wait a little and try again."
+msgstr "Son muchos guardados desde aquí en poco tiempo. Espera un poco e inténtalo de nuevo."
 
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"
@@ -26440,6 +26572,12 @@ msgctxt "role editor"
 msgid "Always background-checked, whatever the references say (roles that hold money or work near children)"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, save and finish later: draft gone"
+msgid "This saved application is no longer kept. Save again to start a new link."
+msgstr "Ya no guardamos esta solicitud. Guárdala de nuevo para crear un enlace nuevo."
+
 #. placeholder {0}: dayWords(a.raisedOn)
 #: client/src/components/priorities/RaisedAsksCard.tsx
 msgctxt "an ask raised with a role, the day it was raised"
@@ -26488,6 +26626,12 @@ msgstr "Cerrar"
 #: client/src/components/journey/TestRun.tsx
 msgid "<0>{0}</0>: {1}, about {2} times"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/fireflyPath/SaveLater.tsx
+msgctxt "founding application, opened from a save and finish later link"
+msgid "Your application is saved. Pick up where you left off."
+msgstr "Tu solicitud está guardada. Sigue donde lo dejaste."
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "What the document does not answer yet"
@@ -27108,9 +27252,9 @@ msgid "Apply again"
 msgstr "Postular de nuevo"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
-msgctxt "founding application know us fork"
-msgid "Completely new here?"
-msgstr "¿Es tu primera vez por aquí?"
+#~ msgctxt "founding application know us fork"
+#~ msgid "Completely new here?"
+#~ msgstr "¿Es tu primera vez por aquí?"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ReceivePanel.tsx
@@ -28448,13 +28592,13 @@ msgid "A role on the team"
 msgstr "Un rol en el equipo"
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ContributorRoutes.tsx
+#: client/src/lib/replyPromise.ts
 msgctxt "after sending a proposal: when you hear back"
 msgid "You'll hear from us within one moon cycle."
 msgstr "Tendrás noticias nuestras dentro de un ciclo lunar."
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/components/ContributorRoutes.tsx
+#: client/src/lib/replyPromise.ts
 msgctxt "after sending a proposal: when you hear back, more than one moon"
 msgid "You'll hear from us within {moons} moon cycles."
 msgstr "Tendrás noticias nuestras dentro de {moons} ciclos lunares."

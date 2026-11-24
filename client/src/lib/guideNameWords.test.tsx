@@ -7,7 +7,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { setupI18n, type I18n } from "@lingui/core";
+import { i18n as appI18n, setupI18n, type I18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
@@ -18,19 +18,22 @@ import { guideLabelIn, guideNameIn, unnamedGuideWords } from "./guideNameWords";
 
 vi.mock("@/components/MicButton", () => ({ default: () => null }));
 vi.mock("@/lib/proposals", () => ({ sendProposal: async () => ({ ok: true, idea: null }) }));
+const guideAnswer = vi.hoisted(() => ({ value: null as unknown }));
+vi.mock("@/lib/guideApi", () => ({ fetchGuide: async () => guideAnswer.value }));
 
 import GuideChat from "@/components/GuideChat";
 import { useGuideName } from "@/hooks/useGuideName";
 
 /** Every single-line entry of es.po, by the id Lingui gives it at runtime. */
-function spanish(): I18n {
+function spanishMessages(): Record<string, string> {
   const po = fs.readFileSync(path.resolve(__dirname, "../locales/es.po"), "utf8");
   const messages: Record<string, string> = {};
   const entry = /(?:^msgctxt "((?:[^"\\]|\\.)*)"\n)?^msgid "((?:[^"\\]|\\.)+)"\nmsgstr "((?:[^"\\]|\\.)+)"$/gm;
   const unquote = (s: string) => JSON.parse(`"${s}"`) as string;
   for (let m = entry.exec(po); m; m = entry.exec(po)) messages[generateMessageId(unquote(m[2]), m[1] === undefined ? undefined : unquote(m[1]))] = unquote(m[3]);
-  return setupI18n({ locale: "es", messages: { es: messages } });
+  return messages;
 }
+const spanish = (): I18n => setupI18n({ locale: "es", messages: { es: spanishMessages() } });
 const en = setupI18n({ locale: "en", messages: { en: {} } });
 const es = spanish();
 
@@ -122,5 +125,42 @@ describe("useGuideName, which most pages read the name through", () => {
     serve("Maia");
     inSpanish(<Shown />);
     await waitFor(() => expect(screen.getByTestId("guide").textContent).toBe("Maia"));
+  });
+});
+
+describe("the founder's Name your guide note, in Spanish", () => {
+  it("says the note and the label others read in Spanish", async () => {
+    const { default: NameYourGuide } = await import("@/components/NameYourGuide");
+    const { Router } = await import("wouter");
+    inSpanish(
+      <Router>
+        <NameYourGuide guide={guideNameIn("", "founder", es)} audience="founder" ready />
+      </Router>,
+    );
+    expect(screen.getByText("Tu guía de la aldea todavía no tiene nombre")).toBeTruthy();
+    expect(screen.getByText(/ven “la guía de la aldea” hasta que le pongas nombre/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Ponle nombre a tu guía/ })).toBeTruthy();
+  });
+
+  it("CONTROL: a named guide shows no note at all", async () => {
+    const { default: NameYourGuide } = await import("@/components/NameYourGuide");
+    inSpanish(<NameYourGuide guide={guideNameIn("Maia", "founder", es)} audience="founder" ready />);
+    expect(document.body.textContent).toBe("");
+  });
+});
+
+describe("a guide name the server sends, read where the page shows it", () => {
+  it("the role proposal's AI help names an unnamed guide in Spanish and Maia as Maia", async () => {
+    const { aiHelpStatus } = await import("@/components/roleProposal/aiHelp");
+    appI18n.load("es", spanishMessages());
+    appI18n.activate("es");
+    try {
+      guideAnswer.value = { answering: "village", options: [{ id: "village", name: "the village guide" }] };
+      expect(await aiHelpStatus("words")).toMatchObject({ configured: true, guide: "La guía de la aldea" });
+      guideAnswer.value = { answering: "village", options: [{ id: "village", name: "Maia" }] };
+      expect(await aiHelpStatus("words")).toMatchObject({ configured: true, guide: "Maia" });
+    } finally {
+      appI18n.activate("en");
+    }
   });
 });

@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
-import { useReplyPromise } from "@/components/ContributorRoutes";
+import { useReplyPromise } from "@/lib/replyPromise";
 import { useSearch } from "wouter";
 import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
 

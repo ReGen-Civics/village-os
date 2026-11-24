@@ -262,6 +262,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "Something about money needs a person: a hold lifted, a signature refused, a charge disputed.",
     many: "{n} money matters need a look.",
   },
+  crash_alert: {
+    blurb: "Something broke in the village's software, and the people who look after it are told.",
+    many: "{n} things broke in the village's software.",
+  },
   failed_action: {
     blurb: "Something in the village keeps failing, and the report says what to do about it.",
     many: "{n} reports of things failing in the village.",

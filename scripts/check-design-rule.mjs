@@ -97,6 +97,8 @@ const PAGES = [
   // The review page as cards (2026-11-16): where every change an agent proposes is decided.
   "client/src/pages/ProposedChanges.tsx",  // The send and receive page (2026-11-23, credits lane 3): born inside the rule.
   "client/src/pages/Pay.tsx",
+  // The investor path (24 Nov 2026, investor remake): into the night world with the other paths.
+  "client/src/pages/InvestorJourney.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
@@ -135,6 +137,9 @@ const JOURNEY = [
   "client/src/components/governance/SeatPicksField.tsx",
   "client/src/components/governance/DraftCards.tsx",
   "client/src/components/FaqSection.tsx",
+  // What the investor page and the landing draw beside it (24 Nov 2026, investor remake).
+  "client/src/components/InvestorSummary.tsx",
+  "client/src/components/BuildProgress.tsx",
   "client/src/components/approvals/ApprovalInbox.tsx",
   "client/src/components/profile/OnboardingPath.tsx",
   "client/src/components/alignment/EndingActions.tsx",
