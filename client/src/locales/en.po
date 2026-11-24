@@ -23321,6 +23321,11 @@ msgstr "{0} inside the band"
 msgid "Anybody in the village can suggest a change to it under Say."
 msgstr "Anybody in the village can suggest a change to it under Say."
 
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} of {stepCount} steps completed"
+
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
 msgid "{n} recordings, not sent. Tick the box under them to send them."
