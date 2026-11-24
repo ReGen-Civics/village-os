@@ -34,6 +34,40 @@
     <meta name="theme-color" content="#0d1411" />
     <style>html{background-color:#0d1411;color-scheme:dark}</style>
 
+    <!--
+      THE VISITOR'S COLOUR MODE, BEFORE THE FIRST PAINT (light and dark modes,
+      24 Nov 2026). Runs before any stylesheet or bundle so a light visitor never
+      sees the night flash. The order and the key are client/src/lib/colourMode.ts's,
+      written out because this cannot import; colourMode.test.ts holds the two
+      together. A dark visitor keeps the night ground the style above paints.
+      The CSP hashes this script from the built shell, so it needs no nonce.
+    -->
+    <script>
+      (function () {
+        var live = false, fallback = "light", light = "#f3ede0";
+        var d = document.documentElement, m = null;
+        try { m = localStorage.getItem("village-mode"); } catch (e) {}
+        if (m !== "light" && m !== "dark") {
+          m = null;
+          if (live) {
+            try {
+              if (matchMedia("(prefers-color-scheme: dark)").matches) m = "dark";
+              else if (matchMedia("(prefers-color-scheme: light)").matches) m = "light";
+            } catch (e) {}
+            m = m || fallback;
+          }
+        }
+        if (!m) return;
+        d.setAttribute("data-mode", m);
+        d.style.colorScheme = m;
+        if (m === "light") {
+          d.style.backgroundColor = light;
+          var t = document.querySelector('meta[name="theme-color"]');
+          if (t) t.setAttribute("content", light);
+        }
+      })();
+    </script>
+
     <title>Village</title>
     <meta name="description" content="A coordination platform for a regenerative village: quests, recognition, circles, and shared stewardship." />
 

@@ -9,8 +9,8 @@ import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
-import { CalendarDays, Sprout } from "lucide-react";
-import { CARD, CARD_FEATURED, EYEBROW, H1, HINT, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
+import { CalendarDays, Check, Sprout } from "lucide-react";
+import { CARD, CARD_FEATURED, EYEBROW, H1, H2, HINT, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import { useStoryPageShown } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
 
@@ -68,7 +68,7 @@ export default function SeasonalFestivals() {
       {/* The night world (public launch, 24 Nov 2026): the sheet's look, same words. */}
       <div className={WORLD}>
       <section className="pt-12 pb-4 sm:pt-16">
-        <div className="container max-w-2xl">
+        <div className="container max-w-3xl">
           <p className={EYEBROW}>
             <Trans context="seasonal festivals page eyebrow">The village year</Trans>
           </p>
@@ -82,7 +82,7 @@ export default function SeasonalFestivals() {
       </section>
 
       <section className="pt-6 pb-16">
-        <div className="container max-w-2xl space-y-4">
+        <div className="container max-w-3xl space-y-4">
           {/* The "Now" card's place while the season is read: an empty card
               of its measured height (282px at 390, 262px from 768 up). */}
           {!seasonRead && (
@@ -104,26 +104,11 @@ export default function SeasonalFestivals() {
               {season.current.focus && (
                 <p className="text-base text-muted-foreground mt-1">{season.current.focus}</p>
               )}
-              {currentGoals.length > 0 && (
-                <ul className="mt-2 space-y-1">
-                  {currentGoals.map((g: any, i: number) => (
-                    <li key={i} className="text-base text-muted-foreground">
-                      {g.done ? "Done: " : ""}{g.text}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {currentGoals.length > 0 && stewardOn && (
-                <p className="text-base text-foreground mt-3">
-                  <Trans context="seasonal festivals: under this season's goals, the invitation to the steward path">
-                    If you can help us meet these, consider the{" "}
-                    <Link href="/steward" className={LINK}>Village Steward path</Link>.
-                  </Trans>
-                </p>
-              )}
               <p className={`${HINT} mt-2`}>{span(season.current)}</p>
             </div>
           )}
+
+          {season?.current && currentGoals.length > 0 && <SeasonGoals goals={currentGoals} stewardOn={stewardOn} />}
 
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-4">
@@ -180,5 +165,74 @@ export default function SeasonalFestivals() {
       </section>
       </div>
     </Layout>
+  );
+}
+
+/**
+ * The season's goals, one card each (the lead, 24 Nov 2026: the list read as
+ * "a wall of text"). A goal written "Title: the rest" leads with its title in
+ * the display face and carries the rest beneath it. Reached goals keep their
+ * place in the order the stewards set and wear a filled seal; the count is the
+ * village's, never a person's.
+ */
+function SeasonGoals({ goals, stewardOn }: { goals: { text: string; done?: boolean }[]; stewardOn: boolean }) {
+  const reached = goals.filter((g) => g.done).length;
+  return (
+    <section className={CARD} aria-labelledby="season-goals">
+      <p className={EYEBROW}>
+        <Trans context="seasonal festivals: eyebrow over this season's goals">This season</Trans>
+      </p>
+      <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="season-goals" className={H2}>
+          <Trans context="seasonal festivals: heading over this season's goals">What we are tending</Trans>
+        </h2>
+        <p className={HINT}>
+          <Trans context="seasonal festivals: how many of the season's goals the village has reached">
+            {reached} of {goals.length} reached
+          </Trans>
+        </p>
+      </div>
+      <ol className="mt-5 grid gap-3 sm:grid-cols-2">
+        {goals.map((g, i) => {
+          const text = String(g.text).trim();
+          const cut = text.indexOf(": ");
+          const title = cut > 0 && cut < 60 ? text.slice(0, cut) : text;
+          const rest = cut > 0 && cut < 60 ? text.slice(cut + 2) : "";
+          return (
+            <li
+              key={i}
+              className={`season-goal flex items-start gap-3 rounded-xl border p-3.5 ${g.done ? "border-border/60" : "border-border bg-muted"}`}
+              data-done={g.done ? "" : undefined}
+            >
+              <span
+                aria-hidden="true"
+                className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-notice ${g.done ? "bg-notice text-background" : "text-notice"}`}
+              >
+                {g.done ? <Check className="size-4" /> : <Sprout className="size-4" />}
+              </span>
+              <div className="min-w-0">
+                <p className="font-display text-lg leading-snug text-foreground">{title}</p>
+                {rest && <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{rest}</p>}
+                <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  {g.done ? (
+                    <Trans context="seasonal festivals: a season goal the village has reached">Reached</Trans>
+                  ) : (
+                    <Trans context="seasonal festivals: a season goal still being worked on">Growing</Trans>
+                  )}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      {stewardOn && (
+        <p className="mt-5 text-base text-foreground">
+          <Trans context="seasonal festivals: under this season's goals, the invitation to the steward path">
+            If you can help us meet these, consider the{" "}
+            <Link href="/steward" className={LINK}>Village Steward path</Link>.
+          </Trans>
+        </p>
+      )}
+    </section>
   );
 }

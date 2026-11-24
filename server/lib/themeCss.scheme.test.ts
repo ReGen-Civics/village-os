@@ -93,6 +93,18 @@ describe("the dark scheme, derived from a seed alone", () => {
     expect(admin).toContain(`--primary-hover: ${light["--tone-brand-hover"]};`);
   });
 
+  it("gives a visitor who chose light mode the village's light palette, outranking the dark root", () => {
+    const css = buildThemeCss({ seed: "#0b1a1e", character: "woven", mode: "dark" });
+    const at = css.indexOf(':root:root[data-mode="light"] {');
+    expect(at).toBeGreaterThan(css.indexOf(":root:root {"));
+    const block = css.slice(at, css.indexOf("}", at));
+    expect(block).toMatch(/color-scheme: light;/);
+    const light = deriveTheme("#0b1a1e", "woven")!.vars;
+    expect(block).toContain(`--background: ${light["--background"]};`);
+    // A light village has no dark root to answer, so it gets no such block.
+    expect(buildThemeCss({ seed: "#0b1a1e", character: "woven" })).not.toContain('[data-mode="light"]');
+  });
+
   it("marks the shell, paints its first frame in the village's ground, and gives the installer that ground", () => {
     const theme = { seed: "#0b1a1e", character: "woven", mode: "dark" };
     const ground = deriveTheme("#0b1a1e", "woven", null, { mode: "dark" })!.vars["--background"];
