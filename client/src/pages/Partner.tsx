@@ -5,7 +5,7 @@
  * No account needed. It posts to the submissions pipeline as `partner` (POST /api/forms/submit), with that route's
  * honeypot and per-IP limit, and lands in the admin's form submissions under its own type. The holders of the role
  * the village names in `org.partnerships_role` get it by email (server/lib/partnerRouting.ts), else the business
- * inbox. The answer-by promise is the village's one reply promise (`org.applicant_reply_days`), said once.
+ * inbox. When they will hear back is said once they have sent, in moon cycles (`org.reply_window_moons`), never before.
  *
  * ON SEND, EVERY PROBLEM AT ONCE (QA, 23 Nov 2026): a summary at the top of the form lists each thing to fix, each a
  * link to its field; each field names its own problem under it (`aria-describedby`, `aria-invalid`); and focus moves
@@ -17,7 +17,7 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, TICK, WORLD } from "@/components/journey/look";
 import { sendProposal } from "@/lib/proposals";
-import ContributorRoutes, { useReplyDays, useReplyPromise, useRouteWords } from "@/components/ContributorRoutes";
+import ContributorRoutes, { useReplyPromise, useRouteWords } from "@/components/ContributorRoutes";
 import { CONTRIBUTOR_SOURCE, PARTNER_FORM, PARTNER_LIMITS, PARTNER_SERVES, partnerProblems, type PartnerProblem, type PartnerProposal, type PartnerServes } from "@shared/contributorRoutes";
 
 /** The element a problem's link moves to: the field, or the first box of the serves question. */
@@ -34,7 +34,6 @@ const EMPTY: PartnerProposal = { name: "", email: "", project: "", link: "", ser
 
 export default function Partner() {
   const { t } = useLingui();
-  const days = useReplyDays();
   const words = useRouteWords().partner;
   const [form, setForm] = useState<PartnerProposal>(EMPTY);
   const [hp, setHp] = useState(""); // honeypot: real people never fill this
@@ -95,9 +94,9 @@ export default function Partner() {
               <CheckCircle2 className="size-10 text-notice" aria-hidden="true" />
               <h1 className="font-display text-3xl text-foreground">{t({ message: "Your proposal is with us", context: "partner form: sent" })}</h1>
               <p className={LEDE}>{t({ message: "The people who hold partnerships read every proposal. We write to the email you gave.", context: "partner form: sent" })}</p>
-              <p className="font-semibold text-foreground" data-route-promise={days}>{promise}</p>
+              <p className="font-semibold text-foreground" data-route-promise="">{promise}</p>
             </div>
-            <ContributorRoutes variant="links" except={["partner"]} promise={false} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingAs="h2" />
+            <ContributorRoutes variant="links" except={["partner"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingAs="h2" />
           </div>
         </section>
       </Layout>
@@ -148,7 +147,6 @@ export default function Partner() {
                 <dd className="text-muted-foreground">{words.back}</dd>
               </div>
             </dl>
-            <p className="font-semibold text-notice" data-route-promise={days}>{promise}</p>
           </header>
           <form onSubmit={submit} noValidate className={`${CARD} grid gap-5`} data-partner-form="">
             {/* Honeypot: hidden from people and screen readers; only a bot fills it. */}

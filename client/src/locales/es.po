@@ -28380,3 +28380,39 @@ msgstr "Enviando"
 msgctxt "prosperity packet form: the button"
 msgid "Send my request"
 msgstr "Enviar mi solicitud"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the venture card's eyebrow"
+msgid "A business of your own"
+msgstr "Un negocio propio"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the partner card's eyebrow"
+msgid "Work alongside us"
+msgstr "Trabaja a nuestro lado"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the quest card's eyebrow"
+msgid "One piece of work"
+msgstr "Un trabajo puntual"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Home.tsx
+msgctxt "landing, four ways: the team card's eyebrow"
+msgid "A role on the team"
+msgstr "Un rol en el equipo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "after sending a proposal: when you hear back"
+msgid "You'll hear from us within one moon cycle."
+msgstr "Tendrás noticias nuestras dentro de un ciclo lunar."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "after sending a proposal: when you hear back, more than one moon"
+msgid "You'll hear from us within {moons} moon cycles."
+msgstr "Tendrás noticias nuestras dentro de {moons} ciclos lunares."

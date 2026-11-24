@@ -2908,6 +2908,18 @@ export const VARIABLES: VariableDef[] = [
   },
 
   {
+    key: "org.reply_window_moons",
+    category: "The village's people",
+    label: "Moon cycles we tell a proposer they will hear back within",
+    description:
+      "What a person is told once they have sent an application, a venture, a partnership or a quest idea: that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. The application's own dated steps and letters still use the days above.",
+    type: "integer",
+    default: "1",
+    min: 1,
+    max: 6,
+    unit: "moons",
+  },
+  {
     key: "org.partnerships_role",
     category: "The village's people",
     label: "The role that answers partner proposals",

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
+import { useReplyPromise } from "@/components/ContributorRoutes";
 import { useSearch } from "wouter";
 import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
 
@@ -127,6 +128,8 @@ const RECIPROCITY_FALLBACK: ReciprocityOption[] = [
 export default function WorkWithUs() {
   const { user } = useAuth();
   const { t } = useLingui();
+  // When they will hear back, said once they have sent (the lead, 24 Nov 2026).
+  const replyPromise = useReplyPromise();
   // Arrived from Start a venture: the page opens set up for a venture. Without the query it is the page it always was.
   const venture = isVentureQuery(useSearch());
   /*
@@ -209,6 +212,7 @@ export default function WorkWithUs() {
             <p className="text-white text-lg break-words">
               <Emphasized text={page?.thanks.fields.body ?? ""} />
             </p>
+            <p className="mt-4 text-lg font-semibold text-white" data-route-promise="">{replyPromise}</p>
           </div>
         </section>
       </Layout>

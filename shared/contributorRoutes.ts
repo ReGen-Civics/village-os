@@ -27,6 +27,22 @@ export function replyDaysOf(raw: unknown): number {
   return Number.isInteger(n) && n >= 1 && n <= 60 ? n : CONTRIBUTOR_REPLY_DAYS_DEFAULT;
 }
 
+/**
+ * WHEN A PROPOSER HEARS BACK, SAID ONLY ONCE THEY HAVE SENT (the lead, 24 Nov 2026): "remove that they'll hear within
+ * 7 days! That's not true! Let's say for all proposals they'll hear within 1 moon cycle and only at submission". The
+ * window is the village's own, in moons, `org.reply_window_moons` (default 1), served on /api/game/config as
+ * `replyWindowMoons`. Nothing before submission promises a reply. `org.applicant_reply_days` still dates the
+ * application's own steps and letters.
+ */
+export const REPLY_WINDOW_MOONS_VARIABLE = "org.reply_window_moons";
+export const REPLY_WINDOW_MOONS_DEFAULT = 1;
+
+/** A window the page can say: a whole number of moons from 1 to 6, else one. */
+export function replyMoonsOf(raw: unknown): number {
+  const n = typeof raw === "number" ? raw : typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN;
+  return Number.isInteger(n) && n >= 1 && n <= 6 ? n : REPLY_WINDOW_MOONS_DEFAULT;
+}
+
 /** The routes in order, less any the caller leaves out ("the other three" beside a role). */
 export function routesExcept(left: readonly ContributorRoute[] = []): ContributorRoute[] {
   return CONTRIBUTOR_ROUTES.filter((r) => !left.includes(r));

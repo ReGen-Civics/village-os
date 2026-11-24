@@ -77,6 +77,8 @@ describe("after a Quest idea is sent", () => {
     serve({ success: true, id: "s1", idea: { queued: true } });
     await send();
     expect(await screen.findByText("Your Quest idea is in.")).toBeTruthy();
+    // When they hear back, said once it is sent (the lead, 24 Nov 2026).
+    expect(document.querySelector("[data-route-promise]")?.textContent).toBe("You'll hear from us within one moon cycle.");
   });
 
   it("says a member's idea past the allowance was held, how many is the allowance, and what to do", async () => {
