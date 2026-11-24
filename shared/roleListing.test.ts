@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { circleHasListedRole, circlesToShow, isListed, ownRoleIdsOf, planListOnly, pushRecord, visibleTo, LISTING_RECORDS_MAX } from "./roleListing";
+import { circleHasListedRole, circlesToShow, isListed, ownRoleIdsOf, planListOnly, pushRecord, visibleTo, ventureOpenNow, LISTING_RECORDS_MAX } from "./roleListing";
 
 describe("isListed", () => {
   it("reads null and absent as listed, and only an explicit false as unlisted", () => {
@@ -105,5 +105,16 @@ describe("ownRoleIdsOf", () => {
     );
     expect(Array.from(set)).toEqual(["r1"]);
     expect(ownRoleIdsOf([{ orgRoleId: "r1", userId: "u1" }], null).size).toBe(0);
+  });
+});
+
+describe("ventureOpenNow", () => {
+  it("is a future venture whose door is open, and nothing else (the lead, 23 Nov 2026)", () => {
+    expect(ventureOpenNow({ futureVenture: true, recruiting: true })).toBe(true);
+    // Control: the door closed, or an open door on a role that is not a venture.
+    expect(ventureOpenNow({ futureVenture: true, recruiting: false })).toBe(false);
+    expect(ventureOpenNow({ futureVenture: true })).toBe(false);
+    expect(ventureOpenNow({ futureVenture: false, recruiting: true })).toBe(false);
+    expect(ventureOpenNow(null)).toBe(false);
   });
 });

@@ -4,7 +4,7 @@
  * information in the role"; approved mockup A, https://claude.ai/artifact/NaavCsufyAEHKowgEdKFAX).
  *
  * Left, the role as a seat: its art (the role's own image, else its first character's art), its
- * circle, its name, its roots, "This role is rewarded", four quick facts and the one act, "Apply for
+ * circle, its name, its roots, "This is a paid role", four quick facts and the one act, "Apply for
  * this role". Right, the role's words as pieces (RolePieces), each with an icon, its lines split
  * into short tiles (shared/rolePieces.ts) and never rewritten.
  *
@@ -155,7 +155,7 @@ function useTabs(): PieceTab[] {
     { key: "role", tab: t({ message: "The role", context: "role card tab: purpose and what it looks after" }), icon: Compass, pieces: ["purpose", "domain"] },
     { key: "deliverables", tab: t({ message: "Deliverables", context: "role card: the dated outcomes" }), icon: Handshake, pieces: ["accountabilities"] },
     { key: "work", tab: t({ message: "How we co-create", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: Users, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
-    { key: "you", tab: t({ message: "You and rewards", context: "role card tab: who we hope for and the rewards" }), icon: Coins, pieces: ["who", "rewards"] },
+    { key: "you", tab: t({ message: "You and compensation", context: "role card tab: who we hope for and the compensation" }), icon: Coins, pieces: ["who", "rewards"] },
     { key: "path", tab: t({ message: "The path in", context: "role card tab: how you're chosen and once you're selected" }), icon: DoorOpen, pieces: ["chosen", "onboarding"] },
   ];
 }
@@ -343,7 +343,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
       ),
     });
   }
-  if (p.pay) pieces.push({ key: "rewards", tab: t({ message: "Rewards", context: "founding card piece, short" }), icon: Coins, title: SECTION_WORDS.payShape, body: p.pay });
+  if (p.pay) pieces.push({ key: "rewards", tab: t({ message: "Compensation", context: "founding card piece, short" }), icon: Coins, title: SECTION_WORDS.payShape, body: p.pay });
   // Never an empty panel (screenshot check of 1.3.38): a role with no steps or goals written says so in one line.
   const chosenShown = roleCardParamsShown(chosenSeat);
   pieces.push({

@@ -12,7 +12,7 @@
  *   aiSupport         "Digital Companion": one or two sentences on the companion that
  *                     saves the role time
  *   aiCompanion       the companion's animal, one or two words ("Heron")
- *   paid              true draws "This role is rewarded" at the top of the card
+ *   paid              true draws "This is a paid role" at the top of the card (compensation words for a role, 23 Nov 2026)
  *   payShape          the SHAPE of the pay, never an amount: each share a label
  *                     and a percent ("Cash 40", "Equity 55", "Credits 5")
  *   payNote           the line under the shape (indicative, under review)
@@ -29,6 +29,10 @@
  *                     (`org.pay_split_amounts`), "total" is one figure, "split"
  *                     names each share's amount ("Up to $4,000 in cash and
  *                     $6,000 in equity a month")
+ *   applyBy           the last day to apply, a civil date "2026-11-30", drawn
+ *                     "Apply by Mon 30 Nov" on the card's front (the lead, 23 Nov
+ *                     2026). Absent: no date. Kept here, in the JSON document,
+ *                     so it needs no column and no migration
  *
  * NO RANGE AND NO MINIMUM EVER LIVE HERE. The one figure is the ceiling, in its
  * own typed field; a share is a percent of the whole, and an amount written
@@ -65,6 +69,8 @@ export interface RoleCardSections {
   onboarding?: string[];
   /** Where the role is worked, in the card's own words; drawn in place of the listing's land or remote label. */
   where?: string;
+  /** The last day to apply, a civil date (YYYY-MM-DD). Absent: no date on the card. */
+  applyBy?: string;
 }
 
 /**
@@ -112,7 +118,7 @@ export const SECTION_LIMITS = {
   payNoteChars: 300,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where", "applyBy"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -123,9 +129,10 @@ export const SECTION_WORDS = {
   aiSupport: "Digital Companion",
   onboarding: "Once you're selected",
   where: "Where, in the card's own words",
+  applyBy: "Apply by (the last day to apply)",
   aiCompanionLabel: "Companion",
-  paid: "This role is rewarded",
-  payShape: "How rewards work",
+  paid: "This is a paid role",
+  payShape: "How compensation works",
   editorHeading: "Who we hope for, and how pay works",
   editorLede: "Shown on the full card to everyone. We're transparent about all compensation and how value in (contributions) equals value out (rewards).",
   paidToggle: "Say on the card that this is a paid role",
@@ -166,6 +173,7 @@ export const SECTION_PROBLEMS = {
   notSections: "The founding sections arrive as a set of fields.",
   visibility: "Choose who sees the listed price: the village setting, everyone, or only the card's editors.",
   wording: "Choose how the listed price reads: the village setting, one figure, or each share's amount.",
+  applyBy: "Write the last day to apply as a real date, year-month-day, like 2026-11-30.",
 } as const;
 
 export const EMPTY_SECTIONS: RoleCardSections = {
@@ -245,6 +253,20 @@ export function splitLine(shape: readonly PayShare[], note: string): string {
   return `${SECTION_WORDS.splitLead} ${shares}.${note ? ` ${note}` : ""}`;
 }
 
+/** The last day to apply: a real civil date, YYYY-MM-DD, or nothing. */
+export function readApplyBy(raw: unknown): { ok: true; value: string } | { ok: false; problem: string } {
+  if (raw === null || raw === undefined || raw === "") return { ok: true, value: "" };
+  if (typeof raw !== "string") return { ok: false, problem: SECTION_PROBLEMS.applyBy };
+  const t = raw.trim();
+  if (!t) return { ok: true, value: "" };
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
+  if (!m) return { ok: false, problem: SECTION_PROBLEMS.applyBy };
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  // A day that rolls over (2026-02-30) is not a real date.
+  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== t) return { ok: false, problem: SECTION_PROBLEMS.applyBy };
+  return { ok: true, value: t };
+}
+
 /** A choice from a closed list, where "village" (or nothing) reads as absent: the village decides. */
 function choice<T extends string>(raw: unknown, allowed: readonly T[]): { ok: true; value: Exclude<T, "village"> | undefined } | { ok: false } {
   if (raw === null || raw === undefined || raw === "" || raw === "village") return { ok: true, value: undefined };
@@ -254,7 +276,7 @@ function choice<T extends string>(raw: unknown, allowed: readonly T[]): { ok: tr
 /** The pay shape: shares with a name and a whole percent, adding to no more than 100. */
 export function readPayShape(raw: unknown): { ok: true; value: PayShare[] } | { ok: false; problem: string } {
   if (raw === null || raw === undefined) return { ok: true, value: [] };
-  if (!Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.notAList("How rewards work") };
+  if (!Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.notAList("How compensation works") };
   if (raw.length > SECTION_LIMITS.shares) return { ok: false, problem: SECTION_PROBLEMS.tooManyShares };
   const out: PayShare[] = [];
   for (const item of raw) {
@@ -309,6 +331,8 @@ export function readSections(raw: unknown): SectionsRead {
   if (!onboarding.ok) return { ...onboarding, field: "sections.onboarding" };
   const where = text(o.where, SECTION_LIMITS.whereChars, SECTION_WORDS.where);
   if (!where.ok) return { ...where, field: "sections.where" };
+  const applyBy = readApplyBy(o.applyBy);
+  if (!applyBy.ok) return { ...applyBy, field: "sections.applyBy" };
   const paid = o.paid === true || o.paid === "true" || o.paid === 1;
   return {
     ok: true,
@@ -329,6 +353,7 @@ export function readSections(raw: unknown): SectionsRead {
       ...(deliverables.value.length ? { deliverables: deliverables.value } : {}),
       ...(onboarding.value.length ? { onboarding: onboarding.value } : {}),
       ...(where.value ? { where: where.value } : {}),
+      ...(applyBy.value ? { applyBy: applyBy.value } : {}),
     },
   };
 }
@@ -375,7 +400,7 @@ export function sectionsForReader(s: RoleCardSections, reader: PayReader): Reade
 /** Whether a card has any of these sections written. */
 export function hasSections(s: RoleCardSections | ReaderSections | null | undefined): boolean {
   if (!s) return false;
-  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0 || !!s.where;
+  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0 || !!s.where || !!s.applyBy;
 }
 
 /** "Cash 40%", one line per share, for the card. */

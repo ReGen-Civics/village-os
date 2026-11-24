@@ -3,6 +3,7 @@ import BuildProgress from "@/components/BuildProgress";
 import SeasonBanner from "@/components/SeasonBanner";
 import VillagePulse from "@/components/VillagePulse";
 import MapPeek from "@/components/MapPeek";
+import ContributorRoutes, { useFourWaysHeading } from "@/components/ContributorRoutes";
 import { altOr, useBrandImages, useVillageLinks } from "@/lib/gameApi";
 import { Link } from "wouter";
 import { m } from "framer-motion";
@@ -138,6 +139,7 @@ const PERSONA_LOOKS = [
 
 export default function Home() {
   const { t } = useLingui();
+  const fourWaysHeading = useFourWaysHeading();
   // Blank hides both buttons rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
   const brand = useBrandImages();
@@ -369,6 +371,14 @@ export default function Home() {
           ) : null}
         </div>
         )}
+      </section>
+
+      {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026): join the team, start a venture, become a partner, propose a
+          quest. Under the hero and its ways in. */}
+      <section aria-labelledby="four-ways-h" className="pb-16 sm:pb-20" data-four-ways="">
+        <div className="container">
+          <ContributorRoutes heading={fourWaysHeading} headingId="four-ways-h" />
+        </div>
       </section>
 
       <SeasonBanner />

@@ -89,6 +89,8 @@ import {
   WIRED_BUT_HELD_BACK,
   type PowerHolder,
 } from "./lib/capabilityRegistry";
+import { partnerRecipients } from "./lib/partnerRouting";
+import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
@@ -1300,6 +1302,7 @@ const PUBLIC_FORM_TYPES: ReadonlySet<string> = new Set([
   "contact",
   "work-with-us",
   "quest-proposal",
+  "partner", // Partner.tsx: a project or business that would like to work with the village (the lead, 23 Nov 2026)
   "investor",
   "investor-pack",
   "investor-call",
@@ -7651,7 +7654,8 @@ async function startServer() {
 
     (async () => { // fire-and-forget notifications
       // Notify the pathway inbox
-      const recipients = recipientsForType(type);
+      // A partner proposal goes to the holders of the role the village named for partnerships (server/lib/partnerRouting.ts).
+      const recipients = type === PARTNER_FORM ? await partnerRecipients({ pool: getPool(), roleId: stringVar(PARTNERSHIPS_ROLE_VARIABLE), emailOf: async (id) => ((await members.byId(id)) as any)?.email ?? null, fallback: () => (getEmailConfig().prosperity ? [getEmailConfig().prosperity as string] : recipientsForType(type)) }) : recipientsForType(type);
       if (recipients.length) {
         await sendResendEmail({
           to: recipients, origin: "forms.team_alert",
@@ -18233,6 +18237,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
+      applicantReplyDays: numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE), // the village's one reply promise, said by the application and the four ways in (shared/contributorRoutes.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });

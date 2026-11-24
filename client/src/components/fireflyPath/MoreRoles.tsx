@@ -20,9 +20,10 @@ import { askPeriod, ceilingAt } from "@shared/commitmentRange";
 import { waitlistHref } from "@shared/roleListing";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
-import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, LINK, TILE } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
 import { CommitmentFor, EMPTY_TERMS_STEP, type TermsRole, type TermsStepValue } from "@/components/governance/TermsEight";
 import { EarlyWords } from "./EarlyWords";
+import ContributorRoutes, { useGiftHeading } from "@/components/ContributorRoutes";
 
 /** A role the form offers, as this step reads it. */
 export interface MoreRolesRole extends TermsRole {
@@ -69,6 +70,7 @@ export default function MoreRoles({
   problemOf: (index: number) => string | null;
 }) {
   const { t, i18n } = useLingui();
+  const giftHeading = useGiftHeading();
   const byId = new Map(offered.map((r) => [r.id, r]));
   const chosen = new Set([first.id, ...extras.map((x) => x.roleId)]);
   // Open roles and held roles still recruiting; never a fully held role, a future venture, or a role not open yet.
@@ -101,7 +103,7 @@ export default function MoreRoles({
           {t({ message: "More than one role", context: "founding application, roles added to one application" })}
         </h3>
         <p className={HINT}>
-          {t({ message: `Up to ${max} roles in one application, in any circle, each with its own commitment, price and agreement. The prices add up: two roles at 50% are rewarded like one whole role.`, context: "founding application, roles added to one application" })}
+          {t({ message: `Up to ${max} roles in one application, in any circle, each with its own commitment, compensation and agreement. The amounts add up: two roles at 50% are compensated like one whole role.`, context: "founding application, roles added to one application" })}
         </p>
       </div>
       {extras.map((x, i) => {
@@ -157,14 +159,15 @@ export default function MoreRoles({
           <p className={HINT}>
             {t({ message: "Not open yet. Join a role's waitlist to hear when it opens.", context: "founding application, coming-soon roles under the picker" })} <EarlyWords />
           </p>
-          <ul className="grid gap-1">
+          <ul className="grid gap-2">
             {notYet.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center gap-x-4 text-sm">
-                <a className={`${LINK} inline-flex min-h-11 items-center`} href={waitlistHref(r.id)} data-waitlist-role={r.id}>
+              // Buttons, as on the Upcoming roles cards (the lead, 23 Nov 2026): the waitlist edged, Apply early in the accent.
+              <li key={r.id} className="flex flex-wrap items-center gap-2 text-sm">
+                <a className={BTN_SECONDARY} href={waitlistHref(r.id)} data-waitlist-role={r.id}>
                   {t({ message: `Join the waitlist for ${r.name}`, context: "founding application, a coming-soon role's waitlist" })}
                 </a>
                 {extras.length + 1 < max && (
-                  <button type="button" className={`${LINK} inline-flex min-h-11 items-center`} onClick={() => add(r.id)} data-apply-early={r.id}>
+                  <button type="button" className={BTN_NOTICE} onClick={() => add(r.id)} data-apply-early={r.id}>
                     {t({ message: `Apply early for ${r.name}`, context: "founding application, add a coming-soon role as an early application" })}
                   </button>
                 )}
@@ -173,6 +176,8 @@ export default function MoreRoles({
           </ul>
         </div>
       )}
+      {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build. */}
+      <ContributorRoutes variant="links" register="founding" except={["team"]} heading={giftHeading} />
       {extras.length > 0 && (
         <p className={`${TILE} text-foreground`} data-roles-total="" aria-live="polite">
           {priceTotal !== null

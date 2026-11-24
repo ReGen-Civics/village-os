@@ -113,6 +113,16 @@ export function isFutureVenture(role: { futureVenture?: boolean | null } | null 
   return role?.futureVenture === true;
 }
 
+/**
+ * A VENTURE OPEN NOW (the lead, 23 Nov 2026): a future venture whose door is open. It reuses `recruiting`, the
+ * door every role card already carries and the role_card proposal already writes, so no column is added. The
+ * roles page draws it first with "Open now, high priority"; every other venture reads "Accepting proposals". A venture is still applied
+ * for with a pitch, never a raised hand, whatever its door says.
+ */
+export function ventureOpenNow(role: { futureVenture?: boolean | null; recruiting?: boolean | null } | null | undefined): boolean {
+  return role?.futureVenture === true && role?.recruiting === true;
+}
+
 /** Whether a role is on the discovery surfaces: listed, or marked coming soon or a future venture. */
 export function isShown(role: { listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null } | null | undefined): boolean {
   return isListed(role) || isComingSoon(role) || isFutureVenture(role);

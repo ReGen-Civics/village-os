@@ -3,7 +3,7 @@
  *
  *   "Up to $13,000 a month for the full role*"
  *   "Take on all of it, or part of it: we're open to proposals from 30% to 100%. ..."
- *   "Your proposal sets your rewards. ... At 50%, the suggested price is $6,500 a month. You can propose more or less."
+ *   "Your proposal sets your rewards. ... At 50%, the suggested compensation is $6,500 a month. You can propose more or less."
  *   "*At 100% commitment. Your first moon often starts lower and follows what you deliver. ..."
  *
  * The figure is the card's own ceiling (shared/roleCardSections.ts); the share is straight proportional
@@ -111,13 +111,13 @@ export function rewardWords(
     // One figure for the full role, as cards read by default; each share's amount when the card or the village says so.
     headline: split.length
       ? splitHeadline(i18n, c, split)
-      : i18n._(msg({ message: `Listed price: ${full} for the full role*`, context: "role card rewards: the full role's listed price" })),
+      : i18n._(msg({ message: `Listed compensation: ${full} for the full role*`, context: "role card rewards: the full role's listed price" })),
     range: shared
       ? i18n._(msg({ message: `Take on all of it, or part of it: we're open to proposals from ${lo}% to 100%. One person can hold the whole role, or a few people can share it.`, context: "role card rewards: a role that can be shared" }))
       : null,
     proposal: [
       i18n._(msg({ message: "Your proposal sets your rewards. Tell us what you'd deliver each moon and how much of yourself that takes; that becomes your contract.", context: "role card rewards: the proposal sets the pay" })),
-      shared && at < 100 ? i18n._(msg({ message: `At ${at}%, the suggested price is ${atPrice}.`, context: "role card rewards: the price at an example share" })) : null,
+      shared && at < 100 ? i18n._(msg({ message: `At ${at}%, the suggested compensation is ${atPrice}.`, context: "role card rewards: the price at an example share" })) : null,
       i18n._(msg({ message: "You can propose more or less.", context: "role card rewards: the proposal sets the pay" })),
     ]
       .filter(Boolean)

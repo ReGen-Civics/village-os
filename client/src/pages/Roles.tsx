@@ -2,7 +2,7 @@
  * /roles, AS APPROVED IN 1.3.41 (the lead, 21 Nov 2026): 1.3.42's compact index cards are undone, and the founding
  * team leads with its full role cards again (FoundingTeam.tsx). Kept from the lead's asks: the groups in order (Open
  * roles, Open ventures, Upcoming roles, then the roles held now), one frame per role with its card inside it
- * (FoundingLineup.tsx), and "Roles to be added:" in a lead role's row. Old links to one role (`?seat=`, `?role=`,
+ * (FoundingLineup.tsx), and "Related roles this role will onboard:" in a lead role's row. Old links to one role (`?seat=`, `?role=`,
  * `#<id>`, `#role-<id>`, `#<slug>`) land on its own page, `/roles/<slug>` (RoleShare.tsx), its share link.
  */
 import ArchetypeStep from "@/components/roleDraft/ArchetypeStep";
@@ -12,7 +12,10 @@ import { anchorCircleId } from "@shared/circlePicker";
 import SeasonGoals from "@/components/roleDraft/SeasonGoals";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 import NotListedChip from "@/components/NotListedChip";
-import { ComingSoonChip, HeldByAgentLine } from "@/components/ComingSoon";
+import { ComingSoonChip, HeldByAgentLine, VentureChip } from "@/components/ComingSoon";
+import { FourWaysSection, GiftSection, StartVentureButton, useVentureHref } from "@/components/ContributorRoutes";
+import { oldLink, roleForOldLink, ROLES_SECTIONS, useLandOnSection } from "@/lib/sectionAnchor";
+export { roleForOldLink };
 import Layout from "@/components/Layout";
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
@@ -34,6 +37,7 @@ import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
 import ComingSoonRoles, { type SoonRole } from "@/components/roleCard/ComingSoonRoles";
+import { soonIsPaid } from "@/components/roleCard/frontWords";
 import { waitlistHash } from "@shared/roleWaitlist";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
@@ -45,7 +49,7 @@ import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@s
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
-import { heldButRecruiting, rolesLeadWillBuild } from "@shared/roleListing";
+import { heldButRecruiting, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
@@ -127,23 +131,6 @@ function normalizeStatus(s: unknown): SeatStateWord {
   return "open";
 }
 
-/** What an old in-page link to one role named, read once on arrival: `?seat=`, `?role=`, or the hash. */
-function oldLink(): { seat: string | null; hash: string | null } {
-  if (typeof window === "undefined") return { seat: null, hash: null };
-  const q = new URLSearchParams(window.location.search);
-  const h = decodeURIComponent(window.location.hash.replace(/^#/, ""));
-  return { seat: q.get("seat") || q.get("role") || null, hash: h || null };
-}
-
-/** The role an old link names: by id for `?seat=`, by id, `role-<id>` or slug for a hash. */
-export function roleForOldLink(link: { seat: string | null; hash: string | null }, roles: ReadonlyArray<{ id: string; path: string }>): { id: string; path: string } | null {
-  if (link.seat) return roles.find((r) => r.id === link.seat) ?? null;
-  const h = link.hash;
-  if (!h || h.startsWith("waitlist-")) return null;
-  const id = h.startsWith("role-") ? h.slice(5) : h;
-  return roles.find((r) => r.id === id || r.id === h || r.path === `/roles/${h}`) ?? null;
-}
-
 /** The gap between role rows: room enough that each row reads as its own panel (the lead, 21 Nov 2026). */
 const ROWS = "space-y-5";
 
@@ -199,7 +186,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>
                 {/* A coming-soon role says so in place of its state, until someone holds it (Rye, 16 Nov 2026). */}
                 {(role.raw?.comingSoon === true || role.raw?.futureVenture === true) && role.status !== "filled" && role.status !== "partial" ? (
-                  <ComingSoonChip role={role.raw} />
+                  role.raw?.futureVenture === true ? <VentureChip role={role.raw} /> : <ComingSoonChip role={role.raw} />
                 ) : (
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
                     {stateWords[role.status]}
@@ -483,18 +470,26 @@ export default function Roles() {
   const HeroHeading = leads ? "h2" : "h1";
   // The header waits for both reads, so it never draws on top and then jumps below the founding team.
   const heroShown = founding !== null && (!founding.on || roles !== null || failed);
+  // Join the team and Start a venture land on this page's founding team and open ventures while the founding team
+  // leads; with none leading neither section is drawn, so they go to the role board and the venture form instead.
+  const ventureHref = useVentureHref();
+  const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
+  // Arriving on /roles#founding-team or /roles#open-ventures lands on the section once it is drawn (sectionAnchor.ts).
+  useLandOnSection(heroShown, [leads, roles]);
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
   // Future ventures (the Operations Steward, 16 Nov 2026): their own section while the founding team leads, with no lead.
-  const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)) : [];
+  // The ventures open now come first, each in its own order (the lead, 23 Nov 2026: highlight the ones open now).
+  const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)).sort((a, b) => Number(ventureOpenNow(b.raw)) - Number(ventureOpenNow(a.raw))) : [];
   const ventureIds = new Set(ventures.map((r) => r.id));
   // Coming soon (the lead, 19 Nov 2026): directly under the open roles and above the roles held now, each with its
   // waitlist. Shown even while unlisted, as a coming-soon role always is (shared/roleListing.ts).
   const liveCircles = circles.filter((c: any) => c && c.status !== "dormant" && !c.isExample);
   const soon = (roles ?? []).filter((r) => r.raw?.comingSoon === true && r.raw?.futureVenture !== true && !r.isExample && r.status !== "filled" && !featuredShown.has(r.id));
   const soonIds = new Set(soon.map((r) => r.id));
-  const soonRoles: SoonRole[] = soon.map((r) => ({ id: r.id, name: r.name, aim: typeof r.raw?.aim === "string" ? r.raw.aim : null, circleName: r.group || null }));
+  // Every upcoming role will be paid (the lead, 23 Nov 2026): each says so unless its track says otherwise (soonIsPaid).
+  const soonRoles: SoonRole[] = soon.map((r) => ({ id: r.id, name: r.name, aim: typeof r.raw?.aim === "string" ? r.raw.aim : null, circleName: r.group || null, paid: soonIsPaid(r.raw) }));
   // Future ventures and the coming-soon roles each get their own group while the founding team leads (the lead,
   // 20 Nov 2026: Open roles, then Open ventures, then Upcoming roles).
   const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && !soonIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
@@ -542,7 +537,7 @@ export default function Roles() {
   const featuredReach = rolesWithinReach(featured, (f) => ({ commitmentPct: f.seat?.card?.commitmentPct ?? null, commitmentRequired: f.seat?.card?.commitmentRequired === true }), memberPct);
   const featuredHidden = featuredReach.beyond;
   const featuredVisible = showBeyond ? featured : featured.filter((f) => !featuredHidden.includes(f));
-  // "Roles to be added:" in a lead role's row: the coming-soon roles of the circles it leads (the lead, 21 Nov 2026).
+  // "Related roles this role will onboard:" in a lead role's row: the coming-soon roles of the circles it leads (the lead, 21 Nov 2026).
   const toBeAdded: Record<string, Array<{ id: string; name: string }>> = Object.fromEntries(Object.entries(builds).map(([id, list]) => [id, list.filter((b) => !b.held).map((b) => ({ id: b.id, name: b.name }))]));
   // "N roles, one timeline" (the lead, 20 Nov 2026): the open founding roles' dated deliverables, one lane each.
   const withDates = featuredVisible.filter((f) => (f.sections?.deliverables?.length ?? 0) > 0);
@@ -607,6 +602,8 @@ export default function Roles() {
 
   const otherWaysSection = (
     <>
+          {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build, at the end of the lists. */}
+          <GiftSection hrefs={elsewhere} />
           {/* OTHER WAYS TO JOIN: clearly secondary to the founding team, and open from the start. */}
           <section aria-labelledby="other-ways" className={`mx-auto mb-14 max-w-4xl ${featured.length > 0 ? "border-t border-border pt-10" : ""}`} data-other-ways="">
             <h2 id="other-ways" className={`${H2} mb-2`}>{t({ message: "Other ways to join", context: "roles page, other ways to join" })}</h2>
@@ -705,11 +702,15 @@ export default function Roles() {
               </div>
             )}
           </div>
+          {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026), at the top. Join the team scrolls down to the founding team and Start a
+              venture to the open ventures, on this page; with no founding team leading, neither section is drawn, so they go to
+              the role board and the venture form. */}
+          <FourWaysSection hrefs={elsewhere} />
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
               {/* 1. OPEN ROLES: the founding team's full cards, each role in its own frame, then the roles opening next. */}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} comingSoon={teamTimeline} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead anchorId={ROLES_SECTIONS.team} roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} comingSoon={teamTimeline} />}
               {featuredVisible.length === 0 && openingNext.length > 0 && <div className="mx-auto mb-6 max-w-4xl">{openHeading}</div>}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
@@ -738,14 +739,16 @@ export default function Roles() {
                 </section>
               )}
               {/* 2. OPEN VENTURES: a row the village flagged `futureVenture` (0399). With none, the group says so. */}
-              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
+              <section id={ROLES_SECTIONS.venture} aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
                 <p className={EYEBROW}>{t({ message: "Build with us", context: "roles page, the open ventures' eyebrow" })}</p>
-                <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1 mb-2`}>
+                <h2 id="future-ventures-heading" tabIndex={-1} data-section-focus="" className={`${GROUP_H2} mt-1 mb-2 outline-none`}>
                   {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
                 </h2>
-                <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
+                {/* What a venture is, and the one door to pitch your own (the lead, 23 Nov 2026). */}
+                <p className="mb-4 max-w-2xl text-base leading-relaxed text-foreground" data-venture-explainer="">
+                  {t({ message: "A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role.", context: "roles page, open ventures: what a venture is" })}
                 </p>
+                <StartVentureButton />
                 {ventures.length > 0 ? (
                   <div className="grid items-start gap-4 lg:grid-cols-2" data-ventures-grid="">
                     {/* Two columns on a desktop (the lead, 21 Nov 2026); an opened venture takes the full width. */}

@@ -34,6 +34,7 @@
  * for the facts it needs and draws nothing while one is missing, and a line
  * whose fact could not be read is left out rather than guessed.
  */
+import ContributorRoutes from "@/components/ContributorRoutes";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Compass } from "lucide-react";
@@ -292,6 +293,10 @@ export default function StartHereCard({ ownerId, me, signing, config, catalogue 
           <p className="mt-2 text-sm text-muted-foreground">{primary.after}</p>
         </div>
       ) : null}
+
+      {/* A member's other ways to build (the lead, 23 Nov 2026), beside the quest this card leads with. A role keeps
+          its own door above, which shows only while /roles offers a hand. */}
+      {admitted ? <ContributorRoutes variant="links" except={["quest", "team"]} className="mt-6 max-w-xl border-t border-border pt-5" /> : null}
 
       {others.length ? (
         <ul aria-label="Other ways forward" className="mt-6 space-y-3 border-t border-border pt-5">

@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import ContributorRoutes from "@/components/ContributorRoutes";
 import { BTN_PRIMARY, EYEBROW, H1, RING, WORLD } from "@/components/journey/look";
 import QuietEmpty from "@/components/quiet/QuietEmpty";
 import { Link, useSearch } from "wouter";
@@ -585,14 +586,18 @@ export default function Quests() {
                 <p>{t`The Quest Board didn't load. Reload to try again.`}</p>
               </div>
             ) : quests.length === 0 ? (
+              <>
               <QuietEmpty
                 drawing="meadow"
                 title={word("empty", "questsTitle") ?? t`The meadow is resting`}
                 door={{ label: t({ message: "Propose a Quest", context: "empty quest board: the one door" }), href: "/propose-quest" }}
-                className="max-w-3xl mx-auto mb-16 justify-center"
+                className="max-w-3xl mx-auto mb-8 justify-center"
               >
                 {word("empty", "questsLine") ?? t`No Quests posted yet. Post the first one.`}
               </QuietEmpty>
+              {/* The other ways to build, under an empty board (the lead, 23 Nov 2026). */}
+              <ContributorRoutes variant="links" except={["quest"]} heading={t({ message: "Other ways to build the village", context: "empty quest board: the other ways to build" })} className="mx-auto mb-16 max-w-3xl" />
+              </>
             ) : roots.on && rootsHidden > 0 ? (
               <QuietEmpty
                 drawing="meadow"
