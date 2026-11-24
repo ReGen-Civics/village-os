@@ -37,7 +37,7 @@ export const SITE_PAGE: PageSpec = {
         {
           key: "image",
           label: "Picture address",
-          help: "The address of a picture you uploaded, ideally 1200 by 630. Leave blank to use your homepage picture.",
+          help: "The address of any picture you uploaded. It is cropped to the share size, 1200 by 630, automatically. Leave blank to use your homepage picture.",
           kind: "link",
           max: 500,
           default: "",

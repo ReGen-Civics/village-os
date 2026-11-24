@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sitePageMeta, spliceHeroPreload, spliceMeta } from "./pageMeta";
+import { sitePageMeta, spliceHeroPreload, spliceMeta, type ShareCardLookup } from "./pageMeta";
 import { documentTitle } from "../../shared/pageTitles";
 
 const config = {
@@ -122,5 +122,59 @@ describe("spliceHeroPreload", () => {
 
   it("escapes what it writes into the attribute", () => {
     expect(spliceHeroPreload(SHELL, 'https://cdn.example/a"b.webp')).toContain('href="https://cdn.example/a&quot;b.webp"');
+  });
+});
+
+describe("the village's own share card (server/lib/shareCard.ts)", () => {
+  const uploaded = { ...config, images: { hero: "/api/uploads/hero-1a2b.webp" } };
+  const asked: Array<[string, string]> = [];
+  // Stands in for the volume: a card exists for this village's own hero, at version abc123.
+  const lookup: ShareCardLookup = (picture, origin) => {
+    asked.push([picture, origin]);
+    return picture === "/api/uploads/hero-1a2b.webp" ? "abc123" : null;
+  };
+
+  it("names the 1200x630 JPEG card, versioned, when the picture is one of the village's uploads", () => {
+    asked.length = 0;
+    const meta = sitePageMeta("/visit", "https://willow.example", uploaded, null, false, lookup);
+    expect(asked).toEqual([["/api/uploads/hero-1a2b.webp", "https://willow.example"]]);
+    expect(meta.image).toBe("https://willow.example/api/share-card.jpg?v=abc123");
+    const html = spliceMeta(SHELL, meta);
+    expect(html).toContain('<meta property="og:image" content="https://willow.example/api/share-card.jpg?v=abc123" />');
+    expect(html).toContain('<meta property="og:image:width" content="1200" />');
+    expect(html).toContain('<meta property="og:image:height" content="630" />');
+    expect(html).toContain('<meta property="og:image:type" content="image/jpeg" />');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
+  });
+
+  it("asks about the Whole site share picture first, the same choice as before", () => {
+    asked.length = 0;
+    const content = { "page-site": { share: { image: "/api/uploads/share-9z.webp" } } };
+    const meta = sitePageMeta("/", "https://willow.example", uploaded, content, false, lookup);
+    expect(asked[0][0]).toBe("/api/uploads/share-9z.webp");
+    // No card for that file (missing on the volume, say): its own address, as before, and no claimed size.
+    expect(meta.image).toBe("https://willow.example/api/uploads/share-9z.webp");
+    expect(meta.imageSize).toBeUndefined();
+    expect(spliceMeta(SHELL, meta)).not.toContain("og:image:type");
+  });
+
+  it("keeps a picture on another host exactly as typed", () => {
+    const content = { "page-site": { share: { image: "https://cdn.example/valley.webp" } } };
+    const meta = sitePageMeta("/", "https://willow.example", uploaded, content, false, lookup);
+    expect(meta.image).toBe("https://cdn.example/valley.webp");
+    expect(meta.imageType).toBeUndefined();
+  });
+
+  it("names no card when the origin is unknown, since the card needs an absolute address", () => {
+    asked.length = 0;
+    const meta = sitePageMeta("/", "", uploaded, null, false, lookup);
+    expect(meta.image).toBe("");
+    expect(asked).toEqual([]);
+  });
+
+  it("is the old card with no lookup at all (control)", () => {
+    const meta = sitePageMeta("/", "https://willow.example", uploaded, null);
+    expect(meta.image).toBe("https://willow.example/api/uploads/hero-1a2b.webp");
+    expect(meta.imageSize).toBeUndefined();
   });
 });

@@ -38,7 +38,8 @@ import type { Pool } from "mysql2/promise";
 
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { wordsIn } from "../../shared/applicantWords";
-import { confirmLetter, safeGreeting } from "../../shared/openProposals";
+import { APPLY_EMAIL_WORDS, confirmLetter, safeGreeting } from "../../shared/openProposals";
+import { plainLetterHtml } from "./letterHtml";
 import type { OpenProposalTerm } from "../../shared/openProposalTerm";
 import { languageOf } from "./applicantLanguage";
 import { listOrgRoles } from "./orgChart";
@@ -86,11 +87,12 @@ export function confirmationEmail(
 ): OutgoingEmail {
   const w = wordsIn(p.lang);
   const firstName = safeGreeting(p.name);
+  const link = `${deps.siteUrl()}/propose-a-role/confirm?token=${encodeURIComponent(token)}`;
   const words = confirmLetter({
     firstName,
     village: deps.projectName(),
     roleNames: p.roleNames,
-    link: `${deps.siteUrl()}/propose-a-role/confirm?token=${encodeURIComponent(token)}`,
+    link,
     lang: p.lang,
     // The form is for a listed role: an application (Phase A vocabulary).
     kind: "application",
@@ -105,10 +107,8 @@ export function confirmationEmail(
     origin: "open_proposal.confirm",
     to: { email: p.email, ...(firstName ? { name: firstName } : {}) },
     subject: words.subject,
-    html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${words.text
-      .split("\n\n")
-      .map((para) => `<p>${deps.escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-      .join("")}</body></html>`,
+    // Its one act as a button too, and every address a link (server/lib/letterHtml.ts).
+    html: plainLetterHtml(words.text, { action: { href: link, label: APPLY_EMAIL_WORDS[p.lang].confirmButton } }),
     text: words.text,
   };
 }

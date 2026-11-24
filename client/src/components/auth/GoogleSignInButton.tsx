@@ -16,6 +16,7 @@
  * answer arrives and returns null for both "not asked yet" and "not available".
  */
 import { useEffect, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { fetchSignInMethods } from "./signInMethods";
 
 interface Props {
@@ -58,6 +59,7 @@ export function GoogleMark() {
 }
 
 export default function GoogleSignInButton({ next, label, invite }: Props) {
+  const { t } = useLingui();
   const [available, setAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -82,7 +84,7 @@ export default function GoogleSignInButton({ next, label, invite }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{t({ message: "or", context: "sign in with google: between the two ways in" })}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
       {/*
@@ -96,7 +98,7 @@ export default function GoogleSignInButton({ next, label, invite }: Props) {
         className="jw-btn w-full flex min-h-11 items-center justify-center gap-3 px-6 py-3 bg-card border border-border rounded-lg font-semibold text-foreground hover:bg-muted"
       >
         <GoogleMark />
-        {label ?? "Continue with Google"}
+        {label ?? t({ message: "Continue with Google", context: "sign in with google: the button" })}
       </a>
     </div>
   );
