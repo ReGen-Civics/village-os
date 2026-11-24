@@ -17231,6 +17231,11 @@ msgctxt "admin character classes: the stock portraits heading"
 msgid "Faces"
 msgstr ""
 
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor page: under a disabled request-the-pack button"
+msgid "The investor pack is being prepared."
+msgstr ""
+
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, choose the role that owns a new item"
 msgid "Owner role"
