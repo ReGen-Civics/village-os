@@ -28,9 +28,9 @@ export default function PlanBasketPanel({ all, viewer }: { all: BasketModule[]; 
   const s = planSummary(ids, all);
   const pickedNames = ids.map((id) => all.find((m) => m.id === id)?.name ?? id);
   return (
-    <section aria-labelledby="plan-basket" className="mb-8 rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-4 sm:p-5">
+    <section aria-labelledby="plan-basket" className="mb-8 rounded-xl border border-notice/40 bg-notice/10 p-4 sm:p-5">
       <h2 id="plan-basket" className="flex items-center gap-2 font-semibold text-foreground">
-        <Trans context="PlanBasketPanel, h2"><ClipboardList className="w-5 h-5 text-teal-deep" aria-hidden="true" />
+        <Trans context="PlanBasketPanel, h2"><ClipboardList className="w-5 h-5 text-notice" aria-hidden="true" />
         Your plan
       </Trans></h2>
       <ul className="mt-2 flex flex-wrap gap-2">

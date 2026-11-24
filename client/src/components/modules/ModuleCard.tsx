@@ -76,7 +76,7 @@ export default function ModuleCard({ module: m, steward = false }: { module: Cat
   return (
     <Link
       href={`/modules/${m.id}`}
-      className="group block rounded-xl border border-border bg-card overflow-hidden min-w-0 break-words hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-teal-deep/50"
+      className="group block rounded-xl border border-border bg-card overflow-hidden min-w-0 break-words hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="aspect-[8/5] w-full overflow-hidden bg-muted">
         <ModuleArt
@@ -97,22 +97,22 @@ export default function ModuleCard({ module: m, steward = false }: { module: Cat
             </Trans></span>
           )}
           {!m.core && m.on && (
-            <span className={`${PILL} bg-emerald-50 text-emerald-700 border-emerald-200`}><Trans context="ModuleCard, span">On in this village</Trans></span>
+            <span className={`${PILL} bg-open/10 text-open border-open/40`}><Trans context="ModuleCard, span">On in this village</Trans></span>
           )}
           {m.lifecycle === "preview" && (
-            <span className={`${PILL} bg-amber-50 text-amber-700 border-amber-200`}><Trans context="ModuleCard, span">Preview</Trans></span>
+            <span className={`${PILL} bg-notice/10 text-notice border-notice/40`}><Trans context="ModuleCard, span">Preview</Trans></span>
           )}
           {/* A steward reads the whole shelf as a plan, so "not on" is a
               state worth a pill for them. Never a call to action (R55). */}
           {steward && !m.core && (m.lifecycle ?? "off") === "off" && (
             <span className={`${PILL} bg-muted text-muted-foreground border-border`}><Trans context="ModuleCard, span">Not on yet</Trans></span>
           )}
-          {m.tier === "connected" && <span className={`${PILL} bg-sky-50 text-sky-700 border-sky-200`}>{TIER_PILL.connected}</span>}
-          {m.tier === "managed" && <span className={`${PILL} bg-violet-50 text-violet-700 border-violet-200`}>{TIER_PILL.managed}</span>}
+          {m.tier === "connected" && <span className={`${PILL} bg-muted text-foreground border-border`}>{TIER_PILL.connected}</span>}
+          {m.tier === "managed" && <span className={`${PILL} bg-card text-muted-foreground border-border`}>{TIER_PILL.managed}</span>}
           {m.priceLine && m.priceLine !== "Free" && (
-            <span className={`${PILL} bg-emerald-50 text-emerald-700 border-emerald-200`}>{m.priceLine}</span>
+            <span className={`${PILL} bg-open/10 text-open border-open/40`}>{m.priceLine}</span>
           )}
-          {poolLine && <span className={`${PILL} bg-teal-deep/5 text-teal-deep border-teal-deep/20`}>{poolLine}</span>}
+          {poolLine && <span className={`${PILL} bg-notice/10 text-notice border-notice/40`}>{poolLine}</span>}
         </div>
         {m.withdrawn && (
           <p className="text-xs text-orange-700 mt-2"><Trans context="ModuleCard, p">No longer offered since {m.withdrawn.since}.</Trans></p>
