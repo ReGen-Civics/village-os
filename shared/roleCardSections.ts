@@ -185,7 +185,7 @@ export const SECTION_PROBLEMS = {
   applyBy: "Write the last day to apply as a real date, year-month-day, like 2026-11-30.",
   relatedList: "The related roles are a list of role ids.",
   relatedUnknown: (id: string) => `There is no role with the id ${id}.`,
-  relatedSelf: "A role is not one of its own related roles.",
+  relatedSelf: "A role cannot name itself as a related role.",
   relatedDuplicate: (id: string) => `The related roles name ${id} twice.`,
   relatedTooMany: `At most ${SECTION_LIMITS.relatedRoles} related roles.`,
 } as const;
