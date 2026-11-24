@@ -13,7 +13,9 @@
  *   - the recent row is the asker's own counterparts, newest first;
  *   - a request link to your own handle is refused, an org link says ventures
  *     cannot take payments yet, and an unknown handle finds nobody;
- *   - the summary reads what the member holds and what a credit is worth.
+ *   - the summary reads what the member holds and what a credit is worth;
+ *   - a venture is a payee only while `ledger.org_accounts_open` is on, by
+ *     search, by link and in the recent row, and never to a member who runs it.
  *
  * Every name is fake.
  */
@@ -23,9 +25,12 @@ import type { Pool } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { allTokens, loadTokenRegistry, memberAccount, MINT_FAUCET, postTransfer } from "../lib/ledger";
+import { openOrgAccount, sendToOrg } from "../lib/orgAccounts";
+import { setVariable } from "../lib/variables";
+import { ORG_ACCOUNTS_OPEN_KEY } from "../../shared/orgAccounts";
 import { usersRepo } from "../repos/users";
 import { PAY_SEARCH_LIMIT } from "../../shared/payLink";
-import { MEMBERS_SEARCH, NOBODY_THERE, ORG_NOT_YET, OWN_LINK, register, searchTerm } from "./pay";
+import { MEMBERS_SEARCH, NO_VENTURE_THERE, NOBODY_THERE, ORG_NOT_YET, OWN_LINK, OWN_VENTURE, register, searchTerm, ventureMatches } from "./pay";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[pay routes] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -84,6 +89,7 @@ describe.skipIf(!configured)("/api/pay reads", () => {
   });
 
   afterAll(async () => {
+    await setVariable(pool, ORG_ACCOUNTS_OPEN_KEY, "false").catch(() => undefined);
     await new Promise<void>((resolve) => server?.close(() => resolve()));
     await pool?.end();
     await db?.drop();
@@ -179,5 +185,56 @@ describe.skipIf(!configured)("/api/pay reads", () => {
     const row = summary.tokens.find((t: any) => t.slug === slug);
     if (row) expect(row.balance).toBe(4800);
     expect(summary.villageCurrency).toBe("USD");
+  });
+  it("offers a venture only while venture payments are open, and never to a member who runs it", async () => {
+    await pool.query("INSERT INTO org_roles (id, name, active, is_example) VALUES ('garden-coop', 'Garden Coop', 1, 0)"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      "INSERT INTO org_role_assignments (id, org_role_id, holder_kind, user_id, holder_key, is_example) VALUES ('as-garden-dan', 'garden-coop', 'member', 'u-dan', 'mem:u-dan', 0)",
+    );
+    const opened = await openOrgAccount(pool, { orgRoleId: "garden-coop", label: "Garden Coop", openedBy: null });
+    expect(opened.ok).toBe(true);
+    const venture = { kind: "org", id: "garden-coop", handle: null, name: "Garden Coop" };
+
+    // Off: no venture anywhere, and its link says ventures cannot take payments yet.
+    await setVariable(pool, ORG_ACCOUNTS_OPEN_KEY, "false");
+    expect(ids((await get("/api/pay/people?q=gar")).body)).toEqual([]);
+    expect(await get(`/api/pay/resolve?to=${encodeURIComponent("org:garden-coop")}`)).toEqual({ status: 404, body: { error: ORG_NOT_YET } });
+
+    // On: found by a word of its name, opened by its link, and the asker's other answers unchanged.
+    await setVariable(pool, ORG_ACCOUNTS_OPEN_KEY, "true");
+    expect((await get("/api/pay/people?q=coop")).body.people).toEqual([venture]);
+    expect((await get("/api/pay/people?q=oop")).body.people).toEqual([]);
+    expect((await get(`/api/pay/resolve?to=${encodeURIComponent("org:Garden-Coop")}`)).body).toEqual({ payee: venture });
+    expect(await get(`/api/pay/resolve?to=${encodeURIComponent("org:no-such")}`)).toEqual({ status: 404, body: { error: NO_VENTURE_THERE } });
+
+    // Somebody not yet a member finds ventures and no members.
+    state.viewer = "u-new";
+    const newcomer = await get("/api/pay/people?q=gar");
+    expect(newcomer.status).toBe(200);
+    expect(ids(newcomer.body)).toEqual(["garden-coop"]);
+    expect(ids((await get("/api/pay/people?q=ana")).body)).toEqual([]);
+
+    // The member who runs it is never offered it.
+    state.viewer = "u-dan";
+    expect(ids((await get("/api/pay/people?q=garden")).body)).toEqual([]);
+    expect(await get(`/api/pay/resolve?to=${encodeURIComponent("org:garden-coop")}`)).toEqual({ status: 409, body: { error: OWN_VENTURE } });
+
+    // A payment to it puts it at the front of the payer's recent row; switched off, it leaves the row.
+    state.viewer = "u-ora";
+    const credit = allTokens().find((t) => t.kind === "credit" && t.governance === "platform")!;
+    await pool.query("UPDATE tokens SET transferable = 1 WHERE slug = ?", [credit.slug]); // module-review-ok: fixture SQL: the village's own switch that lets members send credits
+    await loadTokenRegistry(pool);
+    await new Promise((r) => setTimeout(r, 1100));
+    const paid = await sendToOrg(pool, { fromUserId: "u-ora", orgRoleId: "garden-coop", tokenType: credit.slug, amountMinor: 100, nonce: "pay-test-org" });
+    expect(paid.ok, paid.ok ? "" : paid.error).toBe(true);
+    expect(ids((await get("/api/pay/recent")).body)[0]).toBe("garden-coop");
+    await setVariable(pool, ORG_ACCOUNTS_OPEN_KEY, "false");
+    expect(ids((await get("/api/pay/recent")).body)).not.toContain("garden-coop");
+  });
+
+  it("matches a venture by a word of its name", () => {
+    expect(ventureMatches("Garden Coop", "co")).toBe(true);
+    expect(ventureMatches("Garden Coop", "gar")).toBe(true);
+    expect(ventureMatches("Garden Coop", "rden")).toBe(false);
   });
 });

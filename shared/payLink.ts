@@ -64,8 +64,10 @@ export interface PayRequest {
 export const PAY_NOTE_MAX = 180;
 /** Fewer letters than this match nobody: a search is never a way to list the village. */
 export const PAY_SEARCH_MIN = 2;
-/** The most a search answers with, however many match. */
+/** The most members a search answers with, however many match. */
 export const PAY_SEARCH_LIMIT = 6;
+/** The most ventures a search answers with, beside the members. */
+export const PAY_SEARCH_ORG_LIMIT = 3;
 /** How many recent people the row shows. */
 export const PAY_RECENT_LIMIT = 8;
 /** The largest amount one payment may carry, in credits. */

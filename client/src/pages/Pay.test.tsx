@@ -31,6 +31,7 @@ vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => ({ user: { id:
 vi.mock("@/lib/workPay", () => ({ chosenDisplayCurrency: () => "", useDisplayRates: () => ({ base: "EUR", asOf: null, rates: { USD: 1.1, CRC: 560 } }) }));
 
 const ana = { kind: "member", id: "usr-ana", handle: "ana", name: "Ana Mora" };
+const garden = { kind: "org", id: "garden-coop", handle: null, name: "Garden Coop" };
 const summary = {
   me: { kind: "member", id: "usr-me", handle: "ora", name: "Ora Vale" },
   tokens: [{ slug: "credits", name: "Village Credits", decimals: 2, balance: 10000, face: { currency: "USD", minorPerToken: 100 } }],
@@ -45,14 +46,15 @@ vi.mock("@/lib/gameApi", () => ({
     calls.list.push({ url, body: init?.body ? JSON.parse(String(init.body)) : null });
     if (url === "/api/pay") return json(summary);
     if (url === "/api/pay/recent") return json({ people: [] });
-    if (url.startsWith("/api/pay/people")) return json({ people: [ana] });
+    if (url.startsWith("/api/pay/people")) return json({ people: url.includes("q=gar") ? [garden] : [ana] });
     if (url.startsWith("/api/pay/resolve")) return json({ payee: ana });
     if (url === "/api/wallet/send") {
       if (calls.sendFails > 0) {
         calls.sendFails--;
         throw new TypeError("network down");
       }
-      return json({ success: true, sent: 2550, tokenName: "Village Credits", to: "Ana Mora", balance: 7450, balanceDecimals: 2 });
+      const body = init?.body ? JSON.parse(String(init.body)) : {};
+      return json({ success: true, sent: body.amount, tokenName: "Village Credits", to: body.toOrg ? "Garden Coop" : "Ana Mora", balance: 10000 - body.amount, balanceDecimals: 2 });
     }
     return json({}, 404);
   }),
@@ -143,5 +145,19 @@ describe("/pay", () => {
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/cash out|cash-out|withdraw|redeem/i);
     expect(text).not.toMatch(/expire|expiry/i);
+  });
+  it("pays a venture the server offers through the venture door, never as a member", async () => {
+    view();
+    fireEvent.change(await screen.findByPlaceholderText("@handle or name"), { target: { value: "gar" } });
+    const pick = await screen.findByRole("button", { name: /Garden Coop/ });
+    expect(within(pick).getByText("Venture")).toBeTruthy();
+    fireEvent.click(pick);
+    const pad = await screen.findByRole("group", { name: "Amount pad" });
+    for (const k of ["4", "0"]) fireEvent.click(within(pad).getByRole("button", { name: k }));
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    fireEvent.click(await screen.findByRole("button", { name: /Send 40 Village Credits to Garden Coop/ }));
+    await screen.findByText("Paid to Garden Coop");
+    expect(sends()[0].body).toMatchObject({ toOrg: "garden-coop", tokenType: "credits", amount: 4000 });
+    expect(sends()[0].body).not.toHaveProperty("to");
   });
 });

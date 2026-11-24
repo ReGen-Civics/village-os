@@ -31,12 +31,16 @@
  *     profile, and the id the send route takes: no address, no avatar;
  *   - `SEARCHES_PER_HOUR` per member, so walking the alphabet takes days.
  *
- * ── ORGS ───────────────────────────────────────────────────────────────────
+ * ── VENTURES ───────────────────────────────────────────────────────────────
  *
- * Ventures (org accounts) are credits lane 1's. This file returns members
- * only, and a request link naming an org answers that it cannot be paid here
- * yet; the page draws whatever kinds it is handed, so orgs appear when a
- * server starts returning them.
+ * A venture's account is credits lane 1's (server/lib/orgAccounts.ts). A
+ * venture appears here as a payee only while `ledger.org_accounts_open` is
+ * on, and never to a member who runs it (a member never pays a venture they
+ * run). Its name is all that is shown, the same names-only list
+ * `GET /api/org-accounts` already answers any signed-in member, so ventures
+ * are searchable by anybody signed in, member or not yet. The payment itself
+ * goes to `POST /api/wallet/send { toOrg }`, lane 1's door. With the dial off
+ * a venture's link answers that ventures cannot take payments yet.
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
@@ -44,16 +48,19 @@ import { isAcceptedMember } from "../lib/applicantAccount";
 import { departedRecipient } from "../lib/departed";
 import { isExampleUser } from "../lib/examples";
 import { latestPrice } from "../lib/exchange";
+import { orgAccountsOpen, orgPayees } from "../lib/orgAccounts";
 import { latestRates } from "../lib/fxRates";
 import { balancesFor, memberAccount } from "../lib/ledger";
 import { userIdForHandle } from "../lib/profile";
 import { redemptionCurrencies, redemptionRateSource, resolveRedemptionRate } from "../lib/redemption";
 import { sendableTokens } from "../lib/spending";
 import { numberVar } from "../lib/variables";
+import { liveSeatedRoleIds } from "../repos/orgAccounts";
 import { recentSendCounterpartRows } from "../repos/tokenLedger";
 import { payeeCandidateIds } from "../repos/users";
 import { convertMinor, crossRate } from "../../shared/money";
-import { PAY_RECENT_LIMIT, PAY_SEARCH_LIMIT, PAY_SEARCH_MIN, normaliseHandle, parseTarget, type Payee } from "../../shared/payLink";
+import { ORG_SEND_SOURCE, orgRoleIdFromAccount } from "../../shared/orgAccounts";
+import { PAY_RECENT_LIMIT, PAY_SEARCH_LIMIT, PAY_SEARCH_MIN, PAY_SEARCH_ORG_LIMIT, normaliseHandle, parseTarget, type Payee } from "../../shared/payLink";
 import { EXCHANGE_PRICE_CURRENCY } from "./redemption";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "members" | "overLimit" | "projectCurrency">;
@@ -70,6 +77,10 @@ const CANDIDATES = 24;
 export const NOBODY_THERE = "Nobody here has that handle. Check the link with the person who sent it.";
 export const OWN_LINK = "That is your own request link. Share it with the person paying you.";
 export const ORG_NOT_YET = "Ventures cannot take payments here yet.";
+export const NO_VENTURE_THERE = "No venture here takes payments by that link. Check it with the person who sent it.";
+export const OWN_VENTURE = "That is a venture you run. Share its link with the person paying it.";
+/** The ledger source a member-to-member send is written under (`POST /api/wallet/send`). */
+const MEMBER_SEND_SOURCE = "member_send";
 export const MEMBERS_SEARCH = "Searching for people is for members. Ask the person for their request link or QR code.";
 
 /** A member as the page may show them. */
@@ -81,6 +92,25 @@ export function payeeOf(m: { id: unknown; handle?: unknown; name?: unknown }): P
 /** Somebody a payment may go to at all: present, not a demonstration, not the asker. */
 function payable(m: any, askerId: string): boolean {
   return !!m && String(m.id) !== askerId && !departedRecipient(m) && !isExampleUser(m);
+}
+
+/**
+ * The ventures this member may pay, as payees, or none while the village has
+ * venture payments switched off. Names only (lane 1's `orgPayees`), and never
+ * a venture the member runs.
+ */
+async function ventureList(pool: ReturnType<Deps["getPool"]>, askerId: string): Promise<Payee[]> {
+  if (!orgAccountsOpen()) return [];
+  const mine = new Set(await liveSeatedRoleIds(pool, askerId));
+  return (await orgPayees(pool))
+    .filter((v) => !mine.has(v.orgRoleId))
+    .map((v) => ({ kind: "org" as const, id: v.orgRoleId, handle: null, name: v.label }));
+}
+
+/** Whether a venture's name has a word starting with what was typed. */
+export function ventureMatches(name: string, q: string): boolean {
+  const n = String(name ?? "").toLowerCase();
+  return n.startsWith(q) || n.includes(` ${q}`);
 }
 
 /** What a search box held, as the search reads it: no @, lowercase, short. Null when too short to ask. */
@@ -162,29 +192,42 @@ export function register(app: Express, deps: Deps): void {
     const q = searchTerm(req.query.q);
     if (!q) return res.json({ people: [] });
     const pool = getPool();
-    if (!(await isAcceptedMember(me, pool))) return res.status(403).json({ error: MEMBERS_SEARCH });
+    const member = await isAcceptedMember(me, pool);
+    // Somebody not yet a member may still find a venture, whose name is public to anyone signed in.
+    if (!member && !orgAccountsOpen()) return res.status(403).json({ error: MEMBERS_SEARCH });
     if (await overLimit(`pay-search:${me.id}`, SEARCHES_PER_HOUR, HOUR_MS)) {
       return res.status(429).json({ error: "That is a lot of searching. Try again in a little while, or ask for their link." });
     }
     const people: Payee[] = [];
-    for (const id of await payeeCandidateIds(pool, q, String(me.id), CANDIDATES)) {
-      if (people.length >= PAY_SEARCH_LIMIT) break;
-      const m = await members.byId(id);
-      if (!payable(m, String(me.id)) || !(await isAcceptedMember(m, pool))) continue;
-      people.push(payeeOf(m!));
+    if (member) {
+      for (const id of await payeeCandidateIds(pool, q, String(me.id), CANDIDATES)) {
+        if (people.length >= PAY_SEARCH_LIMIT) break;
+        const m = await members.byId(id);
+        if (!payable(m, String(me.id)) || !(await isAcceptedMember(m, pool))) continue;
+        people.push(payeeOf(m!));
+      }
     }
-    res.json({ people });
+    const ventures = (await ventureList(pool, String(me.id))).filter((v) => ventureMatches(v.name, q)).slice(0, PAY_SEARCH_ORG_LIMIT);
+    res.json({ people: [...people, ...ventures] });
   });
 
   /** The people this member last sent to or received from, newest first. Never anybody else's. */
   app.get("/api/pay/recent", async (req, res) => {
     const me = await authedUser(req);
     if (!me) return res.status(401).json({ error: "auth_required" });
-    const rows = await recentSendCounterpartRows(getPool(), memberAccount(me.id), PAY_RECENT_LIMIT * 2);
+    const pool = getPool();
+    const rows = await recentSendCounterpartRows(pool, memberAccount(me.id), [MEMBER_SEND_SOURCE, ORG_SEND_SOURCE], PAY_RECENT_LIMIT * 2);
+    // A venture comes back only while venture payments are open, and only one the member may still pay.
+    const ventures = new Map((await ventureList(pool, String(me.id))).map((v) => [v.id, v]));
     const people: Payee[] = [];
     for (const r of rows) {
       if (people.length >= PAY_RECENT_LIMIT) break;
       const acct = String(r.counter_account ?? "");
+      const venture = ventures.get(orgRoleIdFromAccount(acct) ?? "");
+      if (venture) {
+        people.push(venture);
+        continue;
+      }
       if (!acct.startsWith(memberAccount(""))) continue;
       const m = await members.byId(acct.slice(memberAccount("").length));
       if (payable(m, String(me.id))) people.push(payeeOf(m!));
@@ -205,7 +248,15 @@ export function register(app: Express, deps: Deps): void {
     }
     const target = parseTarget(req.query.to);
     if (!target) return res.status(400).json({ error: NOBODY_THERE });
-    if (target.kind === "org") return res.status(404).json({ error: ORG_NOT_YET });
+    if (target.kind === "org") {
+      if (!orgAccountsOpen()) return res.status(404).json({ error: ORG_NOT_YET });
+      const ref = target.ref.toLowerCase();
+      if ((await liveSeatedRoleIds(getPool(), String(me.id))).some((id) => id.toLowerCase() === ref)) {
+        return res.status(409).json({ error: OWN_VENTURE });
+      }
+      const venture = (await ventureList(getPool(), String(me.id))).find((v) => v.id.toLowerCase() === ref);
+      return venture ? res.json({ payee: venture }) : res.status(404).json({ error: NO_VENTURE_THERE });
+    }
     const id = await userIdForHandle(getPool(), target.ref);
     if (id && id === String(me.id)) return res.status(409).json({ error: OWN_LINK });
     const m = id ? await members.byId(id) : null;
