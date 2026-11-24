@@ -92,6 +92,11 @@ export interface GoogleAuthDeps {
   /** A sign-in just ended this member's unproved password: tell them, by letter. Must never reject. */
   onPasswordEnded(member: any): void;
   /**
+   * The account an EXTRA address belongs to, and the address as it was proved
+   * (0430). Optional: without it, only the main address matches.
+   */
+  attachedAddress?(email: string): Promise<{ userId: string; email: string } | null>;
+  /**
    * A brand-new member arrived through Google. The host records the join AND
    * greets whoever greets (`memberJoined` in server/lib/arrival.ts), exactly as
    * the email door does. Called without waiting, so it must never reject.
@@ -432,8 +437,23 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
     // it would end that person's unproved password and hand their account to
     // whoever holds the lookalike. Creating instead would hit the same unique
     // key, so it is refused outright.
-    if (byEmail && !sameAddress(byEmail.email, identity.email)) {
+    //
+    // AN EXTRA ADDRESS THE MEMBER PROVED (0430) is the same mailbox when it is
+    // the very address Google verified, compared the same strict way. Attaching
+    // one needs a proved main address, so the account it finds holds no
+    // password nobody proved; asked anyway, because ending a password from a
+    // door its owner did not use would be a surprise nobody could trace.
+    const viaExtra =
+      byEmail && !sameAddress(byEmail.email, identity.email) && deps.attachedAddress
+        ? await deps.attachedAddress(identity.email).catch(() => null)
+        : null;
+    const extraMatches = !!viaExtra && viaExtra.userId === byEmail?.id && sameAddress(viaExtra.email, identity.email);
+    if (byEmail && !sameAddress(byEmail.email, identity.email) && !extraMatches) {
       console.warn(`[oauth] Google sign-in refused for ${identity.sub}: its address only collates equal to ${byEmail.id}'s`);
+      return failTo(res, "account_unavailable");
+    }
+    if (extraMatches && holdsUnprovenPassword(byEmail)) {
+      console.warn(`[oauth] Google sign-in refused for ${identity.sub}: an extra address of ${byEmail.id}, whose password was never proved`);
       return failTo(res, "account_unavailable");
     }
 

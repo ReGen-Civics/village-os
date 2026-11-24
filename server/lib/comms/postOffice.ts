@@ -94,6 +94,8 @@ import { SKIP_REASONS, type EmailKind, type MessageStatus, type SkipReason } fro
 import type { ModuleLifecycle } from "../../../shared/modules";
 import { lostConcurrencyRace } from "../../db/concurrency";
 import { upsertContact } from "../../repos/commsContacts";
+import { deliveryFactsOf } from "../../repos/memberEmails";
+import { deliveryAddresses } from "../../../shared/memberEmails";
 import {
   cappedSendsInWindow,
   claimMessage,
@@ -480,6 +482,54 @@ async function sendRow(deps: PostOfficeDeps, row: OutboundRow, rehearse: string[
  * `duplicate` with the first row's id for a key already used.
  */
 export async function post(deps: PostOfficeDeps, email: OutgoingEmail): Promise<PostResult> {
+  const addresses = await memberDelivery(deps, email);
+  if (addresses.length === 1 && addresses[0] === email.to?.email) return postOne(deps, email);
+  let best: PostResult | null = null;
+  for (let i = 0; i < addresses.length; i++) {
+    const r = await postOne(deps, {
+      ...email,
+      // The first address keeps the caller's key, so a retried post is still one email; a second needs its own.
+      idempotencyKey: i === 0 ? email.idempotencyKey : `${email.idempotencyKey}:also`,
+      to: { ...email.to, email: addresses[i] },
+    });
+    if (!best || (!WENT.has(best.status) && WENT.has(r.status))) best = r;
+  }
+  return best as PostResult;
+}
+
+/** What a caller reads as "the member will get it", for the answer `post()` gives when one email became two. */
+const WENT: ReadonlySet<string> = new Set(["sent", "queued", "rehearsed", "duplicate"]);
+
+/**
+ * WHERE ONE MEMBER'S EMAIL GOES (0430, shared/memberEmails.ts). The one place
+ * the delivery choice applies, because every email passes through here.
+ *
+ * Only when the email names a member (`to.userId`) and is addressed to that
+ * member's MAIN address: a caller that wrote to a particular address on
+ * purpose (a test send, a reply to a form) is left alone. Never for essential
+ * mail, which goes to the address that asked for it: a sign-in code, a reset
+ * link, the code that proves a new address.
+ *
+ * A fault reading the choice never stops an email: it goes where it was
+ * addressed, which is where it always went.
+ */
+async function memberDelivery(deps: PostOfficeDeps, email: OutgoingEmail): Promise<string[]> {
+  const given = email.to?.email;
+  const userId = email.to?.userId;
+  if (!userId || email.kind === "essential" || !given) return [given];
+  try {
+    const facts = await deliveryFactsOf(deps.getPool(), userId);
+    if (!facts || emailKeyOf(facts.main) !== emailKeyOf(given)) return [given];
+    const to = deliveryAddresses(facts);
+    return to.length === 1 && emailKeyOf(to[0]) === emailKeyOf(given) ? [given] : to;
+  } catch (err) {
+    console.error(`[comms] the delivery choice for ${userId} could not be read, so the email goes to the address it named`, err);
+    return [given];
+  }
+}
+
+/** Record one email to one address and, when it is urgent and may go now, send it now. */
+async function postOne(deps: PostOfficeDeps, email: OutgoingEmail): Promise<PostResult> {
   const address = String(email.to?.email ?? "").trim();
   const emailKey = emailKeyOf(address);
   const bad = addressProblem(address) !== null;

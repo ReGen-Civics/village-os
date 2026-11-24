@@ -7,6 +7,270 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: removed"
+msgid "Address removed."
+msgstr "Dirección eliminada."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: d.pending.email
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code sent"
+msgid "We sent a code to {0}. Enter it below."
+msgstr "Enviamos un código a {0}. Escríbelo abajo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery needs extra"
+msgid "Add another address to choose it here."
+msgstr "Agrega otra dirección para poder elegirla aquí."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof sent"
+msgid "A confirmation email is on its way to your main address."
+msgstr "Un correo de confirmación va en camino a tu dirección principal."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: confirm remove"
+msgid "Remove {email} from your account? You will no longer be able to sign in with it."
+msgstr "¿Quitar {email} de tu cuenta? Ya no podrás iniciar sesión con ella."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: the main address label"
+msgid "Main"
+msgstr "Principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "Main address only"
+msgstr "Solo la dirección principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: network failure"
+msgid "That did not reach the village. Check your connection and try again."
+msgstr "No llegó a la aldea. Revisa tu conexión e intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Send a confirmation email"
+msgstr "Enviar un correo de confirmación"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: main state"
+msgid "(main, not confirmed yet)"
+msgstr "(principal, aún sin confirmar)"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "My main address only"
+msgstr "Solo mi dirección principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Make main"
+msgstr "Hacer principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: add label"
+msgid "Add an email address"
+msgstr "Agregar una dirección de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: generic failure"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code not sent"
+msgid "The code could not be sent from this village right now. Try again later, or ask a steward to check the email settings."
+msgstr "No se pudo enviar el código desde esta aldea en este momento. Intenta más tarde, o pide a un guardián que revise la configuración de correo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "My other address only"
+msgstr "Solo mi otra dirección"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails"
+msgid "Loading..."
+msgstr "Cargando..."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof not sent"
+msgid "The village could not send the email just now. Try again later."
+msgstr "La aldea no pudo enviar el correo en este momento. Intenta más tarde."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery saved"
+msgid "Saved. Your email will go where you chose."
+msgstr "Guardado. Tu correo irá adonde elegiste."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: heading"
+msgid "Your email addresses"
+msgstr "Tus direcciones de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery essential"
+msgid "Sign-in codes and password links always go to the address that asked for them."
+msgstr "Los códigos de inicio de sesión y los enlaces de contraseña siempre van a la dirección que los pidió."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery legend"
+msgid "Where your email goes"
+msgstr "Adónde va tu correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: goesTo.join(", ")
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery answer"
+msgid "Village email goes to {0}."
+msgstr "El correo de la aldea va a {0}."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Send a code"
+msgstr "Enviar un código"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: lede"
+msgid "Sign in with any address on this list. Add another one, such as a village address beside your personal one, and choose where your email goes."
+msgstr "Inicia sesión con cualquier dirección de esta lista. Agrega otra, como una dirección de la aldea junto a la personal, y elige adónde va tu correo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: summary"
+msgid "Email addresses"
+msgstr "Direcciones de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: new Date(e.verifiedAt).toLocaleDateString()
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: extra state"
+msgid "(confirmed {0})"
+msgstr "(confirmada el {0})"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: no admin write"
+msgid "Only the member can add an address, by entering the code sent to it."
+msgstr "Solo la persona puede agregar una dirección, escribiendo el código que se le envió."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code hint"
+msgid "The code works for 15 minutes. To send a new one, add the address again."
+msgstr "El código sirve por 15 minutos. Para recibir uno nuevo, agrega la dirección otra vez."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "Both addresses"
+msgstr "Ambas direcciones"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: which other address"
+msgid "The other address is"
+msgstr "La otra dirección es"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: data.pending.email
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code label"
+msgid "Enter the code we sent to {0}"
+msgstr "Escribe el código que enviamos a {0}"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: deliveryWords[data.delivery]
+#. placeholder {1}: data.deliversTo.join(", ")
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery line"
+msgid "Email goes to: {0} ({1})"
+msgstr "El correo va a: {0} ({1})"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails"
+msgid "The addresses could not be read. Try again."
+msgstr "No se pudieron leer las direcciones. Intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "Both addresses"
+msgstr "Ambas direcciones"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: attached"
+msgid "Address added. You can sign in with it now."
+msgstr "Dirección agregada. Ya puedes iniciar sesión con ella."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof already"
+msgid "Your main address is already confirmed. Reload the page to add another."
+msgstr "Tu dirección principal ya está confirmada. Recarga la página para agregar otra."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: main unproved"
+msgid "Confirm your main address before adding another. Open the confirmation email we sent it, or send a new one here."
+msgstr "Confirma tu dirección principal antes de agregar otra. Abre el correo de confirmación que le enviamos, o envía uno nuevo aquí."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Confirm the code"
+msgstr "Confirmar el código"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "The other address only"
+msgstr "Solo la otra dirección"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: main changed"
+msgid "{email} is now your main address."
+msgstr "{email} ahora es tu dirección principal."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: main state"
+msgid "(main, confirmed)"
+msgstr "(principal, confirmada)"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."

@@ -4,6 +4,7 @@ import GameDashboard from "@/components/GameDashboard";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
 import NotifyPrefsPanel from "@/components/NotifyPrefsPanel";
+import AccountEmailsPanel from "@/components/AccountEmailsPanel";
 import YourAgentPanel from "@/components/YourAgentPanel";
 import ProfileSheet from "@/components/ProfileSheet";
 import ProfileHero from "@/components/ProfileHero";
@@ -877,6 +878,11 @@ export default function Profile() {
               {/* INVITE SOMEBODY. The hero's "Invite a friend" lands here. */}
               <div id="invite" className="scroll-mt-28">
                 <InvitePanel />
+              </div>
+
+              {/* One account, more than one address, and where the mail goes (0430). */}
+              <div id="email-addresses" className="scroll-mt-28">
+                <AccountEmailsPanel />
               </div>
 
               {/* S16/S18: notification cadence + data rights */}
