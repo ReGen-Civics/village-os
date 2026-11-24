@@ -8,11 +8,6 @@ msgstr ""
 "Language: es\n"
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/ProsperityJourney.tsx
-msgctxt "prosperity path ticked off"
-msgid "{walkedCount} of {stepCount} steps completed"
-msgstr "{walkedCount} de {stepCount} pasos completados"
-
 #: client/src/pages/Powers.tsx
 msgctxt "powers page eyebrow"
 msgid "How the village is held"
@@ -12178,6 +12173,12 @@ msgstr ""
 msgctxt "approval inbox"
 msgid "Approve {count} selected"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ProsperityJourney.tsx
+msgctxt "prosperity path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team view: a list of roles"
