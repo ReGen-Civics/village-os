@@ -29,12 +29,13 @@ import {
   attributionLine,
   type PlacePhoto,
 } from "@shared/placePhotos";
+import { LINK } from "@/components/journey/look";
 
 /** Every control clears the 44px floor. */
 export const TAP = "min-h-[44px]";
 export const BTN =
   `${TAP} inline-flex items-center gap-1.5 px-3 rounded-lg border border-border text-sm font-medium ` +
-  "hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-deep";
+  "hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 export const jsonHeaders = (): Record<string, string> => {
   const t = authToken();
@@ -132,7 +133,7 @@ export default function PhotoCard({
           <p className="text-xs">
             <Link
               href={`/places/${encodeURIComponent(photo.structureKey)}`}
-              className="text-teal-deep underline"
+              className={LINK}
               aria-label={`Every photograph of ${photo.structureKey}`}
             >
               {photo.structureKey}
@@ -140,12 +141,12 @@ export default function PhotoCard({
           </p>
         )}
         {photo.heroAt && (
-          <p className="inline-flex items-center gap-1 text-xs font-semibold text-teal-deep">
+          <p className="inline-flex items-center gap-1 text-xs font-semibold text-notice">
             <Pin className="w-3 h-3" aria-hidden="true" /> This place leads with this one
           </p>
         )}
         {photo.hiddenAt && (
-          <p className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
+          <p className="inline-flex items-center gap-1 text-xs font-semibold text-notice">
             <EyeOff className="w-3 h-3" aria-hidden="true" /> Hidden{photo.hiddenReason ? `: ${photo.hiddenReason}` : ""}
           </p>
         )}
@@ -202,7 +203,7 @@ export default function PhotoCard({
               type="button"
               onClick={remove}
               disabled={busy}
-              className={`${BTN} text-red-700 border-red-200`}
+              className={`${BTN} text-destructive border-destructive/60`}
               aria-label={mine ? "Take down my photograph for good" : `Take down the photograph described as ${photo.altText} for good`}
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> {mine && !canCurate ? "Take mine down" : "Take down"}

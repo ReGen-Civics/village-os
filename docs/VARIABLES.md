@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 286 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 64 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 323 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 324 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-350 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 51 boolean, 37 choice, 73 text, 13 longtext.
+351 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 52 boolean, 37 choice, 73 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Each dial also says WHEN a change lands. 323 of them as soon as it is saved, and
 | Hidden map | 11 | 11 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
-| Language | 1 | 1 | 0 |
+| Language | 2 | 2 | 0 |
 
 ## Every dial by name
 
@@ -438,6 +438,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
 | How long a live session runs unless its opener says otherwise | `sessions.default_minutes` | Live Sessions | integer | `60` | the whole village |
 | Default language | `village.default_locale` | Language | choice | `en` | the whole village |
+| Offer Español | `village.offer_locale.es` | Language | boolean | `true` | the whole village |
 
 ## Membership
 
@@ -6050,7 +6051,7 @@ The length a new live session starts with when whoever opens it names none. The 
 
 ## Language
 
-1 dial. 1 for the whole village.
+2 dials. 2 for the whole village.
 
 ### Default language
 
@@ -6071,6 +6072,20 @@ What it may be set to:
 - `en` English.
 - `es` Español.
 
+### Offer Español
+
+Whether visitors and members can read this village in Español. Off removes it from the language picker; anyone who had chosen it reads the village's default language instead.
+
+| Fact | Value |
+| --- | --- |
+| Key | `village.offer_locale.es` |
+| Type | boolean, on or off |
+| Default | `true` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
 ## What this file is made from
 
 The generator reads these and fails loudly if any of them moves:
@@ -6089,6 +6104,7 @@ The generator reads these and fails loudly if any of them moves:
 - `shared/gameVariables.ts`
 - `shared/governanceEngine.ts`
 - `shared/governingPurpose.ts`
+- `shared/i18nLocales.ts`
 - `shared/mintCapWords.ts`
 - `shared/moonSettlement.ts`
 - `shared/needs.ts`
