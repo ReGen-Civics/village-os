@@ -19,7 +19,9 @@
  *
  * The three ratchets are pointed at a scratch baseline (`--baseline`), so the
  * committed ones are never touched. The auth guard reads the tree it is run in,
- * so it is run inside a two-file fixture.
+ * so it is run inside a two-file fixture. The image budget reads the tree its
+ * own file sits in, and the real one holds no image to weigh, so a copy of the
+ * real script is run inside a fixture holding one WebP.
  *
  * Run: node scripts/ratchet-gates-go-red.test.mjs
  */
@@ -42,22 +44,48 @@ let checked = 0;
 
 try {
   // ── The image budget ───────────────────────────────────────────────────
+  //
+  // In a fixture tree. The real client/public holds no raster image at all
+  // (its committed baseline is 0 bytes), so on the real tree there is no
+  // baseline "one byte under" to build, and this case used to stop at
+  // "measured nothing". The gate finds its tree from its own location, so the
+  // REAL script is copied into <fixture>/scripts/ and reads <fixture> as the
+  // repository: one WebP in client/public, named by one source file so the
+  // orphan check has nothing to say, and nothing else.
   {
     const script = "check-image-budget.mjs";
-    // One JSON line, then the human report, which this does not read.
-    const measured = JSON.parse(run(script, ["--json"]).out.split("\n").find((l) => l.trim().startsWith("{"))).total;
-    assert.ok(measured > 0, "the image budget measured nothing, so nothing below means anything");
+    const root = path.join(scratch, "image-tree");
+    fs.mkdirSync(path.join(root, "scripts"), { recursive: true });
+    fs.mkdirSync(path.join(root, "client", "public", "art"), { recursive: true });
+    fs.mkdirSync(path.join(root, "client", "src"), { recursive: true });
+    fs.copyFileSync(path.join(HERE, script), path.join(root, "scripts", script));
+    fs.writeFileSync(path.join(root, "client", "public", "art", "fixture-art.webp"), Buffer.alloc(2048, 1));
+    fs.writeFileSync(path.join(root, "client", "src", "art.ts"), `export const art = "/art/fixture-art.webp";\n`);
+    const runIn = (args) => {
+      const r = spawnSync(process.execPath, [path.join(root, "scripts", script), ...args], { encoding: "utf8" });
+      return { status: r.status, out: `${r.stdout}\n${r.stderr}` };
+    };
     const b = path.join(scratch, "image.json");
+    writeJson(b, { totalBytes: 0, files: 0, maxSingleBytes: 409600 });
+    // One JSON line, then the human report, which this does not read.
+    const json = JSON.parse(runIn(["--baseline", b, "--json"]).out.split("\n").find((l) => l.trim().startsWith("{")));
+    const measured = json.total;
+    assert.strictEqual(measured, 2048, `the image budget measured ${measured} bytes in a fixture holding one 2048-byte WebP`);
+    assert.deepStrictEqual([json.orphans, json.wrongFormat, json.dangling], [[], [], []], "the fixture tree is red for a reason other than its total");
     writeJson(b, { totalBytes: measured - 1, files: 0, maxSingleBytes: 409600 });
-    const over = run(script, ["--baseline", b]);
+    const over = runIn(["--baseline", b]);
     assert.strictEqual(over.status, 1, `${script} passed a tree one byte over its baseline:\n${over.out.slice(-600)}`);
     assert.match(over.out, /over the .* baseline/, `${script} failed without saying the total is over`);
-    const refused = run(script, ["--baseline", b, "--update-baseline"]);
+    const refused = runIn(["--baseline", b, "--update-baseline"]);
     assert.strictEqual(refused.status, 1, `${script} --update-baseline recorded a rise:\n${refused.out.slice(-600)}`);
     assert.strictEqual(readJson(b).totalBytes, measured - 1, `${script} --update-baseline wrote the rise it refused`);
     writeJson(b, { totalBytes: measured, files: 0, maxSingleBytes: 409600 });
-    const equal = run(script, ["--baseline", b]);
+    const equal = runIn(["--baseline", b]);
     assert.strictEqual(equal.status, 0, `${script} failed a tree that sits at its baseline:\n${equal.out.slice(-600)}`);
+    // And the real tree still passes its committed baseline, so the fixture is
+    // not standing in for a gate that is red at home.
+    const home = run(script);
+    assert.strictEqual(home.status, 0, `${script} is red on the real tree:\n${home.out.slice(-600)}`);
     checked++;
   }
 
