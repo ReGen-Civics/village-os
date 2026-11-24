@@ -13165,9 +13165,9 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
    * of them, and the client cannot derive a score from it without inventing
    * the denominator itself.
    */
-  app.get("/api/village/powers", async (req, res) => {
-    const user = await authedUser(req);
-    if (!user) return res.status(401).json({ error: "auth_required" });
+  app.get("/api/village/powers", async (_req, res) => {
+    // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
+    // which is all a row carries. Under `org.public_people` off, peopleLockMiddleware takes the first names out.
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
