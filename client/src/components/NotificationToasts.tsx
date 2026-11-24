@@ -43,6 +43,7 @@ import { celebrates, celebrationFor } from "@shared/notificationKinds";
 import { authToken } from "@/lib/gameApi";
 import { subscribeArrivals } from "@/lib/notificationStore";
 import type { FeedItem } from "@/lib/notificationFeed";
+import { useLingui } from "@lingui/react/macro";
 
 /** How long a moment sits there before it lets itself out. */
 export const TOAST_MS = 9000;
@@ -57,6 +58,7 @@ interface Moment {
 }
 
 export default function NotificationToasts() {
+  const { t } = useLingui();
   const [moments, setMoments] = useState<Moment[]>([]);
   const [announcement, setAnnouncement] = useState("");
   const [muted, setMuted] = useState<boolean | null>(null);
@@ -154,7 +156,7 @@ export default function NotificationToasts() {
               <button
                 type="button"
                 onClick={() => drop(m.id)}
-                aria-label="Dismiss this"
+                aria-label={t({ message: "Dismiss this", context: "NotificationToasts, aria-label" })}
                 className="shrink-0 inline-flex items-center justify-center min-h-11 min-w-11 -m-2 text-muted-foreground hover:text-foreground"
               >
                 <X aria-hidden="true" className="w-4 h-4" />

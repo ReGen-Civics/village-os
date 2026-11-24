@@ -18,7 +18,9 @@
  *      the people responsible for it, whether or not anything else is set up.
  *      Its own kind, `crash_alert`, to the admins and founders the village
  *      names in `ops.crash_alert_recipients`, or all of them when it names
- *      none (shared/crashAlerts.ts, wired in server/index.ts).
+ *      none. An address on that list with no account, such as a shared
+ *      operations inbox, gets the email alone (shared/crashAlerts.ts and
+ *      server/lib/crashAlerts.ts, wired in server/index.ts).
  *   2. OPTIONAL: a webhook (`ERROR_WEBHOOK_URL`) — Sentry's store endpoint, a
  *      Slack incoming webhook, Discord, or a fork's own collector.
  *

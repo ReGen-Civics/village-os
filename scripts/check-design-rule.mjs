@@ -85,6 +85,7 @@ const PAGES = [
   "client/src/pages/GratitudeWall.tsx",
   "client/src/pages/Feedback.tsx",
   "client/src/pages/Places.tsx",
+  "client/src/pages/Photographs.tsx",
   "client/src/pages/EmailPages.tsx",
   "client/src/pages/ProposeQuest.tsx",
   "client/src/pages/Crowdpool.tsx",
