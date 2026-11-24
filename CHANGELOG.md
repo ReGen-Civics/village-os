@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.62 (2026-11-24)
+
+### What changed for your village
+
+- **Applications speak in moon cycles everywhere.** The application's steps, its confirmation and update letters, the thank-you pages and the status page now say "within one moon cycle", from `org.reply_window_moons`. `org.applicant_reply_days` stays as a floor: a village that once promised a longer wait never promises a shorter one.
+- **More pages in the house look:** Seasonal Festivals, the steward and resident rights pages, Leaving Well, sign-in and password reset, Feedback and Places.
+- **The Google sign-in button reads clearly** on the night pages.
+- **The gratitude wall is offered to visitors** in the menu and footer, while the phone tab bar keeps Roles. Game Mechanics in the footer is for members.
+- **The season goals count** is shown to members only.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.61 (2026-11-24)
 
 ### What changed for your village
