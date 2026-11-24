@@ -273,6 +273,14 @@ describe("moduleCatalog", () => {
      *                           moves it by the dial or a vote (internal spec
      *                           i18n, US3).
      *
+     * Judged on 2026-11-24, by the Spanish lane:
+     *
+     *   village.offer_locale.<tag>  matched on "locale". One switch per
+     *                           language the platform carries, on by default,
+     *                           so a village offers every language the
+     *                           platform has unless it chooses fewer. Neutral
+     *                           under any sky; nothing about a place decides it.
+     *
      * Judged on 2026-11-24, by credits lane 2 (a venture redeems, 0420):
      *
      *   ledger.org_redemption_currencies, ledger.org_redemption_rate
@@ -313,6 +321,7 @@ describe("moduleCatalog", () => {
       "redemption.min_amount",
       "stay.autopay_post_hour",
       "village.default_locale",
+      "village.offer_locale.es",
     ]);
   });
 

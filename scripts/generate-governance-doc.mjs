@@ -89,6 +89,8 @@ export const MIGRATION_DIR = "drizzle";
  */
 export const SOURCES = [
   "shared/governanceEngine.ts",
+  // The default-language dial and the per-language offer switches read the language registry (24 Nov 2026).
+  "shared/i18nLocales.ts",
   "shared/ballotSubjects.ts",
   // The change-set cap: a village dial since 2026-11-06, bounded here.
   "shared/changeSetCap.ts",
