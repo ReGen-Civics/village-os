@@ -18041,6 +18041,11 @@ msgctxt "workbook cover title"
 msgid "Governance Canvas workbook"
 msgstr "Governance Canvas workbook"
 
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card fact"
+msgid "Nationality"
+msgstr "Nationality"
+
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "Choose one, or write your own."

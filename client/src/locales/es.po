@@ -11022,12 +11022,6 @@ msgctxt "founding card fact"
 msgid "Languages"
 msgstr "Idiomas"
 
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "founding card fact"
-msgid "Nationality"
-msgstr "Nacionalidad"
-
 #. placeholder {0}: selected.length
 #. placeholder {1}: changes.length
 #: client/src/pages/ProposedChanges.tsx
@@ -18540,6 +18534,12 @@ msgstr "Código fuente de {villageName}"
 msgctxt "workbook cover title"
 msgid "Governance Canvas workbook"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card fact"
+msgid "Nationality"
+msgstr "Nacionalidad"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
