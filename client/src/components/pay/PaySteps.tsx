@@ -8,10 +8,33 @@
  */
 import { useEffect } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ArrowLeft, Delete, ScanLine } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { PAY_NOTE_MAX, PAYEE_KINDS, type Payee, type PayeeKind } from "@shared/payLink";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, QUIET, RING, STATEMENT, TILE } from "@/components/journey/look";
 import { amountProblem, creditsWords, initialsOf, moneyBeside, type PayToken } from "./payMoney";
+
+/*
+ * TWO GLYPHS DRAWN HERE, not imported from lucide-react. Every lucide icon is
+ * grouped into the "icons" chunk the first page loads (vite.config.ts), so a
+ * new icon used only on this lazy page would add its bytes to every visitor's
+ * first page. These two strokes cost the page a few hundred bytes instead.
+ */
+const GLYPH = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+function BackspaceGlyph({ className }: { className?: string }) {
+  return (
+    <svg {...GLYPH} className={className} aria-hidden="true">
+      <path d="M10 5h10a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H10l-7-7z" />
+      <path d="M17 9l-5 6M12 9l5 6" />
+    </svg>
+  );
+}
+function ScanGlyph({ className }: { className?: string }) {
+  return (
+    <svg {...GLYPH} className={className} aria-hidden="true">
+      <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" />
+    </svg>
+  );
+}
 
 /** What a money figure needs to be drawn. */
 export interface MoneyContext {
@@ -154,7 +177,7 @@ export function WhoStep({
         </div>
       ))}
       <button type="button" onClick={onScan} className={`${BTN_SECONDARY} w-full sm:w-auto`}>
-        <ScanLine className="h-4 w-4" aria-hidden="true" />
+        <ScanGlyph className="h-4 w-4" />
         {t({ context: "pay page, button", message: "Scan a code or open a link" })}
       </button>
     </div>
@@ -247,7 +270,7 @@ export function AmountStep({
             className="jw-btn flex min-h-12 items-center sm:min-h-14 justify-center rounded-xl border border-border bg-muted text-2xl font-semibold tabular-nums text-foreground hover:border-notice disabled:opacity-30"
             aria-label={k === "back" ? t({ context: "pay page, amount pad key", message: "Delete the last digit" }) : k === "." ? t({ context: "pay page, amount pad key", message: "Decimal point" }) : k}
           >
-            {k === "back" ? <Delete className="h-6 w-6" aria-hidden="true" /> : k}
+            {k === "back" ? <BackspaceGlyph className="h-6 w-6" /> : k}
           </button>
         ))}
       </div>

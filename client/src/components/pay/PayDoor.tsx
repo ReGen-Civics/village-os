@@ -12,12 +12,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
-import { QrCode as QrIcon, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { getFormattingLocale } from "@/i18n/i18n";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, H2, HINT } from "@/components/journey/look";
 import { creditsWords, type PaySummary } from "./payMoney";
+
+/** Drawn here, not from lucide-react, whose icons all ride on the first page (vite.config.ts "icons"). */
+function CodeGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3M21 14v.01M14 21h7v-4" />
+    </svg>
+  );
+}
 
 export default function PayDoor() {
   const { t } = useLingui();
@@ -63,7 +75,7 @@ export default function PayDoor() {
           {t({ context: "profile, door to the pay page", message: "Pay someone" })}
         </Link>
         <Link href="/pay?tab=receive" className={BTN_SECONDARY}>
-          <QrIcon className="h-4 w-4" aria-hidden="true" />
+          <CodeGlyph className="h-4 w-4" />
           {t({ context: "profile, door to the pay page", message: "Your code" })}
         </Link>
       </div>
