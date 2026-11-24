@@ -10,8 +10,8 @@
  *   - the status pill says the kind ("Open paid role", "Open role"), and the pay split shows as a thin bar with a
  *     one-line legend in place of the old "Open paid role ·" line (PaySplitMini.tsx); a volunteer role says so.
  *   - b2: circle, commitment and place on one line with their signs. The apply-by date left its small gold tile for a
- *     stamp (the lead, 24 Nov 2026, ApplyByStamp.tsx): a seal under "Read the card" from 1024px, and on the painting
- *     below that, both in the village's true gold (the dash gold, never `notice`, which a village may tint the colour
+ *     stamp (the lead, 24 Nov 2026, ApplyByStamp.tsx): a tilted seal under "Read the card" from 1024px, and a ribbon
+ *     across the painting's top edge below that, both in the village's true gold (the dash gold, never `notice`, which a village may tint the colour
  *     of its buttons).
  *   - b1: the related roles as wrapping chips (lineupParts.tsx).
  */
@@ -24,7 +24,7 @@ import type { PayShare } from "@shared/roleCardSections";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import { Domains, FillMeter, OpenPill, ToBeAdded } from "./lineupParts";
 import { pillKind, type ApplyByParts, type FrontKind } from "./frontWords";
-import { ApplyByRibbon, ApplyByStamp, stampLook } from "./ApplyByStamp";
+import { ApplyByRibbon, ApplyByStamp } from "./ApplyByStamp";
 import PaySplitMini from "./PaySplitMini";
 
 export interface FoundingRowProps {
@@ -79,18 +79,16 @@ export function FactsGrouped({ circle, commitment, where }: { circle: string | n
 
 export default function FoundingRow(p: FoundingRowProps) {
   const { t } = useLingui();
-  const look = stampLook();
   const frame = `rounded-2xl border-2 bg-card shadow-sm ${p.here && p.cardSlot ? "border-notice" : "border-notice/50"}`;
   return (
     <li className={`overflow-hidden ${frame}`} data-role-frame={p.id}>
       <div className={`grid sm:grid-cols-[13rem_minmax(0,1fr)] ${p.here ? "bg-notice/10" : ""}`}>
-        {/* Below 1024px the last day to apply rides with the painting: a ribbon across its top edge (above it, so the
-            whole subject stays in frame), or a seal on its bottom-right corner. */}
+        {/* Below 1024px the last day to apply rides with the painting: a ribbon across its top edge, above it, so the
+            whole subject stays in frame. */}
         <div className="flex flex-col border-b border-notice/30 sm:min-h-full sm:border-b-0 sm:border-r">
-          {p.applyBy && look.phone === "ribbon" && <ApplyByRibbon parts={p.applyBy} className="lg:hidden" />}
+          {p.applyBy && <ApplyByRibbon parts={p.applyBy} className="lg:hidden" />}
           <div className="relative aspect-[4/3] sm:aspect-auto sm:flex-1">
             <ArtImage portrait src={p.art} className="absolute inset-0" imgClassName="object-[50%_35%]" />
-            {p.applyBy && look.phone === "corner" && <ApplyByStamp parts={p.applyBy} tilt={look.desk === "tilt"} size="sm" className="absolute bottom-4 right-3 lg:hidden" />}
           </div>
         </div>
         <div className="grid min-w-0 gap-4 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
@@ -124,7 +122,7 @@ export default function FoundingRow(p: FoundingRowProps) {
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>
           {/* From 1024px the card's right column is empty under the button: the seal stands there. */}
-          {p.applyBy && <ApplyByStamp parts={p.applyBy} tilt={look.desk === "tilt"} className="hidden lg:block" />}
+          {p.applyBy && <ApplyByStamp parts={p.applyBy} className="hidden lg:block" />}
           </div>
         </div>
       </div>

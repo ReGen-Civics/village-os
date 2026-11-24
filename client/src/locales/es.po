@@ -13352,9 +13352,9 @@ msgstr "Transcripción de IA, escrita por {0}. La persona solicitante no la revi
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/roleCard/frontWords.ts
-msgctxt "role card front: the last day to apply"
-msgid "Apply by {when}"
-msgstr "Postúlate hasta el {when}"
+#~ msgctxt "role card front: the last day to apply"
+#~ msgid "Apply by {when}"
+#~ msgstr "Postúlate hasta el {when}"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season. Hours are an estimate: full time is roughly 30 to 40 hours a week, half time roughly 20."

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * THE CLOSED CARD'S FRONT (the lead, 23 Nov 2026): the status pill says the kind, the pay split is a mini bar with a
- * one-line legend and no amount (credits always, 0% said as not in use yet), the last day to apply on its gold tile,
+ * one-line legend and no amount (credits always, 0% said as not in use yet), the last day to apply as a seal and a ribbon,
  * and "Upcoming paid role" on an upcoming role. Unit checks of the words, then the team sheet and the upcoming cards.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,7 +9,7 @@ import { setupI18n } from "@lingui/core";
 import { cleanup, render } from "@testing-library/react";
 import { DEFAULT_SHARE_NAMES, type ShareNames } from "@shared/contributionToken";
 import { readApplyBy, readSections } from "@shared/roleCardSections";
-import { applyByParts, applyByWords, frontKind, payMixParts, payMixWords, pillKind, soonIsPaid, volunteerLine } from "./frontWords";
+import { applyByParts, frontKind, payMixParts, payMixWords, pillKind, soonIsPaid, volunteerLine } from "./frontWords";
 import FoundingTeam, { type FoundingRole } from "./FoundingTeam";
 import ComingSoonRoles from "./ComingSoonRoles";
 
@@ -55,14 +55,6 @@ describe("the front's words", () => {
     expect(payMixParts(i18n, shape, NAMES, { withCredits: true }).map((p) => [p.part, p.pct])).toEqual([["cash", 60], ["equity", 40], ["credits", 0]]);
     // CONTROL: a 0% cash share never shows, with or without the credits.
     expect(payMixParts(i18n, [{ label: "Cash", pct: 0 }, { label: "Equity", pct: 100 }], NAMES, { withCredits: true }).map((p) => p.part)).toEqual(["equity", "credits"]);
-  });
-
-  it("says the last day to apply until it has passed", () => {
-    expect(applyByWords(i18n, "2026-11-30", "2026-11-23")).toBe("Apply by Mon 30 Nov");
-    expect(applyByWords(i18n, "2026-11-30", "2026-11-30")).toBe("Apply by Mon 30 Nov");
-    expect(applyByWords(i18n, "2026-11-30", "2026-12-01")).toBeNull();
-    expect(applyByWords(i18n, "", "2026-11-23")).toBeNull();
-    expect(applyByWords(i18n, undefined, "2026-11-23")).toBeNull();
   });
 
   it("gives the stamp its pieces, and the days left only inside the last week", () => {
@@ -118,7 +110,7 @@ describe("the team sheet's front", () => {
     vi.unstubAllGlobals();
   });
 
-  it("draws the pill's kind, the mini split from the card's shape or the village's, and the apply-by tile", () => {
+  it("draws the pill's kind, the mini split from the card's shape or the village's, and the apply-by stamp", () => {
     const roles: FoundingRole[] = [
       { seat: { id: "a", name: "Role A", state: "open", archetypes: [], card: { track: "contractor" } }, circleName: "Anchor Circle", sections: { ...SECTIONS, payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }], applyBy: "2026-11-30" } },
       { seat: { id: "b", name: "Role B", state: "open", archetypes: [], card: { track: "contractor" } }, circleName: "Anchor Circle", sections: { ...SECTIONS } },

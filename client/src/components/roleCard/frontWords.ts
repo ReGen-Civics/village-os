@@ -4,7 +4,7 @@
  *   - the role's kind, said by its status pill: "Open paid role" for a paid track, "Open role" otherwise (`pillKind`).
  *   - its pay mix, never an amount, drawn as a thin split bar with a one-line legend ("60% cash · 40% Amora tokens",
  *     PaySplitMini.tsx), each share above zero only. A volunteer role says "Volunteer role" in its place.
- *   - the last day to apply, when the card names one (`sections.applyBy`): "Apply by Mon 30 Nov".
+ *   - the last day to apply, when the card names one (`sections.applyBy`): a seal and a ribbon (`applyByParts`).
  *   - an upcoming role is a paid role unless its track says otherwise: every upcoming role will be paid.
  *
  * The mix names only the shares above zero, read from the card's own shape or the village's default (`cardPay`),
@@ -95,26 +95,12 @@ export function todayDay(now: Date = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-/** "Apply by Mon 30 Nov", while the day has not passed; null for no day, a day that does not read, or one gone by. */
-export function applyByWords(i18n: I18n = appI18n, day: string | null | undefined, today: string = todayDay()): string | null {
-  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day) || day < today) return null;
-  let when: string;
-  try {
-    const parts = new Intl.DateTimeFormat(i18n.locale || "en", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).formatToParts(new Date(`${day}T00:00:00Z`));
-    const part = (type: string) => parts.find((p) => p.type === type)?.value.replace(/\.$/, "") ?? "";
-    when = [part("weekday"), part("day"), part("month")].filter(Boolean).join(" ");
-  } catch {
-    when = day;
-  }
-  return i18n._(msg({ message: `Apply by ${when}`, context: "role card front: the last day to apply" }));
-}
-
 /**
  * THE APPLY-BY STAMP AND RIBBON (the lead, 24 Nov 2026: "really obvious the cut off date to apply"): the last day to
  * apply in the pieces a seal draws ("APPLY BY", "30", "NOV", "MONDAY"), the ribbon's line ("Applications close Mon 30
  * Nov"), the whole sentence a screen reader hears ("Applications close Monday 30 November"), and, inside the last
  * seven days, how many are left ("6 days left", "Closes today"). Null for no day, a day that does not read, or one
- * gone by, as applyByWords.
+ * gone by.
  */
 export interface ApplyByParts {
   /** "Apply by", the seal's top line. */
