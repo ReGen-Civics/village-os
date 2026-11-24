@@ -40,6 +40,7 @@ import {
   type PortraitSource,
 } from "@shared/characterPortraits";
 import type { VillageMoon } from "@shared/villageMoon";
+import { Trans } from "@lingui/react/macro";
 
 /** One row of `character_portraits`, as the studio payload carries it. */
 export interface StudioPortrait {
@@ -218,7 +219,7 @@ export default function PortraitStudio({
   return (
     <section className="mt-6 rounded-2xl bg-white p-5 shadow-lg">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-deep">
-        Your own face for {archetypeName}
+        <Trans context="PortraitStudio, h3">Your own face for {archetypeName}</Trans>
       </h3>
 
       <div className="mt-4 flex flex-wrap gap-5">
@@ -239,11 +240,11 @@ export default function PortraitStudio({
                 : "Only you can see it. It stays that way until you show it."}
             </p>
           ) : preview ? (
-            <p className="text-sm text-sage">This is how it will be cropped. Save it to keep it.</p>
+            <p className="text-sm text-sage"><Trans context="PortraitStudio, p">This is how it will be cropped. Save it to keep it.</Trans></p>
           ) : (
             <p className="text-sm text-sage">
-              You are using the village art for this path. Upload your own whenever you like.
-            </p>
+              <Trans context="PortraitStudio, p">You are using the village art for this path. Upload your own whenever you like.
+            </Trans></p>
           )}
 
           {/* THE UPLOAD PATH. Always here, always free, and it never reads the
@@ -287,9 +288,9 @@ export default function PortraitStudio({
                   aria-label="Remove this portrait"
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-coral/40 px-4 py-2 text-sm font-medium text-coral disabled:opacity-50"
                 >
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  <Trans context="PortraitStudio, button"><Trash2 className="h-4 w-4" aria-hidden="true" />
                   Remove
-                </button>
+                </Trans></button>
               </>
             ) : null}
           </div>
@@ -354,12 +355,12 @@ function ForgePanel(p: ForgeProps) {
         // No provider anywhere, which is every village today. Say so plainly
         // and point at the half that works, which is directly above this panel.
         <p className="mt-3 text-sm text-sage">
-          Forging a picture is not switched on in this village yet. Your gifts are kept for when it
+          <Trans context="PortraitStudio, p">Forging a picture is not switched on in this village yet. Your gifts are kept for when it
           is. Uploading your own picture always works.
-        </p>
+        </Trans></p>
       ) : p.candidateUrl ? (
         <div className="mt-3">
-          <p className="text-sm text-teal-deep">Here is what the forge made. Keep it, or let it go.</p>
+          <p className="text-sm text-teal-deep"><Trans context="PortraitStudio, p">Here is what the forge made. Keep it, or let it go.</Trans></p>
           <div className="mt-2 w-28 overflow-hidden rounded-xl border-2 border-teal-deep">
             <div className="aspect-[3/4] w-full">
               <FramelessImg src={p.candidateUrl} alt="" className="h-full w-full object-cover object-top" />
@@ -384,20 +385,20 @@ function ForgePanel(p: ForgeProps) {
             </button>
           </div>
           <p className="mt-2 text-sm text-sage">
-            The gift for this one is already spent, whichever you choose.
-          </p>
+            <Trans context="PortraitStudio, p">The gift for this one is already spent, whichever you choose.
+          </Trans></p>
         </div>
       ) : p.held <= 0 ? (
         // ZERO, AND NO DEAD BUTTON. The sentence above already said when the
         // next gift lands and in how many days, and the upload sits above.
         <p className="mt-3 text-sm text-sage">
-          There is nothing to spend on a forge today. Your own picture is always welcome.
-        </p>
+          <Trans context="PortraitStudio, p">There is nothing to spend on a forge today. Your own picture is always welcome.
+        </Trans></p>
       ) : p.confirming ? (
         <div className="mt-3 rounded-xl border border-amber-ink/30 bg-amber-light p-3">
           <p className="text-sm font-medium text-amber-ink">
-            This spends one of your {p.held} gifts. It is spent whether you keep the picture or let it go.
-          </p>
+            <Trans context="PortraitStudio, p">This spends one of your {p.held} gifts. It is spent whether you keep the picture or let it go.
+          </Trans></p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
@@ -413,8 +414,8 @@ function ForgePanel(p: ForgeProps) {
               disabled={!!p.busy}
               className="min-h-11 rounded-xl border border-sage/40 px-4 py-2 text-sm font-medium text-teal-deep disabled:opacity-50"
             >
-              Keep my gift
-            </button>
+              <Trans context="PortraitStudio, button">Keep my gift
+            </Trans></button>
           </div>
         </div>
       ) : (
@@ -423,9 +424,9 @@ function ForgePanel(p: ForgeProps) {
           onClick={p.onConfirm}
           className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-teal-deep/40 px-4 py-2 text-sm font-semibold text-teal-deep"
         >
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
+          <Trans context="PortraitStudio, button"><Sparkles className="h-4 w-4" aria-hidden="true" />
           Forge a picture
-        </button>
+        </Trans></button>
       )}
     </div>
   );

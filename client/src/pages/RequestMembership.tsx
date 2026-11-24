@@ -37,7 +37,7 @@ import Layout from "@/components/Layout";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import { useVillageName } from "@/hooks/useVillageName";
 import { authToken } from "@/lib/gameApi";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import VoiceArea from "@/components/voice/VoiceArea";
 
 const FIELD =
@@ -105,34 +105,34 @@ export default function RequestMembership() {
             <section aria-live="polite" className="rounded-2xl border border-border bg-card p-8 shadow-sm">
               <HeartHandshake className="h-8 w-8 text-notice" aria-hidden="true" />
               <h1 ref={thanks} tabIndex={-1} className="mt-4 font-display text-3xl font-bold text-card-foreground outline-none">
-                Thank you{firstName ? `, ${firstName}` : ""}.
-              </h1>
+                <Trans context="RequestMembership, h1">Thank you{firstName ? `, ${firstName}` : ""}.
+              </Trans></h1>
               <p className="mt-3 text-muted-foreground">
-                Your request is with the people who look after joining {villageName}. Someone will write to you at{" "}
+                <Trans context="RequestMembership, p">Your request is with the people who look after joining {villageName}. Someone will write to you at{" "}
                 <span className="font-medium text-card-foreground break-words">{email.trim()}</span>.
-              </p>
+              </Trans></p>
               <p className="mt-3 text-muted-foreground">
-                The best way to get to know the village while you wait is to come along to a community call or an event.
-              </p>
+                <Trans context="RequestMembership, p">The best way to get to know the village while you wait is to come along to a community call or an event.
+              </Trans></p>
               <a
                 href="/events"
                 className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <CalendarDays className="h-5 w-5" aria-hidden="true" />
+                <Trans context="RequestMembership, a"><CalendarDays className="h-5 w-5" aria-hidden="true" />
                 See calls and events
-              </a>
+              </Trans></a>
             </section>
           ) : (
             <>
               <div className="mb-8">
-                <h1 className="font-display text-4xl font-bold text-foreground">Ask to join {villageName}</h1>
+                <h1 className="font-display text-4xl font-bold text-foreground"><Trans context="RequestMembership, h1">Ask to join {villageName}</Trans></h1>
                 <p className="mt-3 text-muted-foreground">
-                  Everybody here arrives because somebody already in the village knows them. If nobody has invited you
+                  <Trans context="RequestMembership, p">Everybody here arrives because somebody already in the village knows them. If nobody has invited you
                   yet, tell us a little about yourself and someone will be in touch.
-                </p>
+                </Trans></p>
                 <p className="mt-3 text-muted-foreground">
-                  Already have an invitation link? Open it, and it takes you straight to making your account.
-                </p>
+                  <Trans context="RequestMembership, p">Already have an invitation link? Open it, and it takes you straight to making your account.
+                </Trans></p>
               </div>
 
               <form onSubmit={submit} className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
@@ -143,8 +143,8 @@ export default function RequestMembership() {
                 )}
                 <div>
                   <label htmlFor="request-name" className="mb-2 block text-sm font-semibold text-card-foreground">
-                    Name
-                  </label>
+                    <Trans context="RequestMembership, label">Name
+                  </Trans></label>
                   <input
                     id="request-name"
                     name="name"
@@ -157,8 +157,8 @@ export default function RequestMembership() {
                 </div>
                 <div>
                   <label htmlFor="request-email" className="mb-2 block text-sm font-semibold text-card-foreground">
-                    Email
-                  </label>
+                    <Trans context="RequestMembership, label">Email
+                  </Trans></label>
                   <input
                     id="request-email"
                     name="email"
@@ -172,8 +172,8 @@ export default function RequestMembership() {
                 </div>
                 <div>
                   <label htmlFor="request-why" className="mb-2 block text-sm font-semibold text-card-foreground">
-                    What draws you to {villageName}?
-                  </label>
+                    <Trans context="RequestMembership, label">What draws you to {villageName}?
+                  </Trans></label>
                   <VoiceArea
                     value={why}
                     onValue={setWhy}
@@ -195,7 +195,7 @@ export default function RequestMembership() {
                 </div>
                 <div>
                   <label htmlFor="request-heard" className="mb-2 block text-sm font-semibold text-card-foreground">
-                    How did you hear about us? <span className="font-normal text-muted-foreground">(optional)</span>
+                    <Trans context="RequestMembership, label">How did you hear about us? <span className="font-normal text-muted-foreground">(optional)</span></Trans>
                   </label>
                   <input
                     id="request-heard"
@@ -221,20 +221,20 @@ export default function RequestMembership() {
               </form>
 
               <p className="mt-6 text-center text-muted-foreground">
-                Want to meet us first?{" "}
+                <Trans context="RequestMembership, p">Want to meet us first?{" "}
                 <a href="/events" className="font-medium text-foreground underline underline-offset-2">
                   Come to a community call or an event
                 </a>
                 .
-              </p>
+              </Trans></p>
               {/* Somebody who already knows the role they want can propose for it, no account needed (sheet 19i). */}
               <p className="mt-3 text-center text-muted-foreground">
-                Know the role you'd take on next season?{" "}
+                <Trans context="RequestMembership, p">Know the role you'd take on next season?{" "}
                 <a href="/propose-a-role" className="font-medium text-foreground underline underline-offset-2">
                   Propose a role
                 </a>
                 .
-              </p>
+              </Trans></p>
               {/* The draft board: every open role by character, a shortlist, then apply (pages/RoleDraft.tsx). */}
               <p className="mt-3 text-center text-muted-foreground">
                 <a href="/roles/select" className="font-medium text-foreground underline underline-offset-2">

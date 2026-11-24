@@ -19,7 +19,7 @@
  * never `user.role`.
  */
 import InfoTip from "@/components/InfoTip";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import ModuleCard from "@/components/modules/ModuleCard";
 import ModuleShelf from "@/components/modules/ModuleShelf";
@@ -42,14 +42,14 @@ function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string 
         <Hammer className="w-5 h-5 text-teal-deep" aria-hidden="true" />
         <h3 className="font-semibold text-foreground">
           Build one, get paid in{" "}
-          <InfoTip tip="$ReGen is the network's own token. The builders' pool pays module builders in it, each lunar cycle, sized by how many members open their module.">$ReGen</InfoTip>
+          <InfoTip tip="$ReGen is the network's own token. The builders' pool pays module builders in it, each lunar cycle, sized by how many members open their module."><Trans context="Modules, InfoTip">$ReGen</Trans></InfoTip>
         </h3>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Anyone can build a module for this platform. Every free module earns a share of the
+        <Trans context="Modules, p">Anyone can build a module for this platform. Every free module earns a share of the
         builders' pool each lunar cycle, sized by how many members open it. Nothing has been paid out
         yet.
-      </p>
+      </Trans></p>
       <div className="mt-3 flex flex-col gap-1.5">
         <a
           href={guideUrl}
@@ -57,16 +57,16 @@ function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string 
           rel="noopener noreferrer"
           className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
         >
-          Read the builder guide ↗
-        </a>
+          <Trans context="Modules, a">Read the builder guide ↗
+        </Trans></a>
         <a
           href={poolUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
         >
-          See the builders' pool ↗
-        </a>
+          <Trans context="Modules, a">See the builders' pool ↗
+        </Trans></a>
         <a
           href={`#${BUILDER_JOURNEY_ID}`}
           className="text-sm font-medium text-teal-deep underline min-h-[44px] inline-flex items-center"
@@ -100,25 +100,26 @@ export function ShelfToolbar({
   count: number;
   total: number;
 }) {
+  const { t } = useLingui();
   return (
     <div className="mb-6 flex flex-wrap items-center gap-2">
       <input
         type="search"
         value={f.query}
         onChange={(e) => set({ query: e.target.value })}
-        placeholder="Search the library"
-        aria-label="Search the library"
+        placeholder={t({ message: "Search the library", context: "Modules, placeholder" })}
+        aria-label={t({ message: "Search the library", context: "Modules, aria-label" })}
         className="w-full sm:flex-1 sm:w-auto sm:min-w-[200px] px-3 py-2 text-base min-h-[44px] border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-teal-deep/40"
       />
       {showState && (
-        <select value={f.state} onChange={(e) => set({ state: e.target.value as ShelfFilters["state"] })} className={SELECT} aria-label="Show">
+        <select value={f.state} onChange={(e) => set({ state: e.target.value as ShelfFilters["state"] })} className={SELECT} aria-label={t({ message: "Show", context: "Modules, aria-label" })}>
           <option value="all">Every module</option>
           <option value="on">On here</option>
           <option value="off">Not on yet</option>
         </select>
       )}
       {choices.tiers.length > 1 && (
-        <select value={f.tier} onChange={(e) => set({ tier: e.target.value })} className={SELECT} aria-label="Filter by tier">
+        <select value={f.tier} onChange={(e) => set({ tier: e.target.value })} className={SELECT} aria-label={t({ message: "Filter by tier", context: "Modules, aria-label" })}>
           <option value="all">Any tier</option>
           {choices.tiers.map((t) => (
             <option key={t} value={t}>{TIER_PILL[t as ModuleTier] ?? t}</option>
@@ -126,7 +127,7 @@ export function ShelfToolbar({
         </select>
       )}
       {choices.domains.length > 1 && (
-        <select value={f.domain} onChange={(e) => set({ domain: e.target.value })} className={SELECT} aria-label="Filter by domain">
+        <select value={f.domain} onChange={(e) => set({ domain: e.target.value })} className={SELECT} aria-label={t({ message: "Filter by domain", context: "Modules, aria-label" })}>
           <option value="all">Any domain</option>
           {choices.domains.map((d) => (
             <option key={d} value={d}>{d}</option>
@@ -134,7 +135,7 @@ export function ShelfToolbar({
         </select>
       )}
       {choices.prices.length > 1 && (
-        <select value={f.price} onChange={(e) => set({ price: e.target.value as ShelfFilters["price"] })} className={SELECT} aria-label="Filter by price">
+        <select value={f.price} onChange={(e) => set({ price: e.target.value as ShelfFilters["price"] })} className={SELECT} aria-label={t({ message: "Filter by price", context: "Modules, aria-label" })}>
           <option value="all">Any price</option>
           <option value="free">No extra charge</option>
           <option value="paid">Paid</option>
@@ -142,10 +143,10 @@ export function ShelfToolbar({
       )}
       {isFiltered(f) && (
         <>
-          <span className="text-sm text-muted-foreground">{count} of {total}</span>
+          <span className="text-sm text-muted-foreground"><Trans context="Modules, span">{count} of {total}</Trans></span>
           <button onClick={() => set(NO_FILTERS)} className="text-sm font-medium text-teal-deep underline min-h-[44px] px-2">
-            Clear
-          </button>
+            <Trans context="Modules, button">Clear
+          </Trans></button>
         </>
       )}
     </div>
@@ -175,20 +176,20 @@ export default function Modules() {
       {/* Inherited by every heading, card and term below: a long word a village gives a shelf or a module wraps instead of widening the page. */}
       <div className="container max-w-5xl py-8 sm:py-12 [overflow-wrap:anywhere]">
         <header className="mb-6">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">Module Library</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground"><Trans context="Modules, h1">Module Library</Trans></h1>
           {/* The cards themselves are single links, so the pill mechanics
               live up here where a tooltip trigger is legal HTML. */}
           <p className="text-muted-foreground mt-2 max-w-2xl leading-relaxed">
             Everything this platform can be, one card at a time. A village{" "}
-            <InfoTip tip={`Every module ships off. ${catalyst.aNameCap} turns one on for members or for everyone, and the four core modules are always there.`}>turns on</InfoTip>{" "}
+            <InfoTip tip={`Every module ships off. ${catalyst.aNameCap} turns one on for members or for everyone, and the four core modules are always there.`}><Trans context="Modules, InfoTip">turns on</Trans></InfoTip>{" "}
             what it needs and leaves the rest on the shelf, and every card{" "}
-            <InfoTip tip={`On a card, "${TIER_PILL.connected}" means the module talks to a service that runs somewhere else, and "${TIER_PILL.managed}" means a vendor runs it for you. A card with neither pill runs entirely here.`}>wears its pills</InfoTip>{" "}
+            <InfoTip tip={`On a card, "${TIER_PILL.connected}" means the module talks to a service that runs somewhere else, and "${TIER_PILL.managed}" means a vendor runs it for you. A card with neither pill runs entirely here.`}><Trans context="Modules, InfoTip">wears its pills</Trans></InfoTip>{" "}
             so you can read it at a glance.
           </p>
           {steward && !viewer.launched && (
             <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-              Before launch you turn modules on yourself. Open a module to switch it, set it up, or add it to your plan.
-            </p>
+              <Trans context="Modules, p">Before launch you turn modules on yourself. Open a module to switch it, set it up, or add it to your plan.
+            </Trans></p>
           )}
         </header>
 
@@ -196,10 +197,10 @@ export default function Modules() {
         <div role="status">
           {failed && (
             <p className="text-sm text-muted-foreground py-12 text-center">
-              The library could not load just now. Try again in a moment.
-            </p>
+              <Trans context="Modules, p">The library could not load just now. Try again in a moment.
+            </Trans></p>
           )}
-          {!data && !failed && <p className="text-sm text-muted-foreground py-12 text-center">Loading the shelves…</p>}
+          {!data && !failed && <p className="text-sm text-muted-foreground py-12 text-center"><Trans context="Modules, p">Loading the shelves…</Trans></p>}
         </div>
 
         {data && (
@@ -216,8 +217,8 @@ export default function Modules() {
             />
             {visible.length === 0 && (
               <p className="text-sm text-muted-foreground py-8 text-center">
-                Nothing in the library matches that. Clear the filters to see all {modules.length}.
-              </p>
+                <Trans context="Modules, p">Nothing in the library matches that. Clear the filters to see all {modules.length}.
+              </Trans></p>
             )}
             {data.groups.map((g, gi) => {
               const shelf = visible.filter((m) => m.group === g.id);

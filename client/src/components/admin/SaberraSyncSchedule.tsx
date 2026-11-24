@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { MODULES_BY_ID, SABERRA_POLL_SCHEDULES, saberraPollSchedule, type SaberraPollSchedule } from "@shared/modules";
 import type { SyncFailureWhy, SyncKind, SyncRun, SyncRunsAnswer } from "@shared/saberraSyncLog";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const MODULE_ID = "saberra";
 
@@ -214,8 +215,8 @@ export function ReviewQueueButton({ waiting }: { waiting: number }) {
       href="/review"
       className="mt-2 inline-flex items-center min-h-11 px-4 py-2 text-sm font-medium rounded-lg bg-teal-deep text-white hover:bg-teal-deep-dark transition-colors"
     >
-      Open the review queue ({count(waiting, "suggestion")})
-    </a>
+      <Trans context="SaberraSyncSchedule, a">Open the review queue ({count(waiting, "suggestion")})
+    </Trans></a>
   );
 }
 
@@ -262,6 +263,7 @@ function runLines(r: SyncRun): string[] {
 
 /** The schedule's state and the last twenty runs, read from the server each time `version` moves. */
 export function SyncRunLog({ password, version }: { password: string; version: number }) {
+  const { t } = useLingui();
   const [answer, setAnswer] = useState<SyncRunsAnswer | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -292,7 +294,7 @@ export function SyncRunLog({ password, version }: { password: string; version: n
   }, [password, version]);
 
   if (problem) return <p className="text-xs text-amber-800 mt-4">{problem}</p>;
-  if (!answer) return <p className="text-xs text-gray-500 mt-4">Reading the sync log…</p>;
+  if (!answer) return <p className="text-xs text-gray-500 mt-4"><Trans context="SaberraSyncSchedule, p">Reading the sync log…</Trans></p>;
 
   const { backoff, runs } = answer;
   return (
@@ -300,23 +302,23 @@ export function SyncRunLog({ password, version }: { password: string; version: n
       <div className="text-sm text-gray-700 space-y-1">
         <p>{nextLine(answer, Date.now())}</p>
         {answer.schedule !== "off" && backoff.failures === 1 && (
-          <p className="text-amber-800">The last sync failed. The schedule tries again at its usual time.</p>
+          <p className="text-amber-800"><Trans context="SaberraSyncSchedule, p">The last sync failed. The schedule tries again at its usual time.</Trans></p>
         )}
         {answer.schedule !== "off" && backoff.factor > 1 && (
           <p className="text-amber-800">
-            The last {backoff.failures} syncs failed, so the schedule waits {times(backoff.factor)} as long before it
+            <Trans context="SaberraSyncSchedule, p">The last {backoff.failures} syncs failed, so the schedule waits {times(backoff.factor)} as long before it
             tries again.
-          </p>
+          </Trans></p>
         )}
-        <p className="text-xs text-gray-500">Times are village time, {answer.timezone.replace(/_/g, " ")}.</p>
+        <p className="text-xs text-gray-500"><Trans context="SaberraSyncSchedule, p">Times are village time, {answer.timezone.replace(/_/g, " ")}.</Trans></p>
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-gray-900 mb-2">Recent syncs</h4>
+        <h4 className="text-sm font-semibold text-gray-900 mb-2"><Trans context="SaberraSyncSchedule, h4">Recent syncs</Trans></h4>
         {runs.length === 0 ? (
-          <p className="text-sm text-gray-500">No sync has run yet.</p>
+          <p className="text-sm text-gray-500"><Trans context="SaberraSyncSchedule, p">No sync has run yet.</Trans></p>
         ) : (
-          <ol className="space-y-2 max-h-[36rem] overflow-y-auto pr-1" aria-label="Recent syncs, newest first">
+          <ol className="space-y-2 max-h-[36rem] overflow-y-auto pr-1" aria-label={t({ message: "Recent syncs, newest first", context: "SaberraSyncSchedule, aria-label" })}>
             {runs.map((r) => (
               <li key={`${r.at}-${r.trigger}`} className="border border-gray-100 rounded-lg px-3 py-2">
                 <p className="text-sm">

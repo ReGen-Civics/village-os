@@ -9,6 +9,7 @@
  */
 import { DecideKey } from "./DecideLens";
 import type { PowerData } from "./types";
+import { useLingui } from "@lingui/react/macro";
 
 export default function LensRow({
   data,
@@ -24,9 +25,10 @@ export default function LensRow({
   /** The row's display, so a caller can show it at one width only. */
   className?: string;
 }) {
+  const { t } = useLingui();
   return (
     <div className={`${className} items-center gap-2 flex-wrap`} data-power-lens-row>
-      <div role="group" aria-label="Which domain" className="flex items-center gap-1 flex-wrap">
+      <div role="group" aria-label={t({ message: "Which domain", context: "LensRow, aria-label" })} className="flex items-center gap-1 flex-wrap">
         {[null, ...data.power.glossary.domains.map((d) => d.id)].map((d) => {
           const def = d ? data.power.glossary.domains.find((x) => x.id === d) : null;
           return (

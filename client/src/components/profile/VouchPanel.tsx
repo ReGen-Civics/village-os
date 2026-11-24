@@ -37,6 +37,7 @@ import { useEffect, useState } from "react";
 import { HeartHandshake } from "lucide-react";
 
 import { gameFetch } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 interface VouchState {
   count: number;
@@ -119,13 +120,13 @@ export default function VouchPanel({
         <HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg font-semibold text-card-foreground">
-            Vouching for {name}
+            <Trans context="VouchPanel, h2">Vouching for {name}</Trans>
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">{sentence}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            A vouch says you know this person and you would have them here. It cannot be taken
+            <Trans context="VouchPanel, p">A vouch says you know this person and you would have them here. It cannot be taken
             back, so it is worth meaning.
-          </p>
+          </Trans></p>
           <button
             type="button"
             onClick={() => void vouch()}

@@ -23,6 +23,7 @@ import {
   Vote,
   Coins,
 } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 
 const TOOL_ICONS: Record<string, React.ElementType> = {
   Landmark, MessageCircle, FileText, Wrench, Users, Calendar, Globe, BookOpen, Vote, Coins,
@@ -77,11 +78,11 @@ export default function ToolsHub() {
     <Layout>
       <section className="py-16 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Village Tools</h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="ToolsHub, h1">Village Tools</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Everything the village runs on, in one place. Where to talk, where to
+            <Trans context="ToolsHub, p">Everything the village runs on, in one place. Where to talk, where to
             decide, where the documents live.
-          </p>
+          </Trans></p>
           <ExamplesBanner moduleId="tools" noun="tool" />
         </div>
       </section>
@@ -95,14 +96,14 @@ export default function ToolsHub() {
                   <Landmark className="w-5 h-5 text-teal-deep" />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-foreground">{data.hyphaCard.name} on Hypha</h2>
-                  <p className="text-xs text-teal-deep font-medium">Governance &amp; Pay</p>
+                  <h2 className="font-semibold text-foreground"><Trans context="ToolsHub, h2">{data.hyphaCard.name} on Hypha</Trans></h2>
+                  <p className="text-xs text-teal-deep font-medium"><Trans context="ToolsHub, p">Governance &amp; Pay</Trans></p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Agreements, contributions, expenses and membership all live on the
+                <Trans context="ToolsHub, p">Agreements, contributions, expenses and membership all live on the
                 village's Hypha DHO. This platform links out, decisions happen there.
-              </p>
+              </Trans></p>
               <div className="flex flex-wrap gap-2">
                 {[
                   ["governance", "Open the DHO"],
@@ -154,7 +155,7 @@ export default function ToolsHub() {
                           <div className="text-xs text-muted-foreground mb-2 space-y-1">
                             {tool.description && <p>{tool.description}</p>}
                             {tool.gettingStarted && (
-                              <p className="italic">Getting started: {tool.gettingStarted}</p>
+                              <p className="italic"><Trans context="ToolsHub, p">Getting started: {tool.gettingStarted}</Trans></p>
                             )}
                           </div>
                         )}
@@ -208,8 +209,8 @@ export default function ToolsHub() {
 
           {data && data.tools.length === 0 && !data.hyphaCard && (
             <p className="text-center text-muted-foreground text-sm py-12">
-              No tools have been added yet.
-            </p>
+              <Trans context="ToolsHub, p">No tools have been added yet.
+            </Trans></p>
           )}
         </div>
       </section>

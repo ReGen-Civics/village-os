@@ -56,6 +56,7 @@ import {
   type PlanModule,
 } from "@shared/moduleSwitch";
 import type { ModuleLifecycle, ModuleTier } from "@shared/modules";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 // Keyed by the union: the compiler owns the promise that every lifecycle has a
 // sentence, so a fifth one is a build error, not a blank paragraph.
@@ -90,6 +91,7 @@ export default function ModuleStewardPanel({
   viewer: LibraryViewer;
   onChanged: () => void;
 }) {
+  const { t } = useLingui();
   const token = authToken() ?? "";
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<ModuleLifecycle | null>(null);
@@ -140,7 +142,7 @@ export default function ModuleStewardPanel({
         forgetExamplesCache(m.id, { confirmed: true });
       }
     } catch {
-      toast.error("Could not clear the examples");
+      toast.error(t({ message: "Could not clear the examples", context: "ModuleStewardPanel, toast" }));
     }
     setBusy(false);
     onChanged();
@@ -171,7 +173,7 @@ export default function ModuleStewardPanel({
       const d = await up.json().catch(() => ({}));
       if (!up.ok || !d?.url) throw new Error(String(d?.error || "Upload failed"));
       await putImage(String(d.url));
-      toast.success("Card image set");
+      toast.success(t({ message: "Card image set", context: "ModuleStewardPanel, toast" }));
       window.dispatchEvent(new Event("modules:changed"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "The image did not upload");
@@ -183,7 +185,7 @@ export default function ModuleStewardPanel({
     setBusy(true);
     try {
       await putImage(null);
-      toast.success("Back to the platform art");
+      toast.success(t({ message: "Back to the platform art", context: "ModuleStewardPanel, toast" }));
       window.dispatchEvent(new Event("modules:changed"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "That change did not go through");
@@ -209,8 +211,8 @@ export default function ModuleStewardPanel({
   return (
     <section aria-labelledby="steward-panel" className="mt-8 rounded-xl border border-gray-200 bg-white p-4 sm:p-5 text-gray-900">
       <h2 id="steward-panel" className="font-semibold">
-        For the people who run this village
-      </h2>
+        <Trans context="ModuleStewardPanel, h2">For the people who run this village
+      </Trans></h2>
 
       {health && (
         <p
@@ -224,12 +226,12 @@ export default function ModuleStewardPanel({
       {/* While Settings is open the same board is inside it, so it is never on screen twice. */}
       {m.id === "saberra" && (
         <p className="mt-3">
-          <a href="/admin?tab=modules&module=saberra" className="inline-flex min-h-[44px] items-center text-sm font-medium text-teal-deep underline">Back to admin</a>
+          <a href="/admin?tab=modules&module=saberra" className="inline-flex min-h-[44px] items-center text-sm font-medium text-teal-deep underline"><Trans context="ModuleStewardPanel, a">Back to admin</Trans></a>
         </p>
       )}
       {BOARD_ON_PAGE.has(m.id) && !settingsOpen && (
         <div className="mt-4" data-testid="module-board">
-          <Suspense fallback={<p className="text-xs text-gray-500">Loading the board…</p>}>
+          <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="ModuleStewardPanel, p">Loading the board…</Trans></p>}>
             <SaberraConfigPanel password={token} />
           </Suspense>
         </div>
@@ -241,8 +243,8 @@ export default function ModuleStewardPanel({
           call unless this reader holds the power, so it is dead too and the
           proposal on this page is the way. */}
       <div className="mt-4">
-        <p className="text-sm font-medium mb-1.5">Who can see it</p>
-        <div role="group" aria-label="Who can see it" className="grid grid-cols-2 gap-px rounded-lg border border-gray-200 bg-gray-200 overflow-hidden sm:flex sm:w-fit">
+        <p className="text-sm font-medium mb-1.5"><Trans context="ModuleStewardPanel, p">Who can see it</Trans></p>
+        <div role="group" aria-label={t({ message: "Who can see it", context: "ModuleStewardPanel, aria-label" })} className="grid grid-cols-2 gap-px rounded-lg border border-gray-200 bg-gray-200 overflow-hidden sm:flex sm:w-fit">
           {LIFECYCLE_ORDER.map((lc) => {
             const wider = widens(lifecycle, lc);
             const barred =
@@ -269,11 +271,11 @@ export default function ModuleStewardPanel({
         <p className="mt-1.5 text-sm text-gray-600">{LIFECYCLE_HINT[lifecycle]}</p>
         {viewer.launched && !viewer.canSwitch && (
           <p className="mt-1 text-sm text-gray-600">
-            Since the launch, widening this is the village's call. You can still pause it or turn it off, and the village is told.
-          </p>
+            <Trans context="ModuleStewardPanel, p">Since the launch, widening this is the village's call. You can still pause it or turn it off, and the village is told.
+          </Trans></p>
         )}
-        {needs && viewer.canSwitch && <p className="mt-1 text-sm text-gray-700">{needs}. Turning it on turns those on first.</p>}
-        {lifecycle === "off" && viewer.canSwitch && <p className="mt-1 text-sm text-gray-600">Turn it on in preview to look before anyone else does. You go live from here when it is ready.</p>}
+        {needs && viewer.canSwitch && <p className="mt-1 text-sm text-gray-700"><Trans context="ModuleStewardPanel, p">{needs}. Turning it on turns those on first.</Trans></p>}
+        {lifecycle === "off" && viewer.canSwitch && <p className="mt-1 text-sm text-gray-600"><Trans context="ModuleStewardPanel, p">Turn it on in preview to look before anyone else does. You go live from here when it is ready.</Trans></p>}
       </div>
 
       {pending && (
@@ -290,8 +292,8 @@ export default function ModuleStewardPanel({
       )}
       {(extra?.orphans ?? []).length > 0 && (
         <p className="mt-3 text-xs text-gray-600">
-          Stored settings name module id(s) this platform does not know, and they are ignored: {extra!.orphans.join(", ")}.
-        </p>
+          <Trans context="ModuleStewardPanel, p">Stored settings name module id(s) this platform does not know, and they are ignored: {extra!.orphans.join(", ")}.
+        </Trans></p>
       )}
 
       <SetupNeeded
@@ -306,7 +308,7 @@ export default function ModuleStewardPanel({
         }}
       />
       {lifecycle === "preview" && m.setup !== "none" && m.ready && !m.ready.ready && (
-        <p className="text-sm text-gray-600 mt-2">Then the go-live choice appears here.</p>
+        <p className="text-sm text-gray-600 mt-2"><Trans context="ModuleStewardPanel, p">Then the go-live choice appears here.</Trans></p>
       )}
       {lifecycle === "preview" && viewer.canSwitch && (
         <div className="mt-4">
@@ -317,26 +319,26 @@ export default function ModuleStewardPanel({
       {m.showingExamples && (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
           <p>
-            Showing example content, so it is never empty when you first open it. Nobody here made it, and it clears
+            <Trans context="ModuleStewardPanel, p">Showing example content, so it is never empty when you first open it. Nobody here made it, and it clears
             itself the moment you publish something real.
-          </p>
+          </Trans></p>
           {!clearAsk ? (
             <button type="button" onClick={() => setClearAsk(true)} disabled={busy} className="mt-2 min-h-[44px] px-3 rounded-md border border-amber-400 bg-white font-medium">
-              Clear the examples now
-            </button>
+              <Trans context="ModuleStewardPanel, button">Clear the examples now
+            </Trans></button>
           ) : (
             <div className="mt-2 space-y-2">
               <p>
-                {twins.length ? `This clears ${twins.join(" and ")} too, because they show the same rows. ` : ""}
+                <Trans context="ModuleStewardPanel, p">{twins.length ? `This clears ${twins.join(" and ")} too, because they show the same rows. ` : ""}
                 They are removed for good, and turning the module off and on does not bring them back.
-              </p>
+              </Trans></p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={clearExamples} disabled={busy} className="min-h-[44px] px-3 rounded-md bg-amber-700 text-white font-medium">
-                  Clear them
-                </button>
+                  <Trans context="ModuleStewardPanel, button">Clear them
+                </Trans></button>
                 <button type="button" onClick={() => setClearAsk(false)} className="min-h-[44px] px-3 rounded-md border border-amber-400 bg-white font-medium">
-                  Keep them
-                </button>
+                  <Trans context="ModuleStewardPanel, button">Keep them
+                </Trans></button>
               </div>
             </div>
           )}
@@ -345,7 +347,7 @@ export default function ModuleStewardPanel({
 
       {m.id === "hypha" && (
         <div className="mt-4 rounded-lg border border-teal-deep/30 bg-teal-deep/5 p-3 text-sm">
-          <p className="font-medium">Your Hypha links</p>
+          <p className="font-medium"><Trans context="ModuleStewardPanel, p">Your Hypha links</Trans></p>
           {extra?.hypha?.configured ? (
             <div className="mt-2 flex flex-wrap gap-2">
               {Object.entries(extra.hypha.links ?? {}).map(([name, url]) => (
@@ -355,7 +357,7 @@ export default function ModuleStewardPanel({
               ))}
             </div>
           ) : (
-            <p className="mt-1 text-gray-700">Not connected yet. Set the address under this module's settings (hypha.org_url), and every Hypha button appears.</p>
+            <p className="mt-1 text-gray-700"><Trans context="ModuleStewardPanel, p">Not connected yet. Set the address under this module's settings (hypha.org_url), and every Hypha button appears.</Trans></p>
           )}
         </div>
       )}
@@ -396,16 +398,16 @@ export default function ModuleStewardPanel({
       {detailOpen && <ListingDetail m={m} names={names} />}
 
       <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-sm font-medium mb-1">Card image</p>
-        <p className="text-xs text-gray-600 mb-2">Your own picture for this module's card, or the platform art when unset.</p>
+        <p className="text-sm font-medium mb-1"><Trans context="ModuleStewardPanel, p">Card image</Trans></p>
+        <p className="text-xs text-gray-600 mb-2"><Trans context="ModuleStewardPanel, p">Your own picture for this module's card, or the platform art when unset.</Trans></p>
         {/* The catalog withholds a village's own art below the members rung,
             so custom art on a staged module never hints at what a village is
             trying out. A steward passes that check, so say so here. */}
         {hasVillageImage && (served === "off" || served === "preview") && (
           <p className="text-xs text-gray-600 mb-2">
-            You are the only one seeing it. While this module is {served === "off" ? "off" : "in preview"}, members and
+            <Trans context="ModuleStewardPanel, p">You are the only one seeing it. While this module is {served === "off" ? "off" : "in preview"}, members and
             visitors get the platform art. Yours appears for everyone once it is live for members.
-            {served !== lifecycle && " That is what is being served right now, whatever this is set to, because the module is missing something it requires."}
+            {served !== lifecycle && " That is what is being served right now, whatever this is set to, because the module is missing something it requires."}</Trans>
           </p>
         )}
         <div className="flex flex-wrap items-center gap-3">
@@ -415,8 +417,8 @@ export default function ModuleStewardPanel({
           </label>
           {hasVillageImage && (
             <button type="button" disabled={busy} onClick={clearImage} className="min-h-[44px] px-3 text-sm font-medium text-gray-600 underline">
-              Use the platform art
-            </button>
+              <Trans context="ModuleStewardPanel, button">Use the platform art
+            </Trans></button>
           )}
         </div>
       </div>
@@ -430,24 +432,24 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
     <div className="mt-4 pt-4 border-t border-gray-100 grid gap-3 text-sm">
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-gray-600">
         <span>id: <code className="text-gray-800">{m.id}</code></span>
-        <span>data it holds: <span className="text-gray-800">{m.dataClass}</span></span>
-        {m.tier !== "included" && <span>tier: <span className="text-gray-800">{TIER_PILL[m.tier as ModuleTier] ?? m.tier}</span></span>}
+        <span><Trans context="ModuleStewardPanel, span">data it holds: <span className="text-gray-800">{m.dataClass}</span></Trans></span>
+        {m.tier !== "included" && <span><Trans context="ModuleStewardPanel, span">tier: <span className="text-gray-800">{TIER_PILL[m.tier as ModuleTier] ?? m.tier}</span></Trans></span>}
         {m.pool && POOL_REASON_COPY[m.pool.reason] && (
           <span>
-            pool: <span className={m.pool.disposition === "paid" ? "text-emerald-700" : "text-gray-800"}>{POOL_REASON_COPY[m.pool.reason]}</span>
+            <Trans context="ModuleStewardPanel, span">pool: <span className={m.pool.disposition === "paid" ? "text-emerald-700" : "text-gray-800"}>{POOL_REASON_COPY[m.pool.reason]}</span></Trans>
           </span>
         )}
-        {m.provides && <span>domain: <span className="text-gray-800">{m.provides}</span></span>}
+        {m.provides && <span><Trans context="ModuleStewardPanel, span">domain: <span className="text-gray-800">{m.provides}</span></Trans></span>}
         <span>
-          contract doc: <span className={m.hasContractDoc ? "text-gray-800" : "text-amber-700"}>{m.hasContractDoc ? "on the shelf" : "none yet"}</span>
+          <Trans context="ModuleStewardPanel, span">contract doc: <span className={m.hasContractDoc ? "text-gray-800" : "text-amber-700"}>{m.hasContractDoc ? "on the shelf" : "none yet"}</span></Trans>
         </span>
       </div>
-      {m.builtBy && <p className="text-gray-600">Built by {m.builtBy}</p>}
+      {m.builtBy && <p className="text-gray-600"><Trans context="ModuleStewardPanel, p">Built by {m.builtBy}</Trans></p>}
       {m.requires?.length > 0 && <p className="text-gray-600">Needs: {m.requires.map((id: string) => names[id] ?? id).join(", ")}</p>}
       {m.listing && (
         <p className="text-gray-600">
-          Turned on as "{TIER_PILL[m.listing.tier as ModuleTier] ?? m.listing.tier}" under library contract {m.listing.contractVersion}
-          {m.listing.acceptedAt ? ` on ${new Date(m.listing.acceptedAt).toLocaleDateString()}` : ""}
+          <Trans context="ModuleStewardPanel, p">Turned on as "{TIER_PILL[m.listing.tier as ModuleTier] ?? m.listing.tier}" under library contract {m.listing.contractVersion}
+          {m.listing.acceptedAt ? ` on ${new Date(m.listing.acceptedAt).toLocaleDateString()}` : ""}</Trans>
         </p>
       )}
       {m.pricing && (
@@ -460,8 +462,8 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
           </p>
           {m.pricing.billingUrl && (
             <a href={m.pricing.billingUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">
-              Pricing and billing ↗
-            </a>
+              <Trans context="ModuleStewardPanel, a">Pricing and billing ↗
+            </Trans></a>
           )}
           {m.pricing.licenceKey && (
             <p className="text-emerald-800 mt-1">
@@ -470,20 +472,20 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
             </p>
           )}
           {m.pricing.amount > 0 && m.credentialPresent === false && (
-            <p className="text-amber-700 mt-1">No licence key yet. This module answers 503 and says who to reach, and the rest of the village keeps working.</p>
+            <p className="text-amber-700 mt-1"><Trans context="ModuleStewardPanel, p">No licence key yet. This module answers 503 and says who to reach, and the rest of the village keeps working.</Trans></p>
           )}
-          {m.pricing.amount > 0 && m.credentialPresent === true && <p className="text-emerald-800 mt-1">Licence key is set.</p>}
+          {m.pricing.amount > 0 && m.credentialPresent === true && <p className="text-emerald-800 mt-1"><Trans context="ModuleStewardPanel, p">Licence key is set.</Trans></p>}
         </div>
       )}
-      {m.tier === "managed" && <p className="text-gray-600">Supported by whoever runs this deployment. One bill, one number to call.</p>}
+      {m.tier === "managed" && <p className="text-gray-600"><Trans context="ModuleStewardPanel, p">Supported by whoever runs this deployment. One bill, one number to call.</Trans></p>}
       {m.vendor && (
         <div className="grid gap-1">
           <p className="font-medium text-gray-800">{m.vendor.legalName}</p>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <a href={m.vendor.url} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">Product ↗</a>
-            <a href={m.vendor.termsUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">Terms ↗</a>
-            <a href={m.vendor.statusUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">Status ↗</a>
-            <a href={m.vendor.supportUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">Support ↗</a>
+            <a href={m.vendor.url} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline"><Trans context="ModuleStewardPanel, a">Product ↗</Trans></a>
+            <a href={m.vendor.termsUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline"><Trans context="ModuleStewardPanel, a">Terms ↗</Trans></a>
+            <a href={m.vendor.statusUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline"><Trans context="ModuleStewardPanel, a">Status ↗</Trans></a>
+            <a href={m.vendor.supportUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline"><Trans context="ModuleStewardPanel, a">Support ↗</Trans></a>
             <span className="text-gray-600">{m.vendor.supportEmail}</span>
           </div>
           <p className="text-gray-600">
@@ -495,7 +497,7 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
       )}
       {(m.vendor?.setupSteps ?? []).length > 0 && (
         <div>
-          <p className="font-medium text-gray-800 mb-1">Setup you do inside their product</p>
+          <p className="font-medium text-gray-800 mb-1"><Trans context="ModuleStewardPanel, p">Setup you do inside their product</Trans></p>
           <ul className="list-disc pl-4 space-y-1 text-gray-600">
             {m.vendor.setupSteps.map((s: string, i: number) => <li key={i}>{s}</li>)}
           </ul>
@@ -503,7 +505,7 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
       )}
       {(m.health ?? []).length > 0 && (
         <div>
-          <p className="font-medium text-gray-800 mb-1">What its calls have actually done</p>
+          <p className="font-medium text-gray-800 mb-1"><Trans context="ModuleStewardPanel, p">What its calls have actually done</Trans></p>
           {m.health.map((h: any) => (
             <p key={h.operation} className={h.reading?.verdict === "failing" || h.reading?.verdict === "stale" ? "text-red-600" : "text-gray-600"}>
               {h.operation}: {h.reading?.detail}
@@ -513,7 +515,7 @@ function ListingDetail({ m, names }: { m: any; names: Record<string, string> }) 
       )}
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-gray-600">
         {m.recommends?.length > 0 && <span>works better with: {m.recommends.map((id: string) => names[id] ?? id).join(", ")}</span>}
-        {m.capabilities?.length > 0 && <span>adds permissions: {m.capabilities.join(", ")}</span>}
+        {m.capabilities?.length > 0 && <span><Trans context="ModuleStewardPanel, span">adds permissions: {m.capabilities.join(", ")}</Trans></span>}
       </div>
     </div>
   );

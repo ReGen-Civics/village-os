@@ -19,6 +19,7 @@
 import { useEffect, useState } from "react";
 import { PROPOSE_QUEST_MODULE } from "@shared/questIdeas";
 import WorkValueEditor, { draftFrom, usePayOptions, type WorkValueDraft } from "@/components/WorkValueEditor";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface QuestCard {
   id: string;
@@ -58,6 +59,7 @@ export default function QuestProposalCard({
   /** The reason the steward typed, which the proposer reads; empty when none was given. */
   onReject: (reason: string) => void;
 }) {
+  const { t } = useLingui();
   // The words open on what arrived, so a steward who changes nothing sends the idea as it came.
   const options = usePayOptions();
   const [typed, setTyped] = useState<QuestTyped>({
@@ -85,14 +87,14 @@ export default function QuestProposalCard({
       </p>
       {q.prose.description && <p className="text-sm text-muted-foreground mt-2">{String(q.prose.description)}</p>}
       {q.rationale && <p className="text-xs text-muted-foreground mt-2 whitespace-pre-line">{q.rationale}</p>}
-      {q.quote && <p className="text-xs text-muted-foreground mt-2 italic">&ldquo;{q.quote}&rdquo;</p>}
+      {q.quote && <p className="text-xs text-muted-foreground mt-2 italic"><Trans context="QuestProposalCard, p">&ldquo;{q.quote}&rdquo;</Trans></p>}
 
       <p className="text-xs text-foreground mt-4 font-medium">
-        What goes on the board, where anyone can read it. Take out anything that would name or reach a person.
-      </p>
-      <input aria-label="Quest title" value={typed.title} onChange={set("title")} className={`w-full mt-2 ${field}`} />
+        <Trans context="QuestProposalCard, p">What goes on the board, where anyone can read it. Take out anything that would name or reach a person.
+      </Trans></p>
+      <input aria-label={t({ message: "Quest title", context: "QuestProposalCard, aria-label" })} value={typed.title} onChange={set("title")} className={`w-full mt-2 ${field}`} />
       <textarea
-        aria-label="What the quest asks"
+        aria-label={t({ message: "What the quest asks", context: "QuestProposalCard, aria-label" })}
         value={typed.description}
         onChange={set("description")}
         rows={4}
@@ -100,8 +102,8 @@ export default function QuestProposalCard({
       />
 
       <p className="text-xs text-foreground mt-4 font-medium">
-        What it pays. Nothing else can set this, so it is yours to type.
-      </p>
+        <Trans context="QuestProposalCard, p">What it pays. Nothing else can set this, so it is yours to type.
+      </Trans></p>
       <div className="mt-2 text-foreground">
         <WorkValueEditor
           draft={typed.pay}
@@ -114,8 +116,8 @@ export default function QuestProposalCard({
       </div>
       <div className="flex flex-wrap gap-2 mt-2">
         <input
-          aria-label="Stay credits, in nights"
-          placeholder="Nights, optional"
+          aria-label={t({ message: "Stay credits, in nights", context: "QuestProposalCard, aria-label" })}
+          placeholder={t({ message: "Nights, optional", context: "QuestProposalCard, placeholder" })}
           value={typed.stayCreditReward}
           onChange={set("stayCreditReward")}
           className={field}
@@ -139,15 +141,15 @@ export default function QuestProposalCard({
           onClick={() => onAccept(typed)}
           className="text-xs border border-border rounded-lg px-3 py-2 min-h-[44px] font-medium"
         >
-          Put it on the board
-        </button>
+          <Trans context="QuestProposalCard, button">Put it on the board
+        </Trans></button>
         <button
           disabled={busy}
           onClick={() => onReject(reason.trim())}
           className="text-xs border border-border rounded-lg px-3 py-2 min-h-[44px]"
         >
-          Reject
-        </button>
+          <Trans context="QuestProposalCard, button">Reject
+        </Trans></button>
       </div>
     </div>
   );

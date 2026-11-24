@@ -36,6 +36,7 @@ import type { RoomActions } from "@/components/sessions/useSessionRoom";
 import { useGuideName } from "@/hooks/useGuideName";
 import { fillGuideName } from "@shared/guideName";
 import { CARD_POLL_MS, publishCards, useSharedCards } from "./sharedCards";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** How often an open card reads the room's cards, so a card pulled on another phone arrives. */
 export { CARD_POLL_MS };
@@ -78,8 +79,9 @@ function SystemTag({ system }: { system: CardSystem }) {
 
 /** Six bars read from the bottom up, the Sun's line lit in gold. */
 function LineBars({ line }: { line: number }) {
+  const { t } = useLingui();
   return (
-    <svg viewBox="0 0 28 34" className="h-14 w-12 shrink-0" role="img" aria-label={`Line ${line} of 6`}>
+    <svg viewBox="0 0 28 34" className="h-14 w-12 shrink-0" role="img" aria-label={t({ message: `Line ${line} of 6`, context: "PullACard, aria-label" })}>
       {[1, 2, 3, 4, 5, 6].map((n) => (
         <rect
           key={n}
@@ -110,20 +112,20 @@ function Sky({ card }: { card: CardView }) {
       <div className={SOFT}>
         <SystemTag system="human-design" />
         <ul className="mt-1.5 space-y-0.5 text-sm text-foreground">
-          <li>Sun in gate {s.gates.Sun.gate}, line {s.gates.Sun.line}</li>
-          <li>Earth in gate {s.gates.Earth.gate}, line {s.gates.Earth.line}</li>
-          <li>Moon in gate {s.gates.Moon.gate}</li>
+          <li><Trans context="PullACard, li">Sun in gate {s.gates.Sun.gate}, line {s.gates.Sun.line}</Trans></li>
+          <li><Trans context="PullACard, li">Earth in gate {s.gates.Earth.gate}, line {s.gates.Earth.line}</Trans></li>
+          <li><Trans context="PullACard, li">Moon in gate {s.gates.Moon.gate}</Trans></li>
         </ul>
       </div>
       <div className={SOFT}>
         <SystemTag system="western" />
         <ul className="mt-1.5 space-y-0.5 text-sm text-foreground">
-          <li>Sun in {SIGNS[s.signs.Sun]}</li>
+          <li><Trans context="PullACard, li">Sun in {SIGNS[s.signs.Sun]}</Trans></li>
           <li>
-            {moonPhaseName(s.moonPhase)} in {SIGNS[s.signs.Moon]}
+            <Trans context="PullACard, li">{moonPhaseName(s.moonPhase)} in {SIGNS[s.signs.Moon]}</Trans>
           </li>
-          {s.retro.length ? <li>Retrograde: {andList(s.retro)}</li> : null}
-          {s.moonVoidUntil ? <li>Moon void of course until {timeWords(s.moonVoidUntil)}</li> : null}
+          {s.retro.length ? <li><Trans context="PullACard, li">Retrograde: {andList(s.retro)}</Trans></li> : null}
+          {s.moonVoidUntil ? <li><Trans context="PullACard, li">Moon void of course until {timeWords(s.moonVoidUntil)}</Trans></li> : null}
         </ul>
       </div>
     </div>
@@ -177,14 +179,14 @@ function CardFace({
         <LineBars line={card.sky.gates.Sun.line} />
         <div className="min-w-0">
           <p className={EYEBROW}>
-            Card {card.n} · pulled by {card.pulledByName}
+            <Trans context="PullACard, p">Card {card.n} · pulled by {card.pulledByName}</Trans>
           </p>
           <p className="font-display text-3xl leading-tight lining-nums text-foreground">
-            Gate {card.sky.gates.Sun.gate}.{card.sky.gates.Sun.line}
+            <Trans context="PullACard, p">Gate {card.sky.gates.Sun.gate}.{card.sky.gates.Sun.line}</Trans>
           </p>
           <p className="mt-0.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MoonGlyph phase={card.sky.moonPhase} size={16} />
-            {moonPhaseName(card.sky.moonPhase)} in {SIGNS[card.sky.signs.Moon]}
+            <Trans context="PullACard, p"><MoonGlyph phase={card.sky.moonPhase} size={16} />
+            {moonPhaseName(card.sky.moonPhase)} in {SIGNS[card.sky.signs.Moon]}</Trans>
           </p>
         </div>
       </div>
@@ -198,7 +200,7 @@ function CardFace({
             <p className="mt-0.5 text-base leading-relaxed text-foreground">{c.text}</p>
           </div>
         ))}
-        {card.welcomed.length ? <p className="text-base text-foreground">Welcome too, {andList(card.welcomed)}.</p> : null}
+        {card.welcomed.length ? <p className="text-base text-foreground"><Trans context="PullACard, p">Welcome too, {andList(card.welcomed)}.</Trans></p> : null}
       </div>
 
       <section className={SOFT} aria-labelledby={`card-${card.id}-mine`}>
@@ -221,8 +223,8 @@ function CardFace({
             {answer.notRead === null ? CARD_WORDS.readNext : fillGuideName(CARD_WORDS.notRead[answer.notRead], guide)}{" "}
             {answer.notRead && answer.notRead !== "left-out" ? (
               <Link href="/profile/gene-keys" className="text-notice underline underline-offset-2">
-                Your Gene Keys
-              </Link>
+                <Trans context="PullACard, Link">Your Gene Keys
+              </Trans></Link>
             ) : null}
           </p>
         )}

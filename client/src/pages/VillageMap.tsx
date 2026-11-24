@@ -66,6 +66,7 @@ import {
   type PowerSeat,
   type Selection,
 } from "@/components/power/types";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -89,6 +90,7 @@ function focusFromUrl(): string | null {
 }
 
 export default function VillageMap() {
+  const { t } = useLingui();
   const modules = useModules();
   const mapModule = useModule("map");
   const { modules: exampleModules } = useExampleModules();
@@ -388,11 +390,11 @@ export default function VillageMap() {
           the title down, so the hearths are not met after a light band. */}
       <section className="circle-lens py-6 sm:py-10 bg-background text-foreground">
         <div className="container text-center">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3">How Power Is Held</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3"><Trans context="VillageMap, h1">How Power Is Held</Trans></h1>
           <p className="hidden sm:block text-muted-foreground max-w-xl mx-auto">
-            The village's shape, how each circle decides, who holds each role, and the roles waiting
+            <Trans context="VillageMap, p">The village's shape, how each circle decides, who holds each role, and the roles waiting
             for someone like you.
-          </p>
+          </Trans></p>
         </div>
       </section>
 
@@ -408,7 +410,7 @@ export default function VillageMap() {
       <section className="circle-lens py-6 bg-background text-foreground">
         <div className="container max-w-7xl">
           {denied && (
-            <p className="text-center text-muted-foreground py-16">Sign in to see the village map.</p>
+            <p className="text-center text-muted-foreground py-16"><Trans context="VillageMap, p">Sign in to see the village map.</Trans></p>
           )}
           {data && layout && (
             <>
@@ -484,7 +486,7 @@ export default function VillageMap() {
                       is counted round the ring. A row steps into its circle;
                       the one a tap has named on the map is marked here too. */}
                   {phoneKeys.length > 0 && (
-                    <ol aria-label="The circles on the map, by number" className="grid grid-cols-2 gap-2 px-4 mt-3">
+                    <ol aria-label={t({ message: "The circles on the map, by number", context: "VillageMap, aria-label" })} className="grid grid-cols-2 gap-2 px-4 mt-3">
                       {phoneKeys.map(({ id, key }) => {
                         const circle = data.circles.find((o) => o.id === id);
                         const named = namedId === id;
@@ -542,23 +544,23 @@ export default function VillageMap() {
                 />
                 <div className="flex items-center gap-1.5 flex-wrap" data-power-actions>
                   {/* The four chips that change the picture are `hidden sm:` here: a phone gets them in MapToolStrip, over the map. */}
-                  <div role="group" aria-label="Now or Vision" className="hidden sm:inline-flex rounded-full border border-border overflow-hidden">
+                  <div role="group" aria-label={t({ message: "Now or Vision", context: "VillageMap, aria-label" })} className="hidden sm:inline-flex rounded-full border border-border overflow-hidden">
                     <button
                       type="button"
                       aria-pressed={mode === "now"}
                       onClick={() => setMode("now")}
                       className={`text-xs px-2.5 py-1 ${mode === "now" ? "bg-teal-deep text-white" : "bg-card text-muted-foreground"}`}
                     >
-                      Now
-                    </button>
+                      <Trans context="VillageMap, button">Now
+                    </Trans></button>
                     <button
                       type="button"
                       aria-pressed={mode === "vision"}
                       onClick={() => setMode("vision")}
                       className={`text-xs px-2.5 py-1 ${mode === "vision" ? "bg-teal-deep text-white" : "bg-card text-muted-foreground"}`}
                     >
-                      Vision
-                    </button>
+                      <Trans context="VillageMap, button">Vision
+                    </Trans></button>
                   </div>
                   <button
                     type="button"
@@ -568,8 +570,8 @@ export default function VillageMap() {
                       lensOn ? "bg-teal-deep text-white border-teal-deep" : "bg-card text-muted-foreground border-border"
                     }`}
                   >
-                    How we decide
-                  </button>
+                    <Trans context="VillageMap, button">How we decide
+                  </Trans></button>
                   {data.viewer.mayArrange && !listMode && (
                     <button
                       type="button"
@@ -598,8 +600,8 @@ export default function VillageMap() {
                         resourcesOn ? "bg-teal-deep text-white border-teal-deep" : "bg-card text-muted-foreground border-border"
                       }`}
                     >
-                      Resources
-                    </button>
+                      <Trans context="VillageMap, button">Resources
+                    </Trans></button>
                   )}
                   <button
                     type="button"
@@ -609,8 +611,8 @@ export default function VillageMap() {
                       linesOn ? "bg-teal-deep text-white border-teal-deep" : "bg-card text-muted-foreground border-border"
                     }`}
                   >
-                    <Link2 className="w-3.5 h-3.5" aria-hidden="true" /> Links
-                  </button>
+                    <Trans context="VillageMap, button"><Link2 className="w-3.5 h-3.5" aria-hidden="true" /> Links
+                  </Trans></button>
                   <button
                     type="button"
                     aria-pressed={listMode}
@@ -628,16 +630,16 @@ export default function VillageMap() {
                     className="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-card text-muted-foreground border-border"
                     aria-label="Download the map as SVG"
                   >
-                    <Download className="w-3.5 h-3.5" aria-hidden="true" /> SVG
-                  </button>
+                    <Trans context="VillageMap, button"><Download className="w-3.5 h-3.5" aria-hidden="true" /> SVG
+                  </Trans></button>
                   <button
                     type="button"
                     onClick={exportPng}
                     className="hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-card text-muted-foreground border-border"
                     aria-label="Download the map as PNG"
                   >
-                    <Download className="w-3.5 h-3.5" aria-hidden="true" /> PNG
-                  </button>
+                    <Trans context="VillageMap, button"><Download className="w-3.5 h-3.5" aria-hidden="true" /> PNG
+                  </Trans></button>
                 </div>
               </div>
 
@@ -731,7 +733,7 @@ export default function VillageMap() {
                     {selectedSeat ? (
                       <div>
                         <div className="flex justify-end">
-                          <button type="button" onClick={() => setSelected(null)} aria-label="Back to the village overview" className="text-muted-foreground hover:text-foreground">
+                          <button type="button" onClick={() => setSelected(null)} aria-label={t({ message: "Back to the village overview", context: "VillageMap, aria-label" })} className="text-muted-foreground hover:text-foreground">
                             <X className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
@@ -867,20 +869,20 @@ function VillageSummary({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-display text-lg font-bold text-foreground mb-1">The whole village</h2>
+        <h2 className="font-display text-lg font-bold text-foreground mb-1"><Trans context="VillageMap, h2">The whole village</Trans></h2>
         <p className="text-xs text-muted-foreground">
-          {counts.circles} circle{counts.circles === 1 ? "" : "s"} · {counts.roles} role
+          <Trans context="VillageMap, p">{counts.circles} circle{counts.circles === 1 ? "" : "s"} · {counts.roles} role
           {counts.roles === 1 ? "" : "s"} · {counts.held} of {counts.places} held
-        </p>
+        </Trans></p>
         {open > 0 && (
           <p className="text-xs text-amber-700 bg-amber/10 rounded-lg px-3 py-2 mt-3">
-            {open} opening{open === 1 ? "" : "s"} in {counts.openRoles} role{counts.openRoles === 1 ? "" : "s"}: the dashed places are waiting for someone.
-          </p>
+            <Trans context="VillageMap, p">{open} opening{open === 1 ? "" : "s"} in {counts.openRoles} role{counts.openRoles === 1 ? "" : "s"}: the dashed places are waiting for someone.
+          </Trans></p>
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        Tap a circle to step inside it. Tap a role to meet whoever holds it, or to apply for it.
-      </p>
+        <Trans context="VillageMap, p">Tap a circle to step inside it. Tap a role to meet whoever holds it, or to apply for it.
+      </Trans></p>
       {isAdmin && (
         <button
           type="button"
@@ -888,8 +890,8 @@ function VillageSummary({
           data-power-walk-launch
           className="w-full text-sm bg-amber/90 text-primary-foreground rounded-lg px-4 py-2 font-semibold"
         >
-          Walk the setup: roles, methods, shape
-        </button>
+          <Trans context="VillageMap, button">Walk the setup: roles, methods, shape
+        </Trans></button>
       )}
       {mayDeclareVillage && (
         <ShapePicker power={data.power} preview={shapePreview} onPreview={onPreview} onSaved={onSaved} />

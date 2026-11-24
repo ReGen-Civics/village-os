@@ -27,6 +27,7 @@ import {
   type SeatSettings,
   type SettingsGroup,
 } from "@shared/seatSettings";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const input =
   "w-full min-h-[44px] rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -158,6 +159,7 @@ function DateBox({ label, value, onChange }: { label: string; value: unknown; on
  * "Whole numbers only.", and no headline ever shows a rescaled figure.
  */
 function Amount({ label, minor, currency, onChange }: { label: string; minor: unknown; currency: string | undefined; onChange: (v: number | string | undefined) => void }) {
+  const { t } = useLingui();
   const digits = minorDigits(currency);
   const shown =
     typeof minor === "string"
@@ -166,7 +168,7 @@ function Amount({ label, minor, currency, onChange }: { label: string; minor: un
         ? String(minor / 10 ** digits)
         : "";
   return (
-    <Field label={currency ? `${label}, in ${currency}` : label}>
+    <Field label={currency ? t({ message: `${label}, in ${currency}`, context: "SeatSettingsFields, label" }) : label}>
       {(id) => (
         <input
           id={id}
@@ -188,10 +190,11 @@ function Amount({ label, minor, currency, onChange }: { label: string; minor: un
 }
 
 function TermFields({ g, set, openLabel }: { g: Obj; set: (next: Obj) => void; openLabel: string }) {
+  const { t } = useLingui();
   const mode = g.endsOn === null ? "season" : typeof g.endsOn === "string" ? "date" : g.lengthMoons !== undefined ? "moons" : "";
   return (
     <>
-      <Field label="How it ends">
+      <Field label={t({ message: "How it ends", context: "SeatSettingsFields, label" })}>
         {(id) => (
           <select
             id={id}
@@ -213,16 +216,17 @@ function TermFields({ g, set, openLabel }: { g: Obj; set: (next: Obj) => void; o
           </select>
         )}
       </Field>
-      {mode === "date" && <DateBox label="Ends on" value={g.endsOn} onChange={(v) => set({ ...g, endsOn: v ?? "" })} />}
-      {mode === "moons" && <Whole label="Moons from seating" min={1} max={LIMITS.lengthMoons} value={g.lengthMoons} onChange={(v) => set(put(g, "lengthMoons", v))} />}
-      <Whole label="Notice, in days" max={LIMITS.noticeDays} value={g.noticeDays} onChange={(v) => set(put(g, "noticeDays", v))} />
-      <DateBox label="Review on" value={g.reviewOn} onChange={(v) => set(put(g, "reviewOn", v))} />
-      <DateBox label="Renewal on" value={g.renewalOn} onChange={(v) => set(put(g, "renewalOn", v))} />
+      {mode === "date" && <DateBox label={t({ message: "Ends on", context: "SeatSettingsFields, label" })} value={g.endsOn} onChange={(v) => set({ ...g, endsOn: v ?? "" })} />}
+      {mode === "moons" && <Whole label={t({ message: "Moons from seating", context: "SeatSettingsFields, label" })} min={1} max={LIMITS.lengthMoons} value={g.lengthMoons} onChange={(v) => set(put(g, "lengthMoons", v))} />}
+      <Whole label={t({ message: "Notice, in days", context: "SeatSettingsFields, label" })} max={LIMITS.noticeDays} value={g.noticeDays} onChange={(v) => set(put(g, "noticeDays", v))} />
+      <DateBox label={t({ message: "Review on", context: "SeatSettingsFields, label" })} value={g.reviewOn} onChange={(v) => set(put(g, "reviewOn", v))} />
+      <DateBox label={t({ message: "Renewal on", context: "SeatSettingsFields, label" })} value={g.renewalOn} onChange={(v) => set(put(g, "renewalOn", v))} />
     </>
   );
 }
 
 function RhythmFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
+  const { t } = useLingui();
   const gatherings: Obj[] = Array.isArray(g.gatherings) ? g.gatherings : [];
   const quiet: number[] = Array.isArray(g.quietDays) ? g.quietDays : [];
   const setRow = (i: number, row: Obj) => set({ ...g, gatherings: gatherings.map((x, j) => (j === i ? row : x)) });
@@ -231,9 +235,9 @@ function RhythmFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
       <div className="space-y-3 sm:col-span-2">
         {gatherings.map((row, i) => (
           <fieldset key={i} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
-            <legend className="px-1 text-xs font-semibold text-foreground">Gathering {i + 1}</legend>
-            <Words label="Name" max={LIMITS.labelChars} wide={false} value={row.label} onChange={(v) => setRow(i, put(row, "label", v))} />
-            <Field label="Day">
+            <legend className="px-1 text-xs font-semibold text-foreground"><Trans context="SeatSettingsFields, legend">Gathering {i + 1}</Trans></legend>
+            <Words label={t({ message: "Name", context: "SeatSettingsFields, label" })} max={LIMITS.labelChars} wide={false} value={row.label} onChange={(v) => setRow(i, put(row, "label", v))} />
+            <Field label={t({ message: "Day", context: "SeatSettingsFields, label" })}>
               {(id) => (
                 <select id={id} className={input} value={row.weekday === undefined ? "" : String(row.weekday)} onChange={(e) => setRow(i, put(row, "weekday", wholeFrom(e.target.value)))}>
                   <option value="">Pick a day</option>
@@ -245,15 +249,15 @@ function RhythmFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
                 </select>
               )}
             </Field>
-            <Field label="Time">
+            <Field label={t({ message: "Time", context: "SeatSettingsFields, label" })}>
               {(id) => <input id={id} className={input} type="time" value={String(row.time ?? "")} onChange={(e) => setRow(i, put(row, "time", e.target.value))} />}
             </Field>
-            <Choice label="How often" value={row.every} options={GATHERING_EVERY} blank={null} onChange={(v) => setRow(i, put(row, "every", v))} />
+            <Choice label={t({ message: "How often", context: "SeatSettingsFields, label" })} value={row.every} options={GATHERING_EVERY} blank={null} onChange={(v) => setRow(i, put(row, "every", v))} />
             <div className="sm:col-span-2">
               <button type="button" className={smallButton} onClick={() => set({ ...g, gatherings: gatherings.filter((_, j) => j !== i) })}>
-                <X className="size-4" aria-hidden="true" />
+                <Trans context="SeatSettingsFields, button"><X className="size-4" aria-hidden="true" />
                 Remove this gathering
-              </button>
+              </Trans></button>
             </div>
           </fieldset>
         ))}
@@ -263,12 +267,12 @@ function RhythmFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
           disabled={gatherings.length >= LIMITS.gatherings}
           onClick={() => set({ ...g, gatherings: [...gatherings, { label: "", weekday: 1, time: "10:00", every: "week" }] })}
         >
-          <Plus className="size-4" aria-hidden="true" />
+          <Trans context="SeatSettingsFields, button"><Plus className="size-4" aria-hidden="true" />
           Add a gathering
-        </button>
+        </Trans></button>
       </div>
       <fieldset className="sm:col-span-2">
-        <legend className={labelClass}>Quiet days</legend>
+        <legend className={labelClass}><Trans context="SeatSettingsFields, legend">Quiet days</Trans></legend>
         <div className="mt-1 flex flex-wrap gap-2">
           {WEEKDAYS.map((d, n) => (
             <label key={d} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border px-3 text-sm text-foreground">
@@ -285,19 +289,20 @@ function RhythmFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
           ))}
         </div>
       </fieldset>
-      <Words label="Time zone (leave empty for the season's own)" max={64} value={g.tz} onChange={(v) => set(put(g, "tz", v))} />
+      <Words label={t({ message: "Time zone (leave empty for the season's own)", context: "SeatSettingsFields, label" })} max={64} value={g.tz} onChange={(v) => set(put(g, "tz", v))} />
     </>
   );
 }
 
 function MoneyFields({ group, g, set, openLabel }: { group: "pay" | "allowance"; g: Obj; set: (next: Obj) => void; openLabel: string }) {
+  const { t } = useLingui();
   const kinds = group === "pay" ? PAY_KINDS : ALLOWANCE_KINDS;
   const kind = String(g.kind ?? "");
   const amountKinds = group === "pay" ? ["fixed", "in-kind", "deferred"] : ["flat"];
   return (
     <>
       <Choice
-        label="Kind"
+        label={t({ message: "Kind", context: "SeatSettingsFields, label" })}
         value={g.kind}
         options={kinds}
         blank={openLabel}
@@ -305,36 +310,37 @@ function MoneyFields({ group, g, set, openLabel }: { group: "pay" | "allowance";
         onChange={(v) => set(v === "tbd" ? put(put(put(put(g, "kind", v), "amountMinor", undefined), "minMinor", undefined), "maxMinor", undefined) : put(g, "kind", v))}
       />
       <Words
-        label="Currency code"
+        label={t({ message: "Currency code", context: "SeatSettingsFields, label" })}
         max={3}
         wide={false}
         value={g.currency}
         onChange={(v) => set(put(g, "currency", v ? v.toUpperCase() : undefined))}
       />
-      {amountKinds.includes(kind) && <Amount label="Amount" minor={g.amountMinor} currency={g.currency} onChange={(v) => set(put(g, "amountMinor", v))} />}
+      {amountKinds.includes(kind) && <Amount label={t({ message: "Amount", context: "SeatSettingsFields, label" })} minor={g.amountMinor} currency={g.currency} onChange={(v) => set(put(g, "amountMinor", v))} />}
       {group === "pay" && kind === "range" && (
         <>
-          <Amount label="Lowest" minor={g.minMinor} currency={g.currency} onChange={(v) => set(put(g, "minMinor", v))} />
-          <Amount label="Highest" minor={g.maxMinor} currency={g.currency} onChange={(v) => set(put(g, "maxMinor", v))} />
+          <Amount label={t({ message: "Lowest", context: "SeatSettingsFields, label" })} minor={g.minMinor} currency={g.currency} onChange={(v) => set(put(g, "minMinor", v))} />
+          <Amount label={t({ message: "Highest", context: "SeatSettingsFields, label" })} minor={g.maxMinor} currency={g.currency} onChange={(v) => set(put(g, "maxMinor", v))} />
         </>
       )}
       {kind !== "none" && kind !== "honorary" && kind !== "reimbursed" && kind !== "tbd" && (
-        <Choice label="Each" value={g.per} options={MONEY_PER} blank={openLabel} onChange={(v) => set(put(g, "per", v))} />
+        <Choice label={t({ message: "Each", context: "SeatSettingsFields, label" })} value={g.per} options={MONEY_PER} blank={openLabel} onChange={(v) => set(put(g, "per", v))} />
       )}
-      <Words label="Note" area max={LIMITS.noteChars} value={g.note} onChange={(v) => set(put(g, "note", v))} />
+      <Words label={t({ message: "Note", context: "SeatSettingsFields, label" })} area max={LIMITS.noteChars} value={g.note} onChange={(v) => set(put(g, "note", v))} />
     </>
   );
 }
 
 function BonusFields({ g, set, openLabel }: { g: Obj; set: (next: Obj) => void; openLabel: string }) {
+  const { t } = useLingui();
   return (
     <>
-      <Choice label="Kind" value={g.kind} options={BONUS_KINDS} blank={openLabel} onChange={(v) => set(put(g, "kind", v))} />
+      <Choice label={t({ message: "Kind", context: "SeatSettingsFields, label" })} value={g.kind} options={BONUS_KINDS} blank={openLabel} onChange={(v) => set(put(g, "kind", v))} />
       {g.kind === "equity" && (
         <>
-          <Words label="The cap, in words" max={LIMITS.wordsChars} placeholder="Up to a set share, written here in words" value={g.capWords} onChange={(v) => set(put(g, "capWords", v))} />
-          <Words label="Rated by" max={LIMITS.wordsChars} value={g.ratedBy} onChange={(v) => set(put(g, "ratedBy", v))} />
-          <Words label="How often it is rated" max={LIMITS.wordsChars} value={g.cadence} onChange={(v) => set(put(g, "cadence", v))} />
+          <Words label={t({ message: "The cap, in words", context: "SeatSettingsFields, label" })} max={LIMITS.wordsChars} placeholder={t({ message: "Up to a set share, written here in words", context: "SeatSettingsFields, placeholder" })} value={g.capWords} onChange={(v) => set(put(g, "capWords", v))} />
+          <Words label={t({ message: "Rated by", context: "SeatSettingsFields, label" })} max={LIMITS.wordsChars} value={g.ratedBy} onChange={(v) => set(put(g, "ratedBy", v))} />
+          <Words label={t({ message: "How often it is rated", context: "SeatSettingsFields, label" })} max={LIMITS.wordsChars} value={g.cadence} onChange={(v) => set(put(g, "cadence", v))} />
         </>
       )}
     </>
@@ -342,33 +348,35 @@ function BonusFields({ g, set, openLabel }: { g: Obj; set: (next: Obj) => void; 
 }
 
 function QuestFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
+  const { t } = useLingui();
   return (
     <>
-      <Whole label="Fewest quests a moon" min={1} max={LIMITS.questsPerMoon} value={g.perMoonMin} onChange={(v) => set({ ...put(g, "perMoonMin", v), doneWhenRequired: true })} />
-      <Whole label="Most quests a moon" min={1} max={LIMITS.questsPerMoon} value={g.perMoonMax} onChange={(v) => set({ ...put(g, "perMoonMax", v), doneWhenRequired: true })} />
-      <Words label="How quests are agreed" max={LIMITS.wordsChars} value={g.agreedHow} onChange={(v) => set({ ...put(g, "agreedHow", v), doneWhenRequired: true })} />
-      <p className="text-xs text-muted-foreground sm:col-span-2">Every quest has a done when. That part is always on.</p>
+      <Whole label={t({ message: "Fewest quests a moon", context: "SeatSettingsFields, label" })} min={1} max={LIMITS.questsPerMoon} value={g.perMoonMin} onChange={(v) => set({ ...put(g, "perMoonMin", v), doneWhenRequired: true })} />
+      <Whole label={t({ message: "Most quests a moon", context: "SeatSettingsFields, label" })} min={1} max={LIMITS.questsPerMoon} value={g.perMoonMax} onChange={(v) => set({ ...put(g, "perMoonMax", v), doneWhenRequired: true })} />
+      <Words label={t({ message: "How quests are agreed", context: "SeatSettingsFields, label" })} max={LIMITS.wordsChars} value={g.agreedHow} onChange={(v) => set({ ...put(g, "agreedHow", v), doneWhenRequired: true })} />
+      <p className="text-xs text-muted-foreground sm:col-span-2"><Trans context="SeatSettingsFields, p">Every quest has a done when. That part is always on.</Trans></p>
     </>
   );
 }
 
 function ScoreboardFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
+  const { t } = useLingui();
   const measures: Obj[] = Array.isArray(g.measures) ? g.measures : [];
   const setRow = (i: number, row: Obj) => set({ ...g, measures: measures.map((x, j) => (j === i ? row : x)) });
   return (
     <div className="space-y-3 sm:col-span-2">
-      <p className="text-xs text-muted-foreground">A scoreboard measures the work. It never ranks people.</p>
+      <p className="text-xs text-muted-foreground"><Trans context="SeatSettingsFields, p">A scoreboard measures the work. It never ranks people.</Trans></p>
       {measures.map((row, i) => (
         <fieldset key={i} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
-          <legend className="px-1 text-xs font-semibold text-foreground">Measure {i + 1}</legend>
-          <Words label="What is measured" max={LIMITS.measureChars} value={row.measure} onChange={(v) => setRow(i, put(row, "measure", v))} />
-          <Words label="Target, in words" max={LIMITS.measureChars} wide={false} value={row.target} onChange={(v) => setRow(i, put(row, "target", v))} />
-          <Words label="Read from" max={LIMITS.measureChars} wide={false} value={row.readFrom} onChange={(v) => setRow(i, put(row, "readFrom", v))} />
+          <legend className="px-1 text-xs font-semibold text-foreground"><Trans context="SeatSettingsFields, legend">Measure {i + 1}</Trans></legend>
+          <Words label={t({ message: "What is measured", context: "SeatSettingsFields, label" })} max={LIMITS.measureChars} value={row.measure} onChange={(v) => setRow(i, put(row, "measure", v))} />
+          <Words label={t({ message: "Target, in words", context: "SeatSettingsFields, label" })} max={LIMITS.measureChars} wide={false} value={row.target} onChange={(v) => setRow(i, put(row, "target", v))} />
+          <Words label={t({ message: "Read from", context: "SeatSettingsFields, label" })} max={LIMITS.measureChars} wide={false} value={row.readFrom} onChange={(v) => setRow(i, put(row, "readFrom", v))} />
           <div className="sm:col-span-2">
             <button type="button" className={smallButton} onClick={() => set({ ...g, measures: measures.filter((_, j) => j !== i) })}>
-              <X className="size-4" aria-hidden="true" />
+              <Trans context="SeatSettingsFields, button"><X className="size-4" aria-hidden="true" />
               Remove this measure
-            </button>
+            </Trans></button>
           </div>
         </fieldset>
       ))}
@@ -378,18 +386,19 @@ function ScoreboardFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
         disabled={measures.length >= LIMITS.scoreMeasures}
         onClick={() => set({ ...g, measures: [...measures, { measure: "" }] })}
       >
-        <Plus className="size-4" aria-hidden="true" />
+        <Trans context="SeatSettingsFields, button"><Plus className="size-4" aria-hidden="true" />
         Add a measure
-      </button>
+      </Trans></button>
     </div>
   );
 }
 
 function EndingFields({ g, set }: { g: Obj; set: (next: Obj) => void }) {
+  const { t } = useLingui();
   const id = useId();
   return (
     <>
-      <Whole label="Notice, in days" max={LIMITS.noticeDays} value={g.noticeDays} onChange={(v) => set(put(g, "noticeDays", v))} />
+      <Whole label={t({ message: "Notice, in days", context: "SeatSettingsFields, label" })} max={LIMITS.noticeDays} value={g.noticeDays} onChange={(v) => set(put(g, "noticeDays", v))} />
       <div className="flex items-end">
         <label htmlFor={id} className="inline-flex min-h-[44px] items-center gap-2 text-sm text-foreground">
           <input id={id} type="checkbox" checked={g.payThroughNotice === true} onChange={(e) => set({ ...g, payThroughNotice: e.target.checked })} />
@@ -412,6 +421,7 @@ export default function SeatSettingsFields({
   /** The blank choice, when a field has no value yet. */
   openLabel?: string;
 }) {
+  const { t } = useLingui();
   const g: Obj = ((settings as Obj)[group] as Obj | undefined) ?? (group === "scoreboard" ? { measures: [] } : group === "quests" ? { doneWhenRequired: true } : {});
   const set = (next: Obj) => onChange({ ...settings, [group]: next } as SeatSettings);
   return (
@@ -419,8 +429,8 @@ export default function SeatSettingsFields({
       {group === "term" && <TermFields g={g} set={set} openLabel={openLabel} />}
       {group === "clocks" && (
         <>
-          <Choice label="Money keeps" value={g.pay} options={PAY_CLOCKS} blank={openLabel} onChange={(v) => set(put(g, "pay", v))} />
-          <Choice label="The work keeps" value={g.work} options={WORK_CLOCKS} blank={openLabel} onChange={(v) => set(put(g, "work", v))} />
+          <Choice label={t({ message: "Money keeps", context: "SeatSettingsFields, label" })} value={g.pay} options={PAY_CLOCKS} blank={openLabel} onChange={(v) => set(put(g, "pay", v))} />
+          <Choice label={t({ message: "The work keeps", context: "SeatSettingsFields, label" })} value={g.work} options={WORK_CLOCKS} blank={openLabel} onChange={(v) => set(put(g, "work", v))} />
         </>
       )}
       {group === "rhythm" && <RhythmFields g={g} set={set} />}

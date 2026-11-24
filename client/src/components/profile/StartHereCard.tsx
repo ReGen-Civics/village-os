@@ -47,6 +47,7 @@ import { articleFor } from "@shared/villageWord";
 import { useModule } from "@/modules/ModuleProvider";
 import { useMyGeneKeys } from "@/components/geneKeys/useMyGeneKeys";
 import { memberDoorShown } from "@/lib/brochure";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * The rung whose rule is being admitted. The server names it `ADMISSION_RUNG`
@@ -182,6 +183,7 @@ export interface StartHereCardProps {
 }
 
 export default function StartHereCard({ ownerId, me, signing, config, catalogue }: StartHereCardProps) {
+  const { t } = useLingui();
   const { user } = useAuth();
   // The seat card offers a hand only while the map module is on for this
   // reader, read exactly the way Roles.tsx reads it, so this door never leads
@@ -271,8 +273,8 @@ export default function StartHereCard({ ownerId, me, signing, config, catalogue 
       <div className="flex items-center gap-2">
         <Compass className="h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
         <h2 id="start-here-h" className="font-display text-sm font-semibold uppercase tracking-widest text-notice">
-          Start here
-        </h2>
+          <Trans context="StartHereCard, h2">Start here
+        </Trans></h2>
       </div>
       <p className="mt-3 font-display text-2xl font-bold leading-snug text-card-foreground sm:text-3xl">{step}</p>
       {lines.map((line) => (
@@ -299,7 +301,7 @@ export default function StartHereCard({ ownerId, me, signing, config, catalogue 
       {admitted ? <ContributorRoutes variant="links" except={["quest", "team"]} className="mt-6 max-w-xl border-t border-border pt-5" /> : null}
 
       {others.length ? (
-        <ul aria-label="Other ways forward" className="mt-6 space-y-3 border-t border-border pt-5">
+        <ul aria-label={t({ message: "Other ways forward", context: "StartHereCard, aria-label" })} className="mt-6 space-y-3 border-t border-border pt-5">
           {others.map((door) => (
             <li key={door.href} className="max-w-xl">
               <Link

@@ -55,12 +55,12 @@ export default function MyStanding({ standing }: { standing: Standing }) {
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-        <Scale className="w-4 h-4 text-notice" aria-hidden="true" />
+        <Trans context="MyStanding, h3"><Scale className="w-4 h-4 text-notice" aria-hidden="true" />
         Your weight
         <InfoTip
           tip="Weight is how much a vote counts. It is read when a ballot opens and frozen there, so a later change never rewrites a vote in flight."
           label="What voting weight is"
-        />
+        /></Trans>
       </h3>
 
       {!standing.eligible ? (
@@ -99,16 +99,16 @@ export default function MyStanding({ standing }: { standing: Standing }) {
           <p className="mt-2.5 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
             <CrowdFigure size={22} className="mt-0.5" />
             <span>
-              On a decision, the row of silhouettes fills by weight and never by heads, so this number is the share of
+              <Trans context="MyStanding, span">On a decision, the row of silhouettes fills by weight and never by heads, so this number is the share of
               it your vote fills.
-            </span>
+            </Trans></span>
           </p>
 
           {zero && (
             <p className="mt-3 rounded-lg bg-notice/10 px-3 py-2 text-sm text-notice leading-relaxed">
-              You hold no weight, so a vote from you would count for nothing. That is a decision somebody made, and it
+              <Trans context="MyStanding, p">You hold no weight, so a vote from you would count for nothing. That is a decision somebody made, and it
               has a reason on the record. Ask a steward for it.
-            </p>
+            </Trans></p>
           )}
         </>
       )}

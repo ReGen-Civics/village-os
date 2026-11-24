@@ -43,6 +43,7 @@ import { Handshake, KeyRound, Undo2 } from "lucide-react";
 import { Celebration } from "@/components/natural";
 import type { Ballot } from "./governanceApi";
 import { useCatalyst } from "@/lib/gameApi";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The date a member reads, from the timestamp the server sent.
@@ -153,14 +154,14 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
         </div>
         {t.consequence ? (
           <p className="mt-1 text-sm text-foreground leading-relaxed">
-            Whoever holds this can {t.consequence}.
-          </p>
+            <Trans context="TransferCeremony, p">Whoever holds this can {t.consequence}.
+          </Trans></p>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
-          </p>
+            <Trans context="TransferCeremony, p">This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
+          </Trans></p>
         )}
-        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Where it is used: {t.surface}.</p>}
+        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed"><Trans context="TransferCeremony, p">Where it is used: {t.surface}.</Trans></p>}
 
         <dl className="mt-4 space-y-3 border-t border-border pt-3 text-sm">
           {/* WHO HAS IT TODAY. Null means nobody has taken it on, and the
@@ -191,9 +192,9 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
               {toWhom}
               {t.toRoleName === null && (
                 <span className="text-muted-foreground">
-                  {" "}
+                  <Trans context="TransferCeremony, span">{" "}
                   (this role has been retired since the vote opened, so nobody is seated to act on it)
-                </span>
+                </Trans></span>
               )}
             </dd>
           </div>
@@ -206,10 +207,10 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
               {crossed ? "What changed that day" : "What changes on the day it crosses"}
             </dt>
             <dd className="mt-0.5 text-foreground leading-relaxed">
-              {catalyst.aNameCap} who is not seated in {toWhom} stops passing this gate by being {catalyst.aName}. They
+              <Trans context="TransferCeremony, dd">{catalyst.aNameCap} who is not seated in {toWhom} stops passing this gate by being {catalyst.aName}. They
               can still act on it, and every time they do, the village is told and the act goes on the village's own
               record. Handing it back is the same kind of act, in the open.
-            </dd>
+            </Trans></dd>
           </div>
         </dl>
 
@@ -218,9 +219,9 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
             that was written down. */}
         {crossed && (
           <p className="mt-4 rounded-lg border border-open/40 bg-card/60 px-4 py-3 text-sm text-foreground leading-relaxed">
-            {toWhom} has looked after this since {crossedOn ?? "the day this vote closed"}, by a vote of the whole
+            <Trans context="TransferCeremony, p">{toWhom} has looked after this since {crossedOn ?? "the day this vote closed"}, by a vote of the whole
             village{ballot.closedBy ? `, closed by ${ballot.closedBy}` : ""}.
-            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}
+            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}</Trans>
           </p>
         )}
 
@@ -231,11 +232,11 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
             says it: a carried ballot with no crossing row against its id. */}
         {!open && !crossed && ballot.status === "passed" && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            The village said yes, and this power has not moved. Nothing is lost: the ask stands on the record with
+            <Trans context="TransferCeremony, p">The village said yes, and this power has not moved. Nothing is lost: the ask stands on the record with
             every word and every vote, and it can be taken up again.
             {t.roleCarriesIt
               ? ""
-              : ` ${toWhom} does not carry this power at the moment, so nobody in it could act the day it crossed. That is the usual reason, and giving the role the power is what clears it.`}
+              : ` ${toWhom} does not carry this power at the moment, so nobody in it could act the day it crossed. That is the usual reason, and giving the role the power is what clears it.`}</Trans>
           </p>
         )}
 
@@ -245,9 +246,9 @@ function CrossingCard({ ballot, t, fresh }: { ballot: Ballot; t: PowerFacts; fre
             was running. */}
         {!t.movable && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            This platform does not move {t.capability}. A vote here records what the village wants, and the power
+            <Trans context="TransferCeremony, p">This platform does not move {t.capability}. A vote here records what the village wants, and the power
             stays where it is until the platform can carry it across.
-          </p>
+          </Trans></p>
         )}
       </div>
     </section>
@@ -298,14 +299,14 @@ function GrantCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
 
         {t.consequence ? (
           <p className="mt-1 text-sm text-foreground leading-relaxed">
-            Whoever carries this can {t.consequence}.
-          </p>
+            <Trans context="TransferCeremony, p">Whoever carries this can {t.consequence}.
+          </Trans></p>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
-          </p>
+            <Trans context="TransferCeremony, p">This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
+          </Trans></p>
         )}
-        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Where it is used: {t.surface}.</p>}
+        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed"><Trans context="TransferCeremony, p">Where it is used: {t.surface}.</Trans></p>}
 
         <dl className="mt-4 space-y-3 border-t border-border pt-3 text-sm">
           <div>
@@ -320,9 +321,9 @@ function GrantCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
               {toWhom}
               {t.toRoleName === null && (
                 <span className="text-muted-foreground">
-                  {" "}
+                  <Trans context="TransferCeremony, span">{" "}
                   (this role has been retired since the vote opened, so nobody is seated to act on it)
-                </span>
+                </Trans></span>
               )}
             </dd>
           </div>
@@ -336,21 +337,21 @@ function GrantCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
               {carried ? "What changed" : "What changes if this carries"}
             </dt>
             <dd className="mt-0.5 text-foreground leading-relaxed">
-              Anybody seated in {toWhom} can do this. The admin panel keeps it too, so {catalyst.aName} can still do
+              <Trans context="TransferCeremony, dd">Anybody seated in {toWhom} can do this. The admin panel keeps it too, so {catalyst.aName} can still do
               it and nothing about that changes here.
-            </dd>
+            </Trans></dd>
           </div>
 
           {/* WHERE THIS SITS IN THE JOURNEY, stated as the mechanism and never
               as a next step the village owes anybody. A grant that stands on
               its own forever is a whole answer. */}
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Why this comes first</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><Trans context="TransferCeremony, dt">Why this comes first</Trans></dt>
             <dd className="mt-0.5 text-foreground leading-relaxed">
-              A role has to carry a power before the village can vote to hold it, because a holder that cannot act is
+              <Trans context="TransferCeremony, dd">A role has to carry a power before the village can vote to hold it, because a holder that cannot act is
               not a holder. The village can go on to ask to hold this one, and it can leave it here. Both are whole
               answers.
-            </dd>
+            </Trans></dd>
           </div>
         </dl>
 
@@ -359,9 +360,9 @@ function GrantCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
             off the vote's own outcome. */}
         {carried && t.roleCarriesIt && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            {toWhom} carries this today, by a vote of the whole village
+            <Trans context="TransferCeremony, p">{toWhom} carries this today, by a vote of the whole village
             {ballot.closedBy ? `, closed by ${ballot.closedBy}` : ""}.
-            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}
+            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}</Trans>
           </p>
         )}
 
@@ -369,9 +370,9 @@ function GrantCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
             never paper over, and the honest reading of the same one fact. */}
         {carried && !t.roleCarriesIt && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            The village said yes, and {toWhom} does not carry this today. Nothing is lost: the ask stands on the
+            <Trans context="TransferCeremony, p">The village said yes, and {toWhom} does not carry this today. Nothing is lost: the ask stands on the
             record with every word and every vote, and it can be taken up again.
-          </p>
+          </Trans></p>
         )}
       </div>
     </section>
@@ -415,14 +416,14 @@ function ReturnCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
 
         {t.consequence ? (
           <p className="mt-1 text-sm text-foreground leading-relaxed">
-            Whoever holds this can {t.consequence}.
-          </p>
+            <Trans context="TransferCeremony, p">Whoever holds this can {t.consequence}.
+          </Trans></p>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
-          </p>
+            <Trans context="TransferCeremony, p">This build has no sentence for what {t.capability} opens. The vote and the record below are unaffected.
+          </Trans></p>
         )}
-        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Where it is used: {t.surface}.</p>}
+        {t.surface && <p className="mt-1 text-sm text-muted-foreground leading-relaxed"><Trans context="TransferCeremony, p">Where it is used: {t.surface}.</Trans></p>}
 
         <dl className="mt-4 space-y-3 border-t border-border pt-3 text-sm">
           <div>
@@ -447,10 +448,10 @@ function ReturnCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
               {carried ? "What changed" : "What changes if this carries"}
             </dt>
             <dd className="mt-0.5 text-foreground leading-relaxed">
-              The admin panel carries this one again. {catalyst.aNameCap} passes this gate by being {catalyst.aName},
+              <Trans context="TransferCeremony, dd">The admin panel carries this one again. {catalyst.aNameCap} passes this gate by being {catalyst.aName},
               and the village stops being told each time somebody acts on it. The role keeps the power itself, so the
               same people can still do it. What ends is the village holding it.
-            </dd>
+            </Trans></dd>
           </div>
 
           {/* THE SENTENCE THIS CARD EXISTS FOR. A village that can only ever
@@ -458,19 +459,19 @@ function ReturnCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
               again" on the way out is governing. It states the mechanism and
               asks the village for nothing. */}
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">And afterwards</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><Trans context="TransferCeremony, dt">And afterwards</Trans></dt>
             <dd className="mt-0.5 text-foreground leading-relaxed">
-              The village can ask for this one again whenever it wants to, on the same ceremony it used the first
+              <Trans context="TransferCeremony, dd">The village can ask for this one again whenever it wants to, on the same ceremony it used the first
               time. Handing a power back is one of the ordinary things a village does with a power.
-            </dd>
+            </Trans></dd>
           </div>
         </dl>
 
         {carried && !stillHeld && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            The admin panel has carried this one since this vote closed, by a decision of the whole village
+            <Trans context="TransferCeremony, p">The admin panel has carried this one since this vote closed, by a decision of the whole village
             {ballot.closedBy ? `, closed by ${ballot.closedBy}` : ""}.
-            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}
+            {ballot.outcomeNote ? ` The village's words on it: ${ballot.outcomeNote}` : ""}</Trans>
           </p>
         )}
 
@@ -479,9 +480,9 @@ function ReturnCard({ ballot, t }: { ballot: Ballot; t: PowerFacts }) {
             the executor deleted was written again by something else. */}
         {carried && stillHeld && (
           <p className="mt-4 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground leading-relaxed">
-            The village said yes, and this village is holding this one today. The holding above is the live record,
+            <Trans context="TransferCeremony, p">The village said yes, and this village is holding this one today. The holding above is the live record,
             and this ask stands on the record beside it with every word and every vote.
-          </p>
+          </Trans></p>
         )}
       </div>
     </section>

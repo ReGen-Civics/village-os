@@ -28,7 +28,7 @@ import { statusFor } from "@/lib/questStatus";
 import { PlantGlyph } from "@/components/openWork/StatusMark";
 import { useStatusWords } from "@/components/openWork/statusWords";
 import { usePlaceWords } from "@/components/openWork/placeWords";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { Gauge, MapPin, Target } from "lucide-react";
 import { questFit, type QuestFit } from "@shared/commitment";
 import ExampleStamp from "@/components/openWork/ExampleStamp";
@@ -174,8 +174,8 @@ export default function QuestCard({
           <div className="absolute top-3 right-3 flex gap-1.5">
             {statusIs(quest, "seasonal") && !chip && (
               <span className="px-2 py-0.5 rounded-full bg-white/85 text-teal-deep text-[10px] font-bold uppercase tracking-wide">
-                Seasonal
-              </span>
+                <Trans context="QuestCard, span">Seasonal
+              </Trans></span>
             )}
             {chip && (
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${chip.cls}`}>
@@ -267,9 +267,9 @@ export default function QuestCard({
               )}
               {done > 0 && (
                 <span className="inline-flex items-center gap-1 text-muted-foreground">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <Trans context="QuestCard, span"><CheckCircle2 className="w-3.5 h-3.5" />
                   {done} completed
-                </span>
+                </Trans></span>
               )}
             </div>
           )}
@@ -295,7 +295,7 @@ export default function QuestCard({
           )}
 
           <div className="mt-auto pt-2 flex items-center justify-between text-sm font-semibold text-notice">
-            <span>See the quest</span>
+            <span><Trans context="QuestCard, span">See the quest</Trans></span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </div>
         </div>

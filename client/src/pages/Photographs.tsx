@@ -35,7 +35,7 @@ import BreathingLoader from "@/components/natural/BreathingLoader";
 import PhotoCard, { BTN, jsonHeaders } from "@/components/places/PhotoCard";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import type { PlacePhoto } from "@shared/placePhotos";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
 
 interface IndexPage {
@@ -122,14 +122,14 @@ function PhotographsPage() {
     return (
       <Layout>
         <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
-          <h1 className="font-serif text-3xl">Every photograph</h1>
+          <h1 className="font-serif text-3xl"><Trans context="Photographs, h1">Every photograph</Trans></h1>
           <p className="rounded-xl border border-border bg-card p-6">
-            This village keeps its pictures to members.{" "}
+            <Trans context="Photographs, p">This village keeps its pictures to members.{" "}
             <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className="text-teal-deep underline">
               Sign in
             </Link>{" "}
             to read them.
-          </p>
+          </Trans></p>
         </div>
       </Layout>
     );
@@ -143,19 +143,19 @@ function PhotographsPage() {
     <Layout>
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
         <header className="space-y-2">
-          <h1 className="font-serif text-3xl">Every photograph</h1>
+          <h1 className="font-serif text-3xl"><Trans context="Photographs, h1">Every photograph</Trans></h1>
           <p className="text-muted-foreground">
-            Every picture anybody has added to this village, newest first, whatever place it is filed under. Each one
+            <Trans context="Photographs, p">Every picture anybody has added to this village, newest first, whatever place it is filed under. Each one
             carries the name of whoever took it and the month it was taken.
-          </p>
+          </Trans></p>
           <p className="text-muted-foreground">
-            If one of these is a photograph of you and you want it down, find it here and press "This is a photograph of
+            <Trans context="Photographs, p">If one of these is a photograph of you and you want it down, find it here and press "This is a photograph of
             me". It goes dark straight away, the file stops answering, and the curators get your request.
-          </p>
-          <nav aria-label="Places">
+          </Trans></p>
+          <nav aria-label={t({ message: "Places", context: "Photographs, aria-label" })}>
             <Link href="/places" className="text-sm text-teal-deep underline inline-block py-1.5 min-h-[44px]">
-              Browse by place instead
-            </Link>
+              <Trans context="Photographs, Link">Browse by place instead
+            </Trans></Link>
           </nav>
         </header>
 
@@ -166,22 +166,22 @@ function PhotographsPage() {
             server's own refusal, so the two never say different things. */}
         {head && !head.signedIn && (
           <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-            <Link href={`/login?next=${encodeURIComponent("/photographs")}`} className="text-teal-deep underline">
+            <Trans context="Photographs, p"><Link href={`/login?next=${encodeURIComponent("/photographs")}`} className="text-teal-deep underline">
               Sign in
             </Link>{" "}
             to ask for a photograph of you to come down. A request needs an account, because one press from a signed
             out stranger would be enough to darken any picture here and leave nobody to talk to about it afterwards.
-          </p>
+          </Trans></p>
         )}
 
         <p role="status" aria-live="polite" className="text-sm text-teal-deep min-h-[20px]">{say}</p>
 
         {failed ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            The photographs did not load. Reload the page to try again.
-          </p>
+            <Trans context="Photographs, p">The photographs did not load. Reload the page to try again.
+          </Trans></p>
         ) : !pages ? (
-          <BreathingLoader label="Opening the village's photographs" />
+          <BreathingLoader label={t({ message: "Opening the village's photographs", context: "Photographs, label" })} />
         ) : photos.length === 0 ? (
           <ComingSoonPanel title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })} body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })} door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }} />
         ) : (
@@ -205,7 +205,7 @@ function PhotographsPage() {
                 {busy ? "Opening..." : "Show older"}
               </button>
             ) : (
-              <p className="text-sm text-muted-foreground">That is the whole record, back to the first picture.</p>
+              <p className="text-sm text-muted-foreground"><Trans context="Photographs, p">That is the whole record, back to the first picture.</Trans></p>
             )}
           </>
         )}

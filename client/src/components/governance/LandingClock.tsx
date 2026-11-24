@@ -16,6 +16,7 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { countdown, tickMsFor } from "./voteBars";
+import { Trans } from "@lingui/react/macro";
 
 export function landingReading(
   landsAtIso: string,
@@ -68,8 +69,8 @@ export default function LandingClock({ landsAt, sentence }: { landsAt: string; s
         </span>
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
-        {sentence} It takes effect {on}.
-      </p>
+        <Trans context="LandingClock, p">{sentence} It takes effect {on}.
+      </Trans></p>
     </div>
   );
 }

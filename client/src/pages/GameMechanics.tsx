@@ -62,6 +62,7 @@ import InfoTip, { DialFact } from "@/components/InfoTip";
 import LongText from "@/components/LongText";
 import PurposeAlignmentField, { usePurposeAlignment } from "@/components/governance/PurposeAlignmentField";
 import { AskVillageButton, mayAskVillageOn } from "./gameMechanicsAskVillage";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface MechanicsVariable {
   key: string;
@@ -470,6 +471,7 @@ function DialEditor({
 }
 
 export default function GameMechanics() {
+  const { t } = useLingui();
   const cfg = useGameConfig();
   // A LABEL. Who may withdraw is unchanged: the route still checks
   // proposal.decide and isAdmin, and this only says the village's word for it.
@@ -777,17 +779,17 @@ export default function GameMechanics() {
       <section className="bg-teal-deep text-white py-16">
         <div className="container max-w-3xl mx-auto px-4 text-center">
           <Scale className="w-8 h-8 text-amber mx-auto mb-3" />
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-3">Game Mechanics</h1>
+          <h1 className="font-display text-4xl md:text-5xl font-bold mb-3"><Trans context="GameMechanics, h1">Game Mechanics</Trans></h1>
           {/* No venue in this sentence. It renders before the snapshot lands,
               and where the binding vote happens is this village's own answer:
               the old wording named Hypha as a flat fact and was false for
               every village running its own ballots. The Proposals section
               says which, once the page knows. */}
           <p className="text-white/80 max-w-2xl mx-auto">
-            Every rule this Game runs on, in the open, and yours to change. Adjust a dial to
+            <Trans context="GameMechanics, p">Every rule this Game runs on, in the open, and yours to change. Adjust a dial to
             start a proposal; the village senses it here, then votes on it, and every
             change lands on the permanent record.
-            {villageName ? ` This is how ${villageName} plays.` : ""}
+            {villageName ? ` This is how ${villageName} plays.` : ""}</Trans>
           </p>
         </div>
       </section>
@@ -804,10 +806,10 @@ export default function GameMechanics() {
           )}
           {failed && (
             <p role="alert" className="text-center text-muted-foreground">
-              The mechanics couldn't be loaded just now. Reload to try again.
-            </p>
+              <Trans context="GameMechanics, p">The mechanics couldn't be loaded just now. Reload to try again.
+            </Trans></p>
           )}
-          {!snapshot && !failed && <p className="text-center text-muted-foreground">Loading the rules of the Game…</p>}
+          {!snapshot && !failed && <p className="text-center text-muted-foreground"><Trans context="GameMechanics, p">Loading the rules of the Game…</Trans></p>}
 
           {snapshot && (
             <>
@@ -815,12 +817,12 @@ export default function GameMechanics() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Lock className="w-5 h-5 text-teal-deep" />
-                  <h2 className="font-display text-2xl font-bold text-teal-deep">The Constitution</h2>
+                  <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="GameMechanics, h2">The Constitution</Trans></h2>
                 </div>
                 <p className="text-sm text-stone-600 mb-5 max-w-2xl">
-                  These are enforced by the platform itself and cannot be changed by any vote,
+                  <Trans context="GameMechanics, p">These are enforced by the platform itself and cannot be changed by any vote,
                   admin, or founder. Everything below them is tunable <em>because</em> these are not.
-                </p>
+                </Trans></p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {snapshot.constitution.map((law) => (
                     <m.div
@@ -842,10 +844,10 @@ export default function GameMechanics() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <SlidersHorizontal className="w-5 h-5 text-teal-deep" />
-                  <h2 className="font-display text-2xl font-bold text-teal-deep">The Dials</h2>
+                  <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="GameMechanics, h2">The Dials</Trans></h2>
                 </div>
                 <p className="text-sm text-stone-600 mb-2 max-w-2xl">
-                  Every tunable rule, grouped by the part of the Game it shapes.{" "}
+                  <Trans context="GameMechanics, p">Every tunable rule, grouped by the part of the Game it shapes.{" "}
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 text-xs align-middle">
                     <Users className="w-3 h-3" /> community
                   </span>{" "}
@@ -854,22 +856,22 @@ export default function GameMechanics() {
                     <Lock className="w-3 h-3" /> founder-held
                   </span>{" "}
                   dials stay with the founders. Every dial only ever moves within the bounds shown.
-                </p>
+                </Trans></p>
                 {!user && (
                   <p className="text-xs text-stone-500 mb-5">
-                    Sign in to stage changes and propose. Reading is open to everyone.
-                  </p>
+                    <Trans context="GameMechanics, p">Sign in to stage changes and propose. Reading is open to everyone.
+                  </Trans></p>
                 )}
                 {standing?.denied && (
                   <p role="alert" className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-5 inline-block">
-                    A standing warning currently suspends your proposal rights. Talk to a steward.
-                  </p>
+                    <Trans context="GameMechanics, p">A standing warning currently suspends your proposal rights. Talk to a steward.
+                  </Trans></p>
                 )}
                 {standing && !standing.denied && !standing.qualified && (
                   <p className="text-xs text-stone-500 mb-5">
-                    You can draft proposals; a qualified member's sponsorship opens them.
+                    <Trans context="GameMechanics, p">You can draft proposals; a qualified member's sponsorship opens them.
                     {standing.recognitionRequired > 0 &&
-                      ` Full standing takes ${standing.recognitionRequired} earned recognition (you have ${standing.recognitionHeld}).`}
+                      ` Full standing takes ${standing.recognitionRequired} earned recognition (you have ${standing.recognitionHeld}).`}</Trans>
                   </p>
                 )}
                 {/*
@@ -889,18 +891,18 @@ export default function GameMechanics() {
                   */}
                 <div className="mb-4 max-w-md">
                   <label htmlFor="dial-search" className="sr-only">
-                    Search the dials
-                  </label>
+                    <Trans context="GameMechanics, label">Search the dials
+                  </Trans></label>
                   <input
                     id="dial-search"
                     type="search"
                     value={dialQuery}
                     onChange={(e) => setDialQuery(e.target.value)}
-                    placeholder="Search dials by name, key, or what they do"
+                    placeholder={t({ message: "Search dials by name, key, or what they do", context: "GameMechanics, placeholder" })}
                     className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
                   />
                   {allDials.some((v) => v.key.startsWith("comms.")) && (
-                    <Link href="/village-email" className="block text-xs text-teal-deep underline underline-offset-2 mt-2">See every email the village sends, and when</Link>
+                    <Link href="/village-email" className="block text-xs text-teal-deep underline underline-offset-2 mt-2"><Trans context="GameMechanics, Link">See every email the village sends, and when</Trans></Link>
                   )}
                   <p aria-live="polite" className="text-xs text-stone-500 mt-1">
                     {dialSearch
@@ -910,9 +912,9 @@ export default function GameMechanics() {
                 </div>
                 {dialSearch && categories.length === 0 && (
                   <p className="text-sm text-stone-500">
-                    No dial matches that. The search reads each dial's name, its key, its
+                    <Trans context="GameMechanics, p">No dial matches that. The search reads each dial's name, its key, its
                     category, and the description under it.
-                  </p>
+                  </Trans></p>
                 )}
                 <div className="space-y-3">
                   {categories.map((cat) => {
@@ -932,9 +934,9 @@ export default function GameMechanics() {
                           <span className="font-semibold text-stone-900">
                             {cat}
                             <span className="ml-2 text-xs font-normal text-stone-500">
-                              {vars.length} {dialSearch ? "matching " : ""}dial{vars.length === 1 ? "" : "s"}
+                              <Trans context="GameMechanics, span">{vars.length} {dialSearch ? "matching " : ""}dial{vars.length === 1 ? "" : "s"}
                               {tuned > 0 ? ` · ${tuned} village-tuned` : ""}
-                              {stagedHere > 0 ? ` · ${stagedHere} staged` : ""}
+                              {stagedHere > 0 ? ` · ${stagedHere} staged` : ""}</Trans>
                             </span>
                           </span>
                           <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -958,7 +960,7 @@ export default function GameMechanics() {
                                       )}
                                       {!v.isDefault && stagedValue === undefined && (
                                         <span className="ml-2 text-[11px] font-normal text-teal-deep align-middle">
-                                          village-tuned · default {displayValue(v, v.default)}
+                                          <Trans context="GameMechanics, span">village-tuned · default {displayValue(v, v.default)}</Trans>
                                         </span>
                                       )}
                                     </span>
@@ -982,19 +984,19 @@ export default function GameMechanics() {
                                   <p className="text-[11px] text-stone-500 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                                     {v.ring === "open" ? (
                                       <span className="inline-flex items-center gap-1 text-emerald-700">
-                                        <Users className="w-3 h-3" /> community dial
-                                      </span>
+                                        <Trans context="GameMechanics, span"><Users className="w-3 h-3" /> community dial
+                                      </Trans></span>
                                     ) : (
                                       <span className="inline-flex items-center gap-1">
-                                        <Lock className="w-3 h-3" /> founder-held
-                                      </span>
+                                        <Trans context="GameMechanics, span"><Lock className="w-3 h-3" /> founder-held
+                                      </Trans></span>
                                     )}
                                     {v.min != null && v.max != null && (
                                       <span>
-                                        bounds {v.min}-{v.max}
+                                        <Trans context="GameMechanics, span">bounds {v.min}-{v.max}</Trans>
                                       </span>
                                     )}
-                                    {v.applyTiming === "cycle-close" && <span>changes take effect at the next cycle close</span>}
+                                    {v.applyTiming === "cycle-close" && <span><Trans context="GameMechanics, span">changes take effect at the next cycle close</Trans></span>}
                                     <span className="font-mono">{v.key}</span>
                                   </p>
                                   <SettingHistory settingKey={v.key} label={v.label} valueOf={amendmentValue} />
@@ -1013,7 +1015,7 @@ export default function GameMechanics() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Megaphone className="w-5 h-5 text-teal-deep" />
-                  <h2 className="font-display text-2xl font-bold text-teal-deep">Proposals</h2>
+                  <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="GameMechanics, h2">Proposals</Trans></h2>
                 </div>
                 {/* The venue, from the server, in the one place the page has
                     room to say it. Both readings are true of a real village:
@@ -1029,7 +1031,7 @@ export default function GameMechanics() {
                     comes and goes on a number nobody was shown is the kind of
                     thing a member reads as the page being broken. */}
                 <p className="text-sm text-stone-600 mb-5 max-w-2xl">
-                  Rule changes the village is weighing. Support gathers here
+                  <Trans context="GameMechanics, p">Rule changes the village is weighing. Support gathers here
                   {supportThreshold > 0
                     ? ` (${supportThreshold} supporter${supportThreshold === 1 ? "" : "s"} sends one to the vote)`
                     : ""}
@@ -1037,11 +1039,11 @@ export default function GameMechanics() {
                     ? "; the binding vote runs here, on this village's own ballot, and a proposal that carries is"
                     : "; the binding vote runs on the village's Hypha, and a proposal that carries is"}{" "}
                   applied and recorded on the amendment ledger.
-                </p>
+                </Trans></p>
                 {activeProposals.length === 0 && (
                   <p className="text-sm text-stone-500">
-                    Nothing is being proposed right now. Adjust a community dial above to start.
-                  </p>
+                    <Trans context="GameMechanics, p">Nothing is being proposed right now. Adjust a community dial above to start.
+                  </Trans></p>
                 )}
                 <div className="space-y-3">
                   {activeProposals.map((p) => {
@@ -1065,9 +1067,9 @@ export default function GameMechanics() {
                           </span>
                         </div>
                         <p className="text-xs text-stone-500 mb-2">
-                          by {p.proposer} · {new Date(p.createdAt).toLocaleDateString()} · {p.supports} supporter
+                          <Trans context="GameMechanics, p">by {p.proposer} · {new Date(p.createdAt).toLocaleDateString()} · {p.supports} supporter
                           {p.supports === 1 ? "" : "s"}
-                          {p.sponsors > 0 ? ` · sponsored` : ""}
+                          {p.sponsors > 0 ? ` · sponsored` : ""}</Trans>
                         </p>
                         <p className="text-sm text-stone-600 mb-3 leading-relaxed">{p.rationale}</p>
                         <BallotReturnNote proposal={p} />
@@ -1079,10 +1081,10 @@ export default function GameMechanics() {
                               <span className="line-through text-stone-500">{c.fromDisplay}</span> →{" "}
                               <span className="font-semibold text-teal-deep">{c.toDisplay}</span>
                               {c.applyTiming === "cycle-close" && (
-                                <span className="text-[11px] text-stone-500"> (at next cycle close)</span>
+                                <span className="text-[11px] text-stone-500"> <Trans context="GameMechanics, span">(at next cycle close)</Trans></span>
                               )}
                               {c.currentValue !== null && c.currentValue !== c.from && (
-                                <span className="text-[11px] text-amber-700"> · baseline has since moved to {c.currentValue}</span>
+                                <span className="text-[11px] text-amber-700"> <Trans context="GameMechanics, span">· baseline has since moved to {c.currentValue}</Trans></span>
                               )}
                             </li>
                           ))}
@@ -1094,11 +1096,11 @@ export default function GameMechanics() {
                               onClick={() => act(`/api/game/mechanics/proposals/${p.id}/support`)}
                               className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium hover:bg-teal-deep-dark"
                             >
-                              Support
-                            </button>
+                              <Trans context="GameMechanics, button">Support
+                            </Trans></button>
                           )}
                           {user && p.status === "open" && backedIds.has(p.id) && (
-                            <span className="text-xs text-emerald-700">You support this</span>
+                            <span className="text-xs text-emerald-700"><Trans context="GameMechanics, span">You support this</Trans></span>
                           )}
                           {user && p.status === "draft" && standing?.qualified && (
                             <button
@@ -1106,8 +1108,8 @@ export default function GameMechanics() {
                               onClick={() => act(`/api/game/mechanics/proposals/${p.id}/sponsor`)}
                               className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium hover:bg-teal-deep-dark"
                             >
-                              Sponsor this draft
-                            </button>
+                              <Trans context="GameMechanics, button">Sponsor this draft
+                            </Trans></button>
                           )}
                           {/* THE DOOR TO THE VILLAGE'S OWN VOTE. The route
                               behind it shipped complete and unreachable: no
@@ -1122,8 +1124,8 @@ export default function GameMechanics() {
                               onClick={() => openBallot(p)}
                               className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium hover:bg-teal-deep-dark"
                             >
-                              Open the village vote
-                            </button>
+                              <Trans context="GameMechanics, button">Open the village vote
+                            </Trans></button>
                           )}
                           {mayAskVillageOn(p, standing) && <AskVillageButton onAsk={() => openBallot(p)} />}
                           {/* 0219: the field asks itself whether to render, from
@@ -1144,7 +1146,7 @@ export default function GameMechanics() {
                               is first and it is the default. */}
                           {mayOpenBallotOn(p) && answerable.length > 0 && (
                             <label className="flex flex-col gap-1 basis-full text-xs text-stone-600">
-                              <span>Does this answer an objection? Naming one is optional.</span>
+                              <span><Trans context="GameMechanics, span">Does this answer an objection? Naming one is optional.</Trans></span>
                               <select
                                 value={answersFor[p.id] ?? ""}
                                 onChange={(e) =>
@@ -1185,8 +1187,8 @@ export default function GameMechanics() {
                               onClick={() => continueToHypha(p.id)}
                               className="inline-flex items-center gap-1.5 text-sm text-teal-deep font-medium hover:underline"
                             >
-                              Continue to Hypha ↗
-                            </button>
+                              <Trans context="GameMechanics, button">Continue to Hypha ↗
+                            </Trans></button>
                           )}
                           {user && p.status === "open" && !onSite && (
                             <button
@@ -1195,8 +1197,8 @@ export default function GameMechanics() {
                               className="text-sm text-stone-600 hover:text-stone-900 hover:underline"
                               title="Proposer only: marks this as taken to Hypha for the binding vote"
                             >
-                              I've taken it to Hypha
-                            </button>
+                              <Trans context="GameMechanics, button">I've taken it to Hypha
+                            </Trans></button>
                           )}
                           {user && (p.status === "to_hypha" || p.status === "passed_claimed") && (
                             <button
@@ -1211,7 +1213,7 @@ export default function GameMechanics() {
                                 if (url) act(`/api/game/mechanics/proposals/${p.id}/link-hypha`, { url });
                               }}
                               className={`text-sm font-medium hover:underline ${p.hyphaProposalId ? "text-emerald-700" : "text-amber-700"}`}
-                              title="The chain reports outcomes by proposal number, not by title. This link is how the verified result finds its way home"
+                              title={t({ message: "The chain reports outcomes by proposal number, not by title. This link is how the verified result finds its way home", context: "GameMechanics, title" })}
                             >
                               {p.hyphaProposalId
                                 ? `On-chain #${p.hyphaProposalId} linked${p.hubLinkSynced ? " ✓" : " (hub sync pending, click to retry)"}`
@@ -1229,8 +1231,8 @@ export default function GameMechanics() {
                               }}
                               className="text-sm text-stone-600 hover:text-stone-900 hover:underline"
                             >
-                              It passed on Hypha
-                            </button>
+                              <Trans context="GameMechanics, button">It passed on Hypha
+                            </Trans></button>
                           )}
                           {/* APPLYABLE, not a list retyped here. This condition
                               read three statuses while the route accepted
@@ -1270,8 +1272,8 @@ export default function GameMechanics() {
                               }}
                               className="text-sm bg-amber text-foreground rounded-lg px-3 py-1.5 font-medium"
                             >
-                              Adopt this
-                            </button>
+                              <Trans context="GameMechanics, button">Adopt this
+                            </Trans></button>
                           )}
                           {user && (p.status === "open" || p.status === "draft") && (
                             <button
@@ -1280,8 +1282,8 @@ export default function GameMechanics() {
                               className="text-sm text-stone-500 hover:text-red-600 hover:underline"
                               title={`Proposer or ${catalyst.name} only`}
                             >
-                              Withdraw
-                            </button>
+                              <Trans context="GameMechanics, button">Withdraw
+                            </Trans></button>
                           )}
                         </div>
                       </div>
@@ -1291,9 +1293,9 @@ export default function GameMechanics() {
                 {settledProposals.length > 0 && (
                   <details className="mt-4">
                     <summary className="text-sm text-stone-500 cursor-pointer">
-                      {settledProposals.length} settled proposal{settledProposals.length === 1 ? "" : "s"} (applied,
+                      <Trans context="GameMechanics, summary">{settledProposals.length} settled proposal{settledProposals.length === 1 ? "" : "s"} (applied,
                       withdrawn, or did not pass)
-                    </summary>
+                    </Trans></summary>
                     <ul className="mt-2 space-y-1.5">
                       {settledProposals.map((p) => (
                         <li key={p.id} className="text-sm text-stone-500">
@@ -1305,8 +1307,8 @@ export default function GameMechanics() {
                             <>
                               {" · "}
                               <Link href={`/decisions/${p.ballotId}`} className="text-teal-deep hover:underline">
-                                see its vote
-                              </Link>
+                                <Trans context="GameMechanics, Link">see its vote
+                              </Trans></Link>
                             </>
                           )}
                         </li>
@@ -1320,12 +1322,12 @@ export default function GameMechanics() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <ScrollText className="w-5 h-5 text-teal-deep" />
-                  <h2 className="font-display text-2xl font-bold text-teal-deep">Amendment History</h2>
+                  <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="GameMechanics, h2">Amendment History</Trans></h2>
                 </div>
                 <p className="text-sm text-stone-600 mb-4 max-w-2xl">
-                  Every change to the rules is on the permanent record: what moved, from what to
+                  <Trans context="GameMechanics, p">Every change to the rules is on the permanent record: what moved, from what to
                   what, by whom, and under which passed proposal.
-                </p>
+                </Trans></p>
                 <button
                   type="button"
                   onClick={openHistory}
@@ -1338,11 +1340,11 @@ export default function GameMechanics() {
                 {historyOpen && (
                   <div className="mt-4 bg-white rounded-xl border border-stone-200 overflow-hidden">
                     {history === null ? (
-                      <p className="px-4 py-6 text-sm text-stone-500">Loading the record…</p>
+                      <p className="px-4 py-6 text-sm text-stone-500"><Trans context="GameMechanics, p">Loading the record…</Trans></p>
                     ) : history.length === 0 ? (
                       <p className="px-4 py-6 text-sm text-stone-500">
-                        No rules have been changed yet. This Game still plays entirely by its platform defaults.
-                      </p>
+                        <Trans context="GameMechanics, p">No rules have been changed yet. This Game still plays entirely by its platform defaults.
+                      </Trans></p>
                     ) : (
                       <ul className="divide-y divide-stone-100">
                         {history.map((h) => (
@@ -1369,45 +1371,45 @@ export default function GameMechanics() {
             {!composerOpen ? (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-stone-700">
-                  <span className="font-semibold">{stagedCount}</span> change{stagedCount === 1 ? "" : "s"} staged
-                </p>
+                  <Trans context="GameMechanics, p"><span className="font-semibold">{stagedCount}</span> change{stagedCount === 1 ? "" : "s"} staged
+                </Trans></p>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setStaged({})}
                     className="text-sm text-stone-500 hover:text-stone-700 hover:underline"
                   >
-                    Clear
-                  </button>
+                    <Trans context="GameMechanics, button">Clear
+                  </Trans></button>
                   <button
                     type="button"
                     onClick={() => setComposerOpen(true)}
                     className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium hover:bg-teal-deep-dark"
                   >
-                    Write the proposal
-                  </button>
+                    <Trans context="GameMechanics, button">Write the proposal
+                  </Trans></button>
                 </div>
               </div>
             ) : (
               <div className="pb-2">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-stone-900">Propose these changes</h3>
-                  <button type="button" onClick={() => setComposerOpen(false)} aria-label="Collapse the composer">
+                  <h3 className="font-semibold text-stone-900"><Trans context="GameMechanics, h3">Propose these changes</Trans></h3>
+                  <button type="button" onClick={() => setComposerOpen(false)} aria-label={t({ message: "Collapse the composer", context: "GameMechanics, aria-label" })}>
                     <ChevronDown className="w-4 h-4 text-stone-400" />
                   </button>
                 </div>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="A title the village will recognize it by"
-                  aria-label="Proposal title"
+                  placeholder={t({ message: "A title the village will recognize it by", context: "GameMechanics, placeholder" })}
+                  aria-label={t({ message: "Proposal title", context: "GameMechanics, aria-label" })}
                   className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm mb-2"
                 />
                 <textarea
                   value={rationale}
                   onChange={(e) => setRationale(e.target.value)}
-                  placeholder="Why this change matters. The village votes on reasons, not numbers."
-                  aria-label="Proposal rationale"
+                  placeholder={t({ message: "Why this change matters. The village votes on reasons, not numbers.", context: "GameMechanics, placeholder" })}
+                  aria-label={t({ message: "Proposal rationale", context: "GameMechanics, aria-label" })}
                   rows={3}
                   className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm mb-2 resize-y"
                 />

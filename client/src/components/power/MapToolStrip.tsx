@@ -19,6 +19,7 @@
  */
 import type { ReactNode } from "react";
 import { Link2 } from "lucide-react";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export type MapMode = "now" | "vision";
 
@@ -46,14 +47,15 @@ export default function MapToolStrip({
   onLines: () => void;
   children?: ReactNode;
 }) {
+  const { t } = useLingui();
   const pressed = (on: boolean) => (on ? "bg-teal-deep text-white border-teal-deep" : "bg-card text-muted-foreground border-border");
   const chip = "shrink-0 inline-flex items-center gap-1 min-h-10 px-3.5 text-[13px] rounded-full border";
   return (
     <div className="sm:hidden mb-3" data-map-tool-strip>
       {/* A row that scrolls sideways inside itself when a village has every
           chip on, so the page never does. */}
-      <div role="group" aria-label="What the map shows" className="flex items-center gap-1.5 overflow-x-auto px-4 pb-1">
-        <div role="group" aria-label="Now or Vision" className="shrink-0 inline-flex rounded-full border border-border overflow-hidden">
+      <div role="group" aria-label={t({ message: "What the map shows", context: "MapToolStrip, aria-label" })} className="flex items-center gap-1.5 overflow-x-auto px-4 pb-1">
+        <div role="group" aria-label={t({ message: "Now or Vision", context: "MapToolStrip, aria-label" })} className="shrink-0 inline-flex rounded-full border border-border overflow-hidden">
           {(["now", "vision"] as const).map((m) => (
             <button
               key={m}
@@ -67,16 +69,16 @@ export default function MapToolStrip({
           ))}
         </div>
         <button type="button" aria-pressed={lensOn} onClick={onLens} className={`${chip} ${pressed(lensOn)}`}>
-          How we decide
-        </button>
+          <Trans context="MapToolStrip, button">How we decide
+        </Trans></button>
         {resourcesModule && (
           <button type="button" aria-pressed={resourcesOn} onClick={onResources} className={`${chip} ${pressed(resourcesOn)}`}>
-            Resources
-          </button>
+            <Trans context="MapToolStrip, button">Resources
+          </Trans></button>
         )}
         <button type="button" aria-pressed={linesOn} onClick={onLines} className={`${chip} ${pressed(linesOn)}`}>
-          <Link2 className="w-3.5 h-3.5" aria-hidden="true" /> Links
-        </button>
+          <Trans context="MapToolStrip, button"><Link2 className="w-3.5 h-3.5" aria-hidden="true" /> Links
+        </Trans></button>
       </div>
       {children && <div className="px-4 mt-2">{children}</div>}
     </div>

@@ -44,6 +44,7 @@ import {
   type ThreadMessage,
 } from "@/lib/messaging";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -122,7 +123,7 @@ function Inbox() {
       <div className="container max-w-2xl py-6 sm:py-10">
         <header className="flex items-center justify-between gap-3 mb-5">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Messages</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground"><Trans context="Messages, h1">Messages</Trans></h1>
             <p className="text-sm text-muted-foreground">
               {total > 0 ? `${total} waiting for you` : "All caught up"}
             </p>
@@ -132,20 +133,20 @@ function Inbox() {
             onClick={() => setComposing(true)}
             className={`inline-flex items-center gap-2 ${TAP} px-4 rounded-lg bg-teal-deep text-white font-semibold text-sm`}
           >
-            <Plus className="w-4 h-4" aria-hidden="true" />
+            <Trans context="Messages, button"><Plus className="w-4 h-4" aria-hidden="true" />
             New
-          </button>
+          </Trans></button>
         </header>
 
         {composing && <NewConversation onClose={() => setComposing(false)} />}
 
-        {loading && <p className="text-sm text-muted-foreground py-8 text-center">Loading your conversations…</p>}
+        {loading && <p className="text-sm text-muted-foreground py-8 text-center"><Trans context="Messages, p">Loading your conversations…</Trans></p>}
 
         {!loading && !ordered.length && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <Users className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
-            <p className="font-semibold text-foreground mb-1">No conversations yet</p>
-            <p className="text-sm text-muted-foreground">Tap New to message anyone here.</p>
+            <p className="font-semibold text-foreground mb-1"><Trans context="Messages, p">No conversations yet</Trans></p>
+            <p className="text-sm text-muted-foreground"><Trans context="Messages, p">Tap New to message anyone here.</Trans></p>
           </div>
         )}
 
@@ -153,14 +154,14 @@ function Inbox() {
         {work.length > 0 && (
           <section aria-labelledby="shared-work-heading" className="mb-6">
             <h2 id="shared-work-heading" className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2 px-1">
-              Shared work
-            </h2>
+              <Trans context="Messages, h2">Shared work
+            </Trans></h2>
             <InboxList list={work} viewerId={user.id} now={now} />
           </section>
         )}
 
         {work.length > 0 && people.length > 0 && (
-          <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2 px-1">Conversations</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2 px-1"><Trans context="Messages, h2">Conversations</Trans></h2>
         )}
         <InboxList list={people} viewerId={user.id} now={now} />
       </div>
@@ -170,6 +171,7 @@ function Inbox() {
 
 /** One run of conversation rows. Shared work rows say what they are about. */
 function InboxList({ list, viewerId, now }: { list: InboxConversation[]; viewerId: string; now: Date }) {
+  const { t } = useLingui();
   if (!list.length) return null;
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
@@ -217,7 +219,7 @@ function InboxList({ list, viewerId, now }: { list: InboxConversation[]; viewerI
                       {badge}
                     </span>
                   )}
-                  {c.muted && <BellOff className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-label="Muted" />}
+                  {c.muted && <BellOff className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-label={t({ message: "Muted", context: "Messages, aria-label" })} />}
                 </span>
               </span>
             </Link>
@@ -236,6 +238,7 @@ interface PersonResult {
 
 /** Search people, pick one for a direct thread or several for a named group. */
 function NewConversation({ onClose }: { onClose: () => void }) {
+  const { t } = useLingui();
   const [, navigate] = useLocation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PersonResult[]>([]);
@@ -293,7 +296,7 @@ function NewConversation({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 mb-5">
-      <h2 className="font-semibold text-foreground mb-3">Start a conversation</h2>
+      <h2 className="font-semibold text-foreground mb-3"><Trans context="Messages, h2">Start a conversation</Trans></h2>
 
       {!!chosen.length && (
         <ul className="flex flex-wrap gap-2 mb-3">
@@ -306,7 +309,7 @@ function NewConversation({ onClose }: { onClose: () => void }) {
               >
                 {c.name}
                 <span aria-hidden="true">×</span>
-                <span className="sr-only">Remove {c.name}</span>
+                <span className="sr-only"><Trans context="Messages, span">Remove {c.name}</Trans></span>
               </button>
             </li>
           ))}
@@ -314,7 +317,7 @@ function NewConversation({ onClose }: { onClose: () => void }) {
       )}
 
       <label className="block relative mb-3">
-        <span className="sr-only">Search for a member by name or handle</span>
+        <span className="sr-only"><Trans context="Messages, span">Search for a member by name or handle</Trans></span>
         <Search
           className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
@@ -322,7 +325,7 @@ function NewConversation({ onClose }: { onClose: () => void }) {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or handle"
+          placeholder={t({ message: "Search by name or handle", context: "Messages, placeholder" })}
           className={`w-full ${TAP} pl-9 pr-3 rounded-lg border border-border bg-background text-foreground`}
         />
       </label>
@@ -349,11 +352,11 @@ function NewConversation({ onClose }: { onClose: () => void }) {
 
       {needsName && (
         <label className="block mb-3">
-          <span className="block text-sm font-medium text-foreground mb-1">Name this group</span>
+          <span className="block text-sm font-medium text-foreground mb-1"><Trans context="Messages, span">Name this group</Trans></span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Water crew"
+            placeholder={t({ message: "Water crew", context: "Messages, placeholder" })}
             maxLength={120}
             className={`w-full ${TAP} px-3 rounded-lg border border-border bg-background text-foreground`}
           />
@@ -372,8 +375,8 @@ function NewConversation({ onClose }: { onClose: () => void }) {
           {busy ? "Starting…" : "Start"}
         </button>
         <button type="button" onClick={onClose} className={`inline-flex items-center ${TAP} px-4 rounded-lg border border-border text-sm`}>
-          Cancel
-        </button>
+          <Trans context="Messages, button">Cancel
+        </Trans></button>
       </div>
     </div>
   );
@@ -395,6 +398,7 @@ function AddMembers({
   onAdd: (ids: string[]) => Promise<boolean>;
   onCancel: () => void;
 }) {
+  const { t } = useLingui();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PersonResult[]>([]);
   const [chosen, setChosen] = useState<PersonResult[]>([]);
@@ -441,7 +445,7 @@ function AddMembers({
               >
                 {c.name}
                 <X className="w-3 h-3" aria-hidden="true" />
-                <span className="sr-only">Remove {c.name} from the list</span>
+                <span className="sr-only"><Trans context="Messages, span">Remove {c.name} from the list</Trans></span>
               </button>
             </li>
           ))}
@@ -449,12 +453,12 @@ function AddMembers({
       )}
 
       <label className="block relative mb-2">
-        <span className="sr-only">Search for someone to add</span>
+        <span className="sr-only"><Trans context="Messages, span">Search for someone to add</Trans></span>
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or handle"
+          placeholder={t({ message: "Search by name or handle", context: "Messages, placeholder" })}
           className={`w-full ${TAP} pl-9 pr-3 rounded-lg border border-border bg-background text-foreground`}
         />
       </label>
@@ -495,8 +499,8 @@ function AddMembers({
           {busy ? "Adding…" : "Add"}
         </button>
         <button type="button" onClick={onCancel} className={`inline-flex items-center ${TAP} px-3 rounded-lg border border-border text-sm`}>
-          Cancel
-        </button>
+          <Trans context="Messages, button">Cancel
+        </Trans></button>
       </div>
     </div>
   );
@@ -520,6 +524,7 @@ interface ThreadData {
 }
 
 function ThreadView({ id }: { id: string }) {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const [thread, setThread] = useState<ThreadData | null>(null);
@@ -660,9 +665,9 @@ function ThreadView({ id }: { id: string }) {
     return (
       <Layout>
         <div className="container max-w-2xl py-24 text-center">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-3">This conversation didn't load.</h1>
-          <p className="text-muted-foreground mb-8">Reload to try again.</p>
-          <Link href="/messages" className="text-teal-deep font-medium">← Back to messages</Link>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-3"><Trans context="Messages, h1">This conversation didn't load.</Trans></h1>
+          <p className="text-muted-foreground mb-8"><Trans context="Messages, p">Reload to try again.</Trans></p>
+          <Link href="/messages" className="text-teal-deep font-medium"><Trans context="Messages, Link">← Back to messages</Trans></Link>
         </div>
       </Layout>
     );
@@ -670,7 +675,7 @@ function ThreadView({ id }: { id: string }) {
   if (!user || !thread) {
     return (
       <Layout>
-        <div className="container py-16 text-center text-sm text-muted-foreground">Loading the conversation…</div>
+        <div className="container py-16 text-center text-sm text-muted-foreground"><Trans context="Messages, div">Loading the conversation…</Trans></div>
       </Layout>
     );
   }
@@ -694,7 +699,7 @@ function ThreadView({ id }: { id: string }) {
             <Link
               href="/messages"
               className={`shrink-0 grid place-items-center w-11 ${TAP} rounded-lg hover:bg-muted`}
-              aria-label="Back to all messages"
+              aria-label={t({ message: "Back to all messages", context: "Messages, aria-label" })}
             >
               <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             </Link>
@@ -711,7 +716,7 @@ function ThreadView({ id }: { id: string }) {
               type="button"
               onClick={() => act("", { method: "PATCH", body: JSON.stringify({ muted: !thread.muted }) })}
               className={`shrink-0 grid place-items-center w-11 ${TAP} rounded-lg hover:bg-muted`}
-              aria-label={thread.muted ? "Unmute this conversation" : "Mute this conversation"}
+              aria-label={thread.muted ? t({ message: "Unmute this conversation", context: "Messages, aria-label" }) : t({ message: "Mute this conversation", context: "Messages, aria-label" })}
             >
               {thread.muted ? <BellOff className="w-5 h-5" aria-hidden="true" /> : <Bell className="w-5 h-5" aria-hidden="true" />}
             </button>
@@ -731,7 +736,7 @@ function ThreadView({ id }: { id: string }) {
                         {initialsOf(m.name)}
                       </span>
                       {m.name ?? "A member"}
-                      {m.role === "owner" && <span className="text-xs text-muted-foreground">owner</span>}
+                      {m.role === "owner" && <span className="text-xs text-muted-foreground"><Trans context="Messages, span">owner</Trans></span>}
                       {/* Owner-only, and never against yourself: the server
                           refuses both, and drawing a control that always 400s
                           teaches people the app is broken. */}
@@ -748,7 +753,7 @@ function ThreadView({ id }: { id: string }) {
                             title={`Make ${m.name ?? "them"} the owner`}
                           >
                             <Crown className="w-3.5 h-3.5" aria-hidden="true" />
-                            <span className="sr-only">Make {m.name ?? "them"} the owner</span>
+                            <span className="sr-only"><Trans context="Messages, span">Make {m.name ?? "them"} the owner</Trans></span>
                           </button>
                           <button
                             type="button"
@@ -761,7 +766,7 @@ function ThreadView({ id }: { id: string }) {
                             title={`Remove ${m.name ?? "them"}`}
                           >
                             <UserMinus className="w-3.5 h-3.5" aria-hidden="true" />
-                            <span className="sr-only">Remove {m.name ?? "them"}</span>
+                            <span className="sr-only"><Trans context="Messages, span">Remove {m.name ?? "them"}</Trans></span>
                           </button>
                         </span>
                       )}
@@ -788,9 +793,9 @@ function ThreadView({ id }: { id: string }) {
                     onClick={() => setAdding(true)}
                     className={`inline-flex items-center gap-1.5 ${TAP} px-3 rounded-lg border border-border text-sm`}
                   >
-                    <UserPlus className="w-4 h-4" aria-hidden="true" />
+                    <Trans context="Messages, button"><UserPlus className="w-4 h-4" aria-hidden="true" />
                     Add people
-                  </button>
+                  </Trans></button>
                 )}
                 {canRename(thread) && (
                   <button
@@ -801,13 +806,13 @@ function ThreadView({ id }: { id: string }) {
                     }}
                     className={`inline-flex items-center ${TAP} px-3 rounded-lg border border-border text-sm`}
                   >
-                    Rename
-                  </button>
+                    <Trans context="Messages, button">Rename
+                  </Trans></button>
                 )}
                 {workThread ? (
                   workPage && (
                     <Link href={workPage} className={`inline-flex items-center ${TAP} px-3 rounded-lg border border-border text-sm`}>
-                      Open the {workLabel(thread).toLowerCase()}
+                      <Trans context="Messages, Link">Open the {workLabel(thread).toLowerCase()}</Trans>
                     </Link>
                   )
                 ) : (
@@ -819,20 +824,20 @@ function ThreadView({ id }: { id: string }) {
                     }}
                     className={`inline-flex items-center gap-1.5 ${TAP} px-3 rounded-lg border border-border text-sm text-destructive`}
                   >
-                    <LogOut className="w-4 h-4" aria-hidden="true" />
+                    <Trans context="Messages, button"><LogOut className="w-4 h-4" aria-hidden="true" />
                     Leave
-                  </button>
+                  </Trans></button>
                 )}
               </div>
               {workThread && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Everyone on this {workLabel(thread).toLowerCase()} is in this chat while they are on it. Mute it to quiet it.
-                </p>
+                  <Trans context="Messages, p">Everyone on this {workLabel(thread).toLowerCase()} is in this chat while they are on it. Mute it to quiet it.
+                </Trans></p>
               )}
               {canManageMembers(thread) && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  You own this conversation, so you can add people, remove them, and hand it on.
-                </p>
+                  <Trans context="Messages, p">You own this conversation, so you can add people, remove them, and hand it on.
+                </Trans></p>
               )}
             </div>
           )}
@@ -840,8 +845,8 @@ function ThreadView({ id }: { id: string }) {
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4">
             {!thread.messages.length && (
               <p className="text-center text-sm text-muted-foreground py-10">
-                No messages yet. Say the first thing.
-              </p>
+                <Trans context="Messages, p">No messages yet. Say the first thing.
+              </Trans></p>
             )}
             {days.map((day) => (
               <section key={day.label} aria-label={day.label}>
@@ -870,7 +875,7 @@ function ThreadView({ id }: { id: string }) {
                               message that can change after it was read, with
                               no sign it changed, is worse than one that
                               cannot change at all. */}
-                          {m.editedAt && !m.deleted && <span title="This message was edited">edited</span>}
+                          {m.editedAt && !m.deleted && <span title="This message was edited"><Trans context="Messages, span">edited</Trans></span>}
                           {m.mine && !m.deleted && (
                             <button
                               type="button"
@@ -883,7 +888,7 @@ function ThreadView({ id }: { id: string }) {
                               className="inline-flex items-center gap-1 py-2 hover:text-foreground"
                             >
                               <Pencil className="w-3 h-3" aria-hidden="true" />
-                              <span className="sr-only">Edit this message</span>
+                              <span className="sr-only"><Trans context="Messages, span">Edit this message</Trans></span>
                             </button>
                           )}
                           {m.mine && !m.deleted && (
@@ -897,7 +902,7 @@ function ThreadView({ id }: { id: string }) {
                               className="inline-flex items-center gap-1 py-2 hover:text-destructive"
                             >
                               <Trash2 className="w-3 h-3" aria-hidden="true" />
-                              <span className="sr-only">Delete this message</span>
+                              <span className="sr-only"><Trans context="Messages, span">Delete this message</Trans></span>
                             </button>
                           )}
                           {!m.mine && !m.deleted && (
@@ -912,7 +917,7 @@ function ThreadView({ id }: { id: string }) {
                               className="inline-flex items-center gap-1 py-2 hover:text-destructive"
                             >
                               <Flag className="w-3 h-3" aria-hidden="true" />
-                              <span className="sr-only">Report this message</span>
+                              <span className="sr-only"><Trans context="Messages, span">Report this message</Trans></span>
                             </button>
                           )}
                         </span>
@@ -935,7 +940,7 @@ function ThreadView({ id }: { id: string }) {
             }}
           >
             <label className="flex-1">
-              <span className="sr-only">Write a message</span>
+              <span className="sr-only"><Trans context="Messages, span">Write a message</Trans></span>
               <VoiceArea value={draft} onValue={setDraft}>
               <textarea
                 value={draft}
@@ -948,7 +953,7 @@ function ThreadView({ id }: { id: string }) {
                 }}
                 rows={1}
                 maxLength={4000}
-                placeholder="Write a message"
+                placeholder={t({ message: "Write a message", context: "Messages, placeholder" })}
                 className="w-full min-h-[44px] max-h-32 px-3 py-2.5 rounded-2xl border border-border bg-background text-foreground resize-none"
               />
               </VoiceArea>
@@ -957,7 +962,7 @@ function ThreadView({ id }: { id: string }) {
               type="submit"
               disabled={!draft.trim() || sending}
               className={`shrink-0 grid place-items-center w-11 ${TAP} rounded-full bg-teal-deep text-white disabled:opacity-50`}
-              aria-label="Send"
+              aria-label={t({ message: "Send", context: "Messages, aria-label" })}
             >
               <Send className="w-5 h-5" aria-hidden="true" />
             </button>

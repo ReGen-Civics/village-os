@@ -15,6 +15,7 @@ import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
+import { Trans } from "@lingui/react/macro";
 
 type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable" | "sessions.write";
 interface Offer { scope: OfferedScope; write: boolean; ticked: boolean }
@@ -87,21 +88,21 @@ export default function OAuthAuthorize() {
     <main className="mx-auto max-w-lg px-4 pb-10 pt-3">
       {/* The language selector (spec i18n US2): this page renders without the shell. */}
       <PageLanguageBar className="mb-4" />
-      <h1 className="text-2xl font-semibold text-foreground">Connect an agent</h1>
+      <h1 className="text-2xl font-semibold text-foreground"><Trans context="OAuthAuthorize, h1">Connect an agent</Trans></h1>
       {loading ? null : !user ? (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-foreground">Sign in first, and you come straight back here to decide.</p>
-          <Link href={`/login?next=${encodeURIComponent(here)}`} className="inline-block min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white">Sign in</Link>
+          <p className="text-sm text-foreground"><Trans context="OAuthAuthorize, p">Sign in first, and you come straight back here to decide.</Trans></p>
+          <Link href={`/login?next=${encodeURIComponent(here)}`} className="inline-block min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white"><Trans context="OAuthAuthorize, Link">Sign in</Trans></Link>
         </div>
       ) : problem ? (
         <p role="alert" className="mt-4 text-sm text-foreground">{problem}</p>
       ) : !req ? null : (
         <div className="mt-4 space-y-5">
           <p className="text-sm text-foreground">
-            A connector that says it is <strong>{req.clientName}</strong> asks to act for you, {user.name}. It named itself; check the return address before you allow it. When you decide, you go back to <strong>{req.redirectHost}</strong>.
-          </p>
+            <Trans context="OAuthAuthorize, p">A connector that says it is <strong>{req.clientName}</strong> asks to act for you, {user.name}. It named itself; check the return address before you allow it. When you decide, you go back to <strong>{req.redirectHost}</strong>.
+          </Trans></p>
           <fieldset className="space-y-3 rounded-xl border border-border bg-white p-4">
-            <legend className="px-1 text-sm font-semibold text-foreground">What it may do</legend>
+            <legend className="px-1 text-sm font-semibold text-foreground"><Trans context="OAuthAuthorize, legend">What it may do</Trans></legend>
             {req.scopes.map((s) => (
               <label key={s.scope} className="flex items-start gap-3 text-sm text-foreground">
                 <input
@@ -110,16 +111,16 @@ export default function OAuthAuthorize() {
                   checked={picked.includes(s.scope)}
                   onChange={(e) => setPicked((p) => (e.target.checked ? [...p, s.scope] : p.filter((x) => x !== s.scope)))}
                 />
-                <span>{SCOPE_WORDS[s.scope] ?? s.scope}{s.write ? <span className="ml-1 text-muted-foreground">(writes)</span> : null}</span>
+                <span>{SCOPE_WORDS[s.scope] ?? s.scope}{s.write ? <span className="ml-1 text-muted-foreground"><Trans context="OAuthAuthorize, span">(writes)</Trans></span> : null}</span>
               </label>
             ))}
           </fieldset>
           <p className="text-sm text-muted-foreground">
-            It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
-          </p>
+            <Trans context="OAuthAuthorize, p">It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
+          </Trans></p>
           <div className="flex flex-wrap gap-3">
-            <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className="min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">Allow</button>
-            <button type="button" disabled={busy} onClick={() => void decide("deny")} className="min-h-11 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-foreground">Refuse</button>
+            <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className="min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"><Trans context="OAuthAuthorize, button">Allow</Trans></button>
+            <button type="button" disabled={busy} onClick={() => void decide("deny")} className="min-h-11 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-foreground"><Trans context="OAuthAuthorize, button">Refuse</Trans></button>
           </div>
         </div>
       )}

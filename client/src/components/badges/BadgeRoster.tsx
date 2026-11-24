@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { gameFetch } from "@/lib/gameApi";
 import { petalColour, type FlowerBadge } from "./BadgeFlower";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const KIND_WORD: Record<string, string> = {
   earned: "Earned",
@@ -52,6 +53,7 @@ export default function BadgeRoster({
   /** After a pick lands, so the page re-reads. */
   onChanged?: () => void;
 }) {
+  const { t } = useLingui();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [said, setSaid] = useState("");
@@ -97,7 +99,7 @@ export default function BadgeRoster({
               <div className="min-w-0 flex-1">
                 <p className="m-0 break-words font-medium text-foreground">
                   {b.name}
-                  {!editable && b.featured ? <span className="ml-1.5 text-dash-gold-lit" aria-label="shown on their card">★</span> : null}
+                  {!editable && b.featured ? <span className="ml-1.5 text-dash-gold-lit" aria-label={t({ message: "shown on their card", context: "BadgeRoster, aria-label" })}>★</span> : null}
                 </p>
                 <p className="m-0 text-xs uppercase tracking-[0.12em] text-muted-foreground">{KIND_WORD[b.kind] ?? b.kind}</p>
                 {b.description ? <p className="m-0 mt-1 break-words text-sm text-foreground/85">{b.description}</p> : null}
@@ -108,7 +110,7 @@ export default function BadgeRoster({
                   onClick={() => toggle(b)}
                   disabled={busy !== null || full}
                   aria-pressed={!!b.featured}
-                  title={full ? `You have picked ${max}. Take one off first.` : undefined}
+                  title={full ? t({ message: `You have picked ${max}. Take one off first.`, context: "BadgeRoster, title" }) : undefined}
                   className={`min-h-11 shrink-0 rounded-xl border px-3 text-sm font-medium disabled:opacity-50 ${
                     b.featured
                       ? "border-dash-gold bg-dash-gold text-dash-gold-ink"
@@ -131,8 +133,8 @@ export default function BadgeRoster({
         {said}
       </p>
       <Link href="/badges" className="text-sm text-dash-gold-lit underline underline-offset-2 hover:text-foreground">
-        Every badge in the village
-      </Link>
+        <Trans context="BadgeRoster, Link">Every badge in the village
+      </Trans></Link>
     </div>
   );
 

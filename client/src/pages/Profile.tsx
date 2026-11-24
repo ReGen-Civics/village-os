@@ -49,7 +49,7 @@ import { TASK_BOARD_ANCHOR } from "@shared/sessionTasks";
 import MoonDock from "@/components/profile/MoonDock";
 import NightMotes from "@/components/profile/NightMotes";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useModule, useModuleOn } from "@/modules/ModuleProvider";
 import { authToken, fetchGameMe, gameFetch, useGameConfig, type GameMe, type ProgressionCapability } from "@/lib/gameApi";
@@ -487,12 +487,12 @@ export default function Profile() {
                 actions={
                   <div className="hidden items-center gap-3 sm:flex">
                     <a href="#invite" className={BTN_GOLD}>
-                      <UserPlus className="h-[18px] w-[18px]" aria-hidden="true" />
+                      <Trans context="Profile, a"><UserPlus className="h-[18px] w-[18px]" aria-hidden="true" />
                       Invite a friend
-                    </a>
+                    </Trans></a>
                     <button type="button" onClick={() => logout()} className={BTN_LINE}>
-                      Sign out
-                    </button>
+                      <Trans context="Profile, button">Sign out
+                    </Trans></button>
                   </div>
                 }
                 about={
@@ -504,7 +504,7 @@ export default function Profile() {
                       </a>
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Paths</span>
+                      <span className="text-xs uppercase tracking-[0.15em] text-muted-foreground"><Trans context="Profile, span">Paths</Trans></span>
                       {user.paths.map((id, i) => (
                         <span
                           key={id}
@@ -530,8 +530,8 @@ export default function Profile() {
                       </Link>
                     ) : null}
                     <a href="#invite" className={`${BTN_GOLD} w-full sm:hidden`}>
-                      Invite a friend
-                    </a>
+                      <Trans context="Profile, a">Invite a friend
+                    </Trans></a>
                   </div>
                 }
               />
@@ -645,7 +645,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              <aside aria-label="Your character" className="flex min-w-0 flex-[1_1_360px] flex-col gap-6 sm:gap-8">
+              <aside aria-label={t({ message: "Your character", context: "Profile, aria-label" })} className="flex min-w-0 flex-[1_1_360px] flex-col gap-6 sm:gap-8">
                 <div className={`empty:hidden ${tabOf("quests")}`}>
                   <PartiesCard data={dash} />
                 </div>
@@ -694,8 +694,8 @@ export default function Profile() {
                 last band. Each one is the section it always was. */}
             <div className={`flex flex-col gap-6 sm:gap-8 ${tabOf("sheet")}`}>
               <div>
-                <p className={KICKER}>Settings</p>
-                <h2 className={H2}>How your sheet works for you</h2>
+                <p className={KICKER}><Trans context="Profile, p">Settings</Trans></p>
+                <h2 className={H2}><Trans context="Profile, h2">How your sheet works for you</Trans></h2>
               </div>
               {/* ABOUT YOU IS A DAY-ONE ACT. The bio Save is the whole point:
                   the editor used to discard every word on close, silently. */}
@@ -708,8 +708,8 @@ export default function Profile() {
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <h2 id="bio-h" className="font-display text-2xl font-bold text-card-foreground">
-                    About you
-                  </h2>
+                    <Trans context="Profile, h2">About you
+                  </Trans></h2>
                   <button
                     type="button"
                     onClick={() => {
@@ -717,7 +717,7 @@ export default function Profile() {
                       setEditingBio(!editingBio);
                     }}
                     className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
-                    aria-label={editingBio ? "Stop editing your bio" : "Edit your bio"}
+                    aria-label={editingBio ? t({ message: "Stop editing your bio", context: "Profile, aria-label" }) : t({ message: "Edit your bio", context: "Profile, aria-label" })}
                   >
                     <Edit2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                   </button>
@@ -725,8 +725,8 @@ export default function Profile() {
                 {editingBio ? (
                   <>
                     <label htmlFor="profile-bio" className="sr-only">
-                      Your bio
-                    </label>
+                      <Trans context="Profile, label">Your bio
+                    </Trans></label>
                     <VoiceArea
                       value={bioText}
                       onValue={setBioText}
@@ -739,7 +739,7 @@ export default function Profile() {
                       id="profile-bio"
                       value={bioText}
                       onChange={(e) => setBioText(e.target.value)}
-                      placeholder="Tell us about yourself..."
+                      placeholder={t({ message: "Tell us about yourself...", context: "Profile, placeholder" })}
                       className="w-full rounded-lg border border-border bg-background p-4 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                       rows={4}
                     />
@@ -819,20 +819,20 @@ export default function Profile() {
                 className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"
               >
                 <h2 id="contrib-h" className="mb-6 font-display text-2xl font-bold text-card-foreground">
-                  Your contributions
-                </h2>
+                  <Trans context="Profile, h2">Your contributions
+                </Trans></h2>
                 {recentContributions.length === 0 ? (
                   /* R47: say what is missing, then point at the one door. */
                   storyShown("/work-with-us") ? (
                     <p className="text-muted-foreground">
-                      No contributions yet. Propose one through{" "}
+                      <Trans context="Profile, p">No contributions yet. Propose one through{" "}
                       <Link href="/work-with-us" className="font-medium text-foreground underline underline-offset-2">
                         Work With Us
                       </Link>
                       .
-                    </p>
+                    </Trans></p>
                   ) : (
-                    <p className="text-muted-foreground">No contributions yet.</p>
+                    <p className="text-muted-foreground"><Trans context="Profile, p">No contributions yet.</Trans></p>
                   )
                 ) : (
                   <ul className="space-y-4">
@@ -884,9 +884,9 @@ export default function Profile() {
               </div>
 
               <button type="button" onClick={() => logout()} className={`${BTN_LINE} self-start sm:hidden`}>
-                <LogOut className="h-4 w-4" aria-hidden="true" />
+                <Trans context="Profile, button"><LogOut className="h-4 w-4" aria-hidden="true" />
                 Sign out
-              </button>
+              </Trans></button>
             </div>
 
             {/*
@@ -933,8 +933,8 @@ export default function Profile() {
               className={`rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8 ${tabOf("sheet")}`}
             >
               <h2 id="links-h" className="mb-4 font-display text-lg font-bold text-card-foreground">
-                Quick links
-              </h2>
+                <Trans context="Profile, h2">Quick links
+              </Trans></h2>
               <ul className="space-y-2">
                 {[
                   { href: "/quests", label: "Quests" },

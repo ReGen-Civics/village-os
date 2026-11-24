@@ -43,6 +43,7 @@ import {
   updateWeek,
   type Plan,
 } from "@/lib/planEdits";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface EditorProps {
   plan: Plan;
@@ -212,12 +213,12 @@ export function RemovedItems({
   return (
     <details className="bg-stone-100 rounded-xl border border-stone-200 px-4 py-3 mt-6">
       <summary className="cursor-pointer text-sm font-semibold text-stone-600 select-none">
-        Removed ({items.length})
-      </summary>
+        <Trans context="PlanEditor, summary">Removed ({items.length})
+      </Trans></summary>
       <p className="text-xs text-stone-500 mt-2 mb-2">
-        Hidden from every view. Their ticks, notes and answers are kept, and
+        <Trans context="PlanEditor, p">Hidden from every view. Their ticks, notes and answers are kept, and
         come back with them.
-      </p>
+      </Trans></p>
       <ul className="space-y-2">
         {items.map(item => (
           <li
@@ -235,9 +236,9 @@ export function RemovedItems({
               onClick={() => restore(item.kind, item.id)}
               className="shrink-0 flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-white border border-stone-200 text-teal-deep hover:bg-teal-deep/10"
             >
-              <RotateCcw className="w-3 h-3" />
+              <Trans context="PlanEditor, button"><RotateCcw className="w-3 h-3" />
               Restore
-            </button>
+            </Trans></button>
           </li>
         ))}
       </ul>
@@ -256,6 +257,7 @@ export function PlanWeeksEditor({
   fill,
   villageName,
 }: EditorProps & { villageName: string }) {
+  const { t } = useLingui();
   const [focusId, setFocusId] = useState<string | null>(null);
   const weeks = plan.weeks.filter(w => !w.hidden);
   const totalTasks = plan.weeks.reduce((n, w) => n + w.tasks.length, 0);
@@ -264,11 +266,11 @@ export function PlanWeeksEditor({
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4">
         <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
-          Who owns it
-        </p>
+          <Trans context="PlanEditor, p">Who owns it
+        </Trans></p>
         <div className="flex flex-wrap items-center gap-2">
           <LimitedField
-            label="Build partner's name"
+            label={t({ message: "Build partner's name", context: "PlanEditor, label" })}
             value={plan.partnerName}
             max={PLAN_LIMITS.partnerName}
             onChange={v => onChange(updatePartner(plan, v))}
@@ -278,14 +280,14 @@ export function PlanWeeksEditor({
             {villageName}
           </span>
           <span className="px-2 py-0.5 rounded-full border text-xs font-semibold bg-violet-100 text-violet-700 border-violet-200">
-            Both
-          </span>
+            <Trans context="PlanEditor, span">Both
+          </Trans></span>
         </div>
         <p className="text-xs text-stone-500 mt-2">
-          The build side's name shows on the owner pill, this legend and each
+          <Trans context="PlanEditor, p">The build side's name shows on the owner pill, this legend and each
           row's dropdown. Write {"{village}"} in any text below for your
           village's name.
-        </p>
+        </Trans></p>
       </div>
 
       {weeks.map((week, wi) => {
@@ -301,7 +303,7 @@ export function PlanWeeksEditor({
                 label={`Week ${wi + 1} label`}
                 value={week.label}
                 max={PLAN_LIMITS.weekLabel}
-                placeholder="Week label, for example Week 7 | May 5-11"
+                placeholder={t({ message: "Week label, for example Week 7 | May 5-11", context: "PlanEditor, placeholder" })}
                 autoFocus={focusId === week.id}
                 onChange={v =>
                   onChange(updateWeek(plan, week.id, { label: v }))
@@ -310,21 +312,21 @@ export function PlanWeeksEditor({
               />
               <RowButtons>
                 <IconButton
-                  label="Move this week up"
+                  label={t({ message: "Move this week up", context: "PlanEditor, label" })}
                   disabled={wi === 0}
                   onClick={() => onChange(moveWeek(plan, week.id, -1))}
                 >
                   <ArrowUp className="w-4 h-4" />
                 </IconButton>
                 <IconButton
-                  label="Move this week down"
+                  label={t({ message: "Move this week down", context: "PlanEditor, label" })}
                   disabled={wi === weeks.length - 1}
                   onClick={() => onChange(moveWeek(plan, week.id, 1))}
                 >
                   <ArrowDown className="w-4 h-4" />
                 </IconButton>
                 <IconButton
-                  label="Remove this week"
+                  label={t({ message: "Remove this week", context: "PlanEditor, label" })}
                   tone="remove"
                   onClick={() => onChange(setWeekHidden(plan, week.id, true))}
                 >
@@ -337,7 +339,7 @@ export function PlanWeeksEditor({
               value={week.goal}
               max={PLAN_LIMITS.weekGoal}
               multiline
-              placeholder="What this week is for"
+              placeholder={t({ message: "What this week is for", context: "PlanEditor, placeholder" })}
               onChange={v => onChange(updateWeek(plan, week.id, { goal: v }))}
               className="mt-2"
             />
@@ -356,28 +358,28 @@ export function PlanWeeksEditor({
                       max={PLAN_LIMITS.taskText}
                       multiline
                       rows={2}
-                      placeholder="What needs doing"
+                      placeholder={t({ message: "What needs doing", context: "PlanEditor, placeholder" })}
                       autoFocus={focusId === task.id}
                       onChange={v => onChange(updateTask(plan, task.id, v))}
                       className="flex-1"
                     />
                     <RowButtons>
                       <IconButton
-                        label="Move this task up"
+                        label={t({ message: "Move this task up", context: "PlanEditor, label" })}
                         disabled={first}
                         onClick={() => onChange(moveTask(plan, task.id, -1))}
                       >
                         <ArrowUp className="w-4 h-4" />
                       </IconButton>
                       <IconButton
-                        label="Move this task down"
+                        label={t({ message: "Move this task down", context: "PlanEditor, label" })}
                         disabled={last}
                         onClick={() => onChange(moveTask(plan, task.id, 1))}
                       >
                         <ArrowDown className="w-4 h-4" />
                       </IconButton>
                       <IconButton
-                        label="Remove this task"
+                        label={t({ message: "Remove this task", context: "PlanEditor, label" })}
                         tone="remove"
                         onClick={() =>
                           onChange(setTaskHidden(plan, task.id, true))
@@ -402,8 +404,8 @@ export function PlanWeeksEditor({
                   onChange(next.plan);
                 }}
               >
-                Add a task
-              </AddButton>
+                <Trans context="PlanEditor, AddButton">Add a task
+              </Trans></AddButton>
             </div>
           </section>
         );
@@ -417,8 +419,8 @@ export function PlanWeeksEditor({
           onChange(next.plan);
         }}
       >
-        Add a week
-      </AddButton>
+        <Trans context="PlanEditor, AddButton">Add a week
+      </Trans></AddButton>
 
       <RemovedItems
         plan={plan}
@@ -440,6 +442,7 @@ function OptionsField({
   onChange: (next: string[]) => void;
   label: string;
 }) {
+  const { t } = useLingui();
   const [draft, setDraft] = useState("");
   const add = () => {
     const text = draft.trim();
@@ -450,8 +453,8 @@ function OptionsField({
   return (
     <div>
       <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
-        Suggested options
-      </p>
+        <Trans context="PlanEditor, p">Suggested options
+      </Trans></p>
       <div className="flex flex-wrap gap-1.5 mb-2">
         {options.map((opt, i) => (
           <span
@@ -461,7 +464,7 @@ function OptionsField({
             <span className="break-words min-w-0">{opt}</span>
             <button
               type="button"
-              aria-label={`Remove the option ${opt}`}
+              aria-label={t({ message: `Remove the option ${opt}`, context: "PlanEditor, aria-label" })}
               onClick={() => onChange(options.filter((_, j) => j !== i))}
               className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-stone-500 hover:bg-red-50 hover:text-red-600"
             >
@@ -470,7 +473,7 @@ function OptionsField({
           </span>
         ))}
         {options.length === 0 && (
-          <span className="text-xs text-stone-500 italic">None yet.</span>
+          <span className="text-xs text-stone-500 italic"><Trans context="PlanEditor, span">None yet.</Trans></span>
         )}
       </div>
       {options.length < PLAN_LIMITS.optionsPerDecision && (
@@ -480,7 +483,7 @@ function OptionsField({
             value={draft}
             maxLength={PLAN_LIMITS.option}
             aria-label={label}
-            placeholder="Add an option"
+            placeholder={t({ message: "Add an option", context: "PlanEditor, placeholder" })}
             onChange={e => setDraft(e.target.value)}
             onKeyDown={e => {
               if (e.key === "Enter") {
@@ -491,8 +494,8 @@ function OptionsField({
             className={`${INPUT} flex-1`}
           />
           <AddButton onClick={add} disabled={!draft.trim()}>
-            Add
-          </AddButton>
+            <Trans context="PlanEditor, AddButton">Add
+          </Trans></AddButton>
         </div>
       )}
     </div>
@@ -506,6 +509,7 @@ export function DecisionsEditor({
   stateKeys,
   fill,
 }: EditorProps) {
+  const { t } = useLingui();
   const [focusId, setFocusId] = useState<string | null>(null);
   const decisions = plan.decisions.filter(d => !d.hidden);
   const tasks = visibleTasks(plan);
@@ -523,7 +527,7 @@ export function DecisionsEditor({
               label={`Decision ${di + 1} title`}
               value={dec.title}
               max={PLAN_LIMITS.decisionTitle}
-              placeholder="What needs deciding"
+              placeholder={t({ message: "What needs deciding", context: "PlanEditor, placeholder" })}
               autoFocus={focusId === dec.id}
               onChange={v =>
                 onChange(updateDecision(plan, dec.id, { title: v }))
@@ -532,21 +536,21 @@ export function DecisionsEditor({
             />
             <RowButtons>
               <IconButton
-                label="Move this decision up"
+                label={t({ message: "Move this decision up", context: "PlanEditor, label" })}
                 disabled={di === 0}
                 onClick={() => onChange(moveDecision(plan, dec.id, -1))}
               >
                 <ArrowUp className="w-4 h-4" />
               </IconButton>
               <IconButton
-                label="Move this decision down"
+                label={t({ message: "Move this decision down", context: "PlanEditor, label" })}
                 disabled={di === decisions.length - 1}
                 onClick={() => onChange(moveDecision(plan, dec.id, 1))}
               >
                 <ArrowDown className="w-4 h-4" />
               </IconButton>
               <IconButton
-                label="Remove this decision"
+                label={t({ message: "Remove this decision", context: "PlanEditor, label" })}
                 tone="remove"
                 onClick={() => onChange(setDecisionHidden(plan, dec.id, true))}
               >
@@ -560,7 +564,7 @@ export function DecisionsEditor({
             max={PLAN_LIMITS.decisionDescription}
             multiline
             rows={3}
-            placeholder="What it covers and why it matters"
+            placeholder={t({ message: "What it covers and why it matters", context: "PlanEditor, placeholder" })}
             onChange={v =>
               onChange(updateDecision(plan, dec.id, { description: v }))
             }
@@ -574,8 +578,8 @@ export function DecisionsEditor({
           />
           <label className="block">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              Timeline task it settles
-            </span>
+              <Trans context="PlanEditor, span">Timeline task it settles
+            </Trans></span>
             <select
               value={dec.linkedItem ?? ""}
               onChange={e =>
@@ -609,8 +613,8 @@ export function DecisionsEditor({
           onChange(next.plan);
         }}
       >
-        Add a decision
-      </AddButton>
+        <Trans context="PlanEditor, AddButton">Add a decision
+      </Trans></AddButton>
 
       <RemovedItems
         plan={plan}
@@ -634,8 +638,8 @@ export function EmptyPlanNote({ plan }: { plan: CommandCentrePlan }) {
   if (plan.weeks.length > 0 || plan.decisions.length > 0) return null;
   return (
     <p className="text-white text-sm max-w-2xl mb-6">
-      No plan yet. Use Edit the plan to add your first week, its tasks and the decisions ahead.
-    </p>
+      <Trans context="PlanEditor, p">No plan yet. Use Edit the plan to add your first week, its tasks and the decisions ahead.
+    </Trans></p>
   );
 }
 
@@ -662,9 +666,9 @@ export function PlanEditBar({
           onClick={onEdit}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-300 bg-white text-stone-700 hover:bg-stone-100 transition-colors"
         >
-          <Pencil className="w-3.5 h-3.5" />
+          <Trans context="PlanEditor, button"><Pencil className="w-3.5 h-3.5" />
           Edit the plan
-        </button>
+        </Trans></button>
       </div>
     );
   }
@@ -673,9 +677,9 @@ export function PlanEditBar({
       className={`max-w-4xl mx-auto flex flex-wrap items-center gap-3 rounded-xl border border-teal-deep/30 bg-white px-4 py-3 shadow-sm ${bottom ? "mt-6" : "mb-4"}`}
     >
       <p className="flex-1 min-w-48 text-sm text-stone-700">
-        <span className="font-semibold">Editing the plan.</span> Nothing changes
+        <Trans context="PlanEditor, p"><span className="font-semibold">Editing the plan.</span> Nothing changes
         for anyone else until you save.
-      </p>
+      </Trans></p>
       <button
         type="button"
         onClick={onSave}
@@ -691,8 +695,8 @@ export function PlanEditBar({
         disabled={saving}
         className="text-xs px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 transition-colors"
       >
-        Cancel
-      </button>
+        <Trans context="PlanEditor, button">Cancel
+      </Trans></button>
     </div>
   );
 }

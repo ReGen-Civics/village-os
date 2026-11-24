@@ -23,6 +23,7 @@ import {
   type MapChip,
   type ResolvedChip,
 } from "@shared/mapStatChips";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Village settings: the chips across the top of the Living Map.
@@ -108,6 +109,7 @@ function previewLine(p: ResolvedChip | undefined): string {
 }
 
 export default function MapChipsPanel() {
+  const { t } = useLingui();
   const mayAdminister = useIsAdmin();
   const [chips, setChips] = useState<MapChip[] | null>(null);
   const [preview, setPreview] = useState<ResolvedChip[]>([]);
@@ -130,7 +132,7 @@ export default function MapChipsPanel() {
       if (!res.ok) throw new Error(String(res.status));
       take(await res.json());
     } catch {
-      toast.error("Could not load the map's chips");
+      toast.error(t({ message: "Could not load the map's chips", context: "MapChipsPanel, toast" }));
     }
   }, [mayAdminister]);
   useEffect(() => { void load(); }, [load]);
@@ -171,9 +173,9 @@ export default function MapChipsPanel() {
       take(body);
       window.dispatchEvent(new Event(MAP_CHIPS_SAVED_EVENT));
       writeStored("local", MAP_CHIPS_SAVED_KEY, String(Date.now()));
-      toast.success("Chips saved. An open map shows them straight away");
+      toast.success(t({ message: "Chips saved. An open map shows them straight away", context: "MapChipsPanel, toast" }));
     } catch {
-      toast.error("The chips did not save");
+      toast.error(t({ message: "The chips did not save", context: "MapChipsPanel, toast" }));
     } finally {
       setSaving(false);
     }
@@ -183,11 +185,11 @@ export default function MapChipsPanel() {
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5">
-      <h3 className="font-semibold text-gray-900 mb-1">The numbers across the top of the map</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="MapChipsPanel, h3">The numbers across the top of the map</Trans></h3>
       <p className="text-xs text-gray-500 mb-3">
-        Each chip reads something the village keeps, or a number you type. A chip you have not set
+        <Trans context="MapChipsPanel, p">Each chip reads something the village keeps, or a number you type. A chip you have not set
         shows the map's example number and says example on it, until you choose what it reads.
-      </p>
+      </Trans></p>
 
       <datalist id="map-chip-links">
         {links.map((l) => <option key={l} value={l} />)}
@@ -206,16 +208,16 @@ export default function MapChipsPanel() {
                 <span className="font-medium text-sm text-gray-900 flex-1 min-w-0 truncate">{name}</span>
                 {/* Icons with names, so a 400px drawer keeps room for the chip's own name. */}
                 <button type="button" className={iconBtnCls} disabled={i === 0} onClick={() => move(i, -1)}
-                  aria-label={`Move ${name} earlier`} title="Earlier on the bar">
+                  aria-label={t({ message: `Move ${name} earlier`, context: "MapChipsPanel, aria-label" })} title={t({ message: "Earlier on the bar", context: "MapChipsPanel, title" })}>
                   <ArrowUp className="w-4 h-4" aria-hidden="true" />
                 </button>
                 <button type="button" className={iconBtnCls} disabled={i === chips.length - 1} onClick={() => move(i, 1)}
-                  aria-label={`Move ${name} later`} title="Later on the bar">
+                  aria-label={t({ message: `Move ${name} later`, context: "MapChipsPanel, aria-label" })} title={t({ message: "Later on the bar", context: "MapChipsPanel, title" })}>
                   <ArrowDown className="w-4 h-4" aria-hidden="true" />
                 </button>
                 <button type="button" className={`${iconBtnCls} text-red-600 border-red-200`}
                   onClick={() => change(chips.filter((_, j) => j !== i))}
-                  aria-label={`Take ${name} off the map`} title="Take it off the bar">
+                  aria-label={t({ message: `Take ${name} off the map`, context: "MapChipsPanel, aria-label" })} title={t({ message: "Take it off the bar", context: "MapChipsPanel, title" })}>
                   <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
@@ -256,7 +258,7 @@ export default function MapChipsPanel() {
                 <label className="text-xs text-gray-500" htmlFor={fieldId("unit")}>
                   Unit after the number
                   <input id={fieldId("unit")} className={`${inputCls} mt-1`} value={chip.unit} maxLength={8}
-                    placeholder="kg, %, ha" onChange={(e) => edit(i, { unit: e.target.value })} />
+                    placeholder={t({ message: "kg, %, ha", context: "MapChipsPanel, placeholder" })} onChange={(e) => edit(i, { unit: e.target.value })} />
                 </label>
 
                 {isStatSource(chip.source) && (
@@ -273,7 +275,7 @@ export default function MapChipsPanel() {
                 <label className="text-xs text-gray-500 sm:col-span-2" htmlFor={fieldId("link")}>
                   Page it opens
                   <input id={fieldId("link")} className={`${inputCls} mt-1`} value={chip.link} maxLength={64}
-                    list="map-chip-links" placeholder="/quests"
+                    list="map-chip-links" placeholder={t({ message: "/quests", context: "MapChipsPanel, placeholder" })}
                     onChange={(e) => edit(i, { link: e.target.value.trim() })} />
                 </label>
 
@@ -297,7 +299,7 @@ export default function MapChipsPanel() {
 
               {src && <p className="text-[11px] text-gray-400 mt-2">{src.how}</p>}
               {/* A members-only source says so in every state, saved or not. */}
-              {src?.membersOnly && <p className="text-[11px] text-gray-600 mt-1">Only members see this chip.</p>}
+              {src?.membersOnly && <p className="text-[11px] text-gray-600 mt-1"><Trans context="MapChipsPanel, p">Only members see this chip.</Trans></p>}
               {/* Before a save, the warning; after it, the preview says the same thing once. */}
               {dirty && src?.hiddenFromVisitors && !src.membersOnly && (
                 <p className="text-[11px] text-amber-700 mt-1">{src.hiddenFromVisitors}</p>
@@ -309,25 +311,25 @@ export default function MapChipsPanel() {
       </ol>
 
       {chips.length === 0 && (
-        <p className="text-xs text-gray-500 mt-2">The bar carries only the moon. Add a chip to put a number beside it.</p>
+        <p className="text-xs text-gray-500 mt-2"><Trans context="MapChipsPanel, p">The bar carries only the moon. Add a chip to put a number beside it.</Trans></p>
       )}
 
       <div className="flex flex-wrap gap-2 mt-3">
         <button type="button" className={btnCls} onClick={add} disabled={chips.length >= MAX_MAP_CHIPS}>
-          Add a chip
-        </button>
+          <Trans context="MapChipsPanel, button">Add a chip
+        </Trans></button>
         <button type="button" className={btnCls}
           onClick={() => change(DEFAULT_MAP_CHIPS.map((c) => ({ ...c })))}>
-          Put back the five examples
-        </button>
+          <Trans context="MapChipsPanel, button">Put back the five examples
+        </Trans></button>
       </div>
       {chips.length >= MAX_MAP_CHIPS && (
         <p className="text-[11px] text-gray-400 mt-1">
-          The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone.
-        </p>
+          <Trans context="MapChipsPanel, p">The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone.
+        </Trans></p>
       )}
 
-      {dirty && <p className="text-[11px] text-gray-500 mt-3">Save to see what the map will show.</p>}
+      {dirty && <p className="text-[11px] text-gray-500 mt-3"><Trans context="MapChipsPanel, p">Save to see what the map will show.</Trans></p>}
 
       <button type="button" onClick={save} disabled={saving}
         className="mt-3 min-h-[44px] px-4 text-sm rounded-lg bg-teal-deep text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep disabled:opacity-40">

@@ -40,7 +40,7 @@ import QuestThreadPicker from "@/components/openWork/QuestThreadPicker";
 import ExampleStamp from "@/components/openWork/ExampleStamp";
 import { statusFor } from "@/lib/questStatus";
 import { goalOf } from "@shared/questThreads";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { useLadderTitle } from "@/hooks/useVillagePaths";
 import {
   currentClaims, gateFix, gateLabel, relativeWhen, statusIs,
@@ -195,9 +195,9 @@ export default function QuestDetail() {
               href="/quests"
               className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <Trans context="QuestDetail, Link"><ArrowLeft className="w-4 h-4" />
               All quests
-            </Link>
+            </Trans></Link>
           </div>
         </section>
       </Layout>
@@ -211,7 +211,7 @@ export default function QuestDetail() {
       <Layout>
         <section className="py-10 bg-background min-h-[60vh]">
           <div className="container max-w-5xl" aria-busy="true">
-            <span className="sr-only">Loading this quest</span>
+            <span className="sr-only"><Trans context="QuestDetail, span">Loading this quest</Trans></span>
             <div className="rounded-3xl aspect-[16/9] sm:aspect-[21/9] bg-muted animate-pulse" />
             <div className="flex gap-2.5 mt-4">
               <div className="h-8 w-32 rounded-full bg-muted animate-pulse" />
@@ -234,9 +234,9 @@ export default function QuestDetail() {
             href="/quests"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-deep hover:text-teal transition-colors mb-4"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <Trans context="QuestDetail, Link"><ArrowLeft className="w-4 h-4" />
             All quests
-          </Link>
+          </Trans></Link>
           <QuestPoster
             quest={quest}
             priority
@@ -253,8 +253,8 @@ export default function QuestDetail() {
             )}
             {statusIs(quest, "seasonal") && (
               <span className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-white/85 text-teal-deep text-xs font-bold uppercase tracking-wide">
-                Seasonal
-              </span>
+                <Trans context="QuestDetail, span">Seasonal
+              </Trans></span>
             )}
             <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
               {quest.circle && (
@@ -310,8 +310,8 @@ export default function QuestDetail() {
                 )}
                 {done > 0 && (
                   <span className="inline-flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" /> {done} completed
-                  </span>
+                    <Trans context="QuestDetail, span"><CheckCircle2 className="w-4 h-4" /> {done} completed
+                  </Trans></span>
                 )}
               </span>
             )}
@@ -388,8 +388,8 @@ export default function QuestDetail() {
             {(why || quest.impact) && (
               <div>
                 <h2 className="font-display text-xl font-bold text-foreground mb-3">
-                  Why this quest matters
-                </h2>
+                  <Trans context="QuestDetail, h2">Why this quest matters
+                </Trans></h2>
                 {why && (
                   <p className="text-muted-foreground leading-relaxed">{why}</p>
                 )}
@@ -405,13 +405,13 @@ export default function QuestDetail() {
             {quest.firstStep && (
               <div className="bg-amber-light border border-amber/30 rounded-2xl p-5">
                 <h2 className="font-display text-lg font-bold text-amber-ink mb-2 flex items-center gap-2">
-                  <Footprints className="w-5 h-5" />
+                  <Trans context="QuestDetail, h2"><Footprints className="w-5 h-5" />
                   Your first step
-                </h2>
+                </Trans></h2>
                 <p className="text-foreground/90 leading-relaxed">{quest.firstStep}</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Fifteen minutes or less. The rest of the quest can wait until you've done this.
-                </p>
+                  <Trans context="QuestDetail, p">Fifteen minutes or less. The rest of the quest can wait until you've done this.
+                </Trans></p>
               </div>
             )}
 
@@ -419,9 +419,9 @@ export default function QuestDetail() {
             {steps.length > 0 && (
               <div>
                 <h2 className="font-display text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                  <ListChecks className="w-5 h-5 text-teal-deep" />
+                  <Trans context="QuestDetail, h2"><ListChecks className="w-5 h-5 text-teal-deep" />
                   How to do this quest
-                </h2>
+                </Trans></h2>
                 <ol className="space-y-3">
                   {steps.map((step, i) => (
                     <li key={i} className="flex gap-3 bg-card border border-border rounded-xl p-4">
@@ -439,9 +439,9 @@ export default function QuestDetail() {
             {tips.length > 0 && (
               <div>
                 <h2 className="font-display text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-gold" />
+                  <Trans context="QuestDetail, h2"><Lightbulb className="w-5 h-5 text-gold" />
                   Worth knowing
-                </h2>
+                </Trans></h2>
                 <ul className="space-y-2">
                   {tips.map((tip, i) => (
                     <li key={i} className="flex gap-2.5 text-sm text-muted-foreground leading-relaxed">
@@ -457,8 +457,8 @@ export default function QuestDetail() {
             {completions.length > 0 && (
               <div>
                 <h2 className="font-display text-xl font-bold text-foreground mb-3">
-                  Recently completed by
-                </h2>
+                  <Trans context="QuestDetail, h2">Recently completed by
+                </Trans></h2>
                 <ul className="space-y-1.5">
                   {completions.map((r, i) => (
                     <li key={i} className="text-sm text-muted-foreground">
@@ -477,9 +477,9 @@ export default function QuestDetail() {
             <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
               <div className="p-5 pb-4">
                 <h2 className="font-display text-lg font-bold text-foreground mb-2 flex items-center gap-2">
-                  <ClipboardCheck className="w-5 h-5 text-teal-deep" />
+                  <Trans context="QuestDetail, h2"><ClipboardCheck className="w-5 h-5 text-teal-deep" />
                   What you'll share
-                </h2>
+                </Trans></h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {quest.deliverable ??
                     "A link or a few words showing what you did. The circle reads it before consenting."}
@@ -543,9 +543,9 @@ export default function QuestDetail() {
             {/* Submitted state gets a small reassurance */}
             {claim?.status === "submitted" && (
               <p className="flex items-center gap-2 text-sm text-blue-700 px-1">
-                <Send className="w-4 h-4" />
+                <Trans context="QuestDetail, p"><Send className="w-4 h-4" />
                 Thank you! A steward will look at your work soon.
-              </p>
+              </Trans></p>
             )}
           </aside>
         </div>
@@ -556,7 +556,7 @@ export default function QuestDetail() {
         <section className="py-10 bg-primary/5">
           <div className="container max-w-5xl">
             <h2 className="font-display text-xl font-bold text-foreground mb-5">
-              More from {quest.circle}
+              <Trans context="QuestDetail, h2">More from {quest.circle}</Trans>
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {related.map((q) => (
@@ -577,12 +577,12 @@ export default function QuestDetail() {
       <section className="py-10 bg-background">
         <div className="container max-w-3xl text-center">
           <p className="text-sm text-muted-foreground">
-            None of these fit your gift?{" "}
+            <Trans context="QuestDetail, p">None of these fit your gift?{" "}
             <Link href="/propose-quest" className="font-semibold text-teal-deep hover:text-teal transition-colors">
               Propose your own quest
             </Link>
             .
-          </p>
+          </Trans></p>
         </div>
       </section>
     </Layout>

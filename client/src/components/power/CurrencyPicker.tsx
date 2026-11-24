@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import { removeStored, storedText, writeStored } from "@/lib/safeStorage";
+import { Trans } from "@lingui/react/macro";
 
 const STORAGE_KEY = "power-display-currency";
 
@@ -118,7 +119,7 @@ export default function CurrencyPicker({
   return (
     <div data-power-currency className="text-left">
       <label className="text-[11px] text-muted-foreground flex items-center gap-2">
-        <span>Show money in</span>
+        <span><Trans context="CurrencyPicker, span">Show money in</Trans></span>
         <select
           value={choice}
           onChange={(e) => save(e.target.value)}
@@ -136,8 +137,8 @@ export default function CurrencyPicker({
       </label>
       {!!resolved && !covered(resolved) && (
         <p className="text-[10px] text-muted-foreground mt-1">
-          No daily rate for {resolved} yet, so amounts in other currencies show unconverted.
-        </p>
+          <Trans context="CurrencyPicker, p">No daily rate for {resolved} yet, so amounts in other currencies show unconverted.
+        </Trans></p>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import {
   Info,
   Wallet,
 } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 
 interface SummaryDetail {
   id: string;
@@ -69,8 +70,8 @@ export default function InvestorSummary() {
         <div className={CARD}>
           <div className="mb-8 max-w-2xl">
             <p className={`${EYEBROW} mb-3`}>
-              Investment Summary
-            </p>
+              <Trans context="InvestorSummary, p">Investment Summary
+            </Trans></p>
             <h2 className="mb-3 font-display text-3xl leading-tight text-card-foreground sm:text-4xl break-words">
               {data.headline}
             </h2>

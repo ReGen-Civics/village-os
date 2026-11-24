@@ -29,6 +29,7 @@ import {
   attributionLine,
   type PlacePhoto,
 } from "@shared/placePhotos";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** Every control clears the 44px floor. */
 export const TAP = "min-h-[44px]";
@@ -59,6 +60,7 @@ export default function PhotoCard({
   onChanged: () => void;
   onSay: (s: string) => void;
 }) {
+  const { t } = useLingui();
   const [busy, setBusy] = useState(false);
 
   /**
@@ -141,12 +143,12 @@ export default function PhotoCard({
         )}
         {photo.heroAt && (
           <p className="inline-flex items-center gap-1 text-xs font-semibold text-teal-deep">
-            <Pin className="w-3 h-3" aria-hidden="true" /> This place leads with this one
-          </p>
+            <Trans context="PhotoCard, p"><Pin className="w-3 h-3" aria-hidden="true" /> This place leads with this one
+          </Trans></p>
         )}
         {photo.hiddenAt && (
           <p className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
-            <EyeOff className="w-3 h-3" aria-hidden="true" /> Hidden{photo.hiddenReason ? `: ${photo.hiddenReason}` : ""}
+            <Trans context="PhotoCard, p"><EyeOff className="w-3 h-3" aria-hidden="true" /> Hidden{photo.hiddenReason ? `: ${photo.hiddenReason}` : ""}</Trans>
           </p>
         )}
         {photo.caption && <p className="text-sm">{photo.caption}</p>}
@@ -160,8 +162,8 @@ export default function PhotoCard({
               className={BTN}
               aria-label={`Flag the photograph described as ${photo.altText}`}
             >
-              <Flag className="w-3.5 h-3.5" aria-hidden="true" /> Flag this
-            </button>
+              <Trans context="PhotoCard, button"><Flag className="w-3.5 h-3.5" aria-hidden="true" /> Flag this
+            </Trans></button>
           )}
           {signedIn && (
             <button
@@ -171,8 +173,8 @@ export default function PhotoCard({
               className={BTN}
               aria-label={`Ask for the photograph described as ${photo.altText} to come down because it is of you`}
             >
-              <UserRound className="w-3.5 h-3.5" aria-hidden="true" /> This is a photograph of me
-            </button>
+              <Trans context="PhotoCard, button"><UserRound className="w-3.5 h-3.5" aria-hidden="true" /> This is a photograph of me
+            </Trans></button>
           )}
           {canCurate && !photo.hiddenAt && (
             <button
@@ -181,8 +183,8 @@ export default function PhotoCard({
               disabled={busy}
               className={BTN}
             >
-              <EyeOff className="w-3.5 h-3.5" aria-hidden="true" /> Hide
-            </button>
+              <Trans context="PhotoCard, button"><EyeOff className="w-3.5 h-3.5" aria-hidden="true" /> Hide
+            </Trans></button>
           )}
           {canCurate && photo.hiddenAt && (
             <button
@@ -191,8 +193,8 @@ export default function PhotoCard({
               disabled={busy}
               className={BTN}
             >
-              <Undo2 className="w-3.5 h-3.5" aria-hidden="true" /> Put back
-            </button>
+              <Trans context="PhotoCard, button"><Undo2 className="w-3.5 h-3.5" aria-hidden="true" /> Put back
+            </Trans></button>
           )}
           {canCurate && !photo.hiddenAt && !photo.heroAt && (
             <SetHero structureKey={photo.structureKey} photoId={photo.id} onChanged={onChanged} onSay={onSay} />
@@ -203,7 +205,7 @@ export default function PhotoCard({
               onClick={remove}
               disabled={busy}
               className={`${BTN} text-red-700 border-red-200`}
-              aria-label={mine ? "Take down my photograph for good" : `Take down the photograph described as ${photo.altText} for good`}
+              aria-label={mine ? t({ message: "Take down my photograph for good", context: "PhotoCard, aria-label" }) : `Take down the photograph described as ${photo.altText} for good`}
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> {mine && !canCurate ? "Take mine down" : "Take down"}
             </button>
@@ -249,7 +251,7 @@ function SetHero({
   };
   return (
     <button type="button" onClick={pin} disabled={busy} className={BTN}>
-      <Pin className="w-3.5 h-3.5" aria-hidden="true" /> Make this the lead
-    </button>
+      <Trans context="PhotoCard, button"><Pin className="w-3.5 h-3.5" aria-hidden="true" /> Make this the lead
+    </Trans></button>
   );
 }

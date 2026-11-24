@@ -15,6 +15,7 @@
 import { useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { joinNames } from "@shared/moduleSwitch";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function ConsentCard({
   names,
@@ -31,18 +32,19 @@ export default function ConsentCard({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLingui();
   const [read, setRead] = useState(false);
   return (
-    <div role="group" aria-label="Before this turns on" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+    <div role="group" aria-label={t({ message: "Before this turns on", context: "ConsentCard, aria-label" })} className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
       <p className="flex items-center gap-2 font-semibold">
-        <ShieldAlert className="w-5 h-5 text-amber-700" aria-hidden="true" />
+        <Trans context="ConsentCard, p"><ShieldAlert className="w-5 h-5 text-amber-700" aria-hidden="true" />
         {joinNames(names)} {names.length === 1 ? "touches" : "touch"} money
-      </p>
+      </Trans></p>
       <ul className="mt-2 list-disc pl-5 space-y-1 text-sm leading-relaxed">
-        <li>Credits bought here stay credits. Nobody can withdraw them or turn them back into money.</li>
-        <li>Every person who runs this village signs in with their own account.</li>
-        <li>Backups have been made and a restore has been tried.</li>
-        <li>Someone who knows the law where this village is has read how it works.</li>
+        <li><Trans context="ConsentCard, li">Credits bought here stay credits. Nobody can withdraw them or turn them back into money.</Trans></li>
+        <li><Trans context="ConsentCard, li">Every person who runs this village signs in with their own account.</Trans></li>
+        <li><Trans context="ConsentCard, li">Backups have been made and a restore has been tried.</Trans></li>
+        <li><Trans context="ConsentCard, li">Someone who knows the law where this village is has read how it works.</Trans></li>
       </ul>
       <label className="mt-3 flex items-start gap-2 text-sm font-medium min-h-[44px]">
         <input
@@ -67,8 +69,8 @@ export default function ConsentCard({
           onClick={onCancel}
           className="min-h-[44px] px-4 rounded-lg border border-amber-300 bg-white text-sm font-medium"
         >
-          Not yet
-        </button>
+          <Trans context="ConsentCard, button">Not yet
+        </Trans></button>
       </div>
     </div>
   );

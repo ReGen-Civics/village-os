@@ -29,7 +29,7 @@ import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent
 import { buttonAction, percent, stepPoints, type TargetContext } from "@/lib/journeyPage";
 import { INVESTOR_FIGURE_IDS, INVESTOR_JOURNEY, JOURNEY_LEGACY_STEP_IDS } from "@shared/pageContent/journeys";
 import { useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -534,7 +534,7 @@ export default function InvestorJourney() {
                       <div className="min-w-0 flex-1">
                         <div className="mb-1.5 flex items-center justify-between gap-3">
                           <span className={`${CHIP_SOFT} break-words`}>
-                            Stage: {step.stage}
+                            <Trans context="InvestorJourney, span">Stage: {step.stage}</Trans>
                           </span>
                           <m.span
                             className="shrink-0"
@@ -567,7 +567,7 @@ export default function InvestorJourney() {
                       >
                         <div className="px-4 pb-5 sm:px-5 sm:pl-[4.75rem]">
                           <div className={`${TILE} mb-4`}>
-                            <h4 className="mb-3 text-sm font-semibold text-foreground">What you'll accomplish:</h4>
+                            <h4 className="mb-3 text-sm font-semibold text-foreground"><Trans context="InvestorJourney, h4">What you'll accomplish:</Trans></h4>
                             <ul className="grid gap-2 sm:grid-cols-2">
                               {stepPoints(step).map((detail, i) => (
                                 <li key={i} className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground break-words">
@@ -738,15 +738,15 @@ export default function InvestorJourney() {
         <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-card-foreground">
-              Request Investor Pack
-            </DialogTitle>
+              <Trans context="InvestorJourney, DialogTitle">Request Investor Pack
+            </Trans></DialogTitle>
             <DialogDescription className="sr-only">
-              Request the full investor pack with financials and development timeline.
-            </DialogDescription>
+              <Trans context="InvestorJourney, DialogDescription">Request the full investor pack with financials and development timeline.
+            </Trans></DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePackFormSubmit} className="space-y-4">
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Name</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Name</Trans></label>
               <input
                 type="text"
                 value={packFormData.name}
@@ -756,7 +756,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Email</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Email</Trans></label>
               <input
                 type="email"
                 value={packFormData.email}
@@ -766,7 +766,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Investment Range</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Investment Range</Trans></label>
               <input
                 type="text"
                 placeholder={page?.packForm.fields.rangeHint || undefined}
@@ -776,7 +776,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Message (optional)</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Message (optional)</Trans></label>
               <textarea
                 value={packFormData.message}
                 onChange={(e) => setPackFormData({ ...packFormData, message: e.target.value })}
@@ -800,9 +800,9 @@ export default function InvestorJourney() {
             <PathConsentBox checked={packConsent} onChange={setPackConsent} />
             {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
             <button type="submit" className={`${BTN_PRIMARY} w-full`}>
-              <Send className="size-4" aria-hidden="true" />
+              <Trans context="InvestorJourney, button"><Send className="size-4" aria-hidden="true" />
               Send Request
-            </button>
+            </Trans></button>
           </form>
         </DialogContent>
       </Dialog>
@@ -812,15 +812,15 @@ export default function InvestorJourney() {
         <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-card-foreground">
-              Schedule a Call
-            </DialogTitle>
+              <Trans context="InvestorJourney, DialogTitle">Schedule a Call
+            </Trans></DialogTitle>
             <DialogDescription className="sr-only">
-              Schedule a one-on-one investment call with our team.
-            </DialogDescription>
+              <Trans context="InvestorJourney, DialogDescription">Schedule a one-on-one investment call with our team.
+            </Trans></DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCallFormSubmit} className="space-y-4">
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Name</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Name</Trans></label>
               <input
                 type="text"
                 value={callFormData.name}
@@ -830,7 +830,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Email</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Email</Trans></label>
               <input
                 type="email"
                 value={callFormData.email}
@@ -840,7 +840,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Preferred Time</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Preferred Time</Trans></label>
               <input
                 type="text"
                 placeholder={page?.callForm.fields.timeHint || undefined}
@@ -850,7 +850,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}>Message (optional)</label>
+              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Message (optional)</Trans></label>
               <textarea
                 value={callFormData.message}
                 onChange={(e) => setCallFormData({ ...callFormData, message: e.target.value })}
@@ -861,9 +861,9 @@ export default function InvestorJourney() {
             <PathConsentBox checked={callConsent} onChange={setCallConsent} />
             {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
             <button type="submit" className={`${BTN_PRIMARY} w-full`}>
-              <Send className="size-4" aria-hidden="true" />
+              <Trans context="InvestorJourney, button"><Send className="size-4" aria-hidden="true" />
               Request Call
-            </button>
+            </Trans></button>
           </form>
         </DialogContent>
       </Dialog>

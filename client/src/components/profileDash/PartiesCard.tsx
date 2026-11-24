@@ -19,6 +19,7 @@ import { useModuleOn } from "@/modules/ModuleProvider";
 import { initialsOf, isWorkThread, type InboxConversation } from "@/lib/messaging";
 import type { DashData } from "./useDashData";
 import { H2, LINK, PANEL } from "./dashUi";
+import { Trans } from "@lingui/react/macro";
 
 export interface PartyPerson {
   id: string;
@@ -94,16 +95,16 @@ export default function PartiesCard({ data }: { data: Pick<DashData, "messages">
     <section aria-labelledby="party-h" className={`${PANEL} flex flex-col gap-3 p-5 sm:p-6`}>
       <div className="flex items-baseline gap-3">
         <h2 id="party-h" className={`${H2} flex-1 sm:text-[28px]`}>
-          Your parties
-        </h2>
+          <Trans context="PartiesCard, h2">Your parties
+        </Trans></h2>
         <Link href="/messages" className={`${LINK} text-sm`}>
-          Messages
-        </Link>
+          <Trans context="PartiesCard, Link">Messages
+        </Trans></Link>
       </div>
       {rows.length === 0 ? (
         <p className="m-0 text-sm text-muted-foreground">
-          No parties yet. When you share a quest or task with someone, its chat gathers here.
-        </p>
+          <Trans context="PartiesCard, p">No parties yet. When you share a quest or task with someone, its chat gathers here.
+        </Trans></p>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {rows.map((p) => (
