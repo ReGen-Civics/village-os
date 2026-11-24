@@ -138,9 +138,10 @@ export default function MobileTabBar() {
           const inner = (
             <>
               <span
-                className={`pointer-events-none absolute top-0 h-0.5 w-8 rounded-full bg-amber transition-opacity duration-300 ${
+                className={`m-shoot pointer-events-none absolute top-0 h-0.5 w-8 rounded-full bg-amber transition-opacity duration-300 ${
                   active ? "opacity-100" : "opacity-0"
                 }`}
+                data-on={active}
               />
               <div
                 className={`relative flex items-center justify-center rounded-2xl transition-all duration-300 ${
@@ -148,6 +149,8 @@ export default function MobileTabBar() {
                 }`}
               >
                 <slot.Icon className="w-[22px] h-[22px]" />
+                {/* A bud on the chosen tab (index.css, LIVING MOTION: Root). */}
+                <span aria-hidden="true" className="m-bud bg-amber" data-on={active} />
               </div>
               {/* min-w-0 + truncate, because at a 320px viewport the five labels needed
                   325px of min-content and the bar itself became wider than the
