@@ -7580,6 +7580,12 @@ msgctxt "a proposal's saved split"
 msgid "What they hold in {0}"
 msgstr "Lo que tiene en {0}"
 
+# needs-native-review: new words, 24 Nov 2026 (the lead: "a small stumble is 'We're growing'")
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "We're growing"
+msgstr "Estamos creciendo"
+
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Promised reply time, in hours"
 msgstr ""
@@ -25972,12 +25978,6 @@ msgstr ""
 #~ msgctxt "terms: the pay ask"
 #~ msgid "The monthly amount you would ask"
 #~ msgstr ""
-
-# needs-native-review: new words, 24 Nov 2026 (the lead: "a small stumble is 'We're growing'")
-#: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the eyebrow"
-msgid "We're growing"
-msgstr "Estamos creciendo"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"

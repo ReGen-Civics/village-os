@@ -7416,6 +7416,11 @@ msgctxt "a proposal's saved split"
 msgid "What they hold in {0}"
 msgstr "What they hold in {0}"
 
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "We're growing"
+msgstr "We're growing"
+
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Promised reply time, in hours"
 msgstr "Promised reply time, in hours"
@@ -25308,9 +25313,9 @@ msgstr "We'd agree {0}"
 #~ msgstr "The monthly amount you would ask"
 
 #: client/src/components/ErrorBoundary.tsx
-msgctxt "refresh screen after a crash: the eyebrow"
-msgid "A small stumble"
-msgstr "A small stumble"
+#~ msgctxt "refresh screen after a crash: the eyebrow"
+#~ msgid "A small stumble"
+#~ msgstr "A small stumble"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
