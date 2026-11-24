@@ -64,6 +64,15 @@ describe("when an area is in use", () => {
     expect(areaInUse({ href: "/seasonal-festivals" }, { exampleModules: null, seasons: 0 })).toBe(false);
   });
 
+  it("keeps Badges (examples only) and the Cash Budget (refused before admission) out of a newcomer's account menu", () => {
+    // The every-page audit (24 Nov 2026) found both on a newcomer's phone menu: Badges showed only standing examples,
+    // and /budget answered the newcomer's read with 403.
+    const at = (href: string) => ACCOUNT_MENU.find((l) => l.href === href);
+    expect(at("/badges")?.newcomers).toBe("in-use");
+    expect(at("/budget")?.newcomers).toBe("never");
+    expect(areaInUse(at("/badges")!, { exampleModules: ["badges"], seasons: 0 }), "hidden while badges shows examples").toBe(false);
+  });
+
   it("every in-use entry in the menu has an answer here: a module with examples, or a read of its own", () => {
     const entries = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].filter((l) => l.newcomers === "in-use");
     for (const e of entries) {
