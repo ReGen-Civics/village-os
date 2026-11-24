@@ -81,14 +81,14 @@ async function menuHrefs(): Promise<string[]> {
   return Array.from(hrefs);
 }
 
-const UNFINISHED = ["/feed", "/forum", "/messages", "/introductions", "/events", "/sessions", "/gratitude", "/places", "/photographs", "/tools", "/decisions", "/propose", "/campaigns", "/network"];
+const UNFINISHED = ["/feed", "/forum", "/messages", "/introductions", "/events", "/sessions", "/places", "/photographs", "/tools", "/decisions", "/propose", "/campaigns", "/network"];
 
 describe("a visitor's menu", () => {
   it("offers none of the unfinished areas, and keeps the ways in, the map and the quests", async () => {
     const hrefs = await menuHrefs();
     for (const h of UNFINISHED) expect(hrefs, h).not.toContain(h);
-    // What We Look After is public since #1529, so a visitor is offered it.
-    for (const h of ["/map", "/quests", "/seasonal-festivals", "/feedback", "/powers"]) expect(hrefs, h).toContain(h);
+    // What We Look After is public since #1529, and the gratitude wall since #1528, so a visitor is offered both.
+    for (const h of ["/map", "/quests", "/seasonal-festivals", "/feedback", "/powers", "/gratitude"]) expect(hrefs, h).toContain(h);
   });
 
   it("gets an area back once it is in real use: the feed with its examples retired, places with a photograph, an event ahead", async () => {
@@ -98,7 +98,7 @@ describe("a visitor's menu", () => {
     const hrefs = await menuHrefs();
     for (const h of ["/feed", "/places", "/photographs", "/events"]) expect(hrefs, h).toContain(h);
     // Still examples, still a member's own surface: still out.
-    for (const h of ["/forum", "/tools", "/messages", "/gratitude", "/decisions"]) expect(hrefs, h).not.toContain(h);
+    for (const h of ["/forum", "/tools", "/messages", "/decisions"]) expect(hrefs, h).not.toContain(h);
   });
 });
 
@@ -144,13 +144,17 @@ describe("the footer", () => {
 
   it("leaves out the unfinished areas for a visitor", async () => {
     const hrefs = await footerShows();
-    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/review"]) expect(hrefs, h).not.toContain(h);
+    for (const h of ["/network", "/campaigns", "/tools", "/places", "/review"]) expect(hrefs, h).not.toContain(h);
+    // The gratitude wall is public since #1528 (first names only), so the footer offers it to a visitor;
+    // the engine room's rules are for members.
+    expect(hrefs).toContain("/gratitude");
+    expect(hrefs).not.toContain("/game-mechanics");
     expect(hrefs).toContain("/quests");
   });
 
   it("CONTROL: keeps them for a member", async () => {
     user = { id: "u1", name: "Ora Vale", role: "member", membershipGranted: true };
     const hrefs = await footerShows();
-    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/review"]) expect(hrefs, h).toContain(h);
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/review", "/game-mechanics"]) expect(hrefs, h).toContain(h);
   });
 });

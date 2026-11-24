@@ -12,7 +12,7 @@ import { areaInUse } from "./areasInUse";
 import { eventsInUse } from "./areasInUseReads";
 import { newcomerSlots } from "@/components/mobile/MobileTabBar";
 import { resolve } from "@/components/mobile/MobileFab";
-import { FAB_ACTIONS, NEWCOMER_SLOT, TAB_SLOTS } from "@/config/mobileNav";
+import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup } from "@/config/nav";
 
 const STAGES = [{ id: "guest" }, { id: "explorer" }, { id: "member" }, { id: "steward" }];
@@ -79,8 +79,10 @@ describe("a newcomer's phone tab bar", () => {
     expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", "/quests", NEWCOMER_SLOT.path, "/circles", "open-mobile-menu"]);
   });
 
-  it("CONTROL: a member's bar is untouched, and an in-use slot stays for a newcomer", () => {
-    expect(newcomerSlots(TAB_SLOTS, () => true).map((s) => s.path ?? s.event)).toEqual(TAB_SLOTS.map((s) => s.path ?? s.event));
+  it("CONTROL: an in-use slot stays for a newcomer; only the swapped tabs give way to the roles", () => {
+    // The gratitude wall is public (#1528) but its tab is the way in for a newcomer (NEWCOMER_SWAPPED_TABS).
+    const expected = TAB_SLOTS.map((s) => (s.path && NEWCOMER_SWAPPED_TABS.includes(s.path) ? NEWCOMER_SLOT.path : s.path ?? s.event));
+    expect(newcomerSlots(TAB_SLOTS, () => true).map((s) => s.path ?? s.event)).toEqual(expected);
   });
 });
 

@@ -72,6 +72,14 @@ export const TAB_SLOTS: TabSlot[] = [
 export const NEWCOMER_SLOT: TabSlot = { path: "/roles", label: "Roles", Icon: Shield };
 
 /**
+ * Tabs a newcomer's bar gives to the roles even though their page is open to a
+ * newcomer (the coordinator for the lead, 24 Nov 2026). The gratitude wall is
+ * public, reached from the menu and the footer, and the bar's third slot stays
+ * the way in.
+ */
+export const NEWCOMER_SWAPPED_TABS: readonly string[] = ["/gratitude"];
+
+/**
  * Routes that render no bottom bar and no FAB.
  *
  * A fixed bar owns the bottom 65px of the viewport at EVERY scroll position,

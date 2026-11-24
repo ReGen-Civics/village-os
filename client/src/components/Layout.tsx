@@ -79,7 +79,7 @@ export default function Layout({ children }: LayoutProps) {
   // flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
-  const { shows: forNewcomer, showsHref } = useNewcomerShows();
+  const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();
   const visible = (item: NavLink) =>
     !menu.hidden.includes(item.href) &&
     forNewcomer(item) &&
@@ -680,7 +680,7 @@ export default function Layout({ children }: LayoutProps) {
                     when their module is off, which is the default for every
                     optional module, so an ungated link would be a dead end on
                     a fresh fork. /exit-policy is core and always reachable. */}
-                <li>
+                <li hidden={newcomer /* the rules are for members (the lead, 24 Nov 2026); the page stays reachable */}>
                   <Link href="/game-mechanics" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     Game Mechanics
                   </Link>
