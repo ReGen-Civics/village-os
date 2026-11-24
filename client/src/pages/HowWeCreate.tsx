@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { WORLD } from "@/components/journey/look";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useVillageLinks } from "@/lib/gameApi";
@@ -9,7 +10,7 @@ import { HyphaAdminNote } from "@/components/HyphaAdminNote";
 import { HOW_WE_CREATE_PAGE } from "@shared/pageContent/howWeCreate";
 import type { ResolvedItem } from "@shared/pageContent/types";
 import {
-  Sparkles,
+  Sprout,
   ArrowRight,
   Heart,
   Users,
@@ -42,12 +43,12 @@ const PRINCIPLE_ICONS = [CircleDot, Settings, Heart, Repeat, Leaf, Compass];
 const TOKEN_CARD_ICONS = ["🤝", "📊", "🌱"];
 const METHOD_ICONS = [Vote, Handshake, Users, Palette, CircleDot, Compass];
 const SEASON_LOOKS = [
-  { emoji: "🌱", color: "bg-green-light text-forest" },
-  { emoji: "☀️", color: "bg-yellow-100 text-yellow-700" },
-  { emoji: "🍂", color: "bg-orange-100 text-orange-700" },
-  { emoji: "❄️", color: "bg-blue-100 text-blue-700" },
-  { emoji: "🌿", color: "bg-green-light text-forest" },
-  { emoji: "🌙", color: "bg-blue-100 text-blue-700" },
+  { emoji: "🌱", color: "bg-open/10 text-open" },
+  { emoji: "☀️", color: "bg-notice/10 text-notice" },
+  { emoji: "🍂", color: "bg-notice/10 text-notice" },
+  { emoji: "❄️", color: "bg-muted text-foreground" },
+  { emoji: "🌿", color: "bg-open/10 text-open" },
+  { emoji: "🌙", color: "bg-muted text-foreground" },
 ];
 
 /** Wide-screen columns for a row of up to three cards, so one card sits centred instead of in a third of the row. */
@@ -95,7 +96,9 @@ export default function HowWeCreate() {
   const tokenCards = tokens.lists.cards;
   return (
     <Layout>
-      <section className="py-24 bg-background">
+      {/* The night world (public launch, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
+      <section className="py-24">
         <div className="container">
           <m.div
             initial={{ opacity: 0, y: 20 }}
@@ -103,11 +106,9 @@ export default function HowWeCreate() {
             className="text-center mb-16"
           >
             <m.div
-              className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="w-16 h-16 rounded-full bg-notice/10 flex items-center justify-center mx-auto mb-6"
             >
-              <Sparkles className="w-8 h-8 text-primary" />
+              <Sprout className="w-8 h-8 text-notice" aria-hidden="true" />
             </m.div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 break-words">
               {hero.fields.headline}
@@ -133,10 +134,10 @@ export default function HowWeCreate() {
                     key={`${i}-${principle.title}`}
                     variants={itemVariants}
                     whileHover={{ scale: 1.02, y: -4 }}
-                    className="bg-card p-8 rounded-2xl shadow-sm border border-border/50 hover:shadow-lg transition-shadow min-w-0"
+                    className="bg-card p-8 rounded-2xl shadow-sm border border-border/50 hover:shadow-sm transition-shadow min-w-0"
                   >
-                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                      <Icon className="w-7 h-7 text-primary" />
+                    <div className="w-14 h-14 rounded-xl bg-notice/10 flex items-center justify-center mb-4">
+                      <Icon className="w-7 h-7 text-notice" />
                     </div>
                     <h2 className="font-display text-2xl font-semibold text-foreground mb-3 break-words">
                       {principle.title}
@@ -153,20 +154,15 @@ export default function HowWeCreate() {
           {/* Our tokens: named, with a link to the rules the village set. */}
           {!tokens.hidden && (
             <m.div
-              className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl p-8 md:p-12 mb-20"
+              className="bg-card border border-border rounded-2xl p-8 md:p-12 mb-20 shadow-sm"
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
             >
               <div className={`text-center${tokenCards.length ? " mb-12" : ""}`}>
                 <m.div
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 5, -5, 0],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <Heart className="w-12 h-12 text-primary mx-auto mb-4" />
+                  <Heart className="w-12 h-12 text-notice mx-auto mb-4" />
                 </m.div>
                 <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {tokens.fields.heading}
@@ -177,7 +173,7 @@ export default function HowWeCreate() {
                 {tokens.fields.linkLabel && (
                   <Link
                     href="/game-mechanics"
-                    className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
+                    className="inline-flex items-center gap-1 text-notice font-semibold hover:underline"
                   >
                     {tokens.fields.linkLabel}
                     <ArrowRight className="w-4 h-4" />
@@ -195,10 +191,10 @@ export default function HowWeCreate() {
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.15 }}
                       whileHover={{ y: -8, scale: 1.02 }}
-                      className="bg-card p-6 rounded-xl text-center shadow-sm hover:shadow-md transition-all min-w-0"
+                      className="bg-card p-6 rounded-xl text-center shadow-sm hover:shadow-sm transition-all min-w-0"
                     >
                       <m.div
-                        className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
+                        className="w-14 h-14 rounded-full bg-notice/10 flex items-center justify-center mx-auto mb-4"
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 0.5 }}
                       >
@@ -220,13 +216,13 @@ export default function HowWeCreate() {
           {/* Governance Structure */}
           {!governance.hidden && (
             <m.div
-              className="bg-sage/5 rounded-3xl p-8 md:p-12 mb-20 border border-sage/20"
+              className="bg-card rounded-2xl p-8 md:p-12 mb-20 border border-border"
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
             >
               <div className="text-center mb-12">
-                <Users className="w-12 h-12 text-sage mx-auto mb-4" />
+                <Users className="w-12 h-12 text-open mx-auto mb-4" />
                 <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {governance.fields.heading}
                 </h2>
@@ -249,7 +245,7 @@ export default function HowWeCreate() {
                       <ul className="space-y-2 text-sm text-muted-foreground">
                         {numberedLines(phase, "item").map((line, j) => (
                           <li key={j} className="flex gap-2">
-                            <span className="text-sage">→</span> <span className="min-w-0 break-words">{line}</span>
+                            <span className="text-open">→</span> <span className="min-w-0 break-words">{line}</span>
                           </li>
                         ))}
                       </ul>
@@ -266,7 +262,7 @@ export default function HowWeCreate() {
                   className="text-center"
                 >
                   <Link href="/roles">
-                    <a className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors font-medium">
+                    <a className="inline-flex items-center gap-2 px-6 py-3 bg-notice text-background rounded-xl hover:bg-notice/90 transition-colors font-medium">
                       {governance.fields.buttonLabel}
                       <ArrowRight className="w-4 h-4" />
                     </a>
@@ -285,7 +281,7 @@ export default function HowWeCreate() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <Scale className="w-12 h-12 text-sage mx-auto mb-4" />
+                <Scale className="w-12 h-12 text-open mx-auto mb-4" />
                 <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {hyphaSection.fields.heading}
                 </h2>
@@ -312,8 +308,8 @@ export default function HowWeCreate() {
                         className="bg-card p-6 rounded-xl shadow-sm border border-border/50 min-w-0"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-lg bg-sage/10 flex items-center justify-center flex-shrink-0">
-                            <Icon className="w-6 h-6 text-sage" />
+                          <div className="w-12 h-12 rounded-lg bg-open/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-6 h-6 text-open" />
                           </div>
                           <div className="min-w-0">
                             <h3 className="font-display text-xl font-semibold text-foreground mb-2 break-words">
@@ -322,7 +318,7 @@ export default function HowWeCreate() {
                             <p className="text-muted-foreground text-sm mb-3">
                               <Emphasized text={option.description} />
                             </p>
-                            {option.best && <p className="text-xs text-sage font-medium">Best for: {option.best}</p>}
+                            {option.best && <p className="text-xs text-open font-medium">Best for: {option.best}</p>}
                           </div>
                         </div>
                       </m.div>
@@ -332,14 +328,14 @@ export default function HowWeCreate() {
               )}
 
               <m.div
-                className="mt-8 p-6 bg-sage/5 rounded-xl border border-sage/20"
+                className="mt-8 p-6 bg-card rounded-xl border border-border"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
               >
                 <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-sage flex-shrink-0" />
+                  <Settings className="w-5 h-5 text-open flex-shrink-0" />
                   <span className="min-w-0 break-words">{hyphaSection.fields.boxHeading}</span>
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -360,10 +356,8 @@ export default function HowWeCreate() {
                 viewport={{ once: true }}
               >
                 <m.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 >
-                  <Repeat className="w-12 h-12 text-teal-light mx-auto mb-4" />
+                  <Repeat className="w-12 h-12 text-open mx-auto mb-4" />
                 </m.div>
                 <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {seasons.fields.heading}
@@ -401,7 +395,7 @@ export default function HowWeCreate() {
               </div>
               {seasons.fields.note && (
                 <m.div
-                  className="mt-8 p-5 bg-white/60 rounded-xl text-center border border-border/40"
+                  className="mt-8 p-5 bg-muted rounded-xl text-center border border-border/40"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
@@ -418,7 +412,7 @@ export default function HowWeCreate() {
           {/* CTA */}
           {!cta.hidden && (
             <m.div
-              className="max-w-3xl mx-auto text-center bg-cream-dark p-8 rounded-2xl"
+              className="max-w-3xl mx-auto text-center bg-muted border border-border p-8 rounded-2xl"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -433,7 +427,7 @@ export default function HowWeCreate() {
                 {!pageOff("/co-creators-guide") && (
                   <Link
                     href="/co-creators-guide"
-                    className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-primary-hover transition-all hover:scale-105 flex items-center gap-2"
+                    className="px-6 py-3 bg-notice text-background rounded-xl font-medium uppercase tracking-wider text-sm hover:bg-notice/90 transition-all flex items-center gap-2"
                   >
                     {cta.fields.guideLabel}
                     <ArrowRight className="w-5 h-5" />
@@ -444,7 +438,7 @@ export default function HowWeCreate() {
                     href={eventsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-6 py-3 bg-muted text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-muted/80 transition-all hover:scale-105 flex items-center gap-2"
+                    className="px-6 py-3 bg-muted text-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-muted/80 transition-all flex items-center gap-2"
                   >
                     <Calendar className="w-5 h-5" />
                     {cta.fields.eventsLabel}
@@ -455,6 +449,7 @@ export default function HowWeCreate() {
           )}
         </div>
       </section>
+      </div>
     </Layout>
   );
 }
