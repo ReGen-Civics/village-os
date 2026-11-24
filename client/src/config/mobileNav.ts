@@ -26,8 +26,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
-import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Tripoint } from "@/components/sacred/glyphs";
-import { Cell } from "@/components/sacred/living";
+import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
+import { Cell, CellRing, SteppingStones } from "@/components/sacred/living";
 
 /**
  * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in
@@ -55,9 +55,9 @@ export type TabSlot = {
  */
 export const TAB_SLOTS: TabSlot[] = [
   { path: "/", label: "Home", Icon: Lotus },
-  { path: "/quests", label: "Quests", Icon: Labyrinth },
+  { path: "/quests", label: "Quests", Icon: SteppingStones },
   { path: "/gratitude", label: "Gratitude", Icon: Heart, token: "recognition" },
-  { path: "/circles", label: "Circles", Icon: SeedOfLife },
+  { path: "/circles", label: "Circles", Icon: CellRing },
   { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 

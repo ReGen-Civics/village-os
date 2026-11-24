@@ -181,3 +181,190 @@ export function Held(props: GlyphProps) {
     </Svg>
   );
 }
+
+/* ── Round two (the lead, 24 Nov 2026) ─────────────────────────────────── */
+
+/** Two mushrooms joined by threads under the ground: people connected, the network beneath (community, team). */
+export function MushroomNetwork(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 11.2a4 4 0 0 1 8 0zM7.6 11.2v5.2M13.8 13.4a3.2 3.2 0 0 1 6.4 0zM17 13.4v3.2" />
+      <path d="M7.6 16.4c1.6 2.5 8 2.5 9.4.2M10.2 17.9l-.8 2M14.4 17.9l.9 1.9M12.3 18.4v2" />
+    </Svg>
+  );
+}
+
+/** A seed with two small stars of light: something new and special, in place of the stock sparkle. */
+export function SeedGlint(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M10.6 5.8c3 2.8 4.3 5.7 4.3 8.6s-1.9 5.8-4.3 5.8-4.3-2.9-4.3-5.8 1.3-5.8 4.3-8.6z" />
+      <path d="M10.6 9.8v7.4M17.2 3.6v2.6M15.9 4.9h2.6M19.8 8.4v1.6M19 9.2h1.6" />
+    </Svg>
+  );
+}
+
+/** Three pines rising on one ground line: growth (the investor's path, prosperity). */
+export function Pines(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 20.6h18M6 20.6v-1.6M12 20.6v-2M18 20.6v-2.4" />
+      <path {...WASH} d="M6 13.8l2.4 5.2H3.6zM12 9.6l3.2 9H8.8zM18 4.6l3.8 13.8h-7.6z" />
+    </Svg>
+  );
+}
+
+/** An egg-shaped home grown from the ground, a sprout on top, the sun beside it: a resident's home. */
+export function SeedPodHome(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 20h18" />
+      <path {...WASH} d="M12 5.6c3.6 0 6 3.8 6 8.2 0 3.4-1.4 6.2-6 6.2s-6-2.8-6-6.2c0-4.4 2.4-8.2 6-8.2z" />
+      <path d="M12 5.6V3.4M12 4.4c-1-1-2.2-1.1-2.8-.6.6.9 1.7 1.1 2.8.6zM12 4c.9-.9 2-1 2.6-.6-.5.8-1.6 1-2.6.6z" />
+      <circle cx="12" cy="11.4" r="2" />
+      <path d="M10.8 20v-2.6a1.2 1.2 0 0 1 2.4 0V20M19.6 6.4l1.4-.8M20 9.2h1.6" />
+    </Svg>
+  );
+}
+
+/** Open hands under a seedling: the work is tending something alive (building, tools, tending). */
+export function TendingHands(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 14.6c2.2 0 3.6.6 5 1.6h3c1 0 1.4 1.3.4 1.6l-3.2.4M3.6 19.6h4.8c2.4 0 4.6-.6 6.6-1.8l4.2-2.8c.9-.6.2-2-.9-1.6l-4.6 2" />
+      <path d="M14.2 12.2V8M14.2 9.4c-1.2-1.4-2.7-1.6-3.5-1 .7 1.1 2.1 1.5 3.5 1zM14.2 8.8c1.1-1.3 2.5-1.5 3.3-1-.6 1.1-2 1.5-3.3 1z" />
+    </Svg>
+  );
+}
+
+/** A gourd filling with water: how well something fits, the fuller the better (quest fit). */
+export function Gourd(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3.4c1 0 1.6.8 1.6 1.8 0 1-.6 1.6-.6 2.4 0 .8 4 2 4 6.6 0 3.6-2.4 6.2-5 6.2s-5-2.6-5-6.2c0-4.6 4-5.8 4-6.6 0-.8-.6-1.4-.6-2.4 0-1 .6-1.8 1.6-1.8z" />
+      <path {...WASH} d="M7.4 14.6c1.5-.8 3-.8 4.6 0s3.1.8 4.6 0c0 3.2-2.1 5.8-4.6 5.8s-4.6-2.6-4.6-5.8z" />
+    </Svg>
+  );
+}
+
+/** Stepping stones climbing toward a light: the walk ahead (quests). */
+export function SteppingStones(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <ellipse cx="8" cy="19.6" rx="2.6" ry="1.2" />
+      <ellipse cx="13.4" cy="16.4" rx="2.3" ry="1.1" />
+      <ellipse cx="9.6" cy="13" rx="2" ry=".95" />
+      <ellipse cx="13.8" cy="10" rx="1.7" ry=".85" />
+      <ellipse cx="11.2" cy="7.2" rx="1.4" ry=".7" />
+      <Dot cx={13.2} cy={4.6} r={1} />
+    </Svg>
+  );
+}
+
+/** Six cells around a shared centre: many roles, one circle. Pairs with Cell (circles). */
+export function CellRing(props: GlyphProps) {
+  const ring: [number, number, number, number][] = [
+    [12, 5.4, 12.4, 5.1],
+    [17.7, 8.7, 17.9, 8.4],
+    [17.7, 15.3, 17.4, 15.6],
+    [12, 18.6, 11.6, 18.9],
+    [6.3, 15.3, 6.1, 15],
+    [6.3, 8.7, 6.6, 8.4],
+  ];
+  return (
+    <Svg {...props}>
+      {ring.map(([x, y, nx, ny]) => (
+        <g key={`${x}-${y}`}>
+          <circle cx={x} cy={y} r={2.4} />
+          <Dot cx={nx} cy={ny} r={0.7} />
+        </g>
+      ))}
+      <circle cx="12" cy="12" r="1.6" />
+    </Svg>
+  );
+}
+
+/** A hand holding a heap of seeds: value you can hold and plant (money, where a price must be clear). */
+export function SeedHand(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 14.4c2.2 0 3.6.6 5 1.6h3c1 0 1.4 1.3.4 1.6l-3.2.4M3.6 19.4h4.8c2.4 0 4.6-.6 6.6-1.8l4.2-2.8c.9-.6.2-2-.9-1.6l-4.6 2" />
+      {[
+        [10.8, 13.3, -20],
+        [13.3, 13.5, 10],
+        [15.8, 12.8, 35],
+        [12, 11.1, 60],
+        [14.6, 10.7, -30],
+        [13.2, 8.8, 15],
+      ].map(([x, y, a]) => (
+        <ellipse key={`${x}-${y}`} cx={x} cy={y} rx={1.3} ry={0.9} transform={`rotate(${a} ${x} ${y})`} fill="currentColor" stroke="none" />
+      ))}
+    </Svg>
+  );
+}
+
+/** Two people under one tree: safety as shelter (safe, verified, protected). */
+export function Canopy(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M3.4 11.4c0-4.2 3.9-7.4 8.6-7.4s8.6 3.2 8.6 7.4z" />
+      <path d="M12 11.4v8.8M5.4 20.2h13.2" />
+      <Dot cx={8.2} cy={17.6} r={1.2} />
+      <Dot cx={15.8} cy={17.6} r={1.2} />
+    </Svg>
+  );
+}
+
+/** Open hands offering a seed: giving, contributing. */
+export function OfferingHands(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 14.4c2.2 0 3.6.6 5 1.6h3c1 0 1.4 1.3.4 1.6l-3.2.4M3.6 19.4h4.8c2.4 0 4.6-.6 6.6-1.8l4.2-2.8c.9-.6.2-2-.9-1.6l-4.6 2" />
+      <path {...WASH} d="M14.6 4.4c1.8 1.6 2.6 3.3 2.6 5s-1.1 3.1-2.6 3.1-2.6-1.4-2.6-3.1.8-3.4 2.6-5z" />
+    </Svg>
+  );
+}
+
+/** A stone just landed in a pond: a splash crown, droplets thrown up, broken uneven rings. Sensing (the co-creator loop). */
+export function Splash(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 12.6l-1.3-2.7M12 12.6l1.5-2.9M12 12.6V9.2" />
+      <Dot cx={9.6} cy={7.4} r={0.7} />
+      <Dot cx={14.6} cy={7} r={0.8} />
+      <Dot cx={12.2} cy={5.8} r={0.6} />
+      <path d="M8.4 13.6c.4-1.1 1.8-1.8 3.6-1.9M14.6 12.1c1.1.3 1.6.9 1.4 1.6-.3 1-2.1 1.6-4.2 1.6-1.6 0-2.9-.4-3.4-1" />
+      <path d="M5 14.6c-.6-1.8 2.6-3.6 6.6-3.8M15.6 11.2c2.6.4 4 1.6 3.4 3-.6 1.6-3.6 2.6-7.2 2.6M8.2 16.8c-1.2-.3-2.2-.8-2.8-1.4" />
+      <path d="M2.4 15.6c.2 1.6 2.6 3 6 3.6M15.8 19c3.4-.6 5.8-2 5.8-3.6M20.6 12.6c-.6-.6-1.4-1-2.4-1.4" />
+    </Svg>
+  );
+}
+
+/** An eye whose pupil is a seed: seeing (the co-creator loop's "sense"). */
+export function SeedEye(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M2.8 12c2.4-4 5.6-6 9.2-6s6.8 2 9.2 6c-2.4 4-5.6 6-9.2 6s-6.8-2-9.2-6z" />
+      <path {...WASH} d="M12 8.6c1.8 1.6 2.6 3.1 2.6 4.4s-1.1 2.6-2.6 2.6-2.6-1.2-2.6-2.6.8-2.8 2.6-4.4z" />
+    </Svg>
+  );
+}
+
+/** A feather, the quill as it grew: writing it down (the co-creator loop's "propose"). */
+export function Feather(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M19.4 4.2c-6.6.2-11.2 4.6-12 11.4 4.8 0 9.2-2.8 11.2-7.4z" />
+      <path d="M7.4 15.6l-2.6 4.6M9.6 12.4l4.6-1.2M11.8 9.2l4-1.4" />
+    </Svg>
+  );
+}
+
+/** A sprout from the ground: making it real (the co-creator loop's "create"). */
+export function Sprout(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M7 20.2h10M12 20.2v-7.4M12 14.2c-2.2-2.6-5-3-6.4-2 1.2 2.2 4 3 6.4 2zM12 12.8c1.8-2.6 4.4-3.2 5.8-2.4-1 2.2-3.6 3.2-5.8 2.4z" />
+    </Svg>
+  );
+}
