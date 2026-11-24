@@ -15,7 +15,7 @@ import Layout from "@/components/Layout";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { TOKEN_KEY } from "@/lib/gameApi";
 import { writeStored } from "@/lib/safeStorage";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
 import { CODE_LENGTH, RESEND_AFTER_MS, cleanCode } from "@shared/entrance";
 
 export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: string; next: string; onChangeEmail: () => void }) {
@@ -29,7 +29,8 @@ export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: 
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    heading.current?.focus();
+    window.scrollTo({ top: 0 });
+    heading.current?.focus({ preventScroll: true });
   }, []);
   useEffect(() => {
     if (nowMs >= waitUntil) return;
@@ -93,7 +94,7 @@ export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: 
               <KeyRound className="size-6" />
             </span>
             <p className={EYEBROW}>{t({ message: "One more step", context: "portal code step: eyebrow" })}</p>
-            <h1 id={`${ids}-h`} ref={heading} tabIndex={-1} className={`${H1} outline-none`}>
+            <h1 id={`${ids}-h`} ref={heading} tabIndex={-1} className={`${STATEMENT} outline-none`}>
               {t({ message: "Type the code we emailed you", context: "portal code step: heading" })}
             </h1>
             <p className={LEDE}>

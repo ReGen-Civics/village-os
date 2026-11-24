@@ -32,7 +32,7 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { suggestEmail } from "@shared/emailCheck";
 import { INTERESTS, safeNext, type EntranceProblem, type Interest, type UpdatesAnswer } from "@shared/entrance";
@@ -345,7 +345,9 @@ export function KeepInTouch({ village, goTo, sentTo = null }: { village: string;
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    question.current?.focus();
+    // The step replaces the form in place; start it at the top, where its question is.
+    window.scrollTo({ top: 0 });
+    question.current?.focus({ preventScroll: true });
   }, []);
 
   const answer = async (a: UpdatesAnswer) => {
@@ -387,7 +389,7 @@ export function KeepInTouch({ village, goTo, sentTo = null }: { village: string;
                 })}
               </p>
             )}
-            <h1 id={`${ids}-q`} ref={question} tabIndex={-1} className={`${H1} outline-none`}>
+            <h1 id={`${ids}-q`} ref={question} tabIndex={-1} className={`${STATEMENT} outline-none`}>
               {t({ message: `Do you want us to keep you updated, and to hear about opportunities from ${village}?`, context: "portal entrance: the keep-in-touch question, its own step after entering" })}
             </h1>
             {failed && (
