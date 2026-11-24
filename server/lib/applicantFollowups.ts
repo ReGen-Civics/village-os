@@ -33,6 +33,7 @@ import * as review from "../repos/applicationReview";
 import { languageOf } from "./applicantLanguage";
 import { statusLinkFor } from "./applicantUpdates";
 import { escapeHtml } from "./comms/mailer";
+import { plainLetterHtml } from "./letterHtml";
 import type { NotifyInput } from "./notify";
 import { WENT } from "./openProposalKept";
 
@@ -138,11 +139,7 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
   });
   const block = (await deps.footer?.({ village, site, lang: languageOf(p) })) ?? null;
   const footer = block && block.html ? block : null;
-  const html =
-    words.text
-      .split("\n\n")
-      .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-      .join("") + (footer ? footer.html : "");
+
   const text = footer ? `${words.text}\n${footer.text}\n` : words.text;
   return {
     idempotencyKey: closedLetterKey(p.id),
@@ -150,7 +147,8 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     origin: "open_proposal.closed",
     to: { email: p.email, ...(firstName ? { name: firstName } : {}) },
     subject: words.subject,
-    html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${html}</body></html>`,
+    // Every address a link (server/lib/letterHtml.ts), the footer block after.
+    html: plainLetterHtml(words.text, { after: footer ? footer.html : "" }),
     text,
   };
 }
