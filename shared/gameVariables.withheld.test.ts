@@ -47,8 +47,9 @@ describe("the RPC dial", () => {
     expect(withheldFromPublic({ withheld: true, value: "https://mainnet.base.org" })).toBe(true);
   });
 
-  it("is the only flagged dial today, so a new flag is a decision someone made on purpose", () => {
-    expect(VARIABLES.filter((v) => v.withheld).map((v) => v.key)).toEqual(["tokens.base_rpc_url"]);
+  it("is one of two flagged dials today, so a new flag is a decision someone made on purpose", () => {
+    // ops.crash_alert_recipients (2026-11-24): its value is a list of email addresses (shared/crashAlerts.ts).
+    expect(VARIABLES.filter((v) => v.withheld).map((v) => v.key).sort()).toEqual(["ops.crash_alert_recipients", "tokens.base_rpc_url"]);
   });
 });
 
