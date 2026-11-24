@@ -42,6 +42,8 @@ interface Redeeming {
   mayConfirm: boolean;
 }
 interface Queue {
+  /** Whether this reader holds the redemption key. An admin reading while nobody does cannot decide. */
+  holdsKey: boolean;
   waiting: OrgRedemptionView[];
   decided: OrgRedemptionView[];
 }
@@ -120,8 +122,14 @@ export default function VentureAccountsCard() {
                             {formatTokenGrouped(Math.abs(h.amount), h.decimals)} {h.tokenName}
                           </span>
                           <span className="order-last min-w-0 basis-full text-foreground sm:order-none sm:basis-0 sm:flex-1">
-                            {h.withName ? (h.amount < 0 ? t({ message: `to ${h.withName}`, context: "profile ventures you run" }) : t({ message: `from ${h.withName}`, context: "profile ventures you run" })) : h.amount < 0 ? t({ message: "paid out", context: "profile ventures you run" }) : t({ message: "received", context: "profile ventures you run" })}
-                            {h.description ? `: ${h.description}` : ""}
+                            {h.source === "org_redemption_hold"
+                              ? t({ message: "Held for a redemption", context: "profile ventures you run" })
+                              : h.source === "org_redemption_release"
+                                ? t({ message: "Back from a redemption", context: "profile ventures you run" })
+                                : <>
+                                    {h.withName ? (h.amount < 0 ? t({ message: `to ${h.withName}`, context: "profile ventures you run" }) : t({ message: `from ${h.withName}`, context: "profile ventures you run" })) : h.amount < 0 ? t({ message: "paid out", context: "profile ventures you run" }) : t({ message: "received", context: "profile ventures you run" })}
+                                    {h.description ? `: ${h.description}` : ""}
+                                  </>}
                           </span>
                           <time className="ml-auto text-xs text-muted-foreground" dateTime={h.at}>
                             {new Date(h.at).toLocaleDateString()}
@@ -172,7 +180,7 @@ function RedeemDoor({ account, venture, redeeming, onDone }: { account: OrgAccou
   const submit = async () => {
     setBusy(true);
     setError("");
-    const r = await postJson("/api/org-redemptions", { orgRoleId: account.orgRoleId, token, amount: n, currency, payTo });
+    const r = await postJson("/api/org-redemptions", { orgRoleId: account.orgRoleId, token, amount: n, currency, ...(terms.canSealDetails ? { payTo } : { payRef: payTo }) });
     setBusy(false);
     if (!r.ok) return setError(String(r.json?.error ?? t({ message: "That did not go through.", context: "venture redemption" })));
     setNotice(t({ message: `Asked. The Treasury pays ${r.json?.redemption?.grossText ?? ""} to where you said, then confirms.`, context: "venture redemption" }));
@@ -230,10 +238,22 @@ function RedeemDoor({ account, venture, redeeming, onDone }: { account: OrgAccou
               </select>
             </label>
           </div>
-          <label className="flex flex-col gap-1">
-            <span className={LABEL}>{t({ message: "Where the money should go", context: "venture redemption" })}</span>
-            <textarea className={FIELD} rows={2} maxLength={300} value={payTo} onChange={(e) => setPayTo(e.target.value)} placeholder={t({ message: "The account, and the name on it", context: "venture redemption" })} required />
-          </label>
+          {terms.canSealDetails ? (
+            <label className="flex flex-col gap-1">
+              <span className={LABEL}>{t({ message: "Where the money should go", context: "venture redemption" })}</span>
+              <textarea className={FIELD} rows={2} maxLength={300} value={payTo} onChange={(e) => setPayTo(e.target.value)} placeholder={t({ message: "The account, and the name on it", context: "venture redemption" })} required />
+              <span className={HINT}>{t({ message: "Kept sealed. Only the people who run this venture and the Treasury see it in full.", context: "venture redemption" })}</span>
+            </label>
+          ) : (
+            <label className="flex flex-col gap-1">
+              <span className={LABEL}>{t({ message: "Payment reference", context: "venture redemption" })}</span>
+              <input className={FIELD} maxLength={200} value={payTo} onChange={(e) => setPayTo(e.target.value)} required />
+              <span className={HINT}>{t({ message: "This village cannot keep account details safely yet. Give a reference the Treasury can look up, such as an invoice number.", context: "venture redemption" })}</span>
+            </label>
+          )}
+          {terms.confirmers === 0 && (
+            <p className={HINT}>{t({ message: "Nobody holds the redemption key yet, so a request waits until the village gives it to someone.", context: "venture redemption" })}</p>
+          )}
           <p className="text-sm text-foreground" aria-live="polite">
             {gross
               ? t({ message: `The Treasury pays ${gross}.`, context: "venture redemption" })
@@ -259,6 +279,7 @@ function RedeemDoor({ account, venture, redeeming, onDone }: { account: OrgAccou
             <li key={h.id} className={`${QUIET} flex flex-wrap items-center gap-x-3 gap-y-1 text-sm`}>
               <span className="font-semibold text-foreground">{h.credits} {h.tokenName}</span>
               <span className="text-foreground">{h.grossText}</span>
+              {h.paidText && h.paidText !== h.grossText && <span className="text-foreground">{t({ message: `paid ${h.paidText}`, context: "venture redemption, what actually went out" })}</span>}
               <span className="text-muted-foreground">{words[h.state]}</span>
               {h.paymentRef && <span className="text-muted-foreground">{t({ message: `Ref ${h.paymentRef}`, context: "venture redemption payment reference" })}</span>}
               {h.state === "requested" && (
@@ -283,13 +304,18 @@ function TreasuryQueue({ queue, onDone }: { queue: Queue; onDone: () => void }) 
   const { t } = useLingui();
   const words = useStateWords();
   const [refs, setRefs] = useState<Record<string, string>>({});
+  const [paid, setPaid] = useState<Record<string, string>>({});
+  const [paidIn, setPaidIn] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
 
   const act = async (id: string, to: "confirm" | "refuse") => {
     setBusy(id);
     const text = String(refs[id] ?? "");
-    const r = await postJson(`/api/admin/org-redemptions/${id}/${to}`, to === "confirm" ? { paymentRef: text } : { note: text });
+    const r = await postJson(
+      `/api/admin/org-redemptions/${id}/${to}`,
+      to === "confirm" ? { paymentRef: text, paidAmount: paid[id] ?? "", paidCurrency: paid[id] ? paidIn[id] ?? "" : "" } : { note: text },
+    );
     setBusy("");
     setErrors((e) => ({ ...e, [id]: r.ok ? "" : String(r.json?.error ?? "") }));
     if (r.ok) onDone();
@@ -303,6 +329,9 @@ function TreasuryQueue({ queue, onDone }: { queue: Queue; onDone: () => void }) 
       <p className={`${HINT} mt-1`}>
         <Trans>Pay each venture outside the platform first, then confirm with the payment's reference. Confirming destroys the held credits. Nobody who runs a venture can confirm its own.</Trans>
       </p>
+      {!queue.holdsKey && (
+        <p className={`${HINT} mt-2`}>{t({ message: "Nobody has given you the redemption key, so you can read this queue and cannot decide it. Only a holder of the key confirms a venture's redemption.", context: "treasury queue" })}</p>
+      )}
       {queue.waiting.length === 0 && (
         <p className={`${HINT} mt-4`}>{t({ message: "Nothing is waiting.", context: "treasury queue" })}</p>
       )}
@@ -316,24 +345,38 @@ function TreasuryQueue({ queue, onDone }: { queue: Queue; onDone: () => void }) 
               {w.fxRate != null ? t({ message: `, converted at ${w.fxRate.toFixed(4)} ${w.currency} per ${w.pegCurrency} (${w.fxAsOf ?? ""})`, context: "treasury queue" }) : ""}
             </p>
             <p className="mt-2 text-sm text-foreground">
-              <span className={LABEL}>{t({ message: "Pay to:", context: "treasury queue" })}</span> <span className="break-words">{w.payTo}</span>
+              <span className={LABEL}>{t({ message: "Pay to:", context: "treasury queue" })}</span> <span className="break-words">{w.payTo ?? (w.payToLast4 ? `•••• ${w.payToLast4}` : t({ message: `Reference ${w.payRef ?? ""}`, context: "treasury queue, payment reference the venture gave" }))}</span>
             </p>
             <p className={`${HINT} mt-1`}>
               {t({ message: `Asked by ${w.requestedByName ?? w.requestedBy} on ${day(w.createdAt)}`, context: "treasury queue" })}
             </p>
-            <label className="mt-3 flex flex-col gap-1">
-              <span className={LABEL}>{t({ message: "Payment reference, or why not", context: "treasury queue" })}</span>
-              <input className={FIELD} value={refs[w.id] ?? ""} maxLength={200} onChange={(e) => setRefs((r) => ({ ...r, [w.id]: e.target.value }))} />
-            </label>
+            {queue.holdsKey && (
+              <>
+                <label className="mt-3 flex flex-col gap-1">
+                  <span className={LABEL}>{t({ message: "Payment reference, or why not", context: "treasury queue" })}</span>
+                  <input className={FIELD} value={refs[w.id] ?? ""} maxLength={200} onChange={(e) => setRefs((r) => ({ ...r, [w.id]: e.target.value }))} />
+                </label>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1">
+                    <span className={LABEL}>{t({ message: "What actually went out, if different", context: "treasury queue" })}</span>
+                    <input className={FIELD} inputMode="decimal" value={paid[w.id] ?? ""} placeholder={w.grossText} onChange={(e) => setPaid((r) => ({ ...r, [w.id]: e.target.value }))} />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className={LABEL}>{t({ message: "Paid in", context: "treasury queue currency" })}</span>
+                    <input className={FIELD} maxLength={3} value={paidIn[w.id] ?? w.currency} onChange={(e) => setPaidIn((r) => ({ ...r, [w.id]: e.target.value.toUpperCase() }))} />
+                  </label>
+                </div>
+              </>
+            )}
             {errors[w.id] && <p className="mt-2 text-sm font-medium text-destructive" role="alert">{errors[w.id]}</p>}
-            <div className="mt-3 flex flex-wrap gap-2">
+            {queue.holdsKey && <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" className={BTN_PRIMARY} disabled={busy === w.id || !(refs[w.id] ?? "").trim()} onClick={() => void act(w.id, "confirm")}>
                 {t({ message: "Paid, confirm", context: "treasury queue button" })}
               </button>
               <button type="button" className={BTN_SECONDARY} disabled={busy === w.id || !(refs[w.id] ?? "").trim()} onClick={() => void act(w.id, "refuse")}>
                 {t({ message: "Do not redeem", context: "treasury queue button" })}
               </button>
-            </div>
+            </div>}
           </article>
         ))}
       </div>
@@ -342,7 +385,13 @@ function TreasuryQueue({ queue, onDone }: { queue: Queue; onDone: () => void }) 
           {queue.decided.slice(0, 10).map((d) => (
             <li key={d.id} className={`${QUIET} flex flex-wrap items-center gap-x-3 gap-y-1 text-sm`}>
               <span className="font-semibold text-foreground">{d.ventureLabel}</span>
-              <span className="text-foreground">{d.grossText}</span>
+              <span className="text-foreground">{t({ message: `asked ${d.grossText}`, context: "treasury queue, what the venture asked for" })}</span>
+              {d.paidText && (
+                <span className="text-foreground">
+                  {t({ message: `paid ${d.paidText}`, context: "venture redemption, what actually went out" })}
+                  {d.paidFxRate != null ? ` (${d.paidFxRate.toFixed(4)} ${d.paidCurrency ?? ""}/${d.pegCurrency})` : ""}
+                </span>
+              )}
               <span className="text-muted-foreground">{words[d.state]}</span>
               {d.paymentRef && <span className="text-muted-foreground">{t({ message: `Ref ${d.paymentRef}`, context: "venture redemption payment reference" })}</span>}
               <span className="ml-auto text-xs text-muted-foreground">{day(d.decidedAt)}</span>

@@ -150,7 +150,12 @@ export interface OrgRedeemAsk {
   currencies: string[];
   currency: string;
   priced: boolean;
+  /** Where to pay, as typed: account details, which this village can take only when it can seal them. */
   payTo: string;
+  /** A payment reference the Treasury looks up elsewhere, given instead of details. */
+  payRef: string;
+  /** Whether this village has a sealing key (`VILLAGE_SECRETS_KEY`), so details can be kept at rest. */
+  canSeal: boolean;
   /** The cycle cap in whole credits, and what every venture has spoken for in this cycle. */
   capCredits: number;
   usedCredits: number;
@@ -182,7 +187,14 @@ export function orgRedeemRefusal(ask: OrgRedeemAsk): string | null {
   if (!ask.priced) {
     return `There is no daily rate for ${ask.currency} today. Choose ${ask.currencies[0]}, or try again tomorrow`;
   }
-  if (!ask.payTo.trim()) return "Say where the money should go, so the Treasury can pay it";
+  if (ask.payTo.trim() && !ask.canSeal) {
+    return "This village cannot keep payment details safely yet. Give a payment reference the Treasury can look up instead";
+  }
+  if (!ask.payTo.trim() && !ask.payRef.trim()) {
+    return ask.canSeal
+      ? "Say where the money should go, so the Treasury can pay it"
+      : "Give a payment reference the Treasury can look up, so it can pay it";
+  }
   if (ask.capCredits <= 0) return "This village is not redeeming any credits this moon";
   const left = Math.max(0, ask.capCredits - ask.usedCredits);
   if (ask.wholeCredits > left) {
@@ -194,6 +206,15 @@ export function orgRedeemRefusal(ask: OrgRedeemAsk): string | null {
 /** What a confirmer or refuser is, gathered at the route boundary. */
 export interface OrgDecideAsk {
   to: "confirmed" | "refused";
+  /**
+   * Whether the village has given this person the redemption key, counted
+   * through the gate's own planes with the admin short-circuit left out
+   * (`liveHoldersOfCapability`). A venture's redemption has no admin fallback:
+   * with nobody holding the key, it waits.
+   */
+  actorHoldsKey: boolean;
+  /** What the confirmer says went out, when they said: false when the amount or currency is not one. */
+  paidValid: boolean;
   /** Seated in the venture's role right now. */
   actorRunsIt: boolean;
   /** The person who asked for this redemption. */
@@ -211,13 +232,43 @@ export interface OrgDecideAsk {
  * be the ones who say so.
  */
 export function orgDecideRefusal(ask: OrgDecideAsk): string | null {
+  if (!ask.actorHoldsKey) {
+    return "Only someone the village has given the redemption key decides a venture's redemption, and nobody stands in for them";
+  }
   if (ask.actorAsked) return "You asked for this redemption. Someone else in the Treasury decides it";
   if (ask.actorRunsIt) return "You run this venture, so its redemption is decided by someone who does not";
   if (ask.to === "confirmed" && !ask.paymentRef.trim()) {
     return "Give the payment's reference, so the record shows which payment this was";
   }
+  if (ask.to === "confirmed" && !ask.paidValid) {
+    return "Give what was paid as a positive amount and a three-letter currency, or leave both blank to record what was asked";
+  }
   if (ask.to === "refused" && !ask.note.trim()) return "Say why, in a sentence. The venture reads it";
   return null;
+}
+
+/**
+ * The rate actually paid, from what the confirmer says went out. Minor units of
+ * the paid currency per whole credit, and, when the paid currency is not the
+ * peg, units of it per one unit of the peg (the bank's rate on the day).
+ */
+export function paidFigures(input: {
+  paidMinor: number;
+  paidCurrency: string;
+  credits: number;
+  pegCurrency: string;
+  pegRate: number;
+}): { rateMinor: number; fxRate: number | null } {
+  const rateMinor = input.credits > 0 ? Math.round(input.paidMinor / input.credits) : 0;
+  if (input.paidCurrency === input.pegCurrency || !(input.credits > 0) || !(input.pegRate > 0)) return { rateMinor, fxRate: null };
+  const paidMajor = input.paidMinor / Math.pow(10, exponentOf(input.paidCurrency));
+  return { rateMinor, fxRate: paidMajor / (input.credits * input.pegRate) };
+}
+
+/** The last four characters of where to pay, the only part most readers see. */
+export function lastFour(details: string): string {
+  const compact = String(details ?? "").replace(/\s+/g, "");
+  return compact.slice(-4);
 }
 
 // ── What the routes answer with ─────────────────────────────────────────────
@@ -240,7 +291,18 @@ export interface OrgRedemptionView {
   /** Formatted once on the server, so every surface agrees. */
   grossText: string;
   rateText: string;
-  payTo: string;
+  /** Where to pay in full: only for the venture's own people and the redemption key holders. */
+  payTo: string | null;
+  /** The last four characters, for everybody else. */
+  payToLast4: string | null;
+  /** A payment reference the venture gave instead of details. */
+  payRef: string | null;
+  /** What the confirmer says went out, beside what was asked. Null until recorded. */
+  paidCurrency: string | null;
+  paidMinor: number | null;
+  paidText: string | null;
+  paidRateText: string | null;
+  paidFxRate: number | null;
   state: OrgRedemptionState;
   requestedBy: string;
   requestedByName: string | null;
@@ -254,6 +316,10 @@ export interface OrgRedemptionView {
 /** The redeem door's settings, as an operator's card reads them. */
 export interface OrgRedemptionTerms {
   open: boolean;
+  /** Whether this village can seal payment details; without it a venture gives a payment reference. */
+  canSealDetails: boolean;
+  /** How many people hold the redemption key. 0 means a request waits and nobody can confirm it. */
+  confirmers: number;
   currencies: string[];
   pegCurrency: string;
   pegRate: number;

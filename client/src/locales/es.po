@@ -6870,6 +6870,12 @@ msgstr ""
 msgid "This village has not yet named what happens to its treasury and assets if it ever closes. The launch checklist asks for it before a village starts."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue currency"
+msgid "Paid in"
+msgstr "Pagado en"
+
 #: client/src/components/journey/TestRun.tsx
 msgid "Nothing refused across the whole run"
 msgstr ""
@@ -7780,6 +7786,12 @@ msgstr "Puedes cambiar este reparto para tu propuesta. Escribe un porcentaje par
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Kept sealed. Only the people who run this venture and the Treasury see it in full."
+msgstr "Se guarda sellado. Solo quienes dirigen este emprendimiento y la Tesorería lo ven completo."
 
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
@@ -9208,6 +9220,12 @@ msgctxt "roles page, roles after the founding team"
 msgid "join a community call"
 msgstr "unirte a una llamada comunitaria"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Nobody holds the redemption key yet, so a request waits until the village gives it to someone."
+msgstr "Todavía nadie tiene la llave de canje, así que una solicitud espera hasta que la aldea se la dé a alguien."
+
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: confirm a batch"
 msgid "Yes, accept"
@@ -9907,6 +9925,12 @@ msgstr "Elige una o más."
 #~ msgctxt "partner form"
 #~ msgid "See the other ways to build"
 #~ msgstr "Ver las otras formas de construir"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Nobody has given you the redemption key, so you can read this queue and cannot decide it. Only a holder of the key confirms a venture's redemption."
+msgstr "Nadie te ha dado la llave de canje, así que puedes leer esta cola pero no decidirla. Solo quien tiene la llave confirma el canje de un emprendimiento."
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -11627,6 +11651,12 @@ msgstr ""
 #~ msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
 #~ msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Payment reference"
+msgstr "Referencia de pago"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "They have not chosen"
 msgstr "Todavía no ha elegido"
@@ -12031,6 +12061,12 @@ msgstr ""
 #~ msgctxt "price popup lede"
 #~ msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
 #~ msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Held for a redemption"
+msgstr "Retenido para un canje"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -13673,6 +13709,14 @@ msgstr ""
 msgctxt "proposed changes: filter"
 msgid "B-27 or B-27.2, or an older long id"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: d.paidText
+#. placeholder {0}: h.paidText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption, what actually went out"
+msgid "paid {0}"
+msgstr "pagado {0}"
 
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -15957,6 +16001,12 @@ msgstr "Borrar"
 msgctxt "application backup file"
 msgid "Where you are based"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Back from a redemption"
+msgstr "Devuelto de un canje"
 
 #: client/src/components/ErrorBoundary.tsx
 msgid "We just updated the site"
@@ -20448,6 +20498,12 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "Terms we offer"
 msgstr "Términos que ofrecemos"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "What actually went out, if different"
+msgstr "Lo que salió de verdad, si es distinto"
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Move to its own change request"
 msgstr ""
@@ -23601,6 +23657,12 @@ msgstr "Ninguna elegida."
 msgid "Download this season file"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "This village cannot keep account details safely yet. Give a reference the Treasury can look up, such as an invoice number."
+msgstr "Esta aldea todavía no puede guardar datos de cuenta de forma segura. Da una referencia que la Tesorería pueda consultar, como un número de factura."
+
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "Region, about 50 km"
 msgstr ""
@@ -23821,6 +23883,13 @@ msgstr ""
 msgctxt "rites admin"
 msgid "Reads clean: {0} rites, in this order: {1}."
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: w.payRef ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue, payment reference the venture gave"
+msgid "Reference {0}"
+msgstr "Referencia {0}"
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Save what closing means"
@@ -27300,6 +27369,13 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{0} things to look at before the next stone:"
 #~ msgstr "{0} cosas que revisar antes de la siguiente piedra:"
+
+# needs-native-review: new words, 24 Nov 2026
+#. placeholder {0}: d.grossText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue, what the venture asked for"
+msgid "asked {0}"
+msgstr "pedido {0}"
 
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"

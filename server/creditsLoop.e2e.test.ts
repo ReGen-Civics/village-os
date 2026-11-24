@@ -103,6 +103,8 @@ beforeAll(async () => {
       ADMIN_PASSWORD: ADMIN,
       AUTH_TOKEN_SECRET: "cl-token-secret", // module-review-ok: a fixture signing secret for a throwaway server on a scratch schema, same as every e2e suite
       RESEND_API_KEY: "",
+      // Payment details are sealed under this key (server/lib/orgRedemptions.ts); a fixture key for a scratch server.
+      VILLAGE_SECRETS_KEY: "cd".repeat(32), // module-review-ok: a fixture sealing key for a throwaway server on a scratch schema
       ANTHROPIC_API_KEY: "",
     },
     stdio: ["ignore", "pipe", "pipe"],
@@ -224,12 +226,32 @@ describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's accou
 
   it("6. the venture redeems, the Treasury confirms after paying, the credits burn, and the ledger still sums to zero", async () => {
     const ask = (amount: number, token = people.runner.token) =>
-      call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: SLUG, amount, currency: "USD", payTo: "Bank account 0001, Rae Runner" }, token);
+      call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: SLUG, amount, currency: "USD", payTo: "Rae Runner, account 0001 2345" }, token);
 
     // Shut when a village is born.
     const shut = await ask(5);
     expect(shut.status, shut.text).toBe(403);
     await dial("ledger.org_redemption_open", "true");
+
+    // Nobody holds the redemption key yet (the seeded Treasury role has nobody seated), so a request
+    // waits, the panel is told nobody can confirm it, and an admin cannot stand in for a holder.
+    const early = await ask(3);
+    expect(early.status, early.text).toBe(201);
+    expect(early.json.redemption.payTo, "the venture's own people read where to pay").toBe("Rae Runner, account 0001 2345");
+    const [panelTold] = await pool.query<any[]>("SELECT title FROM notifications WHERE dedupe_key LIKE ?", [`org-redemption:${early.json.redemption.id}:asked%`]); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(panelTold.length).toBeGreaterThan(0);
+    expect(String(panelTold[0].title)).toMatch(/nobody holds the redemption key/);
+    const adminQueue = await call("GET", "/api/admin/org-redemptions");
+    expect(adminQueue.status, adminQueue.text).toBe(200);
+    expect(adminQueue.json.holdsKey).toBe(false);
+    expect(adminQueue.json.waiting[0]).toMatchObject({ payTo: null, payToLast4: "2345" });
+    const [sealed] = await pool.query<any[]>("SELECT pay_to_sealed FROM org_redemptions WHERE id = ?", [early.json.redemption.id]); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(String(sealed[0].pay_to_sealed), "sealed at rest").not.toContain("0001 2345");
+    const adminConfirm = await call("POST", `/api/admin/org-redemptions/${early.json.redemption.id}/confirm`, { paymentRef: "TX-ADMIN" });
+    expect(adminConfirm.status, "no admin fallback").toBe(409);
+    expect(String(adminConfirm.json?.error)).toMatch(/nobody stands in/);
+    const pulled = await call("POST", `/api/org-redemptions/${early.json.redemption.id}/cancel`, {}, people.runner.token);
+    expect(pulled.status, pulled.text).toBe(200);
 
     // Two Treasury holders, admitted and seated in the seeded Treasury power group. One of them
     // also runs the venture, which is the person the lead's rule refuses.
@@ -251,7 +273,7 @@ describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's accou
     const asked = await ask(10);
     expect(asked.status, asked.text).toBe(201);
     const id = String(asked.json.redemption.id);
-    expect(asked.json.redemption).toMatchObject({ state: "requested", credits: 10, currency: "USD", rateMinor: 100, grossMinor: 1000, payTo: "Bank account 0001, Rae Runner" });
+    expect(asked.json.redemption).toMatchObject({ state: "requested", credits: 10, currency: "USD", rateMinor: 100, grossMinor: 1000, payTo: "Rae Runner, account 0001 2345" });
     const mine = await call("GET", "/api/org-accounts/mine", undefined, people.runner.token);
     expect(mine.json.accounts[0].account.balances[SLUG]).toBe(15 * UNIT);
 
@@ -274,9 +296,10 @@ describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's accou
     expect(noRef.status).toBe(409);
 
     // Tess paid outside the platform, and confirms. The held credits burn to the retiring sink.
-    const confirmed = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-0001" }, tess.token);
+    // She records what actually went out, beside what was asked.
+    const confirmed = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-0001", paidAmount: "10.40", paidCurrency: "USD" }, tess.token);
     expect(confirmed.status, confirmed.text).toBe(200);
-    expect(confirmed.json.redemption).toMatchObject({ state: "confirmed", paymentRef: "TX-0001", decidedByName: "Tess Treasurer" });
+    expect(confirmed.json.redemption).toMatchObject({ state: "confirmed", paymentRef: "TX-0001", decidedByName: "Tess Treasurer", grossMinor: 1000, paidCurrency: "USD", paidMinor: 1040 });
     const twice = await call("POST", `/api/admin/org-redemptions/${id}/confirm`, { paymentRef: "TX-0001" }, tess.token);
     expect(twice.status, "one burn per redemption").toBe(409);
     const [burn] = await pool.query<any[]>("SELECT from_account, to_account, amount FROM token_ledger WHERE source = 'org_redemption_burn'"); // module-review-ok: a read of the scratch schema this suite provisioned
@@ -306,6 +329,6 @@ describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's accou
     const [sums] = await pool.query<any[]>("SELECT token_type, SUM(balance) AS total FROM token_balances GROUP BY token_type"); // module-review-ok: a read of the scratch schema this suite provisioned
     for (const s of sums) expect(Number(s.total), `sum-zero for ${s.token_type}`).toBe(0);
     const myRecord = await call("GET", "/api/org-redemptions/mine", undefined, people.runner.token);
-    expect(myRecord.json.ventures[0].redeemed).toEqual([{ currency: "USD", minor: 1000, text: expect.any(String) }]);
+    expect(myRecord.json.ventures[0].redeemed).toEqual([{ currency: "USD", minor: 1040, text: expect.any(String) }]);
   });
 });

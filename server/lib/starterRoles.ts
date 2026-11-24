@@ -150,16 +150,13 @@ export const ROLE_PAY_GRANTS = [{ capability: "role.pay", roleIds: [TREASURY_ROL
  */
 export const POT_STEWARD_GRANTS = [{ capability: "pot.steward", roleIds: [TREASURY_ROLE_ID] }] as const;
 
-/**
- * The Treasury confirms a venture's redemption (the lead, 23 Nov 2026: "A
- * Treasury role confirms each redemption after the cash is paid outside the
- * platform"). The venture doors reuse the member redemption's key,
- * `redemption.confirm`, so the seed gives it to the Treasury role of a new
- * village and a village that booted earlier gets it once, through `runOnce`.
- * A village that later takes it off keeps it off. Once anybody holds the key,
- * the admin short-circuit no longer applies to it: the Treasury decides.
+/*
+ * `redemption.confirm` is in the Treasury role of `server/seeds/roles-seed.json`,
+ * so a NEW village's Treasury confirms venture redemptions from its first boot
+ * (the lead, 23 Nov 2026). There is deliberately no boot grant for a running
+ * village (the lead, 24 Nov 2026): a village that already has its roles gives
+ * the key by its own decision when it starts redeeming.
  */
-export const REDEMPTION_CONFIRM_GRANTS = [{ capability: "redemption.confirm", roleIds: [TREASURY_ROLE_ID] }] as const;
 
 /** The two grants, as decisions 18 and 19 name them. */
 export const MOON_REVIEW_GRANTS = [

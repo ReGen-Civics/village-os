@@ -37,13 +37,25 @@ import { toLedgerUnits } from "./economy";
 import { setVariable } from "./variables";
 import { openOrgAccount, orgBalance } from "./orgAccounts";
 import { REDEEMED } from "./redemption";
-import { decideOrgRedemption, orgHoldReconciliation, orgRedemptionTerms, requestOrgRedemption, redeemedMoney } from "./orgRedemptions";
+import {
+  REMIND_AFTER_MS,
+  decideOrgRedemption,
+  openPayTo,
+  orgHoldReconciliation,
+  orgRedemptionTerms,
+  orgRedemptionView,
+  redeemedMoney,
+  remindWaitingOrgRedemptions,
+  requestOrgRedemption,
+} from "./orgRedemptions";
 import {
   ORG_REDEMPTION_CAP_KEY,
   ORG_REDEMPTION_CURRENCIES_KEY,
   ORG_REDEMPTION_HOLD,
   ORG_REDEMPTION_OPEN_KEY,
   orgDecideRefusal,
+  lastFour,
+  paidFigures,
   orgRedemptionMoveRefusal,
   parseOrgRedemptionCurrencies,
   quoteOrgRedemption,
@@ -68,12 +80,22 @@ describe("the pure decisions", () => {
   });
 
   it("refuses a confirmer who runs the venture or asked, and one with no reference", () => {
-    const base = { to: "confirmed" as const, actorRunsIt: false, actorAsked: false, paymentRef: "TX-1", note: "" };
+    const base = { to: "confirmed" as const, actorHoldsKey: true, paidValid: true, actorRunsIt: false, actorAsked: false, paymentRef: "TX-1", note: "" };
     expect(orgDecideRefusal(base)).toBeNull();
+    expect(orgDecideRefusal({ ...base, actorHoldsKey: false }), "no admin stands in for a key holder").toMatch(/Only someone the village has given the redemption key/);
+    expect(orgDecideRefusal({ ...base, paidValid: false })).toMatch(/what was paid/);
     expect(orgDecideRefusal({ ...base, actorRunsIt: true })).toMatch(/You run this venture/);
     expect(orgDecideRefusal({ ...base, actorAsked: true })).toMatch(/You asked for this redemption/);
     expect(orgDecideRefusal({ ...base, paymentRef: " " })).toMatch(/reference/);
     expect(orgDecideRefusal({ ...base, to: "refused", note: "" })).toMatch(/Say why/);
+  });
+
+  it("works out the rate actually paid from what went out", () => {
+    expect(paidFigures({ paidMinor: 1000, paidCurrency: "USD", credits: 10, pegCurrency: "USD", pegRate: 1 })).toEqual({ rateMinor: 100, fxRate: null });
+    const crc = paidFigures({ paidMinor: 512000, paidCurrency: "CRC", credits: 10, pegCurrency: "USD", pegRate: 1 });
+    expect(crc.rateMinor).toBe(51200);
+    expect(crc.fxRate).toBeCloseTo(512, 6);
+    expect(lastFour("Bank account 0001 2345 6789")).toBe("6789");
   });
 
   it("never moves a settled redemption", () => {
@@ -121,10 +143,13 @@ describe.skipIf(!configured)("a venture redeems its credits", () => {
     const r = await postTransfer(pool, { from: CYCLE_POOL_FAUCET, to: `org:${roleId}`, tokenType: TOKEN, amount: units(credits), source: "org_send", idempotencyKey: `fund:${roleId}:${++n}` });
     expect(r.ok, r.error).toBe(true);
   };
-  const ask = (userId: string, orgRoleId: string, amount: number, extra: Partial<{ currency: string; payTo: string }> = {}) =>
-    requestOrgRedemption(pool, { userId, orgRoleId, tokenSlug: TOKEN, amount, currency: extra.currency ?? "USD", payTo: extra.payTo ?? "Bank account 123", cycleStart: since(), fx: FX });
+  const ask = (userId: string, orgRoleId: string, amount: number, extra: Partial<{ currency: string; payTo: string; payRef: string }> = {}) =>
+    requestOrgRedemption(pool, { userId, orgRoleId, tokenSlug: TOKEN, amount, currency: extra.currency ?? "USD", payTo: extra.payTo ?? "Bank account 0001 2345 6789", payRef: extra.payRef, cycleStart: since(), fx: FX });
+  const KEY = "ab".repeat(32);
+  const keyBefore = process.env.VILLAGE_SECRETS_KEY;
 
   beforeAll(async () => {
+    process.env.VILLAGE_SECRETS_KEY = KEY;
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 8 }); // module-review-ok: the S5 scratch-schema harness pool
     await loadTokenRegistry(pool);
@@ -139,6 +164,8 @@ describe.skipIf(!configured)("a venture redeems its credits", () => {
   }, 180_000);
 
   afterAll(async () => {
+    if (keyBefore === undefined) delete process.env.VILLAGE_SECRETS_KEY;
+    else process.env.VILLAGE_SECRETS_KEY = keyBefore;
     for (const k of [ORG_REDEMPTION_OPEN_KEY, ORG_REDEMPTION_CAP_KEY, ORG_REDEMPTION_CURRENCIES_KEY]) await setVariable(pool, k, "").catch(() => undefined);
     await pool?.end();
     await db?.drop();
@@ -178,21 +205,27 @@ describe.skipIf(!configured)("a venture redeems its credits", () => {
     if (!r.ok) throw new Error(r.error);
     // A second person seated in the venture, who did not ask, is still refused.
     await seat("cafe", "other");
-    const own = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorUserId: "other", paymentRef: "TX-own" });
+    const own = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: true, actorUserId: "other", paymentRef: "TX-own" });
     expect(own).toMatchObject({ ok: false, status: 409 });
     if (!own.ok) expect(own.error).toMatch(/You run this venture/);
-    const asker = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorUserId: "runner", paymentRef: "TX-own" });
+    const asker = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: true, actorUserId: "runner", paymentRef: "TX-own" });
     expect(asker).toMatchObject({ ok: false, status: 409 });
-    expect(await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorUserId: "treasurer", paymentRef: "" })).toMatchObject({ ok: false, status: 409 });
+    expect(await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: true, actorUserId: "treasurer", paymentRef: "" })).toMatchObject({ ok: false, status: 409 });
 
     const retiredBefore = await balanceOf(pool, REDEEMED, TOKEN);
-    const ok = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorUserId: "treasurer", paymentRef: "TX-555" });
+    const ok = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: true, actorUserId: "treasurer", paymentRef: "TX-555", paidAmount: "abc" }).then((bad) => {
+      expect(bad, "a paid amount that is not one is refused").toMatchObject({ ok: false, status: 409 });
+      return decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: true, actorUserId: "treasurer", paymentRef: "TX-555", paidAmount: "5.20", paidCurrency: "usd" });
+    });
     expect(ok.ok).toBe(true);
-    if (ok.ok) expect(ok.row).toMatchObject({ state: "confirmed", decidedBy: "treasurer", paymentRef: "TX-555" });
+    if (ok.ok) {
+      // What went out is kept beside what was asked, which is untouched.
+      expect(ok.row).toMatchObject({ state: "confirmed", decidedBy: "treasurer", paymentRef: "TX-555", grossMinor: 500, rateMinor: 100, paidCurrency: "USD", paidMinor: 520, paidRateMinor: 104, paidFxRate: null });
+    }
     expect(await balanceOf(pool, REDEEMED, TOKEN)).toBe(retiredBefore + units(5));
-    const again = await decideOrgRedemption(pool, { id: r.row.id, to: "refused", actorUserId: "treasurer", note: "changed my mind" });
+    const again = await decideOrgRedemption(pool, { id: r.row.id, to: "refused", actorHoldsKey: true, actorUserId: "treasurer", note: "changed my mind" });
     expect(again).toMatchObject({ ok: false, status: 409 });
-    expect(await redeemedMoney(pool, "cafe")).toEqual([{ currency: "USD", minor: 500, text: expect.any(String) }]);
+    expect(await redeemedMoney(pool, "cafe"), "the venture's cash counts what went out").toEqual([{ currency: "USD", minor: 520, text: expect.any(String) }]);
     await conserves();
   });
 
@@ -201,8 +234,8 @@ describe.skipIf(!configured)("a venture redeems its credits", () => {
     const a = await ask("runner", "cafe", 4);
     const b = await ask("runner", "cafe", 6);
     if (!a.ok || !b.ok) throw new Error("asks failed");
-    expect(await decideOrgRedemption(pool, { id: a.row.id, to: "refused", actorUserId: "treasurer", note: "" })).toMatchObject({ ok: false });
-    expect((await decideOrgRedemption(pool, { id: a.row.id, to: "refused", actorUserId: "treasurer", note: "Not this moon" })).ok).toBe(true);
+    expect(await decideOrgRedemption(pool, { id: a.row.id, to: "refused", actorHoldsKey: true, actorUserId: "treasurer", note: "" })).toMatchObject({ ok: false });
+    expect((await decideOrgRedemption(pool, { id: a.row.id, to: "refused", actorHoldsKey: true, actorUserId: "treasurer", note: "Not this moon" })).ok).toBe(true);
     expect(await decideOrgRedemption(pool, { id: b.row.id, to: "cancelled", actorUserId: "treasurer" }), "only the venture cancels").toMatchObject({ ok: false, status: 403 });
     expect((await decideOrgRedemption(pool, { id: b.row.id, to: "cancelled", actorUserId: "runner" })).ok).toBe(true);
     expect(await decideOrgRedemption(pool, { id: b.row.id, to: "cancelled", actorUserId: "runner" })).toMatchObject({ ok: false, status: 409 });
@@ -232,6 +265,65 @@ describe.skipIf(!configured)("a venture redeems its credits", () => {
     expect([x.ok, y.ok].filter(Boolean)).toHaveLength(1);
     expect((await orgRedemptionTerms(pool, since(), FX)).usedCredits).toBe(50);
     await conserves();
+  });
+
+  it("refuses anybody who does not hold the key, admins included", async () => {
+    await setVariable(pool, ORG_REDEMPTION_CAP_KEY, "100");
+    const r = await ask("runner2", "bakery", 2);
+    if (!r.ok) throw new Error(r.error);
+    const admin = await decideOrgRedemption(pool, { id: r.row.id, to: "confirmed", actorHoldsKey: false, actorUserId: "treasurer", paymentRef: "TX-9" });
+    expect(admin).toMatchObject({ ok: false, status: 409 });
+    if (!admin.ok) expect(admin.error).toMatch(/nobody stands in/);
+    expect((await decideOrgRedemption(pool, { id: r.row.id, to: "cancelled", actorUserId: "runner2" })).ok).toBe(true);
+    await conserves();
+  });
+
+  it("seals where to pay, shows four characters to anybody else, and takes a reference when it cannot seal", async () => {
+    const r = await ask("runner2", "bakery", 1, { payTo: "IBAN XX00 1111 2222 3333" });
+    if (!r.ok) throw new Error(r.error);
+    const [raw] = await pool.query<any[]>("SELECT pay_to_sealed, pay_to_last4, pay_ref FROM org_redemptions WHERE id = ?", [r.row.id]); // module-review-ok: fixture read of the scratch schema
+    expect(String(raw[0].pay_to_sealed)).not.toContain("3333");
+    expect(raw[0].pay_to_last4).toBe("3333");
+    expect(openPayTo(r.row)).toBe("IBAN XX00 1111 2222 3333");
+    const name = async () => null;
+    expect((await orgRedemptionView(r.row, name, name, true)).payTo).toBe("IBAN XX00 1111 2222 3333");
+    const masked = await orgRedemptionView(r.row, name, name, false);
+    expect(masked).toMatchObject({ payTo: null, payToLast4: "3333" });
+
+    delete process.env.VILLAGE_SECRETS_KEY;
+    try {
+      const refused = await ask("runner2", "bakery", 1, { payTo: "IBAN XX00 1111 2222 4444" });
+      expect(refused.ok).toBe(false);
+      if (!refused.ok) expect(refused.error).toMatch(/cannot keep payment details safely/);
+      const byRef = await ask("runner2", "bakery", 1, { payTo: "", payRef: "Invoice 2026-17" });
+      expect(byRef.ok, byRef.ok ? "" : byRef.error).toBe(true);
+      if (byRef.ok) expect(byRef.row).toMatchObject({ payToSealed: null, payToLast4: null, payRef: "Invoice 2026-17" });
+      expect((await orgRedemptionTerms(pool, since(), FX)).canSealDetails).toBe(false);
+    } finally {
+      process.env.VILLAGE_SECRETS_KEY = KEY;
+    }
+    await conserves();
+  });
+
+  it("tells the confirmers again after a week waiting, once a week, and the panel when nobody holds the key", async () => {
+    const sent: string[] = [];
+    const panel: string[] = [];
+    const deps = (holders: string[]) => ({
+      holders: async () => holders,
+      notify: async (n: { dedupeKey: string; userId: string }) => { sent.push(n.dedupeKey); },
+      notifyAdmins: async (_t: string, _title: string, key: string) => { panel.push(key); },
+      labelOf: async () => "A venture",
+    });
+    const waiting = (await pool.query<any[]>("SELECT id, created_at, org_role_id FROM org_redemptions WHERE state = 'requested' ORDER BY created_at LIMIT 1"))[0][0]; // module-review-ok: fixture read of the scratch schema
+    const born = new Date(waiting.created_at).getTime();
+    expect(await remindWaitingOrgRedemptions(pool, deps(["treasurer"]), new Date(born + REMIND_AFTER_MS - 60_000)), "not before a week").toBe(0);
+    await remindWaitingOrgRedemptions(pool, deps(["treasurer", "runner"]), new Date(born + REMIND_AFTER_MS + 60_000));
+    const week1 = sent.filter((k) => k.startsWith(`org-redemption:${waiting.id}:waiting:1:`));
+    expect(week1, "the treasurer, never the person who runs it").toEqual([`org-redemption:${waiting.id}:waiting:1:treasurer`]);
+    await remindWaitingOrgRedemptions(pool, deps(["treasurer"]), new Date(born + 2 * REMIND_AFTER_MS + 60_000));
+    expect(sent).toContain(`org-redemption:${waiting.id}:waiting:2:treasurer`);
+    await remindWaitingOrgRedemptions(pool, deps([]), new Date(born + 3 * REMIND_AFTER_MS + 60_000));
+    expect(panel).toContain(`org-redemption:${waiting.id}:waiting:3`);
   });
 
   it("never counts a venture's payout as the village paying the person who runs it", async () => {

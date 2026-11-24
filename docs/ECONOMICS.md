@@ -3162,10 +3162,19 @@ village's legal review clears it. Code: `server/lib/orgRedemptions.ts` (postings
 - **A hold account of its own**, seeded by 0420, not a faucet. Reusing
   `sys:redemption-hold` would break the member module's reconciliation, and a row in
   `redemptions` would block the asker's exit and spend their member caps.
-- **The key is `redemption.confirm`**, through the one gate, given to the seeded
-  Treasury role (seed, plus a `runOnce` grant for a running village). On top of the
-  key, `orgDecideRefusal` refuses anybody seated in the venture's role and the person
-  who asked, and a confirmation needs the payment's reference.
+- **The key is `redemption.confirm`**, through the one gate. A new village's seeded
+  Treasury role carries it; a running village gives it by its own decision, with no
+  boot grant. Deciding needs a REAL holder (counted without the admin short-circuit):
+  with nobody holding it a request waits and the admins are told nobody can confirm.
+  `orgDecideRefusal` also refuses anybody seated in the venture's role and the person
+  who asked, and a confirmation needs the payment's reference. The confirmer may
+  record what actually went out (`paid_currency`, `paid_minor`, `paid_rate_minor`,
+  `paid_fx_rate`), kept beside the requested figures.
+- **No expiry.** A request waits until it is decided; `org-redemption-reminder` tells
+  the confirmers again after a week and each week after. It posts nothing.
+- **Where to pay is sealed** (`pay_to_sealed`, `server/lib/sealedBox.ts` under
+  `VILLAGE_SECRETS_KEY`); everybody but the venture's people and the key holders reads
+  the last four characters. With no key a venture gives a payment reference instead.
 - **The cap.** `ledger.org_redemption_moon_cap`, whole credits per cycle across every
   venture, counted from `cycleWindow()`: rows asked since the cycle began that are
   waiting or confirmed. 0 means zero. Every move locks the hold account's row first,

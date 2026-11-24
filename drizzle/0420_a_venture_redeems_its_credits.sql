@@ -33,8 +33,16 @@
 -- THE MOON CAP is counted from these rows: every redemption asked for since the cycle began that
 -- is still waiting or confirmed, across every venture (`org_redemptions_cycle_idx`).
 --
--- `pay_to` is where the venture asked to be paid, in its own words. It can carry account details,
--- so the routes show it only to the people who run that venture and to the redemption key holders.
+-- WHERE TO PAY, SEALED. Account details are sealed at rest with the platform's one sealing primitive
+-- (server/lib/sealedBox.ts, AES-256-GCM under VILLAGE_SECRETS_KEY): `pay_to_sealed` holds the sealed
+-- JSON and `pay_to_last4` the last four characters, which is all anyone but the venture's own people
+-- and the redemption key holders is shown. A village with no key cannot take details at all; the
+-- venture gives a payment reference instead (`pay_ref`), which carries no account number.
+--
+-- WHAT WAS ACTUALLY PAID. The confirmer may record what went out, which can differ from what was
+-- asked (the bank's rate on the day): `paid_currency`, `paid_minor`, `paid_rate_minor` (minor units
+-- per whole credit) and `paid_fx_rate` (paid currency per unit of the peg). NULL until confirmed. The
+-- requested figures stay beside them, untouched.
 --
 -- EXPAND ONLY. One new table and one new system account row, `INSERT IGNORE`. The UNIQUE keys are
 -- on the NEW table, which the previous release never writes. No existing table changes.
@@ -57,7 +65,9 @@ CREATE TABLE IF NOT EXISTS `org_redemptions` (
   `fx_as_of` varchar(10) NULL,
   `rate_minor` bigint NOT NULL,
   `gross_minor` bigint NOT NULL,
-  `pay_to` varchar(300) NOT NULL,
+  `pay_to_sealed` text NULL,
+  `pay_to_last4` varchar(8) NULL,
+  `pay_ref` varchar(200) NULL,
   `state` varchar(16) NOT NULL DEFAULT 'requested',
   `hold_key` varchar(160) NOT NULL,
   `burn_key` varchar(160) NOT NULL,
@@ -65,6 +75,10 @@ CREATE TABLE IF NOT EXISTS `org_redemptions` (
   `decided_by` varchar(64) NULL,
   `decided_at` timestamp NULL,
   `payment_ref` varchar(200) NULL,
+  `paid_currency` char(3) NULL,
+  `paid_minor` bigint NULL,
+  `paid_rate_minor` bigint NULL,
+  `paid_fx_rate` decimal(24,10) NULL,
   `decision_note` varchar(500) NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -2253,7 +2253,7 @@ Admin, Integrations has two new cards, `railway_project_token` (one Railway proj
 
 ## A venture redeems its credits (migration 0420, 2026-11-23)
 
-- No env var. Migration 0420 adds `org_redemptions` and the system account `sys:org-redemption-hold` at boot. A boot step gives `redemption.confirm` to the seeded Treasury role once (`redemption-confirm-to-treasury-2026-11-23`); seat the people who pay venture redemptions there.
+- No env var. Migration 0420 adds `org_redemptions` and the system account `sys:org-redemption-hold` at boot. A new village's seeded Treasury role carries `redemption.confirm`; a running village gives that power to a role by its own decision (no boot grant). Only a real holder can confirm or refuse a venture's redemption, never an admin standing in. Payment details are sealed under `VILLAGE_SECRETS_KEY`; with no key a venture gives a payment reference instead. A job, `org-redemption-reminder`, tells the confirmers again after a week waiting and each week after.
 - `ledger.org_redemption_open` (off): ventures may ask to redeem. Leave it off until your legal review clears paying out.
 - `ledger.org_redemption_moon_cap` (100): whole credits all ventures together may redeem per cycle, waiting plus confirmed. 0 means zero.
 - `ledger.org_redemption_rate` (1): what one credit is worth in the first listed currency. 0 means no venture can redeem.

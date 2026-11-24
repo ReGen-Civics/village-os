@@ -26,13 +26,16 @@
  *      `/api/org-accounts/mine` and prints the balance and the last payments.
  *   7. With `--redeem N` (needs VILLAGE_RUNNER_TOKEN): the person who runs the
  *      venture asks to redeem N whole credits in `--currency` (default the
- *      village's first), paid to `--pay-to`. The credits are held. If ventures
+ *      village's first), paid to `--pay-to` (sealed; needs VILLAGE_SECRETS_KEY on
+ *      the server), or with `--pay-ref` a reference the Treasury looks up. The credits are held. If ventures
  *      cannot redeem yet it stops, unless `--open-redemption` is passed, which
  *      turns `ledger.org_redemption_open` on.
  *   8. With VILLAGE_TREASURER_TOKEN and `--paid-ref <reference>`: a redemption
  *      key holder who does not run the venture reads the queue and confirms
  *      that request with the reference of the payment they made outside the
- *      platform, and the held credits burn. Without `--paid-ref` the request is
+ *      platform (and, with `--paid-amount` and `--paid-currency`, what actually
+ *      went out), and the held credits burn. The key holder must really hold
+ *      `redemption.confirm`; an admin cannot stand in. Without `--paid-ref` the request is
  *      left waiting, so a person can pay it first. Prints the hold account
  *      against the waiting requests, which should match.
  *
@@ -46,7 +49,7 @@
  *   node scripts/rehearse-credits-loop.mjs --base https://staging.example.org \
  *     --confirm "<village name>" --role <orgRoleId> --token credits \
  *     --amount 5 [--mint 20] [--label "<name members read>"] [--open-door]
- *     [--redeem 3 --pay-to "<account and name>" [--currency USD] [--open-redemption] [--paid-ref TX-1]]
+ *     [--redeem 3 --pay-to "<account and name>" [--currency USD] [--open-redemption] [--paid-ref TX-1 [--paid-amount 10.40 --paid-currency USD]]]
  */
 import { randomUUID } from "node:crypto";
 
@@ -72,6 +75,9 @@ const redeem = flag("--redeem") === undefined ? 0 : Number(flag("--redeem"));
 const payTo = flag("--pay-to") ?? "";
 const currency = flag("--currency") ?? "";
 const paidRef = flag("--paid-ref") ?? "";
+const payRef = flag("--pay-ref") ?? "";
+const paidAmount = flag("--paid-amount") ?? "";
+const paidCurrency = flag("--paid-currency") ?? "";
 
 function stop(message, code = 1) {
   console.log(message);
@@ -186,7 +192,7 @@ if (!t.open) {
   must("Turning ledger.org_redemption_open on", opened);
   console.log("   Turned ledger.org_redemption_open on.");
 }
-const asked = await call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: slug, amount: redeem, currency: currency || t.currencies[0], payTo }, runnerToken);
+const asked = await call("POST", "/api/org-redemptions", { orgRoleId: roleId, token: slug, amount: redeem, currency: currency || t.currencies[0], ...(payTo ? { payTo } : { payRef }) }, runnerToken);
 must(`Asking to redeem ${redeem} ${slug}`, asked, (s) => s === 201);
 const r = asked.json.redemption;
 console.log(`   Asked: ${r.credits} ${r.tokenName} for ${r.grossText} at ${r.rateText} each${r.fxRate ? `, ${r.fxRate} ${r.currency} per ${r.pegCurrency} (${r.fxAsOf})` : ""}. Held until the Treasury answers. Id ${r.id}.`);
@@ -198,6 +204,7 @@ must("Reading the Treasury's queue", queue);
 console.log(`8. The Treasury sees ${queue.json.waiting.length} waiting. Hold against waiting requests:`);
 for (const h of queue.json.reconciliation) console.log(`   ${h.token}: held ${h.heldUnits}, owed ${h.owedUnits}, drift ${h.driftUnits}`);
 if (!paidRef) stop("   No --paid-ref, so the request waits for a person to pay it and confirm. Done.", 0);
-const confirmed = await call("POST", `/api/admin/org-redemptions/${encodeURIComponent(r.id)}/confirm`, { paymentRef: paidRef }, treasurerToken);
+const confirmed = await call("POST", `/api/admin/org-redemptions/${encodeURIComponent(r.id)}/confirm`, { paymentRef: paidRef, paidAmount, paidCurrency }, treasurerToken);
 must("Confirming the redemption", confirmed);
-console.log(`   Confirmed with reference ${confirmed.json.redemption.paymentRef}. The ${r.credits} ${r.tokenName} are retired.`);
+const done = confirmed.json.redemption;
+console.log(`   Confirmed with reference ${done.paymentRef}: asked ${done.grossText}, paid ${done.paidText ?? done.grossText}. The ${r.credits} ${r.tokenName} are retired.`);

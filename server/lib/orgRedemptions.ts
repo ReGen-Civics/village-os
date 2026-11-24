@@ -69,6 +69,8 @@ import {
   orgDecideRefusal,
   orgRedeemRefusal,
   orgRedemptionMoveRefusal,
+  lastFour,
+  paidFigures,
   parseOrgRedemptionCurrencies,
   quoteOrgRedemption,
   type OrgRedemptionState,
@@ -76,7 +78,8 @@ import {
   type OrgRedemptionView,
 } from "../../shared/orgRedemptions";
 import { finerThanScale } from "../../shared/tokenScale";
-import { formatMoney } from "../../shared/money";
+import { keyFromEnv, openWith, sealWith, type Sealed } from "./sealedBox";
+import { exponentOf, formatMoney } from "../../shared/money";
 import { balanceOf, lockLedgerAccounts, postTransferOn, tokenDef } from "./ledger";
 import { decimalsFor, fromLedgerUnits, keys, toLedgerUnits, villageId } from "./economy";
 import { isPriceableToken, MODULE_VOUCHERS } from "./spending";
@@ -84,7 +87,7 @@ import { REDEEMED } from "./redemption";
 import { boolVar, numberVar, stringVar } from "./variables";
 import { lostConcurrencyRace } from "../db/concurrency";
 import { accountBalanceRows } from "../repos/tokenBalances";
-import { orgAccountRow } from "../repos/orgAccounts";
+import { liveSeatedUserIds, orgAccountRow } from "../repos/orgAccounts";
 import {
   claimOrgRedemption,
   insertOrgRedemption,
@@ -92,6 +95,7 @@ import {
   owedToHoldRows,
   redeemedMoneyRows,
   usedSinceRows,
+  waitingSinceRows,
   type OrgRedemptionRow,
 } from "../repos/orgRedemptions";
 import { operatesOrg } from "./orgAccounts";
@@ -136,7 +140,30 @@ export async function usedCreditsSince(pool: Pool | PoolConnection, since: Date)
 export type DailyRates = { rates: Record<string, number>; asOf: string | null };
 
 /** What a venture's card reads before it asks. */
-export async function orgRedemptionTerms(pool: Pool, cycleStart: Date, fx: DailyRates): Promise<OrgRedemptionTerms> {
+// ── Where to pay, sealed ────────────────────────────────────────────────────
+
+/**
+ * The village's sealing key, `VILLAGE_SECRETS_KEY`, read at call time (the
+ * integration secrets plane's own key and primitive, server/lib/sealedBox.ts).
+ * Null means this village cannot keep account details at rest, so a venture
+ * gives a payment reference instead and nothing sensitive is stored.
+ */
+export function payToKey(): Buffer | null {
+  return keyFromEnv("VILLAGE_SECRETS_KEY");
+}
+
+/** Where to pay, opened, or null when it was a reference, the key is gone, or the seal does not open. */
+export function openPayTo(row: Pick<OrgRedemptionRow, "payToSealed">): string | null {
+  const key = payToKey();
+  if (!key || !row.payToSealed) return null;
+  try {
+    return openWith(key, JSON.parse(row.payToSealed) as Sealed);
+  } catch {
+    return null;
+  }
+}
+
+export async function orgRedemptionTerms(pool: Pool, cycleStart: Date, fx: DailyRates, confirmers = 0): Promise<OrgRedemptionTerms> {
   const currencies = orgRedemptionCurrencies();
   const pegRate = orgRedemptionPegRate();
   const capCredits = orgRedemptionCapCredits();
@@ -148,6 +175,8 @@ export async function orgRedemptionTerms(pool: Pool, cycleStart: Date, fx: Daily
   }
   return {
     open: orgRedemptionOpen(),
+    canSealDetails: !!payToKey(),
+    confirmers,
     currencies,
     pegCurrency: currencies[0],
     pegRate,
@@ -167,7 +196,10 @@ export interface OrgRedeemInput {
   /** HUMAN, as typed. Converted once, here. */
   amount: number;
   currency: string;
+  /** Account details, sealed before they are written. Needs a sealing key. */
   payTo: string;
+  /** A payment reference, given instead of details. */
+  payRef?: string;
   cycleStart: Date;
   fx: DailyRates;
 }
@@ -193,6 +225,8 @@ export async function requestOrgRedemption(pool: Pool, input: OrgRedeemInput): P
   const currencies = orgRedemptionCurrencies();
   const currency = String(input.currency ?? "").trim().toUpperCase() || currencies[0];
   const payTo = String(input.payTo ?? "").trim().slice(0, PAY_TO_MAX);
+  const payRef = payTo ? "" : String(input.payRef ?? "").trim().slice(0, PAYMENT_REF_MAX);
+  const key = payToKey();
   const quote = quoteOrgRedemption({
     wholeCredits: fromLedgerUnits(slug, units),
     currency,
@@ -217,6 +251,8 @@ export async function requestOrgRedemption(pool: Pool, input: OrgRedeemInput): P
       currency,
       priced: !!quote,
       payTo,
+      payRef,
+      canSeal: !!key,
       capCredits: orgRedemptionCapCredits(),
       usedCredits,
     });
@@ -255,7 +291,10 @@ export async function requestOrgRedemption(pool: Pool, input: OrgRedeemInput): P
         fxAsOf: quote.fxAsOf,
         rateMinor: quote.rateMinor,
         grossMinor: quote.grossMinor,
-        payTo,
+        // SEALED before it is written; only the last four characters stay readable.
+        payToSealed: payTo && key ? JSON.stringify(sealWith(key, payTo)) : null,
+        payToLast4: payTo ? lastFour(payTo) : null,
+        payRef: payRef || null,
         holdKey: keys.orgRedemptionHold(villageId(), id),
         burnKey: keys.orgRedemptionBurn(villageId(), id),
         releaseKey: keys.orgRedemptionRelease(villageId(), id),
@@ -298,6 +337,15 @@ export interface OrgDecideInput {
   actorUserId: string;
   paymentRef?: string | null;
   note?: string | null;
+  /**
+   * Whether the village has given this person the redemption key (the route
+   * counts it with `liveHoldersOf`, admins left out). Needed to confirm or
+   * refuse; a cancel is the venture's own act and does not ask it.
+   */
+  actorHoldsKey?: boolean;
+  /** What actually went out, HUMAN, when the confirmer says. Blank records what was asked. */
+  paidAmount?: number | string | null;
+  paidCurrency?: string | null;
 }
 
 export type OrgDecideOutcome = { ok: true; row: OrgRedemptionRow } | { ok: false; status: number; error: string };
@@ -325,10 +373,33 @@ export async function decideOrgRedemption(pool: Pool, input: OrgDecideInput): Pr
   const asked = row.requestedBy === input.actorUserId;
   const paymentRef = String(input.paymentRef ?? "").trim().slice(0, PAYMENT_REF_MAX);
   const note = String(input.note ?? "").trim().slice(0, 500);
+  // What actually went out. Both blank records what was asked; anything else must be a real amount and currency.
+  const paidRaw = input.paidAmount == null ? "" : String(input.paidAmount).trim();
+  const paidCur = String(input.paidCurrency ?? "").trim().toUpperCase();
+  let paid: { currency: string; minor: number; rateMinor: number; fxRate: number | null } | "invalid" | null = null;
+  if (paidRaw || paidCur) {
+    const human = Number(paidRaw);
+    const currency = paidCur || row.currency;
+    if (!paidRaw || !Number.isFinite(human) || human <= 0 || !/^[A-Z]{3}$/.test(currency)) {
+      paid = "invalid";
+    } else {
+      const minor = Math.round(human * Math.pow(10, exponentOf(currency)));
+      const credits = fromLedgerUnits(row.tokenSlug, row.amountUnits);
+      paid = { currency, minor, ...paidFigures({ paidMinor: minor, paidCurrency: currency, credits, pegCurrency: row.pegCurrency, pegRate: row.pegRate }) };
+    }
+  }
   if (input.to === "cancelled") {
     if (!runsIt && !asked) return { ok: false, status: 403, error: "Only the people who run this venture can cancel its redemption" };
   } else {
-    const refusal = orgDecideRefusal({ to: input.to, actorRunsIt: runsIt, actorAsked: asked, paymentRef, note });
+    const refusal = orgDecideRefusal({
+      to: input.to,
+      actorHoldsKey: input.actorHoldsKey === true,
+      paidValid: paid !== "invalid",
+      actorRunsIt: runsIt,
+      actorAsked: asked,
+      paymentRef,
+      note,
+    });
     if (refusal) return { ok: false, status: 409, error: refusal };
   }
 
@@ -343,6 +414,7 @@ export async function decideOrgRedemption(pool: Pool, input: OrgDecideInput): Pr
         to: input.to,
         decidedBy: input.actorUserId,
         paymentRef: burns ? paymentRef : null,
+        paid: burns && paid && paid !== "invalid" ? paid : null,
         note: note || (input.to === "cancelled" ? "Cancelled by the venture" : null),
       });
       if (!won) {
@@ -391,11 +463,17 @@ export async function decideOrgRedemption(pool: Pool, input: OrgDecideInput): Pr
 
 // ── Reading ─────────────────────────────────────────────────────────────────
 
-/** One row as people read it. `nameOf` resolves member ids; `labelOf` venture labels. */
+/**
+ * One row as people read it. `nameOf` resolves member ids; `labelOf` venture
+ * labels. `reveal` is whether this reader may see where to pay in full: the
+ * venture's own people and the redemption key holders. Everybody else reads
+ * the last four characters.
+ */
 export async function orgRedemptionView(
   row: OrgRedemptionRow,
   nameOf: (userId: string) => Promise<string | null>,
   labelOf: (orgRoleId: string) => Promise<string | null>,
+  reveal = false,
 ): Promise<OrgRedemptionView> {
   const def = tokenDef(row.tokenSlug);
   return {
@@ -414,7 +492,14 @@ export async function orgRedemptionView(
     grossMinor: row.grossMinor,
     grossText: formatMoney(row.grossMinor, row.currency),
     rateText: formatMoney(row.rateMinor, row.currency),
-    payTo: row.payTo,
+    payTo: reveal ? openPayTo(row) : null,
+    payToLast4: row.payToLast4,
+    payRef: row.payRef,
+    paidCurrency: row.paidCurrency,
+    paidMinor: row.paidMinor,
+    paidText: row.paidCurrency && row.paidMinor != null ? formatMoney(row.paidMinor, row.paidCurrency) : null,
+    paidRateText: row.paidCurrency && row.paidRateMinor != null ? formatMoney(row.paidRateMinor, row.paidCurrency) : null,
+    paidFxRate: row.paidFxRate,
     state: row.state as OrgRedemptionState,
     requestedBy: row.requestedBy,
     requestedByName: await nameOf(row.requestedBy),
@@ -424,6 +509,65 @@ export async function orgRedemptionView(
     decidedAt: row.decidedAt,
     createdAt: row.createdAt,
   };
+}
+
+// ── The weekly nudge ────────────────────────────────────────────────────────
+
+/** How long a request waits before the confirmers are told again, and again each week after. */
+export const REMIND_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
+export interface ReminderDeps {
+  /** Who holds the redemption key, admins left out. */
+  holders(): Promise<string[]>;
+  notify(input: { userId: string; type: string; title: string; body?: string | null; link?: string | null; dedupeKey: string }): Promise<unknown>;
+  notifyAdmins(type: string, title: string, dedupeKey: string, link?: string, except?: readonly string[]): Promise<void>;
+  labelOf(orgRoleId: string): Promise<string | null>;
+}
+
+/**
+ * Tell the confirmers again about every request that has waited a week or
+ * more, once per request per week waited. NO EXPIRY: credits never expire and
+ * neither does a request (the lead, 23 Nov 2026); this only asks again. The
+ * dedupe key names the request and the week, so a job that runs every few
+ * hours sends each nudge once. With nobody holding the key the admins hear
+ * that nobody can confirm it. It posts nothing and decides nothing.
+ */
+export async function remindWaitingOrgRedemptions(pool: Pool, deps: ReminderDeps, now: Date = new Date()): Promise<number> {
+  const rows = await waitingSinceRows(pool, new Date(now.getTime() - REMIND_AFTER_MS));
+  if (!rows.length) return 0;
+  const holders = await deps.holders().catch(() => [] as string[]);
+  let sent = 0;
+  for (const row of rows) {
+    const week = Math.floor((now.getTime() - new Date(row.createdAt).getTime()) / REMIND_AFTER_MS);
+    if (week < 1) continue;
+    const label = (await deps.labelOf(row.orgRoleId)) ?? row.orgRoleId;
+    const credits = fromLedgerUnits(row.tokenSlug, row.amountUnits);
+    const what = `${credits} ${tokenDef(row.tokenSlug)?.name ?? row.tokenSlug} for ${formatMoney(row.grossMinor, row.currency)}`;
+    const operators = new Set([...(await liveSeatedUserIds(pool, row.orgRoleId)), row.requestedBy]);
+    const confirmers = holders.filter((id) => !operators.has(id));
+    if (confirmers.length) {
+      for (const id of confirmers) {
+        await deps.notify({
+          userId: id,
+          type: "venture_redemption",
+          title: `${label} has waited ${week * 7} days to redeem ${what}`,
+          link: "/profile#venture-redemptions",
+          dedupeKey: `org-redemption:${row.id}:waiting:${week}:${id}`,
+        });
+        sent += 1;
+      }
+    } else {
+      await deps.notifyAdmins(
+        "venture_redemption",
+        `${label} has waited ${week * 7} days to redeem ${what}, and nobody holds the redemption key to confirm it`,
+        `org-redemption:${row.id}:waiting:${week}`,
+        "/profile#venture-redemptions",
+        Array.from(operators),
+      );
+      sent += 1;
+    }
+  }
+  return sent;
 }
 
 /**

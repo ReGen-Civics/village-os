@@ -40,6 +40,27 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.58 (2026-11-24)
+
+### What changed for your village
+
+- **A venture can redeem its credits, switched off.** The person seated in a venture's role asks to turn credits the venture holds into money: how many, in which of the village's currencies, and where the money should go. The credits are held at once. Somebody holding the redemption key pays the venture outside the platform, confirms with the payment's reference and, if it differs, what actually went out, and only then are the held credits destroyed. A refusal or a cancel gives them back. Members never cash out.
+- **Only a real holder of the redemption key decides.** Nobody seated in the venture's role and not the person who asked can confirm, and an admin cannot stand in: while nobody holds the key a request waits and the admins are told nobody can confirm it.
+- **One credit is worth one unit of the first listed currency** (USD by default). A venture paid in another listed currency is converted at the day's rate, and both the rate asked and the rate actually paid are written on the redemption.
+- **A cap per cycle across every venture** (100 credits to start), counting requests still waiting and confirmed ones. 0 means zero.
+- **Where to pay is sealed** with the village's secrets key, and everybody but the venture's own people and the key holders sees its last four characters. A village without that key takes a payment reference instead.
+- **Requests never expire.** After a week waiting, and each week after, the key holders are told again.
+- **The operator's card** gets a Redeem action and its requests; **the profile's Treasury tab** gets the queue of venture redemptions. The venture's history now reads "Held for a redemption" where it read "paid out".
+- A new village's Treasury role carries the redemption key from its first boot. A running village is not changed: it gives the key to a role by its own decision.
+
+### What you must do
+
+Nothing. It stays off until you turn on `ledger.org_redemption_open` (Admin, Game Mechanics, Ledger), which waits for your legal review. Before that, give the redemption key to the role that pays, set `ledger.org_redemption_currencies` (for example `USD,CRC`) and `ledger.org_redemption_moon_cap`, and check `VILLAGE_SECRETS_KEY` is set if ventures should give account details.
+
+### Does it touch your data
+
+Yes, by adding only. Migration 0420 adds the table `org_redemptions` and the ledger account `sys:org-redemption-hold`. Nothing existing changes, so going back to 1.3.57 or earlier leaves the new table unused.
+
 ## 1.3.56 (2026-11-23)
 
 ### What changed for your village

@@ -23,7 +23,12 @@ export interface OrgRedemptionRow {
   fxAsOf: string | null;
   rateMinor: number;
   grossMinor: number;
-  payTo: string;
+  /** The sealed JSON of where to pay, or null when the venture gave a reference instead. */
+  payToSealed: string | null;
+  /** The last four characters of where to pay, the only part shown to anybody else. */
+  payToLast4: string | null;
+  /** A payment reference the venture gave instead of details (a village with no sealing key). */
+  payRef: string | null;
   state: string;
   holdKey: string;
   burnKey: string;
@@ -32,6 +37,11 @@ export interface OrgRedemptionRow {
   decidedAt: string | null;
   paymentRef: string | null;
   decisionNote: string | null;
+  /** What the confirmer says actually went out. Null until confirmed, and when they did not say. */
+  paidCurrency: string | null;
+  paidMinor: number | null;
+  paidRateMinor: number | null;
+  paidFxRate: number | null;
   createdAt: string;
 }
 
@@ -52,7 +62,9 @@ function toRow(r: RowDataPacket): OrgRedemptionRow {
     fxAsOf: r.fx_as_of == null ? null : String(r.fx_as_of),
     rateMinor: Number(r.rate_minor),
     grossMinor: Number(r.gross_minor),
-    payTo: String(r.pay_to),
+    payToSealed: r.pay_to_sealed == null ? null : String(r.pay_to_sealed),
+    payToLast4: r.pay_to_last4 == null ? null : String(r.pay_to_last4),
+    payRef: r.pay_ref == null ? null : String(r.pay_ref),
     state: String(r.state),
     holdKey: String(r.hold_key),
     burnKey: String(r.burn_key),
@@ -61,21 +73,30 @@ function toRow(r: RowDataPacket): OrgRedemptionRow {
     decidedAt: r.decided_at == null ? null : iso(r.decided_at),
     paymentRef: r.payment_ref == null ? null : String(r.payment_ref),
     decisionNote: r.decision_note == null ? null : String(r.decision_note),
+    paidCurrency: r.paid_currency == null ? null : String(r.paid_currency),
+    paidMinor: r.paid_minor == null ? null : Number(r.paid_minor),
+    paidRateMinor: r.paid_rate_minor == null ? null : Number(r.paid_rate_minor),
+    paidFxRate: r.paid_fx_rate == null ? null : Number(r.paid_fx_rate),
     createdAt: iso(r.created_at),
   };
 }
 
 export async function insertOrgRedemption(
   conn: PoolConnection,
-  row: Omit<OrgRedemptionRow, "state" | "decidedBy" | "decidedAt" | "paymentRef" | "decisionNote" | "createdAt">,
+  row: Omit<
+    OrgRedemptionRow,
+    "state" | "decidedBy" | "decidedAt" | "paymentRef" | "decisionNote" | "paidCurrency" | "paidMinor" | "paidRateMinor" | "paidFxRate" | "createdAt"
+  >,
 ): Promise<void> {
   await conn.query(
     "INSERT INTO `org_redemptions` (`id`, `org_role_id`, `account_id`, `requested_by`, `token_slug`, `amount`, " +
-      "`currency`, `peg_currency`, `peg_rate`, `fx_rate`, `fx_as_of`, `rate_minor`, `gross_minor`, `pay_to`, " +
-      "`state`, `hold_key`, `burn_key`, `release_key`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'requested',?,?,?)",
+      "`currency`, `peg_currency`, `peg_rate`, `fx_rate`, `fx_as_of`, `rate_minor`, `gross_minor`, " +
+      "`pay_to_sealed`, `pay_to_last4`, `pay_ref`, `state`, `hold_key`, `burn_key`, `release_key`) " +
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'requested',?,?,?)",
     [
       row.id, row.orgRoleId, row.accountId, row.requestedBy, row.tokenSlug, row.amountUnits,
-      row.currency, row.pegCurrency, row.pegRate, row.fxRate, row.fxAsOf, row.rateMinor, row.grossMinor, row.payTo,
+      row.currency, row.pegCurrency, row.pegRate, row.fxRate, row.fxAsOf, row.rateMinor, row.grossMinor,
+      row.payToSealed, row.payToLast4, row.payRef,
       row.holdKey, row.burnKey, row.releaseKey,
     ],
   );
@@ -103,12 +124,21 @@ export async function usedSinceRows(pool: Pool | PoolConnection, since: Date): P
 /** Move a row out of `requested`, once. Only the caller whose update changed the row may post. */
 export async function claimOrgRedemption(
   conn: PoolConnection,
-  claim: { id: string; to: string; decidedBy: string | null; paymentRef: string | null; note: string | null },
+  claim: {
+    id: string;
+    to: string;
+    decidedBy: string | null;
+    paymentRef: string | null;
+    note: string | null;
+    paid?: { currency: string; minor: number; rateMinor: number; fxRate: number | null } | null;
+  },
 ): Promise<boolean> {
+  const paid = claim.paid ?? null;
   const [upd] = await conn.query<ResultSetHeader>(
     "UPDATE `org_redemptions` SET `state` = ?, `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP, " +
-      "`payment_ref` = ?, `decision_note` = ? WHERE `id` = ? AND `state` = 'requested'",
-    [claim.to, claim.decidedBy, claim.paymentRef, claim.note, claim.id],
+      "`payment_ref` = ?, `decision_note` = ?, `paid_currency` = ?, `paid_minor` = ?, `paid_rate_minor` = ?, `paid_fx_rate` = ? " +
+      "WHERE `id` = ? AND `state` = 'requested'",
+    [claim.to, claim.decidedBy, claim.paymentRef, claim.note, paid?.currency ?? null, paid?.minor ?? null, paid?.rateMinor ?? null, paid?.fxRate ?? null, claim.id],
   );
   return Number(upd.affectedRows) === 1;
 }
@@ -150,15 +180,26 @@ export async function owedToHoldRows(pool: Pool): Promise<Array<{ token: string;
 }
 
 /**
- * MONEY A VENTURE HAS BEEN PAID THROUGH REDEMPTION, per currency, minor units.
+ * MONEY A VENTURE HAS BEEN PAID THROUGH REDEMPTION, per currency, minor units:
+ * what the confirmer says went out when they recorded it, else what was asked.
  * Counted here and only here: it is the venture's cash, and no "paid by the
  * village" figure for a person reads this table.
  */
 export async function redeemedMoneyRows(pool: Pool, orgRoleId: string): Promise<Array<{ currency: string; minor: number }>> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT `currency`, SUM(`gross_minor`) AS total FROM `org_redemptions` " +
-      "WHERE `org_role_id` = ? AND `state` = 'confirmed' GROUP BY `currency` ORDER BY `currency`",
+    "SELECT COALESCE(`paid_currency`, `currency`) AS currency, SUM(COALESCE(`paid_minor`, `gross_minor`)) AS total " +
+      "FROM `org_redemptions` WHERE `org_role_id` = ? AND `state` = 'confirmed' " +
+      "GROUP BY COALESCE(`paid_currency`, `currency`) ORDER BY 1",
     [orgRoleId],
   );
   return rows.map((r) => ({ currency: String(r.currency), minor: Number(r.total ?? 0) }));
+}
+
+/** Requests waiting since before `before`, oldest first: the reminder job's list. */
+export async function waitingSinceRows(pool: Pool, before: Date): Promise<OrgRedemptionRow[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM `org_redemptions` WHERE `state` = 'requested' AND `created_at` <= ? ORDER BY `created_at`, `id` LIMIT 500",
+    [before],
+  );
+  return rows.map(toRow);
 }
