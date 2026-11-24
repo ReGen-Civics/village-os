@@ -347,6 +347,9 @@ describe("one frame per role", () => {
     founding.sections.finance = { ...SECTIONS, relatedRoles: ["land"] };
     wide();
     renderRoles();
+    // Every founding card starts closed (the lead, 24 Nov 2026), so the reader opens Finance first.
+    await waitFor(() => expect(frame("finance")?.querySelector('[data-founding-role="finance"]')).toBeTruthy());
+    fireEvent.click(frame("finance").querySelector('[data-founding-role="finance"]') as HTMLElement);
     await waitFor(() => expect(frame("finance")?.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
     fireEvent.click(frame("finance").querySelector('[data-role-to-be-added="land"]') as HTMLElement);
     await waitFor(() => expect(frame("land").querySelector('[data-full-role-card="land"]')).toBeTruthy());
