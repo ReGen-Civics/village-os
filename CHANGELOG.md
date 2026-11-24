@@ -40,7 +40,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
-## 1.3.58 (2026-11-24)
+## 1.3.59 (2026-11-24)
 
 ### What changed for your village
 
@@ -59,7 +59,7 @@ Nothing. It stays off until you turn on `ledger.org_redemption_open` (Admin, Gam
 
 ### Does it touch your data
 
-Yes, by adding only. Migration 0420 adds the table `org_redemptions` and the ledger account `sys:org-redemption-hold`. Nothing existing changes, so going back to 1.3.57 or earlier leaves the new table unused.
+Yes, by adding only. Migration 0420 adds the table `org_redemptions` and the ledger account `sys:org-redemption-hold`. Nothing existing changes, so going back to an earlier version leaves the new table unused.
 
 ## 1.3.57 (2026-11-24)
 
