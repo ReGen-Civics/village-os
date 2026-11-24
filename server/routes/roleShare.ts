@@ -17,7 +17,7 @@
 import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { listOrgRoles } from "../lib/orgChart";
-import { sitePageMeta, spliceMeta, trimTo } from "../lib/pageMeta";
+import { sitePageMeta, spliceMeta, trimTo, type ShareCardLookup } from "../lib/pageMeta";
 import { isShown } from "../../shared/roleListing";
 import { RESERVED_ROLE_SLUGS, roleForSlug, rolePath } from "../../shared/roleSlug";
 import { goalOf } from "../../shared/roleOneMinute";
@@ -34,6 +34,8 @@ export interface RoleShareDeps {
   /** Sends the finished page the way every page is sent (its language, its cache rule). */
   send(req: Request, res: Response, html: string): void;
   pool(): Pool;
+  /** The village's share card, used when the role has no art of its own (server/lib/shareCard.ts). */
+  shareCard?: ShareCardLookup;
 }
 
 export interface ShareableRole {
@@ -47,15 +49,20 @@ export interface ShareableRole {
 const absolute = (src: string, origin: string): string => (/^https?:\/\//i.test(src) ? src : origin && src.startsWith("/") ? origin + src : "");
 
 /** The preview for one role: its name at the village, its purpose or goal, its art or the village's picture. */
-export function roleShareMeta(role: ShareableRole, roles: readonly ShareableRole[], origin: string, config: SiteConfig, content: Record<string, unknown> | null) {
+export function roleShareMeta(role: ShareableRole, roles: readonly ShareableRole[], origin: string, config: SiteConfig, content: Record<string, unknown> | null, shareCard?: ShareCardLookup) {
   const path = rolePath(role, roles);
-  const meta = sitePageMeta(path, origin, config, content);
+  const meta = sitePageMeta(path, origin, config, content, false, shareCard);
   const village = config.project.name;
   const goal = goalOf(String(role.whyItMatters ?? "").split(/\r?\n/)).goal;
   meta.title = village ? `${role.name} at ${village}` : role.name;
   meta.description = trimTo(String(role.aim ?? "").trim() || goal || meta.description);
   const art = role.archetypes?.[0] ? absolute(castArt(role.archetypes[0]), origin) : "";
-  if (art) meta.image = art;
+  // The art's own size and type are not the share card's, so neither is claimed for it.
+  if (art) {
+    meta.image = art;
+    delete meta.imageSize;
+    delete meta.imageType;
+  }
   meta.type = "article";
   meta.url = origin ? origin + path : "";
   return meta;
@@ -70,7 +77,7 @@ export function register(app: Express, deps: RoleShareDeps): void {
     const roles = (await listOrgRoles(deps.pool())).filter((r) => !r.isExample && r.active !== false && isShown(r));
     const role = roleForSlug(slug, roles);
     if (!role) return next();
-    const meta = roleShareMeta(role, roles, deps.origin(req), deps.config(), deps.content());
+    const meta = roleShareMeta(role, roles, deps.origin(req), deps.config(), deps.content(), deps.shareCard);
     deps.send(req, res, spliceMeta(shell, meta));
   });
 }
