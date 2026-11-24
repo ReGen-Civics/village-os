@@ -37,13 +37,13 @@ export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer
                 {s.ids.map((id, i) => (
                   <span key={id}>
                     {i > 0 && ", "}
-                    <Link href={`/modules/${id}`} className="text-teal-deep underline">
+                    <Link href={`/modules/${id}`} className="text-notice underline underline-offset-2 hover:text-foreground">
                       {byId.get(id)?.name ?? id}
                     </Link>
                   </span>
                 ))}
               </p>
-              {seesState && remaining.length === 0 && <p className="text-sm text-emerald-700"><Trans context="StarterSets, p">All on here.</Trans></p>}
+              {seesState && remaining.length === 0 && <p className="text-sm text-open"><Trans context="StarterSets, p">All on here.</Trans></p>}
               {remaining.length > 0 && (
                 <div className="mt-auto space-y-2">
                   <TurnOnAction ids={s.ids} all={all} viewer={viewer} label={t({ message: "the set", context: "StarterSets, label" })} />
