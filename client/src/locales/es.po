@@ -10983,6 +10983,12 @@ msgstr ""
 msgid "Planning for next season instead? Propose my roles lets you change any words (your changes show in gold) and tie your season goals to the village's."
 msgstr "¿Planeas la próxima temporada? Proponer mis roles te deja cambiar cualquier palabra (tus cambios se ven en dorado) y unir tus metas de temporada a las de la aldea."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/ProsperityJourney.tsx
+msgctxt "prosperity path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Shape it into a quest. Once it says what it delivers and what it asks, it goes on the ballot."
 msgstr ""
@@ -12174,12 +12180,6 @@ msgstr ""
 msgctxt "approval inbox"
 msgid "Approve {count} selected"
 msgstr ""
-
-# needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/ProsperityJourney.tsx
-msgctxt "prosperity path ticked off"
-msgid "{walkedCount} of {stepCount} steps completed"
-msgstr "{walkedCount} de {stepCount} pasos completados"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team view: a list of roles"
