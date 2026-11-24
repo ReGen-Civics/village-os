@@ -294,6 +294,7 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
+import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerPayRoutes } from "./routes/pay";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
@@ -17924,6 +17925,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerRewardMomentRoutes(app, { authedUser, getPool, overLimit });
   registerSeasonSummaryRoutes(app, { authedUser, getPool, seasonState }); // idea 4: a member's season summed up (server/routes/seasonSummary.ts)
   registerRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, openRedemptionBallot: (id: string) => openRedemptionVote(id), overLimit, projectCurrency: () => mergedConfig().project.fiatCurrency, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") });
+  registerOrgRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, notifyAdmins, overLimit, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") }); // 0420: a venture redeems its credits (server/routes/orgRedemptions.ts)
   registerPayRoutes(app, { authedUser, getPool, members, overLimit, projectCurrency: () => String(mergedConfig().project.fiatCurrency ?? "") }); // the send and receive page's reads; sending stays on /api/wallet/send (server/routes/pay.ts)
   registerClosingPolicyRoutes(app, { isAdmin, adminActor, getPool, exitPolicy: exitPolicyRepo, ballot: { authedUser, capabilityCtx, notify, weightModeNow, buildElectorate, addActivity } });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardPay, EMPTY_SECTIONS, hasSections, newerEdit, payShapeLines, readPayCeiling, readPayShape, readSections, readVillagePayShape, sectionsFromDoc, SECTION_PROBLEMS, SECTION_WORDS, splitLine, villagePayFrom } from "./roleCardSections";
+import { cardPay, EMPTY_SECTIONS, hasSections, withoutGoneRelated, newerEdit, payShapeLines, readPayCeiling, readPayShape, readSections, readVillagePayShape, sectionsFromDoc, SECTION_PROBLEMS, SECTION_WORDS, splitLine, villagePayFrom } from "./roleCardSections";
 import { payShapeOf } from "./foundingApplication";
 
 const FULL = {
@@ -64,6 +64,55 @@ describe("readSections", () => {
     if (!bank.ok) expect(bank.field).toBe("sections.qualities");
     const many = readSections({ ...FULL, idealBackground: Array.from({ length: 9 }, (_, i) => `Line ${i}`) });
     expect(many.ok).toBe(false);
+  });
+});
+
+describe("the related roles a lead role will onboard (the lead, 24 Nov 2026)", () => {
+  const real = new Set(["perma", "dev", "finance", "kitchen", ...Array.from({ length: 13 }, (_, i) => `r${i}`)]);
+  const ctx = { roleId: "lead", isRole: (id: string) => real.has(id) };
+
+  it("keeps the ids in the order given, and stores nothing when the list is empty", () => {
+    const r = readSections({ ...FULL, relatedRoles: ["finance", "perma", " dev "] }, ctx);
+    expect(r.ok && r.value.relatedRoles).toEqual(["finance", "perma", "dev"]);
+    const none = readSections({ ...FULL, relatedRoles: [] }, ctx);
+    expect(none.ok && "relatedRoles" in none.value).toBe(false);
+    // A related list alone is not a founding section the full card draws.
+    const alone = readSections({ relatedRoles: ["perma"] }, ctx);
+    expect(alone.ok && hasSections(alone.value)).toBe(false);
+  });
+
+  it("refuses an id that is not a role, naming it", () => {
+    expect(readSections({ ...FULL, relatedRoles: ["perma", "ghost"] }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedUnknown("ghost"), field: "sections.relatedRoles" });
+    // Control: with no lookup (a stored document read back, the browser) the same id passes.
+    expect(readSections({ ...FULL, relatedRoles: ["perma", "ghost"] }).ok).toBe(true);
+  });
+
+  it("refuses the card's own role", () => {
+    expect(readSections({ ...FULL, relatedRoles: ["lead"] }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedSelf, field: "sections.relatedRoles" });
+  });
+
+  it("refuses the same role twice", () => {
+    expect(readSections({ ...FULL, relatedRoles: ["dev", "perma", "dev"] }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedDuplicate("dev"), field: "sections.relatedRoles" });
+  });
+
+  it("refuses more than 12, and takes exactly 12 (control)", () => {
+    const thirteen = Array.from({ length: 13 }, (_, i) => `r${i}`);
+    expect(readSections({ ...FULL, relatedRoles: thirteen }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedTooMany, field: "sections.relatedRoles" });
+    expect(readSections({ ...FULL, relatedRoles: thirteen.slice(0, 12) }, ctx).ok).toBe(true);
+  });
+
+  it("refuses a list that is not a list of ids", () => {
+    expect(readSections({ ...FULL, relatedRoles: "perma" }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedList, field: "sections.relatedRoles" });
+    expect(readSections({ ...FULL, relatedRoles: [3] }, ctx)).toEqual({ ok: false, problem: SECTION_PROBLEMS.relatedList, field: "sections.relatedRoles" });
+  });
+
+  it("drops a role removed since the list was written from the held sections, so an unrelated save still reads", () => {
+    const held = { ...EMPTY_SECTIONS, relatedRoles: ["perma", "gone"] };
+    expect(withoutGoneRelated(held, ctx.isRole).relatedRoles).toEqual(["perma"]);
+    expect("relatedRoles" in withoutGoneRelated({ ...EMPTY_SECTIONS, relatedRoles: ["gone"] }, ctx.isRole)).toBe(false);
+    expect(readSections({ ...withoutGoneRelated(held, ctx.isRole), qualities: ["Calm"] }, ctx).ok).toBe(true);
+    // Control: laid over the held list as it is, the save refuses on the removed role.
+    expect(readSections({ ...held, qualities: ["Calm"] }, ctx).ok).toBe(false);
   });
 });
 

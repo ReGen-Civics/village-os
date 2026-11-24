@@ -150,6 +150,14 @@ export const ROLE_PAY_GRANTS = [{ capability: "role.pay", roleIds: [TREASURY_ROL
  */
 export const POT_STEWARD_GRANTS = [{ capability: "pot.steward", roleIds: [TREASURY_ROLE_ID] }] as const;
 
+/*
+ * `redemption.confirm` is in the Treasury role of `server/seeds/roles-seed.json`,
+ * so a NEW village's Treasury confirms venture redemptions from its first boot
+ * (the lead, 23 Nov 2026). There is deliberately no boot grant for a running
+ * village (the lead, 24 Nov 2026): a village that already has its roles gives
+ * the key by its own decision when it starts redeeming.
+ */
+
 /** The two grants, as decisions 18 and 19 name them. */
 export const MOON_REVIEW_GRANTS = [
   { capability: APPROVE_ALONE_CAPABILITY, roleIds: APPROVE_ALONE_GROUPS },

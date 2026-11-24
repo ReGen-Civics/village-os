@@ -84,6 +84,12 @@ export const LEDGER_SOURCE_PAYS_A_CONTRIBUTION: Readonly<Record<string, boolean>
   exit_settlement: false,
   redemption_hold: false,
   redemption_burn: false,
+  // A venture redeeming its credits (0420, server/lib/orgRedemptions.ts). The credits move between
+  // the venture's account, a hold and the retiring sink, never into a member's hands, and the cash
+  // the venture is paid happens outside the platform: none of it is the village paying a person.
+  org_redemption_hold: false,
+  org_redemption_burn: false,
+  org_redemption_release: false,
   // Trading what you already hold, and stocking the treasury.
   exchange_swap: false,
   exchange_stock: false,

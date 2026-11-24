@@ -234,6 +234,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "A redemption was not confirmed, and the tokens it held are back in your wallet.",
     many: "{n} of your redemptions were not confirmed.",
   },
+  venture_redemption: {
+    blurb: "A venture asked to redeem credits, or the Treasury answered a venture's request.",
+    many: "{n} updates on venture redemptions.",
+  },
   moon_review: {
     blurb: "Your moon recap moved: returned, approved, or paid.",
     many: "{n} updates on moon recaps.",
