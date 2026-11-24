@@ -96,6 +96,6 @@ describe("a copy part the server no longer has", () => {
     window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
     mount(await missingPartError());
     expect(reload).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toBe("We just updated the site");
+    expect(screen.getByRole("alert").textContent).toBe("The site just grew");
   });
 });
