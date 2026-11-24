@@ -96,6 +96,7 @@ describe("a copy part the server no longer has", () => {
     window.sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
     mount(await missingPartError());
     expect(reload).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toBe("We just updated the site");
+    // The card's heading as #1531 rewrote it (the playful refresh screen); #1530's test still read the old words.
+    expect(screen.getByRole("alert").textContent).toBe("The site just grew");
   });
 });
