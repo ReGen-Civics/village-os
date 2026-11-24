@@ -86,6 +86,7 @@ const PAGES = [
   "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
+  "client/src/pages/Powers.tsx",
   "client/src/pages/Team.tsx",
   "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",
