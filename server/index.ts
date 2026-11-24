@@ -2911,7 +2911,6 @@ function mergedConfig() {
       prosperityHero: pick(brand.images.prosperityHero, i.prosperityHero),
       masterPlanHero: pick(brand.images.masterPlanHero, i.masterPlanHero),
       logo: pick((brand.images as any).logo, i.logo),
-      logoLight: pick((brand.images as any).logoLight, i.logoLight ?? ""), // the light band's header logo (shared/gameConfig.ts)
       heartLogo: pick((brand.images as any).heartLogo, i.heartLogo),
       favicon: pick((brand.images as any).favicon, i.favicon),
       /*
@@ -25662,7 +25661,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
   });
 
-  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
+  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), logo: () => String(mergedConfig().images?.logo ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
 
   /*
    * ROBOTS AND SITEMAP, as real files.

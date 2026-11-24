@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import { beforeEach, describe, expect, it } from "vitest";
-import ThemeSwitch from "./ThemeSwitch";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import ThemeSwitch, { logoMaskUrl, useLogoMask } from "./ThemeSwitch";
 import { MODE_KEY } from "@/lib/colourMode";
 
 i18n.loadAndActivate({ locale: "en", messages: {} });
@@ -42,5 +42,34 @@ describe("ThemeSwitch", () => {
     fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
     expect(document.documentElement.dataset.mode).toBe("light");
     expect(localStorage.getItem(MODE_KEY)).toBe("light");
+  });
+});
+
+describe("the logo's mask", () => {
+  it("is a same-origin PNG whose address moves with the logo's", () => {
+    const a = logoMaskUrl("https://example.test/mark.svg");
+    expect(a).toMatch(/^\/api\/brand\/logo-mark\.png\?v=[0-9a-z]+$/);
+    expect(logoMaskUrl("https://example.test/mark-2.svg")).not.toBe(a);
+    expect(logoMaskUrl("https://example.test/mark.svg")).toBe(a);
+  });
+
+  function Probe({ src }: { src: string }) {
+    const p = useLogoMask(src);
+    return <span data-testid="probe" data-mask={p["data-mask"]} style={p.style} />;
+  }
+
+  it("repaints nothing until the mask has loaded, and nothing at all while no mode is set", async () => {
+    const made: { onload: null | (() => void); src: string }[] = [];
+    vi.stubGlobal("Image", class { onload: null | (() => void) = null; src = ""; constructor() { made.push(this); } });
+    render(<Probe src="https://example.test/mark.svg" />);
+    expect(made).toHaveLength(0);
+    document.documentElement.dataset.mode = "light";
+    const { getAllByTestId } = render(<Probe src="https://example.test/mark.svg" />);
+    expect(made).toHaveLength(1);
+    expect(getAllByTestId("probe")[1].hasAttribute("data-mask")).toBe(false);
+    act(() => made[0].onload?.());
+    expect(getAllByTestId("probe")[1].hasAttribute("data-mask")).toBe(true);
+    expect(getAllByTestId("probe")[1].style.getPropertyValue("--logo-src")).toContain("/api/brand/logo-mark.png?v=");
+    vi.unstubAllGlobals();
   });
 });

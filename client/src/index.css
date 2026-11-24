@@ -2478,12 +2478,28 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 
-/* The header logo: with a light-band mark set (images.logoLight), light mode
-   shows it and every other look shows the usual one (Layout.tsx). */
-[data-logo="light"],
-:root[data-mode="light"] [data-logo="night"] {
-  display: none;
+/*
+ * THE LOGO, REPAINTED FOR THE LIGHT BAND (the lead, 24 Nov 2026: "do it
+ * automatically"). A logo drawn for a dark band (Amora's is gold line work)
+ * fades on the light one, so in light mode the mark is redrawn in the band's
+ * ink: the logo's own shape is the mask, the ink fills it, and the picture
+ * underneath keeps its box and its alt text but is not painted. Any village's
+ * logo, no asset of its own needed. The ink is --day-logo, then the page
+ * titles' colour, which clears the 3:1 a graphic needs on the band.
+ */
+.village-logo {
+  position: relative;
+  display: inline-flex;
 }
-:root[data-mode="light"] [data-logo="light"] {
-  display: inline;
+:root[data-mode="light"] .village-logo[data-mask] > img {
+  opacity: 0;
+}
+:root[data-mode="light"] .village-logo[data-mask]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--day-logo, var(--day-heading, #0e5b60));
+  -webkit-mask: var(--logo-src) center / contain no-repeat;
+  mask: var(--logo-src) center / contain no-repeat;
+  pointer-events: none;
 }

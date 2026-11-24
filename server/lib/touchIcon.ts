@@ -43,6 +43,22 @@ export async function renderTouchIcon(source: Buffer, background: string): Promi
   return sharp(composed).flatten({ background: ground }).png().toBuffer();
 }
 
+/** The logo mark's height: twice the header's 64px, so a phone's 2x screen draws it sharp. */
+export const LOGO_MARK_PX = 128;
+
+/**
+ * The village's header logo as a transparent PNG, for light mode to use as a
+ * mask (client/src/index.css, `.village-logo`): only its alpha matters there,
+ * so a logo on any host becomes a same-origin shape the page can fill with ink.
+ */
+export async function renderLogoMark(source: Buffer): Promise<Buffer> {
+  return sharp(source, { density: 384 })
+    .resize({ height: LOGO_MARK_PX, fit: "inside", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .ensureAlpha()
+    .png()
+    .toBuffer();
+}
+
 /** Biggest source the route will read: a favicon is kilobytes; this refuses a mistake, not a village. */
 export const TOUCH_ICON_MAX_SOURCE_BYTES = 2 * 1024 * 1024;
 

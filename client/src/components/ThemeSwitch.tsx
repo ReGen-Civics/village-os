@@ -11,7 +11,7 @@
  * Hidden until MODES_LIVE, unless this browser already holds a choice: that is
  * how a tester previews the modes before they are on for everybody.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import { DaySun, NightMoon } from "@/components/sacred/glyphs";
@@ -61,4 +61,35 @@ export function ModeAndLanguage({ villageDefault }: { villageDefault: string | n
       <LanguagePicker villageDefault={villageDefault} />
     </>
   );
+}
+
+/**
+ * The header logo's mask, for light mode's repaint (index.css, `.village-logo`).
+ *
+ * The mask is /api/brand/logo-mark.png, the logo redrawn on this site's own
+ * origin: a logo on another host cannot be a CSS mask without CORS. It is
+ * asked for only while a mode is set, and the logo is repainted only once the
+ * mask has LOADED, so a mask that fails leaves the logo drawn as it is rather
+ * than invisible. The address carries a short hash of the logo's, so a new
+ * logo is a new mask past any cache.
+ */
+export function logoMaskUrl(src: string): string {
+  let h = 5381;
+  for (let i = 0; i < src.length; i++) h = ((h << 5) + h + src.charCodeAt(i)) | 0;
+  return `/api/brand/logo-mark.png?v=${(h >>> 0).toString(36)}`;
+}
+
+export function useLogoMask(src: string | undefined): { "data-mask"?: ""; style?: Record<string, string> } {
+  const [ready, setReady] = useState<string | null>(null);
+  useEffect(() => {
+    if (!src || !document.documentElement.dataset.mode) return;
+    const url = logoMaskUrl(src);
+    const img = new Image();
+    img.onload = () => setReady(url);
+    img.src = url;
+    return () => {
+      img.onload = null;
+    };
+  }, [src]);
+  return ready ? { "data-mask": "", style: { "--logo-src": `url("${ready}")` } } : {};
 }

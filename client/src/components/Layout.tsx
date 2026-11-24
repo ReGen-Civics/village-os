@@ -3,7 +3,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ModeAndLanguage } from "@/components/ThemeSwitch";
+import { ModeAndLanguage, useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import NotificationBell from "@/components/NotificationBell";
@@ -15,8 +15,8 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-const MobileFab = lazy(() => import("./mobile/MobileFab"));
-const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx) // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
@@ -46,6 +46,7 @@ export default function Layout({ children }: LayoutProps) {
   // the logo boxes reserve their height (64px header / 90px footer) so the
   // page never shifts on first paint, and outside links simply don't render.
   const cfg = useGameConfig();
+  const logoMask = useLogoMask(cfg?.images?.logo);
   // The footer's sign-off is the village's own words (Admin, Pages, Whole site),
   // served inside the config. Unknown until the config answers.
   const signoff = cfg ? (cfg.site?.footerSignoff ?? SITE_FOOTER_SIGNOFF) : undefined;
@@ -240,10 +241,10 @@ export default function Layout({ children }: LayoutProps) {
             style={{ minHeight: "64px" }}
           >
             {cfg?.images?.logo ? (
-              /* Light mode's band is pale, so a village can give it its own mark (images.logoLight); index.css shows one of the two. */
-              [cfg.images.logo, cfg.images.logoLight].filter(Boolean).map((src, i) => (
-                <img key={i} src={src} alt={altOr(cfg.images.logoAlt, villageName || "Village logo")} style={{ height: "64px", width: "auto" }} draggable={false} data-logo={i ? "light" : cfg.images.logoLight ? "night" : undefined} />
-              ))
+              /* `.village-logo`: in light mode index.css repaints the mark in the band's ink, through its own shape as a mask (useLogoMask). */
+              <span className="village-logo" {...logoMask}>
+                <img src={cfg.images.logo} alt={altOr(cfg.images.logoAlt, villageName || "Village logo")} style={{ height: "64px", width: "auto" }} draggable={false} />
+              </span>
             ) : villageName ? (
               /* A flex item of the link above, which is already `items-center`
                  inside a 64px box, so the wordmark sits on the same baseline

@@ -7260,7 +7260,6 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
           {imageField("prosperityHero", "Prosperity hero")}
           {imageField("masterPlanHero", "Master plan hero")}
           {imageField("logo", "Header logo (~64px tall, transparent)")}
-          {imageField("logoLight", "Header logo in light mode (for a pale ground)", "It is the same mark as the header logo, so it uses that logo's description.")}
           {imageField("heartLogo", "Footer mark (~90px tall, transparent)")}
           {imageField(
             "favicon",
