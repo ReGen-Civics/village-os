@@ -282,6 +282,14 @@ describe("moduleCatalog", () => {
      *                           the payment spine's `usd`. A village that pays
      *                           in its own money as well lists it second, and
      *                           the daily rate converts it.
+     *
+     * Judged on 2026-11-24, by the coordinator (the nationality row):
+     *
+     *   org.role_card_nationality
+     *                           matched on "country" in its own example. It
+     *                           ships blank, which shows no row, and blank is
+     *                           right under any sky: the words are the
+     *                           village's own, typed once in Admin.
      */
     expect(hits).toEqual([
       "calendar.cross_quarters",
@@ -302,6 +310,7 @@ describe("moduleCatalog", () => {
       "ledger.org_redemption_rate",
       "library.dispute_deadline_days",
       "map.concierge_enabled",
+      "org.role_card_nationality",
       "payments.donation_max_usd",
       "payments.purchase_limit_30d_usd",
       "payments.purchase_limit_annual_usd",

@@ -28,7 +28,7 @@ import { SeedOfLife } from "@/components/journey/nature";
 import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent";
 import { buttonAction, percent, stepPoints, type TargetContext } from "@/lib/journeyPage";
 import { INVESTOR_FIGURE_IDS, INVESTOR_JOURNEY, JOURNEY_LEGACY_STEP_IDS } from "@shared/pageContent/journeys";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
@@ -156,6 +156,27 @@ export default function InvestorJourney() {
   const { eventsUrl, contactEmail, mailTo } = useVillageLinks();
   const targets: TargetContext = { eventsUrl, mailTo, subject: hero?.contactSubject ?? "", forms: [PACK_FORM, CALL_FORM] };
   const openForm = (form: string) => (form === PACK_FORM ? setShowPackForm(true) : setShowCallForm(true));
+  /*
+   * AN EMPTY PACK IS NOT OFFERED (the lead, 24 Nov 2026: "If nothing is in
+   * packet let the button be disabled"). The public summary says whether any
+   * document is in the pack; until one is, every "request the pack" button is
+   * drawn disabled with one line saying why, and the server refuses a request
+   * that arrives anyway. Unknown (still loading, an older server) leaves the
+   * button as it was: the server's refusal is the backstop.
+   */
+  const [packReady, setPackReady] = useState<boolean | null>(null);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/investor-summary")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (live && j && typeof j.packReady === "boolean") setPackReady(j.packReady); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
+  const packClosed = packReady === false;
+  const formDisabled = (form: string) => form === PACK_FORM && packClosed;
+  const opensPack = (b: { action: { kind: string; form?: string } } | null | undefined) => !!b && b.action.kind === "form" && b.action.form === PACK_FORM;
+  const packPreparing = t({ message: "The investor pack is being prepared.", context: "investor page: under a disabled request-the-pack button" });
   const heroPrimary = buttonAction(hero?.primaryLabel, hero?.primaryTarget, targets);
   const heroSecondary = buttonAction(hero?.secondaryLabel, hero?.secondaryTarget, targets);
   const closingPrimary = buttonAction(closing?.fields.primaryLabel, closing?.fields.primaryTarget, targets);
@@ -199,6 +220,13 @@ export default function InvestorJourney() {
         setShowPackForm(false);
         setPackFormData({ name: "", email: "", investmentRange: "", message: "", accredited: false });
         setPackConsent(false);
+        setTimeout(() => setFormSuccess(null), 6000);
+      } else if (response.status === 409) {
+        // The pack emptied while the form was open: the server's own sentence, and the buttons close.
+        const result = await response.json().catch(() => ({}));
+        setFormSuccess(String(result.message || packPreparing));
+        setShowPackForm(false);
+        setPackReady(false);
         setTimeout(() => setFormSuccess(null), 6000);
       } else {
         setFormSuccess(retryNote);
@@ -303,18 +331,21 @@ export default function InvestorJourney() {
                   it reaches the right village, and the request passes through
                   the accreditation step the journey already had. */}
               {heroPrimary && (
-                <JourneyLink action={heroPrimary.action} onForm={openForm} className={BTN_PRIMARY}>
+                <JourneyLink action={heroPrimary.action} onForm={openForm} formDisabled={formDisabled} className={BTN_PRIMARY}>
                   <FileText className="size-5" aria-hidden="true" />
                   {heroPrimary.label}
                 </JourneyLink>
               )}
               {heroSecondary && (
-                <JourneyLink action={heroSecondary.action} onForm={openForm} className={`${BTN_SECONDARY} bg-card`}>
+                <JourneyLink action={heroSecondary.action} onForm={openForm} formDisabled={formDisabled} className={`${BTN_SECONDARY} bg-card`}>
                   <Calendar className="size-5" aria-hidden="true" />
                   {heroSecondary.label}
                 </JourneyLink>
               )}
             </m.div>
+            {packClosed && (opensPack(heroPrimary) || opensPack(heroSecondary)) && (
+              <p className="relative mt-3 text-sm text-muted-foreground" data-pack-preparing="">{packPreparing}</p>
+            )}
             {notice ? (
               <p className="relative mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground break-words">{notice}</p>
             ) : null}
@@ -578,11 +609,12 @@ export default function InvestorJourney() {
                             </ul>
                           </div>
                           {action && (
-                            <JourneyLink action={action.action} onForm={openForm} className={`${BTN_PRIMARY} text-sm`}>
+                            <JourneyLink action={action.action} onForm={openForm} formDisabled={formDisabled} className={`${BTN_PRIMARY} text-sm`}>
                               {action.label}
                               {leavesSite(action.action) ? <ExternalLink className="size-4" aria-hidden="true" /> : <ArrowRight className="size-4" aria-hidden="true" />}
                             </JourneyLink>
                           )}
+                          {packClosed && opensPack(action) && <p className="mt-2 text-sm text-muted-foreground" data-pack-preparing="">{packPreparing}</p>}
                         </div>
                       </m.div>
                     )}
@@ -699,18 +731,21 @@ export default function InvestorJourney() {
             </p>
             <div className="flex flex-col justify-center gap-3 min-[420px]:flex-row min-[420px]:flex-wrap">
               {closingPrimary && (
-                <JourneyLink action={closingPrimary.action} onForm={openForm} className={BTN_PRIMARY}>
+                <JourneyLink action={closingPrimary.action} onForm={openForm} formDisabled={formDisabled} className={BTN_PRIMARY}>
                   {closingPrimary.label}
                   <ArrowRight className="size-5" aria-hidden="true" />
                 </JourneyLink>
               )}
               {closingSecondary && (
-                <JourneyLink action={closingSecondary.action} onForm={openForm} className={BTN_SECONDARY}>
+                <JourneyLink action={closingSecondary.action} onForm={openForm} formDisabled={formDisabled} className={BTN_SECONDARY}>
                   {closingSecondary.label}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </JourneyLink>
               )}
             </div>
+            {packClosed && (opensPack(closingPrimary) || opensPack(closingSecondary)) && (
+              <p className="mt-3 text-sm text-muted-foreground" data-pack-preparing="">{packPreparing}</p>
+            )}
           </div>
         </div>
       </section>
