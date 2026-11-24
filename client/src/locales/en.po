@@ -391,6 +391,11 @@ msgctxt "companion welcome"
 msgid "Enneagram"
 msgstr "Enneagram"
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page title"
+msgid "Pay and receive"
+msgstr "Pay and receive"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
 msgid "If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."
@@ -440,6 +445,11 @@ msgstr "That did not save."
 msgctxt "proposed changes: filter"
 msgid "Waiting and decided"
 msgstr "Waiting and decided"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, an amount converted into the reader's currency"
+msgid "about {aboutText}"
+msgstr "about {aboutText}"
 
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: the lead card for a visitor"
@@ -1237,6 +1247,11 @@ msgstr "underway"
 msgctxt "friday harvest, the line under the read back"
 msgid "Nothing is marked as failed. What did not grow goes back to Monday's soil."
 msgstr "Nothing is marked as failed. What did not grow goes back to Monday's soil."
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Check before you send"
+msgstr "Check before you send"
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: draft heading"
@@ -2070,6 +2085,11 @@ msgctxt "founding team view: the team drawn in rings"
 msgid "Formation"
 msgstr "Formation"
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Which credits"
+msgstr "Which credits"
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Offer your gifts"
@@ -2167,6 +2187,11 @@ msgstr "Finish practice"
 msgctxt "roles page, no open venture"
 msgid "No venture is open yet. When the village opens one, it shows here."
 msgstr "No venture is open yet. When the village opens one, it shows here."
+
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Open link"
+msgstr "Open link"
 
 #: client/src/components/roleCard/lineupParts.tsx
 msgctxt "founding team: the domains a role holds"
@@ -2440,6 +2465,11 @@ msgstr "{0} painted animals and plants of Costa Rica. Every role card, upcoming 
 msgctxt "the reason for a suggestion"
 msgid "Why"
 msgstr "Why"
+
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Pay someone for a jar of honey, a haircut, an afternoon of help. You hold {heldText} {tokenName}."
+msgstr "Pay someone for a jar of honey, a haircut, an afternoon of help. You hold {heldText} {tokenName}."
 
 #: client/src/components/myMoon/accomplishedPayWords.ts
 msgctxt "how pay works"
@@ -3161,6 +3191,11 @@ msgstr "Split helper"
 #~ msgid "Physical work on site"
 #~ msgstr "Physical work on site"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Who are you paying?"
+msgstr "Who are you paying?"
+
 #. placeholder {0}: choiceWords(r.theirs.choice)
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
@@ -3634,6 +3669,11 @@ msgctxt "heading in the Say frame of the conflict block"
 msgid "The restorative steps"
 msgstr "The restorative steps"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, who a payment goes to"
+msgid "Venture"
+msgstr "Venture"
+
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
 msgid "Join the waitlist"
@@ -4059,6 +4099,11 @@ msgctxt "admin compare, how a proposal came in"
 msgid "Early application, the role was coming soon"
 msgstr "Early application, the role was coming soon"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "No amount yet"
+msgstr "No amount yet"
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "No steward is sitting now, so there is nobody to name."
 msgstr "No steward is sitting now, so there is nobody to name."
@@ -4136,6 +4181,11 @@ msgstr "Not open right now"
 msgctxt "admin confidentiality section"
 msgid "Document title"
 msgstr "Document title"
+
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Close"
+msgstr "Close"
 
 #: client/src/components/form/LimitSigns.tsx
 msgctxt "limit notice, read aloud"
@@ -4483,6 +4533,11 @@ msgstr "No open quests grow this yet. Suggest one you feel this village is missi
 #~ msgctxt "open proposal side by side"
 #~ msgid "First task: {quest}"
 #~ msgstr "First task: {quest}"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Anyone here who opens it pays you straight into your credits."
+msgstr "Anyone here who opens it pays you straight into your credits."
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
@@ -4935,6 +4990,11 @@ msgstr "You'll take the suggested compensation."
 msgctxt "funding rounds"
 msgid "Save"
 msgstr "Save"
+
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Scan their code"
+msgstr "Scan their code"
 
 #. placeholder {0}: i18n._(PRECISION_WORDS[pin.precision])
 #: client/src/components/hiddenMap/PinPanel.tsx
@@ -5393,6 +5453,11 @@ msgctxt "founding application refusal"
 msgid "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection."
 msgstr "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection."
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, who a payment goes to"
+msgid "Member"
+msgstr "Member"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Open it on its own page"
 msgstr "Open it on its own page"
@@ -5757,6 +5822,11 @@ msgstr "Up to {FILES_MAX} files, such as a CV, each up to {fileMb} MB, and up to
 msgctxt "proposed changes: confirm a batch"
 msgid "{n, plural, one {Accept this change? It goes live now, as you.} other {Accept all # changes? Each goes live now, one by one, as you.}}"
 msgstr "{n, plural, one {Accept this change? It goes live now, as you.} other {Accept all # changes? Each goes live now, one by one, as you.}}"
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Credits"
+msgstr "Credits"
 
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
@@ -6845,6 +6915,11 @@ msgctxt "founding application refusal"
 msgid "You added the same reference twice."
 msgstr "You added the same reference twice."
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "A code that opens a payment to @{handle}"
+msgstr "A code that opens a payment to @{handle}"
+
 #. placeholder {0}: r.name
 #. placeholder {1}: r.ceiling.per
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -6946,6 +7021,11 @@ msgstr "Save the notice words"
 #~ msgctxt "open proposal review"
 #~ msgid "1 reference"
 #~ msgstr "1 reference"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "What it is for"
+msgstr "What it is for"
 
 #: client/src/components/roleEdit/EditRoleButton.tsx
 msgctxt "role lists, opens the new role from a card dialog"
@@ -7837,6 +7917,11 @@ msgctxt "site header"
 msgid "Close menu"
 msgstr "Close menu"
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Receive"
+msgstr "Receive"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you heading"
 msgid "About you, references and background check"
@@ -7948,6 +8033,11 @@ msgstr "{n} recordings, sent with your application"
 msgctxt "task handed to a role"
 msgid "It waits for the role's holder to accept it. You'll see where it stands under Sent."
 msgstr "It waits for the role's holder to accept it. You'll see where it stands under Sent."
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "The search did not answer. Try again in a moment."
+msgstr "The search did not answer. Try again in a moment."
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Nobody holds the {intakeRoleLabel} today, so a private intake would reach nobody."
@@ -8603,6 +8693,11 @@ msgctxt "connector setup panel, the switch"
 msgid "Our agent may make the changes we approve in the chat"
 msgstr "Our agent may make the changes we approve in the chat"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Left after this"
+msgstr "Left after this"
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
@@ -8968,6 +9063,11 @@ msgctxt "rites"
 msgid "Anyone holding the link reads this line. Keep private places and plans out of it."
 msgstr "Anyone holding the link reads this line. Keep private places and plans out of it."
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Amount"
+msgstr "Amount"
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that proposes a change to what closing means"
 msgid "Propose a change"
@@ -9039,6 +9139,11 @@ msgstr "Running"
 #: client/src/pages/ExitPolicy.tsx
 msgid "These are the platform's starting terms. The community has not yet written its own. Treat them as a draft to be decided together, not a contract."
 msgstr "These are the platform's starting terms. The community has not yet written its own. Treat them as a draft to be decided together, not a contract."
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Send {amountText} {tokenName} to {name}"
+msgstr "Send {amountText} {tokenName} to {name}"
 
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription refusal"
@@ -10630,6 +10735,11 @@ msgctxt "application backup file"
 msgid "Your story"
 msgstr "Your story"
 
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Pay someone"
+msgstr "Pay someone"
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "who last wrote a matrix row, when the name is missing"
 msgid "a founder"
@@ -10727,6 +10837,11 @@ msgstr "Adopting now records the terms as they stand."
 msgctxt "role editor"
 msgid "A required role is hidden from members who say they can give less. Nothing that pays reads this."
 msgstr "A required role is hidden from members who say they can give less. Nothing that pays reads this."
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Pay someone here for a jar of honey, a haircut, an afternoon of help."
+msgstr "Pay someone here for a jar of honey, a haircut, an afternoon of help."
 
 #. placeholder {0}: next.title
 #: client/src/components/today/FirstFourteenDays.tsx
@@ -10859,6 +10974,11 @@ msgstr "Started by {starter}, {started}"
 msgctxt "admin sounds: make a moment silent again"
 msgid "Silence"
 msgstr "Silence"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad"
+msgid "That is more than you hold. You hold {heldText} {tokenName}."
+msgstr "That is more than you hold. You hold {heldText} {tokenName}."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing counts as removed because of a check that failed. A role leaves the list only when {agent} archives it, or when it is missing from two full checks in a row."
@@ -11068,6 +11188,11 @@ msgstr "Three to five is the usual."
 msgid "Each link has to be a full web address starting with https://."
 msgstr "Each link has to be a full web address starting with https://."
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That link did not open. Ask them to share it again."
+msgstr "That link did not open. Ask them to share it again."
+
 #: client/src/components/sessions/GatheringSeed.tsx
 msgctxt "coming up, i'll be there, the names of who said so"
 msgid "{named, plural, one {{names} said they will be there.} other {{names} said they will be there.}}"
@@ -11249,6 +11374,11 @@ msgctxt "companion welcome"
 msgid ". I speak through <0>{engineName}</0>, the guide you chose (change it on your guide card)."
 msgstr ". I speak through <0>{engineName}</0>, the guide you chose (change it on your guide card)."
 
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, opening a link"
+msgid "That is not a request link. Ask them to share it again."
+msgstr "That is not a request link. Ask them to share it again."
+
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "The map"
@@ -11322,6 +11452,11 @@ msgstr "A new role later brings a new friend"
 msgctxt "who answered a note"
 msgid "{by} answered"
 msgstr "{by} answered"
+
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, scanning a code"
+msgid "Point your phone's camera at their code. It opens this page with their name filled in."
+msgstr "Point your phone's camera at their code. It opens this page with their name filled in."
 
 #. placeholder {0}: priced(r.atCommitment, r.full.currency, r.full.per)
 #. placeholder {1}: money(r.full.amount, r.full.currency)
@@ -11612,6 +11747,11 @@ msgctxt "admin helper panel"
 msgid "Your helper is switched off"
 msgstr "Your helper is switched off"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, note field example"
+msgid "Two jars of honey"
+msgstr "Two jars of honey"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft step"
 #~ msgid "Your Ikigai (look it up) and your characters"
@@ -11743,6 +11883,11 @@ msgstr "Choose at least one thing the partnership serves."
 msgctxt "pay board"
 msgid "Reading the month's pay."
 msgstr "Reading the month's pay."
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That payment did not go through."
+msgstr "That payment did not go through."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 #: client/src/components/roleEdit/SectionsFields.tsx
@@ -12182,6 +12327,11 @@ msgctxt "admin protocols editor"
 msgid "Remove"
 msgstr "Remove"
 
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, scanning a code"
+msgid "The camera did not open. Paste their link below."
+msgstr "The camera did not open. Paste their link below."
+
 #: client/src/pages/Partner.tsx
 msgctxt "partner form: a field to fix"
 msgid "Add your name."
@@ -12391,6 +12541,11 @@ msgctxt "save bar, which item failed"
 msgid "Role {name}"
 msgstr "Role {name}"
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Copy"
+msgstr "Copy"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms settings no role has written, in one line"
 msgid "We'll set these together: {togetherNames}."
@@ -12478,10 +12633,20 @@ msgctxt "admin helper, sends the question"
 msgid "Send"
 msgstr "Send"
 
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, example request link in the paste field"
+msgid "https://…/pay?to=@name"
+msgstr "https://…/pay?to=@name"
+
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "a switch setting"
 msgid "Off"
 msgstr "Off"
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Pay or receive"
+msgstr "Pay or receive"
 
 #: client/src/components/priorities/RoomPriorities.tsx
 msgid "Nobody here has a top priority to read back yet."
@@ -12975,6 +13140,11 @@ msgstr "Where you met, what you planted"
 msgctxt "founding application check, a box over its limit"
 msgid "Value {n}: how we'll know it is done"
 msgstr "Value {n}: how we'll know it is done"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Share link"
+msgstr "Share link"
 
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
@@ -13734,6 +13904,11 @@ msgstr "{differs} of your numbers differ between sources. The Treasurer has been
 msgid "Built. Save the files to this device:"
 msgstr "Built. Save the files to this device:"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search results heading"
+msgid "Members"
+msgstr "Members"
+
 #: client/src/components/admin/ArtLibraryTab.tsx
 msgctxt "admin art library: the roles section"
 msgid "Each role's painting"
@@ -14440,6 +14615,11 @@ msgstr "Your split: {0}"
 msgid "The rest of the map is secret."
 msgstr "The rest of the map is secret."
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Your credits did not load. Try again in a moment."
+msgstr "Your credits did not load. Try again in a moment."
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "No paths are open to agents yet."
@@ -14484,6 +14664,11 @@ msgstr "That sound did not save."
 msgctxt "open proposal card"
 msgid "Your time zone"
 msgstr "Your time zone"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button: choose somebody else"
+msgid "Change"
+msgstr "Change"
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "economics view heading"
@@ -14798,6 +14983,11 @@ msgctxt "admin compare saved split"
 msgid "Adopted"
 msgstr "Adopted"
 
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, opening a link"
+msgid "Or paste their link"
+msgstr "Or paste their link"
+
 #: client/src/pages/Characters.tsx
 msgctxt "characters page"
 msgid "Your roots did not load, so nothing here is the whole story."
@@ -15032,6 +15222,11 @@ msgctxt "admin ops report email option"
 msgid "Ops report email: daily"
 msgstr "Ops report email: daily"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "What it is for"
+msgstr "What it is for"
+
 #: client/src/components/roleCard/PieceSuggestionsReview.tsx
 msgctxt "open proposal: suggestions lede"
 msgid "Their own words, beside each piece of the role card they are about. Nothing here is scored or summarised."
@@ -15128,6 +15323,11 @@ msgstr "First up"
 msgctxt "open work filter row"
 msgid "Where it happens"
 msgstr "Where it happens"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad key"
+msgid "Delete the last digit"
+msgstr "Delete the last digit"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -15291,6 +15491,11 @@ msgstr "The village consented. Nobody named a reason to stop it."
 msgctxt "the conflict agreement's screens"
 msgid "Frames"
 msgstr "Frames"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad"
+msgid "You hold {heldText} {tokenName}."
+msgstr "You hold {heldText} {tokenName}."
 
 #: client/src/pages/StructureReview.tsx
 msgid "Update our role with this"
@@ -15628,6 +15833,11 @@ msgstr "Say your age band once. The village keeps the band, never your birth dat
 msgctxt "hidden map, logging a place"
 msgid "Save it"
 msgstr "Save it"
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Sign in to pay and receive credits."
+msgstr "Sign in to pay and receive credits."
 
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Off. Agents reach only the paths listed below and the changes approved one by one."
@@ -16260,6 +16470,11 @@ msgctxt "admin compare"
 msgid "Quests with no circle"
 msgstr "Quests with no circle"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button while sending"
+msgid "Sending"
+msgstr "Sending"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
@@ -16353,6 +16568,11 @@ msgstr "Witness: {0}"
 msgctxt "label of the closing statement box"
 msgid "The village's words"
 msgstr "The village's words"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Copying was blocked. Select the link above and copy it."
+msgstr "Copying was blocked. Select the link above and copy it."
 
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription refusal"
@@ -16980,6 +17200,11 @@ msgstr "Last try did not land: {0}"
 #~ msgctxt "full role card chip"
 #~ msgid "Paid role"
 #~ msgstr "Paid role"
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Loading your credits"
+msgstr "Loading your credits"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "The block it speaks to"
@@ -17683,6 +17908,11 @@ msgctxt "role editor"
 msgid "Where it is worked"
 msgstr "Where it is worked"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Scan a code or open a link"
+msgstr "Scan a code or open a link"
+
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
 msgid "How to switch it off"
@@ -17778,6 +18008,11 @@ msgstr "Close"
 #: client/src/pages/Governance.tsx
 msgid "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
 msgstr "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Your code"
+msgstr "Your code"
 
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
@@ -18267,6 +18502,11 @@ msgstr "Run the test"
 msgid "Apply for the roles you selected"
 msgstr "Apply for the roles you selected"
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Copy link"
+msgstr "Copy link"
+
 #: client/src/components/myMoon/accomplishedPayWords.ts
 msgctxt "how pay works"
 msgid "At each moon's end we look at two things together: your progress on your own goals, and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down."
@@ -18488,6 +18728,11 @@ msgctxt "open work filter: quests that ask most of a person"
 msgid "Heavy, over 60%"
 msgstr "Heavy, over 60%"
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page tab"
+msgid "Pay"
+msgstr "Pay"
+
 #: client/src/pages/ApplicationStatus.tsx
 msgid "What would you like to talk about?"
 msgstr "What would you like to talk about?"
@@ -18530,6 +18775,11 @@ msgstr "Claimed, ready to send"
 msgctxt "thanks composer: close after sending"
 msgid "Back to the wall"
 msgstr "Back to the wall"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search"
+msgid "Nobody by that name or handle. Ask for their link or code."
+msgstr "Nobody by that name or handle. Ask for their link or code."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "No changes yet. Open any setting with a Suggest button, such as those in <0>Game Mechanics</0>, and add it here."
@@ -18757,6 +19007,11 @@ msgctxt "proposed changes"
 msgid "This files a new proposal with what was live before. Nothing changes until someone accepts it."
 msgstr "This files a new proposal with what was live before. Nothing changes until someone accepts it."
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "This village has not opened sending credits between people yet."
+msgstr "This village has not opened sending credits between people yet."
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
 msgid "It holds no live access token, so it reaches nothing through the village's connector today."
@@ -18834,6 +19089,11 @@ msgstr "Canvas moon, {0}"
 msgctxt "Decision Matrix column"
 msgid "Who approves it"
 msgstr "Who approves it"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "What it is for"
+msgstr "What it is for"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -19320,6 +19580,11 @@ msgstr "You see the quest part of Compare: quest ideas only, since you approve q
 msgid "Not written yet. What you see is drawn from the exit policy's restorative path."
 msgstr "Not written yet. What you see is drawn from the exit policy's restorative path."
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "You hold now"
+msgstr "You hold now"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "Not written. We'll set this together."
 msgstr "Not written. We'll set this together."
@@ -19405,6 +19670,11 @@ msgstr "Your value"
 msgctxt "companion welcome"
 msgid "Birth date"
 msgstr "Birth date"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Pay me in credits"
+msgstr "Pay me in credits"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "label of a suggested edit's reason"
@@ -19497,6 +19767,16 @@ msgstr "Total: {totalWords} at {pct}%"
 #~ msgctxt "your path, the whole path page"
 #~ msgid "These wait behind the step above. Take them in any order once it is done."
 #~ msgstr "These wait behind the step above. Take them in any order once it is done."
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Sent"
+msgstr "Sent"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Paid lately"
+msgstr "Paid lately"
 
 #: client/src/components/guide/GuideChoiceCard.tsx
 msgctxt "profile: the member's guide choice card"
@@ -19705,6 +19985,11 @@ msgstr "{count, plural, one {# change not saved yet} other {# changes not saved 
 msgctxt "guide question field"
 msgid "Your question"
 msgstr "Your question"
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive, the amount asked"
+msgid "Asking for {amount} {tokenName}"
+msgstr "Asking for {amount} {tokenName}"
 
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -19918,6 +20203,11 @@ msgstr "Changes"
 msgid "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
 msgstr "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
 
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Send and receive credits"
+msgstr "Send and receive credits"
+
 #: client/src/components/QuestSafety.tsx
 msgctxt "quest safety, age band"
 msgid "That did not save. Try again."
@@ -19927,6 +20217,11 @@ msgstr "That did not save. Try again."
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Terms we offer"
 msgstr "Terms we offer"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Amount pad"
+msgstr "Amount pad"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Move to its own change request"
@@ -20080,6 +20375,11 @@ msgstr "Latitude and longitude grid"
 msgid "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
 msgstr "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Amount"
+msgstr "Amount"
+
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "Choose a file"
@@ -20130,6 +20430,11 @@ msgstr "As much as, for {0}"
 msgctxt "admin look: the label font field"
 msgid "Label face, as a font stack"
 msgstr "Label face, as a font stack"
+
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Your code"
+msgstr "Your code"
 
 #: client/src/components/roots/RootTags.tsx
 msgctxt "roots on a role or quest, the list's name"
@@ -20258,6 +20563,11 @@ msgctxt "add a suggestion to a change request"
 msgid "Add to {targetTitle}"
 msgstr "Add to {targetTitle}"
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page, link"
+msgid "Sign in"
+msgstr "Sign in"
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: after signing up"
 msgid "Thank you. Your details are saved. We will write when the role opens."
@@ -20337,10 +20647,20 @@ msgctxt "limit notice under a box"
 msgid "Nearly full: {0} characters left."
 msgstr "Nearly full: {0} characters left."
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page tab"
+msgid "Receive"
+msgstr "Receive"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Small changes"
 msgstr "Small changes"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad key"
+msgid "Decimal point"
+msgstr "Decimal point"
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: closes the panel"
@@ -20826,6 +21146,11 @@ msgctxt "founding application next"
 msgid "For {roleName}, if we invite you to the conversations:"
 msgstr "For {roleName}, if we invite you to the conversations:"
 
+#: client/src/pages/Pay.tsx
+msgctxt "pay page, balance line"
+msgid "You hold"
+msgstr "You hold"
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "A rupture is not an exit. The restorative path comes first, and its content reaches only the people in the room:"
 msgstr "A rupture is not an exit. The restorative path comes first, and its content reaches only the people in the room:"
@@ -21006,6 +21331,11 @@ msgstr "Sounds finished: {0}"
 msgctxt "roles page, roles after the founding team"
 msgid "We're filling the founding team first, so it may be a while before we reply. You're welcome to apply now, and we'll write to you as soon as we're ready to talk."
 msgstr "We're filling the founding team first, so it may be a while before we reply. You're welcome to apply now, and we'll write to you as soon as we're ready to talk."
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Back"
+msgstr "Back"
 
 #: client/src/components/priorities/MyWeekCard.tsx
 #: client/src/components/priorities/RoomPriorities.tsx
@@ -22210,6 +22540,11 @@ msgctxt "while you wait"
 msgid "Read the Love Letter slowly"
 msgstr "Read the Love Letter slowly"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Pay someone else"
+msgstr "Pay someone else"
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk loading"
 msgid "Opening the budget editor…"
@@ -23249,6 +23584,16 @@ msgctxt "rites"
 msgid "Ask to join"
 msgstr "Ask to join"
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Amount, if you like"
+msgstr "Amount, if you like"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "On the village ledger, {dateText}. Both of you can see it in your history."
+msgstr "On the village ledger, {dateText}. Both of you can see it in your history."
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Imported {count} protocols."
@@ -23268,6 +23613,11 @@ msgstr "this quest's circle"
 msgctxt "open work card: the quest's size beside the reader's own percent"
 msgid "Fits what you can give"
 msgstr "Fits what you can give"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search field"
+msgid "@handle or name"
+msgstr "@handle or name"
 
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -23293,6 +23643,11 @@ msgstr "Read the roles again"
 msgctxt "the workbook's paper size choices"
 msgid "Paper size"
 msgstr "Paper size"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "What it is for (optional)"
+msgstr "What it is for (optional)"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -24209,6 +24564,11 @@ msgctxt "nothing credited"
 msgid "none"
 msgstr "none"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Paid to {toName}"
+msgstr "Paid to {toName}"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application know us"
 msgid "We will share how to meet us once you apply."
@@ -24430,6 +24790,11 @@ msgctxt "language picker"
 msgid "No language matches"
 msgstr "No language matches"
 
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button: go to the check step"
+msgid "Review"
+msgstr "Review"
+
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: suggestions count, one"
 msgid "They suggested 1 change to the role card."
@@ -24472,6 +24837,11 @@ msgstr "The goals it moves and the conversations on the way in"
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Nothing the village runs speaks to {name} yet."
 msgstr "Nothing the village runs speaks to {name} yet."
+
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Choose a handle on your profile and your code appears here."
+msgstr "Choose a handle on your profile and your code appears here."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -25677,6 +26047,11 @@ msgctxt "founding application know us fork"
 msgid "Completely new here?"
 msgstr "Completely new here?"
 
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Link copied."
+msgstr "Link copied."
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgctxt "hidden map settings"
 msgid "Vouching"
@@ -25872,6 +26247,11 @@ msgstr "No agenda items yet"
 msgctxt "budget edit line button"
 msgid "Cancel"
 msgstr "Cancel"
+
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That did not reach the village. Press send again: it will only go once."
+msgstr "That did not reach the village. Press send again: it will only go once."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, connect step"
@@ -26182,6 +26562,11 @@ msgstr "How the limits work"
 msgctxt "voice field label: profile bio"
 msgid "Your bio"
 msgstr "Your bio"
+
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search results heading"
+msgid "Ventures"
+msgstr "Ventures"
 
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk error"
