@@ -7,6 +7,7 @@ import { FOUNDING_KEYS, PAY_SHAPE_KEYS, UPDATED_NOTE_KEY, foundingSetupFrom, fou
 import { readFileSync } from "node:fs";
 import { VARIABLES_BY_KEY, validateVariable } from "./gameVariables";
 import { OPEN_APPLY_ROLES, openBodyOf, parseOpenProposal } from "./openProposals";
+import { TOURS_RESUMED_KEY } from "./toursPaused";
 
 /** What the server hands in: a setting's default, and "" for one the registry does not know (the pay shape until lane A3 lands). */
 const defaults = (key: string) => VARIABLES_BY_KEY[key]?.default ?? "";
@@ -25,7 +26,9 @@ describe("the village's words", () => {
     const fresh = foundingSetupFrom(defaults);
     expect(fresh).toMatchObject({ shares: [], atRisk: "", footer: "" });
     expect(shareWords(null)).toBe("N%");
-    expect(fresh.knowUs).toHaveLength(3);
+    // Land tours and potlucks are paused by default (shared/toursPaused.ts): only the call shows.
+    expect(fresh.knowUs).toEqual(["Join a community call"]);
+    expect(foundingSetupFrom((k) => (k === TOURS_RESUMED_KEY ? "true" : defaults(k))).knowUs).toHaveLength(3);
   });
 
   it("reads a village's own values: the pay shape in the role cards' spelling, the ways and the conversations by line", () => {
@@ -35,11 +38,20 @@ describe("the village's words", () => {
       [FOUNDING_KEYS.knowUs]: "Attend the webinar\r\n\r\nCome on a land tour\nJoin the potluck",
       [FOUNDING_KEYS.firstConversations]: "Technical Operations\n",
     };
-    const s = foundingSetupFrom((k) => set[k] ?? defaults(k));
+    const s = foundingSetupFrom((k) => set[k] ?? (k === TOURS_RESUMED_KEY ? "true" : defaults(k)));
     expect(s.shares).toEqual([{ label: "Cash", pct: 40 }, { label: "Equity", pct: 55 }, { label: "Village credits", pct: 5 }]);
     expect(s.atRisk).toBe("These are at risk.");
     expect(s.knowUs).toEqual(["Attend the webinar", "Come on a land tour", "Join the potluck"]);
     expect(s.firstConversations).toEqual(["Technical Operations"]);
+  });
+
+  it("while land tours and potlucks are paused, only the webinar's way shows, and turning them back on restores every line (the lead, 24 Nov 2026)", () => {
+    const ways = "Attend the webinar / community call (live, or watch the recording)\nCome on a land tour (weekly, right after the potluck)\nJoin the potluck";
+    const paused = foundingSetupFrom((k) => (k === FOUNDING_KEYS.knowUs ? ways : defaults(k)));
+    expect(paused.knowUs).toEqual(["Attend the webinar / community call (live, or watch the recording)"]);
+    expect(VARIABLES_BY_KEY[TOURS_RESUMED_KEY]).toMatchObject({ type: "boolean", default: "false", category: "The founding team" });
+    const running = foundingSetupFrom((k) => (k === FOUNDING_KEYS.knowUs ? ways : k === TOURS_RESUMED_KEY ? "true" : defaults(k)));
+    expect(running.knowUs).toHaveLength(3);
   });
 
   it("a shape that does not read cleanly, or adds up past 100, is no shape: never half a breakdown", () => {

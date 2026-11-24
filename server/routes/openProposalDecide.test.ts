@@ -64,6 +64,7 @@ import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 import { register as registerSignUp } from "./register";
 import { foundingSetupFrom, FOUNDING_KEYS } from "../../shared/foundingApplication";
+import { TOURS_RESUMED_KEY } from "../../shared/toursPaused";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[openProposalDecide] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -162,7 +163,8 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       escapeHtml,
       seasonState: () => ({ current: NOW_SEASON, seasons: [NOW_SEASON, NEXT], timezone: "UTC" }),
       // The ways to get to know the village it lists (Phase A), so a tick for one is kept.
-      founding: () => foundingSetupFrom((key) => (key === FOUNDING_KEYS.knowUs ? "Visit the land\nShare a meal" : "")),
+      // Land tours and shared meals running (shared/toursPaused.ts), so both ways are listed.
+      founding: () => foundingSetupFrom((key) => (key === FOUNDING_KEYS.knowUs ? "Visit the land\nShare a meal" : key === TOURS_RESUMED_KEY ? "true" : "")),
       postEmail: async (email: OutgoingEmail) => {
         state.sent.push(email);
         return state.answer;

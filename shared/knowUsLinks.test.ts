@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { KNOW_US_LINK_KEYS, knowUsLinksFrom, knowUsLinksOf, nextOfWay, STEWARD_PATH_FALLBACK, type KnowUsLinkKey } from "./knowUsLinks";
+import { TOURS_RESUMED_KEY } from "./toursPaused";
 
 const NOW = new Date("2026-11-15T12:00:00Z");
-const settings = (over: Partial<Record<KnowUsLinkKey, string>> = {}) => (key: KnowUsLinkKey) => over[key] ?? "";
+/** The village's links, with land tours and potlucks running unless a test pauses them (shared/toursPaused.ts). */
+const settings = (over: Partial<Record<KnowUsLinkKey, string>> = {}, resumed = "true") => (key: KnowUsLinkKey | typeof TOURS_RESUMED_KEY) => (key === TOURS_RESUMED_KEY ? resumed : (over[key] ?? ""));
 
 describe("step 1's acts (Rye, 15 Nov 2026)", () => {
   it("links the next public call, tour and potluck from the calendar first, with its date and place", () => {
@@ -24,6 +26,18 @@ describe("step 1's acts (Rye, 15 Nov 2026)", () => {
     expect(l.recording).toBe("https://video.example.test/last");
     expect(l.call).toEqual({ href: null, next: null });
     expect(l.potluck).toEqual({ href: null, next: null });
+  });
+
+  it("offers no tour and no potluck while they are paused, from the calendar or a link, and keeps the call (the lead, 24 Nov 2026)", () => {
+    const events = [
+      { title: "Weekly Potluck", startsAt: "2026-11-18T23:00:00Z" },
+      { title: "Community Call", startsAt: "2026-11-19T17:00:00Z", link: "https://meet.example.test/call" },
+      { title: "Land Tour", startsAt: "2026-11-21T14:00:00Z", link: "/events" },
+    ];
+    const l = knowUsLinksFrom(settings({ [KNOW_US_LINK_KEYS.tour]: "https://book.example.test/tour", [KNOW_US_LINK_KEYS.potluck]: "/events" }, "false"), events, NOW);
+    expect(l.tour).toEqual({ href: null, next: null });
+    expect(l.potluck).toEqual({ href: null, next: null });
+    expect(l.call.href).toBe("https://meet.example.test/call");
   });
 
   it("ignores past and cancelled events and other titles (control)", () => {

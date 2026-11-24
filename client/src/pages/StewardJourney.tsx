@@ -8,6 +8,7 @@ import { MoonText } from "@/components/MoonWord";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import { Fireflies, SeedOfLife } from "@/components/journey/nature";
 import FirstSteps from "@/components/tracks/FirstSteps";
+import { stepWhileToursPaused } from "@shared/toursPaused";
 import TwoTracks from "@/components/tracks/TwoTracks";
 import { useJourneyContent } from "@/hooks/useJourneyContent";
 import { buttonAction, stepPoints, type TargetContext } from "@/lib/journeyPage";
@@ -57,7 +58,10 @@ export default function StewardJourney() {
   const bandRef = useRef<HTMLElement | null>(null);
   const thumbAct = useThumbAct(bandRef, !!foundingAct);
   // The open founding roles, live, from the read behind the Roles page's founding section.
-  const openRoles = useOpenFoundingRoles();
+  const foundingRead = useFoundingTeamRead();
+  const openRoles = openRolesOf(foundingRead);
+  // Land tours and potlucks paused (the lead, 24 Nov 2026, shared/toursPaused.ts): only the webinar's step shows until the village turns them back on.
+  const getToKnow = page ? { ...page.getToKnow, lists: { ...page.getToKnow.lists, items: (page.getToKnow.lists.items ?? []).filter((s) => stepWhileToursPaused(s, foundingRead?.toursResumed === true)) } } : null;
   const foundingBody = founding ? founding.fields.body : "";
   // Until the roles arrive, a paragraph that names them keeps its space and stays invisible.
   const bodyWaits = openRoles === null && foundingBody.includes(FOUNDING_ROLES_WORD);
@@ -151,7 +155,7 @@ export default function StewardJourney() {
       {page && !page.getToKnow.hidden && (
         <div className="border-y border-border/60 bg-card/40">
           <FirstSteps
-            section={page.getToKnow}
+            section={getToKnow ?? page.getToKnow}
             heading={page.getToKnow.fields.heading}
             body={page.getToKnow.fields.body}
             targets={targets}
@@ -393,7 +397,7 @@ function TrackTile({ section, targets }: { section: ResolvedSection; targets: Ta
  * it answers; empty when the section is off, every named role is closed, or
  * the read fails, so the band then names nobody.
  */
-function useOpenFoundingRoles(): Array<{ id: string; name: string }> | null {
+function useFoundingTeamRead(): FoundingTeamAnswer | null {
   const [answer, setAnswer] = useState<FoundingTeamAnswer | null>(null);
   useEffect(() => {
     let live = true;
@@ -402,6 +406,10 @@ function useOpenFoundingRoles(): Array<{ id: string; name: string }> | null {
       live = false;
     };
   }, []);
+  return answer;
+}
+
+function openRolesOf(answer: FoundingTeamAnswer | null): Array<{ id: string; name: string }> | null {
   if (!answer) return null;
   if (!answer.on) return [];
   return answer.roleIds.filter((id) => !!answer.names[id]).map((id) => ({ id, name: answer.names[id] }));
