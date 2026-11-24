@@ -270,6 +270,19 @@ describe.skipIf(!DB_CONFIGURED)("the members' powers page names who holds a powe
     expect(story.suggestionsGoTo).toBe("holders");
     expect(page.json.powers.map((p: any) => p.capability)).toContain("power.assign");
     expect(page.json.families.map((f: any) => f.id)).toContain("structure");
+
+    // A visitor reads the same line (the lead, 24 Nov 2026: a public page, first names only).
+    const visitor = await call("GET", "/api/village/powers", undefined, "");
+    expect(visitor.status, visitor.text).toBe(200);
+    expect(visitor.json.powers.find((p: any) => p.capability === "story.tell").heldToday).toEqual(["Trained Practitioners (Cy)"]);
+    expect(visitor.text).not.toContain("Storyteller");
+
+    // Cy keeps roles off the profile: a visitor no longer reads Cy's name, a member still does.
+    expect((await call("PUT", "/api/me/privacy", { showRoles: false }, cy.token)).status).toBe(200);
+    const hidden = await call("GET", "/api/village/powers", undefined, "");
+    expect(hidden.json.powers.find((p: any) => p.capability === "story.tell").heldToday).toEqual([]);
+    const member = await call("GET", "/api/village/powers", undefined, cy.token);
+    expect(member.json.powers.find((p: any) => p.capability === "story.tell").heldToday).toEqual(["Trained Practitioners (Cy)"]);
   });
 });
 

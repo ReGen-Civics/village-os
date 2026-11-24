@@ -448,6 +448,16 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
   },
   /**
+   * A venture's redemption (0420, server/routes/orgRedemptions.ts): the
+   * Treasury hears that a venture asked, and the venture's people hear how it
+   * ended. Not celebrated, for redemption's reason, and not `waits`: fireflies
+   * never sit beside money.
+   */
+  venture_redemption: {
+    group: "economy",
+    celebrate: false,
+  },
+  /**
    * The village marked cash it owed you as paid (0285, server/routes/cashOwed.ts).
    * The body is the treasurer's own note on how it was paid. Not celebrated,
    * for redemption's reason: the platform records the payment and never sees it.

@@ -521,6 +521,23 @@ talked over. A founder decides each starter in Admin, Quests:
 The Journey to Launch row `starter-quests` reads the count of example quests still on the board and
 is done at zero. A village seeded before 2026-10-31 holds none, so it reads as done.
 
+**A village can mark its OWN quests as examples** (the lead, 24 Nov 2026: "put a big example stamp
+on the existing cards and say quests coming soon"). `PUT /api/admin/quests/:id` with the body
+exactly `{ "isExample": true }` marks one (`markQuestExample`, refused while a claim is in flight);
+`{ "isExample": false }` brings it back through the Keep door, and needs a value already on the
+row. A save that posts the quest back whole, carrying the flag it already has, saves as before; one
+asking for the other state beside words is refused. `POST /api/admin/quests/mark-examples` marks every real quest and names the ones it skipped.
+Both are `quest.approve` in `server/lib/operatorRoutes.ts`, and an agent proposes the switch as a
+`setting` against the PUT. A marked quest is stamped on the board and on its page, its take button
+is a disabled "Example quest", and the claim route refuses it as it refuses every example. While no
+real quest is open, `/quests` opens on "Quests coming soon" with a door to `/propose-quest`, and the
+"Don't see your gift here?" panel is hidden until a real open quest brings it back.
+
+A marked quest is never a starter. Starters are the `ex-quest-` ids (`STARTER_QUEST_IDS`,
+`server/repos/questExamples.ts`), and retirement, a refresh, the banner's row count, the Journey
+row and `villageHasOwnQuests` all read that scope, so posting a real quest never deletes a quest the
+village marked, and starters are never seeded over a board of the village's own examples.
+
 **`server/seeds/quests-seed.json` is FROZEN and seeds nothing.** Until 2026-10-31 the boot looped
 `questsRepo.add` over it onto any empty table, writing fourteen live, claimable, payable quests
 that nobody reviewed (and writing them back after a village deleted them all). Villages seeded that

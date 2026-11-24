@@ -438,6 +438,15 @@ export const keys = {
    */
   redemptionHold: (v: string, redemptionId: string) => `redemption:${esc(v)}:${esc(redemptionId)}:hold`,
   redemptionBurn: (v: string, redemptionId: string) => `redemption:${esc(v)}:${esc(redemptionId)}:burn`,
+  /**
+   * A venture's redemption (0420) owns three postings: the hold when it asks,
+   * and then exactly one of the burn (confirmed) or the release (refused or
+   * cancelled). The release is its own posting in the same transaction as the
+   * state change, so it needs a key of its own; the row's id is the occurrence.
+   */
+  orgRedemptionHold: (v: string, redemptionId: string) => `org-redemption:${esc(v)}:${esc(redemptionId)}:hold`,
+  orgRedemptionBurn: (v: string, redemptionId: string) => `org-redemption:${esc(v)}:${esc(redemptionId)}:burn`,
+  orgRedemptionRelease: (v: string, redemptionId: string) => `org-redemption:${esc(v)}:${esc(redemptionId)}:release`,
 };
 
 // ── The cycle ───────────────────────────────────────────────────────────────

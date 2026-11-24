@@ -12,6 +12,7 @@ import {
   type OpenCycle, type PendingSettlement,
 } from "@/lib/settlement";
 import { settlementRefusalWarning } from "@shared/moonSettlement";
+import PathArtFocusField from "@/components/admin/PathArtFocusField";
 import {
   canAct, DISCLOSURE_NOTE, emptyQueueLine, reportedLine, reportPlace,
   type MessageReport, type ReportStatus,
@@ -7133,8 +7134,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
 
 
   const imageField = (key: string, label: string, altUnavailable?: string) => (
-    <BrandImageField
-      key={key}
+    <div key={key}><BrandImageField
       label={label}
       value={brand.images[key] ?? ""}
       fallback={defaults.images[key]}
@@ -7143,7 +7143,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
       onChange={(v) => setField("images", key, v)}
       onAltChange={(v) => setField("images", `${key}Alt`, v)}
       altUnavailable={altUnavailable}
-    />
+    /><PathArtFocusField imageKey={key} images={brand.images} fallback={defaults.images[key]} onChange={(k, v) => setField("images", k, v)} /></div>
   );
 
   /* SetupSection is a module-scope import and MUST stay one. It was declared

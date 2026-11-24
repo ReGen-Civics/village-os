@@ -602,6 +602,11 @@ msgctxt "canvas export button"
 msgid "Build it again"
 msgstr "Build it again"
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point refused"
+msgid "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+msgstr "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
 #~ msgid "Your role card"
@@ -616,6 +621,11 @@ msgstr "Open again"
 #~ msgctxt "admin role characters legend"
 #~ msgid "Characters {roleName} suits"
 #~ msgstr "Characters {roleName} suits"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: quests the mark-all left alone"
+msgid "Left as real, with work in flight: {names}"
+msgstr "Left as real, with work in flight: {names}"
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "sera draft mark"
@@ -1237,6 +1247,12 @@ msgstr "Token pay, the bonus on the pay"
 #: client/src/pages/Governance.tsx
 msgid "Open the canvas workbook"
 msgstr "Open the canvas workbook"
+
+#. placeholder {0}: account.label
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Redemptions for {0}"
+msgstr "Redemptions for {0}"
 
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
@@ -2124,6 +2140,11 @@ msgctxt "AI transcript refusal"
 msgid "The service heard no words in this recording."
 msgstr "The service heard no words in this recording."
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Payment reference, or why not"
+msgstr "Payment reference, or why not"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"
 msgid "Say how we'll know value {n} is done."
@@ -2710,6 +2731,11 @@ msgctxt "application backup file"
 msgid "Roles"
 msgstr "Roles"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Waiting for the Treasury"
+msgstr "Waiting for the Treasury"
+
 #: client/src/pages/RoleDraft.tsx
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
 msgstr "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
@@ -2946,6 +2972,12 @@ msgstr "Someone who reaches out hears back within {replyHours, plural, one {# ho
 msgid "Your idea is shared. Others can comment on it in its thread."
 msgstr "Your idea is shared. Others can comment on it in its thread."
 
+#: client/src/components/openWork/ExampleStamp.tsx
+#: client/src/components/QuestCard.tsx
+msgctxt "the example stamp, read aloud"
+msgid "Example quest"
+msgstr "Example quest"
+
 #: client/src/pages/Quests.tsx
 msgctxt "quests board, roots filter hid everything"
 msgid "Show every quest"
@@ -3092,6 +3124,11 @@ msgstr "Done"
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "{notesArePublic} \"Nobody yet\" is an answer."
 msgstr "{notesArePublic} \"Nobody yet\" is an answer."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue button"
+msgid "Paid, confirm"
+msgstr "Paid, confirm"
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "future venture pitch, part 3"
@@ -3327,6 +3364,11 @@ msgctxt "why a budget line does not count"
 msgid "it came from a source and nobody has adopted it yet"
 msgstr "it came from a source and nobody has adopted it yet"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "How many credits"
+msgstr "How many credits"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
 msgid "Only the people who decide this proposal see these. No AI reads them. They are deleted with the proposal."
@@ -3452,6 +3494,11 @@ msgstr "A canvas moon gathering is on the calendar's list as a draft. It reaches
 #~ msgctxt "founding application review"
 #~ msgid "Your price"
 #~ msgstr "Your price"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: after marking all as examples"
+msgid "{marked} marked as examples"
+msgstr "{marked} marked as examples"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Answers for 1 thing"
@@ -3913,6 +3960,13 @@ msgstr "How the allowance works"
 msgctxt "circle hearth, we meet"
 msgid "We will see you there. Your circle fills the seed."
 msgstr "We will see you there. Your circle fills the seed."
+
+#. placeholder {0}: d.paymentRef
+#. placeholder {0}: h.paymentRef
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption payment reference"
+msgid "Ref {0}"
+msgstr "Ref {0}"
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "Hide how this was worked out"
@@ -4524,6 +4578,11 @@ msgctxt "open proposal side by side goals"
 msgid "Named on each role above."
 msgstr "Named on each role above."
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: what a venture is, under the heading"
+msgid "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
+msgstr "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, none"
 msgid "No open quests grow this yet. Suggest one you feel this village is missing."
@@ -5006,6 +5065,11 @@ msgctxt "time zone field"
 msgid "Use a place name, such as Europe/Lisbon."
 msgstr "Use a place name, such as Europe/Lisbon."
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Paid and confirmed"
+msgstr "Paid and confirmed"
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "What was proposed"
@@ -5118,6 +5182,11 @@ msgstr "Shared or whole"
 msgctxt "sera answers"
 msgid "A decision. It goes into a draft before it is live."
 msgstr "A decision. It goes into a draft before it is live."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Which credits"
+msgstr "Which credits"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application intro"
@@ -5364,6 +5433,12 @@ msgstr "Add the village connector to your Claude"
 msgctxt "companion welcome"
 msgid "How do you like to be helped?"
 msgstr "How do you like to be helped?"
+
+#. placeholder {0}: venture.redeemed.map((m) => m.text).join(", ")
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Paid to this venture through redemption so far: {0}"
+msgstr "Paid to this venture through redemption so far: {0}"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -6784,6 +6859,11 @@ msgstr "Your path"
 msgid "This village has not yet named what happens to its treasury and assets if it ever closes. The launch checklist asks for it before a village starts."
 msgstr "This village has not yet named what happens to its treasury and assets if it ever closes. The launch checklist asks for it before a village starts."
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue currency"
+msgid "Paid in"
+msgstr "Paid in"
+
 #: client/src/components/journey/TestRun.tsx
 msgid "Nothing refused across the whole run"
 msgstr "Nothing refused across the whole run"
@@ -7441,6 +7521,11 @@ msgstr "Edit"
 msgid "The two of us talk it through, in person. In the room: the two of us."
 msgstr "The two of us talk it through, in person. In the room: the two of us."
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's label while the founding team is on"
+msgid "Paid role"
+msgstr "Paid role"
+
 #. placeholder {0}: money(ceiling.amount)
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup: above the full band"
@@ -7531,6 +7616,11 @@ msgstr "The agent confirms"
 #~ msgid "Send"
 #~ msgstr "Send"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption currency"
+msgid "Paid in"
+msgstr "Paid in"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: button"
 msgid "Split evenly"
@@ -7547,6 +7637,11 @@ msgstr "Cash, {0} and {1}"
 msgctxt "heading of the canvas baseline view"
 msgid "The canvas baseline"
 msgstr "The canvas baseline"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the first question"
+msgid "What the business is"
+msgstr "What the business is"
 
 #. placeholder {0}: seasonEntry.name.trim()
 #: client/src/pages/Roles.tsx
@@ -7682,9 +7777,19 @@ msgctxt "split control: it is editable, percents only"
 msgid "You can change this split for your proposal. Type a percent for each share."
 msgstr "You can change this split for your proposal. Type a percent for each share."
 
+#: client/src/components/QuestCard.tsx
+msgctxt "open work card: in place of the status mark on an example quest"
+msgid "An example of the work to come. It cannot be taken yet."
+msgstr "An example of the work to come. It cannot be taken yet."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
 msgstr "Ideas other villages keep, added only if you tap one:"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Kept sealed. Only the people who run this venture and the Treasury see it in full."
+msgstr "Kept sealed. Only the people who run this venture and the Treasury see it in full."
 
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
@@ -7801,6 +7906,16 @@ msgstr "See where it stands"
 msgctxt "sera answers"
 msgid "Keep the vote"
 msgstr "Keep the vote"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: how the related roles work"
+msgid "The roles this role brings in, in the order the card shows them, up to {relatedMost}. Open, upcoming and held roles from any circle can be named. Empty: the card shows the upcoming roles of the circles this role leads."
+msgstr "The roles this role brings in, in the order the card shows them, up to {relatedMost}. Open, upcoming and held roles from any circle can be named. Empty: the card shows the upcoming roles of the circles this role leads."
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the take button on an example, disabled"
+msgid "Example quest"
+msgstr "Example quest"
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: flag"
@@ -8416,6 +8531,11 @@ msgstr "Your calls: {0}."
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Something hiccuped. Ask me that again?"
 msgstr "Something hiccuped. Ask me that again?"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption button"
+msgid "Redeem"
+msgstr "Redeem"
 
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment"
@@ -9073,6 +9193,11 @@ msgctxt "button that proposes a change to what closing means"
 msgid "Propose a change"
 msgstr "Propose a change"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the second question"
+msgid "Space, water, power, access, people, time or decisions, and by when."
+msgstr "Space, water, power, access, people, time or decisions, and by when."
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Withdraw it"
@@ -9086,6 +9211,11 @@ msgstr "That face did not save."
 msgctxt "roles page, roles after the founding team"
 msgid "join a community call"
 msgstr "join a community call"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Nobody holds the redemption key yet, so a request waits until the village gives it to someone."
+msgstr "Nobody holds the redemption key yet, so a request waits until the village gives it to someone."
 
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: confirm a batch"
@@ -9176,6 +9306,11 @@ msgstr "I'll use the reading you already made: <0>{0}</0>, {1}."
 msgctxt "sera answers"
 msgid "Changed since it was taken"
 msgstr "Changed since it was taken"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles, the list is full"
+msgid "The list holds {most}, the most it takes"
+msgstr "The list holds {most}, the most it takes"
 
 #: client/src/components/VillagePulse.tsx
 msgctxt "landing commons door"
@@ -9675,6 +9810,11 @@ msgctxt "admin compare"
 msgid "Where they overlap"
 msgstr "Where they overlap"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: one quest marked as an example"
+msgid "Marked as an example"
+msgstr "Marked as an example"
+
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 #~ msgctxt "founding application know us act"
 #~ msgid "Watch the last recording"
@@ -9776,6 +9916,11 @@ msgstr "Not sure? Tag it from the kind of work"
 msgctxt "partner form: the serves question"
 msgid "Choose one or more."
 msgstr "Choose one or more."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Nobody has given you the redemption key, so you can read this queue and cannot decide it. Only a holder of the key confirms a venture's redemption."
+msgstr "Nobody has given you the redemption key, so you can read this queue and cannot decide it. Only a holder of the key confirms a venture's redemption."
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -10022,6 +10167,11 @@ msgstr "That did not reach the server. Your light is unchanged."
 #: client/src/components/admin/MintDesk.tsx
 msgid "Minted: {remaining} left under this cycle's cap"
 msgstr "Minted: {remaining} left under this cycle's cap"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Cancelled"
+msgstr "Cancelled"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel, who answers"
@@ -10642,6 +10792,11 @@ msgstr "Choose your commitment to see a suggested compensation"
 msgid "Begin your own departure"
 msgstr "Begin your own departure"
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, the steward card's line while the founding team is on"
+msgid "The founding team who hold the village's core domains."
+msgstr "The founding team who hold the village's core domains."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal: current value"
 msgid "Now"
@@ -10874,6 +11029,11 @@ msgctxt "save bar"
 msgid "Saved."
 msgstr "Saved."
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Pay to:"
+msgstr "Pay to:"
+
 #: client/src/pages/Reset.tsx
 msgid "A fresh start for this device"
 msgstr "A fresh start for this device"
@@ -10998,6 +11158,11 @@ msgstr "Owed {owed}, sent {sent}"
 msgctxt "admin venture accounts"
 msgid "Name members read"
 msgstr "Name members read"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue heading"
+msgid "Venture redemptions"
+msgstr "Venture redemptions"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -11174,6 +11339,11 @@ msgstr "The guide is reading"
 #: client/src/components/admin/MenuPanel.tsx
 msgid "Show {0} in the menu"
 msgstr "Show {0} in the menu"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Move {role} up"
+msgstr "Move {role} up"
 
 #: client/src/components/governance/GoalsList.tsx
 msgid "Three to five is the usual."
@@ -11413,6 +11583,14 @@ msgstr "Nobody holds the {chosenName} role today, so a request would reach nobod
 #~ msgid "A new stage"
 #~ msgstr "A new stage"
 
+#. placeholder {0}: w.credits
+#. placeholder {1}: w.tokenName
+#. placeholder {2}: w.rateText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "{0} {1} at {2} each"
+msgstr "{0} {1} at {2} each"
+
 #. placeholder {0}: def.name
 #. placeholder {1}: adoptedOn(String(closing.adoptedAt))
 #: client/src/components/ClosingPolicyCard.tsx
@@ -11464,6 +11642,11 @@ msgstr "Point your phone's camera at their code. It opens this page with their n
 #~ msgctxt "open proposal: the ceiling at their commitment"
 #~ msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
 #~ msgstr "At {atPct}%, the role pays up to {0} (the full role: {1})."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Payment reference"
+msgstr "Payment reference"
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "They have not chosen"
@@ -11868,6 +12051,11 @@ msgstr "How to reach them"
 #~ msgctxt "price popup lede"
 #~ msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
 #~ msgstr "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Held for a redemption"
+msgstr "Held for a redemption"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -12327,6 +12515,12 @@ msgctxt "admin protocols editor"
 msgid "Remove"
 msgstr "Remove"
 
+#: client/src/components/openWork/QuestsComingSoon.tsx
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quests coming soon banner: the one door"
+msgid "Propose a quest"
+msgstr "Propose a quest"
+
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, scanning a code"
 msgid "The camera did not open. Paste their link below."
@@ -12421,6 +12615,11 @@ msgstr "The village did not take every change. Each one says why, on its run."
 msgctxt "voice transcription switch"
 msgid "Write down my words automatically"
 msgstr "Write down my words automatically"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
+msgstr "Marks every quest as an example. Each card carries an Example stamp, nobody can take one, and the board says quests are coming soon. A quest with work in flight is left as it is. Bring a quest back with Keep as a real quest."
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -13522,6 +13721,13 @@ msgctxt "proposed changes: filter"
 msgid "B-27 or B-27.2, or an older long id"
 msgstr "B-27 or B-27.2, or an older long id"
 
+#. placeholder {0}: d.paidText
+#. placeholder {0}: h.paidText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption, what actually went out"
+msgid "paid {0}"
+msgstr "paid {0}"
+
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -13998,6 +14204,13 @@ msgctxt "voice invite"
 msgid "We love hearing your voice."
 msgstr "We love hearing your voice."
 
+#. placeholder {0}: w.requestedByName ?? w.requestedBy
+#. placeholder {1}: day(w.createdAt)
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Asked by {0} on {1}"
+msgstr "Asked by {0} on {1}"
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Places looking for a steward:"
 msgstr "Places looking for a steward:"
@@ -14272,6 +14485,10 @@ msgstr "Not answered"
 #: client/src/components/TreasurySync.tsx
 msgid "Your saved numbers did not load."
 msgstr "Your saved numbers did not load."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgid "Pay each venture outside the platform first, then confirm with the payment's reference. Confirming destroys the held credits. Nobody who runs a venture can confirm its own."
+msgstr "Pay each venture outside the platform first, then confirm with the payment's reference. Confirming destroys the held credits. Nobody who runs a venture can confirm its own."
 
 #. placeholder {0}: civilDayWords(h.dueOn)
 #: client/src/components/profile/HandoffRespondRow.tsx
@@ -14833,6 +15050,15 @@ msgstr "A person"
 #~ msgid "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
 #~ msgstr "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
 
+#. placeholder {0}: w.fxRate.toFixed(4)
+#. placeholder {1}: w.currency
+#. placeholder {2}: w.pegCurrency
+#. placeholder {3}: w.fxAsOf ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid ", converted at {0} {1} per {2} ({3})"
+msgstr ", converted at {0} {1} per {2} ({3})"
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgctxt "role draft carry"
 msgid "From your selection"
@@ -15232,6 +15458,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "I accept"
 msgstr "I accept"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the heading over its questions"
+msgid "Your venture"
+msgstr "Your venture"
+
 #: client/src/components/admin/OpsEmailSwitch.tsx
 msgctxt "admin ops report email option"
 msgid "Ops report email: daily"
@@ -15466,6 +15697,11 @@ msgstr "The card's words"
 msgctxt "proposed changes"
 msgid "Accept"
 msgstr "Accept"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the third question"
+msgid "How the business gives back to the village, the land and the people around it."
+msgstr "How the business gives back to the village, the land and the people around it."
 
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
@@ -15779,6 +16015,11 @@ msgctxt "application backup file"
 msgid "Where you are based"
 msgstr "Where you are based"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Back from a redemption"
+msgstr "Back from a redemption"
+
 #: client/src/components/ErrorBoundary.tsx
 msgid "We just updated the site"
 msgstr "We just updated the site"
@@ -15976,6 +16217,11 @@ msgctxt "proposed changes"
 msgid "This page is for admins and for the people who hold the powers these changes need."
 msgstr "This page is for admins and for the people who hold the powers these changes need."
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption state"
+msgid "Not redeemed"
+msgstr "Not redeemed"
+
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
 msgid "Accept all"
@@ -16170,6 +16416,11 @@ msgctxt "calendar spiral: what is on a day"
 msgid "something on the calendar"
 msgstr "something on the calendar"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "The Treasury pays {gross}."
+msgstr "The Treasury pays {gross}."
+
 #: client/src/components/roleCard/WaitlistForm.tsx
 #~ msgctxt "coming-soon waitlist: what the details are for"
 #~ msgid "We use these details only to tell you when the role opens. You can ask us to remove them."
@@ -16319,6 +16570,11 @@ msgstr "You"
 #~ msgid "Apply with your draft"
 #~ msgstr "Apply with your draft"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "The account, and the name on it"
+msgstr "The account, and the name on it"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "History"
@@ -16343,6 +16599,11 @@ msgstr "Change any words, share it for feedback, then send it to the circle."
 msgctxt "roles page, opens a role's full card"
 msgid "Read the full card"
 msgstr "Read the full card"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "That did not go through."
+msgstr "That did not go through."
 
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: a role, a compact tile"
@@ -16433,6 +16694,11 @@ msgstr "Where it happens"
 msgctxt "budget line button"
 msgid "Withdraw {0}"
 msgstr "Withdraw {0}"
+
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all button"
+msgid "Mark all current quests as examples"
+msgstr "Mark all current quests as examples"
 
 #: client/src/pages/Decision.tsx
 msgctxt "decision: your turn"
@@ -16850,6 +17116,11 @@ msgstr "Your files and recordings come to {0}, {1} more than one application can
 msgctxt "admin quest roots"
 msgid "Roots it grows from"
 msgstr "Roots it grows from"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "There is no daily rate for {currency} today."
+msgstr "There is no daily rate for {currency} today."
 
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "admin identity pack: the picture subjects field"
@@ -17350,6 +17621,11 @@ msgstr "{0} characters left in this answer."
 msgid "Why, in one sentence"
 msgstr "Why, in one sentence"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the mark-all panel"
+msgid "Show the board as examples"
+msgstr "Show the board as examples"
+
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review, several roles"
 msgid "Across your roles"
@@ -17755,6 +18031,11 @@ msgstr "That did not save. Your light is unchanged."
 msgctxt "sera changes"
 msgid "Hide them"
 msgstr "Hide them"
+
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point"
+msgid "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
+msgstr "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent drawing"
@@ -19503,6 +19784,11 @@ msgctxt "notebook row kind, size and date"
 msgid "{0}, {1}, added {2}"
 msgstr "{0}, {1}, added {2}"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the line under Your venture"
+msgid "Start with the business. The questions after it help us see what it takes."
+msgstr "Start with the business. The questions after it help us see what it takes."
+
 #: client/src/components/hiddenMap/SevenMeter.tsx
 msgctxt "hidden map, progress toward opening the map"
 msgid "{vouched} of {needed}"
@@ -19512,6 +19798,11 @@ msgstr "{vouched} of {needed}"
 msgctxt "booking link field"
 msgid "Booking link"
 msgstr "Booking link"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Where the money should go"
+msgstr "Where the money should go"
 
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: a venture, what you get back"
@@ -19745,6 +20036,11 @@ msgstr "The village adopts them by vote"
 msgctxt "sera answers"
 msgid "The line that follows has Undo, to bring them back."
 msgstr "The line that follows has Undo, to bring them back."
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Nothing is waiting."
+msgstr "Nothing is waiting."
 
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment heading"
@@ -20098,6 +20394,11 @@ msgctxt "sera answers"
 msgid "Add to draft"
 msgstr "Add to draft"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: confirm marking all as examples"
+msgid "Mark every quest on the board as an example? Nobody can take an example."
+msgstr "Mark every quest on the board as an example? Nobody can take an example."
+
 #: client/src/components/fireflyPath/limitProblems.ts
 #~ msgctxt "founding application check, a box over its limit"
 #~ msgid "Your Human Design or Gene Keys"
@@ -20243,6 +20544,11 @@ msgctxt "pay page"
 msgid "Amount pad"
 msgstr "Amount pad"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "What actually went out, if different"
+msgstr "What actually went out, if different"
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Move to its own change request"
 msgstr "Move to its own change request"
@@ -20356,6 +20662,11 @@ msgstr "Edits not saved"
 msgctxt "hand-mint grants record, approve a grant"
 msgid "Sign it"
 msgstr "Sign it"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the second question"
+msgid "What it needs from the land and the village"
+msgstr "What it needs from the land and the village"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -20719,6 +21030,12 @@ msgstr "Sync reads three sources again: this village's records, the Base chain (
 msgctxt "admin: the village menu editor heading"
 msgid "Menu"
 msgstr "Menu"
+
+#. placeholder {0}: r.json?.redemption?.grossText ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Asked. The Treasury pays {0} to where you said, then confirms."
+msgstr "Asked. The Treasury pays {0} to where you said, then confirms."
 
 #: client/src/components/Layout.tsx
 msgctxt "site header"
@@ -21697,6 +22014,11 @@ msgctxt "a decided suggestion's own words"
 msgid "What it said"
 msgstr "What it said"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the third question"
+msgid "How it gives back"
+msgstr "How it gives back"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Waiting for you:"
@@ -21992,6 +22314,11 @@ msgctxt "open proposal: the split badge"
 msgid "Split changed by applicant"
 msgstr "Split changed by applicant"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Cancel"
+msgstr "Cancel"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Put back"
@@ -22248,6 +22575,11 @@ msgstr "They chose to negotiate on the first call."
 msgctxt "calendar spiral: label beside the first day"
 msgid "New moon, {date}"
 msgstr "New moon, {date}"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Remove {role}"
+msgstr "Remove {role}"
 
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Warning: with this on, the agent of whoever holds this role can make most admin changes and accept proposals, each one approved in the chat and recorded. Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act."
@@ -22836,6 +23168,11 @@ msgctxt "application backup file"
 msgid "Serves"
 msgstr "Serves"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Not now"
+msgstr "Not now"
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
 msgstr "Share with the village"
@@ -22942,6 +23279,11 @@ msgstr "Crop"
 msgctxt "next step box, link to open roles"
 msgid "See the open roles"
 msgstr "See the open roles"
+
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner eyebrow"
+msgid "Open work"
+msgstr "Open work"
 
 #: client/src/components/priorities/RoomPriorities.tsx
 msgid "Keep this order on the board"
@@ -23364,6 +23706,11 @@ msgstr "None picked."
 msgid "Download this season file"
 msgstr "Download this season file"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "This village cannot keep account details safely yet. Give a reference the Treasury can look up, such as an invoice number."
+msgstr "This village cannot keep account details safely yet. Give a reference the Treasury can look up, such as an invoice number."
+
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "Region, about 50 km"
 msgstr "Region, about 50 km"
@@ -23562,6 +23909,11 @@ msgstr "How your work serves it"
 msgid "Read the pasted list"
 msgstr "Read the pasted list"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quests: the per-quest example switch"
+msgid "Mark as example"
+msgstr "Mark as example"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "You are backing this quest (pending). The Backer badge comes when the quest is done."
 msgstr "You are backing this quest (pending). The Backer badge comes when the quest is done."
@@ -23583,6 +23935,12 @@ msgstr "Discarded by {0}"
 msgctxt "rites admin"
 msgid "Reads clean: {0} rites, in this order: {1}."
 msgstr "Reads clean: {0} rites, in this order: {1}."
+
+#. placeholder {0}: w.payRef ?? ""
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue, payment reference the venture gave"
+msgid "Reference {0}"
+msgstr "Reference {0}"
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Save what closing means"
@@ -24023,6 +24381,11 @@ msgctxt "admin protocols editor"
 msgid "None yet. Write one, or import a file."
 msgstr "None yet. Write one, or import a file."
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the first question"
+msgid "What you would build and run on the land, who it is for, and how it earns its way."
+msgstr "What you would build and run on the land, who it is for, and how it earns its way."
+
 #: client/src/components/admin/RoleCharacterTags.tsx
 msgctxt "admin role roots"
 msgid "Roots saved"
@@ -24052,6 +24415,11 @@ msgstr "Your first quest"
 msgctxt "rites"
 msgid "Saved"
 msgstr "Saved"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: the related roles a lead role names"
+msgid "Related roles this role will onboard"
+msgstr "Related roles this role will onboard"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -24316,6 +24684,11 @@ msgctxt "role draft step"
 msgid "Select up to three"
 msgstr "Select up to three"
 
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests board banner while every quest is an example"
+msgid "Quests coming soon"
+msgstr "Quests coming soon"
+
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription"
 msgid "Stopped. Nothing more is sent. Your recording is kept."
@@ -24498,6 +24871,7 @@ msgid "Saved."
 msgstr "Saved."
 
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/WorkWithUs.tsx
 msgctxt "four ways to build: a venture"
 msgid "Start a venture"
 msgstr "Start a venture"
@@ -24720,6 +25094,13 @@ msgctxt "pricing desk"
 msgid "Past prices"
 msgstr "Past prices"
 
+#. placeholder {0}: formatMoney(terms.rateMinor[terms.pegCurrency] ?? 0, terms.pegCurrency)
+#. placeholder {1}: terms.leftCredits
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "One credit is worth {0}. Ventures together can redeem {1} more credits this moon."
+msgstr "One credit is worth {0}. Ventures together can redeem {1} more credits this moon."
+
 #. placeholder {0}: agreed.at.slice(0, 10)
 #. placeholder {1}: agreed.provider
 #: client/src/components/companion/CompanionPanel.tsx
@@ -24788,6 +25169,11 @@ msgstr "Answered"
 msgctxt "budget line status"
 msgid "Withdrawn"
 msgstr "Withdrawn"
+
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the note under an example quest's poster"
+msgid "An example of the quests to come. It cannot be taken yet."
+msgstr "An example of the quests to come. It cannot be taken yet."
 
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, menu button"
@@ -25117,6 +25503,11 @@ msgstr "The {circleName} hearth. No roles sit here yet."
 msgctxt "partner form: a field to fix"
 msgid "Say what you would like from the village."
 msgstr "Say what you would like from the village."
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: choose a role to add to the related roles"
+msgid "Add a related role"
+msgstr "Add a related role"
 
 #: client/src/components/TypographyPanel.tsx
 msgctxt "admin typography: a typed font stack field"
@@ -25519,6 +25910,11 @@ msgstr "{fit}% would fit the role"
 #~ msgid "You meet the people the role works with, in the order the role sets, when it sets one."
 #~ msgstr "You meet the people the role works with, in the order the role sets, when it sets one."
 
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, set up for a venture: the guide's first message"
+msgid "Hi, I'm {assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?"
+msgstr "Hi, I'm {assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?"
+
 #: client/src/components/roleCard/DeliverablesGantt.tsx
 msgctxt "deliverables timeline: the line for today"
 msgid "Today"
@@ -25808,6 +26204,11 @@ msgstr "The quests board shows what grows from these first. You can turn that of
 msgctxt "founding team tally: open roles"
 msgid "{0} open"
 msgstr "{0} open"
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: under the disabled take button on an example"
+msgid "This shows the kind of quest to come. It cannot be taken."
+msgstr "This shows the kind of quest to come. It cannot be taken."
 
 #: client/src/components/notebook/NotebookAdd.tsx
 msgctxt "notebook add mode"
@@ -26196,6 +26597,11 @@ msgctxt "partner form: a field to fix"
 msgid "Add an email address we can write to."
 msgstr "Add an email address we can write to."
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: related roles"
+msgid "Move {role} down"
+msgstr "Move {role} down"
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "Add to my application"
@@ -26329,6 +26735,11 @@ msgstr "Kind of work"
 msgctxt "admin compare row"
 msgid "Dates"
 msgstr "Dates"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue"
+msgid "Decided recently"
+msgstr "Decided recently"
 
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "founding application draft"
@@ -26484,6 +26895,11 @@ msgctxt "hidden map page"
 msgid "Layers"
 msgstr "Layers"
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "venture redemption"
+msgid "Ask to redeem"
+msgstr "Ask to redeem"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Applications are closed right now. Your draft stays here, and you can apply when they open."
 #~ msgstr "Applications are closed right now. Your draft stays here, and you can apply when they open."
@@ -26572,6 +26988,11 @@ msgstr "When it involves someone who holds power here"
 #~ msgctxt "role draft stat"
 #~ msgid "Answers for {answers} things"
 #~ msgstr "Answers for {answers} things"
+
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue button"
+msgid "Do not redeem"
+msgstr "Do not redeem"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "a button that edits a matrix row"
@@ -26665,6 +27086,11 @@ msgctxt "admin protocols editor"
 msgid "Check the file"
 msgstr "Check the file"
 
+#: client/src/components/openWork/ExampleStamp.tsx
+msgctxt "the ink stamp across a quest that is an example of the work to come"
+msgid "Example"
+msgstr "Example"
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -26738,6 +27164,11 @@ msgstr "your guide"
 msgctxt "how pay works"
 msgid "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
 msgstr "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
+
+#: client/src/components/openWork/QuestsComingSoon.tsx
+msgctxt "quests coming soon banner: the one line under the heading"
+msgid "These are examples of the quests to come. Have one in mind?"
+msgstr "These are examples of the quests to come. Have one in mind?"
 
 #. placeholder {0}: me.needed
 #: client/src/pages/HiddenMap.tsx
@@ -27033,6 +27464,12 @@ msgstr "Your commitment"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{0} things to look at before the next stone:"
 #~ msgstr "{0} things to look at before the next stone:"
+
+#. placeholder {0}: d.grossText
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "treasury queue, what the venture asked for"
+msgid "asked {0}"
+msgstr "asked {0}"
 
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"

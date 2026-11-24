@@ -29,6 +29,7 @@ import {
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
+import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import { Image } from "@/components/Image";
 import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized, Highlighted } from "@/components/PageText";
@@ -37,6 +38,7 @@ import { useModule } from "@/modules/ModuleProvider";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
+import { FOUNDING_CARD_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
 
 
 
@@ -58,14 +60,19 @@ import { uploadSrcSet } from "@shared/uploadVariants";
  * used one: the hover zoom is `transition-transform` and the component's fade
  * is `transition-opacity`, and one would silently cancel the other.
  *
- * The card draws a 112px strip, so an upload is asked for as a 3:1 band at
- * the width the card needs (shared/uploadVariants.ts): the four portraits were
- * 120 to 240 KB each for a strip a tenth of their area. The card is the
- * column's width on a phone and a quarter of the row on a desktop.
+ * The frame is near the photos' own shape (square on a phone, 4:5 in the
+ * desktop row) and the browser gets the whole picture, never the old 3:1 band
+ * the server cut around the centre: a portrait cut to 3:1 kept a quarter of
+ * its height, and the cards showed sky or cut people off at the eyes.
+ * `focus` is the village's own focal point or the top-weighted default
+ * (shared/pathCardArt.ts), and a picture far from the frame's shape is shown
+ * whole on the panel's soft ground instead of being cut.
  */
 const JOURNEY_ART_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
-function JourneyArt({ src, alt }: { src: string | undefined; alt: string }) {
+const JOURNEY_FRAME = "relative -mx-5 -mt-5 mb-4 block aspect-square overflow-hidden rounded-t-2xl bg-muted lg:aspect-[4/5]";
+function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcSet?: string; alt: string; focus: string }) {
   const [failed, setFailed] = useState(false);
+  const [whole, setWhole] = useState(false);
   if (!src || failed) {
     return (
       <div
@@ -84,13 +91,19 @@ function JourneyArt({ src, alt }: { src: string | undefined; alt: string }) {
   return (
     <img
       src={src}
-      srcSet={uploadSrcSet(src, "band")}
+      srcSet={srcSet ?? uploadSrcSet(src)}
       sizes={JOURNEY_ART_SIZES}
       alt={alt}
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      onLoad={(e) => {
+        const img = e.currentTarget;
+        setWhole(shouldShowWhole(img.naturalWidth, img.naturalHeight, img.clientWidth, img.clientHeight));
+      }}
+      style={{ objectPosition: whole ? "50% 50%" : focus }}
+      data-art-fit={whole ? "whole" : "cover"}
+      className={`absolute inset-0 h-full w-full ${whole ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-105`}
     />
   );
 }
@@ -105,10 +118,10 @@ const Fireflies = lazy(() => import("@/components/journey/nature/Fireflies"));
 
 /** What each path card needs that is not words: where it goes, its icon, its picture. */
 const PATH_CARD_LOOK = {
-  investor: { icon: TrendingUp, href: "/investor", color: "bg-amber", imageKey: "investorHero", altKey: "investorHeroAlt" },
-  steward: { icon: Users, href: "/steward", color: "bg-sage", imageKey: "stewardHero", altKey: "stewardHeroAlt" },
-  resident: { icon: HomeIcon, href: "/resident", color: "bg-teal", imageKey: "residentHero", altKey: "residentHeroAlt" },
-  prosperity: { icon: Sparkles, href: "/prosperity", color: "bg-teal-light", imageKey: "prosperityHero", altKey: "prosperityHeroAlt" },
+  investor: { icon: TrendingUp, href: "/investor", color: "bg-amber", imageKey: "investorHero", altKey: "investorHeroAlt", focusKey: "investorHeroFocus" },
+  steward: { icon: Users, href: "/steward", color: "bg-sage", imageKey: "stewardHero", altKey: "stewardHeroAlt", focusKey: "stewardHeroFocus" },
+  resident: { icon: HomeIcon, href: "/resident", color: "bg-teal", imageKey: "residentHero", altKey: "residentHeroAlt", focusKey: "residentHeroFocus" },
+  prosperity: { icon: Sparkles, href: "/prosperity", color: "bg-teal-light", imageKey: "prosperityHero", altKey: "prosperityHeroAlt", focusKey: "prosperityHeroFocus" },
 } as const;
 
 /**
@@ -182,6 +195,7 @@ export default function Home() {
   const ready = !!page && foundingRead !== null;
   const pathsShown = !!paths && !paths.hidden && pathCards.length > 0;
   const waysShown = pathsShown || founding;
+  const stewardShown = pathsShown && pathCards.some((card) => card.id === "steward");
   const foundingLink = (
       <Link href="/roles" className={`${BTN_PRIMARY} min-h-12 px-6 text-base`} data-hero-act="founding">
         {t({ message: "Join the founding team", context: "landing hero main act" })}
@@ -298,8 +312,10 @@ export default function Home() {
 
       {/* THE WAYS IN, overlapping the hero's foot (D-01, D-16). One row on a
           desktop, every card the same height with its door at the bottom; a
-          column on a phone. The founding team leads with the gold edge while
-          the village has the section on. The section keeps its id when it is
+          column on a phone. While the village has its founding team on, the
+          Village Steward card is that team's door (option B, the lead, 24 Nov
+          2026); the gold founding card returns only when the steward path is
+          hidden, so the door never disappears. The section keeps its id when it is
           empty so the hero's "Pick your path" never points at nothing. */}
       {ready ? (
       <>
@@ -319,9 +335,15 @@ export default function Home() {
             </h2>
           )}
           <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
-            {founding && (
+            {/* With no steward card on the page (its path hidden), the founding team keeps a card of its own. */}
+            {founding && !stewardShown && (
               <li className="min-w-0">
                 <Link href="/roles" className={`${WAY_CARD} border-2 border-notice/60`} data-way="founding">
+                  {/* The same frame as the path cards, with a painting from the
+                      platform's nature library, so the row reads as one. */}
+                  <span className={JOURNEY_FRAME}>
+                    <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
+                  </span>
                   <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
                   <span className="mt-2 block font-display text-2xl leading-tight text-foreground">
                     {t({ message: "Founding team", context: "landing, founding team card title" })}
@@ -340,20 +362,35 @@ export default function Home() {
               const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
               if (!look) return null;
               const art = brand[look.imageKey];
+              // Option B (the lead, 24 Nov 2026): "the Village Steward IS the core team and we
+              // should make this clearer". While the village has its founding team on, the
+              // steward card is that team's door: a Paid role label, one plain line, and the
+              // button opens the founding team on /roles. Off, it is the steward path as before.
+              const coreTeam = founding && card.id === "steward";
               return (
                 <li key={card.id} className="min-w-0">
-                  <Link href={look.href} className={`${WAY_CARD} border border-border`}>
+                  <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
                     {/* The village's own art for this way in, when it has added
                         some; a card without art is a quiet card, never a frame. */}
                     {art ? (
-                      <span className="relative -mx-5 -mt-5 mb-4 block h-28 overflow-hidden rounded-t-2xl">
-                        <JourneyArt src={art} alt={altOr(brand[look.altKey], card.title)} />
+                      <span className={JOURNEY_FRAME}>
+                        <JourneyArt src={art} alt={altOr(brand[look.altKey], card.title)} focus={artFocusOr(brand[look.focusKey])} />
+                      </span>
+                    ) : null}
+                    {coreTeam ? (
+                      <span className="mb-2 inline-flex items-center self-start rounded-full border border-notice/60 bg-muted px-2.5 py-0.5 text-xs font-semibold text-notice" data-paid-role="">
+                        {t({ message: "Paid role", context: "landing, the steward card's label while the founding team is on" })}
                       </span>
                     ) : null}
                     <span className="flex flex-wrap items-baseline gap-x-2">
                       <h3 className="font-display text-2xl leading-tight text-foreground">{card.title}</h3>
                       <span className="text-sm text-muted-foreground">{card.subtitle}</span>
                     </span>
+                    {coreTeam ? (
+                      <span className="mt-2 block text-sm font-semibold leading-relaxed text-foreground sm:text-base">
+                        {t({ message: "The founding team who hold the village's core domains.", context: "landing, the steward card's line while the founding team is on" })}
+                      </span>
+                    ) : null}
                     <span className={`mt-2 block ${WAY_BODY}`}>{card.description}</span>
                     <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
                       <span>Choose {card.title}</span>

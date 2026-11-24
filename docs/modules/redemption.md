@@ -167,3 +167,15 @@ that names the money.
 - `server/redemption.routes.e2e.test.ts` drives the doors against the built server, including the
   gate, the open-state refusal and the withdraw door.
 - `server/redemptionModuleSeed.migration.test.ts` runs 0211 twice against seeded rows.
+
+## A venture redeems (0420, credits lane 2)
+
+Members never cash out; a venture does (the lead, 23 Nov 2026). The venture path reuses this
+module's key (`redemption.confirm`), its retiring sink (`sys:redeemed`), its hold-then-burn shape
+and its snapshot law, and keeps its own rows and hold: `org_redemptions` and
+`sys:org-redemption-hold`. It is gated by the dial `ledger.org_redemption_open`, not by this
+module's lifecycle, so a village can keep member redemption off and still let ventures redeem.
+The contract is in docs/ECONOMICS.md, "A venture redeems its credits"; the code in
+`server/lib/orgRedemptions.ts`, `shared/orgRedemptions.ts` and `server/routes/orgRedemptions.ts`;
+the surfaces are the operator's card and the Treasury queue in
+`client/src/components/VentureAccountsCard.tsx`, on the profile's Treasury tab.

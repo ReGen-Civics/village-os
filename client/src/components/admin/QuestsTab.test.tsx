@@ -107,3 +107,49 @@ describe("starter quests in Admin, Quests", () => {
     expect(screen.queryByRole("button", { name: "Keep as a real quest" })).toBeNull();
   });
 });
+
+/*
+ * THE BOARD'S EXAMPLE SWITCH (the lead, 24 Nov 2026). A real quest offers
+ * "Mark as example", which sends exactly `{ isExample: true }` to the save
+ * route; the panel above the list marks every real quest in one press; and a
+ * quest the village marked itself is never counted as a starter.
+ */
+describe("marking quests as examples in Admin, Quests", () => {
+  it("sends the example switch alone to the quest's save route", async () => {
+    const calls = routes({
+      ...board([OWN]),
+      "PUT /api/admin/quests/q-own": { status: 200, body: { ...OWN, isExample: true } },
+    });
+    render(<QuestsTab password="tok" />);
+    fireEvent.click(await screen.findByRole("button", { name: "Mark as example" }));
+    await waitFor(() => expect(calls.some((c) => c.method === "PUT")).toBe(true));
+    const sent = calls.find((c) => c.method === "PUT")!;
+    expect(sent.url).toBe("/api/admin/quests/q-own");
+    expect(sent.body).toEqual({ isExample: true });
+    expect(sent.auth).toBe("Bearer tok");
+  });
+
+  it("marks every real quest after a confirm, and offers no switch on an example", async () => {
+    const calls = routes({
+      ...board([STARTER, OWN]),
+      "POST /api/admin/quests/mark-examples": { status: 200, body: { marked: 1, skipped: [] } },
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("confirm", confirm);
+    render(<QuestsTab password="tok" />);
+    fireEvent.click(await screen.findByRole("button", { name: "Mark all current quests as examples" }));
+    await waitFor(() => expect(calls.some((c) => c.url === "/api/admin/quests/mark-examples")).toBe(true));
+    expect(confirm).toHaveBeenCalledTimes(1);
+    // Only the real quest carries the per-quest switch.
+    expect(screen.getAllByRole("button", { name: "Mark as example" })).toHaveLength(1);
+  });
+
+  it("does not call the village's own marked quest a starter, and hides the panel when nothing is real", async () => {
+    routes(board([{ ...OWN, isExample: true }]));
+    render(<QuestsTab password="tok" />);
+    expect(await screen.findByRole("button", { name: "Keep as a real quest" })).toBeTruthy();
+    expect(screen.queryByText(/starter quest/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Mark all current quests as examples" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Mark as example" })).toBeNull();
+  });
+});

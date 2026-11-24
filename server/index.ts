@@ -293,6 +293,7 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
+import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerPayRoutes } from "./routes/pay";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
@@ -328,6 +329,7 @@ import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
+import { pathArtFocus } from "../shared/pathCardArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
 import { register as registerWalletRoutes } from "./routes/wallet";
@@ -570,7 +572,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
-import { livingHandle, loadGratitude, loadProfile, loadStanding, publicView, userIdForHandle } from "./lib/profile";
+import { livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
 import { seedEconomy, suggestClassTags } from "./lib/economySeed";
@@ -2926,6 +2928,7 @@ function mergedConfig() {
       masterPlanHeroAlt: alt("masterPlanHeroAlt"),
       logoAlt: alt("logoAlt"),
       heartLogoAlt: alt("heartLogoAlt"),
+      ...pathArtFocus(brand.images as Record<string, unknown>), // each path card picture's optional focal point (shared/pathCardArt.ts)
     },
   };
 }
@@ -13164,8 +13167,10 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
    * the denominator itself.
    */
   app.get("/api/village/powers", async (req, res) => {
-    const user = await authedUser(req);
-    if (!user) return res.status(401).json({ error: "auth_required" });
+    // A visitor reads this too (the lead, 24 Nov 2026): the powers, the roles holding them and FIRST names only,
+    // which is all a row carries. A member who keeps their roles off their profile (showRoles false) is left out
+    // for a visitor, and under `org.public_people` off peopleLockMiddleware takes the first names out.
+    const hiddenFromVisitors = (await authedUser(req)) ? new Set<string>() : await membersHidingRoles(getPool());
     const holdings = await capabilityHoldings(getPool());
     const holders = new Map<string, PowerHolder>(
       holdings.map((h) => [
@@ -13175,7 +13180,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
     );
     // Who holds each power today through a role, too (server/lib/villagePowers.ts), so a power a role
     // carries is never described as the admin panel's. Fixed order, no count: the R55 rules hold there.
-    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m)).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
+    const people = new Map((await members.all()).filter((m: any) => !isExampleUser(m) && !hiddenFromVisitors.has(String(m.id))).map((m: any) => [String(m.id), { full: String(m.name ?? ""), first: firstName(m.name ?? "Member") }]));
     const orgNames = new Map((await listOrgRoles(getPool())).map((r) => [r.id, r.name]));
     const ladder = servedLadder(mergedConfig().project.commitmentName) as Array<{ id: string; name?: string }>;
     const unlock = stageUnlockOverridesFromVars();
@@ -17918,6 +17923,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerRewardMomentRoutes(app, { authedUser, getPool, overLimit });
   registerSeasonSummaryRoutes(app, { authedUser, getPool, seasonState }); // idea 4: a member's season summed up (server/routes/seasonSummary.ts)
   registerRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, openRedemptionBallot: (id: string) => openRedemptionVote(id), overLimit, projectCurrency: () => mergedConfig().project.fiatCurrency, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") });
+  registerOrgRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, notifyAdmins, overLimit, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") }); // 0420: a venture redeems its credits (server/routes/orgRedemptions.ts)
   registerPayRoutes(app, { authedUser, getPool, members, overLimit, projectCurrency: () => String(mergedConfig().project.fiatCurrency ?? "") }); // the send and receive page's reads; sending stays on /api/wallet/send (server/routes/pay.ts)
   registerClosingPolicyRoutes(app, { isAdmin, adminActor, getPool, exitPolicy: exitPolicyRepo, ballot: { authedUser, capabilityCtx, notify, weightModeNow, buildElectorate, addActivity } });
 

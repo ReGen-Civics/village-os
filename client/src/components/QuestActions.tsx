@@ -8,6 +8,7 @@ import { claimMoment } from "@/lib/celebrated";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { playMoment } from "@/lib/sound";
 import { linesWords, type WorkPay } from "@/lib/workPay";
+import { useLingui } from "@lingui/react/macro";
 
 // questIdFromTitle is gone (S10): quest ids are REAL server references now.
 // Deriving ids from titles meant a rename silently orphaned every claim.
@@ -114,10 +115,18 @@ export default function QuestActions({
   claim,
   decimals = 0,
   pay,
+  isExample = false,
   onChanged,
 }: {
   questId: string;
   signedIn: boolean;
+  /**
+   * An example of the work to come (the lead, 24 Nov 2026). It cannot be
+   * taken, so the act is a disabled "Example quest" for everybody, signed in
+   * or not, and the stamp on the poster says why. The claim route refuses an
+   * example whatever this says.
+   */
+  isExample?: boolean;
   claim: QuestClaim | undefined;
   /**
    * The recognition token's scale, from `/api/game/me`'s `gratitude.decimals`.
@@ -134,6 +143,25 @@ export default function QuestActions({
   const [artifactUrl, setArtifactUrl] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const { t } = useLingui();
+
+  if (isExample && (!claim || claim.status === "declined")) {
+    return (
+      <div className="px-6 py-3 border-t border-border">
+        <button
+          type="button"
+          disabled
+          className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2 text-sm font-semibold text-muted-foreground"
+          data-example-take
+        >
+          {t({ message: "Example quest", context: "quest page: the take button on an example, disabled" })}
+        </button>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          {t({ message: "This shows the kind of quest to come. It cannot be taken.", context: "quest page: under the disabled take button on an example" })}
+        </p>
+      </div>
+    );
+  }
 
   // This is the conversion CTA for every signed-out visitor on the quests
   // board — it was a 17px tap target, under WCAG 2.5.8's 24px floor and well

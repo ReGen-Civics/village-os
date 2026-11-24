@@ -40,14 +40,15 @@
   {
     "id": "treasury",
     "name": "Treasury",
-    "description": "Keeps the money legible: tracks budgets and allocations, lists tokens and posts their prices, marks the cash the village owes as paid, and carries each cycle's report to the village.",
+    "description": "Keeps the money legible: tracks budgets and allocations, lists tokens and posts their prices, marks the cash the village owes as paid, confirms a venture's redemption once it has paid it, and carries each cycle's report to the village.",
     "capabilities": [
       "proposal.open",
       "forum.post",
       "exchange.manage",
       "cash.pay",
       "role.pay",
-      "pot.steward"
+      "pot.steward",
+      "redemption.confirm"
     ],
     "minStage": "member",
     "order": 3

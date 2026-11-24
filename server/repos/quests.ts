@@ -514,6 +514,67 @@ export async function keepExampleQuest(
   }
 }
 
+/** What marking a quest as an example answers with. */
+export type QuestMark =
+  | { ok: true; quest: QuestRecord }
+  | { ok: false; reason: "missing" | "already_example" }
+  | { ok: false; reason: "in_flight"; count: number };
+
+/**
+ * MARK A REAL QUEST AS AN EXAMPLE (the lead, 24 Nov 2026: "put a big example
+ * stamp on the existing cards and say quests coming soon").
+ *
+ * The other direction from `keepExampleQuest`. The quest stays on the board,
+ * stamped, and every claim on it is refused from this moment, because the
+ * claim gate already refuses an example.
+ *
+ * SETTLE FIRST, the rule `remove` applies: a claim in flight is someone's
+ * work, and the submit route refuses an example, so marking it would strand
+ * that work with no way to turn it in. Counted under the quest's row lock,
+ * the lock `openClaim` takes, so no claim lands between the count and the
+ * flag. The UPDATE carries `AND is_example = 0`, so it changes one real row
+ * or nothing.
+ *
+ * A marked quest is never a starter. Retirement and the starter counts are
+ * scoped to the seeded ids (`STARTER_QUEST_IDS` in server/repos/questExamples.ts),
+ * so posting a real quest later does not delete the quests a village marked.
+ */
+export async function markQuestExample(pool: Pool, id: string): Promise<QuestMark> {
+  return withDeadlockRetry(async () => {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      const [rows] = await conn.query<RowDataPacket[]>(`${QUEST_SELECT} WHERE id = ? FOR UPDATE`, [id]);
+      if (!rows[0]) {
+        await conn.rollback();
+        return { ok: false, reason: "missing" } as const;
+      }
+      const quest = rowToQuest(rows[0]);
+      if (quest.isExample) {
+        await conn.rollback();
+        return { ok: false, reason: "already_example" } as const;
+      }
+      const [[inFlight]] = await conn.query<RowDataPacket[]>(
+        "SELECT COUNT(*) AS n FROM quest_claims WHERE quest_id = ? AND status IN ('claimed','submitted')",
+        [id],
+      );
+      const count = Number(inFlight?.n ?? 0);
+      if (count > 0) {
+        await conn.rollback();
+        return { ok: false, reason: "in_flight", count } as const;
+      }
+      await conn.query("UPDATE quests SET is_example = 1 WHERE id = ? AND is_example = 0", [id]);
+      await conn.commit();
+      return { ok: true, quest: { ...quest, isExample: true } } as const;
+    } catch (e) {
+      await conn.rollback();
+      throw e;
+    } finally {
+      conn.release();
+    }
+  });
+}
+
 // â”€â”€ Claims â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface ClaimRecord {

@@ -26,6 +26,7 @@
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import type { Inventory } from "../../shared/profileInventory";
+import { readPrivacyBlobs } from "../repos/profileInventory";
 
 export interface Privacy {
   /** Where they sleep is not public data. */
@@ -68,6 +69,19 @@ export function resolvePrivacy(raw: unknown): Privacy {
     if (typeof src[key] === "boolean") out[key] = src[key] as boolean;
   }
   return out;
+}
+
+/**
+ * The members who keep their roles off their public profile (`showRoles` false). A page a visitor reads that
+ * names role holders leaves these members out (the lead, 24 Nov 2026: honour a member's own privacy setting).
+ * An unset or junk flag reads as its default, which shows roles, exactly as resolvePrivacy reads it.
+ */
+export async function membersHidingRoles(pool: Pool): Promise<Set<string>> {
+  const hidden = new Set<string>();
+  (await readPrivacyBlobs(pool)).forEach((raw, id) => {
+    if (!resolvePrivacy(raw).showRoles) hidden.add(id);
+  });
+  return hidden;
 }
 
 export interface ProfileView {

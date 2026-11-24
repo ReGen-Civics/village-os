@@ -81,6 +81,25 @@ export async function readPrivacyBlob(pool: Pool, userId: string): Promise<unkno
   }
 }
 
+/** Every member's stored privacy blob that is set, parsed the way readPrivacyBlob parses one, by member id. */
+export async function readPrivacyBlobs(pool: Pool): Promise<Map<string, unknown>> {
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT `id`, `privacy` FROM `users` WHERE `privacy` IS NOT NULL");
+  const out = new Map<string, unknown>();
+  for (const r of rows) {
+    const raw: unknown = r.privacy;
+    if (typeof raw !== "string") {
+      out.set(String(r.id), raw ?? null);
+      continue;
+    }
+    try {
+      out.set(String(r.id), JSON.parse(raw));
+    } catch {
+      out.set(String(r.id), null);
+    }
+  }
+  return out;
+}
+
 /** Write the whole resolved blob. */
 export async function writePrivacyBlob(pool: Pool, userId: string, privacy: object): Promise<void> {
   await pool.query("UPDATE `users` SET `privacy` = ? WHERE `id` = ?", [JSON.stringify(privacy), userId]);

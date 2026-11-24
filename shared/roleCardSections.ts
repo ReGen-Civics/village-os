@@ -33,6 +33,12 @@
  *                     "Apply by Mon 30 Nov" on the card's front (the lead, 23 Nov
  *                     2026). Absent: no date. Kept here, in the JSON document,
  *                     so it needs no column and no migration
+ *   relatedRoles      the roles a lead role will onboard, as role ids in the
+ *                     order the card draws them, at most 12 (the lead, 24 Nov
+ *                     2026). Set, it replaces the list /roles derives from the
+ *                     coming-soon roles of the circles the lead leads, and may
+ *                     name open, coming-soon or held roles in any circle.
+ *                     Absent or empty: the derived list, as before
  *
  * NO RANGE AND NO MINIMUM EVER LIVE HERE. The one figure is the ceiling, in its
  * own typed field; a share is a percent of the whole, and an amount written
@@ -71,6 +77,8 @@ export interface RoleCardSections {
   where?: string;
   /** The last day to apply, a civil date (YYYY-MM-DD). Absent: no date on the card. */
   applyBy?: string;
+  /** The roles this lead role will onboard, by id, in the card's order. Absent or empty: /roles derives them. */
+  relatedRoles?: string[];
 }
 
 /**
@@ -116,9 +124,10 @@ export const SECTION_LIMITS = {
   shares: 5,
   shareLabelChars: 40,
   payNoteChars: 300,
+  relatedRoles: 12,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where", "applyBy"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where", "applyBy", "relatedRoles"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -174,6 +183,11 @@ export const SECTION_PROBLEMS = {
   visibility: "Choose who sees the listed price: the village setting, everyone, or only the card's editors.",
   wording: "Choose how the listed price reads: the village setting, one figure, or each share's amount.",
   applyBy: "Write the last day to apply as a real date, year-month-day, like 2026-11-30.",
+  relatedList: "The related roles are a list of role ids.",
+  relatedUnknown: (id: string) => `There is no role with the id ${id}.`,
+  relatedSelf: "A role cannot name itself as a related role.",
+  relatedDuplicate: (id: string) => `The related roles name ${id} twice.`,
+  relatedTooMany: `At most ${SECTION_LIMITS.relatedRoles} related roles.`,
 } as const;
 
 export const EMPTY_SECTIONS: RoleCardSections = {
@@ -267,6 +281,50 @@ export function readApplyBy(raw: unknown): { ok: true; value: string } | { ok: f
   return { ok: true, value: t };
 }
 
+/** What `readSections` checks the related roles against: the card's own role and which ids are real roles. */
+export interface SectionsContext {
+  /** The role the sections belong to, so it cannot name itself. */
+  roleId?: string;
+  /** Whether an id is a real role of this village. Left out (a stored document read back, the browser): any id passes. */
+  isRole?: (id: string) => boolean;
+}
+
+/**
+ * The related roles: distinct role ids, at most 12, never the card's own role, each a real role when the reader
+ * can tell. Order kept: it is the order the card draws them.
+ */
+export function readRelatedRoles(raw: unknown, ctx: SectionsContext = {}): { ok: true; value: string[] } | { ok: false; problem: string } {
+  if (raw === null || raw === undefined || raw === "") return { ok: true, value: [] };
+  if (!Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.relatedList };
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string") return { ok: false, problem: SECTION_PROBLEMS.relatedList };
+    const id = item.trim();
+    if (!id) continue;
+    if (id.length > 120) return { ok: false, problem: SECTION_PROBLEMS.relatedList };
+    if (ctx.roleId && id === ctx.roleId) return { ok: false, problem: SECTION_PROBLEMS.relatedSelf };
+    if (out.includes(id)) return { ok: false, problem: SECTION_PROBLEMS.relatedDuplicate(id) };
+    if (ctx.isRole && !ctx.isRole(id)) return { ok: false, problem: SECTION_PROBLEMS.relatedUnknown(id) };
+    out.push(id);
+  }
+  if (out.length > SECTION_LIMITS.relatedRoles) return { ok: false, problem: SECTION_PROBLEMS.relatedTooMany };
+  return { ok: true, value: out };
+}
+
+/**
+ * The held sections with any related role that is no longer a role taken out, before a partial change is laid over
+ * them: a role removed since the list was written must not make an unrelated save (the qualities, say) refuse.
+ */
+export function withoutGoneRelated<T extends { relatedRoles?: string[] }>(s: T, isRole: (id: string) => boolean): T {
+  if (!s.relatedRoles?.length) return s;
+  const kept = s.relatedRoles.filter(isRole);
+  if (kept.length === s.relatedRoles.length) return s;
+  const out = { ...s };
+  if (kept.length) out.relatedRoles = kept;
+  else delete out.relatedRoles;
+  return out;
+}
+
 /** A choice from a closed list, where "village" (or nothing) reads as absent: the village decides. */
 function choice<T extends string>(raw: unknown, allowed: readonly T[]): { ok: true; value: Exclude<T, "village"> | undefined } | { ok: false } {
   if (raw === null || raw === undefined || raw === "" || raw === "village") return { ok: true, value: undefined };
@@ -299,7 +357,7 @@ export function readPayShape(raw: unknown): { ok: true; value: PayShare[] } | { 
  * document alike. A key left out reads as empty: the editor always sends the
  * whole set, so leaving a field blank clears it.
  */
-export function readSections(raw: unknown): SectionsRead {
+export function readSections(raw: unknown, ctx: SectionsContext = {}): SectionsRead {
   if (raw === null || raw === undefined) return { ok: true, value: { ...EMPTY_SECTIONS } };
   if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.notSections, field: "sections" };
   const o = raw as Record<string, unknown>;
@@ -333,6 +391,8 @@ export function readSections(raw: unknown): SectionsRead {
   if (!where.ok) return { ...where, field: "sections.where" };
   const applyBy = readApplyBy(o.applyBy);
   if (!applyBy.ok) return { ...applyBy, field: "sections.applyBy" };
+  const related = readRelatedRoles(o.relatedRoles, ctx);
+  if (!related.ok) return { ...related, field: "sections.relatedRoles" };
   const paid = o.paid === true || o.paid === "true" || o.paid === 1;
   return {
     ok: true,
@@ -354,6 +414,7 @@ export function readSections(raw: unknown): SectionsRead {
       ...(onboarding.value.length ? { onboarding: onboarding.value } : {}),
       ...(where.value ? { where: where.value } : {}),
       ...(applyBy.value ? { applyBy: applyBy.value } : {}),
+      ...(related.value.length ? { relatedRoles: related.value } : {}),
     },
   };
 }

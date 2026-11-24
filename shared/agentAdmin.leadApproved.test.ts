@@ -184,6 +184,9 @@ describe("the body half", () => {
     // The last day to apply is the card's listing, never its pay (the lead, 23 Nov 2026): an agent may set it.
     expect(AGENT_SECTION_KEYS).toContain("applyBy");
     expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { applyBy: "2026-11-30" } })).toBeNull();
+    // The related roles a lead role will onboard are role ids, never pay (the lead, 24 Nov 2026): an agent may set them.
+    expect(AGENT_SECTION_KEYS).toContain("relatedRoles");
+    expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { relatedRoles: ["r-2", "r-3"] } })).toBeNull();
     for (const k of ["paid", "payShape", "payNote", "payCeiling", "paySplitNote", "somethingElse"]) {
       expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { qualities: ["x"], [k]: 1 } }), k).toContain(`sections.${k}`);
     }

@@ -5,11 +5,14 @@
  * full card draws (client/src/components/roleCard/FullRoleCard.tsx) is written
  * here, so the full card shows exactly what the editor holds.
  *
+ * The related roles a lead role will onboard (the lead, 24 Nov 2026) are chosen here from the village's roles, in the
+ * order the card shows them; left empty, /roles keeps the list it derives from the circles the role leads.
+ *
  * Fills the form only. The editor's one SAVE sends the whole set, the server
  * reads it with `readSections` (shared/roleCardSections.ts) and refuses an
  * amount or a range in words.
  */
-import { Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { FOCUS_TOKEN } from "@shared/focusLine";
 import { CEILING_PERIODS, EMPTY_SECTIONS, PAY_VISIBILITIES, PAY_WORDINGS, SECTION_LIMITS, SECTION_WORDS, type PayVisibility, type PayWording, type RoleCardSections } from "@shared/roleCardSections";
@@ -40,6 +43,8 @@ export interface SectionsForm {
   where: string;
   /** The last day to apply, YYYY-MM-DD, or empty. */
   applyBy: string;
+  /** The related roles a lead role will onboard, by id, in the card's order. Empty: /roles derives them. */
+  relatedRoles: string[];
 }
 
 export function sectionsFormOf(s: RoleCardSections | undefined | null): SectionsForm {
@@ -62,6 +67,7 @@ export function sectionsFormOf(s: RoleCardSections | undefined | null): Sections
     onboarding: (v.onboarding ?? []).join("\n"),
     where: v.where ?? "",
     applyBy: v.applyBy ?? "",
+    relatedRoles: [...(v.relatedRoles ?? [])],
   };
 }
 
@@ -88,6 +94,7 @@ export function sectionsOf(f: SectionsForm): Record<string, unknown> {
     onboarding: lines(f.onboarding),
     where: f.where.trim(),
     applyBy: f.applyBy.trim(),
+    relatedRoles: f.relatedRoles,
   };
 }
 
@@ -109,11 +116,80 @@ function Field({ label, changed, children }: { label: string; changed: boolean; 
   );
 }
 
-export default function SectionsFields({ value, start, onChange }: { value: SectionsForm; start: SectionsForm; onChange: (v: SectionsForm) => void }) {
+/**
+ * "Related roles this role will onboard": a list of the village's roles, in order, each moved or taken out, and one
+ * picker that adds the next. A role the list names that is no longer offered (removed since) shows its id, to take out.
+ */
+function RelatedRolesField({ value, roles, onChange }: { value: string[]; roles: ReadonlyArray<{ id: string; name: string }>; onChange: (v: string[]) => void }) {
+  const { t } = useLingui();
+  const nameOf = (id: string) => roles.find((r) => r.id === id)?.name ?? id;
+  const left = roles.filter((r) => !value.includes(r.id));
+  const most = SECTION_LIMITS.relatedRoles;
+  const full = value.length >= most;
+  const move = (i: number, by: -1 | 1) => {
+    const j = i + by;
+    if (j < 0 || j >= value.length) return;
+    const next = [...value];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const addLabel = t({ message: "Add a related role", context: "role editor: choose a role to add to the related roles" });
+  return (
+    <div data-editor-related-roles="">
+      {value.length > 0 && (
+        <ol className="mb-2 space-y-2">
+          {value.map((id, i) => {
+            const role = nameOf(id);
+            return (
+              <li key={id} className="flex flex-wrap items-center gap-2" data-editor-related-role={id}>
+                {/* The name keeps a readable width; on a phone the three buttons wrap under it. */}
+                <span className="flex min-w-0 grow basis-48 items-center gap-2">
+                  <span className="w-6 shrink-0 text-sm text-muted-foreground">{i + 1}</span>
+                  <span className="min-w-0 break-words text-sm text-foreground">{role}</span>
+                </span>
+                <span className="flex gap-2">
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} up`, context: "role editor: related roles" })} disabled={i === 0} onClick={() => move(i, -1)}>
+                    <ArrowUp className="size-4" />
+                  </button>
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Move ${role} down`, context: "role editor: related roles" })} disabled={i === value.length - 1} onClick={() => move(i, 1)}>
+                    <ArrowDown className="size-4" />
+                  </button>
+                  <button type="button" className={SECONDARY} aria-label={t({ message: `Remove ${role}`, context: "role editor: related roles" })} onClick={() => onChange(value.filter((x) => x !== id))}>
+                    <Trash2 className="size-4" />
+                  </button>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <select
+        className={INPUT}
+        value=""
+        disabled={full || left.length === 0}
+        aria-label={addLabel}
+        onChange={(e) => {
+          if (e.target.value) onChange([...value, e.target.value]);
+        }}
+        data-editor-related-add=""
+      >
+        <option value="">{full ? t({ message: `The list holds ${most}, the most it takes`, context: "role editor: related roles, the list is full" }) : addLabel}</option>
+        {left.map((r) => (
+          <option key={r.id} value={r.id}>
+            {r.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export default function SectionsFields({ value, start, onChange, roles = [] }: { value: SectionsForm; start: SectionsForm; onChange: (v: SectionsForm) => void; roles?: ReadonlyArray<{ id: string; name: string }> }) {
   const { t } = useLingui();
   const set = <K extends keyof SectionsForm>(k: K, v: SectionsForm[K]) => onChange({ ...value, [k]: v });
   const same = (k: keyof SectionsForm) => JSON.stringify(value[k]) === JSON.stringify(start[k]);
   const total = value.payShape.reduce((n, x) => n + (Number(x.pct) || 0), 0);
+  const relatedMost = SECTION_LIMITS.relatedRoles;
 
   return (
     <section className={`${PANEL} space-y-3`} aria-labelledby="re-sections" data-editor-sections="">
@@ -141,6 +217,10 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
       <Field label={SECTION_WORDS.onboarding} changed={!same("onboarding")}>
         <p className={LEDE}>{t({ message: "The first steps once someone is chosen, one per line. Empty: the village's own steps show.", context: "role editor: how to write the onboarding steps" })}</p>
         <textarea className={AREA} value={value.onboarding} onChange={(e) => set("onboarding", e.target.value)} aria-label={SECTION_WORDS.onboarding} data-editor-onboarding="" />
+      </Field>
+      <Field label={t({ message: "Related roles this role will onboard", context: "role editor: the related roles a lead role names" })} changed={!same("relatedRoles")}>
+        <p className={LEDE}>{t({ message: `The roles this role brings in, in the order the card shows them, up to ${relatedMost}. Open, upcoming and held roles from any circle can be named. Empty: the card shows the upcoming roles of the circles this role leads.`, context: "role editor: how the related roles work" })}</p>
+        <RelatedRolesField value={value.relatedRoles} roles={roles} onChange={(v) => set("relatedRoles", v)} />
       </Field>
       <Field label={SECTION_WORDS.idealBackground} changed={!same("idealBackground")}>
         <textarea className={AREA} value={value.idealBackground} onChange={(e) => set("idealBackground", e.target.value)} aria-label={SECTION_WORDS.idealBackground} />
