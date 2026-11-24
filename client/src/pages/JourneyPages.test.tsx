@@ -24,7 +24,7 @@ class NoopIntersectionObserver {
 }
 vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver);
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ComponentType, ReactNode } from "react";
 import { fillVars, markerDocument } from "@shared/pageContent/resolve";
@@ -326,8 +326,8 @@ describe("/investor", () => {
       },
     };
     show(InvestorJourney);
-    expect(await screen.findByText("Building")).toHaveClass("bg-gold");
-    expect(screen.getByText("Dreaming")).not.toHaveClass("bg-gold");
+    expect(await screen.findByText("Building")).toHaveClass("bg-notice");
+    expect(screen.getByText("Dreaming")).not.toHaveClass("bg-notice");
     expect(screen.getByRole("progressbar", { name: "Barn" })).toHaveAttribute("aria-valuenow", "40");
     expect(screen.getByRole("progressbar", { name: "Orchard" })).toHaveAttribute("aria-valuenow", "0");
   });
@@ -380,6 +380,49 @@ describe("/investor", () => {
     await screen.findByText(fieldDefault(INVESTOR_JOURNEY, "steps", "heading"));
     expect(screen.queryByText(fieldDefault(INVESTOR_JOURNEY, "phases", "heading"))).toBeNull();
     expect(screen.queryByRole("progressbar")).toBeNull();
+  });
+
+  it("draws no reasons of its own until the village writes one, and then draws each", async () => {
+    expect(listDefault(INVESTOR_JOURNEY, "case", "points")).toEqual([]);
+    show(InvestorJourney);
+    await screen.findByText(fieldDefault(INVESTOR_JOURNEY, "steps", "heading"));
+    expect(screen.queryByText(fieldDefault(INVESTOR_JOURNEY, "case", "heading"))).toBeNull();
+  });
+
+  it("draws the village's reasons, numbered, under its heading", async () => {
+    state.pages[pageSectionKey(INVESTOR_JOURNEY)] = {
+      case: { heading: "Why here", points: [{ title: "Water on the land", detail: "Two springs." }, { title: "A permit filed", detail: "Under review." }] },
+    };
+    show(InvestorJourney);
+    expect(await screen.findByText("Why here")).toBeInTheDocument();
+    expect(screen.getByText("Water on the land")).toBeInTheDocument();
+    expect(screen.getByText("A permit filed")).toBeInTheDocument();
+  });
+
+  it("says once, on the page, that it is not an offer, and says it again in each form", async () => {
+    show(InvestorJourney);
+    const line = fieldDefault(INVESTOR_JOURNEY, "notice", "body");
+    expect(await screen.findAllByText(line)).toHaveLength(1);
+    fireEvent.click((await screen.findAllByRole("button", { name: /Request Investor Pack/ }))[0]);
+    await screen.findByRole("button", { name: /Send Request/ });
+    expect(screen.getAllByText(line)).toHaveLength(2);
+  });
+
+  it("drops the notice where the village switched it off", async () => {
+    state.pages[pageSectionKey(INVESTOR_JOURNEY)] = { notice: { hidden: true } };
+    show(InvestorJourney);
+    await screen.findByText(fieldDefault(INVESTOR_JOURNEY, "steps", "heading"));
+    expect(screen.queryByText(fieldDefault(INVESTOR_JOURNEY, "notice", "body"))).toBeNull();
+  });
+
+  it("names the risks plainly: the opening sentence by default, and each risk the village lists", async () => {
+    show(InvestorJourney);
+    expect(await screen.findByText(fieldDefault(INVESTOR_JOURNEY, "risks", "intro"))).toBeInTheDocument();
+    cleanup();
+    state.pages[pageSectionKey(INVESTOR_JOURNEY)] = { risks: { intro: "", items: [{ title: "Permits can slip", detail: "Approval may take longer." }] } };
+    show(InvestorJourney);
+    expect(await screen.findByText("Permits can slip")).toBeInTheDocument();
+    expect(screen.getByText(fieldDefault(INVESTOR_JOURNEY, "risks", "heading"))).toBeInTheDocument();
   });
 
   it("draws only the figures a village stated, under the sentence for stated figures", async () => {

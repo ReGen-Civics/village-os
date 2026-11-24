@@ -10523,6 +10523,12 @@ msgctxt "resident path ticked off"
 msgid "{walkedCount} of {stepCount} steps completed"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/InvestorJourney.tsx
+msgctxt "investor path ticked off"
+msgid "{walkedCount} of {stepCount} steps completed"
+msgstr "{walkedCount} de {stepCount} pasos completados"
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Type the confirmation"

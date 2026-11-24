@@ -43,6 +43,8 @@ const HELD = PAGE_SPECS.filter((spec) => !NOT_HELD.includes(pageSectionKey(spec)
 const ADDED_SINCE: Readonly<Record<string, { sections: readonly string[]; fields: readonly string[] }>> = {
   "page-journey-steward": { sections: ["tracks", "crossover", "foundingTeam", "extras"], fields: ["getToKnow.exceptions"] },
   "page-journey-resident": { sections: ["entry"], fields: [] },
+  // The investor remake (24 Nov 2026): the reasons, the "not an offer" line and the risks.
+  "page-journey-investor": { sections: ["case", "notice", "risks"], fields: [] },
 };
 
 /** The adopted document without the parts added after the adoption. */
