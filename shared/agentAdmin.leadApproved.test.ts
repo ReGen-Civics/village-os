@@ -14,6 +14,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   adminRequestDecision,
+  AGENT_SECTION_KEYS,
   AGENT_WORDING_VARIABLES,
   ALWAYS_A_PERSON,
   alwaysAPerson,
@@ -180,6 +181,9 @@ describe("the body half", () => {
     const p = "/api/org/role-edit/r-1";
     expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { idealBackground: ["Ideally, you studied finance or law"], qualities: ["Calm"] } })).toBeNull();
     expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { aiSupport: "A companion", aiCompanion: "Heron" } })).toBeNull();
+    // The last day to apply is the card's listing, never its pay (the lead, 23 Nov 2026): an agent may set it.
+    expect(AGENT_SECTION_KEYS).toContain("applyBy");
+    expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { applyBy: "2026-11-30" } })).toBeNull();
     for (const k of ["paid", "payShape", "payNote", "payCeiling", "paySplitNote", "somethingElse"]) {
       expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { qualities: ["x"], [k]: 1 } }), k).toContain(`sections.${k}`);
     }

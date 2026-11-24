@@ -625,13 +625,9 @@ export default function Layout({ children }: LayoutProps) {
                     {tokenName} Wall
                   </Link>
                 </li>
-                {storyShown("/work-with-us") && (
-                  <li>
-                    <Link href="/work-with-us" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/work-with-us", "Work With Us")}
-                    </Link>
-                  </li>
-                )}
+                {/* Work with us: the four ways to build, top of /roles, and the partner form (the lead, 23 Nov 2026). */}
+                <li><Link href="/roles#four-ways" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center" data-footer-four-ways="">{footerName("/work-with-us", "Work With Us")}</Link></li>
+                <li><Link href="/partner" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">{t({ message: "Become a partner", context: "four ways to build: a partnership" })}</Link></li>
               </ul>
             </div>
 

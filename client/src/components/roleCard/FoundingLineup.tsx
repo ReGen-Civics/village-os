@@ -26,18 +26,21 @@
  * the open roles), and each role one framed panel, its card opening inside its own frame, so a reader always
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
-import { Fragment, lazy, Suspense, type ReactNode } from "react";
-import { ArrowRight, LayoutList, Sprout, Target } from "lucide-react";
+import { lazy, Suspense, type ReactNode } from "react";
+import { LayoutList, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
-import { fillLine } from "./cardWordsT";
+import { applyByWords, frontKind, pillKind, volunteerLine } from "./frontWords";
+import { cardPay, NO_VILLAGE_PAY, type VillagePay } from "@shared/roleCardSections";
+import { useShareNames } from "@/components/ContributionWord";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { useRoleArt } from "@/lib/natureArt";
-import { domainsHeld } from "@shared/rolePieces";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import type { FoundingRole } from "./FoundingTeam";
+import { Domains, FillMeter, OpenPill } from "./lineupParts";
+import FoundingRow from "./FoundingRow";
 import type { FilledRole, LineupView } from "./RosterCards";
 
 export type { FilledRole, LineupView };
@@ -47,39 +50,6 @@ const RosterList = lazy(() => import("./RosterCards"));
 
 const archetypesOf = (seat: Record<string, any>): string[] => (Array.isArray(seat?.archetypes) ? seat.archetypes.map(String) : []);
 const characterArtOf = (seat: Record<string, any>) => roleArtFor({ archetypes: archetypesOf(seat), raw: seat });
-
-/** The domains a role holds, from its own domain words. */
-const domainsOf = (seat: Record<string, any>): string[] => domainsHeld(typeof seat?.domain === "string" ? seat.domain : "");
-
-/** "Domains they hold": the role's domains as quiet chips. */
-function Domains({ seat, center = false }: { seat: Record<string, any>; center?: boolean }) {
-  const { t } = useLingui();
-  const list = domainsOf(seat);
-  if (list.length === 0) return null;
-  return (
-    <div className={`mt-2 grid gap-1.5 ${center ? "justify-items-center text-center" : ""}`} data-domains-held="">
-      <p className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{t({ message: "Domains they hold", context: "founding team: the domains a role holds" })}</p>
-      <ul className={`flex flex-wrap gap-1.5 ${center ? "justify-center" : ""}`}>
-        {list.map((d) => (
-          <li key={d} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-card-foreground">
-            <Sprout className="size-3 text-notice" aria-hidden="true" />
-            {d}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function OpenPill() {
-  const { t } = useLingui();
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-notice bg-background/80 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest text-notice">
-      <span className="size-1.5 rounded-full bg-notice motion-safe:animate-pulse" aria-hidden="true" />
-      {t({ message: "Open role", context: "founding team: nobody holds this role yet" })}
-    </span>
-  );
-}
 
 export interface FoundingLineupProps {
   roles: FoundingRole[];
@@ -106,56 +76,15 @@ export interface FoundingLineupProps {
   onOpenAdded?: (id: string) => void;
   /** Whether the team sheet draws the roles held now. The /roles page draws them itself, below its other groups. */
   sheetRoster?: boolean;
+  /** The village's pay shape, for the front's pay mix where a card writes none of its own (the lead, 23 Nov 2026). */
+  villagePay?: VillagePay | null;
 }
 
-/** "Roles to be added:", the roles still to come under a lead role, each one press away (the lead, 21 Nov 2026). */
-function ToBeAdded({ roles, onOpen }: { roles: ReadonlyArray<{ id: string; name: string }>; onOpen?: (id: string) => void }) {
-  const { t } = useLingui();
-  if (roles.length === 0) return null;
-  return (
-    <p className="mt-2 text-sm text-muted-foreground" data-roles-to-be-added="">
-      <span className="font-semibold text-card-foreground">{t({ message: "Roles to be added:", context: "under a lead role: the coming-soon roles of the circles it leads" })}</span>{" "}
-      {roles.map((c, i) => (
-        <Fragment key={c.id}>
-          {i > 0 && " · "}
-          {onOpen ? (
-            <button type="button" onClick={() => onOpen(c.id)} className="min-h-11 font-medium text-notice underline underline-offset-2 hover:text-foreground" data-role-to-be-added={c.id}>
-              {c.name}
-            </button>
-          ) : (
-            <span data-role-to-be-added={c.id}>{c.name}</span>
-          )}
-        </Fragment>
-      ))}
-    </p>
-  );
-}
-
-/**
- * HOW FULL A ROLE IS (Rye, 14 Nov 2026, ruling 4): what its holders give against what it needs, as a bar
- * and in words, "50% held · 50% open" or "120% held · covered". A shared role stays open below its target.
- * It shows the role's need, never anyone's worth.
- */
-function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
-  const { t, i18n } = useLingui();
-  const width = Math.min(100, Math.round((f.heldPct / f.targetPct) * 100));
-  return (
-    <div className={`mt-2 grid gap-1 ${center ? "w-full max-w-40 justify-items-center" : "max-w-xs"}`} data-fill-meter="">
-      {/* Without the share (one named holder) there is no bar to draw short of covered. */}
-      {(!f.coarse || f.covered) && (
-        <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
-          <span className={`block h-full rounded-full ${f.covered ? "bg-muted-foreground" : "bg-notice"}`} style={{ width: `${width}%` }} />
-        </span>
-      )}
-      <span className="text-xs text-muted-foreground">{fillLine(i18n, f)}{f.targetPct !== 100 ? ` ${t({ message: `(of ${f.targetPct}%)`, context: "role fill, a target other than 100" })}` : ""}</span>
-    </div>
-  );
-}
-
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true, villagePay = null }: FoundingLineupProps) {
   const roleArt = useRoleArt();
   const artOf = (seat: Record<string, any>) => roleArt(seat?.id) ?? characterArtOf(seat);
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const shareNames = useShareNames();
   const circle = roles[0]?.circleName ?? null;
 
   const toggle = (
@@ -215,41 +144,33 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               const whereWords = r.sections?.where?.trim();
               const tileSeat = whereWords ? { ...r.seat, card: { ...(r.seat.card ?? {}), whereText: whereWords } } : r.seat;
               const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
-              const facts = [r.circleName, typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null, where].filter((x): x is string => !!x);
+              // The front's kind (its pill) and pay split, never an amount, and the last day to apply (the lead, 23 Nov 2026).
+              const kind = frontKind(r.seat, r.sections);
+              const applyBy = applyByWords(i18n, r.sections?.applyBy);
               return (
-                <li key={id} className={`rounded-2xl border-2 bg-card p-2 shadow-sm sm:p-3 ${here && cardSlot ? "border-notice" : "border-notice/50"}`} data-role-frame={id}>
-                <div className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-xl p-1 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 ${here ? "bg-notice/10" : ""}`}>
-                  <ArtImage portrait src={artOf(r.seat)} className="relative size-14 rounded-xl border border-notice/40 sm:size-[4.5rem]" imgClassName="object-top" />
-                  <div className="min-w-0">
-                    <OpenPill />
-                    <p className="mt-1 font-display text-xl leading-snug text-card-foreground">{String(r.seat.name ?? "")}</p>
-                    {typeof r.seat.aim === "string" && r.seat.aim && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{r.seat.aim}</p>}
-                    {facts.length > 0 && (
-                      <ul className="mt-2 flex flex-wrap gap-1.5">
-                        {facts.map((f) => (
-                          <li key={f} className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">{f}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {fill[id] && <FillMeter f={fill[id]} />}
-                    <Domains seat={r.seat} />
-                    <ToBeAdded roles={toBeAdded[id] ?? []} onOpen={onOpenAdded} />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onOpen(id)}
-                    aria-expanded={here}
-                    aria-controls={cardId}
-                    className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-notice bg-notice px-4 font-semibold text-background hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:col-span-1"
-                    data-founding-role={id}
-                  >
-                    {t({ message: "Read the card", context: "team sheet: open this role's card" })}
-                    <span className="sr-only">{`: ${String(r.seat.name ?? "")}`}</span>
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </button>
-                </div>
-                {here && cardSlot && <div className="mt-3" data-card-inline="">{cardSlot}</div>}
-                </li>
+                <FoundingRow
+                  key={id}
+                  id={id}
+                  name={String(r.seat.name ?? "")}
+                  aim={typeof r.seat.aim === "string" && r.seat.aim ? r.seat.aim : null}
+                  art={artOf(r.seat)}
+                  kind={kind}
+                  payShape={cardPay(r.sections, villagePay ?? NO_VILLAGE_PAY)?.shape ?? []}
+                  shareNames={shareNames}
+                  volunteer={volunteerLine(i18n, kind)}
+                  applyBy={applyBy}
+                  circle={r.circleName}
+                  commitment={typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null}
+                  where={where}
+                  fill={fill[id] ?? null}
+                  seat={r.seat}
+                  toBeAdded={toBeAdded[id] ?? []}
+                  onOpenAdded={onOpenAdded}
+                  here={here}
+                  cardSlot={cardSlot}
+                  onOpen={() => onOpen(id)}
+                  cardId={cardId}
+                />
               );
             })}
           </ul>
@@ -293,7 +214,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                     <span className={`relative rounded-full bg-gradient-to-br from-notice/40 via-notice to-notice/40 p-[3px] shadow-[0_0_28px] shadow-notice/40 motion-safe:transition-transform motion-safe:group-hover:-translate-y-1 ${here ? "outline-2 outline-offset-4 outline-notice" : ""}`}>
                       <ArtImage portrait src={artOf(r.seat)} className="relative size-24 rounded-full" imgClassName="object-top" />
                       <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                        <OpenPill />
+                        <OpenPill kind={pillKind(frontKind(r.seat, r.sections))} />
                       </span>
                     </span>
                     <span className="mt-2 font-semibold leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>

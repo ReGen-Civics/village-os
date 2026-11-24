@@ -80,7 +80,7 @@ export function limitProblems(f: LimitInput, i18n: I18n = appI18n): LimitProblem
   });
   for (const step of f.terms) {
     for (const a of Object.values(step.answers)) if (a) over("terms", i18n._(msg({ message: "A note on the terms", context: "founding application check, a box over its limit" })), a.note, TERM_NOTE_MAX);
-    over("terms", i18n._(msg({ message: "Why this price", context: "founding application check, a box over its limit" })), step.payAsk?.why ?? "", PRICE_WHY_MAX);
+    over("terms", i18n._(msg({ message: "Why this compensation", context: "founding application check, a box over its limit" })), step.payAsk?.why ?? "", PRICE_WHY_MAX);
   }
   if (f.voice.consent) {
     over("voice", i18n._(msg({ message: "What we heard, in your words", context: "founding application check, a box over its limit" })), f.voice.transcript.trim(), VOICE_TRANSCRIPT_MAX, null);

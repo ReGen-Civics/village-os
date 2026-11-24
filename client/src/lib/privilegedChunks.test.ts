@@ -27,6 +27,10 @@ describe("privileged pages never ride a shared page group", () => {
     // Pay by member (#1358) and the cash desk, each drawn by the Treasury and by Admin.
     expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\myMoon\\PayBoard.tsx")).toBe(false);
     expect(mayJoinSharedGroup("/repo/client/src/components/admin/CashPayoutsTab.tsx")).toBe(false);
+    // The role waitlist's admin panel and its letter, which /roles draws only for an admin.
+    expect(mayJoinSharedGroup("/repo/client/src/components/roleCard/WaitlistAdmin.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\roleCard\\WaitlistLetter.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/roleCard/WaitlistForm.tsx")).toBe(true);
     expect(mayJoinSharedGroup("/repo/client/src/components/myMoon/MyMoon.tsx")).toBe(true);
   });
 
@@ -40,7 +44,8 @@ describe("privileged pages never ride a shared page group", () => {
     const config = fs.readFileSync(path.join(process.cwd(), "vite.config.ts"), "utf8");
     // The page rule that hands out smallpages, shopfront and midpages.
     expect(config).toMatch(/if \(SMALL_PAGE\.test\(id\)[^\n]*mayJoinSharedGroup\(id\)\) \{/);
-    // Both small-module group rules (smallGroupOf and the second candidate filter).
-    expect(config.match(/!SMALL_GROUP_NEVER\.test\(id\) &&\s*\n\s*mayJoinSharedGroup\(id\) &&/g)?.length).toBe(2);
+    // The three module group rules: smallGroupOf, the "keyset-" candidate filter, and lazyGroupPlan's `free`
+    // (the "lazy-" groups and every module that rides in a group).
+    expect(config.match(/!SMALL_GROUP_NEVER\.test\(id\) &&\s*\n\s*mayJoinSharedGroup\(id\) &&/g)?.length).toBe(3);
   });
 });

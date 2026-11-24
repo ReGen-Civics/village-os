@@ -17,7 +17,11 @@
  * which would otherwise qualify for the "smallui" group by having two importers,
  * and likewise the treasurer's pay board (`components/myMoon/PayBoard.tsx`,
  * "Pay by member") and the cash desk (`components/admin/CashPayoutsTab.tsx`),
- * each drawn by the Treasury page and by Admin.
+ * each drawn by the Treasury page and by Admin. And the role waitlist's admin
+ * panel and its letter (`components/roleCard/WaitlistAdmin.tsx`, drawn on
+ * /roles only for an admin, and `WaitlistLetter.tsx`, opened only from it),
+ * which would otherwise share a "lazy-" chunk with the role pieces every
+ * visitor opens (dist headroom pass, 23 Nov 2026).
  *
  * Kept out of vite.config.ts so a test can pin it without loading the build.
  */
@@ -26,7 +30,7 @@
 export const PRIVILEGED_PAGE = /client[\\/]src[\\/]pages[\\/](?:Treasury|Admin|Mint|Cash)[^\\/]*\.tsx$/;
 
 /** A component that carries one of those pages' powers, never a group member. */
-export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|treasury[\\/][^\\/]+)\.tsx$/;
+export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|roleCard[\\/]Waitlist(?:Admin|Letter)|treasury[\\/][^\\/]+)\.tsx$/;
 
 /** Whether this module may join a shared page or component group at all. */
 export function mayJoinSharedGroup(id: string): boolean {

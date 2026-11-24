@@ -170,6 +170,7 @@ const Photographs = lazyPage(() => import("./pages/Photographs"));
 const Quests = lazyPage(() => import("./pages/Quests"));
 const QuestDetail = lazyPage(() => import("./pages/QuestDetail"));
 const ProposeQuest = lazyPage(() => import("./pages/ProposeQuest"));
+const Partner = lazyPage(() => import("./pages/Partner"));
 const Roles = lazyPage(() => import("./pages/Roles"));
 const RoleDraft = lazyPage(() => import("./pages/RoleDraft"));
 const RoleShare = lazyPage(() => import("./pages/RoleShare"));
@@ -393,6 +394,7 @@ function Router() {
       <Route path="/messages/:id" component={Messages} />
       <Route path="/introductions" component={Introductions} />
       <Route path="/propose-quest" component={ProposeQuest} />
+      <Route path="/partner" component={Partner} />
       <Route path="/roles/select" component={RoleDraft} />
       {/* The old address, kept so every shared link and bookmark still lands (the board was called a draft until 9 Nov 2026). */}
       <Route path="/roles/draft">{() => <Redirect to="/roles/select" replace />}</Route>

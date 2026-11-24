@@ -448,8 +448,9 @@ const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]c
  * plain module; a "smallui" member is a component. "smallui" may import
  * "smalls" and never the reverse, so the two can never import each other.
  */
+// "smalls" also takes shared/comms/ and client/src/i18n/ since the dist headroom pass (23 Nov 2026): the same plain modules, one folder down.
 const SMALL_GROUPS = [
-  { name: "smalls", home: /[\\/]shared[\\/][^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks)[\\/].+\.ts$/, mayImport: ["smalls"] },
+  { name: "smalls", home: /[\\/]shared[\\/](?:comms[\\/])?[^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks|i18n)[\\/].+\.ts$/, mayImport: ["smalls"] },
   { name: "smallui", home: /client[\\/]src[\\/]components[\\/].+\.tsx?$/, mayImport: ["smalls", "smallui"] },
 ] as const;
 type SmallGroup = (typeof SMALL_GROUPS)[number]["name"];
@@ -651,8 +652,208 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
       }
     }
   }
-  keySetGroups = new Map(Array.from(accepted, (id) => [id, `keyset-${keySet.get(id)}`]));
+  const keyset = new Map(Array.from(accepted, (id): [string, string] => [id, `keyset-${keySet.get(id)}`]));
+  keySetGroups = new Map([...Array.from(keyset), ...Array.from(lazyGroupPlan({ info, all, base, keyset, keySet, eager, closureOf }))]);
   return keySetGroups;
+}
+
+/** A lazily imported piece under this many bytes of source may join a "lazy-" group (see lazyGroupPlan). */
+const LAZY_PIECE_BYTES = 32000;
+/** And a "lazy-" group stops growing at this many bytes of source, smallest pieces first, so opening one piece never fetches a page's worth. */
+const LAZY_GROUP_BYTES = 80000;
+
+/*
+ * LAZY PIECES SHARE A FILE, AND A MODULE ONLY A GROUP IMPORTS RIDES IN IT
+ * (dist headroom pass, 23 Nov 2026). On 7980327 the block-charged total stood
+ * at 7556 KB of 7600, with 91 lazily imported components and 47 page chunks
+ * each paying up to 4 KB of padding. Two rules, applied after every group
+ * above is settled, none of them touching what a key page reaches:
+ *
+ * 1. A piece that is only ever imported lazily (React.lazy or import(), no
+ *    static importer anywhere) joins "lazy-<area>", where the area is the set
+ *    of route pages whose code can reach its importers: the role card's
+ *    on-demand pieces share one file, the Admin page's tabs another. Only
+ *    pieces under LAZY_PIECE_BYTES with what rides along, smallest first, up to
+ *    LAZY_GROUP_BYTES a group, and a group of one is not made. When every
+ *    importer is a member of one page group (smallpages, midpages, shopfront)
+ *    the piece joins that group instead, beside the page that asks for it.
+ *    Nothing imports such a piece statically, so no chunk can import a group
+ *    back, and none of them is on a key route's first view, which is a key
+ *    page's static closure. Route pages are left alone: a page in a group
+ *    loses its row in route-preload.js (routePreload.ts maps a route to a
+ *    chunk by its facade), and a rites-pages group measured 8 KB.
+ *
+ * 2. A module whose static importers all sit in ONE named chunk joins that
+ *    chunk. The chunk imports it statically, so it was already loaded every
+ *    time the chunk was; it had a file of its own only because rollup groups
+ *    such a module by the pages that load it, not by the chunk. This moved
+ *    whole chunks (the priority board into "midpages") without changing a
+ *    byte any page loads.
+ *
+ * WHY THESE GROUPS DO NOT SPLIT THE FIRST PAGE, read off rollup 4's
+ * getChunkAssignments. A named chunk holding a lazily imported module counts
+ * as a dynamic entry, and rollup treats everything the importers of its lazy
+ * members already loaded as loaded for it: for a piece imported by a page,
+ * that is every first-page file. The exception is an importer inside (or under)
+ * a STATIC named group ("smalls", "smallui", "keyset-", "natural", ...), a
+ * group with no lazily imported member, which is an entry nothing is loaded
+ * for; through one of those, only what that group itself reaches counts. So a
+ * new group keeps only members whose first-page reach every such group already
+ * covers (`unfit` below), and rule 2 reaches nothing its importers did not.
+ * Pages and the page groups are dynamic entries for the same reason; the atom
+ * model in keySetPlan still counts the page groups as reachers, which only
+ * makes it stricter than rollup.
+ * The build guards say so on every run: the boot-set guard, the key routes'
+ * first views, and the three budgets.
+ */
+function lazyGroupPlan(g: {
+  info: GetModuleInfo;
+  all: string[];
+  base: ReadonlyMap<string, string>;
+  keyset: ReadonlyMap<string, string>;
+  keySet: ReadonlyMap<string, string>;
+  eager: ReadonlySet<string>;
+  closureOf: (start: readonly string[]) => Set<string>;
+}): Map<string, string> {
+  const { info, all, base, keyset, keySet, eager, closureOf } = g;
+  const extra = new Map<string, string>();
+  const groupOf = (id: string) => base.get(id) ?? keyset.get(id) ?? extra.get(id);
+  const PAGE_GROUPS = new Set(["smallpages", "midpages", "shopfront"]);
+  const free = (id: string): boolean =>
+    !groupOf(id) &&
+    !id.includes("node_modules") &&
+    !id.startsWith("\0") &&
+    !eager.has(id) &&
+    !keySet.has(id) &&
+    !SMALL_GROUP_NEVER.test(id) &&
+    mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
+    !NATURAL_KIT.test(id) &&
+    !PAGE_COPY.test(id);
+  const label = (id: string) => path.basename(id.split("?")[0]).replace(/\.[jt]sx?$/, "");
+  const ROUTE_PAGE = /client[\\/]src[\\/]pages[\\/]/;
+  const reachOf = (id: string) => Array.from(closureOf([id])).filter((m) => eager.has(m) && !base.has(m));
+
+  // The route pages whose static closure holds a module: the "area" a lazy piece's importers live in.
+  const pagesReaching = new Map<string, string[]>();
+  for (const page of all.filter((id) => ROUTE_PAGE.test(id) && (info(id)?.dynamicImporters.length ?? 0) > 0)) {
+    const seen = new Set<string>();
+    const stack = [page];
+    while (stack.length) {
+      const m = stack.pop() as string;
+      if (seen.has(m) || eager.has(m)) continue;
+      seen.add(m);
+      pagesReaching.set(m, [...(pagesReaching.get(m) ?? []), label(page)]);
+      for (const dep of info(m)?.importedIds ?? []) stack.push(dep);
+      for (const dep of info(m)?.dynamicallyImportedIds ?? []) if (!ROUTE_PAGE.test(dep)) stack.push(dep);
+    }
+  }
+  const areaOf = (by: string): string[] => pagesReaching.get(by) ?? [label(by)];
+  /*
+   * The members to drop so a group splits no first-page file (see the note
+   * above): for every static group holding or reaching an importer of a lazy
+   * member, that group must already reach every first-page module the members
+   * reach. The members that bring a group falling short go.
+   */
+  const DYNAMIC_GROUPS = new Set(["smallpages", "midpages", "shopfront"]);
+  const staticGroups = new Map<string, string[]>();
+  for (const [id, name] of [...Array.from(base), ...Array.from(keyset)]) if (!DYNAMIC_GROUPS.has(name)) staticGroups.set(name, [...(staticGroups.get(name) ?? []), id]);
+  const staticClosure = new Map(Array.from(staticGroups, ([name, members]) => [name, closureOf(members)] as const));
+  const holdersOf = (id: string): string[] => {
+    const importers = info(id)?.dynamicImporters ?? [];
+    return Array.from(staticClosure).filter(([, reach]) => importers.some((by) => reach.has(by))).map(([name]) => name);
+  };
+  const reachMemo = new Map<string, string[]>();
+  const firstPageReach = (id: string): string[] => {
+    let r = reachMemo.get(id);
+    if (!r) reachMemo.set(id, (r = reachOf(id)));
+    return r;
+  };
+  const unfit = (members: string[]): string[] => {
+    const left = [...members];
+    for (;;) {
+      const union = new Set(left.flatMap(firstPageReach));
+      const short = new Set(left.flatMap(holdersOf).filter((name) => Array.from(union).some((x) => !staticClosure.get(name)?.has(x))));
+      if (short.size === 0) return members.filter((id) => !left.includes(id));
+      const keep = left.filter((id) => !holdersOf(id).some((name) => short.has(name)));
+      if (keep.length === left.length) return members;
+      left.splice(0, left.length, ...keep);
+    }
+  };
+  // A piece's weight: its own source and that of every module only it reaches, which would ride with it (rule 2).
+  const weightOf = (id: string): number => {
+    const own = new Set([id]);
+    for (let grew = true; grew; ) {
+      grew = false;
+      for (const m of Array.from(own)) {
+        for (const dep of info(m)?.importedIds ?? []) {
+          const d = info(dep);
+          if (own.has(dep) || !d || !free(dep) || d.dynamicImporters.length > 0 || !d.importers.every((by) => own.has(by))) continue;
+          own.add(dep);
+          grew = true;
+        }
+      }
+    }
+    return Array.from(own).reduce((n, m) => n + (info(m)?.code?.length ?? 0), 0);
+  };
+  // Rule 1: the seeds.
+  for (const id of all) {
+    if (!free(id)) continue;
+    const m = info(id);
+    if (!m) continue;
+    if (m.importers.length > 0 || m.dynamicImporters.length === 0 || ROUTE_PAGE.test(id)) continue;
+    if (!m.code || weightOf(id) >= LAZY_PIECE_BYTES) continue;
+    const owners = new Set(m.dynamicImporters.map((by) => base.get(by)));
+    const owner = owners.size === 1 ? Array.from(owners)[0] : undefined;
+    if (owner && PAGE_GROUPS.has(owner)) {
+      // Into a group that already reaches every first-page module this piece does, or not at all.
+      if (unfit([id]).length === 0) extra.set(id, owner);
+      continue;
+    }
+    extra.set(id, `lazy-${Array.from(new Set(m.dynamicImporters.flatMap((by) => areaOf(by)))).sort().join("-")}`);
+  }
+
+  // Each "lazy-" group takes its smallest pieces first and stops at LAZY_GROUP_BYTES; the rest keep their own chunks.
+  const seedsOf = new Map<string, string[]>();
+  for (const [id, name] of Array.from(extra)) if (name.startsWith("lazy-")) seedsOf.set(name, [...(seedsOf.get(name) ?? []), id]);
+  for (const seeds of Array.from(seedsOf.values())) {
+    const weight = new Map(seeds.map((id) => [id, weightOf(id)]));
+    let total = 0;
+    for (const id of seeds.sort((a, b) => (weight.get(a) ?? 0) - (weight.get(b) ?? 0) || a.localeCompare(b))) {
+      total += weight.get(id) ?? 0;
+      if (total > LAZY_GROUP_BYTES) extra.delete(id);
+    }
+  }
+
+  // A new group keeps only the members that, together, need no first-page module a static group would not already load.
+  const isNew = (name: string) => name.startsWith("lazy-");
+  for (let changed = true; changed; ) {
+    changed = false;
+    const byGroup = new Map<string, string[]>();
+    for (const [id, name] of Array.from(extra)) if (isNew(name)) byGroup.set(name, [...(byGroup.get(name) ?? []), id]);
+    for (const members of Array.from(byGroup.values())) {
+      // A group of one saves nothing: its member keeps the chunk rollup gives it.
+      const drop = members.length < 2 ? members : unfit(members);
+      for (const id of drop) extra.delete(id);
+      if (drop.length) changed = true;
+    }
+  }
+
+  // Rule 2: a module only one named chunk imports rides in it, until nothing more moves.
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const id of all) {
+      if (!free(id)) continue;
+      const m = info(id);
+      if (!m || m.importers.length === 0 || m.dynamicImporters.length > 0) continue;
+      if (m.importers.some((by) => NATURAL_KIT.test(by))) continue;
+      const into = new Set(m.importers.map(groupOf));
+      const name = into.size === 1 ? Array.from(into)[0] : undefined;
+      if (!name || name.startsWith("keyset-") || name === "icons" || name === "shell-libs" || name === "natural") continue;
+      extra.set(id, name);
+      changed = true;
+    }
+  }
+  return extra;
 }
 
 /*
@@ -781,7 +982,15 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
         for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
       }
     }
-    keySetModules = new Map(Array.from(reached, ([m, labels]) => [m, labels.sort().join("-")]));
+    /*
+     * What a lazy piece the shell draws on every page reaches (the root strip,
+     * `everyPage` in scripts/route-first-view.json) is on every key route's
+     * first view, so its set of key pages is all of them, whichever pages also
+     * import it: one "keyset-RootLine" group where there were three (dist
+     * headroom pass, 23 Nov 2026).
+     */
+    const everyPage = new Set((KEY_ROUTE_SPEC.everyPage ?? []).map((p) => path.basename(p).replace(/\.tsx?$/, "")));
+    keySetModules = new Map(Array.from(reached, ([m, labels]) => [m, (labels.some((l) => everyPage.has(l)) ? labels.filter((l) => everyPage.has(l)) : labels).sort().join("-")]));
   }
   const key = keyRouteModules;
   /*
