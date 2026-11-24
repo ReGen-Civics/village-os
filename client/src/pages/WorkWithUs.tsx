@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
+import { useSearch } from "wouter";
+import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
 
 // ── Shared proposal shape ────────────────────────────────────────────────────
 
@@ -66,6 +68,45 @@ const PROPOSAL_FIELDS: { key: keyof Proposal; label: string; hint: string; requi
   { key: "maintenance", label: "Maintenance & longevity", hint: "What keeps it alive and well? Ongoing care, who's responsible, cost over time, expected lifespan.", required: true, rows: 3 },
 ];
 
+type ProposalField = (typeof PROPOSAL_FIELDS)[number];
+
+/*
+ * SET UP FOR A VENTURE (the lead, 24 Nov 2026): /work-with-us?kind=venture, where every Start a venture link lands
+ * (shared/contributorRoutes.ts). The venture's three questions come first, and each fills a key the proposal already
+ * has, so the inbox, the email and the guide read a venture exactly as they read any offer: what the business is in
+ * `work`, what it needs from the land and the village in `needsFromUs`, how it gives back in `serves`. The other
+ * questions follow in their usual order. The proposal says `kind: "venture"` beside them.
+ */
+const VENTURE_FIRST: (keyof Proposal)[] = ["work", "needsFromUs", "serves"];
+
+function useVentureFields(): ProposalField[] {
+  const { t } = useLingui();
+  const first: ProposalField[] = [
+    {
+      key: "work",
+      label: t({ message: "What the business is", context: "work with us, set up for a venture: the first question" }),
+      hint: t({ message: "What you would build and run on the land, who it is for, and how it earns its way.", context: "work with us, set up for a venture: help under the first question" }),
+      required: true,
+      rows: 3,
+    },
+    {
+      key: "needsFromUs",
+      label: t({ message: "What it needs from the land and the village", context: "work with us, set up for a venture: the second question" }),
+      hint: t({ message: "Space, water, power, access, people, time or decisions, and by when.", context: "work with us, set up for a venture: help under the second question" }),
+      required: true,
+      rows: 3,
+    },
+    {
+      key: "serves",
+      label: t({ message: "How it gives back", context: "work with us, set up for a venture: the third question" }),
+      hint: t({ message: "How the business gives back to the village, the land and the people around it.", context: "work with us, set up for a venture: help under the third question" }),
+      required: true,
+      rows: 3,
+    },
+  ];
+  return [...first, ...PROPOSAL_FIELDS.filter((f) => !VENTURE_FIRST.includes(f.key))];
+}
+
 /*
  * THE FOUR OPTIONS A PAGE SHOWS WHEN THE CONFIG COULD NOT BE READ, and only then.
  * A village that deleted every option in Make it yours, Work With Us saves an
@@ -85,6 +126,9 @@ const RECIPROCITY_FALLBACK: ReciprocityOption[] = [
 
 export default function WorkWithUs() {
   const { user } = useAuth();
+  const { t } = useLingui();
+  // Arrived from Start a venture: the page opens set up for a venture. Without the query it is the page it always was.
+  const venture = isVentureQuery(useSearch());
   /*
    * A generic stand-in until /api/game/config answers, and on a village that
    * has not named itself yet. This read "Amora" on every instance, so the
@@ -179,13 +223,19 @@ export default function WorkWithUs() {
             <Handshake className="w-6 h-6 text-amber-on-band" />
             <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase">Work With Us</span>
           </div>
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-            Build and grow alongside {projectName}
+          <h1 className="font-display text-4xl md:text-5xl font-bold mb-4" data-venture-heading={venture ? "" : undefined}>
+            {venture ? t({ message: "Start a venture", context: "four ways to build: a venture" }) : `Build and grow alongside ${projectName}`}
           </h1>
+          {venture ? (
+            <p className="text-white text-lg max-w-2xl leading-relaxed" data-venture-line="">
+              {t({ message: `A venture is your own business on the land. You run it and keep its upside; ${projectName} shares in it through a lease or profit share.`, context: "work with us, set up for a venture: what a venture is, under the heading" })}
+            </p>
+          ) : (
           <p className="text-white text-lg max-w-2xl leading-relaxed">
             {wwu?.intro ??
               `Propose an idea, an offering, or a venture: a garden, a piece of infrastructure, a service, a craft, a program, or something we haven't imagined yet. ${projectNameSentenceStart} grows through the people who bring their gifts to it.`}
           </p>
+          )}
         </div>
       </section>
 
@@ -219,6 +269,7 @@ export default function WorkWithUs() {
           {mode === "ai" && aiAvailable ? (
             !guideReady ? null : <GuideChat
               kind="work-with-us"
+              venture={venture}
               projectName={projectName}
               assistantName={assistantName}
               greeting={wwu?.assistantGreeting}
@@ -229,7 +280,7 @@ export default function WorkWithUs() {
             />
           ) : (
             /* ProposalForm's one use of the name opens a sentence with it. */
-            <ProposalForm reciprocityLede={page?.reciprocity.fields.lede ?? null} reciprocityOptions={reciprocityOptions} form={form} setForm={saveDraft} onSubmitted={onSubmitted} />
+            <ProposalForm venture={venture} reciprocityLede={page?.reciprocity.fields.lede ?? null} reciprocityOptions={reciprocityOptions} form={form} setForm={saveDraft} onSubmitted={onSubmitted} />
           )}
         </div>
       </section>
@@ -245,8 +296,10 @@ export default function WorkWithUs() {
 // ── The structured form ──────────────────────────────────────────────────────
 
 function ProposalForm({
-  reciprocityLede, reciprocityOptions, form, setForm, onSubmitted,
+  venture = false, reciprocityLede, reciprocityOptions, form, setForm, onSubmitted,
 }: {
+  /** Set up for a venture: the venture's three questions first, and `kind: "venture"` on what is sent. */
+  venture?: boolean;
   /** Null until the page's words arrive. */
   reciprocityLede: string | null;
   reciprocityOptions: ReciprocityOption[];
@@ -255,6 +308,8 @@ function ProposalForm({
   onSubmitted: () => void;
 }) {
   const { t } = useLingui();
+  const ventureFields = useVentureFields();
+  const fields = venture ? ventureFields : PROPOSAL_FIELDS;
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [hp, setHp] = useState(""); // honeypot: real people never fill this
@@ -286,13 +341,14 @@ function ProposalForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) { setError("Add your name and email so we know who we're speaking with."); return; }
-    for (const f of PROPOSAL_FIELDS) if (f.required && !String(form[f.key]).trim()) { setError(`Answer this to continue: ${f.label}.`); return; }
+    for (const f of fields) if (f.required && !String(form[f.key]).trim()) { setError(`Answer this to continue: ${f.label}.`); return; }
     // Only a village that offers options can ask for one. With none listed
     // the person describes the exchange in their own words below.
     if (reciprocityOptions.length > 0 && form.reciprocity.length === 0) { setError("Choose at least one form of reciprocity that fits."); return; }
     setError("");
     setSubmitting(true);
-    const ok = await submitProposal("work-with-us", { ...form, [FORM_CONSENT_FIELD]: consent }, hp);
+    // A venture keeps the type the inbox already reads and says what it is beside it (shared/contributorRoutes.ts).
+    const ok = await submitProposal("work-with-us", { ...form, ...(venture ? { kind: VENTURE_KIND } : {}), [FORM_CONSENT_FIELD]: consent }, hp);
     setSubmitting(false);
     if (ok) onSubmitted(); else setError("That didn't send. Try again.");
   };
@@ -346,10 +402,10 @@ function ProposalForm({
 
       {/* The idea */}
       <div>
-        <h2 className="font-display text-xl font-bold text-teal-deep mb-1">Your proposal</h2>
-        <p className="text-sm text-muted-foreground mb-4">Tell us about your idea. Specificity is a gift to both of us.</p>
+        <h2 className="font-display text-xl font-bold text-teal-deep mb-1">{venture ? t({ message: "Your venture", context: "work with us, set up for a venture: the heading over its questions" }) : "Your proposal"}</h2>
+        <p className="text-sm text-muted-foreground mb-4">{venture ? t({ message: "Start with the business. The questions after it help us see what it takes.", context: "work with us, set up for a venture: the line under Your venture" }) : "Tell us about your idea. Specificity is a gift to both of us."}</p>
         <div className="space-y-5">
-          {PROPOSAL_FIELDS.map((f) => (
+          {fields.map((f) => (
             <div key={f.key}>{field(f.key, f.label, f.hint, f.required, f.rows)}</div>
           ))}
         </div>

@@ -10,6 +10,7 @@ import MicButton from "@/components/MicButton";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { fillGuideName, guideNameAtSentenceStart } from "@shared/guideName";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { VENTURE_KIND } from "@shared/contributorRoutes";
 
 interface ChatMsg { role: "user" | "assistant"; content: string }
 
@@ -23,6 +24,7 @@ export default function GuideChat({
   onFallback,
   onRefineInForm,
   refineLabel = "Review in the form",
+  venture = false,
 }: {
   kind: ProposalKind;
   projectName: string;
@@ -34,17 +36,27 @@ export default function GuideChat({
   onFallback: () => void;
   onRefineInForm: (p: Record<string, any>) => void;
   refineLabel?: string;
+  /**
+   * Work With Us set up for a venture (the lead, 24 Nov 2026): the guide opens on the business, the server's prompt
+   * hears `focus: "venture"` (server/lib/proposalPrompt.ts), and what is sent says `kind: "venture"`. The village's own
+   * greeting asks the general question, so a venture opens with its own first question instead.
+   */
+  venture?: boolean;
 }) {
   const { t } = useLingui();
   const defaultGreeting =
     kind === "quest-proposal"
       ? `Hi, I'm ${assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring.`
       : `Hi, I'm ${assistantName}, and I help people shape their offering to ${projectName}. What are you dreaming of bringing? There's no wrong way to start.`;
+  const ventureGreeting = t({
+    message: `Hi, I'm ${assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?`,
+    context: "guide chat, set up for a venture: the guide's first message",
+  });
 
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       role: "assistant",
-      content: greeting ? fillGuideName(greeting, assistantName) : defaultGreeting,
+      content: venture ? ventureGreeting : greeting ? fillGuideName(greeting, assistantName) : defaultGreeting,
     },
   ]);
   const [input, setInput] = useState("");
@@ -68,7 +80,7 @@ export default function GuideChat({
       const res = await fetch("/api/assistant/proposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, messages: next }),
+        body: JSON.stringify({ kind, messages: next, ...(venture ? { focus: VENTURE_KIND } : {}) }),
       });
       if (res.status === 503) { onFallback(); return; }
       const data = await res.json();
@@ -87,7 +99,7 @@ export default function GuideChat({
   const submit = async () => {
     if (!proposal) return;
     setSubmitting(true);
-    const answer = await sendProposal(kind, proposal);
+    const answer = await sendProposal(kind, venture ? { ...proposal, kind: VENTURE_KIND } : proposal);
     setSubmitting(false);
     if (answer.ok) {
       onSubmitted(answer.idea, proposal);

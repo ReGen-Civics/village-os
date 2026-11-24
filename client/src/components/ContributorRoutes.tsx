@@ -14,6 +14,11 @@
  * section's heading, client/src/lib/sectionAnchor.ts); a partnership to /partner; a quest to /propose-quest. The Open
  * ventures group's own button pitches a venture on the village's general proposal form, /work-with-us (a village that
  * switched that page off gets the member's door for a new role, /role-proposals/new).
+ *
+ * START A VENTURE LANDS ON A VENTURE (the lead, 24 Nov 2026): every Start a venture link now goes to the proposal form
+ * set up for a venture, `/work-with-us?kind=venture` (shared/contributorRoutes.ts), from the Open ventures button, the
+ * cards at the end of /roles, the home page, the thank-you pages and the other lists. The one exception is the compact
+ * tile at the top of /roles (`variant="tiles"`), which keeps scrolling to the open ventures on that page.
  */
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
@@ -24,9 +29,15 @@ import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/com
 import { replyDaysOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
 
-export const VENTURE_PITCH_FORM = "/work-with-us";
+/** The proposal page, as the village's story-page switch names it. */
+export const VENTURE_PITCH_PAGE = "/work-with-us";
+/** The proposal page set up for a venture (VENTURE_QUERY, shared/contributorRoutes.ts). */
+export const VENTURE_PITCH_FORM = "/work-with-us?kind=venture";
 export const VENTURE_PITCH_FALLBACK = "/role-proposals/new";
-/** Each route's own place. Written as doors (`href:`) so the route-reachability guard counts them. */
+/**
+ * Each route's own place. Written as doors (`href:`) so the route-reachability guard counts them. The venture's is the
+ * top of /roles' compact tile only; everywhere else a venture goes to the proposal form (useVentureHref).
+ */
 const ROUTE_DOORS: Record<ContributorRoute, { href: string }> = {
   team: { href: `/roles#${ROLES_SECTIONS.team}` },
   venture: { href: `/roles#${ROLES_SECTIONS.venture}` },
@@ -34,10 +45,10 @@ const ROUTE_DOORS: Record<ContributorRoute, { href: string }> = {
   quest: { href: "/propose-quest" },
 };
 
-/** Where a venture is started on this village. */
+/** Where a venture is started on this village: the proposal form set up for a venture, or the new-role door. */
 export function useVentureHref(): string {
   const shown = useStoryPageShown();
-  return shown(VENTURE_PITCH_FORM) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
+  return shown(VENTURE_PITCH_PAGE) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
 }
 
 /** The village's one answer-by promise, in days (`org.applicant_reply_days`). */
@@ -151,7 +162,10 @@ export default function ContributorRoutes({
   const days = useReplyDays();
   const promise = useReplyPromise();
   const routes = routesExcept(except);
-  const hrefOf = (r: ContributorRoute) => hrefs[r] ?? ROUTE_DOORS[r].href;
+  // The compact tiles sit at the top of /roles and scroll to its open ventures; every other Start a venture opens the
+  // proposal form set up for a venture (the lead, 24 Nov 2026).
+  const ventureForm = useVentureHref();
+  const hrefOf = (r: ContributorRoute) => hrefs[r] ?? (r === "venture" && variant !== "tiles" ? ventureForm : ROUTE_DOORS[r].href);
   const Heading = headingAs;
   const go = (r: ContributorRoute, cls: string, children: React.ReactNode) => {
     const href = hrefOf(r);
