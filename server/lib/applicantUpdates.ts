@@ -29,6 +29,7 @@ import type { DecideDeps } from "./openProposalDecide";
 import { trustedAccountFor } from "./applicantAccount";
 import { numberVar } from "./variables";
 import { escapeHtml } from "./comms/mailer";
+import { plainLetterHtml } from "./letterHtml";
 import { languageOf } from "./applicantLanguage";
 import { STATUS_LINK_STARTS } from "../../shared/applicantWords";
 import { signLink } from "./comms/links";
@@ -97,17 +98,13 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
       if (!p || !p.email || p.status === "unconfirmed") return;
       const words = await wordsFor(deps, p, kind, facts);
       if (UPDATE_EMAILS[kind]) {
-        const body = words.text
-          .split("\n\n")
-          .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
-          .join("");
         const sent = await deps.postEmail({
           idempotencyKey: `open-proposal:${keyOf(ref, kind, facts.part)}`,
           kind: "essential",
           origin: "open_proposal.update",
           to: { email: p.email, ...(greetingName(p.name) ? { name: greetingName(p.name) as string } : {}) },
           subject: words.title,
-          html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${body}</body></html>`,
+          html: plainLetterHtml(words.text), // every address a link (server/lib/letterHtml.ts)
           text: words.text,
         });
         if (!WENT.has(sent.status)) console.warn(`[open-proposals] the ${kind} update for ${ref} did not go by email: ${sent.status}`);

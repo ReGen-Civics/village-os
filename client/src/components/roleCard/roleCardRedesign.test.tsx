@@ -107,6 +107,22 @@ describe("the role in one minute", () => {
     expect(facts[0].textContent).toContain("WhereOn the land");
   });
 
+  it("draws the village's nationality line as a tile across both columns, a line each, ahead of languages and said once (the lead, 24 Nov 2026)", async () => {
+    const withLine = { ...seat(), card: { ...seat().card, languages: ["English", "Spanish"], nationality: "Costa Rican (preferred) | Other nationalities (possible)" } };
+    render(<FullRoleCard seat={withLine} circleName="Anchor Circle" register="founding" />);
+    const el = document.querySelector('[data-full-role-card="finance"]') as HTMLElement;
+    await waitFor(() => expect(el.querySelector('[data-one-minute-fact="price"]')).toBeTruthy());
+    const facts = el.querySelector('[data-testid="card-facts"]') as HTMLElement;
+    const tiles = Array.from(facts.children) as HTMLElement[];
+    const labels = tiles.map((t) => t.querySelector("dt")?.textContent);
+    expect(labels).toEqual(["Nationality", "Track", "Languages"]);
+    expect(tiles[0].className).toContain("col-span-2");
+    expect(tiles[0].querySelector("dd")?.textContent).toBe("Costa Rican (preferred)\nOther nationalities (possible)");
+    expect(tiles[0].querySelector("dd")?.className).toContain("whitespace-pre-line");
+    // Said once: the details under "How you're chosen" leave it to the tile.
+    expect(el.querySelector('[data-testid="role-card-params"]')?.textContent ?? "").not.toContain("Costa Rican");
+  });
+
   it("puts a phone's Apply right after the title, above the one-minute panel, once, with the bar along the foot kept as the card's last child", async () => {
     const el = await card();
     // jsdom is narrow, so this is the phone: no desktop act in the summary, the act in the flow after the title.

@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useState } from "react";
 import { m } from "framer-motion";
@@ -12,6 +13,7 @@ import { BTN_PRIMARY, CARD, FIELD, LABEL, LINK, WORLD } from "@/components/journ
  * a link is on its way IF an account exists, and never claims delivery.
  */
 export default function ForgotPassword() {
+  const { t } = useLingui();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,10 +36,10 @@ export default function ForgotPassword() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message ?? data.error ?? "That didn't go through. Try again.");
+      if (!res.ok) throw new Error(data.message ?? data.error ?? t({ message: "That didn't go through. Try again.", context: "forgot password: when it fails" }));
       setSent(true);
     } catch (err: any) {
-      setError(failureWords(err, "That didn't go through. Try again."));
+      setError(failureWords(err, t({ message: "That didn't go through. Try again.", context: "forgot password: when it fails" })));
     }
     setBusy(false);
   };
@@ -54,13 +56,12 @@ export default function ForgotPassword() {
             {sent ? (
               <div className="text-center">
                 <CheckCircle2 className="w-12 h-12 text-open mx-auto mb-4" aria-hidden="true" />
-                <h1 className="font-display text-2xl font-bold text-foreground mb-2">Check your email</h1>
+                <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t({ message: "Check your email", context: "forgot password: after sending" })}</h1>
                 <p className="text-muted-foreground">
-                  If an account exists for that address, a link to set a new password is on its
-                  way. It expires in an hour and works once.
+                  {t({ message: "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once.", context: "forgot password: after sending" })}
                 </p>
                 <a href={signIn} className={`${LINK} mt-6 inline-flex min-h-11 items-center`}>
-                  Back to sign in
+                  {t({ message: "Back to sign in", context: "forgot password: link back" })}
                 </a>
               </div>
             ) : (
@@ -68,16 +69,16 @@ export default function ForgotPassword() {
                 <div className="text-center mb-6">
                   <Mail className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
                   <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-                    Set a new password
+                    {t({ message: "Set a new password", context: "forgot password: the heading" })}
                   </h1>
                   <p className="text-muted-foreground text-sm">
-                    Tell us the address you signed up with and we'll send you a link.
+                    {t({ message: "Tell us the address you signed up with and we'll send you a link.", context: "forgot password: under the heading" })}
                   </p>
                 </div>
                 <form onSubmit={submit} className="space-y-4">
                   <div>
                     <label htmlFor="forgot-email" className={`${LABEL} mb-2 block`}>
-                      Email
+                      {t({ message: "Email", context: "account forms: field label" })}
                     </label>
                     <input
                       id="forgot-email"
@@ -101,12 +102,12 @@ export default function ForgotPassword() {
                     disabled={busy}
                     className={`${BTN_PRIMARY} w-full py-3`}
                   >
-                    {busy ? "Sending…" : "Send the link"}
+                    {busy ? t({ message: "Sending…", context: "forgot password: the button while it works" }) : t({ message: "Send the link", context: "forgot password: the button" })}
                   </button>
                 </form>
                 <div className="mt-6 text-center">
                   <a href={signIn} className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
-                    Back to sign in
+                    {t({ message: "Back to sign in", context: "forgot password: link back" })}
                   </a>
                 </div>
               </>
