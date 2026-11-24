@@ -1768,6 +1768,96 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * THE PICKED LOOK FOR EACH MODE (the lead, 24 Nov 2026: light "Golden Hour",
+ * dark "Canopy at Night"; docs/DESIGN_RULE.md has the ratios).
+ *
+ * Everything below hangs on `data-mode`, so nothing moves until a mode is set.
+ * Values are knobs a village sets from its brand theme (the day-* and sheet-*
+ * game tokens in shared/brandTokens.ts); the literals are the platform's.
+ *
+ * --village-display is the village's own display face, read at the root where
+ * --font-display is still the village's: `.sheet-night` redeclares it, and a
+ * custom property cannot read its parent's value on the element that
+ * redeclares it. Both modes draw headings in it.
+ */
+:root {
+  --village-display: var(--font-display, "Marcellus", Georgia, "Times New Roman", serif);
+}
+:root[data-mode] {
+  --band: var(--day-band, #ead7b4);
+  --band-ink: var(--day-band-ink, #2b2720);
+  --band-rule: var(--day-rule, #b0813c);
+  --band-active: var(--day-accent, #0e5b60);
+  --band-bar: var(--day-panel, #fffaf1);
+}
+:root[data-mode="dark"] {
+  --band: var(--night-band, #0c241c);
+  --band-ink: var(--sheet-ink, #f3ede0);
+  --band-rule: var(--night-rule, rgb(224 199 154 / 0.5));
+  --band-active: var(--sheet-earned, #e0c79a);
+  --band-bar: var(--night-band, #0c241c);
+}
+:root[data-mode="dark"] .sheet-night {
+  --font-display: var(--sheet-font-display, var(--village-display));
+}
+
+/* The header's band and the phone's tab bar take the mode's band. */
+:root[data-mode] header > nav.bg-teal-deep {
+  background-color: color-mix(in srgb, var(--band) 95%, transparent);
+  color: var(--band-ink);
+  box-shadow: 0 1px 0 var(--band-rule), 0 10px 30px -24px rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(12px);
+}
+:root[data-mode] header > nav.bg-teal-deep :is(.text-white, a, button) {
+  color: var(--band-ink);
+}
+:root[data-mode] header > nav.bg-teal-deep [class*="border-white"] {
+  border-color: color-mix(in srgb, var(--band-ink) 35%, transparent);
+}
+:root[data-mode] header > nav.bg-teal-deep [class*="bg-white/"] {
+  background-color: color-mix(in srgb, var(--band-ink) 8%, transparent);
+}
+:root[data-mode] header .bg-teal-band\/95 {
+  background-color: var(--band-bar);
+  color: var(--band-ink);
+}
+:root[data-mode] [data-mobile-tabbar] {
+  background: color-mix(in srgb, var(--band-bar) 97%, transparent);
+  border-top-color: var(--band-rule);
+}
+:root[data-mode] [data-mobile-tabbar] :is(a, button) {
+  color: var(--band-ink);
+}
+:root[data-mode] [data-mobile-tabbar] [aria-current="page"] {
+  color: var(--band-active);
+}
+:root[data-mode] [data-mobile-tabbar] .bg-amber {
+  background-color: var(--band-active);
+}
+:root[data-mode] [data-mobile-tabbar] .bg-white\/15 {
+  background-color: color-mix(in srgb, var(--band-active) 14%, transparent);
+}
+
+/* The page's light: a warm sky by day, the goldwash over the canopy by night. */
+:root[data-mode="light"] .sheet-night.min-h-screen {
+  background-image:
+    radial-gradient(34rem 18rem at 82% 3rem, var(--day-sun, rgb(255 236 196 / 0.95)), transparent 70%),
+    linear-gradient(180deg, var(--day-sky, #ead7b4) 0, color-mix(in srgb, var(--day-sky, #ead7b4) 45%, var(--day-ground, #f3ebdd)) 9rem, var(--day-ground, #f3ebdd) 26rem);
+}
+:root[data-mode="dark"] .sheet-night.min-h-screen {
+  background-image: radial-gradient(120% 75% at 50% 0%, var(--night-wash, rgb(176 129 60 / 0.2)), transparent 55%);
+}
+
+/* By day the page titles are the ocean, and a panel carries a champagne rule
+   across its top, after the formal documents' accent rules. */
+:root[data-mode="light"] .sheet-night :is(h1, h2):is(.text-foreground, .text-card-foreground) {
+  color: var(--day-heading, #0e5b60);
+}
+:root[data-mode="light"] .sheet-night .rounded-2xl.border.bg-card:not(.border-2) {
+  border-top: 3px solid var(--day-rule-soft, #c9ad7b);
+}
+
+/*
  * THE DAY WORLD: `.sheet-night` in light mode (light and dark modes, 24 Nov 2026).
  *
  * The visitor's mode is `data-mode` on <html> (client/src/lib/colourMode.ts,
@@ -1784,25 +1874,25 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * above stays the look for a page with no mode set, exactly as before modes.
  */
 :root[data-mode="light"] .sheet-night {
-  --background: var(--day-ground, #f3ede0);
+  --background: var(--day-ground, #f3ebdd);
   --foreground: var(--day-ink, #2b2720);
-  --card: var(--day-panel, #faf6ee);
+  --card: var(--day-panel, #fffaf1);
   --card-foreground: var(--day-ink, #2b2720);
-  --popover: var(--day-panel, #faf6ee);
+  --popover: var(--day-panel, #fffaf1);
   --popover-foreground: var(--day-ink, #2b2720);
-  --muted: var(--day-panel-raised, #dfd0b6);
-  --muted-foreground: var(--day-ink-dim, #4d463a);
-  --border: var(--day-edge, #77694c);
-  --input: var(--day-edge, #77694c);
-  --ring: var(--day-accent, #14362b);
-  --sheet-notice: var(--day-accent, #14362b);
-  --sheet-earned-deep: var(--day-accent-shadow, #7a5a22);
-  --sheet-earned-lit: var(--day-accent-highlight, #e0c79a);
+  --muted: var(--day-panel-raised, #efe0c6);
+  --muted-foreground: var(--day-ink-dim, #5f584a);
+  --border: var(--day-edge, #8b785a);
+  --input: var(--day-edge, #8b785a);
+  --ring: var(--day-accent, #0e5b60);
+  --sheet-notice: var(--day-accent, #0e5b60);
+  --sheet-earned-deep: var(--day-accent-shadow, #083a3d);
+  --sheet-earned-lit: var(--day-accent-highlight, #7fb4b6);
   --sheet-open: var(--day-living, #15604a);
   --destructive: var(--day-warn, #9b3b2a);
-  --destructive-foreground: var(--day-panel, #faf6ee);
+  --destructive-foreground: var(--day-panel, #fffaf1);
   --color-coral: var(--day-warn, #9b3b2a);
-  --font-display: var(--day-font-display, var(--sheet-font-display, "Marcellus", Georgia, "Times New Roman", serif));
+  --font-display: var(--day-font-display, var(--village-display));
   color-scheme: light;
 }
 :root[data-mode="light"] .sheet-night .shadow-sm {
@@ -1810,7 +1900,7 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 :root[data-mode="light"]:has(main .sheet-night.min-h-screen),
 :root[data-mode="light"]:has(main .sheet-night.min-h-screen) body {
-  background-color: var(--day-ground, #f3ede0);
+  background-color: var(--day-ground, #f3ebdd);
 }
 
 /*
@@ -1850,18 +1940,18 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * a `--dialogue-*` knob, falling back to the village's day palette.
  */
 :root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
-  --background: var(--dialogue-ground, var(--day-ground, #f3ede0));
+  --background: var(--dialogue-ground, var(--day-ground, #f3ebdd));
   --foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --card: var(--dialogue-panel, var(--day-ground, #f3ede0));
+  --card: var(--dialogue-panel, var(--day-ground, #f3ebdd));
   --card-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --popover: var(--dialogue-panel, var(--day-ground, #f3ede0));
+  --popover: var(--dialogue-panel, var(--day-ground, #f3ebdd));
   --popover-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --muted: var(--dialogue-raised, var(--day-panel-raised, #dfd0b6));
-  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, #4d463a));
-  --border: var(--dialogue-edge, var(--day-edge, #77694c));
-  --input: var(--dialogue-edge, var(--day-edge, #77694c));
-  --ring: var(--dialogue-accent, var(--day-accent, #14362b));
-  --sheet-notice: var(--dialogue-accent, var(--day-accent, #14362b));
+  --muted: var(--dialogue-raised, var(--day-panel-raised, #efe0c6));
+  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, #5f584a));
+  --border: var(--dialogue-edge, var(--day-edge, #8b785a));
+  --input: var(--dialogue-edge, var(--day-edge, #8b785a));
+  --ring: var(--dialogue-accent, var(--day-accent, #0e5b60));
+  --sheet-notice: var(--dialogue-accent, var(--day-accent, #0e5b60));
   --destructive: var(--day-warn, #9b3b2a);
   color-scheme: light;
   color: var(--foreground);

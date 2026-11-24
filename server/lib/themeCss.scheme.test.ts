@@ -105,6 +105,27 @@ describe("the dark scheme, derived from a seed alone", () => {
     expect(buildThemeCss({ seed: "#0b1a1e", character: "woven" })).not.toContain('[data-mode="light"]');
   });
 
+  it("carries a village's exact light and dark palettes as tokens, measured on every surface", () => {
+    const golden = { "day-ground": "#f3ebdd", "day-panel": "#fffaf1", "day-panel-raised": "#efe0c6", "day-ink": "#2b2720", "day-ink-dim": "#5f584a", "day-edge": "#8b785a", "day-accent": "#0e5b60", "day-heading": "#0e5b60" };
+    const canopy = { "sheet-ground": "#14362b", "sheet-panel": "#0f2c23", "sheet-panel-raised": "#1b4335", "sheet-ink": "#f3ede0", "sheet-ink-dim": "#c4d6cc", "sheet-edge": "#7fa393", "sheet-earned": "#e0c79a" };
+    const theme = { seed: "#14362b", character: "handmade", accent: "#e0c79a", tokens: { ...golden, ...canopy } };
+    const css = buildThemeCss(theme);
+    expect(css).toContain("--day-ground: #f3ebdd;");
+    expect(css).toContain("--day-accent: #0e5b60;");
+    // The exact night replaces the derived one.
+    expect(css).toContain("--sheet-ground: #14362b;");
+    expect(css.match(/--sheet-ground:/g)).toHaveLength(1);
+    const d = deriveTheme("#14362b", "handmade", "#e0c79a", { tokens: { ...golden, ...canopy } })!;
+    const mine = d.contrast.pairs.filter((p) => p.name.startsWith("day ") || p.name.startsWith("night "));
+    expect(mine.length).toBeGreaterThanOrEqual(20);
+    expect(mine.filter((p) => p.verdict === "fail")).toEqual([]);
+  });
+
+  it("reports a day palette that would not read", () => {
+    const d = deriveTheme("#14362b", "handmade", null, { tokens: { "day-ground": "#f3ebdd", "day-ink": "#c9bfa9" } })!;
+    expect(d.contrast.pairs.find((p) => p.name === "day ink on day-ground")?.verdict).toBe("fail");
+  });
+
   it("marks the shell, paints its first frame in the village's ground, and gives the installer that ground", () => {
     const theme = { seed: "#0b1a1e", character: "woven", mode: "dark" };
     const ground = deriveTheme("#0b1a1e", "woven", null, { mode: "dark" })!.vars["--background"];
