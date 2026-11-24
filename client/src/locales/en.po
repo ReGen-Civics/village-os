@@ -602,6 +602,11 @@ msgctxt "canvas export button"
 msgid "Build it again"
 msgstr "Build it again"
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point refused"
+msgid "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+msgstr "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
 #~ msgid "Your role card"
@@ -17780,6 +17785,11 @@ msgstr "That did not save. Your light is unchanged."
 msgctxt "sera changes"
 msgid "Hide them"
 msgstr "Hide them"
+
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point"
+msgid "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
+msgstr "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent drawing"

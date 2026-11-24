@@ -610,6 +610,11 @@ msgctxt "canvas export button"
 msgid "Build it again"
 msgstr ""
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point refused"
+msgid "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
 #~ msgid "Your role card"
@@ -18158,6 +18163,11 @@ msgstr "No se guardó. Tu luz sigue igual."
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Hide them"
+msgstr ""
+
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point"
+msgid "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
