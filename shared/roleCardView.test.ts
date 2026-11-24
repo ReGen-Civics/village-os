@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { roleCardView } from "./roleCardView";
+import { nationalityLines, roleCardView } from "./roleCardView";
 
 const card = {
   complete: true,
@@ -45,6 +45,20 @@ describe("roleCardView", () => {
     // Controls: complete, and incomplete in a village that does not gate.
     expect(roleCardView({ card }).applyAllowed).toBe(true);
     expect(roleCardView({ card: { ...card, gated: false, complete: false, missing: ["aim"] } }).applyAllowed).toBe(true);
+  });
+  it("draws the village's nationality line after where and before languages, one line per | or line break", () => {
+    const v = roleCardView({ card: { ...card, commitmentPct: 100, nationality: "Costa Rican (preferred) | Other nationalities (possible)" } });
+    expect(v.rows.map((r) => r.id)).toEqual(["commitment", "track", "goals", "where", "nationality", "languages", "review", "interviews", "criteria"]);
+    const row = v.rows.find((r) => r.id === "nationality")!;
+    expect(row.label).toBe("Nationality");
+    expect(row.lines).toEqual(["Costa Rican (preferred)", "Other nationalities (possible)"]);
+    expect(nationalityLines("Costa Rican (preferred)\nOther nationalities (possible)")).toEqual(["Costa Rican (preferred)", "Other nationalities (possible)"]);
+    // Coming soon and venture cards carry it too: people apply early to those.
+    for (const flag of ["comingSoon", "futureVenture"]) {
+      expect(roleCardView({ [flag]: true, card: { nationality: "Costa Rican (preferred)" } }).rows.map((r) => r.id)).toEqual(["nationality"]);
+    }
+    // Blank, or only separators, draws no row: another village is unaffected.
+    for (const blank of [undefined, null, "", "   ", " | "]) expect(roleCardView({ card: { ...card, nationality: blank } }).rows.some((r) => r.id === "nationality")).toBe(false);
   });
   it("draws nothing for a role with no card, and nothing is invented", () => {
     const v = roleCardView({});
