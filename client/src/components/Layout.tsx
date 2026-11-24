@@ -7,9 +7,10 @@ import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
-import NotificationBell from "@/components/NotificationBell";
-import TaskCountBadge from "@/components/tasks/TaskCountBadge";
-import MessageCountBadge from "@/components/messages/MessageCountBadge";
+// A member's bell and counts load on their own: a visitor who is not signed in never draws them, so they stay off the first page's scripts (MAX_BOOT_JS_KB).
+const NotificationBell = lazy(() => import("@/components/NotificationBell"));
+const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
+const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/config/nav";
@@ -297,7 +298,7 @@ export default function Layout({ children }: LayoutProps) {
 
             {user ? (
               <div className="flex items-center gap-3">
-                <NotificationBell memberId={user.id} />
+                <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>
                 {/* The profile link and sign out used to sit side by side with
                     twelve pixels between them, and sign out was a bare icon
                     with no background of its own: at a glance the arrow read
@@ -347,8 +348,8 @@ export default function Layout({ children }: LayoutProps) {
                             onClick={() => setAccountOpen(false)}
                           >
                             {item.label}
-                            {item.count === "tasks" && <TaskCountBadge who={user.id} />}
-                            {item.count === "messages" && <MessageCountBadge who={user.id} />}
+                            {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
+                            {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                           </Link>
                         ))}
                         <button
@@ -393,7 +394,7 @@ export default function Layout({ children }: LayoutProps) {
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
             <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
-            {user && <NotificationBell memberId={user.id} />}
+            {user && <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>}
             {/* Icon-only, so it needs a spoken name and a state a screen
                 reader can hear — otherwise it announces as bare "button". */}
             <button
@@ -494,8 +495,8 @@ export default function Layout({ children }: LayoutProps) {
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {item.label === "My Profile" ? `My Profile (${user.name.split(" ")[0]})` : item.label}
-                          {item.count === "tasks" && <TaskCountBadge who={user.id} />}
-                          {item.count === "messages" && <MessageCountBadge who={user.id} />}
+                          {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
+                          {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                         </Link>
                       ))}
                       <button
