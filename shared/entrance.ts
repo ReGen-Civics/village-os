@@ -29,6 +29,15 @@
  * `intake.moderate` (Admin, Portal visitors), and no email is ever sent to it by the platform.
  */
 
+/**
+ * A hint, not a pass: the server sets this readable cookie on every page it serves while the village
+ * keeps an entrance, and clears it when the dial goes off. The client's gate reads it synchronously,
+ * so a village without an entrance draws its pages with no extra round trip, and one with an
+ * entrance asks `/api/entrance` before drawing a page behind it. The server's gate is the rule
+ * either way.
+ */
+export const GATE_HINT_COOKIE = "vos_gate";
+
 /** How long one entry is remembered on one device. */
 export const ENTRY_DAYS = 90;
 export const ENTRY_COOKIE = "vos_portal";

@@ -205,6 +205,7 @@ describe("every setting an admin can change has a proposal kind", () => {
     "/api/saberra/links/x": "linking a member to the organisational memory, a member's record",
     "/api/saberra/person-match/backfill": "a sync run with the organisational memory",
     "/api/member-tasks/me/feedback": "a member's own feedback",
+    "/api/members/x/super-vouch": "admitting a person, a steward's act through the one gate (Portal visitors, Make member)",
     "/api/governance/role-applications": "a read: Today lists the waiting role applications (client/src/components/admin/roleApplicationsWaiting.ts)",
   };
 

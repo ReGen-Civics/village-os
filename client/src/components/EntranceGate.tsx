@@ -13,6 +13,9 @@
  * is let through until the look is over, judged once per page change and never while a page is
  * being read; the page they then open shows the code step instead (pages/EntranceCode.tsx).
  *
+ * It asks only when the page's own response said the village keeps an entrance (`GATE_HINT_COOKIE`),
+ * so a village without one draws every page with no extra round trip.
+ *
  * This is the drawing of the gate, not the gate. The server refuses the page's reads to the same
  * visitor whatever this component decides, so a status that cannot be read falls through to the
  * page, which then meets the server's refusal.
@@ -21,7 +24,7 @@ import { lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { useVillageName } from "@/hooks/useVillageName";
-import { EVENT_PASS_PARAM, KEEP_IN_TOUCH_PARAM, lookOver, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
+import { EVENT_PASS_PARAM, GATE_HINT_COOKIE, KEEP_IN_TOUCH_PARAM, lookOver, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
 
 const Entrance = lazy(() => import("@/pages/Entrance"));
 const KeepInTouch = lazy(() => import("@/pages/Entrance").then((m) => ({ default: m.KeepInTouch })));
@@ -71,6 +74,15 @@ function notePage(path: string): void {
     .catch(() => false);
 }
 
+/** Whether the server said, on this page's own response, that the village keeps an entrance. */
+function gateHinted(): boolean {
+  try {
+    return document.cookie.split(";").some((c) => c.trim() === `${GATE_HINT_COOKIE}=1`);
+  } catch {
+    return true;
+  }
+}
+
 /** For tests: forget the status. */
 export function forgetEntranceStatus(): void {
   statusRead = null;
@@ -81,7 +93,8 @@ export default function EntranceGate({ children, waiting }: { children: ReactNod
   const [location] = useLocation();
   const auth = useOptionalAuth();
   const village = useVillageName();
-  const behind = pageBehindEntrance(location);
+  // No hint from the server: this village keeps no entrance, so nothing is asked and nothing waits.
+  const behind = pageBehindEntrance(location) && gateHinted();
   const signedIn = !!auth?.user;
   const authLoading = !!auth?.loading;
   const ask = behind && !signedIn && !authLoading;

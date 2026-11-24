@@ -24,6 +24,7 @@ let status: unknown = { required: true, entered: false, siteKey: null };
 let asked = 0;
 
 beforeEach(() => {
+  document.cookie = "vos_gate=1; path=/";
   forgetEntranceStatus();
   auth.user = null;
   auth.loading = false;
@@ -168,5 +169,12 @@ describe("the entrance gate", () => {
     at("/roles");
     expect(await screen.findByTestId("keep-in-touch")).toHaveTextContent("keep:/roles?x=1");
     window.history.replaceState(null, "", "/");
+  });
+
+  it("asks nothing and draws the page at once when the server gave no hint of an entrance", async () => {
+    document.cookie = "vos_gate=; path=/; max-age=0";
+    at("/roles");
+    expect(screen.getByTestId("page")).toBeInTheDocument();
+    expect(asked).toBe(0);
   });
 });
