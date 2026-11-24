@@ -168,7 +168,7 @@ describe("the token section (Rye, 2026-10-22)", () => {
     expect(listDefault("tokens", "cards")).toEqual([]);
     renderPage();
     await headline();
-    const panel = screen.getByRole("heading", { name: fieldDefault("tokens", "heading") }).closest("div.rounded-3xl") as HTMLElement;
+    const panel = screen.getByRole("heading", { name: fieldDefault("tokens", "heading") }).closest("div.rounded-2xl") as HTMLElement;
     expect(panel).not.toBeNull();
     expect(panel.querySelectorAll("h3")).toHaveLength(0);
     expect(panel.textContent).toContain(filled(fieldDefault("tokens", "intro")));
