@@ -14,7 +14,9 @@
 // a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
 import { ceilingAt, rangeMin } from "@shared/commitmentRange";
+import { commitmentKind, type CommitmentTime } from "@shared/commitmentKind";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { partOfLabel } from "@shared/rewardShare";
@@ -164,12 +166,40 @@ export function splitNotRestated(note: string): string {
  * that switch, so an older payload that still carries a range draws nothing while the village hides it.
  * Null for anything but a range of two whole minor amounts, low to high, in a currency.
  */
-/** The commitment row: "Full or part commitment (from 30%)", or "Full commitment (100%)" for a role offered whole. */
+/** The commitment row: "Full or part time, from 30%", or "Full time" for a role offered whole. */
 export function commitmentRowWords(i18n: I18n, min: number | null | undefined): string {
   const lo = rangeMin(min);
   return lo < 100
-    ? i18n._(msg({ message: `Full or part commitment (from ${lo}%)`, context: "role card fact: a role that can be shared" }))
-    : i18n._(msg({ message: "Full commitment (100%)", context: "role card fact: a role offered whole" }));
+    ? i18n._(msg({ message: `Full or part time, from ${lo}%`, context: "role card fact: a role that can be shared" }))
+    : i18n._(msg({ message: "Full time", context: "role card commitment label" }));
+}
+
+/**
+ * THE PLAIN COMMITMENT LABEL (the lead, 24 Nov 2026): "Full time", "Part time or fractional" or "Full or
+ * part time", each with ", contract" for a contractor role. One short label, read from the role's own data
+ * (shared/commitmentKind.ts); never hours, never pay. Empty when the role's data says nothing.
+ */
+const TIME_LABELS: Record<CommitmentTime, { alone: MessageDescriptor; contract: MessageDescriptor }> = {
+  full: {
+    alone: msg({ message: "Full time", context: "role card commitment label" }),
+    contract: msg({ message: "Full time, contract", context: "role card commitment label" }),
+  },
+  part: {
+    alone: msg({ message: "Part time or fractional", context: "role card commitment label" }),
+    contract: msg({ message: "Part time or fractional, contract", context: "role card commitment label" }),
+  },
+  either: {
+    alone: msg({ message: "Full or part time", context: "role card commitment label" }),
+    contract: msg({ message: "Full or part time, contract", context: "role card commitment label" }),
+  },
+};
+
+export function commitmentLabel(i18n: I18n, seat: unknown): string {
+  const kind = commitmentKind(seat);
+  if (!kind) return "";
+  if (!kind.time) return i18n._(msg({ message: "Contract", context: "role card commitment label" }));
+  const words = TIME_LABELS[kind.time];
+  return i18n._(kind.contract ? words.contract : words.alone);
 }
 
 /**
@@ -180,7 +210,12 @@ export function commitmentRowWords(i18n: I18n, min: number | null | undefined): 
 export function commitmentLine(i18n: I18n, seat: Record<string, any> | null | undefined): string {
   const card = seat?.card && typeof seat.card === "object" ? seat.card : {};
   if (typeof card.commitmentMin === "number") return commitmentRowWords(i18n, card.commitmentMin);
-  if (Number.isInteger(card.commitmentPct)) return `${card.commitmentPct}%`;
+  if (Number.isInteger(card.commitmentPct)) {
+    const pct = card.commitmentPct as number;
+    return pct === 100
+      ? i18n._(msg({ message: "Full time", context: "role card commitment label" }))
+      : i18n._(msg({ message: `Part time, ${pct}%`, context: "role card fact: a role offered at one share" }));
+  }
   return typeof seat?.timeCommitment === "string" ? seat.timeCommitment.trim() : "";
 }
 

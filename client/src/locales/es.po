@@ -48311,3 +48311,48 @@ msgstr "<0/> Esta es una fotografía mía"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card fact: a role that can be shared"
+msgid "Full or part time, from {lo}%"
+msgstr "Tiempo completo o parcial, desde el {lo}%"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card fact: a role offered at one share"
+msgid "Part time, {pct}%"
+msgstr "Medio tiempo, {pct}%"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full time"
+msgstr "Tiempo completo"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full time, contract"
+msgstr "Tiempo completo, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Part time or fractional"
+msgstr "Medio tiempo o fraccional"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Part time or fractional, contract"
+msgstr "Medio tiempo o fraccional, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full or part time"
+msgstr "Tiempo completo o parcial"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full or part time, contract"
+msgstr "Tiempo completo o parcial, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Contract"
+msgstr "Por contrato"
