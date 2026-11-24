@@ -34,6 +34,9 @@
  *   --skip-apply            SMOKE_SKIP_APPLY=1
  *   --json FILE             SMOKE_JSON          also write the results as JSON
  *                           SMOKE_TEST_TOKEN    the server's token; without it the apply step is skipped
+ *                           SMOKE_ENTRANCE_PASS the village's entrance pass (Admin, Integrations): every
+ *                                               page is drawn past the portal entrance, as our own
+ *                                               automation sees it, and nothing is recorded as a visitor
  *                           SMOKE_WHY_CHARS     length of the "why" answer (default 7500)
  *                           SMOKE_TIMEOUT_MS    per page (default 30000)
  *                           PLAYWRIGHT_MODULE   a path to the playwright package, when it is not resolvable
@@ -99,6 +102,7 @@ export function parseArgs(argv, env = process.env) {
     skipApply: flag("skip-apply") || env.SMOKE_SKIP_APPLY === "1",
     json: value("json") ?? env.SMOKE_JSON ?? "",
     token: env.SMOKE_TEST_TOKEN ?? "",
+    entrancePass: env.SMOKE_ENTRANCE_PASS ?? "",
     whyChars: Math.max(1, Number(env.SMOKE_WHY_CHARS ?? 7500) || 7500),
     timeoutMs: Math.max(5000, Number(env.SMOKE_TIMEOUT_MS ?? 30000) || 30000),
   };
@@ -182,6 +186,8 @@ async function checkPage(context, url, timeoutMs) {
  * no entrance answers "none" and nothing is sent.
  */
 export async function enterPortal(context, opts, engine) {
+  // Carrying the village's pass, the smoke is our own automation: there is no entrance to walk.
+  if (opts.entrancePass) return { status: "none", detail: "passed by the entrance pass header" };
   const page = await context.newPage();
   try {
     await page.goto(`${opts.baseUrl}/roles`, { waitUntil: "load", timeout: opts.timeoutMs });
@@ -411,7 +417,8 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       return EXIT.missing;
     }
     ran++;
-    const profile = engine === "webkit" ? { ...pw.devices["iPhone 14"] } : { viewport: { width: 1280, height: 800 } };
+    const passHeaders = opts.entrancePass ? { extraHTTPHeaders: { "x-entrance-pass": opts.entrancePass } } : {};
+    const profile = engine === "webkit" ? { ...pw.devices["iPhone 14"], ...passHeaders } : { viewport: { width: 1280, height: 800 }, ...passHeaders };
     const label = engine === "webkit" ? `webkit (iPhone 14, WebKit ${browser.version()})` : `${engine} ${browser.version()}`;
     results.engines.push({ engine, status: "ran", version: browser.version() });
     log(`${label}: ${opts.routes.length} page(s)`);
@@ -456,7 +463,8 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     }
     if (!opts.skipApply) {
       // In this engine on the phone either way, so WebKit and Chromium each measure the same 390x664 screen.
-      const { defaultBrowserType: _ignored, ...phone } = pw.devices[PHONE] ?? {};
+      const { defaultBrowserType: _ignored, ...phoneBare } = pw.devices[PHONE] ?? {};
+      const phone = { ...phoneBare, ...passHeaders };
       const context = await browser.newContext(phone);
       await through(context, "role page");
       const r = await checkRoleApply(context, opts);

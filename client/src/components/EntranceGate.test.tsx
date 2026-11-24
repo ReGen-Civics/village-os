@@ -89,6 +89,16 @@ describe("the entrance gate", () => {
     expect(screen.getByTestId("waiting")).toBeInTheDocument();
   });
 
+  it("lets an invited guest onto the calendar with their gathering's pass, and nowhere else", async () => {
+    status = { required: true, entered: false, siteKey: null, eventPass: "ev-1" };
+    at("/events");
+    expect(await screen.findByTestId("page")).toBeInTheDocument();
+    cleanup();
+    forgetEntranceStatus();
+    at("/roles");
+    expect(await screen.findByTestId("entrance")).toBeInTheDocument();
+  });
+
   it("hands the Turnstile site key to the screen when the village has one", async () => {
     status = { required: true, entered: false, siteKey: "0x4AAA" };
     at("/circles");

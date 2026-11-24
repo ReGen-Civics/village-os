@@ -1,4 +1,4 @@
--- 0426: a portal visitor says what draws them, and the opted-in ones reach the village's email list
+-- 0427: a portal visitor says what draws them, and the opted-in ones reach the village's email list
 -- (ops, 24 Nov 2026: "so that we can build our CRM").
 --
 -- THE CONTRACT IS shared/entrance.ts; the SQL is server/repos/portalEntries.ts.

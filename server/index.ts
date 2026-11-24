@@ -103,7 +103,7 @@ import { register as registerBrochurePagesRoutes } from "./routes/brochurePages"
 import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger } from "./routes/peopleLock";
-import { register as registerEntrance, BREVO_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
+import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
 import { register as registerGratitudeVoiceRoutes } from "./routes/gratitudeVoices";
@@ -6686,7 +6686,7 @@ async function startServer() {
   app.use(express.json({ limit: "1mb" }));
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
   registerPeopleLock(app, { authedUser, getPool, boolVar });
-  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") } }); // the portal entrance, in front of every later route (shared/entrance.ts)
+  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
   // ── LANE L6 ZONE START: your agent ──────────────────────────────────────────
   //
@@ -16798,7 +16798,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     { key: "assistant_api_key", title: "Anthropic, the AI guide", unlocks: "The AI guide: proposal intake, the launch journey, and call synthesis. Blank means every form still works, with no guide on them.", getAt: "console.anthropic.com", placeholder: "sk-ant-…" },
     { key: "riverside_webhook_secret", title: "Riverside recording deliveries", unlocks: "Call automation's inbound deliveries. It fails closed: with no secret set, every payload is discarded with an inert 200 and nobody is told why.", getAt: "Riverside → webhook settings → send this same value as the x-riverside-secret header", placeholder: "a long random string you choose" },
     { key: "governance_hub_secret", title: "Governance hub deliveries", unlocks: "How a Hypha vote's executed outcome comes home. Fails closed the same way. Until it is set, outcomes are reported by the proposer and applied by an admin.", getAt: "Issued when your fork is registered with the hub", placeholder: "the value the hub issued you" },
-    { key: "basescan_api_key", title: "Basescan token lookup", unlocks: "Game Mechanics, Hypha Bridge lists the token contracts your founder account holds on Base. Without it that lookup answers 409 and addresses can still be pasted by hand.", getAt: "etherscan.io → API keys (one free key serves Base)", placeholder: "your Etherscan API key" }, HYPHA_VOICE_CARD, ...GOOGLE_CARDS, ERROR_WEBHOOK_CARD, BASE_RPC_CARD, ...ROOT_SLOT_CARDS, ...VOICE_TRANSCRIPTION_CARDS, TURNSTILE_CARD, BREVO_CARD,
+    { key: "basescan_api_key", title: "Basescan token lookup", unlocks: "Game Mechanics, Hypha Bridge lists the token contracts your founder account holds on Base. Without it that lookup answers 409 and addresses can still be pasted by hand.", getAt: "etherscan.io → API keys (one free key serves Base)", placeholder: "your Etherscan API key" }, HYPHA_VOICE_CARD, ...GOOGLE_CARDS, ERROR_WEBHOOK_CARD, BASE_RPC_CARD, ...ROOT_SLOT_CARDS, ...VOICE_TRANSCRIPTION_CARDS, TURNSTILE_CARD, ENTRANCE_PASS_CARD, BREVO_CARD,
   ];
 
   interface IntegrationCard {

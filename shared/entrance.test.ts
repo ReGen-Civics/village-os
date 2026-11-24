@@ -26,9 +26,17 @@ describe("what stands behind the entrance", () => {
     }
   });
 
-  it("holds the audit's judgment calls back until the lead answers", () => {
-    for (const p of ["/governance", "/gratitude", "/network", "/events", "/seasonal-festivals"]) expect(pageBehindEntrance(p), p).toBe(false);
-    for (const p of ["/api/events", "/api/events/calendar.ics", "/api/season", "/api/governance/voice-spread", "/api/game/gratitude/wall", "/api/network"]) expect(apiBehindEntrance(p), p).toBe(false);
+  it("puts the audit's judgment calls behind it, on the lead's word", () => {
+    for (const p of ["/governance", "/gratitude", "/network", "/events", "/seasonal-festivals"]) expect(pageBehindEntrance(p), p).toBe(true);
+    for (const p of ["/api/events", "/api/events/ev-1", "/api/events/calendar.ics", "/api/governance/voice-spread", "/api/game/gratitude/wall", "/api/game/mechanics", "/api/network"]) expect(apiBehindEntrance(p), p).toBe(true);
+    expect(pageBehindEntrance("/team")).toBe(false);
+  });
+
+  it("keeps open a gathering's join link and a member's own calendar feed, which carry no cookie", () => {
+    expect(apiBehindEntrance("/api/events/ev-1/join")).toBe(false);
+    expect(apiBehindEntrance("/api/events/calendar.ics", { token: "abc" })).toBe(false);
+    expect(apiBehindEntrance("/api/events/calendar.ics", { token: "" })).toBe(true);
+    expect(apiBehindEntrance("/api/events/ev-1/join/more")).toBe(true);
   });
 
   it("answers a visitor the founding team's open roles and nothing else", () => {

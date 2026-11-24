@@ -151,6 +151,9 @@ const BASE_SECRET_KEYS = [
   // The village's email list (ops, 24 Nov 2026: portal visitors who ask for updates join one Brevo
   // list, server/lib/portalSync.ts). Typed under Admin, Integrations; no host variable.
   "brevo_api_key",
+  // The portal entrance's pass for the village's own automation (the lead, 24 Nov 2026: "I don't
+  // want to stop our own sessions from accessing it"). Carried in X-Entrance-Pass. No host variable.
+  "entrance_pass_token",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -208,6 +211,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   voice_transcription_groq_key: null,
   turnstile_secret_key: null,
   brevo_api_key: null,
+  entrance_pass_token: null,
 };
 
 /**
