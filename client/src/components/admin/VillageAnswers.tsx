@@ -20,6 +20,7 @@
  */
 import { useEffect, useState } from "react";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
+import { Trans } from "@lingui/react/macro";
 
 /**
  * The two launch items this banner speaks for, by id.
@@ -63,7 +64,7 @@ export default function VillageAnswers({ password }: { password: string }) {
 
   return (
     <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3" role="status">
-      <p className="text-sm font-semibold text-amber-900">Only this village can answer this</p>
+      <p className="text-sm font-semibold text-amber-900"><Trans context="VillageAnswers, p">Only this village can answer this</Trans></p>
       <ul className="mt-1.5 space-y-1.5">
         {missing.map((m) => (
           <li key={m.id} className="text-xs text-amber-800">
@@ -73,8 +74,8 @@ export default function VillageAnswers({ password }: { password: string }) {
         ))}
       </ul>
       <p className="text-[11px] text-amber-700 mt-1.5">
-        Nothing is blocked. Answering takes one click each, and this goes for good once it is said.
-      </p>
+        <Trans context="VillageAnswers, p">Nothing is blocked. Answering takes one click each, and this goes for good once it is said.
+      </Trans></p>
     </div>
   );
 }

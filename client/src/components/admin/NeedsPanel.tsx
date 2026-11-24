@@ -94,6 +94,7 @@ import {
   type ScopeSummary,
 } from "./needsCopy";
 import { CARD, FIELD, HINT, PRIMARY, QUIET, DepthLadder, NeedDot, NeedTickRow, Recap, ScreenRail } from "./NeedsPieces";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export { NeedsSetupStep, useNeedsSetupObservation } from "./NeedsSetupStep";
 
@@ -104,6 +105,7 @@ export default function NeedsPanel({
   password: string;
   onOpenTab?: (tab: string) => void;
 }) {
+  const { t } = useLingui();
   const auth = useMemo(() => authHeaders(password), [password]);
 
   const [screen, setScreen] = useState(1);
@@ -357,8 +359,8 @@ export default function NeedsPanel({
   if (loading) {
     return (
       <div className="text-center py-12 text-muted-foreground" role="status" aria-live="polite">
-        Reading what this village is for.
-      </div>
+        <Trans context="NeedsPanel, div">Reading what this village is for.
+      </Trans></div>
     );
   }
 
@@ -377,13 +379,13 @@ export default function NeedsPanel({
     <div className="bg-background text-foreground rounded-xl p-4 -m-1">
       <header className="mb-5">
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Heart className="w-5 h-5" aria-hidden="true" />
+          <Trans context="NeedsPanel, h2"><Heart className="w-5 h-5" aria-hidden="true" />
           What this village is for
-        </h2>
+        </Trans></h2>
         <p className={`${HINT} mt-1`}>
-          Six screens. Say which needs this village is taking on, how far it means to get on each, for
+          <Trans context="NeedsPanel, p">Six screens. Say which needs this village is taking on, how far it means to get on each, for
           how many, and what does the meeting. You can change any of it later.
-        </p>
+        </Trans></p>
       </header>
 
       <ScreenRail at={screen} onGo={setScreen} />
@@ -403,32 +405,32 @@ export default function NeedsPanel({
       {screen === 1 ? (
         <section aria-labelledby="needs-screen-1">
           <h3 id="needs-screen-1" className="text-lg font-semibold text-foreground mb-2">
-            What this village is for
-          </h3>
+            <Trans context="NeedsPanel, h3">What this village is for
+          </Trans></h3>
           <p className="text-sm text-foreground mb-2">
-            A village is a business designed to meet the needs of the people in it. A need is something a
+            <Trans context="NeedsPanel, p">A village is a business designed to meet the needs of the people in it. A need is something a
             person cannot do without and can name out loud: clean water, someone to talk to, work that
             means something. Before you set a single number, say which needs this village is taking on.
-          </p>
+          </Trans></p>
           <p className="text-sm text-foreground mb-2">
-            These ten come from Manfred Max-Neef's list by way of Nonviolent Communication. Tick the ones
+            <Trans context="NeedsPanel, p">These ten come from Manfred Max-Neef's list by way of Nonviolent Communication. Tick the ones
             this village is taking on. You can add your own, and you can change any of this later.
-          </p>
+          </Trans></p>
           <p className={`${HINT} mb-4`}>
-            Choosing few is the honest move. Every need you take on is work somebody has to do, so a
+            <Trans context="NeedsPanel, p">Choosing few is the honest move. Every need you take on is work somebody has to do, so a
             village that names all ten and staffs two has told its members something untrue.
-          </p>
+          </Trans></p>
           {/* The other door onto the same import, which lives on Make This Site Yours beside the
               Identity boxes it fills (ProfileImportDoor.tsx). */}
           {onOpenTab ? (
             <div className={`${CARD} p-3 mb-4 flex flex-wrap items-center justify-between gap-3`}>
               <p className="text-sm text-card-foreground">
-                Designed your needs in a ReGen Civics session? Start from your profile, and read every part before
+                <Trans context="NeedsPanel, p">Designed your needs in a ReGen Civics session? Start from your profile, and read every part before
                 anything is set.
-              </p>
+              </Trans></p>
               <button type="button" className={QUIET} onClick={() => onOpenTab("setup")}>
-                Start from my profile
-              </button>
+                <Trans context="NeedsPanel, button">Start from my profile
+              </Trans></button>
             </div>
           ) : null}
 
@@ -442,8 +444,8 @@ export default function NeedsPanel({
                 return next;
               })}
             >
-              Take on all ten
-            </button>
+              <Trans context="NeedsPanel, button">Take on all ten
+            </Trans></button>
             <button
               type="button"
               className={QUIET}
@@ -453,8 +455,8 @@ export default function NeedsPanel({
                 return next;
               })}
             >
-              Clear every tick
-            </button>
+              <Trans context="NeedsPanel, button">Clear every tick
+            </Trans></button>
           </div>
 
           <div className="grid gap-2 mb-5">
@@ -475,24 +477,24 @@ export default function NeedsPanel({
 
           <div className={`${CARD} px-4 py-4 mb-5`}>
             <label htmlFor="needs-custom-name" className="block text-sm font-medium text-foreground mb-1">
-              A need this list does not name
-            </label>
+              <Trans context="NeedsPanel, label">A need this list does not name
+            </Trans></label>
             <p className={`${HINT} mb-2`}>
-              Write it the way the ten above are written, as the words your members would actually use. It
+              <Trans context="NeedsPanel, p">Write it the way the ten above are written, as the words your members would actually use. It
               is stored under a key of its own and can never take one of the ten.
-            </p>
+            </Trans></p>
             <div className="flex flex-wrap gap-2">
               <input
                 id="needs-custom-name"
                 type="text"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                placeholder="Quiet"
+                placeholder={t({ message: "Quiet", context: "NeedsPanel, placeholder" })}
                 className={`${FIELD} flex-1 min-w-[12rem]`}
               />
               <button type="button" onClick={addCustom} className={QUIET}>
-                Add this need
-              </button>
+                <Trans context="NeedsPanel, button">Add this need
+              </Trans></button>
             </div>
           </div>
 
@@ -501,8 +503,8 @@ export default function NeedsPanel({
               {saving ? "Saving" : "Save what this village is for"}
             </button>
             <button type="button" onClick={() => setScreen(2)} className={QUIET}>
-              Next: how far, on each
-            </button>
+              <Trans context="NeedsPanel, button">Next: how far, on each
+            </Trans></button>
           </div>
         </section>
       ) : null}
@@ -510,29 +512,29 @@ export default function NeedsPanel({
       {screen === 2 ? (
         <section aria-labelledby="needs-screen-2">
           <h3 id="needs-screen-2" className="text-lg font-semibold text-foreground mb-2">
-            How far, on each
-          </h3>
+            <Trans context="NeedsPanel, h3">How far, on each
+          </Trans></h3>
           <div className="mb-3">
             <Recap drafts={drafts} order={order} upTo={1} />
           </div>
           <p className="text-sm text-foreground mb-2">
-            For each need you took on, say how far you mean to get. The five rungs are Deprived, Unmet,
+            <Trans context="NeedsPanel, p">For each need you took on, say how far you mean to get. The five rungs are Deprived, Unmet,
             Alive, Satisfied and Thriving, and every need starts at Satisfied.
-          </p>
+          </Trans></p>
           <p className="text-sm text-foreground mb-2">
-            Most villages aim at Satisfied and reach for Thriving on two or three. Aiming at Thriving
+            <Trans context="NeedsPanel, p">Most villages aim at Satisfied and reach for Thriving on two or three. Aiming at Thriving
             everywhere is a promise, and a promise the economy cannot fund is worse than a smaller one it
             can.
-          </p>
+          </Trans></p>
           <p className={`${HINT} mb-4`}>
-            The five words are the deck's own. The sentence under each one is this platform's reading of
+            <Trans context="NeedsPanel, p">The five words are the deck's own. The sentence under each one is this platform's reading of
             what that rung means for the need beside it.
-          </p>
+          </Trans></p>
 
           {live.length === 0 ? (
             <p className="text-sm text-foreground">
-              Nothing is ticked, so there is nothing to set a depth on. Screen 1 is where that starts.
-            </p>
+              <Trans context="NeedsPanel, p">Nothing is ticked, so there is nothing to set a depth on. Screen 1 is where that starts.
+            </Trans></p>
           ) : (
             <div className="grid gap-3 mb-5">
               {live.map((draft) => (
@@ -543,7 +545,7 @@ export default function NeedsPanel({
                   </p>
                   <DepthLadder draft={draft} onPick={pickDepth} />
                   <label className="block mt-3">
-                    <span className={`${HINT} block mb-1`}>Why this one, in your words. Optional.</span>
+                    <span className={`${HINT} block mb-1`}><Trans context="NeedsPanel, span">Why this one, in your words. Optional.</Trans></span>
                     <input
                       type="text"
                       value={draft.note}
@@ -558,14 +560,14 @@ export default function NeedsPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setScreen(1)} className={QUIET}>
-              Back
-            </button>
+              <Trans context="NeedsPanel, button">Back
+            </Trans></button>
             <button type="button" onClick={save} disabled={saving} className={PRIMARY}>
               {saving ? "Saving" : "Save these depths"}
             </button>
             <button type="button" onClick={() => setScreen(3)} className={QUIET}>
-              Next: for how many
-            </button>
+              <Trans context="NeedsPanel, button">Next: for how many
+            </Trans></button>
           </div>
         </section>
       ) : null}
@@ -573,26 +575,26 @@ export default function NeedsPanel({
       {screen === 3 ? (
         <section aria-labelledby="needs-screen-3">
           <h3 id="needs-screen-3" className="text-lg font-semibold text-foreground mb-2">
-            For how many
-          </h3>
+            <Trans context="NeedsPanel, h3">For how many
+          </Trans></h3>
           <div className="mb-3">
             <Recap drafts={drafts} order={order} upTo={2} />
           </div>
           <p className="text-sm text-foreground mb-2">
-            Say who each need is for. A village that meets Love for half its members has chosen something,
+            <Trans context="NeedsPanel, p">Say who each need is for. A village that meets Love for half its members has chosen something,
             and it should be able to say so out loud. Childcare may be for the four families with
             children. Clean water is for everyone.
-          </p>
+          </Trans></p>
           <p className={`${HINT} mb-4`}>
-            A percentage here is a share of the members on the roll. This screen does not count them: the
+            <Trans context="NeedsPanel, p">A percentage here is a share of the members on the roll. This screen does not count them: the
             roll is counted on the Village Health page, and a second count taken here could disagree with
             the one the village measures against.
-          </p>
+          </Trans></p>
 
           {live.length === 0 ? (
             <p className="text-sm text-foreground">
-              Nothing is ticked, so there is nobody to set a share for. Screen 1 is where that starts.
-            </p>
+              <Trans context="NeedsPanel, p">Nothing is ticked, so there is nobody to set a share for. Screen 1 is where that starts.
+            </Trans></p>
           ) : (
             <div className="grid gap-2 mb-5">
               {live.map((draft) => (
@@ -612,7 +614,7 @@ export default function NeedsPanel({
                       onChange={(e) => setDraft(draft.key, { breadth: e.target.value })}
                       className={`${FIELD} w-24 text-right`}
                     />
-                    <span className={HINT}>percent of members</span>
+                    <span className={HINT}><Trans context="NeedsPanel, span">percent of members</Trans></span>
                   </span>
                 </div>
               ))}
@@ -621,14 +623,14 @@ export default function NeedsPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setScreen(2)} className={QUIET}>
-              Back
-            </button>
+              <Trans context="NeedsPanel, button">Back
+            </Trans></button>
             <button type="button" onClick={save} disabled={saving} className={PRIMARY}>
               {saving ? "Saving" : "Save these shares"}
             </button>
             <button type="button" onClick={() => setScreen(4)} className={QUIET}>
-              Next: how much of each person's needs
-            </button>
+              <Trans context="NeedsPanel, button">Next: how much of each person's needs
+            </Trans></button>
           </div>
         </section>
       ) : null}
@@ -636,39 +638,39 @@ export default function NeedsPanel({
       {screen === 4 ? (
         <section aria-labelledby="needs-screen-4">
           <h3 id="needs-screen-4" className="text-lg font-semibold text-foreground mb-2">
-            How much of each person's needs
-          </h3>
+            <Trans context="NeedsPanel, h3">How much of each person's needs
+          </Trans></h3>
           <div className="mb-3">
             <Recap drafts={drafts} order={order} upTo={3} />
           </div>
           <p className="text-sm text-foreground mb-2">
-            Nobody meets all of anybody's needs, and a village that says it does is lying to the person
+            <Trans context="NeedsPanel, p">Nobody meets all of anybody's needs, and a village that says it does is lying to the person
             who joins it. This is what you have said so far, added up:
-          </p>
+          </Trans></p>
           <p className={`${CARD} px-4 py-4 text-base text-foreground mb-3`}>
             {totalitySentence(activeScope, summary?.answered ?? false)}
           </p>
           <p className="text-sm text-foreground mb-2">
-            Ten percent is a good neighbour: people live their own lives and this village helps. A hundred
+            <Trans context="NeedsPanel, p">Ten percent is a good neighbour: people live their own lives and this village helps. A hundred
             percent is a whole world, and it needs a whole economy behind it.
-          </p>
+          </Trans></p>
           <p className={`${HINT} mb-2`}>
-            That sentence is a description of what you have ticked and saved. The dial that would take this
+            <Trans context="NeedsPanel, p">That sentence is a description of what you have ticked and saved. The dial that would take this
             figure and size the economy around it is not built. No quest payout, no role payout and no
             allowance reads it today, so changing your ticks changes what this village SAYS and nothing
             about what it pays.
-          </p>
+          </Trans></p>
           <p className={`${HINT} mb-4`}>
-            The more needs you take on, the more roles the economy needs to meet them. Screen 5 counts the
+            <Trans context="NeedsPanel, p">The more needs you take on, the more roles the economy needs to meet them. Screen 5 counts the
             roles you have tagged and how many of them are held.
-          </p>
+          </Trans></p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setScreen(3)} className={QUIET}>
-              Back
-            </button>
+              <Trans context="NeedsPanel, button">Back
+            </Trans></button>
             <button type="button" onClick={() => setScreen(5)} className={QUIET}>
-              Next: what meets them
-            </button>
+              <Trans context="NeedsPanel, button">Next: what meets them
+            </Trans></button>
           </div>
         </section>
       ) : null}
@@ -676,21 +678,21 @@ export default function NeedsPanel({
       {screen === 5 ? (
         <section aria-labelledby="needs-screen-5">
           <h3 id="needs-screen-5" className="text-lg font-semibold text-foreground mb-2">
-            What meets them
-          </h3>
+            <Trans context="NeedsPanel, h3">What meets them
+          </Trans></h3>
           <div className="mb-3">
             <Recap drafts={drafts} order={order} upTo={3} />
           </div>
           <p className="text-sm text-foreground mb-2">
-            Now say what does the meeting. A quest, a role, a place a member can spend, a stay, an event or
+            <Trans context="NeedsPanel, p">Now say what does the meeting. A quest, a role, a place a member can spend, a stay, an event or
             a place on the map can each be tagged with the needs it meets. A need with nothing tagged to it
             is an intention, and no economy answers it.
-          </p>
+          </Trans></p>
 
           {activeScope.length === 0 ? (
             <p className="text-sm text-foreground mb-4">
-              Nothing is in scope, so there is nothing to meet. Screen 1 is where that starts.
-            </p>
+              <Trans context="NeedsPanel, p">Nothing is in scope, so there is nothing to meet. Screen 1 is where that starts.
+            </Trans></p>
           ) : (
             <div className="grid gap-2 mb-5">
               {(report?.coverage ?? []).map((row) => {
@@ -717,21 +719,21 @@ export default function NeedsPanel({
                 );
               })}
               {report === null ? (
-                <p className={HINT}>The coverage read has not come back, so no count is shown here.</p>
+                <p className={HINT}><Trans context="NeedsPanel, p">The coverage read has not come back, so no count is shown here.</Trans></p>
               ) : report.seatings.every((s) => !seatLineWorthSaying(s)) ? (
                 <p className={HINT}>
-                  No role is tagged to any of these needs, so there is no role count to give. The more
+                  <Trans context="NeedsPanel, p">No role is tagged to any of these needs, so there is no role count to give. The more
                   needs a village takes on, the more roles its economy needs to meet them.
-                </p>
+                </Trans></p>
               ) : null}
             </div>
           )}
 
           <div className={`${CARD} px-4 py-4 mb-4`}>
-            <p className="text-sm font-medium text-foreground mb-2">Tag one thing as meeting one need</p>
+            <p className="text-sm font-medium text-foreground mb-2"><Trans context="NeedsPanel, p">Tag one thing as meeting one need</Trans></p>
             <div className="flex flex-wrap gap-2 items-end">
               <label className="grid gap-1">
-                <span className={HINT}>The need</span>
+                <span className={HINT}><Trans context="NeedsPanel, span">The need</Trans></span>
                 <select value={tagNeed} onChange={(e) => setTagNeed(e.target.value)} className={FIELD}>
                   <option value="">Pick a need</option>
                   {activeScope.map((r) => (
@@ -742,7 +744,7 @@ export default function NeedsPanel({
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className={HINT}>What meets it</span>
+                <span className={HINT}><Trans context="NeedsPanel, span">What meets it</Trans></span>
                 <select value={tagSubject} onChange={(e) => setTagSubject(e.target.value)} className={FIELD}>
                   <option value="">Pick a quest or a role</option>
                   {quests.map((q) => (
@@ -758,46 +760,46 @@ export default function NeedsPanel({
                 </select>
               </label>
               <button type="button" onClick={addTag} className={QUIET}>
-                Tag it
-              </button>
+                <Trans context="NeedsPanel, button">Tag it
+              </Trans></button>
             </div>
             <p className={`${HINT} mt-2`}>
-              Quests and roles are edited on their own screens. Nothing here changes a quest or a role: it
+              <Trans context="NeedsPanel, p">Quests and roles are edited on their own screens. Nothing here changes a quest or a role: it
               only records that the one meets the other.
-            </p>
+            </Trans></p>
             {onOpenTab ? (
               <div className="flex flex-wrap gap-2 mt-2">
                 <button type="button" onClick={() => onOpenTab("quests-admin")} className={QUIET}>
-                  Open Quests
-                </button>
+                  <Trans context="NeedsPanel, button">Open Quests
+                </Trans></button>
                 <button type="button" onClick={() => onOpenTab("org-chart")} className={QUIET}>
-                  Open Org Chart
-                </button>
+                  <Trans context="NeedsPanel, button">Open Org Chart
+                </Trans></button>
               </div>
             ) : null}
           </div>
 
           <div className={`${CARD} px-4 py-4 mb-5`}>
             <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
-              <ListChecks className="w-4 h-4" aria-hidden="true" />
+              <Trans context="NeedsPanel, p"><ListChecks className="w-4 h-4" aria-hidden="true" />
               Tags added in this sitting
-            </p>
+            </Trans></p>
             <p className={`${HINT} mb-2`}>
-              These are the only tags this screen can take off. No route returns a tag with its id, so a
+              <Trans context="NeedsPanel, p">These are the only tags this screen can take off. No route returns a tag with its id, so a
               tag added before today can be counted here and cannot be removed here.
-            </p>
+            </Trans></p>
             {freshLinks.length === 0 ? (
-              <p className={HINT}>None yet.</p>
+              <p className={HINT}><Trans context="NeedsPanel, p">None yet.</Trans></p>
             ) : (
               <ul className="grid gap-1.5">
                 {freshLinks.map((link) => (
                   <li key={link.id} className="flex items-center justify-between gap-3 text-sm text-foreground">
                     <span>
-                      {link.subjectName} meets {drafts[link.needKey]?.label ?? link.needKey}
+                      <Trans context="NeedsPanel, span">{link.subjectName} meets {drafts[link.needKey]?.label ?? link.needKey}</Trans>
                     </span>
                     <button type="button" onClick={() => removeTag(link)} className={QUIET}>
-                      Take this tag off
-                    </button>
+                      <Trans context="NeedsPanel, button">Take this tag off
+                    </Trans></button>
                   </li>
                 ))}
               </ul>
@@ -806,11 +808,11 @@ export default function NeedsPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setScreen(4)} className={QUIET}>
-              Back
-            </button>
+              <Trans context="NeedsPanel, button">Back
+            </Trans></button>
             <button type="button" onClick={() => setScreen(6)} className={QUIET}>
-              Next: the whole of it
-            </button>
+              <Trans context="NeedsPanel, button">Next: the whole of it
+            </Trans></button>
           </div>
         </section>
       ) : null}
@@ -818,12 +820,12 @@ export default function NeedsPanel({
       {screen === 6 ? (
         <section aria-labelledby="needs-screen-6">
           <h3 id="needs-screen-6" className="text-lg font-semibold text-foreground mb-2">
-            The whole of it
-          </h3>
+            <Trans context="NeedsPanel, h3">The whole of it
+          </Trans></h3>
           <p className={`${HINT} mb-3`}>
-            This is what your village says it is for, in the words you would read out at its birthing.
+            <Trans context="NeedsPanel, p">This is what your village says it is for, in the words you would read out at its birthing.
             Every sentence here is read back from what was saved.
-          </p>
+          </Trans></p>
 
           <p className={`${CARD} px-4 py-4 text-base text-foreground mb-3`}>
             {totalitySentence(activeScope, summary?.answered ?? false)}
@@ -862,9 +864,9 @@ export default function NeedsPanel({
             </p>
           ) : (
             <p className={`${HINT} mb-3`}>
-              No role is tagged to any of these needs, so there is no role count to give. Screen 5 is where
+              <Trans context="NeedsPanel, p">No role is tagged to any of these needs, so there is no role count to give. Screen 5 is where
               a role is tagged.
-            </p>
+            </Trans></p>
           )}
 
           <p className={`${HINT} mb-4`}>
@@ -875,11 +877,11 @@ export default function NeedsPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setScreen(5)} className={QUIET}>
-              Back
-            </button>
+              <Trans context="NeedsPanel, button">Back
+            </Trans></button>
             <button type="button" onClick={() => setScreen(1)} className={QUIET}>
-              Start again at screen 1
-            </button>
+              <Trans context="NeedsPanel, button">Start again at screen 1
+            </Trans></button>
           </div>
         </section>
       ) : null}

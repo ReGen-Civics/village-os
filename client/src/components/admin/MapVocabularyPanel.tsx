@@ -155,7 +155,7 @@ export default function MapVocabularyPanel() {
               </label>
               <div className="sm:col-span-2">
                 <button type="button" className={`${btnCls} text-red-600 border-red-200 w-full`}
-                  aria-label={`Remove phase ${k}`}
+                  aria-label={t({ message: `Remove phase ${k}`, context: "MapVocabularyPanel, aria-label" })}
                   onClick={() => setPhases(phases.filter((_, j) => j !== i))}><Trans context="MapVocabularyPanel, button">Remove</Trans></button>
               </div>
             </div>

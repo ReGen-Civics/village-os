@@ -102,7 +102,7 @@ describe("LIVING MOTION in index.css and motion.css", () => {
   });
 
   it("moves only compositor properties in its keyframes", () => {
-    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight", "m-breathe", "m-breathe-ring", "m-seed-land", "m-draw", "m-unfurl-l", "m-unfurl-r", "m-knot-in", "m-knot-glow"]) {
+    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight", "m-breathe", "m-breathe-ring", "m-seed-land", "m-draw", "m-unfurl-l", "m-unfurl-r", "m-knot-in", "m-knot-glow", "m-root", "m-reroot", "m-page-in"]) {
       keyframes(name).walkDecls((d) => {
         expect(MOVES_ONLY.has(d.prop), `${name} animates ${d.prop}`).toBe(true);
       });
@@ -151,6 +151,13 @@ describe("LIVING MOTION in index.css and motion.css", () => {
     }
   });
 
+  it("arrives only after the reader has moved, and never dims the page being left", () => {
+    const rules = rulesFor((s) => s.includes("#main"));
+    expect(rules).toHaveLength(1);
+    expect(rules[0].selector).toBe(":root[data-m-arrived] #main:not([data-m-stay])");
+    expect(guards(rules[0])).toContain(NO_PREFERENCE);
+  });
+
   it("lets a thread's knots glow a few times and rest, never forever", () => {
     const knots = rulesFor((s) => s.includes(".m-knot")).flatMap((r) => r.nodes.filter((n): n is Declaration => n.type === "decl" && n.prop === "animation"));
     expect(knots.length).toBeGreaterThan(0);
@@ -160,5 +167,16 @@ describe("LIVING MOTION in index.css and motion.css", () => {
       expect(glow, "the glow is declared").toBeDefined();
       expect(Number(glow!.trim().split(/\s+/).pop())).toBeLessThanOrEqual(3);
     }
+  });
+
+  it("fades a new page in without holding anything on <main> once it ends", () => {
+    const [r] = rulesFor((s) => s.includes("#main"));
+    const anim = r.nodes.find((n): n is Declaration => n.type === "decl" && n.prop === "animation");
+    expect(anim?.value).toMatch(/\bbackwards\b/);
+    expect(anim?.value).not.toMatch(/\b(both|forwards)\b/);
+    keyframes("m-page-in").walkDecls((d) => expect(d.prop, "only opacity on the page").toBe("opacity"));
+    const from = (keyframes("m-page-in").nodes ?? []).find((n): n is Rule => n.type === "rule" && n.selector === "from");
+    const op = (from?.nodes ?? []).find((n): n is Declaration => n.type === "decl" && n.prop === "opacity");
+    expect(Number(op?.value)).toBeGreaterThanOrEqual(0.4);
   });
 });

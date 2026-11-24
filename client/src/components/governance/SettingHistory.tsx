@@ -14,7 +14,7 @@ import { useCallback, useId, useState } from "react";
 import { Link } from "wouter";
 import { History } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface Amendment {
   id: string;
@@ -114,6 +114,7 @@ export function SettingHistory({
   label: string;
   valueOf: (key: string, raw: string | null) => string;
 }) {
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<Amendment[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -141,7 +142,7 @@ export function SettingHistory({
         onClick={toggle}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`History of ${label}`}
+        aria-label={t({ message: `History of ${label}`, context: "SettingHistory, aria-label" })}
         className="inline-flex min-h-[44px] items-center gap-1 text-[11px] text-teal-deep hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep rounded"
       >
         <Trans context="SettingHistory, button"><History className="w-3 h-3" aria-hidden="true" /> History

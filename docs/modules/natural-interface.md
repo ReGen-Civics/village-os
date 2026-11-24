@@ -149,7 +149,10 @@ wip to painted, and a reduced-motion guard on every one of them.
 | `useReducedMotion()` | `client/src/components/natural/useReducedMotion.ts` | Branching a composition, not just cancelling one |
 
 Import from the barrel, `@/components/natural`, unless you want one component
-and nothing else.
+and nothing else. The moon is the exception: it is not in the barrel. Import it
+by path, `@/components/natural/MoonProgress` and `@/components/natural/moonGeometry`.
+The barrel rides the first page on every visit, and its moon re-exports pulled the
+moon's table of dates onto it for everybody (first-page budget, 24 Nov 2026).
 
 ## The moon's design rules
 

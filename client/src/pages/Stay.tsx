@@ -304,7 +304,7 @@ export default function Stay() {
                                   aria-label={t({ message: `Nights of ${stayName} to buy`, context: "Stay, aria-label" })}
                                   onChange={(e) => setBuyNights(Math.min(data?.maxPurchaseNights ?? 60, Math.max(1, Number(e.target.value) || 1)))}
                                   className="w-14 text-sm border border-border rounded-lg px-2 py-2" title={t({ message: "Nights", context: "Stay, title" })} />
-                                <button onClick={() => checkout(a.id)} title={`Buy ${buyNights} night(s) of ${stayName}`}
+                                <button onClick={() => checkout(a.id)} title={t({ message: `Buy ${buyNights} night(s) of ${stayName}`, context: "Stay, title" })}
                                   className="inline-flex items-center gap-1.5 text-sm border border-teal-deep text-teal-deep rounded-lg px-3 py-2 font-medium hover:bg-teal-deep/5">
                                   <Trans context="Stay, button"><CreditCard className="w-3.5 h-3.5" /> Buy
                                 </Trans></button>

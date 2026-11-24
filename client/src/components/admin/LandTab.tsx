@@ -37,6 +37,7 @@ import {
   parseCoordinates,
   seedFrame,
 } from "@shared/land";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /*
  * THE MAP'S OWN FRAME, and why this screen offers it.
@@ -81,6 +82,7 @@ const VISIBILITY: Array<{ id: Parcel["visibility"]; title: string; detail: strin
 ];
 
 export default function LandTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [provider, setProvider] = useState<any>(null);
   const [slug, setSlug] = useState(DEFAULT_PARCEL_SLUG);
@@ -189,7 +191,7 @@ export default function LandTab({ password }: { password: string }) {
       }
       return toast.error(refusal(d, "That location was refused"));
     }
-    toast.success("Saved. The map draws this the next time it loads.");
+    toast.success(t({ message: "Saved. The map draws this the next time it loads.", context: "LandTab, toast" }));
     await load();
   };
 
@@ -208,7 +210,7 @@ export default function LandTab({ password }: { password: string }) {
     const d = await res.json().catch(() => ({}));
     setBusy("");
     if (!res.ok) return toast.error(refusal(d, "The picture could not be removed"));
-    toast.success("Picture removed. The map draws its own ground again.");
+    toast.success(t({ message: "Picture removed. The map draws its own ground again.", context: "LandTab, toast" }));
     await load();
   };
 
@@ -234,9 +236,9 @@ export default function LandTab({ password }: { password: string }) {
 
   const addParcel = () => {
     const s = parcelSlug(newLabel);
-    if (!s) return toast.error("Give the piece of land a name with a letter or a number in it.");
+    if (!s) return toast.error(t({ message: "Give the piece of land a name with a letter or a number in it.", context: "LandTab, toast" }));
     if (parcels.some((p) => p.slug === s)) {
-      return toast.error("This project already has a parcel by that name.");
+      return toast.error(t({ message: "This project already has a parcel by that name.", context: "LandTab, toast" }));
     }
     /*
      * A parcel exists once it has a location. The new one starts selected and
@@ -297,16 +299,16 @@ export default function LandTab({ password }: { password: string }) {
     await load();
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-400"><Trans context="LandTab, div">Loading...</Trans></div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Where The Land Is</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="LandTab, h2">Where The Land Is</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          Put this project on the real map. Paste the coordinates of your land and the village map
+          <Trans context="LandTab, p">Put this project on the real map. Paste the coordinates of your land and the village map
           draws a photograph of that actual ground underneath it.
-        </p>
+        </Trans></p>
       </div>
 
       {parcels.length > 1 && (
@@ -322,7 +324,7 @@ export default function LandTab({ password }: { password: string }) {
               }`}
             >
               {p.label || "The land"}
-              {!p.centre && <span className="opacity-60"> · not placed</span>}
+              {!p.centre && <span className="opacity-60"> <Trans context="LandTab, span">· not placed</Trans></span>}
             </button>
           ))}
         </div>
@@ -332,23 +334,23 @@ export default function LandTab({ password }: { password: string }) {
         {parcels.length > 1 && (
           <div>
             <label className="block text-sm font-medium text-gray-900">
-              What this piece of land is called
-            </label>
+              <Trans context="LandTab, label">What this piece of land is called
+            </Trans></label>
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="North field"
+              placeholder={t({ message: "North field", context: "LandTab, placeholder" })}
               className="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
             />
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-900">Location</label>
+          <label className="block text-sm font-medium text-gray-900"><Trans context="LandTab, label">Location</Trans></label>
           <p className="text-xs text-gray-500 mt-0.5">
-            In Google Maps, long-press your land and copy the pair of numbers at the top. A map link
+            <Trans context="LandTab, p">In Google Maps, long-press your land and copy the pair of numbers at the top. A map link
             works too.
-          </p>
+          </Trans></p>
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -368,8 +370,8 @@ export default function LandTab({ password }: { password: string }) {
                     onClick={() => setText(`${parsed.swapped!.lat}, ${parsed.swapped!.lon}`)}
                     className="underline font-medium"
                   >
-                    use {parsed.swapped.lat}, {parsed.swapped.lon} instead
-                  </button>
+                    <Trans context="LandTab, button">use {parsed.swapped.lat}, {parsed.swapped.lon} instead
+                  </Trans></button>
                 </>
               )}
             </div>
@@ -385,7 +387,7 @@ export default function LandTab({ password }: { password: string }) {
                     onClick={() => setText(`${parsed.suggestion!.lat}, ${parsed.suggestion!.lon}`)}
                     className="underline font-medium"
                   >
-                    use {parsed.suggestion.lat}, {parsed.suggestion.lon}
+                    <Trans context="LandTab, button">use {parsed.suggestion.lat}, {parsed.suggestion.lon}</Trans>
                   </button>
                 </>
               )}
@@ -394,11 +396,11 @@ export default function LandTab({ password }: { password: string }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-900">How wide across, in metres</label>
+          <label className="block text-sm font-medium text-gray-900"><Trans context="LandTab, label">How wide across, in metres</Trans></label>
           <p className="text-xs text-gray-500 mt-0.5">
-            How much ground to photograph - not the shape of your parcel, which you draw on the map
+            <Trans context="LandTab, p">How much ground to photograph - not the shape of your parcel, which you draw on the map
             itself.
-          </p>
+          </Trans></p>
           <input
             value={span}
             onChange={(e) => setSpan(e.target.value)}
@@ -414,29 +416,29 @@ export default function LandTab({ password }: { password: string }) {
               and {SEED.spanM.toLocaleString()} m across. A picture framed anywhere else moves the ground
               under every one of them.{" "}
               <button onClick={useMapFrame} className="underline font-medium">
-                Use the map's frame
-              </button>
+                <Trans context="LandTab, button">Use the map's frame
+              </Trans></button>
             </div>
           )}
           {spanBad && (
             <div className="mt-1.5 text-xs text-red-600">
-              Pick a number of metres between {MIN_SPAN_M} and {MAX_SPAN_M}. Most projects sit near{" "}
+              <Trans context="LandTab, div">Pick a number of metres between {MIN_SPAN_M} and {MAX_SPAN_M}. Most projects sit near{" "}
               {DEFAULT_SPAN_M}.
-            </div>
+            </Trans></div>
           )}
           {!spanBad && frameDetail && (
             <p className="mt-1.5 text-xs text-gray-500">
-              About {frameDetail.mpp.toFixed(2)} m per pixel, in a picture {frameDetail.pixels} pixels
+              <Trans context="LandTab, p">About {frameDetail.mpp.toFixed(2)} m per pixel, in a picture {frameDetail.pixels} pixels
               wide.
               {provider?.detailVariesByPlace
                 ? " This source holds less detail over open country than over a city, so a narrow frame can come back softer than this."
-                : ""}
+                : ""}</Trans>
             </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-900">Who can see where this is</label>
+          <label className="block text-sm font-medium text-gray-900"><Trans context="LandTab, label">Who can see where this is</Trans></label>
           <div className="mt-1.5 space-y-1.5">
             {VISIBILITY.map((v) => (
               <label key={v.id} className="flex items-start gap-2 cursor-pointer">
@@ -458,10 +460,10 @@ export default function LandTab({ password }: { password: string }) {
             the photograph too, and it does not.
           */}
           <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            These three settings cover the <strong>coordinates only</strong>. Your aerial picture is
+            <Trans context="LandTab, div">These three settings cover the <strong>coordinates only</strong>. Your aerial picture is
             shown to visitors at every setting, including "Nobody". Use "Remove the picture" below if you
             would rather it were not.
-          </div>
+          </Trans></div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -485,8 +487,8 @@ export default function LandTab({ password }: { password: string }) {
               disabled={busy !== ""}
               className="text-sm border border-red-200 text-red-700 rounded-lg px-4 py-2 font-medium disabled:opacity-40"
             >
-              Remove the picture
-            </button>
+              <Trans context="LandTab, button">Remove the picture
+            </Trans></button>
           )}
           {/*
             Only on a parcel added after the first. The first one is the
@@ -506,27 +508,27 @@ export default function LandTab({ password }: { password: string }) {
 
         {!provider?.providerId && (
           <p className="text-xs text-gray-500">
-            No imagery provider is set up for this deployment, so there is nothing to fetch from yet.
+            <Trans context="LandTab, p">No imagery provider is set up for this deployment, so there is nothing to fetch from yet.
             Choose one in Game Mechanics, under Village. Until one is, the map draws its own ground.
-          </p>
+          </Trans></p>
         )}
         {provider?.providerId && !provider?.ready && (
           <p className="text-xs text-amber-700">
-            {provider.providerLabel} is selected and its key is not set, in Admin, Integrations or as{" "}
+            <Trans context="LandTab, p">{provider.providerLabel} is selected and its key is not set, in Admin, Integrations or as{" "}
             {provider.missingEnv} on the host, so there is no key to call it with.
-          </p>
+          </Trans></p>
         )}
         {active?.imagery?.error && (
-          <p className="text-xs text-red-600">Last attempt: {active.imagery.error}</p>
+          <p className="text-xs text-red-600"><Trans context="LandTab, p">Last attempt: {active.imagery.error}</Trans></p>
         )}
       </div>
 
       {active?.imagery?.url && (
         <div className="border border-gray-200 rounded-xl p-4">
-          <h3 className="font-semibold text-gray-900 text-sm mb-2">The picture the map is drawing</h3>
+          <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="LandTab, h3">The picture the map is drawing</Trans></h3>
           <img
             src={active.imagery.url}
-            alt="Aerial photograph of this parcel"
+            alt={t({ message: "Aerial photograph of this parcel", context: "LandTab, alt" })}
             className="w-full max-w-lg rounded-lg"
           />
           <p className="text-[11px] text-gray-500 mt-1.5">{active.imagery.attribution}</p>
@@ -539,17 +541,17 @@ export default function LandTab({ password }: { password: string }) {
       )}
 
       <div className="border border-dashed border-gray-300 rounded-xl p-4">
-        <h3 className="font-semibold text-gray-900 text-sm">Another piece of land</h3>
+        <h3 className="font-semibold text-gray-900 text-sm"><Trans context="LandTab, h3">Another piece of land</Trans></h3>
         <p className="text-xs text-gray-500 mt-0.5 mb-2">
-          Projects often hold several parcels in different places. Each one gets its own map, because
+          <Trans context="LandTab, p">Projects often hold several parcels in different places. Each one gets its own map, because
           two pieces of ground far apart share no single honest picture - the map gives you a way to
           jump between them.
-        </p>
+        </Trans></p>
         <div className="flex flex-wrap gap-2 items-center">
           <input
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
-            placeholder="North field"
+            placeholder={t({ message: "North field", context: "LandTab, placeholder" })}
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5"
           />
           <button
@@ -557,8 +559,8 @@ export default function LandTab({ password }: { password: string }) {
             disabled={!newLabel.trim()}
             className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
           >
-            Add
-          </button>
+            <Trans context="LandTab, button">Add
+          </Trans></button>
           {newLabel.trim() && parcelSlug(newLabel) && (
             <span className="text-[11px] text-gray-400 font-mono">/{parcelSlug(newLabel)}</span>
           )}

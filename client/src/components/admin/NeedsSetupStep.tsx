@@ -23,6 +23,7 @@ import {
 } from "./setupProgress";
 import { stepSummaryLine, type ScopeSummary } from "./needsCopy";
 import { HINT, PRIMARY } from "./NeedsPieces";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /* -------------------------------------------------------------------------- *
  * The reading the Setup Wizard's step needs, and the step itself.
@@ -99,6 +100,7 @@ export function NeedsSetupStep({
   onOpenTab: (tab: string) => void;
   summary: ScopeSummary | null;
 }) {
+  const { t } = useLingui();
   return (
     <SetupSection
       rows={rows}
@@ -106,7 +108,7 @@ export function NeedsSetupStep({
       onToggleStep={onToggleStep}
       id="needs"
       n={2}
-      title="What this village is for"
+      title={t({ message: "What this village is for", context: "NeedsSetupStep, title" })}
       subtitle="The needs this village is taking on, how far it means to get on each, and for how many."
     >
       {/* Its own ground, for the same reason the panel has one: the wizard
@@ -114,14 +116,14 @@ export function NeedsSetupStep({
           laid straight onto it is near-white text on light gray in dark mode. */}
       <div className="bg-background text-foreground rounded-lg p-4">
         <p className="text-sm text-foreground mb-3">
-          A village is a business designed to meet the needs of the people in it. Setting this up front
+          <Trans context="NeedsSetupStep, p">A village is a business designed to meet the needs of the people in it. Setting this up front
           orients everything after it: meeting one need for a tenth of your members and meeting all ten
           for all of them are two different economic engines.
-        </p>
+        </Trans></p>
         <p className={`${HINT} mb-4`}>{stepSummaryLine(summary)}</p>
         <button type="button" onClick={() => onOpenTab("needs-admin")} className={PRIMARY}>
-          Open the six screens
-        </button>
+          <Trans context="NeedsSetupStep, button">Open the six screens
+        </Trans></button>
       </div>
     </SetupSection>
   );

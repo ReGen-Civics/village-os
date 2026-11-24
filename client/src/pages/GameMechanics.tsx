@@ -1195,7 +1195,7 @@ export default function GameMechanics() {
                               type="button"
                               onClick={() => act(`/api/game/mechanics/proposals/${p.id}/to-hypha`)}
                               className="text-sm text-stone-600 hover:text-stone-900 hover:underline"
-                              title="Proposer only: marks this as taken to Hypha for the binding vote"
+                              title={t({ message: "Proposer only: marks this as taken to Hypha for the binding vote", context: "GameMechanics, title" })}
                             >
                               <Trans context="GameMechanics, button">I've taken it to Hypha
                             </Trans></button>

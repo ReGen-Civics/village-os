@@ -792,7 +792,7 @@ export default function LivingMap() {
         <button
           type="button"
           onClick={exitApp}
-          aria-label="Leave the map"
+          aria-label={t({ message: "Leave the map", context: "LivingMap, aria-label" })}
           className="fixed z-10 inline-flex items-center gap-2 min-h-[44px] min-w-[44px] px-4 py-2 text-sm rounded-lg border border-border bg-background/95 text-foreground shadow-sm backdrop-blur-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           style={{
             bottom: "max(env(safe-area-inset-bottom, 0px), 12px)",

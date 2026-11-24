@@ -13,6 +13,7 @@
  */
 import { useState } from "react";
 import type { WordsPreview as Preview } from "./wordsApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const WIDTHS = { phone: 375, desktop: 640 } as const;
 type Width = keyof typeof WIDTHS;
@@ -37,14 +38,15 @@ function notes(preview: Preview): Array<{ tone: "warn" | "info"; text: string }>
 }
 
 export default function WordsPreview({ preview, loading, error }: { preview: Preview | null; loading: boolean; error: string }) {
+  const { t } = useLingui();
   const [width, setWidth] = useState<Width>("phone");
   const [showText, setShowText] = useState(false);
 
   return (
-    <section aria-label="Preview" className="min-w-0 rounded-xl border border-gray-200 bg-white">
+    <section aria-label={t({ message: "Preview", context: "WordsPreview, aria-label" })} className="min-w-0 rounded-xl border border-gray-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Preview</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500"><Trans context="WordsPreview, p">Preview</Trans></p>
           {preview && (
             <>
               <p className="truncate text-sm font-semibold text-gray-900" title={preview.subject}>{preview.subject}</p>
@@ -52,7 +54,7 @@ export default function WordsPreview({ preview, loading, error }: { preview: Pre
             </>
           )}
         </div>
-        <div className="flex items-center gap-1" role="group" aria-label="Preview width">
+        <div className="flex items-center gap-1" role="group" aria-label={t({ message: "Preview width", context: "WordsPreview, aria-label" })}>
           {(Object.keys(WIDTHS) as Width[]).map((w) => (
             <button
               key={w}
@@ -77,8 +79,8 @@ export default function WordsPreview({ preview, loading, error }: { preview: Pre
               showText ? "bg-gray-900 text-white" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
-            Plain text
-          </button>
+            <Trans context="WordsPreview, button">Plain text
+          </Trans></button>
         </div>
       </div>
 
@@ -106,7 +108,7 @@ export default function WordsPreview({ preview, loading, error }: { preview: Pre
           ) : (
             <div className="overflow-x-auto">
               <iframe
-                title={`The email at ${width} width`}
+                title={t({ message: `The email at ${width} width`, context: "WordsPreview, title" })}
                 sandbox=""
                 srcDoc={preview.html}
                 style={{ width: WIDTHS[width], height: 640 }}

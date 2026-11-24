@@ -4,6 +4,7 @@ import { fetchConfigCached } from "./lib/gameApi";
 import { listenForThemeChanges } from "./lib/liveTheme";
 import { installCrashReporting } from "./lib/crashReport";
 import { installStaleChunkRecovery } from "./lib/staleChunk";
+import { installRouteGrowth } from "./lib/routeGrowth";
 import "./index.css";
 
 /**
@@ -109,6 +110,8 @@ void import("./lib/touchLight").then((m) => m.installTouchLight()).catch(() => u
 
 // A page that outlived a deploy reloads itself once for the new build (lib/staleChunk.ts).
 installStaleChunkRecovery();
+// Page to page: a root across the top and the new page arriving (lib/routeGrowth.ts). Never on the first page.
+installRouteGrowth();
 installCrashReporting();
 
 createRoot(document.getElementById("root")!).render(<App />);

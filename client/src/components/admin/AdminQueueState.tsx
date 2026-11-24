@@ -6,6 +6,7 @@
  * nothing is waiting yet.
  */
 import { handledOnThisDevice } from "./adminQueueModel";
+import { Trans } from "@lingui/react/macro";
 
 const TAP = "inline-flex min-h-[44px] items-center justify-center rounded-lg px-4 text-base font-medium";
 
@@ -24,8 +25,8 @@ export default function AdminQueueState({
         <p className="text-base text-gray-900">{message || "The list did not load. Try again in a moment."}</p>
         {onRetry && (
           <button type="button" onClick={onRetry} className={`${TAP} mt-3 bg-teal-deep text-white`}>
-            Try again
-          </button>
+            <Trans context="AdminQueueState, button">Try again
+          </Trans></button>
         )}
       </div>
     );

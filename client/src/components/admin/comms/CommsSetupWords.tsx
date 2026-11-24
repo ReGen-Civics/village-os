@@ -20,27 +20,29 @@ import { changedKeys } from "@/lib/unsavedChanges";
 import { commsCall, whenOfIso, type SettingsPayload } from "./commsSettingsApi";
 import { EmailField } from "./EmailField";
 import { Refused, inputCls, primaryCls, secondaryCls, useSaver, type EditorProps } from "./CommsSetupEditors";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const SETTINGS = "/admin/comms/settings";
 
 // ── 5. The postal address ───────────────────────────────────────────────────
 
 export function PostalAddressEditor(props: EditorProps) {
+  const { t } = useLingui();
   const [draft, setDraft] = useState(props.data.settings.postalAddress);
   const { refused, saveForBar } = useSaver(props);
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-sm font-medium text-gray-700 block mb-1">Postal address</span>
+        <span className="text-sm font-medium text-gray-700 block mb-1"><Trans context="CommsSetupWords, span">Postal address</Trans></span>
         <textarea
           rows={3}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={"Street and number\nTown, postcode\nCountry"}
+          placeholder={t({ message: "Street and number\nTown, postcode\nCountry", context: "CommsSetupWords, placeholder" })}
           className={`${inputCls} font-sans`}
         />
       </label>
-      <p className="text-xs text-gray-500">It goes in the footer of every email the village sends in bulk, the way it would on an envelope.</p>
+      <p className="text-xs text-gray-500"><Trans context="CommsSetupWords, p">It goes in the footer of every email the village sends in bulk, the way it would on an envelope.</Trans></p>
       <SaveBar
         count={draft.trim() === props.data.settings.postalAddress.trim() ? 0 : 1}
         onSave={() => saveForBar(SETTINGS, "PUT", { postalAddress: draft })}
@@ -68,6 +70,7 @@ interface Inboxes {
  * inboxes receive replies to each path's emails.
  */
 export function ReplyToEditor(props: EditorProps) {
+  const { t } = useLingui();
   const { password } = props;
   // Each path by the name this village gives it (Admin, Paths & Stages).
   const pathName = (id: string, fallback: string) => props.data.paths.find((p) => p.id === id)?.label || fallback;
@@ -89,7 +92,7 @@ export function ReplyToEditor(props: EditorProps) {
       setCfg(got);
       setHeld(got);
     } else {
-      toast.error("Failed to load email settings");
+      toast.error(t({ message: "Failed to load email settings", context: "CommsSetupWords, toast" }));
     }
     setLoading(false);
   }, [password]);
@@ -108,29 +111,29 @@ export function ReplyToEditor(props: EditorProps) {
     return { ok: true };
   };
 
-  if (loading) return <p className="text-sm text-gray-400">Loading...</p>;
+  if (loading) return <p className="text-sm text-gray-400"><Trans context="CommsSetupWords, p">Loading...</Trans></p>;
   return (
     <div className="space-y-4">
       <EmailField
-        label="Business Inquiries (Prosperity / Contact)"
+        label={t({ message: "Business Inquiries (Prosperity / Contact)", context: "CommsSetupWords, label" })}
         value={cfg.prosperity}
         onChange={(v) => setCfg({ ...cfg, prosperity: v })}
         hint={`Receives business and contact form submissions, and replies to the ${pathName("prosperity-creator", "Prosperity Creator")} path.`}
       />
       <EmailField
-        label="Investor"
+        label={t({ message: "Investor", context: "CommsSetupWords, label" })}
         value={cfg.investor}
         onChange={(v) => setCfg({ ...cfg, investor: v })}
         hint={`Receives investor enquiries and document requests, and replies to the ${pathName("investor", "Investor")} path.`}
       />
       <EmailField
-        label="Core Team (Steward)"
+        label={t({ message: "Core Team (Steward)", context: "CommsSetupWords, label" })}
         value={cfg.steward}
         onChange={(v) => setCfg({ ...cfg, steward: v })}
         hint={`Receives ${pathName("steward", "Village Steward")} applications, and replies to the ${pathName("steward", "Village Steward")} path.`}
       />
       <EmailField
-        label="Resident"
+        label={t({ message: "Resident", context: "CommsSetupWords, label" })}
         value={cfg.resident}
         onChange={(v) => setCfg({ ...cfg, resident: v })}
         hint={`Receives ${pathName("resident", "Resident")} applications and waitlist signups, and replies to the ${pathName("resident", "Resident")} path.`}
@@ -158,9 +161,9 @@ export function PathContactsEditor(props: EditorProps) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-gray-600">
-        At three weeks, each path's journey asks this person to write to whoever is walking it. With nobody named, the request goes to the path's
+        <Trans context="CommsSetupWords, p">At three weeks, each path's journey asks this person to write to whoever is walking it. With nobody named, the request goes to the path's
         inbox above.
-      </p>
+      </Trans></p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {data.paths.map((p) => (
           <label key={p.id} className="block">
@@ -202,13 +205,13 @@ export function ConsentWordsEditor(props: EditorProps) {
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-sm font-medium text-gray-700 block mb-1">The words beside the box</span>
+        <span className="text-sm font-medium text-gray-700 block mb-1"><Trans context="CommsSetupWords, span">The words beside the box</Trans></span>
         <textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} className={`${inputCls} font-sans`} />
       </label>
       <p className="text-xs text-gray-500">
-        Every public form that leads to a path shows these words beside its tick-box. Ticked, the person is walked through the next steps by
+        <Trans context="CommsSetupWords, p">Every public form that leads to a path shows these words beside its tick-box. Ticked, the person is walked through the next steps by
         email. Left unticked, they get the acknowledgement and nothing more.
-      </p>
+      </Trans></p>
       <div className="flex flex-wrap gap-2">
         <SaveBar
           count={draft.trim() === current.trim() ? 0 : 1}
@@ -225,8 +228,8 @@ export function ConsentWordsEditor(props: EditorProps) {
             }}
             className={secondaryCls}
           >
-            Use the platform's words
-          </button>
+            <Trans context="CommsSetupWords, button">Use the platform's words
+          </Trans></button>
         )}
       </div>
       <Refused text={refused} />
@@ -245,11 +248,11 @@ export function RecapQuestionsEditor(props: EditorProps) {
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-sm font-medium text-gray-700 block mb-1">First question, answered yes or no with one click</span>
+        <span className="text-sm font-medium text-gray-700 block mb-1"><Trans context="CommsSetupWords, span">First question, answered yes or no with one click</Trans></span>
         <input type="text" value={first} onChange={(e) => setFirst(e.target.value)} className={inputCls} />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-gray-700 block mb-1">Second question, answered in a few words</span>
+        <span className="text-sm font-medium text-gray-700 block mb-1"><Trans context="CommsSetupWords, span">Second question, answered in a few words</Trans></span>
         <input type="text" value={second} onChange={(e) => setSecond(e.target.value)} className={inputCls} />
       </label>
       <div className="flex flex-wrap gap-2">
@@ -271,8 +274,8 @@ export function RecapQuestionsEditor(props: EditorProps) {
             }}
             className={secondaryCls}
           >
-            Use the platform's questions
-          </button>
+            <Trans context="CommsSetupWords, button">Use the platform's questions
+          </Trans></button>
         )}
       </div>
       <Refused text={refused} />
@@ -292,13 +295,13 @@ export function WhoRunsCommsEditor({ data }: EditorProps) {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-gray-600">Nobody holds the power to run comms through a role yet, so the admins do it.</p>
+        <p className="text-sm text-gray-600"><Trans context="CommsSetupWords, p">Nobody holds the power to run comms through a role yet, so the admins do it.</Trans></p>
       )}
       <p className="text-xs text-gray-500">
-        Running comms is an appointment: a power group carries the power, and whoever is in that group holds it.{" "}
+        <Trans context="CommsSetupWords, p">Running comms is an appointment: a power group carries the power, and whoever is in that group holds it.{" "}
         <a href="/admin?tab=game-roles" className="text-teal-deep underline">
           Give it to a power group
-        </a>
+        </a></Trans>
       </p>
     </div>
   );
@@ -316,8 +319,8 @@ export function InvestorWordsEditor(props: EditorProps) {
           ? `Reviewed by ${r.by} on ${whenOfIso(r.at)}.`
           : "The investor path's emails wait for a person to read them. Until then it sends only its welcome and its three-week check-in."}{" "}
         <a href="/admin?tab=comms-words" className="text-teal-deep underline">
-          Read them in Words
-        </a>
+          <Trans context="CommsSetupWords, a">Read them in Words
+        </Trans></a>
       </p>
       {r ? (
         <button
@@ -326,8 +329,8 @@ export function InvestorWordsEditor(props: EditorProps) {
           onClick={() => save(SETTINGS, "PUT", { investorWordsReviewed: false }, "Review cleared")}
           className={secondaryCls}
         >
-          Clear the review
-        </button>
+          <Trans context="CommsSetupWords, button">Clear the review
+        </Trans></button>
       ) : (
         <button
           type="button"
@@ -335,8 +338,8 @@ export function InvestorWordsEditor(props: EditorProps) {
           onClick={() => save(SETTINGS, "PUT", { investorWordsReviewed: true }, "Marked as reviewed")}
           className={primaryCls}
         >
-          I have read the investor emails
-        </button>
+          <Trans context="CommsSetupWords, button">I have read the investor emails
+        </Trans></button>
       )}
       <Refused text={refused} />
     </div>
@@ -346,6 +349,7 @@ export function InvestorWordsEditor(props: EditorProps) {
 // ── 12. The rehearsal inbox ─────────────────────────────────────────────────
 
 export function RehearsalInboxEditor(props: EditorProps) {
+  const { t } = useLingui();
   const named = props.data.settings.rehearsalTo;
   const [draft, setDraft] = useState(named.join(", "));
   const { busy, refused, save, saveForBar } = useSaver(props);
@@ -356,18 +360,18 @@ export function RehearsalInboxEditor(props: EditorProps) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-gray-600">
-        While comms is in preview, every gathering, path and letter email goes to these addresses instead of to the person, marked as a
+        <Trans context="CommsSetupWords, p">While comms is in preview, every gathering, path and letter email goes to these addresses instead of to the person, marked as a
         rehearsal. Password links and member notices still reach their person.{" "}
-        {named.length ? "" : `With none named, rehearsals go to the admins${props.data.admins.length ? `: ${props.data.admins.join(", ")}` : ""}.`}
+        {named.length ? "" : `With none named, rehearsals go to the admins${props.data.admins.length ? `: ${props.data.admins.join(", ")}` : ""}.`}</Trans>
       </p>
       <label className="block">
-        <span className="text-sm font-medium text-gray-700 block mb-1">Rehearsal inbox</span>
+        <span className="text-sm font-medium text-gray-700 block mb-1"><Trans context="CommsSetupWords, span">Rehearsal inbox</Trans></span>
         <input
           type="text"
           inputMode="email"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="one@example.org, two@example.org"
+          placeholder={t({ message: "one@example.org, two@example.org", context: "CommsSetupWords, placeholder" })}
           className={inputCls}
         />
       </label>
@@ -387,8 +391,8 @@ export function RehearsalInboxEditor(props: EditorProps) {
             }}
             className={secondaryCls}
           >
-            Send rehearsals to the admins
-          </button>
+            <Trans context="CommsSetupWords, button">Send rehearsals to the admins
+          </Trans></button>
         )}
       </div>
       <Refused text={refused} />

@@ -9,6 +9,7 @@
  */
 import { useEffect, useState } from "react";
 import { fetchSubjects, walk, whenLabel, type JourneyDetail, type WalkRequest, type WalkView } from "./journeysApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 type Who = "real" | "madeUp";
 
@@ -22,6 +23,7 @@ const browserZone = (): string => {
 };
 
 export default function JourneyWalk({ password, detail, enrollmentId }: { password: string; detail: JourneyDetail; enrollmentId: string | null }) {
+  const { t } = useLingui();
   const [who, setWho] = useState<Who>("madeUp");
   const [email, setEmail] = useState("");
   const [subjectRef, setSubjectRef] = useState("");
@@ -71,9 +73,9 @@ export default function JourneyWalk({ password, detail, enrollmentId }: { passwo
 
   const field = "rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900";
   return (
-    <section aria-label="Walk someone through it" className="rounded-lg border border-gray-200 bg-white p-4">
-      <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Walk someone through it</h4>
-      <p className="mt-1 text-sm text-gray-600">Every email one person would get from this journey, and when. Nothing is sent.</p>
+    <section aria-label={t({ message: "Walk someone through it", context: "JourneyWalk, aria-label" })} className="rounded-lg border border-gray-200 bg-white p-4">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500"><Trans context="JourneyWalk, h4">Walk someone through it</Trans></h4>
+      <p className="mt-1 text-sm text-gray-600"><Trans context="JourneyWalk, p">Every email one person would get from this journey, and when. Nothing is sent.</Trans></p>
       <form onSubmit={submit} className="mt-3 space-y-3">
         <div className="flex gap-4 text-sm text-gray-700">
           <label className="flex items-center gap-1.5">
@@ -87,9 +89,9 @@ export default function JourneyWalk({ password, detail, enrollmentId }: { passwo
         </div>
         {who === "real" ? (
           <div className="flex flex-wrap gap-2">
-            <input aria-label="Their email address" placeholder="Their email address" value={email} onChange={(e) => setEmail(e.target.value)} className={`${field} min-w-0 flex-1`} />
+            <input aria-label={t({ message: "Their email address", context: "JourneyWalk, aria-label" })} placeholder={t({ message: "Their email address", context: "JourneyWalk, placeholder" })} value={email} onChange={(e) => setEmail(e.target.value)} className={`${field} min-w-0 flex-1`} />
             {subjects.length > 0 && (
-              <select aria-label="What it is about" value={subjectRef} onChange={(e) => setSubjectRef(e.target.value)} className={`${field} min-w-0 flex-1`}>
+              <select aria-label={t({ message: "What it is about", context: "JourneyWalk, aria-label" })} value={subjectRef} onChange={(e) => setSubjectRef(e.target.value)} className={`${field} min-w-0 flex-1`}>
                 {subjects.map((s) => (
                   <option key={s.subjectRef} value={s.subjectRef}>
                     {s.label}
@@ -101,10 +103,10 @@ export default function JourneyWalk({ password, detail, enrollmentId }: { passwo
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <input aria-label="Name" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className={`${field} min-w-0 flex-1`} />
-            <input aria-label="Their time zone" placeholder="Time zone, such as Europe/Lisbon" value={zone} onChange={(e) => setZone(e.target.value)} className={`${field} min-w-0 flex-1`} />
+            <input aria-label={t({ message: "Name", context: "JourneyWalk, aria-label" })} placeholder={t({ message: "Name", context: "JourneyWalk, placeholder" })} value={name} onChange={(e) => setName(e.target.value)} className={`${field} min-w-0 flex-1`} />
+            <input aria-label={t({ message: "Their time zone", context: "JourneyWalk, aria-label" })} placeholder={t({ message: "Time zone, such as Europe/Lisbon", context: "JourneyWalk, placeholder" })} value={zone} onChange={(e) => setZone(e.target.value)} className={`${field} min-w-0 flex-1`} />
             {event && (
-              <input aria-label="When the gathering starts" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
+              <input aria-label={t({ message: "When the gathering starts", context: "JourneyWalk, aria-label" })} type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={field} />
             )}
           </div>
         )}
@@ -117,10 +119,10 @@ export default function JourneyWalk({ password, detail, enrollmentId }: { passwo
       {result && (
         <div className="mt-4">
           <p className="text-sm text-gray-700">
-            {result.person.name || result.person.email || "This person"}, from {whenLabel(result.enrolledAt)}. Daytime emails wait for daytime in {result.zone}.
-            {result.state === "off" ? " The journey is off, so nothing goes until it is turned on." : ""}
+            <Trans context="JourneyWalk, p">{result.person.name || result.person.email || "This person"}, from {whenLabel(result.enrolledAt)}. Daytime emails wait for daytime in {result.zone}.
+            {result.state === "off" ? " The journey is off, so nothing goes until it is turned on." : ""}</Trans>
           </p>
-          {result.stoppedBy && <p className="mt-1 text-sm text-red-700">This journey has ended for them, so nothing more goes.</p>}
+          {result.stoppedBy && <p className="mt-1 text-sm text-red-700"><Trans context="JourneyWalk, p">This journey has ended for them, so nothing more goes.</Trans></p>}
           <ol className="mt-2 space-y-2">
             {result.steps.map((s) => (
               <li key={s.key} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">

@@ -32,6 +32,7 @@ import {
   type WordsField,
   type WordsPreview as Preview,
 } from "./wordsApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** How long the editor waits after the last keystroke before asking for a new preview. */
 const PREVIEW_PAUSE_MS = 700;
@@ -83,7 +84,7 @@ function FieldPicker({ fields, onPick }: { fields: WordsField[]; onPick: (key: s
   }, [fields]);
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-      <p className="mb-2 text-xs font-semibold text-gray-700">Put in a field</p>
+      <p className="mb-2 text-xs font-semibold text-gray-700"><Trans context="WordsEditor, p">Put in a field</Trans></p>
       <div className="space-y-2">
         {groups.map((g) => (
           <div key={g.label}>
@@ -133,9 +134,9 @@ function Compare({ detail, onAdopt, busy }: { detail: WordsDetail; onAdopt: () =
         disabled={busy}
         className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
       >
-        Take the new words
-      </button>
-      <p className="text-xs text-gray-500">Your own words stay in the versions below, one click from coming back.</p>
+        <Trans context="WordsEditor, button">Take the new words
+      </Trans></button>
+      <p className="text-xs text-gray-500"><Trans context="WordsEditor, p">Your own words stay in the versions below, one click from coming back.</Trans></p>
     </div>
   );
 }
@@ -153,6 +154,7 @@ export default function WordsEditor({
   /** Tells the screen whether there are unsaved words. */
   onDirty: (dirty: boolean) => void;
 }) {
+  const { t } = useLingui();
   const [detail, setDetail] = useState<WordsDetail | null>(null);
   const [loadError, setLoadError] = useState("");
   const [draft, setDraft] = useState<WordsDraft>({ subject: "", preheader: "", bodyMd: "" });
@@ -274,7 +276,7 @@ export default function WordsEditor({
   };
 
   if (loadError) return <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</p>;
-  if (!detail) return <p className="py-12 text-center text-sm text-gray-400">Loading the words...</p>;
+  if (!detail) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="WordsEditor, p">Loading the words...</Trans></p>;
 
   const box = (name: FieldName) => ({
     ref: (el: HTMLInputElement | HTMLTextAreaElement | null) => {
@@ -299,8 +301,8 @@ export default function WordsEditor({
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-amber-900">
-              An improved version of these words is available from the platform. Your words stay yours until you take it.
-            </p>
+              <Trans context="WordsEditor, p">An improved version of these words is available from the platform. Your words stay yours until you take it.
+            </Trans></p>
             <button
               type="button"
               onClick={() => setComparing(!comparing)}
@@ -323,7 +325,7 @@ export default function WordsEditor({
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <div className="min-w-0 space-y-4">
           <div>
-            <label htmlFor="words-subject" className="mb-1 block text-sm font-medium text-gray-700">Subject</label>
+            <label htmlFor="words-subject" className="mb-1 block text-sm font-medium text-gray-700"><Trans context="WordsEditor, label">Subject</Trans></label>
             <input
               id="words-subject"
               type="text"
@@ -333,7 +335,7 @@ export default function WordsEditor({
             />
           </div>
           <div>
-            <label htmlFor="words-preheader" className="mb-1 block text-sm font-medium text-gray-700">Preview line</label>
+            <label htmlFor="words-preheader" className="mb-1 block text-sm font-medium text-gray-700"><Trans context="WordsEditor, label">Preview line</Trans></label>
             <input
               id="words-preheader"
               type="text"
@@ -341,10 +343,10 @@ export default function WordsEditor({
               onChange={(e) => setDraft({ ...draft, preheader: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
-            <p className="mt-1 text-xs text-gray-500">The line an inbox shows after the subject. Left empty, it shows the email's first words.</p>
+            <p className="mt-1 text-xs text-gray-500"><Trans context="WordsEditor, p">The line an inbox shows after the subject. Left empty, it shows the email's first words.</Trans></p>
           </div>
           <div>
-            <label htmlFor="words-body" className="mb-1 block text-sm font-medium text-gray-700">The email</label>
+            <label htmlFor="words-body" className="mb-1 block text-sm font-medium text-gray-700"><Trans context="WordsEditor, label">The email</Trans></label>
             <textarea
               id="words-body"
               rows={16}
@@ -361,14 +363,14 @@ export default function WordsEditor({
           <FieldPicker fields={detail.fields} onPick={pick} />
 
           <div aria-live="polite" className="rounded-lg border border-gray-200 bg-white p-3">
-            <p className="text-xs font-semibold text-gray-700">Voice check</p>
+            <p className="text-xs font-semibold text-gray-700"><Trans context="WordsEditor, p">Voice check</Trans></p>
             {voice.length === 0 ? (
-              <p className="mt-1 text-xs text-gray-500">Clean: no dashes, filler words or contrast frames.</p>
+              <p className="mt-1 text-xs text-gray-500"><Trans context="WordsEditor, p">Clean: no dashes, filler words or contrast frames.</Trans></p>
             ) : (
               <ul className="mt-1 space-y-1">
                 {voice.map((f, i) => (
                   <li key={i} className="text-xs text-amber-900">
-                    <span className="font-semibold">{RULE_LABELS[f.rule]}</span> in the {f.where}: "{f.match}". {f.hint}
+                    <Trans context="WordsEditor, li"><span className="font-semibold">{RULE_LABELS[f.rule]}</span> in the {f.where}: "{f.match}". {f.hint}</Trans>
                   </li>
                 ))}
               </ul>
@@ -395,16 +397,16 @@ export default function WordsEditor({
               disabled={busy || !dirty}
               className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
             >
-              Save as a new version
-            </button>
+              <Trans context="WordsEditor, button">Save as a new version
+            </Trans></button>
             <button
               type="button"
               onClick={test}
               disabled={busy}
               className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
-              Send me a test
-            </button>
+              <Trans context="WordsEditor, button">Send me a test
+            </Trans></button>
             {dirty && (
               <button
                 type="button"
@@ -412,8 +414,8 @@ export default function WordsEditor({
                 disabled={busy}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
               >
-                Undo my changes
-              </button>
+                <Trans context="WordsEditor, button">Undo my changes
+              </Trans></button>
             )}
           </div>
         </div>
@@ -421,17 +423,17 @@ export default function WordsEditor({
         <WordsPreview preview={preview} loading={previewing} error={previewError} />
       </div>
 
-      <section aria-label="Versions" className="rounded-xl border border-gray-200 bg-white">
-        <p className="border-b border-gray-100 px-4 py-3 text-sm font-semibold text-gray-900">Versions</p>
+      <section aria-label={t({ message: "Versions", context: "WordsEditor, aria-label" })} className="rounded-xl border border-gray-200 bg-white">
+        <p className="border-b border-gray-100 px-4 py-3 text-sm font-semibold text-gray-900"><Trans context="WordsEditor, p">Versions</Trans></p>
         {detail.versions.length === 0 ? (
-          <p className="px-4 py-3 text-xs text-gray-500">None yet. This email uses the platform's words until your village saves its own.</p>
+          <p className="px-4 py-3 text-xs text-gray-500"><Trans context="WordsEditor, p">None yet. This email uses the platform's words until your village saves its own.</Trans></p>
         ) : (
           <ul className="divide-y divide-gray-100">
             {detail.versions.map((v) => (
               <li key={v.version} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
                 <div className="min-w-0">
                   <p className="truncate text-sm text-gray-900">
-                    Version {v.version}: {v.subject}
+                    <Trans context="WordsEditor, p">Version {v.version}: {v.subject}</Trans>
                   </p>
                   <p className="text-xs text-gray-500">
                     {when(v.createdAt)}
@@ -439,7 +441,7 @@ export default function WordsEditor({
                   </p>
                 </div>
                 {v.state === "live" ? (
-                  <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-medium text-white">Live</span>
+                  <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-medium text-white"><Trans context="WordsEditor, span">Live</Trans></span>
                 ) : (
                   <button
                     type="button"
@@ -447,7 +449,7 @@ export default function WordsEditor({
                     disabled={busy}
                     className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                   >
-                    Bring back version {v.version}
+                    <Trans context="WordsEditor, button">Bring back version {v.version}</Trans>
                   </button>
                 )}
               </li>

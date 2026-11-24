@@ -14,6 +14,7 @@
  * this folder.
  */
 import { isClearable, isCleared, withCleared, type ClearableBrandField } from "@shared/brandCleared";
+import { useLingui } from "@lingui/react/macro";
 
 export default function BrandTextField({
   fieldKey,
@@ -29,6 +30,7 @@ export default function BrandTextField({
   project: Record<string, any>;
   onProject: (next: Record<string, any>) => void;
 }) {
+  const { t } = useLingui();
   const id = `brand-${fieldKey}`;
   const clearable = isClearable(fieldKey);
   const cleared = clearable && isCleared(project, fieldKey);
@@ -41,7 +43,7 @@ export default function BrandTextField({
         value={cleared ? "" : project?.[fieldKey] ?? ""}
         disabled={cleared}
         onChange={(e) => onProject({ ...project, [fieldKey]: e.target.value })}
-        placeholder={cleared ? "Nothing shows here" : defaultVal}
+        placeholder={cleared ? t({ message: "Nothing shows here", context: "BrandTextField, placeholder" }) : defaultVal}
         className="w-full px-3 py-2 text-sm border border-border rounded-lg disabled:bg-muted"
       />
       <p className="text-[11px] text-muted-foreground mt-0.5">

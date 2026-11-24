@@ -611,6 +611,7 @@ function OpportunityCard({
   onChanged: () => void;
   onSay: (t: string) => void;
 }) {
+  const { t } = useLingui();
   const them = opp.theirs.incognito
     ? "Someone here"
     : opp.theirs.counterpart?.firstName ?? "A member";
@@ -648,7 +649,7 @@ function OpportunityCard({
               {r.aboutMe && (
                 <button
                   type="button"
-                  title="About me? Hide this sentence"
+                  title={t({ message: "About me? Hide this sentence", context: "Introductions, title" })}
                   aria-label={`Hide this sentence about you: ${r.text}`}
                   onClick={() => act(`reasons/${r.index}/hide`, "Hidden. It no longer shows to anyone")}
                   className="inline-flex items-center gap-1 shrink-0 underline decoration-dotted"

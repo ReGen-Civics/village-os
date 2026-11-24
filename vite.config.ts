@@ -947,8 +947,10 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    */
   // The celebration is the kit's one large piece and nothing on the first page
   // draws it (its last boot importer, NotificationToasts, went lazy with
-  // MemberMoments), so it rides with the lazy pages that do.
-  if (NATURAL_KIT.test(id) && !/natural[\\/](?:Celebration|celebrationPlan)\./.test(id)) {
+  // MemberMoments), so it rides with the lazy pages that do. The moon pieces
+  // likewise: once the bell went lazy (Layout), only lazy pages draw a moon,
+  // and grouped here they kept shared/lunar and its table on the first page.
+  if (NATURAL_KIT.test(id) && !/natural[\\/](?:Celebration|celebrationPlan|MoonProgress|moonGeometry)\./.test(id)) {
     return "natural";
   }
   // SMALL SHARED MODULES, two lazy chunks: see SMALL_MODULE_BYTES above.

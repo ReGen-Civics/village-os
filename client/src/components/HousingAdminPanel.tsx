@@ -19,6 +19,7 @@ import {
   type HousingPatch,
   type PatchResult,
 } from "@/lib/housingForm";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Housing availability (0077): the Admin half of Rye's two founder surfaces.
@@ -109,6 +110,7 @@ function askedOn(raw: string): string {
 }
 
 export default function HousingAdminPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [rows, setRows] = useState<FounderRow[]>([]);
   const [reservations, setReservations] = useState<ReservationRow[]>([]);
   /*
@@ -210,12 +212,12 @@ export default function HousingAdminPanel({ password }: { password: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-stone-800">Housing Availability</h2>
+        <h2 className="text-xl font-semibold text-stone-800"><Trans context="HousingAdminPanel, h2">Housing Availability</Trans></h2>
         <p className="text-sm text-stone-500 mt-1">
-          How many homes each hamlet has, and how many are spoken for. Builder mode on the map
+          <Trans context="HousingAdminPanel, p">How many homes each hamlet has, and how many are spoken for. Builder mode on the map
           writes the same numbers. Leave a box empty to mark it unset, and every surface showing
           that hamlet will call its numbers an example.
-        </p>
+        </Trans></p>
       </div>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
@@ -225,7 +227,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
         <input
           value={newKey}
           onChange={(e) => setNewKey(e.target.value)}
-          placeholder="Structure key from the map, e.g. ridgeA"
+          placeholder={t({ message: "Structure key from the map, e.g. ridgeA", context: "HousingAdminPanel, placeholder" })}
           className={`flex-1 ${FIELD_CLASS}`}
         />
         <button
@@ -241,16 +243,16 @@ export default function HousingAdminPanel({ password }: { password: string }) {
           }}
           className="px-4 py-2 bg-stone-800 text-white rounded-lg text-sm"
         >
-          Add hamlet
-        </button>
+          <Trans context="HousingAdminPanel, button">Add hamlet
+        </Trans></button>
       </div>
 
       {showsPlaceholder(phase) ? (
-        <p className="text-sm text-stone-500">Loading.</p>
+        <p className="text-sm text-stone-500"><Trans context="HousingAdminPanel, p">Loading.</Trans></p>
       ) : rows.length === 0 ? (
         <p className="text-sm text-stone-500">
-          No hamlets yet. Add one with its structure key from the map.
-        </p>
+          <Trans context="HousingAdminPanel, p">No hamlets yet. Add one with its structure key from the map.
+        </Trans></p>
       ) : (
         <div className="space-y-3">
           {rows.map((r) => {
@@ -288,7 +290,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                 </div>
                 <div className="grid sm:grid-cols-4 gap-3 items-end">
                   <label className="block">
-                    <span className="block text-xs text-stone-500 mb-1">Name</span>
+                    <span className="block text-xs text-stone-500 mb-1"><Trans context="HousingAdminPanel, span">Name</Trans></span>
                     <input
                       defaultValue={labelFieldValue(r)}
                       onBlur={(e) => edit(r, () => labelPatch(e.target.value))}
@@ -296,7 +298,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="block text-xs text-stone-500 mb-1">Homes total</span>
+                    <span className="block text-xs text-stone-500 mb-1"><Trans context="HousingAdminPanel, span">Homes total</Trans></span>
                     <input
                       type="number"
                       min={0}
@@ -307,8 +309,8 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                   </label>
                   <label className="block">
                     <span className="block text-xs text-stone-500 mb-1">
-                      Homes taken, the number you type
-                    </span>
+                      <Trans context="HousingAdminPanel, span">Homes taken, the number you type
+                    </Trans></span>
                     {/*
                       Bound to the founder's typed number through
                       takenFieldValue, and EDITABLE even while reservations
@@ -329,7 +331,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="block text-xs text-stone-500 mb-1">Taken counted by</span>
+                    <span className="block text-xs text-stone-500 mb-1"><Trans context="HousingAdminPanel, span">Taken counted by</Trans></span>
                     <select
                       value={r.takenSource}
                       onChange={(e) => edit(r, () => sourcePatch(e.target.value))}
@@ -350,14 +352,14 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                 */}
                 {r.takenSource === "reservations" && (
                   <p className="text-xs text-stone-400 mt-2">
-                    Reservations count {r.reservedCount} right now, and that is the number every
+                    <Trans context="HousingAdminPanel, p">Reservations count {r.reservedCount} right now, and that is the number every
                     visitor sees. Yours comes back if you switch this hamlet over.
-                  </p>
+                  </Trans></p>
                 )}
                 {busy === r.structureKey ? (
-                  <p className="text-xs text-stone-400 mt-2">Saving.</p>
+                  <p className="text-xs text-stone-400 mt-2"><Trans context="HousingAdminPanel, p">Saving.</Trans></p>
                 ) : saved === r.structureKey ? (
-                  <p className="text-xs text-emerald-600 mt-2">Saved.</p>
+                  <p className="text-xs text-emerald-600 mt-2"><Trans context="HousingAdminPanel, p">Saved.</Trans></p>
                 ) : null}
               </div>
             );
@@ -366,15 +368,15 @@ export default function HousingAdminPanel({ password }: { password: string }) {
       )}
 
       <div>
-        <h3 className="text-lg font-semibold text-stone-800 mb-1">Reservation requests</h3>
+        <h3 className="text-lg font-semibold text-stone-800 mb-1"><Trans context="HousingAdminPanel, h3">Reservation requests</Trans></h3>
         <p className="text-sm text-stone-500 mb-3">
-          People who asked for a home. Marking one Reserved counts it against its hamlet, and
+          <Trans context="HousingAdminPanel, p">People who asked for a home. Marking one Reserved counts it against its hamlet, and
           only for hamlets counted by reservations.
-        </p>
+        </Trans></p>
         {showsPlaceholder(phase) ? (
-          <p className="text-sm text-stone-500">Loading.</p>
+          <p className="text-sm text-stone-500"><Trans context="HousingAdminPanel, p">Loading.</Trans></p>
         ) : reservations.length === 0 ? (
-          <p className="text-sm text-stone-500">Nothing yet.</p>
+          <p className="text-sm text-stone-500"><Trans context="HousingAdminPanel, p">Nothing yet.</Trans></p>
         ) : (
           <div className="space-y-2">
             {reservations.map((res) => (
@@ -452,7 +454,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
         )}
       </div>
 
-      {showsRefreshing(phase) && <p className="text-xs text-stone-400">Refreshing.</p>}
+      {showsRefreshing(phase) && <p className="text-xs text-stone-400"><Trans context="HousingAdminPanel, p">Refreshing.</Trans></p>}
 
       {/* The other half of housing (0131): what a home IS, as opposed to how
           many of them a hamlet has open. Its own file, its own fetch and its

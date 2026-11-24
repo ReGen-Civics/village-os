@@ -81,7 +81,7 @@ export default function TypographyPanel({ password }: { password: string }) {
       setTheme(data.brand?.theme ?? {});
       setSaved(data.brand?.theme ?? {});
     } catch {
-      toast.error("Could not load typography");
+      toast.error(t({ message: "Could not load typography", context: "TypographyPanel, toast" }));
     }
   }, [password]);
 
@@ -115,9 +115,9 @@ export default function TypographyPanel({ password }: { password: string }) {
 
   const upload = async () => {
     const file = fileRef.current?.files?.[0];
-    if (!file) return toast.error("Choose a font file first (.woff2 is best)");
-    if (!family.trim()) return toast.error("Name the font, using the family name from its licence");
-    if (!ack) return toast.error("Please confirm the web-embedding licence first");
+    if (!file) return toast.error(t({ message: "Choose a font file first (.woff2 is best)", context: "TypographyPanel, toast" }));
+    if (!family.trim()) return toast.error(t({ message: "Name the font, using the family name from its licence", context: "TypographyPanel, toast" }));
+    if (!ack) return toast.error(t({ message: "Please confirm the web-embedding licence first", context: "TypographyPanel, toast" }));
     setUploading(true);
     try {
       const form = new FormData();
@@ -148,11 +148,11 @@ export default function TypographyPanel({ password }: { password: string }) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
-      <h3 className="font-semibold text-gray-900 mb-1">Typography</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="TypographyPanel, h3">Typography</Trans></h3>
       <p className="text-xs text-gray-500 mb-4">
-        Every catalogue font is self-hosted and licensed for the web (SIL Open Font License), so
+        <Trans context="TypographyPanel, p">Every catalogue font is self-hosted and licensed for the web (SIL Open Font License), so
         choosing one is always safe. Changes apply live, no deploy.
-      </p>
+      </Trans></p>
 
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         {(Object.keys(ROLE_LABELS) as FontRole[]).map((role) => {
@@ -198,8 +198,8 @@ export default function TypographyPanel({ password }: { password: string }) {
                 style={{ fontFamily: current || undefined }}
                 aria-hidden="true"
               >
-                A village worth co-creating
-              </p>
+                <Trans context="TypographyPanel, p">A village worth co-creating
+              </Trans></p>
             </div>
           );
         })}
@@ -213,12 +213,12 @@ export default function TypographyPanel({ password }: { password: string }) {
       />
 
       <div className="border-t border-gray-100 mt-6 pt-5">
-        <h4 className="text-sm font-medium text-gray-900 mb-1">Bring your own font</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-1"><Trans context="TypographyPanel, h4">Bring your own font</Trans></h4>
         <p className="text-xs text-gray-500 mb-3">
-          For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best;
+          <Trans context="TypographyPanel, p">For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best;
           .woff, .ttf and .otf also work). It's stored with your deployment and set as the face for the role you pick,
           one face per role.
-        </p>
+        </Trans></p>
         {theme.fontFaces?.length ? (
           <ul className="text-xs text-muted-foreground mb-3 bg-muted rounded-lg px-3 py-2 list-none">
             {theme.fontFaces.map((f) => (
@@ -232,7 +232,7 @@ export default function TypographyPanel({ password }: { password: string }) {
           <p className="text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg px-3 py-2">
             Active custom face: <span className="font-medium">{theme.fontFaceName}</span>
             {theme.fontLicenceAck && (
-              <span className="text-gray-400"> · licence confirmed by {theme.fontLicenceAck.by} on {theme.fontLicenceAck.at.slice(0, 10)}</span>
+              <span className="text-gray-400"> <Trans context="TypographyPanel, span">· licence confirmed by {theme.fontLicenceAck.by} on {theme.fontLicenceAck.at.slice(0, 10)}</Trans></span>
             )}
           </p>
         )}
@@ -240,7 +240,7 @@ export default function TypographyPanel({ password }: { password: string }) {
           <input
             value={family}
             onChange={(e) => setFamily(e.target.value)}
-            placeholder='Font name, e.g. "Serenity"'
+            placeholder={t({ message: "Font name, e.g. \"Serenity\"", context: "TypographyPanel, placeholder" })}
             className="text-sm border border-gray-200 rounded-lg px-2.5 py-2 w-48"
           />
           <select
@@ -273,12 +273,12 @@ export default function TypographyPanel({ password }: { password: string }) {
           {/* The confirmation is the name. What counts as a web licence is a
               description: useful, and too long to hear before every tick. */}
           <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5"
-            aria-label="I confirm this project holds a licence to embed this font on the web."
+            aria-label={t({ message: "I confirm this project holds a licence to embed this font on the web.", context: "TypographyPanel, aria-label" })}
             aria-describedby="font-licence-hint" />
           <span>
-            I confirm this project holds a licence to embed this font on the web. <span id="font-licence-hint" className="text-gray-400">
+            <Trans context="TypographyPanel, span">I confirm this project holds a licence to embed this font on the web. <span id="font-licence-hint" className="text-gray-400">
             ("Free to download" usually covers desktop use only. Web embedding is a separate right.
-            Fonts from Google Fonts / Fontsource are OFL and always fine.)</span>
+            Fonts from Google Fonts / Fontsource are OFL and always fine.)</span></Trans>
           </span>
         </label>
       </div>

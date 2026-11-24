@@ -18,6 +18,7 @@ import { exponentOf, formatMoney } from "@shared/money";
 import { finerThanScale } from "@shared/tokenScale";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { ResourcesRoutingEditor } from "@/components/admin/ModuleConfigPanels";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface Rule {
   id: string;
@@ -171,6 +172,7 @@ const EMPTY_BUDGET = { circleId: "", seasonId: "", amount: "", cycleAmount: "", 
 const EMPTY_MOVE = { amount: "", toUserId: "", note: "", requestId: "" };
 
 export default function ResourcesAdminPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const auth = { Authorization: `Bearer ${password}` };
   const [data, setData] = useState<AdminPayload | null>(null);
   const [moduleOff, setModuleOff] = useState(false);
@@ -454,12 +456,12 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
   if (moduleOff) {
     return (
       <div className="max-w-2xl">
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">How Resources Flow</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2"><Trans context="ResourcesAdminPanel, h1">How Resources Flow</Trans></h1>
         <p className="text-sm text-muted-foreground">
-          The resources module is off. Turn it on under Module Library and this tab becomes the
+          <Trans context="ResourcesAdminPanel, p">The resources module is off. Turn it on under Module Library and this tab becomes the
           place to declare who may spend what, with whose approval, paid from where, and where the
           money comes from.
-        </p>
+        </Trans></p>
       </div>
     );
   }
@@ -485,17 +487,17 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
   return (
     <div className="max-w-3xl space-y-8" data-resources-admin>
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-1">How Resources Flow</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-1"><Trans context="ResourcesAdminPanel, h1">How Resources Flow</Trans></h1>
         <p className="text-sm text-muted-foreground">
-          Declarations, never movements: these rows say who may spend what and where money comes
+          <Trans context="ResourcesAdminPanel, p">Declarations, never movements: these rows say who may spend what and where money comes
           from. Nothing here touches a balance.
-        </p>
+        </Trans></p>
         {empty && (
           <div className="mt-3 text-sm text-foreground bg-amber/10 border border-amber/40 rounded-lg px-3 py-2">
-            Nothing is declared yet. Three rows make the map speak: one spending rule for a circle
+            <Trans context="ResourcesAdminPanel, div">Nothing is declared yet. Three rows make the map speak: one spending rule for a circle
             (what its people may spend alone), one funding source (where the money comes from), and
             one circle budget (what the circle holds this season).
-          </div>
+          </Trans></div>
         )}
         {problem && <p role="alert" className="mt-2 text-sm text-red-600">{problem}</p>}
         {note && <p role="status" className="mt-2 text-sm text-teal-deep">{note}</p>}
@@ -503,15 +505,15 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
 
       {/* ── Spending rules ── */}
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-bold text-foreground">Spending rules</h2>
+        <h2 className="font-display text-lg font-bold text-foreground"><Trans context="ResourcesAdminPanel, h2">Spending rules</Trans></h2>
         {data.rules.length > 0 && (
           <div className="space-y-1.5">
             {data.rules.map((r) => (
               <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2">
                 <span className="text-foreground/90">
-                  <span className="font-semibold">{scopeName(r)}</span>: up to {money(r.amountMinor, r.unit)},{" "}
+                  <Trans context="ResourcesAdminPanel, span"><span className="font-semibold">{scopeName(r)}</span>: up to {money(r.amountMinor, r.unit)},{" "}
                   {approvalLabel(r.approval).toLowerCase()}, paid from {paidFromLabel(r.paidFrom).toLowerCase()}
-                  {r.visibility === "holders" ? ", holders only" : ""}
+                  {r.visibility === "holders" ? ", holders only" : ""}</Trans>
                 </span>
                 <span className="flex gap-2 shrink-0 max-w-full">
                   <button
@@ -535,15 +537,15 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                       });
                     }}
                   >
-                    Edit
-                  </button>
+                    <Trans context="ResourcesAdminPanel, button">Edit
+                  </Trans></button>
                   <button
                     type="button"
                     className="text-xs text-red-600 font-medium"
                     onClick={() => act(`/api/admin/resources/rules/${r.id}`, "DELETE")}
                   >
-                    Remove
-                  </button>
+                    <Trans context="ResourcesAdminPanel, button">Remove
+                  </Trans></button>
                 </span>
               </div>
             ))}
@@ -623,14 +625,14 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
               setRule({ ...EMPTY_RULE, unit: data.defaultUnit, scopeId: data.circles[0]?.id ?? "" });
             }}
           >
-            Stop editing
-          </button>
+            <Trans context="ResourcesAdminPanel, button">Stop editing
+          </Trans></button>
         )}
       </section>
 
       {/* ── Funding sources ── */}
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-bold text-foreground">Where the money comes from</h2>
+        <h2 className="font-display text-lg font-bold text-foreground"><Trans context="ResourcesAdminPanel, h2">Where the money comes from</Trans></h2>
         {data.sources.length > 0 && (
           <div className="space-y-1.5">
             {data.sources.map((s) => (
@@ -643,8 +645,8 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                   {s.amountMinorPerYear !== null && s.unit ? `, about ${money(s.amountMinorPerYear, s.unit)} a year` : ""}
                 </span>
                 <button type="button" className="text-xs text-red-600 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/sources/${s.id}`, "DELETE")}>
-                  Remove
-                </button>
+                  <Trans context="ResourcesAdminPanel, button">Remove
+                </Trans></button>
               </div>
             ))}
           </div>
@@ -680,13 +682,13 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
           </label>
         </div>
         <button type="button" className={button} disabled={!source.name.trim()} onClick={saveSource}>
-          Declare the source
-        </button>
+          <Trans context="ResourcesAdminPanel, button">Declare the source
+        </Trans></button>
       </section>
 
       {/* ── Circle budgets ── */}
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-bold text-foreground">Circle budgets</h2>
+        <h2 className="font-display text-lg font-bold text-foreground"><Trans context="ResourcesAdminPanel, h2">Circle budgets</Trans></h2>
         {data.budgets.length > 0 && (
           <div className="space-y-1.5">
             {data.budgets.map((b) => (
@@ -710,17 +712,17 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                     )}
                   </span>
                   <button type="button" className="text-xs text-red-600 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/budgets/${b.id}`, "DELETE")}>
-                    Remove
-                  </button>
+                    <Trans context="ResourcesAdminPanel, button">Remove
+                  </Trans></button>
                 </div>
 
                 {b.dormant && (
                   <p className="text-xs text-muted-foreground">
-                    This circle went dormant on {b.dormant.at.slice(0, 10)} and its treasury of{" "}
+                    <Trans context="ResourcesAdminPanel, p">This circle went dormant on {b.dormant.at.slice(0, 10)} and its treasury of{" "}
                     {money(b.dormant.heldMinor, b.unit)} was{" "}
                     {b.dormant.destination === "retired" ? "retired, so those tokens are gone" : "returned to the village treasury"}.
                     Funding it again is a new mint, so it meets the village's issuance cap for the cycle it happens in.
-                  </p>
+                  </Trans></p>
                 )}
 
                 {b.pending ? (
@@ -728,8 +730,8 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                     Queued: this circle moves to a {b.pending.mode === "treasury" ? "treasury" : "spending cap"} on{" "}
                     {b.pending.from.slice(0, 10)}. It finishes this period on the model it started with.{" "}
                     <button type="button" className="underline font-medium" onClick={() => act(`/api/admin/resources/budgets/${b.id}/mode`, "DELETE")}>
-                      Withdraw that
-                    </button>
+                      <Trans context="ResourcesAdminPanel, button">Withdraw that
+                    </Trans></button>
                   </p>
                 ) : (
                   <button type="button" className="text-xs underline font-medium text-foreground/80" onClick={() => scheduleMode(b)}>
@@ -750,30 +752,30 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                     />
                     <input
                       className={input}
-                      placeholder="Member id, to pay somebody"
+                      placeholder={t({ message: "Member id, to pay somebody", context: "ResourcesAdminPanel, placeholder" })}
                       value={draft(b.id).toUserId}
                       onChange={(e) => setDraft(b.id, { toUserId: e.target.value })}
                     />
                     <input
                       className={input}
-                      placeholder="Why"
+                      placeholder={t({ message: "Why", context: "ResourcesAdminPanel, placeholder" })}
                       value={draft(b.id).note}
                       onChange={(e) => setDraft(b.id, { note: e.target.value })}
                     />
                     <button type="button" className={button} disabled={!draft(b.id).amount} onClick={() => fundTreasury(b)}>
-                      Mint into it
-                    </button>
+                      <Trans context="ResourcesAdminPanel, button">Mint into it
+                    </Trans></button>
                     <button
                       type="button"
                       className={button}
                       disabled={!draft(b.id).amount || !draft(b.id).toUserId.trim()}
                       onClick={() => spendTreasury(b)}
                     >
-                      Pay from it
-                    </button>
+                      <Trans context="ResourcesAdminPanel, button">Pay from it
+                    </Trans></button>
                     <button type="button" className={button} onClick={() => returnTreasury(b)}>
-                      Hand it back
-                    </button>
+                      <Trans context="ResourcesAdminPanel, button">Hand it back
+                    </Trans></button>
                   </div>
                 )}
               </div>
@@ -814,21 +816,21 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
           </label>
         </div>
         <p className="text-xs text-muted-foreground">
-          Choose per circle. Some circles can run on a cap while others hold a treasury, in the same season. Changing
+          <Trans context="ResourcesAdminPanel, p">Choose per circle. Some circles can run on a cap while others hold a treasury, in the same season. Changing
           the model of a budget that already exists waits for the next period, so a circle finishes its season on the
           model it started with.
-        </p>
+        </Trans></p>
         <button type="button" className={button} disabled={!budget.circleId || !budget.amount} onClick={saveBudget}>
-          Declare the budget
-        </button>
+          <Trans context="ResourcesAdminPanel, button">Declare the budget
+        </Trans></button>
       </section>
 
       {/* ── Labels (R29 P4) ── */}
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-bold text-foreground">Your words for the vocabulary</h2>
+        <h2 className="font-display text-lg font-bold text-foreground"><Trans context="ResourcesAdminPanel, h2">Your words for the vocabulary</Trans></h2>
         <p className="text-xs text-muted-foreground">
-          The ids never change; the words are yours. Blank keeps the platform wording.
-        </p>
+          <Trans context="ResourcesAdminPanel, p">The ids never change; the words are yours. Blank keeps the platform wording.
+        </Trans></p>
         <div className="grid grid-cols-2 gap-2">
           {[
             ...data.vocab.approvals.map((a) => ({ key: `approval.${a.id}`, fallback: a.label })),
@@ -847,8 +849,8 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
           ))}
         </div>
         <button type="button" className={button} onClick={saveLabels}>
-          Save the labels
-        </button>
+          <Trans context="ResourcesAdminPanel, button">Save the labels
+        </Trans></button>
       </section>
 
       {/* ── Routing and visibility: two config keys with no control until now ── */}
@@ -857,14 +859,14 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
       {/* ── Measured, read only ── */}
       {data.measured && (data.measured.fiat.length > 0 || data.measured.tokens.length > 0) && (
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold text-foreground">Measured inflows</h2>
+          <h2 className="font-display text-lg font-bold text-foreground"><Trans context="ResourcesAdminPanel, h2">Measured inflows</Trans></h2>
           <p className="text-xs text-muted-foreground">
-            Counts and totals the ledger and the charges table already knew. Read only, no names.
-          </p>
+            <Trans context="ResourcesAdminPanel, p">Counts and totals the ledger and the charges table already knew. Read only, no names.
+          </Trans></p>
           <div className="text-sm text-foreground/90 space-y-1">
             {data.measured.fiat.map((f) => (
               <p key={`${f.module}-${f.currency}`}>
-                {f.module}: {money(f.totalMinor, f.currency)} across {f.count} payment{f.count === 1 ? "" : "s"}
+                <Trans context="ResourcesAdminPanel, p">{f.module}: {money(f.totalMinor, f.currency)} across {f.count} payment{f.count === 1 ? "" : "s"}</Trans>
               </p>
             ))}
             {data.measured.tokens

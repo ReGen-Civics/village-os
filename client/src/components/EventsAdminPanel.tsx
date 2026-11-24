@@ -13,6 +13,7 @@ import {
 import GatheringEmailSettings from "@/components/comms/GatheringEmailSettings";
 import HostRecapPanel, { hostToolsFor } from "@/components/comms/HostRecapPanel";
 import TimePollEditor from "@/components/admin/comms/TimePollEditor";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Admin, The Game, Calendar: the village calendar's own surface (0059,
@@ -141,6 +142,7 @@ const WEEKDAY_CHOICES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
 const EMPTY_SLOT = { kind: "dish", label: "", needed: "1", note: "" };
 
 export default function EventsAdminPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [events, setEvents] = useState<CalendarItem[] | null>(null);
   const [timezone, setTimezone] = useState<string>("");
   const [moduleOff, setModuleOff] = useState(false);
@@ -184,7 +186,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       setEvents(data.events ?? []);
       setTimezone(data.timezone ?? "");
       setPayableTokens(Array.isArray(data.payableTokens) ? data.payableTokens : []);
-    } catch { toast.error("Could not load the calendar"); setEvents([]); }
+    } catch { toast.error(t({ message: "Could not load the calendar", context: "EventsAdminPanel, toast" })); setEvents([]); }
   }, [password]);
 
   const loadNames = useCallback(async () => {
@@ -237,14 +239,14 @@ export default function EventsAdminPanel({ password }: { password: string }) {
     });
     const d = await res.json().catch(() => ({}));
     if (!res.ok) { toast.error(d?.error ?? "That did not work"); return; }
-    toast.success("Slot added");
+    toast.success(t({ message: "Slot added", context: "EventsAdminPanel, toast" }));
     setSlotForm(EMPTY_SLOT);
     await loadSlots(eventId);
   };
 
   const removeSlot = async (eventId: string, slotId: string) => {
     const res = await fetch(`/api/admin/events/${eventId}/slots/${slotId}`, { method: "DELETE", headers: auth });
-    if (res.ok) { toast.success("Slot removed"); await loadSlots(eventId); } else toast.error("That did not work");
+    if (res.ok) { toast.success(t({ message: "Slot removed", context: "EventsAdminPanel, toast" })); await loadSlots(eventId); } else toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" }));
   };
 
   // ── 0088: the weekly brief's evening ───────────────────────────────────────
@@ -262,8 +264,8 @@ export default function EventsAdminPanel({ password }: { password: string }) {
         body: JSON.stringify({ config }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); toast.error(d?.error ?? "That did not work"); }
-      else { toast.success("Weekly brief settings saved"); setBrief(next); }
-    } catch { toast.error("That did not work"); }
+      else { toast.success(t({ message: "Weekly brief settings saved", context: "EventsAdminPanel, toast" })); setBrief(next); }
+    } catch { toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" })); }
     setBriefBusy(false);
   };
 
@@ -274,7 +276,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       const d = await res.json().catch(() => ({}));
       if (!res.ok) toast.error(d?.error ?? "That did not work");
       else setBriefPreview({ subject: d.subject, html: d.html });
-    } catch { toast.error("That did not work"); }
+    } catch { toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" })); }
     setBriefBusy(false);
   };
 
@@ -329,7 +331,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       if (!res.ok) { toast.error(data?.error ?? "Save failed"); setSaving(false); return; }
       toast.success(editingId ? "Gathering updated" : "Gathering added");
       setForm(EMPTY); setEditing(null); setEditingVoted(false); load();
-    } catch { toast.error("Save failed"); }
+    } catch { toast.error(t({ message: "Save failed", context: "EventsAdminPanel, toast" })); }
     setSaving(false);
   };
 
@@ -362,13 +364,13 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       method: "PUT", headers: { ...auth, "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    if (res.ok) { toast.success(`Marked ${status}`); load(); } else toast.error("That did not work");
+    if (res.ok) { toast.success(`Marked ${status}`); load(); } else toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" }));
   };
 
   const remove = async (g: CalendarItem) => {
     if (!window.confirm(`Delete "${g.title}"? Answers to it go too.`)) return;
     const res = await fetch(`/api/admin/events/${g.id}`, { method: "DELETE", headers: auth });
-    if (res.ok) { toast.success("Deleted"); load(); } else toast.error("That did not work");
+    if (res.ok) { toast.success(t({ message: "Deleted", context: "EventsAdminPanel, toast" })); load(); } else toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" }));
   };
 
   const toggleRsvps = async (g: CalendarItem) => {
@@ -406,7 +408,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
         setCalForm({ name: "", url: "", layer: "village", colour: "" });
         loadCalendars(); load();
       }
-    } catch { toast.error("That did not work"); }
+    } catch { toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" })); }
     setCalBusy(null);
   };
 
@@ -418,14 +420,14 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       if (!res.ok) toast.error(d?.error ?? "That did not work");
       else toast[d.poll?.ok ? "success" : "error"](d.poll?.ok ? `${d.poll.imported} item(s), ${d.poll.retired} retired` : d.poll?.error ?? "Fetch failed");
       loadCalendars(); load();
-    } catch { toast.error("That did not work"); }
+    } catch { toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" })); }
     setCalBusy(null);
   };
 
   const removeCalendar = async (c: ExternalCalendar) => {
     if (!window.confirm(`Detach "${c.name}"? Its imported items leave the calendar.`)) return;
     const res = await fetch(`/api/admin/events/calendars/${c.id}`, { method: "DELETE", headers: auth });
-    if (res.ok) { toast.success("Detached"); loadCalendars(); load(); } else toast.error("That did not work");
+    if (res.ok) { toast.success(t({ message: "Detached", context: "EventsAdminPanel, toast" })); loadCalendars(); load(); } else toast.error(t({ message: "That did not work", context: "EventsAdminPanel, toast" }));
   };
 
   const input = "w-full text-sm border border-gray-200 rounded-lg px-2.5 py-2";
@@ -437,7 +439,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
     </div>
   );
 
-  if (events === null) return <div className="text-center py-12 text-gray-400">Loading...</div>;
+  if (events === null) return <div className="text-center py-12 text-gray-400"><Trans context="EventsAdminPanel, div">Loading...</Trans></div>;
 
   const authored = events.filter((g) => g.kind === "gathering" || g.kind === "festival");
   // A saved weekday rhythm stays visible even after the start moves to a day
@@ -450,18 +452,18 @@ export default function EventsAdminPanel({ password }: { password: string }) {
 
   return (
     <div>
-      <h2 id="integration-calendar" tabIndex={-1} className="text-xl font-bold text-gray-900 mb-1">Calendar</h2>
+      <h2 id="integration-calendar" tabIndex={-1} className="text-xl font-bold text-gray-900 mb-1"><Trans context="EventsAdminPanel, h2">Calendar</Trans></h2>
       <p className="text-sm text-gray-500 mb-5">
-        The village calendar: gatherings you write here, the thirteen moons by name, and calendars you attach
+        <Trans context="EventsAdminPanel, p">The village calendar: gatherings you write here, the thirteen moons by name, and calendars you attach
         from elsewhere. Everything starts as a draft, so nothing reaches the calendar until you publish it.
-        {timezone ? ` Times are village time, ${timezone.replace(/_/g, " ")}.` : ""}
+        {timezone ? ` Times are village time, ${timezone.replace(/_/g, " ")}.` : ""}</Trans>
       </p>
 
       {moduleOff && (
         <p className="mb-5 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          The Events module is off, so the calendar is not being served. Turn it on under
+          <Trans context="EventsAdminPanel, p">The Events module is off, so the calendar is not being served. Turn it on under
           Module Library and this page starts working.
-        </p>
+        </Trans></p>
       )}
 
       <div className="border border-gray-200 rounded-xl p-5 mb-6">
@@ -470,8 +472,8 @@ export default function EventsAdminPanel({ password }: { password: string }) {
         </h3>
         {editingVoted && (
           <p className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-            This gathering's time follows its vote, so saving here leaves the time as it is. Change the time from the vote.
-          </p>
+            <Trans context="EventsAdminPanel, p">This gathering's time follows its vote, so saving here leaves the time as it is. Change the time from the vote.
+          </Trans></p>
         )}
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           {field("Title", "title", "text", "Harvest work party")}
@@ -480,13 +482,13 @@ export default function EventsAdminPanel({ password }: { password: string }) {
           {field("Ends (optional)", "endsAt", "datetime-local")}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-capacity">
-              Capacity
-            </label>
+              <Trans context="EventsAdminPanel, label">Capacity
+            </Trans></label>
             <input id="ev-capacity" type="number" min={0} value={form.capacity}
               onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-              placeholder="blank = no limit" className={input} />
+              placeholder={t({ message: "blank = no limit", context: "EventsAdminPanel, placeholder" })} className={input} />
             {/* The distinction the whole capacity path turns on. */}
-            <p className="text-[11px] text-gray-400 mt-0.5">Blank means no limit. 0 means nobody.</p>
+            <p className="text-[11px] text-gray-400 mt-0.5"><Trans context="EventsAdminPanel, p">Blank means no limit. 0 means nobody.</Trans></p>
           </div>
           {/* 0092: a gathering that asks for credits. Held from the moment
               somebody takes a place, and returned in full on every way out:
@@ -494,8 +496,8 @@ export default function EventsAdminPanel({ password }: { password: string }) {
               being cancelled or taken off the calendar. */}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-seat-price">
-              Seat fee
-            </label>
+              <Trans context="EventsAdminPanel, label">Seat fee
+            </Trans></label>
             <div className="flex gap-2">
               <input id="ev-seat-price" type="number" min={0} step={1} value={form.seatPrice}
                 onChange={(e) => setForm({ ...form, seatPrice: e.target.value })}
@@ -510,22 +512,22 @@ export default function EventsAdminPanel({ password }: { password: string }) {
               </select>
             </div>
             <p className="text-[11px] text-gray-400 mt-0.5">
-              Held when somebody takes a place, returned whenever they give it up.
-            </p>
+              <Trans context="EventsAdminPanel, p">Held when somebody takes a place, returned whenever they give it up.
+            </Trans></p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-keys">
-              Map structures
-            </label>
+              <Trans context="EventsAdminPanel, label">Map structures
+            </Trans></label>
             <input id="ev-keys" value={form.structureKeys}
               onChange={(e) => setForm({ ...form, structureKeys: e.target.value })}
-              placeholder="greenhouse, commons" className={input} />
+              placeholder={t({ message: "greenhouse, commons", context: "EventsAdminPanel, placeholder" })} className={input} />
             <p className="text-[11px] text-gray-400 mt-0.5">
-              Comma separated. The map lights these buildings.
-            </p>
+              <Trans context="EventsAdminPanel, p">Comma separated. The map lights these buildings.
+            </Trans></p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-status">Status</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-status"><Trans context="EventsAdminPanel, label">Status</Trans></label>
             <select id="ev-status" value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
               className={`${input} bg-white`}>
@@ -533,7 +535,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-mode">Attendance</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-mode"><Trans context="EventsAdminPanel, label">Attendance</Trans></label>
             <select id="ev-mode" value={form.attendanceMode}
               onChange={(e) => setForm({ ...form, attendanceMode: e.target.value })}
               className={`${input} bg-white`}>
@@ -542,7 +544,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
           </div>
           {form.attendanceMode !== "offline" && field("Online link", "onlineUrl", "text", "https://")}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-kind">Kind</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-kind"><Trans context="EventsAdminPanel, label">Kind</Trans></label>
             <select id="ev-kind" value={form.kind}
               onChange={(e) => setForm({ ...form, kind: e.target.value })}
               className={`${input} bg-white`}>
@@ -551,32 +553,32 @@ export default function EventsAdminPanel({ password }: { password: string }) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-layer">Who sees it</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-layer"><Trans context="EventsAdminPanel, label">Who sees it</Trans></label>
             <select id="ev-layer" value={form.layer}
               onChange={(e) => setForm({ ...form, layer: e.target.value })}
               className={`${input} bg-white`}>
               {CALENDAR_LAYERS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
-            <p className="text-[11px] text-gray-400 mt-0.5">village and public: anyone past the module gate. circle, household: members. admin: founders.</p>
+            <p className="text-[11px] text-gray-400 mt-0.5"><Trans context="EventsAdminPanel, p">village and public: anyone past the module gate. circle, household: members. admin: founders.</Trans></p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-repeat">Repeats</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-repeat"><Trans context="EventsAdminPanel, label">Repeats</Trans></label>
             <select id="ev-repeat" value={form.repeat}
               onChange={(e) => setForm({ ...form, repeat: e.target.value })}
               className={`${input} bg-white`}>
               {repeatOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
-            <p className="text-[11px] text-gray-400 mt-0.5">A moon or sun rhythm lands on the village date of the sky event, at the start's time of day. A weekday of the month is offered from the start's date.</p>
+            <p className="text-[11px] text-gray-400 mt-0.5"><Trans context="EventsAdminPanel, p">A moon or sun rhythm lands on the village date of the sky event, at the start's time of day. A weekday of the month is offered from the start's date.</Trans></p>
           </div>
           {field("Link (optional)", "link", "text", "https:// or /quests/...")}
           <div className="flex items-center gap-2 pt-5">
             <input id="ev-allday" type="checkbox" checked={form.allDay}
               onChange={(e) => setForm({ ...form, allDay: e.target.checked })} />
-            <label className="text-sm text-gray-700" htmlFor="ev-allday">All day</label>
+            <label className="text-sm text-gray-700" htmlFor="ev-allday"><Trans context="EventsAdminPanel, label">All day</Trans></label>
           </div>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-desc">Description</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="ev-desc"><Trans context="EventsAdminPanel, label">Description</Trans></label>
           <textarea id="ev-desc" rows={3} value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })} className={input} />
         </div>
@@ -587,23 +589,23 @@ export default function EventsAdminPanel({ password }: { password: string }) {
           </button>
           {editing && (
             <button onClick={() => { setEditing(null); setEditingVoted(false); setForm(EMPTY); }}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm">Cancel</button>
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm"><Trans context="EventsAdminPanel, button">Cancel</Trans></button>
           )}
         </div>
       </div>
 
       {authored.length === 0 && !moduleOff && (
-        <p className="text-sm text-gray-400 py-6 text-center">Nothing on the calendar yet.</p>
+        <p className="text-sm text-gray-400 py-6 text-center"><Trans context="EventsAdminPanel, p">Nothing on the calendar yet.</Trans></p>
       )}
 
       {/* 0088: members' requests for the public calendar wait here. */}
       {authored.some((g) => g.status === "draft" && g.layer === "public") && (
         <div className="border border-amber-200 bg-amber-50 rounded-xl p-4 mb-4">
-          <h3 className="font-semibold text-amber-900 mb-1">Approve for the public calendar</h3>
+          <h3 className="font-semibold text-amber-900 mb-1"><Trans context="EventsAdminPanel, h3">Approve for the public calendar</Trans></h3>
           <p className="text-xs text-amber-800 mb-2">
-            Members asked for these on the public calendar. Publishing puts them in front of visitors and search
+            <Trans context="EventsAdminPanel, p">Members asked for these on the public calendar. Publishing puts them in front of visitors and search
             engines; they stay drafts until you say yes.
-          </p>
+          </Trans></p>
           <ul className="space-y-1.5">
             {authored.filter((g) => g.status === "draft" && g.layer === "public").map((g) => (
               <li key={`approve:${g.id}`} className="flex items-center justify-between gap-2 text-sm">
@@ -613,9 +615,9 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                 </span>
                 <span className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => setStatus(g, "scheduled")}
-                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg">Approve</button>
+                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg"><Trans context="EventsAdminPanel, button">Approve</Trans></button>
                   <button onClick={() => remove(g)}
-                    className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg">Delete</button>
+                    className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg"><Trans context="EventsAdminPanel, button">Delete</Trans></button>
                 </span>
               </li>
             ))}
@@ -675,24 +677,24 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                   {openPoll === `${g.id}:${g.occurrenceKey}` ? "Hide time vote" : g.timePoll ? "Time vote" : "Vote on the time"}
                 </button>
                 <button onClick={() => edit(g)}
-                  className="px-2.5 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">Edit</button>
+                  className="px-2.5 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50"><Trans context="EventsAdminPanel, button">Edit</Trans></button>
                 {g.status === "draft" && (
                   <button onClick={() => setStatus(g, "scheduled")}
-                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg">Publish</button>
+                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg"><Trans context="EventsAdminPanel, button">Publish</Trans></button>
                 )}
                 {g.status === "scheduled" && (
                   <button onClick={() => setStatus(g, "cancelled")}
-                    className="px-2.5 py-1 text-xs border border-amber-200 text-amber-800 rounded-lg">Cancel</button>
+                    className="px-2.5 py-1 text-xs border border-amber-200 text-amber-800 rounded-lg"><Trans context="EventsAdminPanel, button">Cancel</Trans></button>
                 )}
                 <button onClick={() => remove(g)}
-                  className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg">Delete</button>
+                  className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg"><Trans context="EventsAdminPanel, button">Delete</Trans></button>
               </div>
             </div>
 
             {openRsvps === g.id && (
               <div className="mt-3 border-t border-gray-100 pt-3">
                 {(rsvps[g.id] ?? []).length === 0 && (
-                  <p className="text-xs text-gray-400">Nobody has answered yet.</p>
+                  <p className="text-xs text-gray-400"><Trans context="EventsAdminPanel, p">Nobody has answered yet.</Trans></p>
                 )}
                 <ul className="text-xs text-gray-600 space-y-1">
                   {(rsvps[g.id] ?? []).map((r) => (
@@ -718,30 +720,30 @@ export default function EventsAdminPanel({ password }: { password: string }) {
             {openSlots === g.id && (
               <div className="mt-3 border-t border-gray-100 pt-3">
                 <p className="text-xs text-gray-500 mb-2">
-                  Slots the gathering asks for: a dish, a ride, childcare, setup crew. Members going can take
+                  <Trans context="EventsAdminPanel, p">Slots the gathering asks for: a dish, a ride, childcare, setup crew. Members going can take
                   them; counts are public, names show to people going and to you.
-                </p>
+                </Trans></p>
                 {(slots[g.id] ?? []).length === 0 && (
-                  <p className="text-xs text-gray-400 mb-2">No slots declared yet.</p>
+                  <p className="text-xs text-gray-400 mb-2"><Trans context="EventsAdminPanel, p">No slots declared yet.</Trans></p>
                 )}
                 <ul className="text-xs text-gray-600 space-y-1 mb-3">
                   {(slots[g.id] ?? []).map((s) => (
                     <li key={s.id} className="flex items-center justify-between gap-3">
                       <span className="min-w-0 truncate">
                         <span className="text-gray-900">{s.label}</span>
-                        <span className="text-gray-400"> ({s.kind}, {s.takenCount} of {s.needed})</span>
+                        <span className="text-gray-400"> <Trans context="EventsAdminPanel, span">({s.kind}, {s.takenCount} of {s.needed})</Trans></span>
                         {s.names && s.names.length > 0 && (
                           <span className="text-gray-500"> {s.names.map((n) => n.name ?? "a member who has since left").join(", ")}</span>
                         )}
                       </span>
                       <button onClick={() => removeSlot(g.id, s.id)}
-                        className="px-2 py-0.5 text-[11px] border border-red-200 text-red-700 rounded-lg shrink-0">Remove</button>
+                        className="px-2 py-0.5 text-[11px] border border-red-200 text-red-700 rounded-lg shrink-0"><Trans context="EventsAdminPanel, button">Remove</Trans></button>
                     </li>
                   ))}
                 </ul>
                 <div className="flex items-end gap-2 flex-wrap">
                   <div>
-                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-kind-${g.id}`}>Kind</label>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-kind-${g.id}`}><Trans context="EventsAdminPanel, label">Kind</Trans></label>
                     <select id={`slot-kind-${g.id}`} value={slotForm.kind}
                       onChange={(e) => setSlotForm({ ...slotForm, kind: e.target.value })}
                       className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
@@ -749,19 +751,19 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                     </select>
                   </div>
                   <div className="flex-1 min-w-[140px]">
-                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-label-${g.id}`}>What is needed</label>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-label-${g.id}`}><Trans context="EventsAdminPanel, label">What is needed</Trans></label>
                     <input id={`slot-label-${g.id}`} value={slotForm.label}
                       onChange={(e) => setSlotForm({ ...slotForm, label: e.target.value })}
-                      placeholder="A salad for twelve" className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5" />
+                      placeholder={t({ message: "A salad for twelve", context: "EventsAdminPanel, placeholder" })} className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5" />
                   </div>
                   <div className="w-16">
-                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-needed-${g.id}`}>How many</label>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor={`slot-needed-${g.id}`}><Trans context="EventsAdminPanel, label">How many</Trans></label>
                     <input id={`slot-needed-${g.id}`} type="number" min={1} value={slotForm.needed}
                       onChange={(e) => setSlotForm({ ...slotForm, needed: e.target.value })}
                       className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5" />
                   </div>
                   <button onClick={() => addSlot(g.id)} disabled={!slotForm.label.trim()}
-                    className="px-3 py-1.5 text-xs bg-teal-deep text-white rounded-lg disabled:opacity-50">Add slot</button>
+                    className="px-3 py-1.5 text-xs bg-teal-deep text-white rounded-lg disabled:opacity-50"><Trans context="EventsAdminPanel, button">Add slot</Trans></button>
                 </div>
               </div>
             )}
@@ -775,12 +777,12 @@ export default function EventsAdminPanel({ password }: { password: string }) {
       {/* ── 0088: the weekly brief's evening ─────────────────────────────── */}
       {brief && (
         <div className="border border-gray-200 rounded-xl p-5 mt-8">
-          <h3 className="font-semibold text-gray-900 mb-1">The weekly brief</h3>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="EventsAdminPanel, h3">The weekly brief</Trans></h3>
           <p className="text-sm text-gray-500 mb-4">
-            Once a week, on the evening you pick here in village time, every member gets one digest: arrivals
+            <Trans context="EventsAdminPanel, p">Once a week, on the evening you pick here in village time, every member gets one digest: arrivals
             and departures, meals and gatherings, the moon and the season, open roles, new quests. Written by a
             template from the village's own records, no AI spend, and each member can turn theirs off.
-          </p>
+          </Trans></p>
           <div className="flex items-end gap-3 flex-wrap">
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input type="checkbox" checked={brief.enabled}
@@ -788,7 +790,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
               Send the weekly brief
             </label>
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor="brief-day">Evening</label>
+              <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor="brief-day"><Trans context="EventsAdminPanel, label">Evening</Trans></label>
               <select id="brief-day" value={String(brief.day)} disabled={briefBusy}
                 onChange={(e) => saveBrief({ ...brief, day: Number(e.target.value) })}
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
@@ -796,7 +798,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
               </select>
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor="brief-hour">From (village time)</label>
+              <label className="block text-[11px] font-medium text-gray-500 mb-0.5" htmlFor="brief-hour"><Trans context="EventsAdminPanel, label">From (village time)</Trans></label>
               <select id="brief-hour" value={String(brief.hour)} disabled={briefBusy}
                 onChange={(e) => saveBrief({ ...brief, hour: Number(e.target.value) })}
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
@@ -808,7 +810,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
               {briefBusy ? "Working..." : "Preview for me"}
             </button>
           </div>
-          <p className="text-[11px] text-gray-400 mt-2">The preview renders this week's brief for you and sends nothing.</p>
+          <p className="text-[11px] text-gray-400 mt-2"><Trans context="EventsAdminPanel, p">The preview renders this week's brief for you and sends nothing.</Trans></p>
           {briefPreview && (
             <div className="mt-4 border border-gray-200 rounded-lg p-4">
               <div className="font-medium text-gray-900 mb-2">{briefPreview.subject}</div>
@@ -821,7 +823,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
 
       {monthNames && (
         <div className="border border-gray-200 rounded-xl p-5 mt-8">
-          <h3 className="font-semibold text-gray-900 mb-1">The thirteen moons of the year, by name</h3>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="EventsAdminPanel, h3">The thirteen moons of the year, by name</Trans></h3>
           {/*
             THESE THIRTEEN ARE POSITIONS IN THE LUNAR YEAR, and they are the
             one place a number 1 to 13 still belongs. A name comes round every
@@ -832,16 +834,16 @@ export default function EventsAdminPanel({ password }: { password: string }) {
             clicks apart and nothing else tells them apart.
           */}
           <p className="text-sm text-gray-500 mb-4">
-            The year's first moon begins at the first new moon after the year anchor (Game Variables, Calendar). The
+            <Trans context="EventsAdminPanel, p">The year's first moon begins at the first new moon after the year anchor (Game Variables, Calendar). The
             names ship as almanac examples, which describe someone else's land: write the village's own word for each
             moon. Blank restores the example. The thirteenth is the extra moon some years hold. These are positions in
             the year and they come round again; the moon number members read on the calendar counts from this
             village's first moon and never resets.
-          </p>
+          </Trans></p>
           <ul className="grid md:grid-cols-2 gap-2">
             {monthNames.map((m) => (
               <li key={m.index} className="flex flex-wrap items-center gap-2">
-                <span className="w-28 text-xs text-gray-500 shrink-0">Moon {m.index} of the year</span>
+                <span className="w-28 text-xs text-gray-500 shrink-0"><Trans context="EventsAdminPanel, span">Moon {m.index} of the year</Trans></span>
                 <input
                   aria-label={`Name of moon ${m.index} of the lunar year`}
                   value={nameDrafts[m.index] ?? m.name}
@@ -850,11 +852,11 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                   maxLength={80}
                 />
                 {m.isExample && nameDrafts[m.index] === undefined && (
-                  <span className="text-[10px] uppercase tracking-wide text-amber-800 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 shrink-0 max-w-full">example</span>
+                  <span className="text-[10px] uppercase tracking-wide text-amber-800 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 shrink-0 max-w-full"><Trans context="EventsAdminPanel, span">example</Trans></span>
                 )}
                 {nameDrafts[m.index] !== undefined && (
                   <button onClick={() => saveName(m.index)}
-                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg shrink-0">Save</button>
+                    className="px-2.5 py-1 text-xs bg-teal-deep text-white rounded-lg shrink-0"><Trans context="EventsAdminPanel, button">Save</Trans></button>
                 )}
               </li>
             ))}
@@ -864,31 +866,31 @@ export default function EventsAdminPanel({ password }: { password: string }) {
 
       {calendars && (
         <div className="border border-gray-200 rounded-xl p-5 mt-8">
-          <h3 className="font-semibold text-gray-900 mb-1">Calendars from elsewhere</h3>
+          <h3 className="font-semibold text-gray-900 mb-1"><Trans context="EventsAdminPanel, h3">Calendars from elsewhere</Trans></h3>
           <p className="text-sm text-gray-500 mb-4">
-            Paste a calendar's iCal address (Google Calendar's "secret address in iCal format", an Apple or Outlook
+            <Trans context="EventsAdminPanel, p">Paste a calendar's iCal address (Google Calendar's "secret address in iCal format", an Apple or Outlook
             published calendar, Luma, Meetup, any .ics) and its events join the village calendar as read-only items,
             refreshed every three hours. The address is kept in the secrets store and shown to nobody, this page
             included: only its host and last four characters appear here.
-          </p>
+          </Trans></p>
           <div className="grid md:grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-name">Name</label>
-              <input id="xc-name" value={calForm.name} onChange={(e) => setCalForm({ ...calForm, name: e.target.value })} className={input} placeholder="Farm Google Calendar" />
+              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-name"><Trans context="EventsAdminPanel, label">Name</Trans></label>
+              <input id="xc-name" value={calForm.name} onChange={(e) => setCalForm({ ...calForm, name: e.target.value })} className={input} placeholder={t({ message: "Farm Google Calendar", context: "EventsAdminPanel, placeholder" })} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-url">iCal address (https)</label>
-              <input id="xc-url" value={calForm.url} onChange={(e) => setCalForm({ ...calForm, url: e.target.value })} className={input} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" type="password" autoComplete="off" />
+              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-url"><Trans context="EventsAdminPanel, label">iCal address (https)</Trans></label>
+              <input id="xc-url" value={calForm.url} onChange={(e) => setCalForm({ ...calForm, url: e.target.value })} className={input} placeholder={t({ message: "https://calendar.google.com/calendar/ical/.../basic.ics", context: "EventsAdminPanel, placeholder" })} type="password" autoComplete="off" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-layer">Who sees it</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-layer"><Trans context="EventsAdminPanel, label">Who sees it</Trans></label>
               <select id="xc-layer" value={calForm.layer} onChange={(e) => setCalForm({ ...calForm, layer: e.target.value })} className={`${input} bg-white`}>
                 {CALENDAR_LAYERS.map((l) => <option key={l} value={l}>{l}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-colour">Colour (optional)</label>
-              <input id="xc-colour" value={calForm.colour} onChange={(e) => setCalForm({ ...calForm, colour: e.target.value })} className={input} placeholder="#0369a1" /* theme-ok: format hint text in an empty field, never applied as a rendered colour */ />
+              <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor="xc-colour"><Trans context="EventsAdminPanel, label">Colour (optional)</Trans></label>
+              <input id="xc-colour" value={calForm.colour} onChange={(e) => setCalForm({ ...calForm, colour: e.target.value })} className={input} placeholder={t({ message: "#0369a1", context: "EventsAdminPanel, placeholder" })} /* theme-ok: format hint text in an empty field, never applied as a rendered colour */ />
             </div>
           </div>
           <button onClick={addCalendar} disabled={calBusy === "add" || !calForm.name.trim() || !calForm.url.trim()}
@@ -907,8 +909,8 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                       {c.colour && <span className="ml-2 inline-block h-3 w-3 rounded-full align-middle" style={{ background: c.colour }} aria-hidden="true" />}
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5">
-                      {c.urlHost} (ends {c.urlLast4}) · {c.importedCount} item(s)
-                      {c.lastPolledAt ? ` · fetched ${new Date(c.lastPolledAt).toLocaleString()}` : " · never fetched"}
+                      <Trans context="EventsAdminPanel, div">{c.urlHost} (ends {c.urlLast4}) · {c.importedCount} item(s)
+                      {c.lastPolledAt ? ` · fetched ${new Date(c.lastPolledAt).toLocaleString()}` : " · never fetched"}</Trans>
                     </div>
                     <div className={`text-xs mt-0.5 ${c.lastStatus === "failed" ? "text-red-700" : "text-gray-500"}`}>
                       {c.lastStatus === "failed" ? `Last fetch failed: ${c.lastError ?? "unknown"}` : c.lastStatus === "ok" ? "Last fetch ok" : "Waiting for the first fetch"}
@@ -920,7 +922,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                       {calBusy === c.id ? "Fetching..." : "Fetch now"}
                     </button>
                     <button onClick={() => removeCalendar(c)}
-                      className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg">Detach</button>
+                      className="px-2.5 py-1 text-xs border border-red-200 text-red-700 rounded-lg"><Trans context="EventsAdminPanel, button">Detach</Trans></button>
                   </div>
                 </li>
               ))}
