@@ -52,6 +52,9 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **Requests never expire.** After a week waiting, and each week after, the key holders are told again.
 - **The operator's card** gets a Redeem action and its requests; **the profile's Treasury tab** gets the queue of venture redemptions. The venture's history now reads "Held for a redemption" where it read "paid out".
 - A new village's Treasury role carries the redemption key from its first boot. A running village is not changed: it gives the key to a role by its own decision.
+- **A lead role names its own related roles.** The role editor has a field to choose the roles a lead role's card lists under "Related roles this role will onboard", up to 12, in order, from any circle. Left empty, the card keeps the list it shows today.
+- **Example quests carry an Example stamp and cannot be taken.** While no real quest is open, /quests says "Quests coming soon" with a Propose a quest button, and admins can mark any quest as an example.
+- **The home page's Village Steward card is the founding team's door,** marked Paid role, and the separate Founding team card is gone.
 
 ### What you must do
 
@@ -60,6 +63,26 @@ Nothing. It stays off until you turn on `ledger.org_redemption_open` (Admin, Gam
 ### Does it touch your data
 
 Yes, by adding only. Migration 0420 adds the table `org_redemptions` and the ledger account `sys:org-redemption-hold`. Nothing existing changes, so going back to an earlier version leaves the new table unused.
+
+---
+
+## 1.3.58 (2026-11-24)
+
+### What changed for your village
+
+- **The photos on the home page's path cards show the people in them.** The cards drew a thin strip cut from the middle of each picture, so a portrait could show only sky or cut people off at the eyes. Each card now draws its picture in a frame near the photo's own shape (square on a phone, a little taller than wide on a computer), kept a little above the middle, where faces usually sit. A picture far from that shape, like a wide landscape, is shown whole on a soft ground.
+- **The founding team card has a picture too.** It shows a painting from the nature library, in the same frame as the other cards, so the row reads as one.
+- **You can choose where each card keeps its focus.** In Admin, Make it yours, Pictures, the investor, steward, resident and prosperity pictures each have a new optional box: two percentages, across then down (for example 50% 30%). Blank keeps 50% 40%. A small preview under it shows the card's square cut.
+
+### What you must do
+
+Nothing. Set a focus only if a card's crop does not suit its photo.
+
+### Does it touch your data
+
+No. The focus is saved with your other pictures in the brand settings, and no table changes.
+
+---
 
 ## 1.3.57 (2026-11-24)
 

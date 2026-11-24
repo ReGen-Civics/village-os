@@ -37,9 +37,28 @@ export function routesExcept(left: readonly ContributorRoute[] = []): Contributo
 /**
  * THE INBOX TAG (for the review inbox lane): a proposal that came through one of the four ways carries
  * `source: "contributor_route"` and `route: "<route>"` in its submission data. Today the partner form sets it
- * (`route: "partner"`); a venture arrives as the existing `work-with-us` type and a quest as `quest-proposal`.
+ * (`route: "partner"`); a venture arrives as the existing `work-with-us` type carrying `kind: "venture"`
+ * (VENTURE_KIND, below) and a quest as `quest-proposal`.
  */
 export const CONTRIBUTOR_SOURCE = "contributor_route";
+
+// ── Start a venture ─────────────────────────────────────────────────────────
+
+/**
+ * START A VENTURE LANDS ON A VENTURE (the lead, 24 Nov 2026). Every Start a venture link but the top tile of /roles
+ * (which scrolls to the open ventures there) goes to `/work-with-us?kind=venture`. With that query the page says Start a
+ * venture at the top, the guide opens on the business, and the form asks the venture's three questions first. The
+ * proposal keeps its type, `work-with-us`, and carries `kind: "venture"` in its data, so the admin inbox can tell a
+ * venture from any other offer. Without the query the page is the general proposal page it always was.
+ */
+export const VENTURE_KIND = "venture";
+export const VENTURE_QUERY = `kind=${VENTURE_KIND}`;
+
+/** Does this address's query (`location.search`, with or without its `?`) ask for the venture page? */
+export function isVentureQuery(search: string | null | undefined): boolean {
+  const params = new URLSearchParams(String(search ?? "").replace(/^\?/, ""));
+  return params.get("kind") === VENTURE_KIND;
+}
 
 /** The submissions pipeline's type for a partner proposal (POST /api/forms/submit). */
 export const PARTNER_FORM = "partner";

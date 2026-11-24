@@ -610,6 +610,11 @@ msgctxt "canvas export button"
 msgid "Build it again"
 msgstr ""
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point refused"
+msgid "Two percentages, for example 50% 30%. Until then the card uses {DEFAULT_ART_FOCUS}."
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
 #~ msgid "Your role card"
@@ -4649,6 +4654,12 @@ msgctxt "open proposal side by side goals"
 msgid "Named on each role above."
 msgstr "Indicadas en cada rol de arriba."
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: what a venture is, under the heading"
+msgid "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
+msgstr "Un emprendimiento es tu propio negocio en la tierra. Tú lo llevas y te quedas con sus ganancias; {projectName} participa en él mediante un arrendamiento o un reparto de ganancias."
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, none"
 msgid "No open quests grow this yet. Suggest one you feel this village is missing."
@@ -7742,6 +7753,12 @@ msgctxt "heading of the canvas baseline view"
 msgid "The canvas baseline"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the first question"
+msgid "What the business is"
+msgstr "Qué es el negocio"
+
 #. placeholder {0}: seasonEntry.name.trim()
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page season"
@@ -9325,6 +9342,12 @@ msgstr "Monto"
 msgctxt "button that proposes a change to what closing means"
 msgid "Propose a change"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the second question"
+msgid "Space, water, power, access, people, time or decisions, and by when."
+msgstr "Espacio, agua, electricidad, acceso, personas, tiempo o decisiones, y para cuándo."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -13161,6 +13184,11 @@ msgctxt "your path, the whole path page"
 msgid "These wait behind the step above. Take them in any order once it's done."
 msgstr ""
 
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by date said whole, for a screen reader"
+msgid "Applications close {whenLong}"
+msgstr "Las postulaciones cierran el {whenLong}"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application choose, founding roles heading"
 #~ msgid "Hiring first: the founding team"
@@ -13480,9 +13508,9 @@ msgstr "Transcripción de IA, escrita por {0}. La persona solicitante no la revi
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/roleCard/frontWords.ts
-msgctxt "role card front: the last day to apply"
-msgid "Apply by {when}"
-msgstr "Postúlate hasta el {when}"
+#~ msgctxt "role card front: the last day to apply"
+#~ msgid "Apply by {when}"
+#~ msgstr "Postúlate hasta el {when}"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season. Hours are an estimate: full time is roughly 30 to 40 hours a week, half time roughly 20."
@@ -13908,6 +13936,11 @@ msgstr "Cargando los roles abiertos…"
 msgctxt "admin art library filter"
 msgid "Ocean"
 msgstr ""
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: applications close today"
+msgid "Closes today"
+msgstr "Cierra hoy"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
@@ -14829,6 +14862,11 @@ msgctxt "admin confidentiality section"
 msgid "Attach the document"
 msgstr ""
 
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by ribbon, a short date"
+msgid "Applications close {whenKept}"
+msgstr "Las postulaciones cierran el {whenKept}"
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "That was not recorded."
 msgstr ""
@@ -15697,6 +15735,12 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "I accept"
 msgstr "Acepto"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the heading over its questions"
+msgid "Your venture"
+msgstr "Tu emprendimiento"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/admin/OpsEmailSwitch.tsx
 msgctxt "admin ops report email option"
@@ -15937,6 +15981,12 @@ msgctxt "proposed changes"
 msgid "Accept"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the third question"
+msgid "How the business gives back to the village, the land and the people around it."
+msgstr "Cómo el negocio retribuye a la aldea, a la tierra y a las personas a su alrededor."
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Remove goal {n}"
@@ -16043,6 +16093,11 @@ msgstr "Bajar la meta {n}"
 #: client/src/pages/RoleDraft.tsx
 msgid "Kept in this browser only. Nothing is sent until you send your proposal."
 msgstr "Se guarda solo en este navegador. No se envía nada hasta que envíes tu propuesta."
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: the apply-by stamp's top line, over the day and month"
+msgid "Apply by"
+msgstr "Cierra el"
 
 #: client/src/components/sessions/RhythmForm.tsx
 msgid "For example, Thursday sync"
@@ -18310,6 +18365,11 @@ msgctxt "sera changes"
 msgid "Hide them"
 msgstr ""
 
+#: client/src/components/admin/PathArtFocusField.tsx
+msgctxt "admin pictures, path card focal point"
+msgid "Where the home page card keeps its focus, across then down. Blank keeps {DEFAULT_ART_FOCUS}, a little above the middle."
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent drawing"
 msgid "You and the village, about to meet"
@@ -20096,6 +20156,12 @@ msgctxt "notebook row kind, size and date"
 msgid "{0}, {1}, added {2}"
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the line under Your venture"
+msgid "Start with the business. The questions after it help us see what it takes."
+msgstr "Empieza por el negocio. Las preguntas que siguen nos ayudan a ver lo que necesita."
+
 #: client/src/components/hiddenMap/SevenMeter.tsx
 msgctxt "hidden map, progress toward opening the map"
 msgid "{vouched} of {needed}"
@@ -20972,6 +21038,12 @@ msgstr ""
 msgctxt "hand-mint grants record, approve a grant"
 msgid "Sign it"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the second question"
+msgid "What it needs from the land and the village"
+msgstr "Qué necesita de la tierra y de la aldea"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -22349,6 +22421,12 @@ msgstr "Que cada grabación dure menos de 7 minutos."
 msgctxt "a decided suggestion's own words"
 msgid "What it said"
 msgstr ""
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the third question"
+msgid "How it gives back"
+msgstr "Cómo retribuye"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -24741,6 +24819,12 @@ msgctxt "admin protocols editor"
 msgid "None yet. Write one, or import a file."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the first question"
+msgid "What you would build and run on the land, who it is for, and how it earns its way."
+msgstr "Qué construirías y llevarías en la tierra, para quién es y cómo se sostiene."
+
 #: client/src/components/admin/RoleCharacterTags.tsx
 msgctxt "admin role roots"
 msgid "Roots saved"
@@ -24929,6 +25013,11 @@ msgstr ""
 msgctxt "tag on the season's current week"
 msgid "This week"
 msgstr ""
+
+#: client/src/components/roleCard/frontWords.ts
+msgctxt "role card front: days left to apply"
+msgid "{daysLeft, plural, one {# day left} other {# days left}}"
+msgstr "{daysLeft, plural, one {Queda # día} other {Quedan # días}}"
 
 #. placeholder {0}: CARD_LIMITS.serves
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -25222,6 +25311,7 @@ msgstr "Guardado."
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/WorkWithUs.tsx
 msgctxt "four ways to build: a venture"
 msgid "Start a venture"
 msgstr "Inicia un emprendimiento"
@@ -26267,6 +26357,12 @@ msgstr "{fit}% encajaría en el rol"
 #~ msgctxt "open proposal section"
 #~ msgid "Your season"
 #~ msgstr "Tu temporada"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, set up for a venture: the guide's first message"
+msgid "Hi, I'm {assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?"
+msgstr "Hola, soy {assistantName}. Demos forma juntos a tu emprendimiento, una pregunta a la vez: qué es el negocio, qué necesita de la tierra y de la aldea, y cómo retribuye. Primero, ¿qué es el negocio y para quién es?"
 
 #: client/src/components/roleCard/DeliverablesGantt.tsx
 msgctxt "deliverables timeline: the line for today"
