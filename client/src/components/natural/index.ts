@@ -4,9 +4,11 @@
  * The contract lives in docs/modules/natural-interface.md. Read the moon's
  * three rules there before using MoonProgress anywhere, and the celebration
  * intensity table before reaching for `moment`.
+ *
+ * The moon is not exported here: import MoonProgress and moonGeometry by path.
+ * This barrel rides the first page, and re-exporting the moon pulled it and its
+ * table of dates onto the first page for every visitor (vite.config.ts).
  */
-export { default as MoonProgress } from "./MoonProgress";
-export type { MoonProgressProps, MoonThresholdTone } from "./MoonProgress";
 
 export { default as BreathingLoader } from "./BreathingLoader";
 export type { BreathingLoaderProps } from "./BreathingLoader";
@@ -23,21 +25,6 @@ export {
   STILL_STATE,
 } from "./celebrationPlan";
 export type { CelebrationElement, CelebrationIntensity, CelebrationKind, CelebrationPlan } from "./celebrationPlan";
-
-export {
-  MOON_STEPS,
-  clamp01,
-  illuminatedFraction,
-  litPath,
-  litSideOf,
-  moonPathParts,
-  readLunation,
-  readProgress,
-  terminatorPath,
-  terminatorRadius,
-  waxingPhase,
-} from "./moonGeometry";
-export type { LitSide, MoonReading } from "./moonGeometry";
 
 export { prefersReducedMotion, useReducedMotion } from "./useReducedMotion";
 export { scrollBehavior } from "./scrollBehavior";
