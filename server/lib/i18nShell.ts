@@ -49,9 +49,10 @@ function cookieValue(header: string | undefined, name: string): string | null {
   return null;
 }
 
-export function shellLocale(input: { cookie: string | undefined; acceptLanguage: string | undefined; villageDefault: string | null | undefined }): string {
+export function shellLocale(input: { cookie: string | undefined; acceptLanguage: string | undefined; villageDefault: string | null | undefined; offered?: readonly string[] }): string {
   return resolveLocale({
-    supported: offeredLocaleTags(),
+    // The village's own languages when the caller knows them, so the shell never says a language the page will not show.
+    supported: input.offered ?? offeredLocaleTags(),
     saved: cookieValue(input.cookie, LOCALE_COOKIE),
     browser: parseAcceptLanguage(input.acceptLanguage),
     villageDefault: input.villageDefault,

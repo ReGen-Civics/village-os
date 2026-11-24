@@ -24,6 +24,32 @@ export const PSEUDO_LOCALES: readonly LocaleEntry[] = [
   { tag: "ar-XB", tier: "pseudo" },
 ];
 
+/**
+ * ADDING A LANGUAGE (docs/I18N.md): an entry in LOCALES and a PO file at
+ * client/src/locales/<tag>.po. Everything else reads this list: the Lingui
+ * config, the default-language dial's choices, the per-village switch for each
+ * language, the server's catalog route and the picker.
+ *
+ * OFFER_FLOOR: a language joins LOCALES only once its PO file translates at
+ * least this share of the messages, so the picker never lists a language that
+ * would show a visitor mostly English. shared/i18nLocaleCoverage.test.ts holds
+ * every entry to it; scripts/i18n-coverage.mjs shows the share per page.
+ */
+export const OFFER_FLOOR = 0.3;
+
+/** The dial that lets one village offer or withhold one language (Admin, Settings, Language). */
+export function offerLocaleKey(tag: string): string {
+  return `village.offer_locale.${tag}`;
+}
+
+/**
+ * The languages THIS village offers: the source always, each other language
+ * unless the village switched it off. `isOn` reads that language's dial.
+ */
+export function villageLocaleTags(isOn: (tag: string) => boolean): string[] {
+  return LOCALES.filter((l) => l.tier === "source" || isOn(l.tag)).map((l) => l.tag);
+}
+
 /** Tags a member may choose (and the server accepts as a saved choice). */
 export function offeredLocaleTags(withPseudo = false): string[] {
   return [...LOCALES, ...(withPseudo ? PSEUDO_LOCALES : [])].map((l) => l.tag);

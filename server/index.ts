@@ -94,6 +94,7 @@ import { partnerRecipients } from "./lib/partnerRouting";
 import { PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
 import { replyMoonsNow } from "./lib/foundingFirst";
 import { PROSPERITY_PACKET_FORM, packetFrom, packetProblems } from "../shared/prosperityPacket";
+import { offerLocaleKey, villageLocaleTags } from "../shared/i18nLocales";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
@@ -18262,6 +18263,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       replyWindowMoons: replyMoonsNow(), // what every proposer is told once they have sent, application included: within one moon cycle (the lead, 24 Nov 2026; server/lib/foundingFirst.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
+      offeredLocales: villageLocaleTags((tag) => boolVar(offerLocaleKey(tag))), // the languages this village offers: one switch each (shared/i18nLocales.ts)
     });
   });
 
@@ -25977,7 +25979,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   /** `<html lang dir>` for this visitor (spec i18n R16): the cookie, their browser, the village default. */
   function withShellLocale(html: string, req: express.Request, res: express.Response): string {
     res.vary("Cookie").vary("Accept-Language");
-    return setShellLang(html, shellLocale({ cookie: req.headers.cookie, acceptLanguage: req.headers["accept-language"], villageDefault: String(stringVar("village.default_locale")) }));
+    return setShellLang(html, shellLocale({ cookie: req.headers.cookie, acceptLanguage: req.headers["accept-language"], villageDefault: String(stringVar("village.default_locale")), offered: villageLocaleTags((tag) => boolVar(offerLocaleKey(tag))) }));
   }
 
   // Terminal error handler. Express 5 forwards a rejected handler promise
