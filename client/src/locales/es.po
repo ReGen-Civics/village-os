@@ -20333,6 +20333,12 @@ msgstr ""
 msgid "What members have paid each venture. Its credits never expire."
 msgstr ""
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page eyebrow"
+msgid "Feedback"
+msgstr "Comentarios"
+
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
 msgid "What went in"

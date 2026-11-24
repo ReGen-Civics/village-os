@@ -25,7 +25,7 @@ export default function PlaceCard({ place }: { place: PlaceCardData }) {
     <li className="rounded-xl border border-border bg-card overflow-hidden">
       <Link
         href={`/places/${encodeURIComponent(place.structureKey)}`}
-        className="block min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-deep"
+        className="block min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         {place.coverUrl && (
           <Image

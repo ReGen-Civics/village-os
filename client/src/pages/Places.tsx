@@ -24,6 +24,7 @@ import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 import { useLingui } from "@lingui/react/macro";
 import ComingSoonPanel from "@/components/ComingSoonPanel";
+import { H1, LINK, WORLD } from "@/components/journey/look";
 
 const jsonHeaders = (): Record<string, string> => {
   const t = authToken();
@@ -73,16 +74,18 @@ function PlacesPage() {
 
   return (
     <Layout>
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
         <header className="space-y-2">
-          <h1 className="font-serif text-3xl">Places, photographed</h1>
+          <h1 className={H1}>Places, photographed</h1>
           {/* R47: the Trail line leads, and the Lore line comes last. */}
           <p className="text-muted-foreground">
             Open a place to see its photographs. Each one carries the name of whoever took it and the month it was
             taken.
           </p>
           <nav aria-label="Every photograph">
-            <Link href="/photographs" className="text-sm text-teal-deep underline inline-block py-1.5 min-h-[44px]">
+            <Link href="/photographs" className={`${LINK} text-sm inline-flex items-center min-h-11`}>
               See every photograph on one page, newest first
             </Link>
           </nav>
@@ -93,7 +96,7 @@ function PlacesPage() {
 
         {locked ? (
           <p className="rounded-xl border border-border bg-card p-6">
-            <Link href={`/login?next=${encodeURIComponent("/places")}`} className="text-teal-deep underline">
+            <Link href={`/login?next=${encodeURIComponent("/places")}`} className={LINK}>
               Sign in
             </Link>{" "}
             to see the places this village has photographed.
@@ -111,6 +114,7 @@ function PlacesPage() {
         )}
 
         {data?.canCurate && <PhotoReportsPanel />}
+      </div>
       </div>
     </Layout>
   );

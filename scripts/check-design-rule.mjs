@@ -83,6 +83,8 @@ const PAGES = [
   "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
+  "client/src/pages/Feedback.tsx",
+  "client/src/pages/Places.tsx",
   "client/src/pages/Approvals.tsx",
   "client/src/pages/VerifyEmail.tsx",
   "client/src/pages/SetPassword.tsx",

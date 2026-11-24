@@ -16,6 +16,7 @@ import { authToken } from "@/lib/gameApi";
 import { Bug, Check, Lightbulb } from "lucide-react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { failureWords } from "@/lib/failureWords";
+import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, LEDE, WORLD } from "@/components/journey/look";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -62,22 +63,25 @@ export default function Feedback() {
 
   return (
     <Layout>
-      <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
-        <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">Something broken? Something missing?</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+      {/* The night world (public launch QA, 24 Nov 2026): the sheet's look, same words. */}
+      <div className={WORLD}>
+      <section className="pt-12 pb-4 sm:pt-16">
+        <div className="container max-w-xl">
+          <p className={EYEBROW}>{t({ message: "Feedback", context: "feedback page eyebrow" })}</p>
+          <h1 className={`${H1} mt-2 mb-3`}>Something broken? Something missing?</h1>
+          <p className={LEDE}>
             Both are gifts. A bug named is a bug on its way out; an idea written
             down is one the village can actually weigh.
           </p>
         </div>
       </section>
 
-      <section className="py-8 bg-background">
+      <section className="pt-4 pb-16">
         <div className="container max-w-xl">
           {sent ? (
-            <div ref={received} tabIndex={-1} className="bg-card border border-border rounded-xl p-8 text-center outline-none">
-              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-6 h-6 text-emerald-700" />
+            <div ref={received} tabIndex={-1} className={`${CARD} text-center outline-none`}>
+              <div className="w-12 h-12 bg-open/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="w-6 h-6 text-open" aria-hidden="true" />
               </div>
               <p className="font-semibold text-foreground mb-1">Received, thank you.</p>
               <p className="text-sm text-muted-foreground">
@@ -87,28 +91,28 @@ export default function Feedback() {
               </p>
               <button
                 onClick={() => { setSent(null); setTitle(""); setDetail(""); }}
-                className="mt-5 text-sm text-teal-deep font-medium hover:underline"
+                className="mt-5 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground"
               >
                 Send another
               </button>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-              {error && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">{error}</p>}
+            <div className={`${CARD} space-y-4`}>
+              {error && <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive rounded-lg px-4 py-2.5">{error}</p>}
 
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setKind("bug")}
-                  className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
-                    kind === "bug" ? "border-teal-deep bg-teal-deep/5 text-teal-deep" : "border-border text-muted-foreground"
+                  className={`jw-btn flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
+                    kind === "bug" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
                   <Bug className="w-4 h-4" /> Something broke
                 </button>
                 <button
                   onClick={() => setKind("idea")}
-                  className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
-                    kind === "idea" ? "border-teal-deep bg-teal-deep/5 text-teal-deep" : "border-border text-muted-foreground"
+                  className={`jw-btn flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
+                    kind === "idea" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
                   <Lightbulb className="w-4 h-4" /> An idea
@@ -127,7 +131,7 @@ export default function Feedback() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
-                  className="w-full text-base border border-border rounded-lg px-3 py-2.5 bg-background"
+                  className={`${FIELD} w-full text-base px-3 py-2.5`}
                   placeholder={kind === "bug" ? "The quest page shows a blank box when…" : "It would help if…"}
                 />
               </div>
@@ -150,7 +154,7 @@ export default function Feedback() {
                   onChange={(e) => setDetail(e.target.value)}
                   rows={6}
                   maxLength={8000}
-                  className="w-full text-base border border-border rounded-lg px-3 py-2.5 bg-background"
+                  className={`${FIELD} w-full text-base px-3 py-2.5`}
                 />
                 </VoiceArea>
               </div>
@@ -189,7 +193,7 @@ export default function Feedback() {
                 onClick={submit}
                 aria-disabled={busy || title.trim().length < 4 || detail.trim().length < 10}
                 disabled={busy || title.trim().length < 4 || detail.trim().length < 10}
-                className="w-full inline-flex items-center justify-center gap-2 text-sm bg-teal-deep text-white rounded-lg px-4 py-3 font-medium disabled:opacity-50"
+                className={`${BTN_PRIMARY} w-full py-3 text-sm`}
               >
                 {busy && <BreathingLoader decorative size={16} />} Send it
               </button>
@@ -197,6 +201,7 @@ export default function Feedback() {
           )}
         </div>
       </section>
+      </div>
     </Layout>
   );
 }
