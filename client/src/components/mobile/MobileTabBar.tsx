@@ -17,7 +17,7 @@
  */
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
-import { BARE_ROUTES, NEWCOMER_SLOT, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
+import { BARE_ROUTES, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
 import { Compass } from "lucide-react";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
@@ -69,11 +69,12 @@ export function newcomerSlots(slots: readonly TabSlot[], shown: (entry: NavLink)
   const taken = new Set(slots.map((s) => s.path ?? s.event ?? ""));
   for (const s of slots) {
     const entry = s.path ? ENTRY_BY_HREF.get(s.path) : undefined;
-    if (!entry?.newcomers || shown(entry)) {
+    const swapped = !!s.path && NEWCOMER_SWAPPED_TABS.includes(s.path);
+    if (!swapped && (!entry?.newcomers || shown(entry))) {
       out.push(s);
       continue;
     }
-    const swap = [NEWCOMER_SLOT, ...TAB_SLOTS].find((c) => c.path && !taken.has(c.path) && !ENTRY_BY_HREF.get(c.path)?.newcomers);
+    const swap = [NEWCOMER_SLOT, ...TAB_SLOTS].find((c) => c.path && !taken.has(c.path) && !ENTRY_BY_HREF.get(c.path)?.newcomers && !NEWCOMER_SWAPPED_TABS.includes(c.path));
     if (swap?.path) {
       taken.add(swap.path);
       out.push(swap);

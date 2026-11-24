@@ -173,7 +173,10 @@ export const NAV: readonly NavEntry[] = [
       // where only a member already looking for it would find it. The
       // shortcuts button carries the other door (config/mobileNav.ts).
       { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never" },
-      { href: "/gratitude", label: "Gratitude", token: "recognition", newcomers: "never" },
+      // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only), so the menu
+      // and the footer offer it to a newcomer. Their phone tab bar still gives its slot to the roles
+      // (NEWCOMER_SWAPPED_TABS, config/mobileNav.ts).
+      { href: "/gratitude", label: "Gratitude", token: "recognition" },
       { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use" },
       { href: "/feedback", label: "Share Feedback" },
     ],
