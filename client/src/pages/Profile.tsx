@@ -9,7 +9,7 @@ import ProfileSheet from "@/components/ProfileSheet";
 import ProfileHero from "@/components/ProfileHero";
 import OnchainCard from "@/components/OnchainCard";
 import WalletCard from "@/components/WalletCard";
-import SendTokensCard from "@/components/SendTokensCard";
+import PayDoor from "@/components/pay/PayDoor";
 import VentureAccountsCard from "@/components/VentureAccountsCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
@@ -894,10 +894,11 @@ export default function Profile() {
               always was; the treasury above summarises them and links down.
 
               The vessel is giving, beside the allowance it spends. WalletCard is
-              /profile#wallet from the account menu. SendTokensCard is deliberately
-              ungated, which is what proves the redemption panel below it still
-              renders with the exchange off: `/wallet` sits behind the exchange
-              module, so this is redemption's only member-facing door.
+              /profile#wallet from the account menu. PayDoor opens /pay, where
+              members send and receive credits; it is deliberately ungated, like
+              the redemption panel below it, which still renders with the
+              exchange off: `/wallet` sits behind the exchange module, so this
+              is redemption's only member-facing door.
             */}
             <div className={`flex flex-col gap-6 sm:gap-8 ${tabOf("treasury")}`}>
               <TheVessel
@@ -908,7 +909,7 @@ export default function Profile() {
               />
               <WalletCard />
               <div id="send-tokens" className="scroll-mt-28">
-                <SendTokensCard />
+                <PayDoor />
               </div>
               <VentureAccountsCard /> {/* 0419: the ventures this member runs; nothing until the village opens venture accounts */}
               {user && redemptionModule && (
