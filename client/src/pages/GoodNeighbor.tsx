@@ -80,10 +80,7 @@ export default function GoodNeighbor() {
       <div className={WORLD}>
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-notice blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-open blur-3xl" />
-        </div>
+        {/* No glow behind the words (DESIGN_RULE: fireflies only around the next act); the blurred blobs went with the light ground. */}
         <div className="container relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {hero.fields.eyebrow && (
