@@ -1785,22 +1785,22 @@ html:has(#sera-changes [data-sera-strip-on]) {
  */
 :root[data-mode="light"] .sheet-night {
   --background: var(--day-ground, #f3ede0);
-  --foreground: var(--day-ink, #14362b);
-  --card: var(--day-panel, #fbf8f1);
-  --card-foreground: var(--day-ink, #14362b);
-  --popover: var(--day-panel, #fbf8f1);
-  --popover-foreground: var(--day-ink, #14362b);
-  --muted: var(--day-panel-raised, #ebe3d2);
-  --muted-foreground: var(--day-ink-dim, #5a5446);
-  --border: var(--day-edge, #867b64);
-  --input: var(--day-edge, #867b64);
-  --ring: var(--day-accent, #7a5a22);
-  --sheet-notice: var(--day-accent, #7a5a22);
+  --foreground: var(--day-ink, #2b2720);
+  --card: var(--day-panel, #faf6ee);
+  --card-foreground: var(--day-ink, #2b2720);
+  --popover: var(--day-panel, #faf6ee);
+  --popover-foreground: var(--day-ink, #2b2720);
+  --muted: var(--day-panel-raised, #dfd0b6);
+  --muted-foreground: var(--day-ink-dim, #4d463a);
+  --border: var(--day-edge, #77694c);
+  --input: var(--day-edge, #77694c);
+  --ring: var(--day-accent, #14362b);
+  --sheet-notice: var(--day-accent, #14362b);
   --sheet-earned-deep: var(--day-accent-shadow, #7a5a22);
   --sheet-earned-lit: var(--day-accent-highlight, #e0c79a);
   --sheet-open: var(--day-living, #15604a);
   --destructive: var(--day-warn, #9b3b2a);
-  --destructive-foreground: var(--day-panel, #fbf8f1);
+  --destructive-foreground: var(--day-panel, #faf6ee);
   --color-coral: var(--day-warn, #9b3b2a);
   --font-display: var(--day-font-display, var(--sheet-font-display, "Marcellus", Georgia, "Times New Roman", serif));
   color-scheme: light;
@@ -1838,6 +1838,33 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root[data-mode="dark"] body {
   background-color: var(--sheet-ground, #0d1411);
   color: var(--sheet-ink, #e9efe6);
+}
+
+/*
+ * DIALOGUE IS SAND, IN BOTH MODES (the lead, 24 Nov 2026: "the dialogue boxes
+ * in dark mode give them a similar sand color as the light mode").
+ *
+ * A dialog, an alert, and anything marked `data-dialogue` (a conversation with
+ * the guide) is a lit page held up in the night: in dark mode it takes the day
+ * palette's sand and ink, so it reads the same in either mode. Every value is
+ * a `--dialogue-*` knob, falling back to the village's day palette.
+ */
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+  --background: var(--dialogue-ground, var(--day-ground, #f3ede0));
+  --foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
+  --card: var(--dialogue-panel, var(--day-ground, #f3ede0));
+  --card-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
+  --popover: var(--dialogue-panel, var(--day-ground, #f3ede0));
+  --popover-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
+  --muted: var(--dialogue-raised, var(--day-panel-raised, #dfd0b6));
+  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, #4d463a));
+  --border: var(--dialogue-edge, var(--day-edge, #77694c));
+  --input: var(--dialogue-edge, var(--day-edge, #77694c));
+  --ring: var(--dialogue-accent, var(--day-accent, #14362b));
+  --sheet-notice: var(--dialogue-accent, var(--day-accent, #14362b));
+  --destructive: var(--day-warn, #9b3b2a);
+  color-scheme: light;
+  color: var(--foreground);
 }
 
 /*
@@ -2323,10 +2350,3 @@ html:has(#sera-changes [data-sera-strip-on]) {
   }
 }
 
-/* The light and dark switch (components/ThemeSwitch.tsx): a pill on the header's band. */
-.theme-switch {
-  border-color: color-mix(in srgb, currentColor 30%, transparent);
-}
-.theme-switch [data-on] {
-  background-color: color-mix(in srgb, currentColor 16%, transparent);
-}

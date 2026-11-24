@@ -22,24 +22,24 @@ beforeEach(() => {
 describe("ThemeSwitch", () => {
   it("is hidden before modes are live, for a visitor who has never chosen", () => {
     draw(false);
-    expect(screen.queryByRole("group", { name: "Light or dark" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Switch to/ })).toBeNull();
   });
 
-  it("shows for a tester who already holds a choice, with that choice pressed", () => {
+  it("shows for a tester who already holds a choice: the mode it is in, small, and what a tap does", () => {
     localStorage.setItem(MODE_KEY, "dark");
     document.documentElement.dataset.mode = "dark";
     draw(false);
-    expect(screen.getByRole("button", { name: "Dark" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: "Light" }).getAttribute("aria-pressed")).toBe("false");
+    const b = screen.getByRole("button", { name: "Switch to light mode" });
+    expect(b.textContent).toBe("Dark");
   });
 
-  it("flips the page at once and remembers it", () => {
+  it("flips the page at once, both ways, and remembers it", () => {
+    document.documentElement.dataset.mode = "light";
     draw(true);
-    fireEvent.click(screen.getByRole("button", { name: "Dark" }));
+    fireEvent.click(screen.getByRole("button", { name: "Switch to dark mode" }));
     expect(document.documentElement.dataset.mode).toBe("dark");
     expect(localStorage.getItem(MODE_KEY)).toBe("dark");
-    expect(screen.getByRole("button", { name: "Dark" }).getAttribute("aria-pressed")).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: "Light" }));
+    fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
     expect(document.documentElement.dataset.mode).toBe("light");
     expect(localStorage.getItem(MODE_KEY)).toBe("light");
   });

@@ -9,7 +9,8 @@ import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
-import { CalendarDays, Check, Sprout } from "lucide-react";
+import { CalendarDays } from "lucide-react";
+import { SeedOfLife, Vesica } from "@/components/sacred/glyphs";
 import { CARD, CARD_FEATURED, EYEBROW, H1, H2, HINT, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import { useStoryPageShown } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
@@ -91,7 +92,7 @@ export default function SeasonalFestivals() {
           {season?.current && (
             <div className={CARD_FEATURED}>
               <div className="flex items-center gap-2 mb-1">
-                <Sprout className="w-4 h-4 text-open" aria-hidden="true" />
+                <Vesica className="w-4 h-4 text-open" />
                 <p className={EYEBROW}>Now</p>
               </div>
               <p className="font-display text-2xl font-bold text-card-foreground">{season.current.name}</p>
@@ -206,9 +207,9 @@ function SeasonGoals({ goals, stewardOn }: { goals: { text: string; done?: boole
             >
               <span
                 aria-hidden="true"
-                className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-notice ${g.done ? "bg-notice text-background" : "text-notice"}`}
+                className={`mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border ${g.done ? "border-notice bg-notice text-background" : "border-notice/60 text-notice"}`}
               >
-                {g.done ? <Check className="size-4" /> : <Sprout className="size-4" />}
+                {g.done ? <SeedOfLife className="size-5" /> : <Vesica className="size-5" />}
               </span>
               <div className="min-w-0">
                 <p className="font-display text-lg leading-snug text-foreground">{title}</p>
