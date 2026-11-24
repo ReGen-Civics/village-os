@@ -73,6 +73,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // own balances now also live in a Wallet section on their profile.
   "/tokens": "The Exchange",
   "/wallet": "The Exchange",
+  "/pay": "Pay and receive",
   "/profile": "My profile",
   "/path": "Your path",
   "/login": "Sign in",

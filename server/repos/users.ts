@@ -531,3 +531,33 @@ export async function isTombstoneId(db: Pool | PoolConnection, id: string): Prom
   const [rows] = await db.query<RowDataPacket[]>("SELECT `email` FROM `users` WHERE `id` = ?", [id]);
   return !!rows[0] && isTombstone({ email: String(rows[0].email ?? "") });
 }
+
+/** LIKE's own wildcards, escaped, so what a member typed matches only itself. */
+const likeEscape = (s: string): string => s.replace(/[\\%_]/g, (c) => `\\${c}`);
+
+/**
+ * Who a member might be paying, from what they typed: the ids whose handle
+ * starts with it, or whose name has a word starting with it.
+ *
+ * For the send page's search (server/routes/pay.ts), and bounded the way that
+ * route promises: a prefix only, never a substring, so two letters cannot walk
+ * the table; the asker and the standing examples excluded here; tombstones
+ * excluded by the address `writeTombstone` leaves; and at most `limit` rows.
+ * The route then keeps only accepted members and hands back no more than its
+ * own cap, so this over-asks a little and never answers with a list.
+ *
+ * Handles first, then names, each in name order, so the person whose handle
+ * was typed is never pushed out by namesakes.
+ */
+export async function payeeCandidateIds(pool: Pool, typed: string, excludeId: string, limit: number): Promise<string[]> {
+  const q = likeEscape(String(typed ?? "").trim().toLowerCase());
+  if (!q) return [];
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT id, (LOWER(handle) LIKE ? ESCAPE '\\\\') AS by_handle FROM users " +
+      "WHERE id <> ? AND is_example = 0 AND email NOT LIKE '%anonymized.invalid' " +
+      "AND (LOWER(handle) LIKE ? ESCAPE '\\\\' OR LOWER(name) LIKE ? ESCAPE '\\\\' OR LOWER(name) LIKE ? ESCAPE '\\\\') " +
+      "ORDER BY by_handle DESC, name, id LIMIT ?",
+    [`${q}%`, String(excludeId ?? ""), `${q}%`, `${q}%`, `% ${q}%`, Math.max(1, Math.trunc(limit))],
+  );
+  return rows.map((r) => String(r.id));
+}
