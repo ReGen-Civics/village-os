@@ -9,12 +9,13 @@ import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
-import { CalendarDays, Sprout } from "lucide-react";
-import { CARD, CARD_FEATURED, EYEBROW, H1, HINT, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
+import { CalendarDays, Check, Sprout } from "lucide-react";
+import { CARD, CARD_FEATURED, CHIP_SOFT, EYEBROW, H1, HINT, LEDE, LINK, QUIET, RING, WORLD } from "@/components/journey/look";
 import { useStoryPageShown } from "@/lib/brochure";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function SeasonalFestivals() {
+  const { t } = useLingui();
   const storyShown = useStoryPageShown();
   const workWithUsOn = storyShown("/work-with-us");
   /*
@@ -62,6 +63,9 @@ export default function SeasonalFestivals() {
     s.endsOn ? `${fmt(s.startsOn)} to ${fmt(s.endsOn)}` : `${fmt(s.startsOn)} onward, until the next season starts`;
 
   const currentGoals = ((season?.current?.goals ?? []) as any[]).filter((g) => String(g?.text ?? "").trim());
+  // The same words and contexts as the /roles goals block (components/roleDraft/SeasonGoals.tsx), so both read alike in every language.
+  const goals = currentGoals;
+  const reached = goals.filter((g) => g.done).length;
 
   return (
     <Layout>
@@ -104,14 +108,35 @@ export default function SeasonalFestivals() {
               {season.current.focus && (
                 <p className="text-base text-muted-foreground mt-1">{season.current.focus}</p>
               )}
-              {currentGoals.length > 0 && (
-                <ul className="mt-2 space-y-1">
-                  {currentGoals.map((g: any, i: number) => (
-                    <li key={i} className="text-base text-muted-foreground">
-                      {g.done ? "Done: " : ""}{g.text}
+              {/*
+                * Each goal its own tile (the lead, 24 Nov 2026: "a wall of text ... a
+                * different design to show each seasonal goal"), drawn the way the /roles
+                * goals block draws them: its number in a gold ring, and a reached goal's
+                * ring filled with a check and the word Done beside it, never "Done:"
+                * glued into the goal's own words. One column: the card is narrow, and
+                * two columns squeezed a reached goal's words beside its chip.
+                */}
+              {goals.length > 0 && reached > 0 && (
+                <p className={`mt-4 ${HINT}`}>
+                  {t({ message: `${reached} of ${goals.length} reached so far`, context: "roles page season goals: how many of the village's goals are done" })}
+                </p>
+              )}
+              {goals.length > 0 && (
+                <ol className="mt-3 grid gap-2">
+                  {goals.map((g: any, i: number) => (
+                    <li
+                      key={String(g.id ?? i)}
+                      data-done={g.done || undefined}
+                      className="flex min-h-14 items-center gap-3 rounded-xl border border-border bg-muted px-3 py-2.5 sm:gap-4 sm:px-4"
+                    >
+                      <span aria-hidden="true" className={`${RING} font-display text-lg ${g.done ? "bg-notice text-background" : ""}`}>
+                        {g.done ? <Check className="size-5 text-background" strokeWidth={3} /> : i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 text-base leading-snug text-card-foreground">{g.text}</span>
+                      {g.done && <span className={`shrink-0 ${CHIP_SOFT}`}>{t({ message: "Done", context: "roles page goal" })}</span>}
                     </li>
                   ))}
-                </ul>
+                </ol>
               )}
               {currentGoals.length > 0 && stewardOn && (
                 <p className="text-base text-foreground mt-3">

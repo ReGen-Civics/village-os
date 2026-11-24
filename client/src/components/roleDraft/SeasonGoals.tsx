@@ -92,7 +92,8 @@ export default function SeasonGoals() {
                 onPointerLeave={() => setActive(null)}
               >
                 <span aria-hidden="true" className={`${RING} font-display text-lg ${g.done ? "bg-notice text-background" : ""}`}>
-                  {g.done ? <Check className="size-5" /> : i + 1}
+                  {/* The check carries its own colour: RING sets text-notice, which beat a text-background on the span, so the check drew gold on the gold fill. */}
+                  {g.done ? <Check className="size-5 text-background" strokeWidth={3} /> : i + 1}
                 </span>
                 <GoalWords goal={g} count={openWorkFor(work, g.goalId)} />
                 {g.done && (
