@@ -99,15 +99,16 @@ describe("the resident page shares the steward page's first steps", () => {
   });
 
   it("keeps a tick from one page on the other", async () => {
+    // The call's step, which /steward shows while land tours are paused too (shared/toursPaused.ts).
     show(StewardJourney);
     await waitFor(() => expect(firstSteps()).not.toBeNull());
-    fireEvent.click(within(firstSteps()).getByRole("checkbox", { name: /Walk the land with us/ }));
-    expect(JSON.parse(localStorage.getItem(FIRST_STEPS_KEY) ?? "[]")).toEqual(["Walk the land with us"]);
+    fireEvent.click(within(firstSteps()).getByRole("checkbox", { name: /Come to an open call/ }));
+    expect(JSON.parse(localStorage.getItem(FIRST_STEPS_KEY) ?? "[]")).toEqual(["Come to an open call"]);
     cleanup();
     show(ResidentJourney);
     await waitFor(() => expect(firstSteps()).not.toBeNull());
-    await waitFor(() => expect(within(firstSteps()).getByRole("checkbox", { name: /Walk the land with us/ })).toHaveAttribute("aria-checked", "true"));
-    expect(within(firstSteps()).getByRole("checkbox", { name: /Come to an open call/ })).toHaveAttribute("aria-checked", "false");
+    await waitFor(() => expect(within(firstSteps()).getByRole("checkbox", { name: /Come to an open call/ })).toHaveAttribute("aria-checked", "true"));
+    expect(within(firstSteps()).getByRole("checkbox", { name: /Walk the land with us/ })).toHaveAttribute("aria-checked", "false");
   });
 
   it("marks the home path as here on the resident page and links across to /steward", async () => {
