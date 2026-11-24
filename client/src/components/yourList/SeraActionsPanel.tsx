@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { BTN_QUIET, HINT } from "@/components/sessions/roomUi";
+import { Trans } from "@lingui/react/macro";
 
 type SeraTool = "link_sera_person" | "suggest_task" | "set_board_access" | "draft_agenda_item" | "suggest_moon_item" | "undo_sera_action";
 interface Action { id: string; tool: SeraTool; subjectUserId: string | null; subjectName?: string | null; state: string; createdAt: string; undoneAt: string | null }
@@ -57,17 +58,17 @@ export default function SeraActionsPanel({ password }: { password: string }) {
 
   return (
     <div className="mt-4">
-      <p className="text-sm font-semibold text-foreground">What Sera's agent did ({actions.length})</p>
+      <p className="text-sm font-semibold text-foreground"><Trans context="SeraActionsPanel, p">What Sera's agent did ({actions.length})</Trans></p>
       {note && <p role="status" className={HINT}>{note}</p>}
       <ul className="mt-1 space-y-1">
         {actions.map((a) => (
           <li key={a.id} className="flex flex-wrap items-center gap-2 text-sm text-foreground">
             <span className="min-w-0 flex-1">
               {TOOL_WORDS[a.tool] ?? a.tool}
-              {a.subjectName ? <span>, for {a.subjectName}</span> : null} <span className={HINT}>{a.createdAt.slice(0, 10)}{a.state === "undone" ? ", undone" : a.state === "refused" ? ", refused" : ""}</span>
+              {a.subjectName ? <span><Trans context="SeraActionsPanel, span">, for {a.subjectName}</Trans></span> : null} <span className={HINT}>{a.createdAt.slice(0, 10)}{a.state === "undone" ? ", undone" : a.state === "refused" ? ", refused" : ""}</span>
             </span>
             {a.state === "done" && a.tool !== "undo_sera_action" && (
-              <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => void undo(a.id)}>Undo</button>
+              <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => void undo(a.id)}><Trans context="SeraActionsPanel, button">Undo</Trans></button>
             )}
           </li>
         ))}

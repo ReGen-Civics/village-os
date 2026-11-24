@@ -23,6 +23,7 @@ import {
   type NeedDepth,
 } from "@shared/needs";
 import { SCREENS, rungMeaning, type Drafts, type NeedDraft } from "./needsCopy";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /* -------------------------------------------------------------------------- *
  * Module-scope pieces. NOT ONE of these is declared inside a component body.
@@ -118,7 +119,7 @@ export function DepthLadder({
 export function Recap({ drafts, order, upTo }: { drafts: Drafts; order: string[]; upTo: number }) {
   const live = order.map((k) => drafts[k]).filter((d) => d && d.on);
   if (live.length === 0) {
-    return <p className={HINT}>No need is ticked yet. Screen 1 is where that starts.</p>;
+    return <p className={HINT}><Trans context="NeedsPieces, p">No need is ticked yet. Screen 1 is where that starts.</Trans></p>;
   }
   return (
     <ul className="flex flex-wrap gap-1.5">
@@ -130,7 +131,7 @@ export function Recap({ drafts, order, upTo }: { drafts: Drafts; order: string[]
           <NeedDot needKey={d.key} />
           {d.label}
           {upTo >= 2 ? <span className="text-muted-foreground">{NEED_DEPTH_LABELS[d.depth]}</span> : null}
-          {upTo >= 3 ? <span className="text-muted-foreground">{d.breadth} percent</span> : null}
+          {upTo >= 3 ? <span className="text-muted-foreground"><Trans context="NeedsPieces, span">{d.breadth} percent</Trans></span> : null}
         </li>
       ))}
     </ul>
@@ -139,8 +140,9 @@ export function Recap({ drafts, order, upTo }: { drafts: Drafts; order: string[]
 
 /** The numbered rail across the top of the panel. Every screen is reachable. */
 export function ScreenRail({ at, onGo }: { at: number; onGo: (n: number) => void }) {
+  const { t } = useLingui();
   return (
-    <nav aria-label="The six screens of the needs setup" className="flex flex-wrap gap-1.5 mb-5">
+    <nav aria-label={t({ message: "The six screens of the needs setup", context: "NeedsPieces, aria-label" })} className="flex flex-wrap gap-1.5 mb-5">
       {SCREENS.map((s) => (
         <button
           key={s.n}

@@ -45,6 +45,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 import { stalemateWarningFor } from "@shared/ballotSubjects";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /*
  * IntegrateDaoPanel USED TO LIVE HERE and is deleted rather than kept
@@ -76,6 +77,7 @@ export function orderCategories<T>(entries: Array<[string, T]>): Array<[string, 
 }
 
 export default function VariablesTab({ password }: { password: string }) {
+  const { t } = useLingui();
   const [vars, setVars] = useState<any[]>([]);
   /** One row per module holding settings, as the variables route reports them. */
   const [moved, setMoved] = useState<Array<{ id: string; name: string; lifecycle: string; keys: string[] }>>([]);
@@ -208,12 +210,12 @@ export default function VariablesTab({ password }: { password: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Game Mechanics</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="VariablesTab, h2">Game Mechanics</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
-          The rules of your village's game, live-editable. Only changed values are
+          <Trans context="VariablesTab, p">The rules of your village's game, live-editable. Only changed values are
           stored, so platform defaults keep flowing to you as the foundation
           evolves. Every value is validated against its bounds before it lands.
-        </p>
+        </Trans></p>
       </div>
       {/*
         WHERE THE MODULE DIALS WENT. Every setting a module reads is set up on
@@ -225,19 +227,19 @@ export default function VariablesTab({ password }: { password: string }) {
       */}
       {moved.length > 0 && (
         <div className="mb-6 border border-gray-200 rounded-xl px-4 py-3">
-          <p className="text-sm font-medium text-gray-900">Settings that live on a module card</p>
+          <p className="text-sm font-medium text-gray-900"><Trans context="VariablesTab, p">Settings that live on a module card</Trans></p>
           <p className="text-xs text-gray-600 mt-0.5 mb-2">
-            Open the module in the Module Library and its settings are on the card, whether the
+            <Trans context="VariablesTab, p">Open the module in the Module Library and its settings are on the card, whether the
             module is on or off.
-          </p>
+          </Trans></p>
           <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
             {moved.map((m) => (
               <li key={m.id} className="text-sm text-gray-900">
-                <a href={`/modules/${m.id}`} className="font-medium text-teal-deep underline">
+                <Trans context="VariablesTab, li"><a href={`/modules/${m.id}`} className="font-medium text-teal-deep underline">
                   {m.name}
                 </a>{" "}
                 {m.keys.length} setting{m.keys.length === 1 ? "" : "s"}
-                {m.lifecycle === "off" ? ", module off" : ""}
+                {m.lifecycle === "off" ? ", module off" : ""}</Trans>
               </li>
             ))}
           </ul>
@@ -249,15 +251,15 @@ export default function VariablesTab({ password }: { password: string }) {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search dials: a word from the name, key or description"
-            aria-label="Search game variables"
+            placeholder={t({ message: "Search dials: a word from the name, key or description", context: "VariablesTab, placeholder" })}
+            aria-label={t({ message: "Search game variables", context: "VariablesTab, aria-label" })}
             className="w-full border border-gray-200 rounded-xl pl-3 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep/30"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              aria-label="Clear search"
+              aria-label={t({ message: "Clear search", context: "VariablesTab, aria-label" })}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm px-1"
             >
               ✕
@@ -277,7 +279,7 @@ export default function VariablesTab({ password }: { password: string }) {
           </p>
         )}
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
+      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="VariablesTab, div">Loading...</Trans></div> : (
         <div className="space-y-8">
           {categoryEntries.map(([cat, list]) => (
             <div key={cat}>
@@ -305,7 +307,7 @@ export default function VariablesTab({ password }: { password: string }) {
                           <div className="font-medium text-gray-900 text-sm">
                             {v.label}
                             {v.isDefault && (
-                              <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">platform default</span>
+                              <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded"><Trans context="VariablesTab, span">platform default</Trans></span>
                             )}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5 max-w-xl">{v.description}</p>
@@ -361,8 +363,8 @@ export default function VariablesTab({ password }: { password: string }) {
                             title={`Back to the platform default (${v.default})`}
                             className="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-2.5 py-1.5"
                           >
-                            Reset
-                          </button>
+                            <Trans context="VariablesTab, button">Reset
+                          </Trans></button>
                         )}
                       </div>
                       {ceiling && (

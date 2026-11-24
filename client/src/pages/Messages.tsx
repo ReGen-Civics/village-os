@@ -875,7 +875,7 @@ function ThreadView({ id }: { id: string }) {
                               message that can change after it was read, with
                               no sign it changed, is worse than one that
                               cannot change at all. */}
-                          {m.editedAt && !m.deleted && <span title="This message was edited"><Trans context="Messages, span">edited</Trans></span>}
+                          {m.editedAt && !m.deleted && <span title={t({ message: "This message was edited", context: "Messages, title" })}><Trans context="Messages, span">edited</Trans></span>}
                           {m.mine && !m.deleted && (
                             <button
                               type="button"

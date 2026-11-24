@@ -24,6 +24,7 @@
  * confirmation are one thing. Light-only, like the rest of this folder.
  */
 import { useSettingFocus } from "@/components/admin/settingFocus";
+import { Trans } from "@lingui/react/macro";
 
 export default function SeasonTimezoneField({
   value,
@@ -47,18 +48,18 @@ export default function SeasonTimezoneField({
           here, because the launch checklist and the admin banner now send
           people straight to this control. */}
       <label htmlFor="season-timezone" className="text-sm font-medium text-gray-700 block mb-1">
-        Timezone
-      </label>
+        <Trans context="SeasonTimezoneField, label">Timezone
+      </Trans></label>
       <input
         id="season-timezone"
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Europe/Lisbon"
+        placeholder="Europe/Lisbon" // i18n-ok: an IANA zone id, the same in every language
         aria-describedby={answered ? undefined : "season-timezone-answer"}
         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
       />
-      <p className="text-[11px] text-gray-400 mt-1">A season turns at midnight where the village is.</p>
+      <p className="text-[11px] text-gray-400 mt-1"><Trans context="SeasonTimezoneField, p">A season turns at midnight where the village is.</Trans></p>
       {!answered && (
         <p
           id="season-timezone-answer"
@@ -68,8 +69,8 @@ export default function SeasonTimezoneField({
           and it decides when a day, a season and the claims window turn. Type yours, or press This is
           right to keep it.{" "}
           <button type="button" onClick={onConfirm} disabled={saving} className="underline font-medium">
-            This is right
-          </button>
+            <Trans context="SeasonTimezoneField, button">This is right
+          </Trans></button>
         </p>
       )}
     </div>

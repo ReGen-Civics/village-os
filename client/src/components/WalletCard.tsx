@@ -93,7 +93,7 @@ function PriceFact({ row }: { row: WalletRow }) {
   if (p.state !== "priced") return <Fact label={t({ message: "Price", context: "WalletCard, label" })}>{p.says}</Fact>;
   const each = formatMoney(p.perTokenMinor, p.currency);
   return (
-    <Fact label="Price">
+    <Fact label={t({ message: "Price", context: "WalletCard, label" })}>
       <Trans context="WalletCard, Fact">{each} each at the exchange
       {row.heldUnits > 0 ? `, so yours come to ${formatMoney(p.heldValueMinor, p.currency)}` : ""}</Trans>
     </Fact>

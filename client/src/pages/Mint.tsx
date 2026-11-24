@@ -26,6 +26,7 @@ import { formatTokenAmount } from "@/lib/tokenAmount";
 import { villageMoonSentence, type VillageMoon } from "@shared/villageMoon";
 import { ceilingBinds } from "@shared/workValue";
 import { ROLE_FLAT_AMOUNT_EXPLAINED, flatRoleAmountLine } from "@shared/duesDividend";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -128,6 +129,7 @@ const TRIGGER_WORDS: Record<string, string> = {
 };
 
 export default function Mint() {
+  const { t } = useLingui();
   const { user, loading } = useAuth();
   const [view, setView] = useState<View | null>(null);
   const [dials, setDials] = useState<Dial[]>([]);
@@ -260,7 +262,7 @@ export default function Mint() {
   if (loading) {
     return (
       <Layout>
-        <div className="container py-16 text-gray-700">Looking.</div>
+        <div className="container py-16 text-gray-700"><Trans context="Mint, div">Looking.</Trans></div>
       </Layout>
     );
   }
@@ -269,16 +271,16 @@ export default function Mint() {
       <Layout>
         <div className="container max-w-md py-16">
           <div className={card}>
-            <h1 className="text-2xl font-display font-bold text-teal-deep">The Mint</h1>
+            <h1 className="text-2xl font-display font-bold text-teal-deep"><Trans context="Mint, h1">The Mint</Trans></h1>
             <p className="mt-3 text-gray-700">
-              Sign in with your admin account to open the Mint.
-            </p>
+              <Trans context="Mint, p">Sign in with your admin account to open the Mint.
+            </Trans></p>
             <Link
               href="/admin"
               className="mt-6 inline-block rounded-lg bg-teal-deep px-5 py-3 text-white"
             >
-              Go to village settings
-            </Link>
+              <Trans context="Mint, Link">Go to village settings
+            </Trans></Link>
           </div>
         </div>
       </Layout>
@@ -288,7 +290,7 @@ export default function Mint() {
   if (!view) {
     return (
       <Layout>
-        <div className="container py-16 text-gray-700">Looking.</div>
+        <div className="container py-16 text-gray-700"><Trans context="Mint, div">Looking.</Trans></div>
       </Layout>
     );
   }
@@ -297,11 +299,11 @@ export default function Mint() {
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-teal-deep/5 to-amber/5 py-10">
         <div className="container max-w-4xl">
-          <h1 className="text-3xl font-display font-bold text-teal-deep">The Mint</h1>
+          <h1 className="text-3xl font-display font-bold text-teal-deep"><Trans context="Mint, h1">The Mint</Trans></h1>
           <p className="mt-2 text-gray-700">
-            What this village pays for, and what it has issued. Every change here takes effect at
+            <Trans context="Mint, p">What this village pays for, and what it has issued. Every change here takes effect at
             the next moon, so nothing can be raised and lowered around a settlement.
-          </p>
+          </Trans></p>
           <p className="mt-1 text-sm text-sage">{villageMoonSentence(view.moon)}</p>
 
           {note ? (
@@ -323,7 +325,7 @@ export default function Mint() {
               className={`${card} mt-6 border-2 ${hypha.value ? "border-sage/50" : "border-amber/60"}`}
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-xl font-display font-bold text-teal-deep">Your Hypha space</h2>
+                <h2 className="text-xl font-display font-bold text-teal-deep"><Trans context="Mint, h2">Your Hypha space</Trans></h2>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     hypha.value ? "bg-sage-light text-sage" : "bg-amber-light text-gray-900"
@@ -336,11 +338,11 @@ export default function Mint() {
               <label className="mt-4 block text-sm font-semibold text-gray-900">
                 DHO slug
                 <div className="mt-1 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-gray-700">app.hypha.earth/</span>
+                  <span className="text-sm text-gray-700"><Trans context="Mint, span">app.hypha.earth/</Trans></span>
                   <input
                     type="text"
                     value={shown(hypha)}
-                    placeholder="your-space"
+                    placeholder={t({ message: "your-space", context: "Mint, placeholder" })}
                     maxLength={120}
                     onChange={(e) => setEdits((s) => ({ ...s, [HYPHA_KEY]: e.target.value }))}
                     onBlur={(e) => {
@@ -371,19 +373,19 @@ export default function Mint() {
                 </p>
               ) : null}
               <p className="mt-3 rounded-lg bg-amber-light px-3 py-2 text-sm text-gray-900">
-                Claims are not open yet, whatever is in this box. The piece that raises the
+                <Trans context="Mint, p">Claims are not open yet, whatever is in this box. The piece that raises the
                 proposal on Hypha is still being built, and until it ships a claim would take a
                 member's voice with nothing able to answer it. The member-facing chip that shows
                 gathering voice is not built either, so nobody is being shown a promise about it.
-              </p>
+              </Trans></p>
             </section>
           ) : null}
 
           {/* The rules. */}
           <section className={`${card} mt-6`}>
-            <h2 className={h2}>What the village pays</h2>
+            <h2 className={h2}><Trans context="Mint, h2">What the village pays</Trans></h2>
             {view.rules.length === 0 ? (
-              <p className="text-gray-700">No rules seeded yet. The economy mints nothing until there are.</p>
+              <p className="text-gray-700"><Trans context="Mint, p">No rules seeded yet. The economy mints nothing until there are.</Trans></p>
             ) : (
               <ul className="space-y-4">
                 {view.rules.map((r) => (
@@ -433,25 +435,25 @@ export default function Mint() {
                     {r.trigger === "role.cycle" ? <p className={ruleLine}>{ROLE_FLAT_AMOUNT_EXPLAINED}</p> : null}
                     {ceilingBinds(r.trigger) ? (
                       <p className={ruleLine}>
-                        The most one payment may be: {formatTokenAmount(r.pays.ceilingUnits, r.pays.decimals)}{" "}
-                        {r.tokenName}
+                        <Trans context="Mint, p">The most one payment may be: {formatTokenAmount(r.pays.ceilingUnits, r.pays.decimals)}{" "}
+                        {r.tokenName}</Trans>
                       </p>
                     ) : (
                       <p className={ruleLine}>
-                        Paid in full, with no ceiling. A piece of work that names its own amount of {r.tokenName} is paid that amount.
-                      </p>
+                        <Trans context="Mint, p">Paid in full, with no ceiling. A piece of work that names its own amount of {r.tokenName} is paid that amount.
+                      </Trans></p>
                     )}
                     {r.problem ? (
                       <p className={ruleWarn}>
-                        This rule pays nobody: {r.problem}.
-                      </p>
+                        <Trans context="Mint, p">This rule pays nobody: {r.problem}.
+                      </Trans></p>
                     ) : null}
 
                     {r.pending ? (
                       <p className={ruleWarn}>
-                        Queued for the next moon:{" "}
+                        <Trans context="Mint, p">Queued for the next moon:{" "}
                         {r.pending.amount === null ? "read from the source" : `${r.pending.amount} ${r.tokenName}`}
-                        {r.pending.enabled ? "" : ", paused"}
+                        {r.pending.enabled ? "" : ", paused"}</Trans>
                       </p>
                     ) : null}
 
@@ -496,12 +498,12 @@ export default function Mint() {
           */}
           {dials.filter((d) => d.key !== HYPHA_KEY).length ? (
             <section className={`${card} mt-6`}>
-              <h2 className={h2}>When voice can be claimed</h2>
+              <h2 className={h2}><Trans context="Mint, h2">When voice can be claimed</Trans></h2>
               <p className="-mt-2 mb-5 text-gray-700">
-                Voice gathers all season and formalises in one pass, so a season of contribution
+                <Trans context="Mint, p">Voice gathers all season and formalises in one pass, so a season of contribution
                 becomes a handful of proposals your circle can genuinely sit with. These decide
                 when that happens and how much it takes.
-              </p>
+              </Trans></p>
               <ul className="space-y-5">
                 {dials
                   .filter((d) => d.key !== HYPHA_KEY)
@@ -511,12 +513,12 @@ export default function Mint() {
                         <p className="font-semibold text-gray-900">{d.label}</p>
                         {d.isDefault ? (
                           <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
-                            Platform default
-                          </span>
+                            <Trans context="Mint, span">Platform default
+                          </Trans></span>
                         ) : (
                           <span className="rounded-full bg-sage-light px-3 py-1 text-xs font-semibold text-sage">
-                            Set by this village
-                          </span>
+                            <Trans context="Mint, span">Set by this village
+                          </Trans></span>
                         )}
                       </div>
                       <p className="mt-2 text-sm leading-relaxed text-gray-800">{d.description}</p>
@@ -554,7 +556,7 @@ export default function Mint() {
                             }}
                             className="min-h-11 rounded-lg border border-teal-deep px-4 py-2 text-sm font-semibold text-teal-deep"
                           >
-                            Back to {d.default || "blank"}
+                            <Trans context="Mint, button">Back to {d.default || "blank"}</Trans>
                           </button>
                         )}
                       </div>
@@ -565,34 +567,34 @@ export default function Mint() {
                       ) : null}
                       {d.min !== undefined && d.max !== undefined ? (
                         <p className="mt-2 text-xs text-gray-700">
-                          Anything from {d.min} to {d.max}. The platform default is {d.default}.
-                        </p>
+                          <Trans context="Mint, p">Anything from {d.min} to {d.max}. The platform default is {d.default}.
+                        </Trans></p>
                       ) : (
-                        <p className="mt-2 text-xs text-gray-700">The platform default is {d.default || "blank"}.</p>
+                        <p className="mt-2 text-xs text-gray-700"><Trans context="Mint, p">The platform default is {d.default || "blank"}.</Trans></p>
                       )}
                     </li>
                   ))}
               </ul>
               <p className="mt-5 text-sm text-gray-700">
-                A change you make here takes effect straight away, because you are the founder and
+                <Trans context="Mint, p">A change you make here takes effect straight away, because you are the founder and
                 this is your setup. The same dials moved by a governance proposal wait for the next
                 moon instead, so a vote cannot shift the goalposts under a season already counting.
-              </p>
+              </Trans></p>
             </section>
           ) : null}
 
           {/* Supply, per source. This detail is admin-only on purpose. */}
           <section className={`${card} mt-6`}>
-            <h2 className={h2}>What has been issued</h2>
+            <h2 className={h2}><Trans context="Mint, h2">What has been issued</Trans></h2>
             {view.supply.length === 0 ? (
-              <p className="text-gray-700">Nothing yet. Every faucet is still at zero.</p>
+              <p className="text-gray-700"><Trans context="Mint, p">Nothing yet. Every faucet is still at zero.</Trans></p>
             ) : (
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="text-gray-700">
-                    <th className="pb-2 font-semibold">Token</th>
-                    <th className="pb-2 font-semibold">From</th>
-                    <th className="pb-2 text-right font-semibold">Issued</th>
+                    <th className="pb-2 font-semibold"><Trans context="Mint, th">Token</Trans></th>
+                    <th className="pb-2 font-semibold"><Trans context="Mint, th">From</Trans></th>
+                    <th className="pb-2 text-right font-semibold"><Trans context="Mint, th">Issued</Trans></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -607,16 +609,16 @@ export default function Mint() {
               </table>
             )}
             <p className="mt-4 text-sm text-gray-700">
-              This breakdown stays here. The public feed publishes village totals only, because at
+              <Trans context="Mint, p">This breakdown stays here. The public feed publishes village totals only, because at
               a small size a per-source figure can be read back to one person's balance.
-            </p>
+            </Trans></p>
           </section>
 
           {/* Settlement preview. */}
           <section className={`${card} mt-6`}>
-            <h2 className={h2}>At the next moon</h2>
+            <h2 className={h2}><Trans context="Mint, h2">At the next moon</Trans></h2>
             {view.settlementPreview.seats === 0 && view.settlementPreview.mints.length === 0 ? (
-              <p className="text-gray-700">Nobody holds a role, so the settlement pays nothing.</p>
+              <p className="text-gray-700"><Trans context="Mint, p">Nobody holds a role, so the settlement pays nothing.</Trans></p>
             ) : (
               <p className="text-gray-800">
                 {view.settlementPreview.seats} role holder
@@ -632,9 +634,9 @@ export default function Mint() {
               </p>
             )}
             <p className="mt-3 text-sm text-gray-700">
-              Computed from the rules in force now, so a change queued today is not in this
+              <Trans context="Mint, p">Computed from the rules in force now, so a change queued today is not in this
               number until the moon it lands in.
-            </p>
+            </Trans></p>
           </section>
         </div>
       </div>

@@ -21,6 +21,7 @@
 import { lazy, Suspense, useState } from "react";
 import type { IdentityPrefill } from "@shared/regenImport";
 import { keepFile, keptFileText } from "@/lib/profilePrefill";
+import { Trans } from "@lingui/react/macro";
 
 const ProfileImport = lazy(() => import("./ProfileImport"));
 
@@ -39,11 +40,11 @@ export default function ProfileImportDoor({
     <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
       <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 px-5 py-3 border-b border-gray-100">
         <div>
-          <h3 className="font-semibold text-gray-900 leading-tight">Start from your ReGen Civics profile</h3>
+          <h3 className="font-semibold text-gray-900 leading-tight"><Trans context="ProfileImportDoor, h3">Start from your ReGen Civics profile</Trans></h3>
           <p className="text-xs text-gray-600">
-            Bring in the needs, circles and roles your project designed in the Season, and read every part before
+            <Trans context="ProfileImportDoor, p">Bring in the needs, circles and roles your project designed in the Season, and read every part before
             anything is set.
-          </p>
+          </Trans></p>
         </div>
         <button
           type="button"
@@ -59,7 +60,7 @@ export default function ProfileImportDoor({
       </div>
       {open ? (
         <div className="p-5 bg-white">
-          <Suspense fallback={<p className="text-sm text-gray-600">Opening...</p>}>
+          <Suspense fallback={<p className="text-sm text-gray-600"><Trans context="ProfileImportDoor, p">Opening...</Trans></p>}>
             <ProfileImport password={password} onOpenTab={onOpenTab} onIdentity={onIdentity} />
           </Suspense>
         </div>

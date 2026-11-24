@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { Rocket } from "lucide-react";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** What `/api/admin/launch` says about the launch vote itself (R74). */
 export interface LaunchVote {
@@ -72,6 +72,7 @@ export default function StartTheGame({
   /** What the server said when it refused the ask, shown on the card. */
   refusal: string;
 }) {
+  const { t } = useLingui();
   // The village may name its launch vote (gap G7); blank keeps the platform's name.
   const launchName = useAppWords()("launch", "name") ?? "Start the Game";
   const running = vote?.openBallot ?? null;
@@ -129,7 +130,7 @@ export default function StartTheGame({
           <button
             onClick={onAsk}
             disabled={!canAsk || busy}
-            title={isFounder ? undefined : "Opening this vote is a founder's act"}
+            title={isFounder ? undefined : t({ message: "Opening this vote is a founder's act", context: "StartTheGame, title" })}
             className="text-sm bg-teal-deep text-white rounded-lg px-5 py-2.5 font-semibold disabled:opacity-40"
           >
             <Trans context="StartTheGame, button">Ask the village

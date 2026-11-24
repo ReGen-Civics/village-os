@@ -284,7 +284,7 @@ export default function WalkEditorPanel({ focus = false }: {
                     structures the village has actually addressed, and a walk
                     written before the addressing is done still needs a home. */}
                 <input id={`w-struct-${i}`} list="walk-structures" value={s.structure_key} className={input}
-                  placeholder={t({ message: "greenhouse", context: "WalkEditorPanel, placeholder" })} onChange={(e) => patch(i, { structure_key: e.target.value })} />
+                  placeholder="greenhouse" /* i18n-ok: an example structure key, typed as written */ onChange={(e) => patch(i, { structure_key: e.target.value })} />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-xs font-medium text-gray-500 mb-1" htmlFor={`w-body-${i}`}><Trans context="WalkEditorPanel, label">What it says</Trans></label>

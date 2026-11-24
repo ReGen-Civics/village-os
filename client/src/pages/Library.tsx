@@ -18,7 +18,7 @@ import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameFor } from "@/hooks/useTokenNameFor";
 import { failureWords } from "@/lib/failureWords";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -32,6 +32,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function Library() {
+  const { t } = useLingui();
   const modules = useModules();
   const libraryModule = useModule("library");
   // The village's own word for its library token (R084), from the registry.
@@ -201,7 +202,7 @@ export default function Library() {
                       <button
                         onClick={() => call(`/api/library/items/${i.id}/reserve`, undefined, i.id)}
                         disabled={!eligible}
-                        title={eligible ? `Sets aside ${i.escrow} ${libraryName} while you borrow` : "Not open to you yet"}
+                        title={eligible ? `Sets aside ${i.escrow} ${libraryName} while you borrow` : t({ message: "Not open to you yet", context: "Library, title" })}
                         className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium disabled:opacity-40"
                       >
                         <Trans context="Library, button">Borrow

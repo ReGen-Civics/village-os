@@ -23,6 +23,7 @@ import { Eye } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
 import { capabilityLabel } from "@shared/capabilities";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 interface HoldingPayload {
   powers: Array<{ capability: string; title: string; consequence: string; heldBy: { roleName: string | null; roleId: string } | null }>;
@@ -67,6 +68,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function MemberAdminView({ userName, onSignOut }: { userName: string; onSignOut: () => void }) {
+  const { t } = useLingui();
   const [holding, setHolding] = useState<Read<HoldingPayload>>({ state: "loading" });
   const [drafts, setDrafts] = useState<Read<Draft[]>>({ state: "loading" });
   const [expiring, setExpiring] = useState<Read<Expiring[]>>({ state: "loading" });
@@ -86,13 +88,13 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
         <div className="mx-auto flex max-w-4xl items-start justify-between gap-3 px-4 py-6">
           <div className="min-w-0">
           <p className="flex items-center gap-2 text-sm text-white">
-            <Eye className="h-4 w-4" aria-hidden="true" />
-            Reading the admin panel as {userName}
+            <Trans context="MemberAdminView, p"><Eye className="h-4 w-4" aria-hidden="true" />
+            Reading the admin panel as {userName}</Trans>
           </p>
-          <h1 className="mt-1 font-display text-2xl font-bold">How the village is run</h1>
+          <h1 className="mt-1 font-display text-2xl font-bold"><Trans context="MemberAdminView, h1">How the village is run</Trans></h1>
           <p className="mt-2 max-w-2xl text-sm text-white">
-            Every member can read this. Changing any of it needs the power to change it, or a village vote.
-          </p>
+            <Trans context="MemberAdminView, p">Every member can read this. Changing any of it needs the power to change it, or a village vote.
+          </Trans></p>
           </div>
           {/* The language selector (spec i18n US2): this view draws its own header. */}
           <PageLanguageBar tone="onDark" className="shrink-0" />
@@ -101,11 +103,11 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
 
       <main className="mx-auto max-w-4xl space-y-4 px-4 py-6">
         {refusedEverywhere && (
-          <p className="text-gray-700">The admin panel opens to members of the village. Once you are a member you can read it here.</p>
+          <p className="text-gray-700"><Trans context="MemberAdminView, p">The admin panel opens to members of the village. Once you are a member you can read it here.</Trans></p>
         )}
 
         {holding.state === "ready" && (
-          <Section title="Powers and the groups that carry them">
+          <Section title={t({ message: "Powers and the groups that carry them", context: "MemberAdminView, title" })}>
             <ul className="space-y-2">
               {holding.data.powers.map((p) => (
                 <li key={p.capability}>
@@ -116,7 +118,7 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
                 </li>
               ))}
             </ul>
-            <h3 className="mt-4 font-semibold text-gray-900">Power groups</h3>
+            <h3 className="mt-4 font-semibold text-gray-900"><Trans context="MemberAdminView, h3">Power groups</Trans></h3>
             <ul className="mt-2 space-y-2">
               {holding.data.roles
                 .filter((g) => !g.isExample)
@@ -131,9 +133,9 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
         )}
 
         {drafts.state === "ready" && (
-          <Section title="Changes to the village's structure">
+          <Section title={t({ message: "Changes to the village's structure", context: "MemberAdminView, title" })}>
             {drafts.data.length === 0 ? (
-              <p>Nobody has drafted a change yet.</p>
+              <p><Trans context="MemberAdminView, p">Nobody has drafted a change yet.</Trans></p>
             ) : (
               <ul className="space-y-2">
                 {drafts.data.map((d) => (
@@ -149,9 +151,9 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
         )}
 
         {expiring.state === "ready" && (
-          <Section title="Roles whose terms are ending">
+          <Section title={t({ message: "Roles whose terms are ending", context: "MemberAdminView, title" })}>
             {expiring.data.length === 0 ? (
-              <p>No role's term is ending soon.</p>
+              <p><Trans context="MemberAdminView, p">No role's term is ending soon.</Trans></p>
             ) : (
               <ul className="space-y-1">
                 {expiring.data.map((e) => (
@@ -172,8 +174,8 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
           onClick={onSignOut}
           className="min-h-[44px] rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-800"
         >
-          Sign out and switch accounts
-        </button>
+          <Trans context="MemberAdminView, button">Sign out and switch accounts
+        </Trans></button>
       </main>
     </div>
   );

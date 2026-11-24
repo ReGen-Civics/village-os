@@ -10,6 +10,7 @@ import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { FORM_TYPES, putSubmissionStatus } from "@/components/admin/submissionStatus";
 import { readSavedViews, rememberView, type SavedView } from "./savedViews";
 import { holdUndo } from "./adminUndo";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const TAP = "inline-flex min-h-[44px] items-center justify-center rounded-lg px-3 text-sm font-medium";
 
@@ -18,12 +19,13 @@ interface Row { id: string; type: string; data: Record<string, unknown> }
 const PickContext = createContext<{ picked: Set<string>; toggle: (id: string) => void } | null>(null);
 
 export function Pick({ id }: { id: string }) {
+  const { t } = useLingui();
   const ctx = useContext(PickContext);
   if (!ctx) return null;
   return (
     <input
       type="checkbox"
-      aria-label="Select this request"
+      aria-label={t({ message: "Select this request", context: "SubmissionDesk, aria-label" })}
       className="mt-3 h-11 w-11 shrink-0"
       checked={ctx.picked.has(id)}
       onClick={(e) => e.stopPropagation()}
@@ -51,6 +53,7 @@ export default function SubmissionDesk({
   onChanged: () => void;
   children: ReactNode;
 }) {
+  const { t } = useLingui();
   const [picked, setPicked] = useState<string[]>([]);
   const [views, setViews] = useState<SavedView[]>(() => readSavedViews());
   const [viewName, setViewName] = useState("");
@@ -128,32 +131,32 @@ export default function SubmissionDesk({
   return (
     <PickContext.Provider value={{ picked: chosen, toggle }}>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">Form Submissions</h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="SubmissionDesk, h2">Form Submissions</Trans></h2>
         <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
           <select
             value={filter}
             onChange={(e) => onFilter(e.target.value)}
-            aria-label="Form type"
+            aria-label={t({ message: "Form type", context: "SubmissionDesk, aria-label" })}
             className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-gray-200 px-3 text-base text-gray-900 sm:flex-none sm:text-sm"
           >
             <option value="all">All types</option>
             {FORM_TYPES.map((t) => <option key={t} value={t}>{prettyType(t)}</option>)}
           </select>
-          <button type="button" onClick={onChanged} aria-label="Look again for new submissions" className={`${TAP} border border-gray-200 bg-white text-gray-900`}>Look again</button>
+          <button type="button" onClick={onChanged} aria-label="Look again for new submissions" className={`${TAP} border border-gray-200 bg-white text-gray-900`}><Trans context="SubmissionDesk, button">Look again</Trans></button>
         </div>
       </div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label className="text-sm text-gray-700">
-          <span className="sr-only">Name this view</span>
-          <input value={viewName} maxLength={40} placeholder="Name this view" onChange={(e) => setViewName(e.target.value)} className="min-h-[44px] rounded-lg border border-gray-200 px-3 text-base text-gray-900" />
+          <span className="sr-only"><Trans context="SubmissionDesk, span">Name this view</Trans></span>
+          <input value={viewName} maxLength={40} placeholder={t({ message: "Name this view", context: "SubmissionDesk, placeholder" })} onChange={(e) => setViewName(e.target.value)} className="min-h-[44px] rounded-lg border border-gray-200 px-3 text-base text-gray-900" />
         </label>
         <button
           type="button"
           className={`${TAP} border border-gray-300 bg-white text-gray-900`}
           onClick={() => { setViews(rememberView(viewName, filter)); setViewName(""); }}
         >
-          Save this view
-        </button>
+          <Trans context="SubmissionDesk, button">Save this view
+        </Trans></button>
         {views.map((view) => (
           <button key={view.name} type="button" className={`${TAP} border border-gray-200 bg-white text-gray-900`} onClick={() => onFilter(view.filter)}>
             {view.name}
@@ -162,12 +165,12 @@ export default function SubmissionDesk({
       </div>
       {targets.length > 0 && (
         <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3 max-sm:sticky max-sm:bottom-3 max-sm:z-30">
-          <p className="text-sm text-gray-900">{targets.length} selected. The reason you pick applies to every form you selected.</p>
+          <p className="text-sm text-gray-900"><Trans context="SubmissionDesk, p">{targets.length} selected. The reason you pick applies to every form you selected.</Trans></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className={`${TAP} bg-teal-deep text-white`} onClick={() => setMode("done")}>Done</button>
-            <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => { setMode("remove"); setReason("already_done"); }}>Remove</button>
-            <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => { setMode("redirect"); setReason("better_for_someone_else"); }}>Redirect</button>
-            <button type="button" className={`${TAP} admin-nowrap border border-gray-300 bg-white text-gray-900`} onClick={() => setPicked(rows.map((row) => row.id))}>Select all</button>
+            <button type="button" className={`${TAP} bg-teal-deep text-white`} onClick={() => setMode("done")}><Trans context="SubmissionDesk, button">Done</Trans></button>
+            <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => { setMode("remove"); setReason("already_done"); }}><Trans context="SubmissionDesk, button">Remove</Trans></button>
+            <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => { setMode("redirect"); setReason("better_for_someone_else"); }}><Trans context="SubmissionDesk, button">Redirect</Trans></button>
+            <button type="button" className={`${TAP} admin-nowrap border border-gray-300 bg-white text-gray-900`} onClick={() => setPicked(rows.map((row) => row.id))}><Trans context="SubmissionDesk, button">Select all</Trans></button>
           </div>
           {mode && mode !== "done" && (
             <fieldset className="mt-3">
@@ -204,7 +207,7 @@ export default function SubmissionDesk({
               <button type="button" className={`${TAP} bg-teal-deep text-white disabled:opacity-40`} disabled={busy || (mode === "redirect" && !to)} onClick={() => holdUndo(`Applying this to ${targets.length} requests.`, () => { void run(); })}>
                 {mode === "done" ? "Mark them done" : mode === "remove" ? "Remove them" : "Hand them on"}
               </button>
-              <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => setMode(null)}>Cancel</button>
+              <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => setMode(null)}><Trans context="SubmissionDesk, button">Cancel</Trans></button>
             </div>
           )}
           {problem && <p role="alert" className="mt-2 text-sm text-gray-900">{problem}</p>}
