@@ -2310,15 +2310,6 @@ msgctxt "empty quest board: the other ways to build"
 msgid "Other ways to build the village"
 msgstr "Otras formas de construir la aldea"
 
-#: client/src/components/fireflyPath/applyBackup.ts
-msgctxt "application backup email body"
-msgid "Hello,\n"
-"\n"
-"I tried to send my role application on your site and it did not go through. Before sending this email, I will attach the application file I downloaded from the page, and any files I meant to upload (a CV, for example).\n"
-"\n"
-"Thank you."
-msgstr ""
-
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
