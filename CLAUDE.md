@@ -138,7 +138,8 @@ strings in `client/src/components/journey/look.ts`. The rule, with "use X, not Y
 
 **Main owns `docs/GOVERNANCE.md`, `docs/knowledge/governance-lineage.md`, `docs/TOKENS.md`,
 `docs/VARIABLES.md`, `docs/MODULES.md`, `docs/CAPABILITIES.md`, the `generated:` regions of
-`docs/ECONOMICS.md`, and `client/src/locales/en.po`** (Rye, 2026-11-09). A pull request does not
+`docs/ECONOMICS.md`, and `client/src/locales/en.po`** (Rye, 2026-11-09), **and `client/src/locales/es.po`**
+(the lead, 2026-11-24: a pull request adds its Spanish as `client/src/locales/es.d/<name>.po`, which main folds in). A pull request does not
 run their generators and does not commit them; `.github/workflows/generated-docs.yml` regenerates
 them after every merge as one bot commit. Committing them is what made every landing conflict every
 open pull request. CI fails a pull request that edits one (`scripts/check-generated-docs-untouched.mjs`),

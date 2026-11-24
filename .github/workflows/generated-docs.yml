@@ -1,6 +1,6 @@
 # MAIN OWNS THE GENERATED FILES (Rye, 2026-11-09).
 #
-# Eight files are written by generators out of the code (the list is
+# Nine files are written by generators out of the code (the list is
 # GENERATED_FILES in scripts/lib/generatedDocs.mjs). A pull request used to commit
 # them regenerated, so every landing on main made every open pull request
 # conflict, GitHub ran no CI on the conflicted ones, and a night of re-merges
@@ -93,6 +93,9 @@ jobs:
           run_one variables    node scripts/generate-variables-doc.mjs
           run_one modules      node scripts/generate-modules-doc.mjs
           run_one capabilities node scripts/generate-capabilities-doc.mjs
+          # Pull requests add translations as fragments (client/src/locales/<tag>.d/*.po).
+          # Fold them into their catalogs and delete them BEFORE extract, so extract tidies the result.
+          run_one fold-po      node scripts/fold-po-fragments.mjs
           run_one i18n-extract pnpm i18n:extract
           echo "failed=${failed# }" >> "$GITHUB_OUTPUT"
           [ -z "$failed" ]
@@ -109,6 +112,7 @@ jobs:
           node scripts/generate-variables-doc.mjs
           node scripts/generate-modules-doc.mjs
           node scripts/generate-capabilities-doc.mjs
+          node scripts/fold-po-fragments.mjs
           pnpm i18n:extract
           git add -A -- docs client/src/locales
           git diff --cached > "$RUNNER_TEMP/second.diff"
