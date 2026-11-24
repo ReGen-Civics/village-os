@@ -39,12 +39,13 @@
       24 Nov 2026). Runs before any stylesheet or bundle so a light visitor never
       sees the night flash. The order and the key are client/src/lib/colourMode.ts's,
       written out because this cannot import; colourMode.test.ts holds the two
-      together. A dark visitor keeps the night ground the style above paints.
+      together, and modePalettes.test.ts holds `light` and `dark` to the two grounds
+      in index.css's palette block (--pal-day-ground, --pal-night-ground).
       The CSP hashes this script from the built shell, so it needs no nonce.
     -->
     <script>
       (function () {
-        var live = false, device = false, fallback = "light", light = "#f3ebdd";
+        var live = false, device = false, fallback = "light", light = "#f3ebdd", dark = "#14362b";
         var d = document.documentElement, m = null;
         try { m = localStorage.getItem("village-mode"); } catch (e) {}
         if (m !== "light" && m !== "dark") {
@@ -60,11 +61,10 @@
         if (!m) return;
         d.setAttribute("data-mode", m);
         d.style.colorScheme = m;
-        if (m === "light") {
-          d.style.backgroundColor = light;
-          var t = document.querySelector('meta[name="theme-color"]');
-          if (t) t.setAttribute("content", light);
-        }
+        var g = m === "light" ? light : dark;
+        d.style.backgroundColor = g;
+        var t = document.querySelector('meta[name="theme-color"]');
+        if (t) t.setAttribute("content", g);
       })();
     </script>
 

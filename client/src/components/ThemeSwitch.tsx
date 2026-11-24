@@ -21,6 +21,12 @@ export default function ThemeSwitch({ live = MODES_LIVE }: { live?: boolean }) {
   const { t } = useLingui();
   const [mode, setMode] = useState<Mode>(() => currentMode());
   const [shown] = useState(() => live || storedMode() !== null);
+  // The first-paint script painted <html> with the platform's ground so the
+  // page never flashes; once the stylesheet is here it decides, so a village's
+  // own day-* or night-* ground is not held under that inline colour.
+  useEffect(() => {
+    document.documentElement.style.removeProperty("background-color");
+  }, []);
   if (!shown) return null;
 
   const next: Mode = mode === "light" ? "dark" : "light";

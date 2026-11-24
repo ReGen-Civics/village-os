@@ -288,16 +288,16 @@ export const GAME_TOKENS = {
   "day-band": "--background",
   "day-sky": "--background",
   "day-rule": "--border",
-  // Dark mode, the night palette: the sheet's own roles, set exactly instead of derived.
-  "sheet-ground": "--sheet-ground",
-  "sheet-panel": "--sheet-panel",
-  "sheet-panel-raised": "--sheet-panel-raised",
-  "sheet-ink": "--sheet-ink",
-  "sheet-ink-dim": "--sheet-ink-dim",
-  "sheet-edge": "--sheet-edge",
-  "sheet-earned": "--sheet-earned",
-  "sheet-earned-highlight": "--sheet-earned-highlight",
-  "sheet-earned-shadow": "--sheet-earned-shadow",
+  // Dark mode, the night palette (index.css: `[data-mode="dark"] body` feeds the sheet's inputs from these).
+  "night-ground": "--sheet-ground",
+  "night-panel": "--sheet-panel",
+  "night-panel-raised": "--sheet-panel-raised",
+  "night-ink": "--sheet-ink",
+  "night-ink-dim": "--sheet-ink-dim",
+  "night-edge": "--sheet-edge",
+  "night-accent": "--sheet-earned",
+  "night-accent-highlight": "--sheet-earned-highlight",
+  "night-accent-shadow": "--sheet-earned-shadow",
   "night-band": "--sheet-ground",
 } as const satisfies Record<string, string>;
 export type GameToken = keyof typeof GAME_TOKENS;
@@ -876,14 +876,14 @@ function withScheme(i: {
       m("day heading on day-ground", tok("day-heading"), tok("day-ground"), AA_LARGE);
       m("day edge on day-panel", tok("day-edge"), tok("day-panel"), AA_LARGE);
     }
-    const night = ["sheet-ground", "sheet-panel", "sheet-panel-raised", "sheet-ink", "sheet-ink-dim", "sheet-edge", "sheet-earned"] as GameToken[];
+    const night = ["night-ground", "night-panel", "night-panel-raised", "night-ink", "night-ink-dim", "night-edge", "night-accent"] as GameToken[];
     if (night.some((k) => k in i.tokens)) {
-      for (const g of ["sheet-ground", "sheet-panel", "sheet-panel-raised"] as GameToken[]) {
-        m(`night ink on ${g}`, tok("sheet-ink"), tok(g), AA_BODY);
-        m(`night quiet ink on ${g}`, tok("sheet-ink-dim"), tok(g), AA_BODY);
-        m(`night gold on ${g}`, tok("sheet-earned"), tok(g), AA_BODY);
+      for (const g of ["night-ground", "night-panel", "night-panel-raised"] as GameToken[]) {
+        m(`night ink on ${g}`, tok("night-ink"), tok(g), AA_BODY);
+        m(`night quiet ink on ${g}`, tok("night-ink-dim"), tok(g), AA_BODY);
+        m(`night accent on ${g}`, tok("night-accent"), tok(g), AA_BODY);
       }
-      m("night edge on sheet-panel", tok("sheet-edge"), tok("sheet-panel"), AA_LARGE);
+      m("night edge on night-panel", tok("night-edge"), tok("night-panel"), AA_LARGE);
     }
     for (const k of ["success", "ceremony"] as GameToken[]) {
       if (k in i.tokens) {

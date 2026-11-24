@@ -1768,6 +1768,65 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
+ * ============================================================================
+ * THE MODE PALETTES: the one place the platform's light and dark colours live
+ * ============================================================================
+ *
+ * To change how light or dark mode looks, change a line here and nothing else.
+ * Every mode rule below reads these names, the first-paint script in
+ * client/index.html is held to the two grounds by colourMode.test.ts, and
+ * client/src/lib/modePalettes.test.ts measures every pair a page draws (text
+ * on each surface, the main act, edges, the band, the logo, the sand dialogue)
+ * against WCAG AA. Run it after an edit: a colour that stops reading fails it.
+ *
+ * A village changes its own palette without code: Admin, Look, the day-* and
+ * night-* tokens (shared/brandTokens.ts), each of which takes the place of the
+ * line here with the same name. These lines are the platform's defaults.
+ *
+ * Light, "Golden Hour"; dark, "Canopy at Night" (the lead, 24 Nov 2026).
+ */
+:root {
+  /* LIGHT: Golden Hour */
+  --pal-day-ground: #f3ebdd;           /* the page */
+  --pal-day-panel: #fffaf1;            /* panels and cards */
+  --pal-day-panel-raised: #efe0c6;     /* tiles inside a panel */
+  --pal-day-ink: #2b2720;              /* text */
+  --pal-day-ink-dim: #5f584a;          /* quiet text */
+  --pal-day-edge: #8b785a;             /* edges and fields */
+  --pal-day-accent: #0e5b60;           /* the main act, links, focus */
+  --pal-day-accent-shadow: #083a3d;    /* the accent in shadow (rings) */
+  --pal-day-accent-highlight: #7fb4b6; /* the accent lit (rings) */
+  --pal-day-heading: #0e5b60;          /* page titles */
+  --pal-day-living: #15604a;           /* held, done */
+  --pal-day-warn: #9b3b2a;             /* errors */
+  --pal-day-band: #ead7b4;             /* the header band */
+  --pal-day-band-ink: #2b2720;         /* text on the band */
+  --pal-day-logo: #0e5b60;             /* the logo, repainted on the band */
+  --pal-day-rule: #b0813c;             /* fine gold rules */
+  --pal-day-rule-soft: #c9ad7b;        /* the rule across a panel's top */
+  --pal-day-sky: #ead7b4;              /* the sky at the top of a page */
+  --pal-day-sun: rgb(255 236 196 / 0.95);
+  --pal-day-shadow: 0 1px 2px rgb(43 39 32 / 0.06), 0 14px 32px -18px rgb(122 90 34 / 0.28);
+
+  /* DARK: Canopy at Night */
+  --pal-night-ground: #14362b;
+  --pal-night-panel: #0f2c23;
+  --pal-night-panel-raised: #1b4335;
+  --pal-night-ink: #f3ede0;
+  --pal-night-ink-dim: #c4d6cc;
+  --pal-night-edge: #7fa393;
+  --pal-night-accent: #e0c79a;
+  --pal-night-accent-shadow: #7a5a22;
+  --pal-night-accent-highlight: #f1dda6;
+  --pal-night-living: #9fc0b2;
+  --pal-night-warn: #eea58a;
+  --pal-night-band: #0c241c;
+  --pal-night-rule: rgb(224 199 154 / 0.5);
+  --pal-night-wash: rgb(176 129 60 / 0.2);
+  --pal-night-shadow: 0 2px 4px rgb(0 0 0 / 0.3), 0 18px 40px -22px rgb(0 0 0 / 0.8);
+}
+
+/*
  * THE PICKED LOOK FOR EACH MODE (the lead, 24 Nov 2026: light "Golden Hour",
  * dark "Canopy at Night"; docs/DESIGN_RULE.md has the ratios).
  *
@@ -1784,18 +1843,18 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --village-display: var(--font-display, "Marcellus", Georgia, "Times New Roman", serif);
 }
 :root[data-mode] {
-  --band: var(--day-band, #ead7b4);
-  --band-ink: var(--day-band-ink, #2b2720);
-  --band-rule: var(--day-rule, #b0813c);
-  --band-active: var(--day-accent, #0e5b60);
-  --band-bar: var(--day-panel, #fffaf1);
+  --band: var(--day-band, var(--pal-day-band));
+  --band-ink: var(--day-band-ink, var(--pal-day-band-ink));
+  --band-rule: var(--day-rule, var(--pal-day-rule));
+  --band-active: var(--day-accent, var(--pal-day-accent));
+  --band-bar: var(--day-panel, var(--pal-day-panel));
 }
 :root[data-mode="dark"] {
-  --band: var(--night-band, #0c241c);
-  --band-ink: var(--sheet-ink, #f3ede0);
-  --band-rule: var(--night-rule, rgb(224 199 154 / 0.5));
-  --band-active: var(--sheet-earned, #e0c79a);
-  --band-bar: var(--night-band, #0c241c);
+  --band: var(--night-band, var(--pal-night-band));
+  --band-ink: var(--night-ink, var(--pal-night-ink));
+  --band-rule: var(--night-rule, var(--pal-night-rule));
+  --band-active: var(--night-accent, var(--pal-night-accent));
+  --band-bar: var(--night-band, var(--pal-night-band));
 }
 :root[data-mode="dark"] .sheet-night {
   --font-display: var(--sheet-font-display, var(--village-display));
@@ -1841,20 +1900,20 @@ html:has(#sera-changes [data-sera-strip-on]) {
 /* The page's light: a warm sky by day, the goldwash over the canopy by night. */
 :root[data-mode="light"] .sheet-night.min-h-screen {
   background-image:
-    radial-gradient(34rem 18rem at 82% 3rem, var(--day-sun, rgb(255 236 196 / 0.95)), transparent 70%),
-    linear-gradient(180deg, var(--day-sky, #ead7b4) 0, color-mix(in srgb, var(--day-sky, #ead7b4) 45%, var(--day-ground, #f3ebdd)) 9rem, var(--day-ground, #f3ebdd) 26rem);
+    radial-gradient(34rem 18rem at 82% 3rem, var(--day-sun, var(--pal-day-sun)), transparent 70%),
+    linear-gradient(180deg, var(--day-sky, var(--pal-day-sky)) 0, color-mix(in srgb, var(--day-sky, var(--pal-day-sky)) 45%, var(--day-ground, var(--pal-day-ground))) 9rem, var(--day-ground, var(--pal-day-ground)) 26rem);
 }
 :root[data-mode="dark"] .sheet-night.min-h-screen {
-  background-image: radial-gradient(120% 75% at 50% 0%, var(--night-wash, rgb(176 129 60 / 0.2)), transparent 55%);
+  background-image: radial-gradient(120% 75% at 50% 0%, var(--night-wash, var(--pal-night-wash)), transparent 55%);
 }
 
 /* By day the page titles are the ocean, and a panel carries a champagne rule
    across its top, after the formal documents' accent rules. */
 :root[data-mode="light"] .sheet-night :is(h1, h2):is(.text-foreground, .text-card-foreground) {
-  color: var(--day-heading, #0e5b60);
+  color: var(--day-heading, var(--pal-day-heading));
 }
 :root[data-mode="light"] .sheet-night .rounded-2xl.border.bg-card:not(.border-2) {
-  border-top: 3px solid var(--day-rule-soft, #c9ad7b);
+  border-top: 3px solid var(--day-rule-soft, var(--pal-day-rule-soft));
 }
 
 /*
@@ -1874,33 +1933,33 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * above stays the look for a page with no mode set, exactly as before modes.
  */
 :root[data-mode="light"] .sheet-night {
-  --background: var(--day-ground, #f3ebdd);
-  --foreground: var(--day-ink, #2b2720);
-  --card: var(--day-panel, #fffaf1);
-  --card-foreground: var(--day-ink, #2b2720);
-  --popover: var(--day-panel, #fffaf1);
-  --popover-foreground: var(--day-ink, #2b2720);
-  --muted: var(--day-panel-raised, #efe0c6);
-  --muted-foreground: var(--day-ink-dim, #5f584a);
-  --border: var(--day-edge, #8b785a);
-  --input: var(--day-edge, #8b785a);
-  --ring: var(--day-accent, #0e5b60);
-  --sheet-notice: var(--day-accent, #0e5b60);
-  --sheet-earned-deep: var(--day-accent-shadow, #083a3d);
-  --sheet-earned-lit: var(--day-accent-highlight, #7fb4b6);
-  --sheet-open: var(--day-living, #15604a);
-  --destructive: var(--day-warn, #9b3b2a);
-  --destructive-foreground: var(--day-panel, #fffaf1);
-  --color-coral: var(--day-warn, #9b3b2a);
+  --background: var(--day-ground, var(--pal-day-ground));
+  --foreground: var(--day-ink, var(--pal-day-ink));
+  --card: var(--day-panel, var(--pal-day-panel));
+  --card-foreground: var(--day-ink, var(--pal-day-ink));
+  --popover: var(--day-panel, var(--pal-day-panel));
+  --popover-foreground: var(--day-ink, var(--pal-day-ink));
+  --muted: var(--day-panel-raised, var(--pal-day-panel-raised));
+  --muted-foreground: var(--day-ink-dim, var(--pal-day-ink-dim));
+  --border: var(--day-edge, var(--pal-day-edge));
+  --input: var(--day-edge, var(--pal-day-edge));
+  --ring: var(--day-accent, var(--pal-day-accent));
+  --sheet-notice: var(--day-accent, var(--pal-day-accent));
+  --sheet-earned-deep: var(--day-accent-shadow, var(--pal-day-accent-shadow));
+  --sheet-earned-lit: var(--day-accent-highlight, var(--pal-day-accent-highlight));
+  --sheet-open: var(--day-living, var(--pal-day-living));
+  --destructive: var(--day-warn, var(--pal-day-warn));
+  --destructive-foreground: var(--day-panel, var(--pal-day-panel));
+  --color-coral: var(--day-warn, var(--pal-day-warn));
   --font-display: var(--day-font-display, var(--village-display));
   color-scheme: light;
 }
 :root[data-mode="light"] .sheet-night .shadow-sm {
-  box-shadow: var(--day-shadow, 0 1px 2px rgb(43 39 32 / 0.06), 0 14px 32px -18px rgb(122 90 34 / 0.28));
+  box-shadow: var(--day-shadow, var(--pal-day-shadow));
 }
 :root[data-mode="light"]:has(main .sheet-night.min-h-screen),
 :root[data-mode="light"]:has(main .sheet-night.min-h-screen) body {
-  background-color: var(--day-ground, #f3ebdd);
+  background-color: var(--day-ground, var(--pal-day-ground));
 }
 
 /*
@@ -1948,23 +2007,50 @@ html:has(#sera-changes [data-sera-strip-on]) {
   color: var(--foreground);
 }
 :root[data-mode="dark"] body {
-  --background: var(--sheet-ground, #0d1411);
-  --foreground: var(--sheet-ink, #e9efe6);
-  --card: var(--sheet-panel, #16221c);
-  --card-foreground: var(--sheet-ink, #e9efe6);
-  --popover: var(--sheet-panel, #16221c);
-  --popover-foreground: var(--sheet-ink, #e9efe6);
-  --muted: var(--sheet-panel-raised, #1c2b23);
-  --muted-foreground: var(--sheet-ink-dim, #9cb0a3);
-  --border: var(--sheet-edge, #6d8175);
-  --input: var(--sheet-edge, #6d8175);
-  --ring: var(--sheet-earned, #dfab4d);
+  /* The night's own inputs, from the palette (or the village's night-* tokens).
+     Redeclared here, under the root where theme.css derives them from the
+     seed, so every night surface (the sheet, the gold rings, the seat foil)
+     draws in the dark mode's palette with no other edit. */
+  --sheet-ground: var(--night-ground, var(--pal-night-ground));
+  --sheet-panel: var(--night-panel, var(--pal-night-panel));
+  --sheet-panel-raised: var(--night-panel-raised, var(--pal-night-panel-raised));
+  --sheet-line: color-mix(in srgb, var(--sheet-edge) 45%, var(--sheet-panel));
+  --sheet-edge: var(--night-edge, var(--pal-night-edge));
+  --sheet-ink: var(--night-ink, var(--pal-night-ink));
+  --sheet-ink-dim: var(--night-ink-dim, var(--pal-night-ink-dim));
+  --sheet-earned: var(--night-accent, var(--pal-night-accent));
+  --sheet-earned-highlight: var(--night-accent-highlight, var(--pal-night-accent-highlight));
+  --sheet-earned-shadow: var(--night-accent-shadow, var(--pal-night-accent-shadow));
+  --sheet-earned-wash: color-mix(in srgb, var(--sheet-earned) 14%, transparent);
+  --sheet-earned-wash-soft: color-mix(in srgb, var(--sheet-earned) 6%, transparent);
+  --sheet-earned-highlight-wash: color-mix(in srgb, var(--sheet-earned-highlight) 10%, transparent);
+  --sheet-earned-highlight-wash-soft: color-mix(in srgb, var(--sheet-earned-highlight) 2%, transparent);
+  --sheet-living: var(--night-living, var(--pal-night-living));
+  --sheet-warn: var(--night-warn, var(--pal-night-warn));
+  --sheet-shadow: var(--pal-night-shadow);
+  /* And the page's tokens, read off them. */
+  --background: var(--sheet-ground);
+  --foreground: var(--sheet-ink);
+  --card: var(--sheet-panel);
+  --card-foreground: var(--sheet-ink);
+  --popover: var(--sheet-panel);
+  --popover-foreground: var(--sheet-ink);
+  --muted: var(--sheet-panel-raised);
+  --muted-foreground: var(--sheet-ink-dim);
+  --border: var(--sheet-edge);
+  --input: var(--sheet-edge);
+  --ring: var(--sheet-earned);
   color-scheme: dark;
 }
+:root[data-mode="light"] {
+  background-color: var(--day-ground, var(--pal-day-ground));
+}
 :root[data-mode="dark"],
-:root[data-mode="dark"] body {
-  background-color: var(--sheet-ground, #0d1411);
-  color: var(--sheet-ink, #e9efe6);
+:root[data-mode="dark"]:has(main .sheet-night.min-h-screen),
+:root[data-mode="dark"] body,
+:root[data-mode="dark"]:has(main .sheet-night.min-h-screen) body {
+  background-color: var(--night-ground, var(--pal-night-ground));
+  color: var(--night-ink, var(--pal-night-ink));
 }
 
 /*
@@ -1977,19 +2063,19 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * a `--dialogue-*` knob, falling back to the village's day palette.
  */
 :root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
-  --background: var(--dialogue-ground, var(--day-ground, #f3ebdd));
-  --foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --card: var(--dialogue-panel, var(--day-ground, #f3ebdd));
-  --card-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --popover: var(--dialogue-panel, var(--day-ground, #f3ebdd));
-  --popover-foreground: var(--dialogue-ink, var(--day-ink, #2b2720));
-  --muted: var(--dialogue-raised, var(--day-panel-raised, #efe0c6));
-  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, #5f584a));
-  --border: var(--dialogue-edge, var(--day-edge, #8b785a));
-  --input: var(--dialogue-edge, var(--day-edge, #8b785a));
-  --ring: var(--dialogue-accent, var(--day-accent, #0e5b60));
-  --sheet-notice: var(--dialogue-accent, var(--day-accent, #0e5b60));
-  --destructive: var(--day-warn, #9b3b2a);
+  --background: var(--dialogue-ground, var(--day-ground, var(--pal-day-ground)));
+  --foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --card: var(--dialogue-panel, var(--day-ground, var(--pal-day-ground)));
+  --card-foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --popover: var(--dialogue-panel, var(--day-ground, var(--pal-day-ground)));
+  --popover-foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
+  --muted: var(--dialogue-raised, var(--day-panel-raised, var(--pal-day-panel-raised)));
+  --muted-foreground: var(--dialogue-ink-dim, var(--day-ink-dim, var(--pal-day-ink-dim)));
+  --border: var(--dialogue-edge, var(--day-edge, var(--pal-day-edge)));
+  --input: var(--dialogue-edge, var(--day-edge, var(--pal-day-edge)));
+  --ring: var(--dialogue-accent, var(--day-accent, var(--pal-day-accent)));
+  --sheet-notice: var(--dialogue-accent, var(--day-accent, var(--pal-day-accent)));
+  --destructive: var(--day-warn, var(--pal-day-warn));
   color-scheme: light;
   color: var(--foreground);
 }
@@ -2498,7 +2584,7 @@ html:has(#sera-changes [data-sera-strip-on]) {
   content: "";
   position: absolute;
   inset: 0;
-  background-color: var(--day-logo, var(--day-heading, #0e5b60));
+  background-color: var(--day-logo, var(--pal-day-logo));
   -webkit-mask: var(--logo-src) center / contain no-repeat;
   mask: var(--logo-src) center / contain no-repeat;
   pointer-events: none;

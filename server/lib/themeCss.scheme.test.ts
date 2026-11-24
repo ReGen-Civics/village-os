@@ -107,14 +107,14 @@ describe("the dark scheme, derived from a seed alone", () => {
 
   it("carries a village's exact light and dark palettes as tokens, measured on every surface", () => {
     const golden = { "day-ground": "#f3ebdd", "day-panel": "#fffaf1", "day-panel-raised": "#efe0c6", "day-ink": "#2b2720", "day-ink-dim": "#5f584a", "day-edge": "#8b785a", "day-accent": "#0e5b60", "day-heading": "#0e5b60" };
-    const canopy = { "sheet-ground": "#14362b", "sheet-panel": "#0f2c23", "sheet-panel-raised": "#1b4335", "sheet-ink": "#f3ede0", "sheet-ink-dim": "#c4d6cc", "sheet-edge": "#7fa393", "sheet-earned": "#e0c79a" };
+    const canopy = { "night-ground": "#14362b", "night-panel": "#0f2c23", "night-panel-raised": "#1b4335", "night-ink": "#f3ede0", "night-ink-dim": "#c4d6cc", "night-edge": "#7fa393", "night-accent": "#e0c79a" };
     const theme = { seed: "#14362b", character: "handmade", accent: "#e0c79a", tokens: { ...golden, ...canopy } };
     const css = buildThemeCss(theme);
     expect(css).toContain("--day-ground: #f3ebdd;");
     expect(css).toContain("--day-accent: #0e5b60;");
-    // The exact night replaces the derived one.
-    expect(css).toContain("--sheet-ground: #14362b;");
-    expect(css.match(/--sheet-ground:/g)).toHaveLength(1);
+    // The night tokens sit beside the derived night, which keeps meaning the sheet with no mode set.
+    expect(css).toContain("--night-ground: #14362b;");
+    expect(css).toContain("--night-accent: #e0c79a;");
     const d = deriveTheme("#14362b", "handmade", "#e0c79a", { tokens: { ...golden, ...canopy } })!;
     const mine = d.contrast.pairs.filter((p) => p.name.startsWith("day ") || p.name.startsWith("night "));
     expect(mine.length).toBeGreaterThanOrEqual(20);
