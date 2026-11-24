@@ -31,6 +31,7 @@ import { usePlaceWords } from "@/components/openWork/placeWords";
 import { useLingui } from "@lingui/react/macro";
 import { Gauge, MapPin, Target } from "lucide-react";
 import { questFit, type QuestFit } from "@shared/commitment";
+import ExampleStamp from "@/components/openWork/ExampleStamp";
 
 export const QUEST_ICONS: Record<string, React.ElementType> = {
   Users, Sprout, ChefHat, TreePine, BookOpen, Home, Camera, Baby, Laptop,
@@ -153,7 +154,11 @@ export default function QuestCard({
   // A gated quest reads differently, so the gate belongs in the link's name: a
   // screen reader user should not have to open the card to learn the quest is
   // not open to them yet.
-  const linkLabel = gate ? `${quest.title}, ${gate}` : quest.title;
+  // An example says so in the name too: the stamp's own words sit inside this
+  // link, and a link's aria-label replaces what is inside it.
+  const example = !!quest.isExample;
+  const exampleWords = t({ message: "Example quest", context: "the example stamp, read aloud" });
+  const linkLabel = [quest.title, example ? exampleWords : null, gate].filter(Boolean).join(", ");
 
   return (
     <Link
@@ -178,6 +183,13 @@ export default function QuestCard({
               </span>
             )}
           </div>
+          {/* The example stamp (the lead, 24 Nov 2026), across the poster
+              and clear of the icon, the chips and the title. */}
+          {example && (
+            <div className="absolute inset-x-0 top-1/3 flex -translate-y-1/2 justify-center">
+              <ExampleStamp />
+            </div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h3 className="font-display text-lg font-bold text-white leading-snug drop-shadow-sm">
               {quest.title}
@@ -269,10 +281,18 @@ export default function QuestCard({
             </p>
           )}
 
-          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-status={status}>
-            <PlantGlyph state={status} className="size-5" />
-            {statusWords[status]}
-          </p>
+          {/* "Open: nobody carries it yet" would promise work an example
+              cannot give, so an example says what it is instead. */}
+          {example ? (
+            <p className="text-xs text-muted-foreground" data-status="example">
+              {t({ message: "An example of the work to come. It cannot be taken yet.", context: "open work card: in place of the status mark on an example quest" })}
+            </p>
+          ) : (
+            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-status={status}>
+              <PlantGlyph state={status} className="size-5" />
+              {statusWords[status]}
+            </p>
+          )}
 
           <div className="mt-auto pt-2 flex items-center justify-between text-sm font-semibold text-notice">
             <span>See the quest</span>

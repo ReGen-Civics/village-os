@@ -105,6 +105,9 @@ const JOURNEY = [
   "client/src/components/journey/look.ts",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",
+  // The /quests example stamp and "Quests coming soon" (24 Nov 2026): born inside the rule.
+  "client/src/components/openWork/ExampleStamp.tsx",
+  "client/src/components/openWork/QuestsComingSoon.tsx",
   "client/src/components/journey/Trail.tsx",
   "client/src/components/journey/Leaf.tsx",
   "client/src/components/calendar/MoonSpiral.tsx",
