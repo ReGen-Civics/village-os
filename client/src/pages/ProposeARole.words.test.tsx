@@ -42,7 +42,7 @@ class FakeRecorder {
   }
 }
 
-function serve(answer: unknown = { sent: true, replyDays: 5 }) {
+function serve(answer: unknown = { sent: true, replyMoons: 5 }) {
   vi.stubGlobal("MediaRecorder", FakeRecorder);
   Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({}) } });
   vi.stubGlobal(

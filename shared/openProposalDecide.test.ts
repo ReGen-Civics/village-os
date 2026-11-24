@@ -70,14 +70,15 @@ describe("open proposals, the decision: the pure half", () => {
     expect(readWaiting({ applications: [], drafts: [] })?.openProposals).toEqual([]);
   });
 
-  it("the reply promise carries the village's number, and the kind no carries no reasons of its own", () => {
-    expect(replyPromise(7)).toBe("We reply within 7 days.");
-    expect(replyPromise(1)).toBe("We reply within 1 day.");
+  it("the reply promise carries the village's moon cycles, and the kind no carries no reasons of its own", () => {
+    expect(replyPromise(1)).toBe("You'll hear from us within one moon cycle.");
+    expect(replyPromise(3)).toBe("You'll hear from us within 3 moon cycles.");
     const no = declinedLetter({ firstName: null, village: "Test Village", roleNames: ["Gate Keeper"], site: "https://v.test" });
     expect(no.text).toContain("https://v.test/quests");
     expect(no.text).not.toMatch(/because|unfortunately|reason/i);
-    const u = applicantUpdate("first_reply", { firstName: "Rowan", village: "Test Village", roleNames: ["Gate Keeper"], replyDays: 5 });
-    expect(u.text).toContain("We reply within 5 days.");
+    const u = applicantUpdate("first_reply", { firstName: "Rowan", village: "Test Village", roleNames: ["Gate Keeper"], replyMoons: 2 });
+    expect(u.text).toContain("You'll hear from us within 2 moon cycles.");
+    expect(u.text).not.toMatch(/days/);
   });
 });
 
@@ -157,7 +158,7 @@ describe("the adoption letters say true days (verify B153, 11 Nov 2026)", () => 
   });
 
   it("the conversation's subject says what we want, in our own voice", () => {
-    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyDays: 3 }).title).toBe("We would love to talk with you");
-    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyDays: 3, lang: "es" }).title).toBe("Nos encantaría conversar contigo");
+    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyMoons: 3 }).title).toBe("We would love to talk with you");
+    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyMoons: 3, lang: "es" }).title).toBe("Nos encantaría conversar contigo");
   });
 });

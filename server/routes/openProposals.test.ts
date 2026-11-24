@@ -351,25 +351,25 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         const flag = (id: string) => form.body.roles.find((r: any) => r.id === id)?.opensLater;
         expect(flag(gate)).toBe(false);
         expect(flag(well)).toBe(true);
-        // The founding role keeps the village's days (control).
-        await setVar("org.applicant_reply_days", "6");
+        // The founding role keeps the village's window, in moon cycles (control; the lead, 24 Nov 2026).
+        await setVar("org.reply_window_moons", "2");
         const sentBefore = state.sent.length;
         const founding = await call("POST", "/api/open-proposals", proposal({ email: "first@example.test" }));
-        expect(founding.body).toMatchObject({ replyDays: 6, afterFounding: false });
-        // The confirmation email says when we reply, from the village's own days (idea 18, 20 Nov 2026).
-        expect(state.sent[sentBefore].text).toContain("We reply within 6 days.");
-        await setVar("org.applicant_reply_days", null);
+        expect(founding.body).toMatchObject({ replyMoons: 2, afterFounding: false });
+        // The confirmation email says when we reply, in the village's own moon cycles.
+        expect(state.sent[sentBefore].text).toContain("You'll hear from us within 2 moon cycles.");
+        await setVar("org.reply_window_moons", null);
         // A role opening next: no days, and said.
         const before = state.sent.length;
         const later = await call("POST", "/api/open-proposals", proposal({ email: "later@example.test", roles: [{ roleId: well, note: "Wells are my life." }] }));
-        expect(later.body).toMatchObject({ sent: true, replyDays: null, afterFounding: true });
+        expect(later.body).toMatchObject({ sent: true, replyMoons: null, afterFounding: true });
         expect(state.sent[before].text).toContain(LANGUAGES.en.replyPromise(null));
         const confirmed = await call("POST", "/api/open-proposals/confirm", { token: tokenOf(state.sent[before]) });
-        expect(confirmed.body).toMatchObject({ confirmed: true, replyDays: null, afterFounding: true, steps: applicantSteps("en", null) });
+        expect(confirmed.body).toMatchObject({ confirmed: true, replyMoons: null, afterFounding: true, steps: applicantSteps("en", null) });
         expect(confirmed.body.steps.find((s: any) => s.key === "review").when).toMatch(/Once our founding team is in place/);
         const status = state.sent.find((m) => m.idempotencyKey.endsWith(":status") && m.to.email === "later@example.test");
         expect(status?.text).toContain(LANGUAGES.en.replyPromise(null));
-        expect(status?.text).not.toMatch(/We reply within \d/);
+        expect(status?.text).not.toMatch(/within \d|moon cycle/);
       } finally {
         await setVar("org.founding_team", null);
         await setVar("org.founding_team_roles", null);
@@ -418,7 +418,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const ok = await call("POST", "/api/open-proposals/confirm", { token });
       // The applicant also gets the link to their own status page (role journey L5); only its hash is kept.
       // The firefly path's confirmed page: it speaks the language proposed in, and dates the first reply.
-      expect(ok.body).toEqual({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath: expect.stringContaining(`/application-status/${id}?token=`), locale: "en", replyDays: expect.any(Number), afterFounding: false, steps: applicantSteps("en", ok.body.replyDays) });
+      expect(ok.body).toEqual({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath: expect.stringContaining(`/application-status/${id}?token=`), locale: "en", replyMoons: expect.any(Number), afterFounding: false, steps: applicantSteps("en", ok.body.replyMoons) });
       // The confirmed page draws the one step list the status page uses (shared/applicantWords.ts), in order.
       expect(ok.body.steps.map((s: { key: string }) => s.key)).toEqual(["received", "review", "invitation", "conversations", "decision", "first_cycle"]);
       expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");

@@ -47,7 +47,7 @@ const WAITING = {
   booking: null,
   mode: "block",
   outcome: null,
-  replyDays: 7,
+  replyMoons: 1,
   referencesGiven: 1,
   reviewFirst: true,
 };
@@ -78,7 +78,7 @@ describe("a founding application's status page (D-07)", () => {
     expect(Array.from(list.querySelectorAll("[data-applicant-step]")).map((e) => e.getAttribute("data-applicant-step"))).toEqual(["review", "invitation", "decision", "first_cycle"]);
     // A step already walked keeps only its name.
     expect(list.querySelector('[data-path-state="done"] [data-applicant-step]')).toBeNull();
-    expect(list.textContent).toContain("Within 7 days");
+    expect(list.textContent).toContain("Within one moon cycle");
   });
 
   it("adopted: the circle said yes, in the lead's words, and the old game line is gone", async () => {

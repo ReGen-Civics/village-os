@@ -33,7 +33,7 @@ const FORM = {
 };
 
 let posted: any[] = [];
-function serve(answer: { status: number; body: unknown } = { status: 200, body: { sent: true, replyDays: 7 } }) {
+function serve(answer: { status: number; body: unknown } = { status: 200, body: { sent: true, replyMoons: 7 } }) {
   posted = [];
   vi.stubGlobal(
     "fetch",

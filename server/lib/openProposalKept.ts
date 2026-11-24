@@ -42,7 +42,7 @@ import { confirmLetter, safeGreeting } from "../../shared/openProposals";
 import type { OpenProposalTerm } from "../../shared/openProposalTerm";
 import { languageOf } from "./applicantLanguage";
 import { listOrgRoles } from "./orgChart";
-import { replyDaysFor } from "./foundingFirst";
+import { replyMoonsFor } from "./foundingFirst";
 import * as store from "../repos/openProposals";
 
 /** A send the provider took, or one already taken under the same key. */
@@ -79,7 +79,7 @@ export interface LetterDeps {
 /** The confirmation email for one application, first time or later. `kept`: we already have it, and the words say so. */
 export function confirmationEmail(
   deps: LetterDeps,
-  p: { id: string; name: string; email: string; roleNames: readonly string[]; lang: ReturnType<typeof languageOf>; term: OpenProposalTerm | null | undefined; replyDays?: number | null },
+  p: { id: string; name: string; email: string; roleNames: readonly string[]; lang: ReturnType<typeof languageOf>; term: OpenProposalTerm | null | undefined; replyMoons?: number | null },
   token: string,
   idempotencyKey: string,
   kept = false,
@@ -95,8 +95,8 @@ export function confirmationEmail(
     // The form is for a listed role: an application (Phase A vocabulary).
     kind: "application",
     kept,
-    // When we reply (idea 18): the village's own days, read by the caller (server/lib/foundingFirst.ts replyDaysFor).
-    ...(p.replyDays !== undefined ? { replyDays: p.replyDays } : {}),
+    // When we reply (idea 18): the village's own days, read by the caller (server/lib/foundingFirst.ts replyMoonsFor).
+    ...(p.replyMoons !== undefined ? { replyMoons: p.replyMoons } : {}),
     ...(p.term ? { when: w.confirm.thisMoon(w.day(p.term.startsOn), w.day(p.term.endsOn)) } : {}),
   });
   return {
@@ -136,7 +136,7 @@ export async function retryOwedConfirmations(
       if (!(await store.setKeptConfirmHash(pool, p.id, hash))) continue;
       const email = confirmationEmail(
         deps,
-        { id: p.id, name: p.name ?? "", email: p.email, roleNames: p.body.roles.map((r) => roleName.get(r.roleId) ?? "").filter(Boolean), lang: languageOf(p), term: p.body.term, replyDays: await replyDaysFor(pool, p.body.roles.map((r) => r.roleId)) },
+        { id: p.id, name: p.name ?? "", email: p.email, roleNames: p.body.roles.map((r) => roleName.get(r.roleId) ?? "").filter(Boolean), lang: languageOf(p), term: p.body.term, replyMoons: await replyMoonsFor(pool, p.body.roles.map((r) => r.roleId)) },
         token,
         // A key per try: the first try's failed row already holds the plain key, and would answer `duplicate`.
         `open-proposal:${p.id}:confirm-again:${hash.slice(0, 16)}`,

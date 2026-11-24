@@ -56,7 +56,7 @@ const WAITING = {
   booking: null,
   mode: "split",
   outcome: null,
-  replyDays: 7,
+  replyMoons: 1,
   locale: "en",
   referencesAsked: { given: null, mayAdd: true },
 };

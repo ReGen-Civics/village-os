@@ -23,8 +23,9 @@ describe("the one list of the applicant's steps", () => {
       expect(steps.map((s) => s.key)).toEqual([...APPLICANT_STEP_KEYS]);
       for (const s of steps) expect(s.name && s.when).toBeTruthy();
     }
-    expect(applicantSteps("en", 5)[1].when).toContain("Within 5 days");
-    expect(applicantSteps("es", 1)[1].when).toContain("1 día");
+    expect(applicantSteps("en", 1)[1].when).toContain("Within one moon cycle");
+    expect(applicantSteps("en", 2)[1].when).toContain("Within 2 moon cycles");
+    expect(applicantSteps("es", 1)[1].when).toContain("Dentro de un ciclo lunar");
     expect(APPLICANT_STEPS.es.first_cycle.name).toBe("Primer ciclo");
   });
 });

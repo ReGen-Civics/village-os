@@ -73,6 +73,7 @@ import { withoutStatusLink } from "../lib/applicantUpdates";
 import { roleNamesById } from "../repos/applicationReview";
 import { isTombstone } from "../lib/oauthAccounts";
 import { numberVar } from "../lib/variables";
+import { replyMoonsNow } from "../lib/foundingFirst";
 import { escapeHtml } from "../lib/comms/mailer";
 import type { Express } from "express";
 import type { PoolConnection } from "mysql2/promise";
@@ -1015,7 +1016,7 @@ export function register(app: Express, deps: Deps): void {
         firstName: greetingName(String(who.name ?? "")),
         village: deps.projectName?.() ?? "",
         roleNames: roleIds.map((r) => names.get(r) ?? "").filter(Boolean),
-        replyDays: numberVar("org.applicant_reply_days"),
+        replyMoons: replyMoonsNow(),
       });
       const text = withoutStatusLink(words.text);
       const sent = await deps.postEmail({

@@ -2898,9 +2898,9 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "org.applicant_reply_days",
     category: "The village's people",
-    label: "Days we promise to reply to a role proposal",
+    label: "Longest reply in days a proposer was ever promised (a floor for the moon cycles)",
     description:
-      "The number of days the applicant's status page and thank-you page say we reply within, and the one promise under the four ways to build the village (join the team, start a venture, become a partner, propose a quest). It is a promise to the person, so set the number the people who reply can keep. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.",
+      "Nobody is told a number of days any more (the lead, 24 Nov 2026): every proposer, an applicant included, is told they will hear back within the moon cycles set below. This number is kept so a village that once promised a long wait is never made to promise a shorter one: the moon cycles said are never fewer than these days, rounded up to whole cycles (45 days reads as two). The default 7 sits inside one cycle and changes nothing. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.",
     type: "integer",
     default: "7",
     min: 1,
@@ -2913,7 +2913,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Moon cycles we tell a proposer they will hear back within",
     description:
-      "What a person is told once they have sent an application, a venture, a partnership or a quest idea: that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. The application's own dated steps and letters still use the days above.",
+      "What a person is told once they have sent an application, a venture, a partnership or a quest idea: on the thank-you page, in the confirmation and update letters, in the application's steps and on its status page, that they will hear back within this many moon cycles. Nothing before they send promises a reply. It is a promise to the person, so set what the people who reply can keep. It never reads fewer cycles than the days above, rounded up.",
     type: "integer",
     default: "1",
     min: 1,

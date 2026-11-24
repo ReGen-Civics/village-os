@@ -111,7 +111,7 @@ export default function StartConversation({
             : t({ message: `Check ${sentTo}. We sent a link to confirm it's you. Your application reaches us once you open it.`, context: "founding application sent" }),
           to: sentTo,
           at: new Date(),
-          replyDays: typeof data?.replyDays === "number" ? data.replyDays : null,
+          replyMoons: typeof data?.replyMoons === "number" ? data.replyMoons : null,
           afterFounding: data?.afterFounding === true,
           comingSoon: picked.some((id) => roles.find((r) => r.id === id)?.comingSoon === true),
           ...(kept ? { kept, statusPath: typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null } : {}),

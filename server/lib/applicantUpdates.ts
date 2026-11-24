@@ -32,7 +32,7 @@ import { escapeHtml } from "./comms/mailer";
 import { languageOf } from "./applicantLanguage";
 import { STATUS_LINK_STARTS } from "../../shared/applicantWords";
 import { signLink } from "./comms/links";
-import { replyDaysFor } from "./foundingFirst";
+import { replyMoonsFor, replyMoonsNow } from "./foundingFirst";
 import type { BookingLink } from "../../shared/interviewBooking";
 
 const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
@@ -77,7 +77,7 @@ async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUr
     village: deps.projectName(),
     roleNames: p.body.roles.map((r) => names.get(r.roleId) ?? "").filter(Boolean),
     // The "with us" letter tells an application for a role that opens after the founding team that the reply waits (Rye, 14 Nov 2026).
-    replyDays: kind === "confirmed" ? await replyDaysFor(deps.getPool(), p.body.roles.map((r) => r.roleId)) : numberVar("org.applicant_reply_days"),
+    replyMoons: kind === "confirmed" ? await replyMoonsFor(deps.getPool(), p.body.roles.map((r) => r.roleId)) : replyMoonsNow(),
     withRole: facts.withRole ?? null,
     minutes: facts.minutes ?? null,
     bookingUrl: facts.bookingUrl ?? null,

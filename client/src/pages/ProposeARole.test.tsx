@@ -1034,8 +1034,8 @@ describe("what the form kept from the Firefly Path", () => {
 });
 
 describe("the sent threshold", () => {
-  const sendAs = async (address: string, replyDays?: number, form: unknown = FORM) => {
-    await applyFor("r-gate", form, { status: 200, body: { sent: true, message: OPEN_WORDS.sent(address), ...(replyDays ? { replyDays } : {}) } });
+  const sendAs = async (address: string, replyMoons?: number, form: unknown = FORM) => {
+    await applyFor("r-gate", form, { status: 200, body: { sent: true, message: OPEN_WORDS.sent(address), ...(replyMoons ? { replyMoons } : {}) } });
     await completeAll();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: address } });
     sendNow();
@@ -1060,7 +1060,7 @@ describe("the sent threshold", () => {
   });
 
   it("an application for a role that opens after the founding team is told the reply waits, and is given no reply date (Rye, 14 Nov 2026)", async () => {
-    await applyFor("r-gate", FORM, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
+    await applyFor("r-gate", FORM, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyMoons: null, afterFounding: true } });
     await completeAll();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
     sendNow();
@@ -1096,7 +1096,7 @@ describe("the sent threshold", () => {
 
   it("FUTURE VENTURE: the form and its confirmation say what holding one means and the pitch's five parts", async () => {
     const venture = { ...FORM, roles: [{ ...FORM.roles[0], futureVenture: true, opensLater: true }, FORM.roles[1]] };
-    await applyFor("r-gate", venture, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
+    await applyFor("r-gate", venture, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyMoons: null, afterFounding: true } });
     await waitFor(() => expect(document.querySelectorAll("[data-venture-note] li")).toHaveLength(5));
     expect(document.querySelector("[data-coming-soon-note]")).toBeNull();
     expect(document.querySelector("[data-opens-later]")).toBeNull();

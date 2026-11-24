@@ -134,7 +134,7 @@ import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
 import { isComingSoon, isFutureVenture, isShown } from "../../shared/roleListing";
 import { opensAfterFounding } from "../../shared/foundingTeam";
-import { foundingIdsOf, replyDaysFor } from "../lib/foundingFirst";
+import { foundingIdsOf, replyMoonsFor } from "../lib/foundingFirst";
 import { gateOf } from "../lib/roleCardProjection";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { writtenKeys } from "../../shared/termsWords";
@@ -279,8 +279,8 @@ export function register(app: Express, deps: Deps): void {
       console.error("[open-proposals] the admins could not be told about a kept application", e);
     }
     const statusPath = kept.review?.statusToken ? `/application-status/${encodeURIComponent(k.id)}?token=${encodeURIComponent(kept.review.statusToken)}` : null;
-    const replyDays = await replyDaysFor(getPool(), kept.proposal.body.roles.map((r) => r.roleId));
-    return res.json({ sent: true, kept: true, email: k.email, message: OPEN_WORDS.keptNotSent(k.email), statusPath, replyDays, afterFounding: replyDays === null });
+    const replyMoons = await replyMoonsFor(getPool(), kept.proposal.body.roles.map((r) => r.roleId));
+    return res.json({ sent: true, kept: true, email: k.email, message: OPEN_WORDS.keptNotSent(k.email), statusPath, replyMoons, afterFounding: replyMoons === null });
   }
 
   /**
@@ -826,7 +826,7 @@ export function register(app: Express, deps: Deps): void {
       } finally {
         await store.deleteOpenProposal(getPool(), smokeId);
       }
-      return res.json({ sent: true, test: true, email, message: OPEN_WORDS.sent(email), replyDays: null, afterFounding: false });
+      return res.json({ sent: true, test: true, email, message: OPEN_WORDS.sent(email), replyMoons: null, afterFounding: false });
     }
     // Every refusal above has been given. Only now, with the proposal acceptable, does this connection spend one of its five an hour.
     if (await overLimit(`open-proposal:ip:${ipBucket(clientIp(req))}`, 5, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooMany });
@@ -859,9 +859,9 @@ export function register(app: Express, deps: Deps): void {
     const byId = new Map(roles.map((r) => [r.id, r.name]));
     const roleNames = proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean);
     // A mail door that throws is a send that did not go: the application is kept all the same.
-    // The days the village gives itself to first reply (org.applicant_reply_days): the letter and the "sent" page both say them (idea 18).
-    const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
-    const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term, replyDays }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
+    // The moon cycles the village gives itself to first reply (replyMoonsFor, server/lib/foundingFirst.ts): the letter and the "sent" page both say them.
+    const replyMoons = await replyMoonsFor(pool, proposal.roles.map((r) => r.roleId));
+    const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term, replyMoons }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
     if (!WENT.has(sent.status)) {
       if (keepsWhenUnsent(sent)) return keepUnsent(res, { id, email, token, status: sent.status });
       // The address itself is refused (suppressed, malformed, expired): nobody can confirm it, so nothing is kept.
@@ -871,7 +871,7 @@ export function register(app: Express, deps: Deps): void {
       return res.status(503).json({ error: OPEN_WORDS.notSent });
     }
     // The same days dated the "sent" page's next steps (the firefly path).
-    res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
+    res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyMoons, afterFounding: replyMoons === null });
   }
 
   /**
@@ -898,9 +898,9 @@ export function register(app: Express, deps: Deps): void {
       text: words.text,
     }).catch((): PostResult => ({ status: "failed", messageId: null }));
     console.log(`[open-proposals] ${a.waiting.id} was sent again while it waits; nothing new kept (${sent.status})`);
-    const replyDays = await replyDaysFor(getPool(), a.waiting.body.roles.map((r) => r.roleId));
-    if (WENT.has(sent.status)) return res.json({ sent: true, email: a.email, message: OPEN_WORDS.sent(a.email), replyDays, afterFounding: replyDays === null });
-    return res.json({ sent: true, kept: true, email: a.email, message: OPEN_WORDS.keptNotSent(a.email), statusPath: null, replyDays, afterFounding: replyDays === null });
+    const replyMoons = await replyMoonsFor(getPool(), a.waiting.body.roles.map((r) => r.roleId));
+    if (WENT.has(sent.status)) return res.json({ sent: true, email: a.email, message: OPEN_WORDS.sent(a.email), replyMoons, afterFounding: replyMoons === null });
+    return res.json({ sent: true, kept: true, email: a.email, message: OPEN_WORDS.keptNotSent(a.email), statusPath: null, replyMoons, afterFounding: replyMoons === null });
   }
 
   /**
@@ -938,9 +938,9 @@ export function register(app: Express, deps: Deps): void {
       const kept = token && token.length <= 100 ? await keptAddressAnswers(hashOf(token), at) : null;
       if (!kept) return res.status(410).json({ error: OPEN_WORDS.confirmGone });
       const lang = languageOf(kept);
-      const replyDays = await replyDaysFor(getPool(), kept.body.roles.map((r) => r.roleId));
-      const steps = stepsAfterSubmit(lang, replyDays);
-      return res.json({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null, locale: lang, replyDays, afterFounding: replyDays === null, ...(steps.length ? { steps } : {}) });
+      const replyMoons = await replyMoonsFor(getPool(), kept.body.roles.map((r) => r.roleId));
+      const steps = stepsAfterSubmit(lang, replyMoons);
+      return res.json({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null, locale: lang, replyMoons, afterFounding: replyMoons === null, ...(steps.length ? { steps } : {}) });
     }
     await alignedAtApplication(confirmed.proposal, at);
     try {
@@ -952,15 +952,15 @@ export function register(app: Express, deps: Deps): void {
     // The applicant's own page: the step, who acts next, by when. The link is shown once and mailed; only its hash is kept.
     let statusPath: string | null = null;
     // The village's days, or null while every role applied for opens after the founding team.
-    const replyDays = await replyDaysFor(getPool(), confirmed.proposal.body.roles.map((r) => r.roleId));
+    const replyMoons = await replyMoonsFor(getPool(), confirmed.proposal.body.roles.map((r) => r.roleId));
     if (confirmed.review?.statusToken) {
       statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
       if (confirmed.proposal.email) {
         const lang = languageOf(confirmed.proposal);
         const apply = APPLY_EMAIL_WORDS[lang];
         // The steps after submit (lane A2's one list, through the slot in shared/openProposals.ts), when there are any.
-        const steps = stepsAsLines(stepsAfterSubmit(lang, replyDays));
-        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyDays))}${steps ? `\n\n${steps}` : ""}`;
+        const steps = stepsAsLines(stepsAfterSubmit(lang, replyMoons));
+        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyMoons))}${steps ? `\n\n${steps}` : ""}`;
         try {
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,
@@ -982,8 +982,8 @@ export function register(app: Express, deps: Deps): void {
     // Somebody who already has an account reads it on their profile too; the email above is theirs either way.
     await tellApplicant(confirmed.proposal.id, "confirmed");
     // The language the applicant proposed in, so the confirmed page can speak it, and the first-reply window to date the next step.
-    const steps = stepsAfterSubmit(languageOf(confirmed.proposal), replyDays);
-    res.json({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath, locale: languageOf(confirmed.proposal), replyDays, afterFounding: replyDays === null, ...(steps.length ? { steps } : {}) });
+    const steps = stepsAfterSubmit(languageOf(confirmed.proposal), replyMoons);
+    res.json({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath, locale: languageOf(confirmed.proposal), replyMoons, afterFounding: replyMoons === null, ...(steps.length ? { steps } : {}) });
   });
 
   // ── The desk ──────────────────────────────────────────────────────────────

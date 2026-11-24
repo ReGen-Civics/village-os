@@ -79,9 +79,7 @@ export function altOr(value: string | undefined, fallback: string): string {
 export interface PublicGameConfig {
   /** The village's default language, dial `village.default_locale` (spec i18n US3). */
   defaultLocale?: string;
-  /** The village's one reply promise in days, `org.applicant_reply_days`: the application's and the four ways' (shared/contributorRoutes.ts). */
-  applicantReplyDays?: number;
-  /** What a proposer is told once they have sent: within this many moon cycles, `org.reply_window_moons` (shared/contributorRoutes.ts). */
+  /** What every proposer is told once they have sent: within this many moon cycles (`effectiveReplyMoons`, shared/contributorRoutes.ts). */
   replyWindowMoons?: number;
   project: {
     name: string;

@@ -90,7 +90,8 @@ import {
   type PowerHolder,
 } from "./lib/capabilityRegistry";
 import { partnerRecipients } from "./lib/partnerRouting";
-import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE, REPLY_WINDOW_MOONS_VARIABLE } from "../shared/contributorRoutes";
+import { PARTNER_FORM, PARTNERSHIPS_ROLE_VARIABLE } from "../shared/contributorRoutes";
+import { replyMoonsNow } from "./lib/foundingFirst";
 import { PROSPERITY_PACKET_FORM, packetFrom, packetProblems } from "../shared/prosperityPacket";
 import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
@@ -18250,8 +18251,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
-      applicantReplyDays: numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE), // the village's one reply promise, said by the application and the four ways in (shared/contributorRoutes.ts)
-      replyWindowMoons: numberVar(REPLY_WINDOW_MOONS_VARIABLE), // what a proposer is told once they have sent: within one moon cycle (the lead, 24 Nov 2026; shared/contributorRoutes.ts)
+      replyWindowMoons: replyMoonsNow(), // what every proposer is told once they have sent, application included: within one moon cycle (the lead, 24 Nov 2026; server/lib/foundingFirst.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
