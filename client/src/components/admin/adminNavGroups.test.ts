@@ -124,7 +124,7 @@ describe("navGroups", () => {
       "health-admin",
     ]],
     ["Money and agreements", ["tokens", "ledger", "cash-payouts", "pricing-desk", "budgets", "cycles", "products", "resources-admin", "exits-admin", "settings"]],
-    ["Day to day", ["submissions", "feedback", "quest-claims", "forum-moderation", "message-reports", "drafts", "brain", "failures"]],
+    ["Day to day", ["submissions", "portal-visitors", "feedback", "quest-claims", "forum-moderation", "message-reports", "drafts", "brain", "failures"]],
     // Village Comms (the comms build spec 6): after the week's queues.
     ["Comms", ["comms-overview", "comms-journeys", "comms-words", "comms-people", "comms-letters", "comms-sent", "comms-settings"]],
     ["Library and files", ["training-modules", "investor-vault", "uploaded-files"]],
@@ -170,6 +170,8 @@ describe("navGroups", () => {
     // what the rail carried at the time.
     const addedSince = [
       "failures",
+      // The portal entrance's visitors, 2026-11-24 (shared/entrance.ts).
+      "portal-visitors",
       // The art library, 2026-11-20: the painted animals and plants on every role card.
       "art-library",
       // Village Comms, 2026-10-02.

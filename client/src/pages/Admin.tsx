@@ -118,6 +118,7 @@ import BrandTextField from "@/components/admin/BrandTextField";
 import HandoverTab from "@/components/admin/HandoverTab";
 import AdminGate from "@/components/admin/AdminGate";
 import FailuresTab from "@/components/admin/FailuresTab";
+import PortalVisitorsTab from "@/components/admin/PortalVisitorsTab";
 import SecretsKeyBanner, { SealedSaveButton } from "@/components/admin/SecretsKeyBanner";
 import SigningKeyCard from "@/components/admin/SigningKeyCard";
 import VariablesTab from "@/components/admin/VariablesTab";
@@ -8010,6 +8011,7 @@ export default function Admin() {
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
           {activeTab === "brain" && <VillageBrainTab password={password} />}
           {activeTab === "failures" && <FailuresTab password={password} />}
+          {activeTab === "portal-visitors" && <PortalVisitorsTab password={password} />}
           {activeTab === "drafts" && <DraftQueueTab password={password} />}
           {activeTab === "seasons-patterns" && <SeasonPatternsTab password={password} />}
           {activeTab === "circles-map" && <CirclesMapTab password={password} />}

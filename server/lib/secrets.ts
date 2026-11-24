@@ -144,6 +144,10 @@ const BASE_SECRET_KEYS = [
   // The same, for Groq's speech-to-text, which has a free tier and is the
   // first one "auto" asks (the lead, 17 Nov 2026: "preferably free").
   "voice_transcription_groq_key",
+  // The portal entrance's human check (the lead, 24 Nov 2026): Cloudflare Turnstile's secret,
+  // typed under Admin, Integrations. Its site key is public by design and lives in the dial
+  // `entrance.turnstile_site_key`. No host variable: an admin sets it, sealed.
+  "turnstile_secret_key",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -199,6 +203,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   dns_zone_token: null,
   voice_transcription_key: null,
   voice_transcription_groq_key: null,
+  turnstile_secret_key: null,
 };
 
 /**

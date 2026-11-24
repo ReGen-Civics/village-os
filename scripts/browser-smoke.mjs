@@ -173,6 +173,46 @@ async function checkPage(context, url, timeoutMs) {
   return { page, problems, ms: Date.now() - started };
 }
 
+/**
+ * The portal entrance (shared/entrance.ts), passed the way a visitor passes it: the entrance draws in
+ * front of /roles, and the visitor sends their name and an address. The smoke's address is the
+ * reserved `.invalid` one and carries the smoke header, so the server keeps the entry as a TEST that
+ * no list shows, and skips the human check a script cannot pass. The cookie it sets lives in this
+ * browser context, so every later page in the context is past the entrance. A village that keeps
+ * no entrance answers "none" and nothing is sent.
+ */
+export async function enterPortal(context, opts, engine) {
+  const page = await context.newPage();
+  try {
+    await page.goto(`${opts.baseUrl}/roles`, { waitUntil: "load", timeout: opts.timeoutMs });
+    const read = await page.evaluate(() => fetch("/api/entrance").then(async (r) => ({ code: r.status, body: r.ok ? await r.json() : null })).catch(() => null));
+    // A deploy from before the entrance has no such route, and so no entrance.
+    if (read?.code === 404) return { status: "none", detail: "this deploy has no entrance" };
+    const status = read?.body;
+    if (!status) return { status: "failed", detail: "the entrance did not answer (/api/entrance)" };
+    if (!status.required || status.entered) return { status: "none", detail: "the village keeps no entrance" };
+    const drawn = await page.waitForSelector("[data-entrance] form", { state: "visible", timeout: Math.min(15000, opts.timeoutMs) }).then(() => true, () => false);
+    if (!drawn) return { status: "failed", detail: "/roles drew no entrance for a visitor, while the village keeps one" };
+    if (!opts.token) return { status: "failed", detail: "the village keeps an entrance and SMOKE_TEST_TOKEN is not set here, so the smoke cannot pass it as a test" };
+    const email = `entrance-${Date.now().toString(36)}-${engine}${SMOKE_DOMAIN}`;
+    const answer = await page.evaluate(
+      async ({ email, header, token }) => {
+        const res = await fetch("/api/entrance", { method: "POST", headers: { "content-type": "application/json", [header]: token }, body: JSON.stringify({ name: "Release Smoke", email, next: "/roles", locale: "en", website: "", shownAt: Date.now() - 10000 }) });
+        return { status: res.status, body: await res.json().catch(() => ({})) };
+      },
+      { email, header: SMOKE_HEADER, token: opts.token },
+    );
+    if (answer.status !== 201) return { status: "failed", detail: `the entrance refused the smoke (${answer.status}): ${String(answer.body?.message ?? answer.body?.error ?? "").slice(0, 300)}` };
+    const after = await page.evaluate(() => fetch("/api/entrance").then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    if (!after?.entered) return { status: "failed", detail: "the entrance took the smoke and the device is still outside: the cookie did not hold" };
+    return { status: "passed", detail: "drew in front of /roles and let the smoke through" };
+  } catch (e) {
+    return { status: "failed", detail: `the entrance did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}` };
+  } finally {
+    await page.close();
+  }
+}
+
 /** The apply flow: the page, its form, and one TEST application sent from inside the page. */
 async function checkApply(context, opts, engine) {
   const { page, problems, ms } = await checkPage(context, `${opts.baseUrl}/propose-a-role`, opts.timeoutMs);
@@ -346,7 +386,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     return EXIT.missing;
   }
 
-  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], apply: [], rolePage: [] };
+  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], entrance: [], apply: [], rolePage: [] };
   let failed = false;
   let ran = 0;
   for (const engine of opts.browsers) {
@@ -388,6 +428,15 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
         log(`ok   ${engine} ${route} (${ms} ms)`);
       }
     }
+    // Every apply context passes the portal entrance first, when the village keeps one.
+    const through = async (context, what) => {
+      const e = await enterPortal(context, opts, engine);
+      if (e.status === "none") return true;
+      results.entrance.push({ engine, for: what, ...e });
+      log(`entrance (${engine}, ${what}): ${e.status === "passed" ? "ok" : e.status.toUpperCase()}, ${e.detail}`);
+      if (e.status !== "passed") failed = true;
+      return e.status === "passed";
+    };
     if (opts.skipApply) {
       log(`apply (${engine}): skipped, --skip-apply`);
     } else if (!opts.token) {
@@ -397,6 +446,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       if (opts.requireApply) failed = true;
     } else {
       const context = await browser.newContext(profile);
+      await through(context, "apply");
       const a = await checkApply(context, opts, engine);
       await context.close();
       if (a.status === "skipped" && opts.requireApply) a.status = "failed";
@@ -408,6 +458,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       // In this engine on the phone either way, so WebKit and Chromium each measure the same 390x664 screen.
       const { defaultBrowserType: _ignored, ...phone } = pw.devices[PHONE] ?? {};
       const context = await browser.newContext(phone);
+      await through(context, "role page");
       const r = await checkRoleApply(context, opts);
       await context.close();
       if (r.status === "skipped" && opts.requireApply) r.status = "failed";
@@ -416,6 +467,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       log(`role page Apply (${engine}, ${PHONE}): ${r.status === "passed" ? "ok" : r.status.toUpperCase()}, ${r.detail}`);
       // The same Apply inside a card opened on /roles. A village with no founding team skips it, never fails it.
       const listContext = await browser.newContext(phone);
+      await through(listContext, "/roles card");
       const l = await checkRolesListApply(listContext, opts);
       await listContext.close();
       results.rolePage.push({ engine, device: PHONE, page: "/roles", ...l });

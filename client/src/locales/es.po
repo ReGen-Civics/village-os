@@ -28744,3 +28744,250 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# ── The portal entrance (portal entrance lane, 24 Nov 2026). Its own block; the Spanish lane owns the rest of this file.
+# needs-native-review: new words, 24 Nov 2026. The privacy line also needs legal review (Costa Rica, Law 8968).
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: eyebrow"
+msgid "The portal"
+msgstr "El portal"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: heading, with the village's name"
+msgid "Welcome to {village}"
+msgstr "Te damos la bienvenida a {village}"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what is inside, and what is asked"
+msgid "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
+msgstr "Justo adentro están los roles de la aldea, su juego y el trabajo de construirla juntos. Cuéntanos quién eres y el camino se abre."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the form's name for screen readers"
+msgid "Enter the portal"
+msgstr "Entrar al portal"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: name field"
+msgid "Your name"
+msgstr "Tu nombre"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: email field"
+msgid "Your email"
+msgstr "Tu correo electrónico"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: optional WhatsApp field"
+msgid "WhatsApp number"
+msgstr "Número de WhatsApp"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: marks a field as optional"
+msgid "(optional)"
+msgstr "(opcional)"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: optional link field"
+msgid "Website or social link"
+msgstr "Sitio web o enlace de redes sociales"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: a hidden field only bots fill"
+msgid "Leave this empty"
+msgstr "Deja esto vacío"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the updates box, unticked by default"
+msgid "Send me occasional updates about {village} by email."
+msgstr "Envíenme noticias ocasionales sobre {village} por correo electrónico."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, with the village's contact address"
+msgid "We keep what you type here so we know who is exploring {village}, and to send you updates only if you tick the box. We never sell it or share it. To see it or have it deleted, write to {contactEmail}."
+msgstr "Guardamos lo que escribes aquí para saber quién está conociendo {village}, y para enviarte noticias solo si marcas la casilla. Nunca lo vendemos ni lo compartimos. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, when the village has no contact address"
+msgid "We keep what you type here so we know who is exploring {village}, and to send you updates only if you tick the box. We never sell it or share it. To see it or have it deleted, ask anyone at the village."
+msgstr "Guardamos lo que escribes aquí para saber quién está conociendo {village}, y para enviarte noticias solo si marcas la casilla. Nunca lo vendemos ni lo compartimos. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the main button"
+msgid "Enter"
+msgstr "Entrar"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the button while sending"
+msgid "Opening the way"
+msgstr "Abriendo el camino"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the second act, for members"
+msgid "I have an account: sign in"
+msgstr "Ya tengo cuenta: iniciar sesión"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the brochure stays open"
+msgid "Looking for the public pages? They are all open."
+msgstr "¿Buscas las páginas públicas? Todas están abiertas."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: link home"
+msgid "Back to the home page"
+msgstr "Volver a la página de inicio"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the human check is not done yet"
+msgid "Finish the check that you are a person first."
+msgstr "Primero completa la verificación de que eres una persona."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the human check failed to load"
+msgid "The check that you are a person did not load. Reload the page to try again."
+msgstr "La verificación de que eres una persona no cargó. Recarga la página para intentarlo de nuevo."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: a generic failure"
+msgid "That did not go through. Try again in a moment."
+msgstr "No se pudo enviar. Inténtalo de nuevo en un momento."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the network failed"
+msgid "That did not go through. Check your connection and try again."
+msgstr "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Portal visitors"
+msgstr "Visitantes del portal"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Everyone who gave their name and email at the portal entrance, newest first. The entrance is on while the setting Ask visitors for their name and email before the portal is on, in Game Mechanics. Nobody here has been emailed by the platform."
+msgstr "Todas las personas que dieron su nombre y correo en la entrada del portal, de la más reciente a la más antigua. La entrada está activa mientras el ajuste Pedir a los visitantes su nombre y correo antes del portal esté activado, en Mecánicas del juego. La plataforma no ha enviado ningún correo a estas personas."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Download CSV"
+msgstr "Descargar CSV"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Only the people who asked for updates"
+msgstr "Solo las personas que pidieron noticias"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Loading the visitors."
+msgstr "Cargando los visitantes."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Nobody has asked for updates yet."
+msgstr "Nadie ha pedido noticias todavía."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Nobody has entered the portal yet."
+msgstr "Nadie ha entrado al portal todavía."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Entered"
+msgstr "Entró"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Name"
+msgstr "Nombre"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Email"
+msgstr "Correo electrónico"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Link"
+msgstr "Enlace"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Updates"
+msgstr "Noticias"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Was going to"
+msgstr "Iba a"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: asked for updates"
+msgid "Yes"
+msgstr "Sí"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: asked for updates"
+msgid "No"
+msgstr "No"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forget a person, when they ask"
+msgstr "Olvidar a una persona, cuando lo pida"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Every entry kept for this address is deleted for good."
+msgstr "Se borra para siempre cada entrada guardada para esta dirección."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "their email address"
+msgstr "su dirección de correo"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forget"
+msgstr "Olvidar"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Nothing is kept for {email}."
+msgstr "No hay nada guardado para {email}."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forgotten: every entry for {email}. Their device will meet the entrance again."
+msgstr "Olvidado: cada entrada de {email}. Su dispositivo volverá a ver la entrada."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The list did not load."
+msgstr "La lista no cargó."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The list did not load. Check your connection."
+msgstr "La lista no cargó. Revisa tu conexión."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The CSV did not download."
+msgstr "El CSV no se descargó."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "That did not go through."
+msgstr "No se pudo completar."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "That did not go through. Check your connection."
+msgstr "No se pudo completar. Revisa tu conexión."

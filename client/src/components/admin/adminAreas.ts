@@ -39,6 +39,7 @@ const entry = (key: string, area: AreaId, name: string, help: string): AdminTabE
 export const ADMIN_TABS: AdminTabEntry[] = [
   entry("home", "today", "Home", "What needs you now, and the six areas."),
   entry("submissions", "inbox", "All forms", "Requests people sent, such as a visit or a wish to join."),
+  entry("portal-visitors", "inbox", "Portal visitors", "Everyone who entered the portal, and who asked for updates."),
   entry("feedback", "inbox", "Feedback", "Notes people sent about the village."),
   entry("quest-claims", "inbox", "Quest claims", "Finished quests waiting for a witness."),
   entry("forum-moderation", "inbox", "Moderation", "Forum posts a member asked you to look at."),

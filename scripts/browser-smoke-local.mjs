@@ -109,6 +109,9 @@ async function seed() {
   );
   must(await call("PUT", "/api/admin/variables/org.founding_team", { value: true }, F), "founding team on");
   must(await call("PUT", "/api/admin/variables/org.founding_team_roles", { value: role.json.id }, F), "founding team role");
+  // The portal entrance on, as the pilot runs it: every page check draws it in front of /roles and
+  // /propose-a-role, and every apply check passes it the way a visitor does (enterPortal).
+  must(await call("PUT", "/api/admin/variables/entrance.required", { value: true }, F), "portal entrance on");
 }
 
 async function run() {
