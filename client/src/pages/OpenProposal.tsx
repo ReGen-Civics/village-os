@@ -27,7 +27,7 @@
 import { AboutYouView, type ServedAboutYou } from "@/components/openProposal/AboutYou";
 import { AttachedView, type ServedAttachments } from "@/components/openProposal/ProposalAttachments";
 import { VoiceHeard, type ServedVoice } from "@/components/voice/VoiceHeard";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { APPLICANT_NOTE_MAX } from "@shared/applicantWords";
 import { CardSideBySide } from "@/components/openProposal/RoleCardBridge";
 import PieceSuggestionsReview from "@/components/roleCard/PieceSuggestionsReview";
@@ -286,9 +286,9 @@ export default function OpenProposal() {
       href="/profile"
       className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+      <Trans context="OpenProposal, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
       Your profile
-    </Link>
+    </Trans></Link>
   );
 
   if (!user || state === "members") {

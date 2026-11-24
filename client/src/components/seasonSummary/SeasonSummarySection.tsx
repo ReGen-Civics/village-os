@@ -21,6 +21,7 @@ import { cardPng, drawSeasonCard, fontsReady, paletteFrom, seasonCardModel } fro
 import SeasonSummaryCard from "./SeasonSummaryCard";
 import { markSeasonSeen } from "./seen";
 import { useTokenName } from "@/hooks/useTokenNames";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -36,6 +37,7 @@ const choiceWords = (thanks: string): Record<keyof ShareChoices, string> => ({
 });
 
 export default function SeasonSummarySection() {
+  const { t } = useLingui();
   const { user } = useAuth();
   const [summary, setSummary] = useState<SeasonSummary | null>(null);
   const [season, setSeason] = useState<string>("");
@@ -130,7 +132,7 @@ export default function SeasonSummarySection() {
   };
 
   return (
-    <section id={SEASON_SUMMARY_ANCHOR} aria-label="Your season, summed up" className="scroll-mt-24 space-y-4">
+    <section id={SEASON_SUMMARY_ANCHOR} aria-label={t({ message: "Your season, summed up", context: "SeasonSummarySection, aria-label" })} className="scroll-mt-24 space-y-4">
       {summary.seasons.length > 1 && (
         <label className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           Season
@@ -154,7 +156,7 @@ export default function SeasonSummarySection() {
 
       <div className="rounded-2xl bg-card p-5 shadow-sm space-y-3">
         <fieldset className="space-y-2">
-          <legend className="text-sm font-semibold text-card-foreground">In the picture</legend>
+          <legend className="text-sm font-semibold text-card-foreground"><Trans context="SeasonSummarySection, legend">In the picture</Trans></legend>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {(Object.keys(CHOICE_WORDS) as Array<keyof ShareChoices>).map((k) => (
               <label key={k} className="flex min-h-9 items-center gap-2 text-sm text-foreground">
@@ -169,8 +171,8 @@ export default function SeasonSummarySection() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            Cash stays out of the picture unless you tick it. Your work and badges are always in it.
-          </p>
+            <Trans context="SeasonSummarySection, p">Cash stays out of the picture unless you tick it. Your work and badges are always in it.
+          </Trans></p>
         </fieldset>
         <div className="flex flex-wrap gap-2">
           <button
@@ -179,8 +181,8 @@ export default function SeasonSummarySection() {
             onClick={save}
             className="min-h-11 rounded-full bg-notice px-5 text-sm font-semibold text-background disabled:opacity-40"
           >
-            Save picture
-          </button>
+            <Trans context="SeasonSummarySection, button">Save picture
+          </Trans></button>
           {canShareFiles && (
             <button
               type="button"
@@ -188,8 +190,8 @@ export default function SeasonSummarySection() {
               onClick={share}
               className="min-h-11 rounded-full border border-border px-5 text-sm font-medium text-foreground disabled:opacity-40"
             >
-              Share
-            </button>
+              <Trans context="SeasonSummarySection, button">Share
+            </Trans></button>
           )}
           {link && (
             <button
@@ -197,8 +199,8 @@ export default function SeasonSummarySection() {
               onClick={copy}
               className="min-h-11 rounded-full border border-border px-5 text-sm font-medium text-foreground"
             >
-              Copy link to my profile
-            </button>
+              <Trans context="SeasonSummarySection, button">Copy link to my profile
+            </Trans></button>
           )}
         </div>
         {notice && <p role="status" className="text-sm text-muted-foreground">{notice}</p>}

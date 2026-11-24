@@ -17,7 +17,7 @@ import { authToken } from "@/lib/gameApi";
 import { actionError } from "@/lib/actionOutcome";
 import { Check, EyeOff, Handshake, Pause, Plus, X } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -167,9 +167,9 @@ function IntroductionsPage() {
           <Header />
           <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
-              The rest of this page opens when you sign in: your own intents, offers to confirm, and the
+              <Trans context="Introductions, p">The rest of this page opens when you sign in: your own intents, offers to confirm, and the
               introductions waiting for you.
-            </p>
+            </Trans></p>
             <SignInDoors next="/introductions" />
           </div>
           <Board entries={board} />
@@ -190,9 +190,9 @@ function IntroductionsPage() {
 
         {!canAct && (
           <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-            Posting and answering introductions opens at the member stage, or during an active stay. The board below is
+            <Trans context="Introductions, div">Posting and answering introductions opens at the member stage, or during an active stay. The board below is
             yours to read meanwhile.
-          </div>
+          </Trans></div>
         )}
 
         <Inbox opportunities={opportunities} onChanged={loadMine} onSay={say} />
@@ -242,15 +242,15 @@ function IntroductionsPage() {
         {canAct && (
           <section className="rounded-xl border border-border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-bold text-foreground">My intents</h2>
+              <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">My intents</Trans></h2>
               <button
                 type="button"
                 onClick={() => setComposing((v) => !v)}
                 className={`inline-flex items-center gap-2 ${TAP} px-4 rounded-lg bg-teal-deep text-white font-semibold text-sm`}
               >
-                <Plus className="w-4 h-4" aria-hidden="true" />
+                <Trans context="Introductions, button"><Plus className="w-4 h-4" aria-hidden="true" />
                 New
-              </button>
+              </Trans></button>
             </div>
             {composing && (
               <Compose
@@ -265,8 +265,8 @@ function IntroductionsPage() {
             )}
             {mine.length === 0 && !composing && (
               <p className="text-sm text-muted-foreground">
-                Say what you seek in your own words. The village listens better than a form suggests.
-              </p>
+                <Trans context="Introductions, p">Say what you seek in your own words. The village listens better than a form suggests.
+              </Trans></p>
             )}
             <ul className="space-y-2">
               {mine.map((i) => (
@@ -303,12 +303,12 @@ function Header() {
   return (
     <header>
       <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
-        <Handshake className="w-7 h-7 text-teal-deep" aria-hidden="true" />
+        <Trans context="Introductions, h1"><Handshake className="w-7 h-7 text-teal-deep" aria-hidden="true" />
         Introductions
-      </h1>
+      </Trans></h1>
       <p className="text-sm text-muted-foreground mt-1">
-        A few good introductions a week. Both people say yes before a conversation opens.
-      </p>
+        <Trans context="Introductions, p">A few good introductions a week. Both people say yes before a conversation opens.
+      </Trans></p>
     </header>
   );
 }
@@ -334,9 +334,9 @@ function ConsentCard({
         <span className="text-sm text-foreground">{sentence}</span>
       </label>
       <p className="text-xs text-muted-foreground pl-8">
-        Until you tick this, matching reads only the words you post here. Withdrawing pauses your intents and deletes
+        <Trans context="Introductions, p">Until you tick this, matching reads only the words you post here. Withdrawing pauses your intents and deletes
         nothing.
-      </p>
+      </Trans></p>
     </section>
   );
 }
@@ -352,10 +352,10 @@ function Suggestions({
 }) {
   return (
     <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <h2 className="font-display text-lg font-bold text-foreground">You could offer</h2>
+      <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">You could offer</Trans></h2>
       <p className="text-xs text-muted-foreground">
-        Drawn from your skills, roles, badges and finished quests. Nothing is posted unless you confirm it.
-      </p>
+        <Trans context="Introductions, p">Drawn from your skills, roles, badges and finished quests. Nothing is posted unless you confirm it.
+      </Trans></p>
       <ul className="space-y-2">
         {suggestions.map((s) => (
           <li key={s.source} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
@@ -366,16 +366,16 @@ function Suggestions({
                 onClick={() => onConfirm(s)}
                 className={`inline-flex items-center gap-1 ${TAP} px-3 rounded-lg bg-teal-deep text-white text-xs font-semibold`}
               >
-                <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                <Trans context="Introductions, button"><Check className="w-3.5 h-3.5" aria-hidden="true" />
                 Confirm
-              </button>
+              </Trans></button>
               <button
                 type="button"
                 onClick={() => onDismiss(s)}
                 className={`inline-flex items-center ${TAP} px-3 rounded-lg border border-border text-xs`}
               >
-                Not now
-              </button>
+                <Trans context="Introductions, button">Not now
+              </Trans></button>
             </span>
           </li>
         ))}
@@ -418,7 +418,7 @@ function Compose({ onDone }: { onDone: (created: boolean) => void }) {
 
   return (
     <div className="rounded-lg border border-border p-3 space-y-3">
-      <div className="flex gap-2" role="radiogroup" aria-label="Kind">
+      <div className="flex gap-2" role="radiogroup" aria-label={t({ message: "Kind", context: "Introductions, aria-label" })}>
         {(["seek", "offer"] as const).map((k) => (
           <button
             key={k}
@@ -444,7 +444,7 @@ function Compose({ onDone }: { onDone: (created: boolean) => void }) {
         onChange={(e) => setText(e.target.value)}
         maxLength={500}
         rows={3}
-        placeholder={kind === "seek" ? "What are you looking for, in your own words?" : "What could you give a hand with?"}
+        placeholder={kind === "seek" ? t({ message: "What are you looking for, in your own words?", context: "Introductions, placeholder" }) : t({ message: "What could you give a hand with?", context: "Introductions, placeholder" })}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
       />
       </VoiceArea>
@@ -452,17 +452,17 @@ function Compose({ onDone }: { onDone: (created: boolean) => void }) {
         value={why}
         onChange={(e) => setWhy(e.target.value)}
         maxLength={300}
-        placeholder="Why it matters to you (optional)"
+        placeholder={t({ message: "Why it matters to you (optional)", context: "Introductions, placeholder" })}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
       />
       <input
         value={topics}
         onChange={(e) => setTopics(e.target.value)}
-        placeholder="Topics, separated by commas: food, land, music"
+        placeholder={t({ message: "Topics, separated by commas: food, land, music", context: "Introductions, placeholder" })}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
       />
       <fieldset className="space-y-1">
-        <legend className="text-xs font-semibold text-muted-foreground">Who can see it</legend>
+        <legend className="text-xs font-semibold text-muted-foreground"><Trans context="Introductions, legend">Who can see it</Trans></legend>
         {(Object.keys(TIER_GLOSS) as Tier[]).map((t) => (
           <label key={t} className="flex items-start gap-2 text-sm cursor-pointer">
             {/* The tier names the choice; the gloss explains it. Wrapped in a
@@ -485,7 +485,7 @@ function Compose({ onDone }: { onDone: (created: boolean) => void }) {
         ))}
       </fieldset>
       <label className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Rests after</span>
+        <span className="text-muted-foreground"><Trans context="Introductions, span">Rests after</Trans></span>
         <select
           value={weeks}
           onChange={(e) => setWeeks(Number(e.target.value))}
@@ -504,17 +504,18 @@ function Compose({ onDone }: { onDone: (created: boolean) => void }) {
           onClick={submit}
           className={`${TAP} px-4 rounded-lg bg-teal-deep text-white text-sm font-semibold disabled:opacity-50`}
         >
-          Post it
-        </button>
+          <Trans context="Introductions, button">Post it
+        </Trans></button>
         <button type="button" onClick={() => onDone(false)} className={`${TAP} px-4 rounded-lg border border-border text-sm`}>
-          Cancel
-        </button>
+          <Trans context="Introductions, button">Cancel
+        </Trans></button>
       </div>
     </div>
   );
 }
 
 function MyIntent({ intent, onChanged, onSay }: { intent: Intent; onChanged: () => void; onSay: (t: string) => void }) {
+  const { t } = useLingui();
   // SWEEP. Pausing, resuming or retiring an intent swallowed every failure,
   // so a member could press Pause, watch the row stay active, and conclude
   // the control was decorative.
@@ -545,7 +546,7 @@ function MyIntent({ intent, onChanged, onSay }: { intent: Intent; onChanged: () 
           {intent.lifecycle === "active" ? (
             <button
               type="button"
-              title="Pause"
+              title={t({ message: "Pause", context: "Introductions, title" })}
               aria-label={`Pause: ${intent.text}`}
               onClick={() => set({ lifecycle: "paused" })}
               className={`inline-flex items-center justify-center ${TAP} min-w-[44px] rounded-lg border border-border`}
@@ -558,13 +559,13 @@ function MyIntent({ intent, onChanged, onSay }: { intent: Intent; onChanged: () 
               onClick={() => set({ lifecycle: "active" })}
               className={`inline-flex items-center ${TAP} px-3 rounded-lg border border-border text-xs`}
             >
-              Wake it
-            </button>
+              <Trans context="Introductions, button">Wake it
+            </Trans></button>
           )}
           {intent.lifecycle === "active" && (
             <button
               type="button"
-              title="Fulfilled"
+              title={t({ message: "Fulfilled", context: "Introductions, title" })}
               aria-label={`Mark fulfilled: ${intent.text}`}
               onClick={() => set({ lifecycle: "fulfilled" })}
               className={`inline-flex items-center justify-center ${TAP} min-w-[44px] rounded-lg border border-border`}
@@ -591,7 +592,7 @@ function Inbox({
   if (!open.length) return null;
   return (
     <section className="rounded-xl border-2 border-teal-deep/40 bg-card p-4 space-y-3">
-      <h2 className="font-display text-lg font-bold text-foreground">Introductions for you</h2>
+      <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">Introductions for you</Trans></h2>
       <ul className="space-y-3">
         {open.map((o) => (
           <OpportunityCard key={o.id} opp={o} onChanged={onChanged} onSay={onSay} />
@@ -652,9 +653,9 @@ function OpportunityCard({
                   onClick={() => act(`reasons/${r.index}/hide`, "Hidden. It no longer shows to anyone")}
                   className="inline-flex items-center gap-1 shrink-0 underline decoration-dotted"
                 >
-                  <EyeOff className="w-3 h-3" aria-hidden="true" />
+                  <Trans context="Introductions, button"><EyeOff className="w-3 h-3" aria-hidden="true" />
                   about me?
-                </button>
+                </Trans></button>
               )}
             </li>
           ))}
@@ -662,16 +663,16 @@ function OpportunityCard({
       )}
       {opp.status === "opened" && opp.conversationId ? (
         <p className="text-sm">
-          You both said yes.{" "}
+          <Trans context="Introductions, p">You both said yes.{" "}
           <Link href={`/messages/${opp.conversationId}`} className="font-semibold text-teal-deep underline">
             Open the thread
           </Link>{" "}
           and say hello in your own words.
-        </p>
+        </Trans></p>
       ) : opp.myAccepted ? (
         <p className="text-sm text-muted-foreground">
-          You said yes. Waiting for {opp.theirs.incognito ? "them" : them}.
-        </p>
+          <Trans context="Introductions, p">You said yes. Waiting for {opp.theirs.incognito ? "them" : them}.
+        </Trans></p>
       ) : (
         <div className="flex gap-2">
           <button
@@ -686,8 +687,8 @@ function OpportunityCard({
             onClick={() => act("decline", "Quietly closed")}
             className={`${TAP} px-4 rounded-lg border border-border text-sm`}
           >
-            Not now
-          </button>
+            <Trans context="Introductions, button">Not now
+          </Trans></button>
         </div>
       )}
     </li>
@@ -701,6 +702,7 @@ function PolicyLine({
   policy: Policy | null;
   onSave: (patch: Record<string, unknown>) => void;
 }) {
+  const { t } = useLingui();
   const [maxPerWeek, setMaxPerWeek] = useState(policy?.maxPerWeek ?? 2);
   const [topics, setTopics] = useState((policy?.topics ?? []).join(", "));
   useEffect(() => {
@@ -710,9 +712,9 @@ function PolicyLine({
   const paused = !!policy?.pausedUntil && new Date(policy.pausedUntil).getTime() > Date.now();
   return (
     <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <h2 className="font-display text-lg font-bold text-foreground">My policy line</h2>
+      <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">My policy line</Trans></h2>
       <label className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Introductions a week, at most</span>
+        <span className="text-muted-foreground"><Trans context="Introductions, span">Introductions a week, at most</Trans></span>
         <select
           value={maxPerWeek}
           onChange={(e) => setMaxPerWeek(Number(e.target.value))}
@@ -726,11 +728,11 @@ function PolicyLine({
         </select>
       </label>
       <label className="block text-sm">
-        <span className="text-muted-foreground">Only about these topics (empty means anything)</span>
+        <span className="text-muted-foreground"><Trans context="Introductions, span">Only about these topics (empty means anything)</Trans></span>
         <input
           value={topics}
           onChange={(e) => setTopics(e.target.value)}
-          placeholder="food, land"
+          placeholder={t({ message: "food, land", context: "Introductions, placeholder" })}
           className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
         />
       </label>
@@ -745,24 +747,24 @@ function PolicyLine({
           }
           className={`${TAP} px-4 rounded-lg bg-teal-deep text-white text-sm font-semibold`}
         >
-          Save
-        </button>
+          <Trans context="Introductions, button">Save
+        </Trans></button>
         {paused ? (
           <button
             type="button"
             onClick={() => onSave({ pauseDays: null })}
             className={`${TAP} px-4 rounded-lg border border-border text-sm`}
           >
-            Resume introductions
-          </button>
+            <Trans context="Introductions, button">Resume introductions
+          </Trans></button>
         ) : (
           <button
             type="button"
             onClick={() => onSave({ pauseDays: 14 })}
             className={`${TAP} px-4 rounded-lg border border-border text-sm`}
           >
-            Pause for two weeks
-          </button>
+            <Trans context="Introductions, button">Pause for two weeks
+          </Trans></button>
         )}
       </div>
     </section>
@@ -773,7 +775,7 @@ function Board({ entries }: { entries: BoardEntry[] }) {
   if (!entries.length) return null;
   return (
     <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <h2 className="font-display text-lg font-bold text-foreground">The board</h2>
+      <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">The board</Trans></h2>
       <ul className="space-y-2">
         {entries.map((b) => (
           <li key={b.id} className="rounded-lg border border-border px-3 py-2">

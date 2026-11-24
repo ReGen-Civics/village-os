@@ -38,6 +38,7 @@ import { POOL_REASON_COPY } from "@shared/moduleCatalog";
 import type { ModuleDataClass } from "@shared/modules";
 import { ArrowLeft, Vote } from "lucide-react";
 import { Link, useRoute } from "wouter";
+import { Trans } from "@lingui/react/macro";
 
 // Keyed by the union the registry declares, so a new data class cannot ship
 // without the plain-words line this page prints under it.
@@ -64,15 +65,15 @@ export default function ModuleDetail() {
     return (
       <Layout>
         <p className="container py-16 text-sm text-muted-foreground text-center">
-          The library could not load just now. Try again in a moment.
-        </p>
+          <Trans context="ModuleDetail, p">The library could not load just now. Try again in a moment.
+        </Trans></p>
       </Layout>
     );
   }
   if (!data || !viewer) {
     return (
       <Layout>
-        <p className="container py-16 text-sm text-muted-foreground text-center">Loading…</p>
+        <p className="container py-16 text-sm text-muted-foreground text-center"><Trans context="ModuleDetail, p">Loading…</Trans></p>
       </Layout>
     );
   }
@@ -98,9 +99,9 @@ export default function ModuleDetail() {
           href="/modules"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-deep underline min-h-[44px]"
         >
-          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          <Trans context="ModuleDetail, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
           Module Library
-        </Link>
+        </Trans></Link>
 
         <div className="mt-4 rounded-2xl overflow-hidden aspect-[8/5] sm:aspect-[2/1] bg-muted">
           <ModuleArt
@@ -116,23 +117,23 @@ export default function ModuleDetail() {
           <h1 className="font-display text-3xl font-bold text-foreground">{m.name}</h1>
           {m.core && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase tracking-wide">
-              Always on
-            </span>
+              <Trans context="ModuleDetail, span">Always on
+            </Trans></span>
           )}
           {!m.core && m.on && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              On in this village
-            </span>
+              <Trans context="ModuleDetail, span">On in this village
+            </Trans></span>
           )}
           {m.lifecycle === "preview" && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-              Preview
-            </span>
+              <Trans context="ModuleDetail, span">Preview
+            </Trans></span>
           )}
           {steward && !m.core && (m.lifecycle ?? "off") === "off" && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
-              Not on yet
-            </span>
+              <Trans context="ModuleDetail, span">Not on yet
+            </Trans></span>
           )}
         </div>
         {m.card && <p className="text-lg text-muted-foreground mt-2 leading-relaxed">{m.card.promise}</p>}
@@ -141,21 +142,21 @@ export default function ModuleDetail() {
             can see the state, in plain words, not only in an admin banner. */}
         {m.withdrawn && (
           <p className="mt-4 text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
-            No longer offered since {m.withdrawn.since}.
+            <Trans context="ModuleDetail, p">No longer offered since {m.withdrawn.since}.
             {m.withdrawn.replacedBy ? ` ${names[m.withdrawn.replacedBy] ?? m.withdrawn.replacedBy} replaces it.` : ""}
             {" "}A village already running it keeps running it.
-          </p>
+          </Trans></p>
         )}
         {m.demotedBecause && m.demotedBecause.length > 0 && (
           <p className="mt-4 text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
-            Resting for now. It needs {m.demotedBecause.join(" and ")}, which {m.demotedBecause.length === 1 ? "is" : "are"} off
+            <Trans context="ModuleDetail, p">Resting for now. It needs {m.demotedBecause.join(" and ")}, which {m.demotedBecause.length === 1 ? "is" : "are"} off
             here, and it comes back the moment {m.demotedBecause.length === 1 ? "that is" : "those are"} on again.
-          </p>
+          </Trans></p>
         )}
 
         {m.card && (
           <section className="mt-8">
-            <h2 className="font-semibold text-foreground mb-2">What it does</h2>
+            <h2 className="font-semibold text-foreground mb-2"><Trans context="ModuleDetail, h2">What it does</Trans></h2>
             <ul className="list-disc pl-5 space-y-1.5 text-sm text-muted-foreground leading-relaxed">
               {m.card.benefits.map((b, i) => (
                 <li key={i}>{b}</li>
@@ -167,25 +168,25 @@ export default function ModuleDetail() {
         <section className="mt-6 grid gap-4 sm:grid-cols-2">
           {m.card && (
             <div className="rounded-xl border border-border p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">Who it is for</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ModuleDetail, h3">Who it is for</Trans></h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{m.card.forWhom}</p>
             </div>
           )}
           {m.card && (
             <div className="rounded-xl border border-border p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">What you will set up</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ModuleDetail, h3">What you will set up</Trans></h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{m.card.setupSummary}</p>
             </div>
           )}
           {m.card && (
             <div className="rounded-xl border border-border p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">What data it holds</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ModuleDetail, h3">What data it holds</Trans></h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{m.card.dataSummary}</p>
               <p className="text-xs text-muted-foreground mt-1.5">{DATA_CLASS_PLAIN[m.dataClass] ?? m.dataClass}</p>
             </div>
           )}
           <div className="rounded-xl border border-border p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-1">Support</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-1"><Trans context="ModuleDetail, h3">Support</Trans></h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {m.support?.party === "vendor" && m.support.vendorName
                 ? `${m.support.vendorName} answers for this one, and your village holds the account.`
@@ -202,7 +203,7 @@ export default function ModuleDetail() {
             need to know what comes with it. */}
         {m.needs && m.needs.length > 0 && (
           <section className="mt-6" aria-labelledby="module-needs">
-            <h2 id="module-needs" className="font-semibold text-foreground mb-2">What it needs</h2>
+            <h2 id="module-needs" className="font-semibold text-foreground mb-2"><Trans context="ModuleDetail, h2">What it needs</Trans></h2>
             <ul className="space-y-3">
               {m.needs.map((n) => (
                 <li key={n.id} className="rounded-xl border border-border p-4 text-sm">
@@ -211,16 +212,16 @@ export default function ModuleDetail() {
                     <span className="font-normal text-muted-foreground"> · {n.provider}</span>
                     {n.keystone && (
                       <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber/20 text-foreground align-middle">
-                        Keystone: a second founder agrees
-                      </span>
+                        <Trans context="ModuleDetail, span">Keystone: a second founder agrees
+                      </Trans></span>
                     )}
-                    {!n.required && <span className="ml-2 text-xs text-muted-foreground">Optional</span>}
+                    {!n.required && <span className="ml-2 text-xs text-muted-foreground"><Trans context="ModuleDetail, span">Optional</Trans></span>}
                   </p>
                   <p className="text-muted-foreground mt-1 leading-relaxed">{n.consequence}</p>
                   <p className="text-xs text-muted-foreground mt-1.5">
                     {n.cost} {n.rotation}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">To undo: {n.undo}</p>
+                  <p className="text-xs text-muted-foreground mt-1"><Trans context="ModuleDetail, p">To undo: {n.undo}</Trans></p>
                 </li>
               ))}
             </ul>
@@ -235,7 +236,7 @@ export default function ModuleDetail() {
 
         {m.recommends.length > 0 && (
           <section className="mt-6">
-            <h2 className="font-semibold text-foreground mb-2">Works well with</h2>
+            <h2 className="font-semibold text-foreground mb-2"><Trans context="ModuleDetail, h2">Works well with</Trans></h2>
             <div className="flex flex-wrap gap-2">
               {m.recommends.map((dep) => (
                 <Link
@@ -255,8 +256,8 @@ export default function ModuleDetail() {
             for it. It draws nothing when there is nothing to offer. */}
         {door.kind === "founders-choose" && (
           <p className="mt-8 text-sm text-muted-foreground">
-            Before launch, {catalyst.plural} choose which modules this village starts with.
-          </p>
+            <Trans context="ModuleDetail, p">Before launch, {catalyst.plural} choose which modules this village starts with.
+          </Trans></p>
         )}
         {door.kind === "running" && (
           <section id="propose" className={CARD}>

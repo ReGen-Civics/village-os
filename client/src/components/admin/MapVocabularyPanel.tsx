@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useIsAdmin } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { API_BASE } from "./adminApi";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const inputCls =
   "border border-gray-200 rounded-lg px-2 py-1.5 text-sm min-h-[44px] w-full focus:outline-none focus:ring-2 focus:ring-teal-deep";
@@ -40,6 +41,7 @@ const wordsOf = (text: string): string[] =>
   text.split("\n").map((s) => s.trim()).filter(Boolean);
 
 export default function MapVocabularyPanel() {
+  const { t } = useLingui();
   const mayAdminister = useIsAdmin();
   const [vocab, setVocab] = useState<any>(null);
   const [road, setRoad] = useState("");
@@ -94,7 +96,7 @@ export default function MapVocabularyPanel() {
     setWater(linesOf(v.water));
     setZone(linesOf(v.zone));
     setPhases(Object.entries(v.phases ?? {}).map(([k, val]) => [String(k), String(val)]));
-    toast.success("Words saved. The map reads them on its next load");
+    toast.success(t({ message: "Words saved. The map reads them on its next load", context: "MapVocabularyPanel, toast" }));
   };
 
   /*
@@ -120,12 +122,12 @@ export default function MapVocabularyPanel() {
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5">
-      <h3 className="font-semibold text-gray-900 mb-1">The map's words</h3>
+      <h3 className="font-semibold text-gray-900 mb-1"><Trans context="MapVocabularyPanel, h3">The map's words</Trans></h3>
       <p className="text-xs text-gray-500 mb-3">
-        What this village calls its paths, its water and its areas, and what it
+        <Trans context="MapVocabularyPanel, p">What this village calls its paths, its water and its areas, and what it
         calls each build phase. The map applies these the next time it loads.
         One word per line.
-      </p>
+      </Trans></p>
 
       <div className="grid sm:grid-cols-3 gap-3">
         {box("Paths and roads", "Track, lane, camino. The first is the default.", road, setRoad)}
@@ -134,10 +136,10 @@ export default function MapVocabularyPanel() {
       </div>
 
       <fieldset className="mt-4 border-0 p-0 m-0">
-        <legend className="text-xs font-medium text-gray-700">Build phases</legend>
+        <legend className="text-xs font-medium text-gray-700"><Trans context="MapVocabularyPanel, legend">Build phases</Trans></legend>
         <p className="text-[11px] text-gray-400 mb-2">
-          The map keeps the numbers for its export; these are the words a person reads.
-        </p>
+          <Trans context="MapVocabularyPanel, p">The map keeps the numbers for its export; these are the words a person reads.
+        </Trans></p>
         <div className="space-y-2">
           {phases.map(([k, v], i) => (
             <div key={i} className="grid sm:grid-cols-12 gap-2 items-end">
@@ -154,13 +156,13 @@ export default function MapVocabularyPanel() {
               <div className="sm:col-span-2">
                 <button type="button" className={`${btnCls} text-red-600 border-red-200 w-full`}
                   aria-label={`Remove phase ${k}`}
-                  onClick={() => setPhases(phases.filter((_, j) => j !== i))}>Remove</button>
+                  onClick={() => setPhases(phases.filter((_, j) => j !== i))}><Trans context="MapVocabularyPanel, button">Remove</Trans></button>
               </div>
             </div>
           ))}
         </div>
         <button type="button" className={`${btnCls} mt-2`}
-          onClick={() => setPhases([...phases, [String(phases.length + 1), ""]])}>Add a phase</button>
+          onClick={() => setPhases([...phases, [String(phases.length + 1), ""]])}><Trans context="MapVocabularyPanel, button">Add a phase</Trans></button>
       </fieldset>
 
       <p className="text-[11px] text-gray-400 mt-4">

@@ -31,6 +31,7 @@
  */
 import { useMemo, useState } from "react";
 import type { CarryPlan, CarryRow } from "@shared/carryAcross";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export interface CarryAnswer extends CarryPlan {
   draftId: string;
@@ -93,6 +94,7 @@ export default function CarryAcross({
   /** Read the batch again after an action, with a sentence to show. */
   onChanged: (notice: string) => void;
 }) {
+  const { t } = useLingui();
   const [picks, setPicks] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -230,39 +232,39 @@ export default function CarryAcross({
 
   return (
     <section id="carry" className="grid gap-3 scroll-mt-4" aria-labelledby="h-carry" data-testid="carry-across">
-      <h2 id="h-carry" className="font-display text-[22px]">Carry people across</h2>
+      <h2 id="h-carry" className="font-display text-[22px]"><Trans context="CarryAcross, h2">Carry people across</Trans></h2>
       <p className="text-base font-semibold" role="status" data-testid="carry-state">{carrySummary(carry)}</p>
       {carry.rows.length > 0 && carry.mayCarry && (
         <p className="text-sm text-muted-foreground max-w-[68ch]">
-          Pick each person&apos;s role on the new chart and confirm it. They get the new role until the season ends, and their old
+          <Trans context="CarryAcross, p">Pick each person&apos;s role on the new chart and confirm it. They get the new role until the season ends, and their old
           role ends with its history kept.
-        </p>
+        </Trans></p>
       )}
       {carry.kept.length > 0 && (
         <p className="text-sm text-muted-foreground" data-testid="carry-kept">
-          {plural(carry.kept.length, "person kept their role", "people kept their role")} when it moved into the new chart, so they need nothing.
-        </p>
+          <Trans context="CarryAcross, p">{plural(carry.kept.length, "person kept their role", "people kept their role")} when it moved into the new chart, so they need nothing.
+        </Trans></p>
       )}
       {!carry.mayCarry && carry.rows.length > 0 && (
         <p className={`${card} px-4 py-3 text-sm`} data-testid="carry-read-only">
-          You can read this list. {who}
+          <Trans context="CarryAcross, p">You can read this list. {who}</Trans>
         </p>
       )}
 
       {carry.mayCarry && suggestedRows.length > 0 && !confirmAll && (
         <button type="button" className={`${secondary} justify-self-start`} disabled={busy !== null} onClick={() => setConfirmAll(true)}>
-          Confirm all suggested ({suggestedRows.length})
-        </button>
+          <Trans context="CarryAcross, button">Confirm all suggested ({suggestedRows.length})
+        </Trans></button>
       )}
       {confirmAll && (
         <div className={`${card} p-3.5 grid gap-2.5 border-notice/60`} role="group" aria-labelledby="h-carry-all" data-testid="carry-confirm-all">
           <p id="h-carry-all" className="font-semibold">
-            Move {plural(suggestedRows.length, "person", "people")} to their suggested role?
-          </p>
+            <Trans context="CarryAcross, p">Move {plural(suggestedRows.length, "person", "people")} to their suggested role?
+          </Trans></p>
           <ul className="text-sm grid gap-1">
             {suggestedRows.map((r) => (
               <li key={r.seatingId}>
-                <b>{r.person}</b>: {r.oldSeatName} to {r.suggestion!.seatName}
+                <Trans context="CarryAcross, li"><b>{r.person}</b>: {r.oldSeatName} to {r.suggestion!.seatName}</Trans>
               </li>
             ))}
           </ul>
@@ -271,15 +273,15 @@ export default function CarryAcross({
               {busy === "all" ? "Moving" : `Yes, move ${plural(suggestedRows.length, "person", "people")}`}
             </button>
             <button type="button" className={secondary} disabled={busy !== null} onClick={() => setConfirmAll(false)}>
-              Not yet
-            </button>
+              <Trans context="CarryAcross, button">Not yet
+            </Trans></button>
           </div>
         </div>
       )}
       {failure && <p className="text-sm text-destructive" role="alert">{failure}</p>}
 
       {carry.rows.length > 0 && (
-        <ul className={card} aria-label="People on the old chart">
+        <ul className={card} aria-label={t({ message: "People on the old chart", context: "CarryAcross, aria-label" })}>
           {carry.rows.map((r) => {
             const pick = pickOf(r);
             const suggested = !!r.suggestion && pick === r.suggestion.seatId;
@@ -294,14 +296,14 @@ export default function CarryAcross({
                     <b className="font-semibold">{r.person}</b>
                     {suggested && (
                       <span className={`${pillBase} text-notice border-current`} data-testid="suggested">
-                        Suggested · {WHY[r.suggestion!.why]}
+                        <Trans context="CarryAcross, span">Suggested · {WHY[r.suggestion!.why]}</Trans>
                       </span>
                     )}
-                    {!suggested && pick && pick !== KEEP && <span className={`${pillBase} text-open border-current`}>Your pick</span>}
+                    {!suggested && pick && pick !== KEEP && <span className={`${pillBase} text-open border-current`}><Trans context="CarryAcross, span">Your pick</Trans></span>}
                   </p>
                   <p className="text-[13px] text-muted-foreground">
-                    Old role: {r.oldSeatName}
-                    {r.oldCircleName ? ` · ${r.oldCircleName}` : ""}
+                    <Trans context="CarryAcross, p">Old role: {r.oldSeatName}
+                    {r.oldCircleName ? ` · ${r.oldCircleName}` : ""}</Trans>
                   </p>
                   {!r.suggestion && (
                     <p className="text-[13px] text-muted-foreground">
@@ -340,8 +342,8 @@ export default function CarryAcross({
                     </button>
                     {pick === KEEP && (
                       <p className="text-[13px] text-muted-foreground sm:col-span-2">
-                        {r.person} stays in {r.oldSeatName} for now. A role somebody holds is never retired.
-                      </p>
+                        <Trans context="CarryAcross, p">{r.person} stays in {r.oldSeatName} for now. A role somebody holds is never retired.
+                      </Trans></p>
                     )}
                   </div>
                 ) : (
@@ -355,8 +357,8 @@ export default function CarryAcross({
 
       {carry.retire.stillHeld.length > 0 && toRetire > 0 && (
         <div className="grid gap-1.5" data-testid="carry-still-held">
-          <h3 className="font-display text-[17px]">Still held</h3>
-          <p className="text-[13px] text-muted-foreground">These old roles stay until their people have a role on the new chart.</p>
+          <h3 className="font-display text-[17px]"><Trans context="CarryAcross, h3">Still held</Trans></h3>
+          <p className="text-[13px] text-muted-foreground"><Trans context="CarryAcross, p">These old roles stay until their people have a role on the new chart.</Trans></p>
           <ul className="text-sm grid gap-0.5">
             {carry.retire.stillHeld.map((s) => (
               <li key={s.id}>
@@ -369,12 +371,12 @@ export default function CarryAcross({
 
       {toRetire > 0 && !carry.retireDraft && (
         <div className={`${card} p-4 grid gap-2.5`} data-testid="carry-retire">
-          <h3 className="font-display text-[17px]">Retire the empty old chart</h3>
+          <h3 className="font-display text-[17px]"><Trans context="CarryAcross, h3">Retire the empty old chart</Trans></h3>
           <p className="text-sm text-muted-foreground">
-            {plural(carry.retire.seats.length, "old role has nobody in it", "old roles have nobody in them")}
+            <Trans context="CarryAcross, p">{plural(carry.retire.seats.length, "old role has nobody in it", "old roles have nobody in them")}
             {carry.retire.circles.length ? `, and ${plural(carry.retire.circles.length, "old circle is", "old circles are")} left empty` : ""}.
             Retiring rests them, keeps their history, and never unseats anybody.
-          </p>
+          </Trans></p>
           {retirePreview ? (
             <>
               <ol className="text-sm grid gap-1 list-decimal pl-5" data-testid="carry-retire-preview">
@@ -387,8 +389,8 @@ export default function CarryAcross({
                   {busy === "retire" ? "Saving" : "Put it in a draft"}
                 </button>
                 <button type="button" className={secondary} disabled={busy !== null} onClick={() => setRetirePreview(null)}>
-                  Not yet
-                </button>
+                  <Trans context="CarryAcross, button">Not yet
+                </Trans></button>
               </div>
             </>
           ) : carry.mayRetire ? (
@@ -396,18 +398,18 @@ export default function CarryAcross({
               {busy === "retire" ? "Reading" : "Retire the empty old chart"}
             </button>
           ) : (
-            <p className="text-[13px] text-muted-foreground">A steward who works the review queue can put this in a draft.</p>
+            <p className="text-[13px] text-muted-foreground"><Trans context="CarryAcross, p">A steward who works the review queue can put this in a draft.</Trans></p>
           )}
         </div>
       )}
 
       {carry.retireDraft?.status === "open" && (
         <div className={`${card} p-4 grid gap-2.5`} data-testid="carry-retire-draft">
-          <h3 className="font-display text-[17px]">The retire draft</h3>
+          <h3 className="font-display text-[17px]"><Trans context="CarryAcross, h3">The retire draft</Trans></h3>
           <p className="text-sm font-semibold">
-            Nothing is retired yet. {plural(carry.retireDraft.reads.length, "change", "changes")},{" "}
+            <Trans context="CarryAcross, p">Nothing is retired yet. {plural(carry.retireDraft.reads.length, "change", "changes")},{" "}
             {carry.retireDraft.blocked ? `${carry.retireDraft.blocked} blocked` : "none blocked"}.
-          </p>
+          </Trans></p>
           <ol className="text-sm grid gap-1 list-decimal pl-5">
             {carry.retireDraft.reads.map((l, i) => (
               <li key={i}>{l}</li>
@@ -425,25 +427,25 @@ export default function CarryAcross({
           )}
           {confirmPublish ? (
             <div className={`${card} p-3.5 grid gap-2.5 border-notice/60`} role="group" aria-labelledby="h-retire-confirm" data-testid="carry-publish-confirm">
-              <p id="h-retire-confirm" className="font-semibold">Publish the retire draft?</p>
+              <p id="h-retire-confirm" className="font-semibold"><Trans context="CarryAcross, p">Publish the retire draft?</Trans></p>
               <p className="text-sm text-muted-foreground">
-                This rests {plural(carry.retireDraft.reads.length, "role or circle", "roles and circles")} at once, as one change. Nobody is unseated.
-              </p>
+                <Trans context="CarryAcross, p">This rests {plural(carry.retireDraft.reads.length, "role or circle", "roles and circles")} at once, as one change. Nobody is unseated.
+              </Trans></p>
               <div className="flex flex-wrap gap-2.5">
                 <button type="button" className={primary} disabled={busy !== null} onClick={() => void publishRetire()}>
                   {busy === "publish" ? "Publishing" : "Yes, publish it now"}
                 </button>
                 <button type="button" className={secondary} disabled={busy !== null} onClick={() => setConfirmPublish(false)}>
-                  Not yet
-                </button>
+                  <Trans context="CarryAcross, button">Not yet
+                </Trans></button>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2.5">
               {carry.mayPublishRetire && (
                 <button type="button" className={primary} disabled={busy !== null || carry.retireDraft.blocked > 0} onClick={() => setConfirmPublish(true)}>
-                  Publish to the live chart
-                </button>
+                  <Trans context="CarryAcross, button">Publish to the live chart
+                </Trans></button>
               )}
               {carry.mayRetire && (
                 <button type="button" className={secondary} disabled={busy !== null} onClick={() => void withdrawRetire()}>
@@ -453,7 +455,7 @@ export default function CarryAcross({
             </div>
           )}
           {!carry.mayPublishRetire && (
-            <p className="text-[13px] text-muted-foreground">Publishing changes the live chart, so an admin of this village does it.</p>
+            <p className="text-[13px] text-muted-foreground"><Trans context="CarryAcross, p">Publishing changes the live chart, so an admin of this village does it.</Trans></p>
           )}
         </div>
       )}

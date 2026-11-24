@@ -45,6 +45,7 @@ import { applySeatsHref } from "@shared/seatApplyLinks";
 import { lineWord, type GeneKeysView } from "@shared/geneKeys";
 import { readPeopleGeneKeys } from "@/lib/geneKeysApi";
 import { useMyGeneKeys } from "@/components/geneKeys/useMyGeneKeys";
+import { Trans } from "@lingui/react/macro";
 
 export const ROLES_FIT_WORDS = {
   heading: "Roles that fit this character",
@@ -250,8 +251,8 @@ export default function RolesThatFit({ archetypeName, fits }: { archetypeName: s
                       </label>
                     )}
                     <Link href={`/roles?seat=${encodeURIComponent(s.id)}`} className="min-h-11 py-3 text-sm font-medium text-teal-deep underline">
-                      Read the role
-                    </Link>
+                      <Trans context="RolesThatFit, Link">Read the role
+                    </Trans></Link>
                   </div>
                 </li>
               );

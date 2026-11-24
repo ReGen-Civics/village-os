@@ -25,6 +25,7 @@ import { ArrowLeft, ChevronUp } from "lucide-react";
 import { cssColourForCircle } from "@shared/circleView";
 import type { PowerCircle, PowerData } from "./types";
 import { circleCounts } from "./villageCounts";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** How far up a swipe travels, in px, before it counts as asking for the card. */
 export const PEEK_SWIPE_PX = 24;
@@ -51,6 +52,7 @@ export default function CirclePeek({
   onOut: () => void;
   onExpand: () => void;
 }) {
+  const { t } = useLingui();
   // Where a swipe began. Null when no swipe is under way, and never set by a
   // touch that starts on the arrow, so a thumb dragging off it cannot open the
   // card on its way to stepping out.
@@ -60,7 +62,7 @@ export default function CirclePeek({
     <div
       data-circle-peek
       role="region"
-      aria-label="The circle you are in"
+      aria-label={t({ message: "The circle you are in", context: "CirclePeek, aria-label" })}
       className="md:hidden sticky bottom-[var(--tabbar-h)] z-[52] -mx-4 min-h-[var(--circle-peek-h)] flex flex-col justify-end px-2 pt-2 pb-2 touch-none"
       onPointerDown={(e) => {
         swipeFrom.current = (e.target as Element).closest("[data-peek-out]") ? null : e.clientY;
@@ -86,7 +88,7 @@ export default function CirclePeek({
             type="button"
             data-peek-out
             onClick={onOut}
-            aria-label={`Step out to ${outTo}`}
+            aria-label={t({ message: `Step out to ${outTo}`, context: "CirclePeek, aria-label" })}
             className="shrink-0 w-11 h-11 grid place-items-center rounded-full text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
@@ -108,8 +110,8 @@ export default function CirclePeek({
               <span className="block truncate text-xs text-muted-foreground">{peekSummary(circle, data)}</span>
             </span>
             <span className="shrink-0 inline-flex items-center gap-0.5 text-xs font-semibold text-foreground">
-              Details
-              <ChevronUp className="w-4 h-4" aria-hidden="true" />
+              <Trans context="CirclePeek, span">Details
+              <ChevronUp className="w-4 h-4" aria-hidden="true" /></Trans>
             </span>
           </button>
         </div>

@@ -38,6 +38,7 @@ import { tokenModule } from "@/components/admin/tokenCatalog";
 import { formatMoney } from "@shared/money";
 import { equityTokenNote } from "@shared/tokenNote";
 import { ContributionWord, useShareNames } from "@/components/ContributionWord";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -87,18 +88,20 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function PriceFact({ row }: { row: WalletRow }) {
+  const { t } = useLingui();
   const p = row.price;
-  if (p.state !== "priced") return <Fact label="Price">{p.says}</Fact>;
+  if (p.state !== "priced") return <Fact label={t({ message: "Price", context: "WalletCard, label" })}>{p.says}</Fact>;
   const each = formatMoney(p.perTokenMinor, p.currency);
   return (
     <Fact label="Price">
-      {each} each at the exchange
-      {row.heldUnits > 0 ? `, so yours come to ${formatMoney(p.heldValueMinor, p.currency)}` : ""}
+      <Trans context="WalletCard, Fact">{each} each at the exchange
+      {row.heldUnits > 0 ? `, so yours come to ${formatMoney(p.heldValueMinor, p.currency)}` : ""}</Trans>
     </Fact>
   );
 }
 
 export default function WalletCard() {
+  const { t } = useLingui();
   const exchangeModule = useModule("exchange");
   const catalog = useModules();
   const { user } = useAuth();
@@ -197,32 +200,32 @@ export default function WalletCard() {
     <div id="wallet" ref={section} className="scroll-mt-24 rounded-2xl bg-card p-6 shadow-lg sm:p-8">
       <div className="mb-2 flex items-center justify-between gap-4">
         <h3 className="flex items-center gap-2 font-display text-xl font-bold text-card-foreground">
-          <WalletIcon className="h-6 w-6" aria-hidden="true" />
+          <Trans context="WalletCard, h3"><WalletIcon className="h-6 w-6" aria-hidden="true" />
           Wallet
-        </h3>
+        </Trans></h3>
         {exchangeModule && (
           <Link href="/tokens" className="flex shrink-0 items-center gap-1 text-sm font-medium text-foreground hover:underline">
-            The Exchange
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <Trans context="WalletCard, Link">The Exchange
+            <ArrowRight className="h-4 w-4" aria-hidden="true" /></Trans>
           </Link>
         )}
       </div>
       <p className="mb-6 text-sm text-muted-foreground">
-        What you hold in the village, what you can carry across to Hypha, and what Base says you hold there. Only you
+        <Trans context="WalletCard, p">What you hold in the village, what you can carry across to Hypha, and what Base says you hold there. Only you
         can see this.
-      </p>
+      </Trans></p>
 
       {status === "loading" ? (
-        <p className="text-sm text-muted-foreground">Loading your wallet…</p>
+        <p className="text-sm text-muted-foreground"><Trans context="WalletCard, p">Loading your wallet…</Trans></p>
       ) : status === "failed" ? (
         <p className="text-sm text-muted-foreground">
           Your wallet didn't load.{" "}
           <button type="button" onClick={load} className="font-medium text-foreground hover:underline">
-            Retry
-          </button>
+            <Trans context="WalletCard, button">Retry
+          </Trans></button>
         </p>
       ) : visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">This village has no tokens yet.</p>
+        <p className="text-sm text-muted-foreground"><Trans context="WalletCard, p">This village has no tokens yet.</Trans></p>
       ) : (
         <ul className="space-y-4">
           {visible.map((row) => (
@@ -237,36 +240,36 @@ export default function WalletCard() {
               <dl className="mt-3 space-y-2 text-sm">
                 {row.role === "gratitude" ? (
                   <>
-                    <Fact label="Thanks received">
+                    <Fact label={t({ message: "Thanks received", context: "WalletCard, label" })}>
                       <span className="font-semibold">{amount(row.heldUnits, row.decimals)}</span>
                     </Fact>
-                    {row.gratitude && <Fact label="Left to give">{row.gratitude.says}</Fact>}
-                    {row.staysHere && <Fact label="Claim on Hypha">{row.staysHere}</Fact>}
+                    {row.gratitude && <Fact label={t({ message: "Left to give", context: "WalletCard, label" })}>{row.gratitude.says}</Fact>}
+                    {row.staysHere && <Fact label={t({ message: "Claim on Hypha", context: "WalletCard, label" })}>{row.staysHere}</Fact>}
                   </>
                 ) : (
                   <>
-                    <Fact label="Held in the village">
+                    <Fact label={t({ message: "Held in the village", context: "WalletCard, label" })}>
                       <span className={`font-semibold ${row.heldUnits < 0 ? "text-destructive" : ""}`}>
                         {amount(row.heldUnits, row.decimals)}
                       </span>
                       {row.lockedUnits > 0 && (
                         <span className="block text-muted-foreground">
-                          {amount(row.lockedUnits, row.decimals)} of it is held: {row.locks.join("; ")}
+                          <Trans context="WalletCard, span">{amount(row.lockedUnits, row.decimals)} of it is held: {row.locks.join("; ")}</Trans>
                         </span>
                       )}
                     </Fact>
                     {row.claim ? (
-                      <Fact label="Claim on Hypha">
+                      <Fact label={t({ message: "Claim on Hypha", context: "WalletCard, label" })}>
                         {row.claim.says}
                         <span className="block text-muted-foreground">{row.claim.opens}</span>
                         {row.claim.claimedToHypha > 0 && (
                           <span className="block text-muted-foreground">
-                            Claimed across so far: {row.claim.claimedToHypha}
+                            <Trans context="WalletCard, span">Claimed across so far: {row.claim.claimedToHypha}</Trans>
                           </span>
                         )}
                       </Fact>
                     ) : (
-                      row.staysHere && <Fact label="Claim on Hypha">{row.staysHere}</Fact>
+                      row.staysHere && <Fact label={t({ message: "Claim on Hypha", context: "WalletCard, label" })}>{row.staysHere}</Fact>
                     )}
                     {row.onBase && (
                       <Fact label={`On Base, as ${row.onBase.mirrorName}`}>

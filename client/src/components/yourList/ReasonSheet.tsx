@@ -7,7 +7,7 @@
  * a role. Nothing is sent until the press is saved.
  */
 import { useEffect, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { HANDOFF_LIMITS } from "@shared/roleTaskHandoff";
 import { NOTE_MAX, REDIRECT_CHOICES, REMOVE_CHOICES, SCREEN_REASON_WORDS, type ScreenReason } from "@shared/memberTaskFeedback";
 import { BTN_PRIMARY, BTN_QUIET, HINT, LABEL_CAPS } from "@/components/sessions/roomUi";
@@ -77,7 +77,7 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
       </fieldset>
       {mode === "remove" && dup && others.length > 0 && (
         <label className="mt-2 block">
-          <span className={LABEL_CAPS}>Which task stays? (optional)</span>
+          <span className={LABEL_CAPS}><Trans context="ReasonSheet, span">Which task stays? (optional)</Trans></span>
           <select className={FIELD} value={keeps} onChange={(e) => setKeeps(e.target.value)}>
             <option value="">Don't say</option>
             {others.map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
@@ -86,16 +86,16 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
       )}
       {mode === "redirect" && (
         <label className="mt-2 block">
-          <span className={LABEL_CAPS}>To</span>
+          <span className={LABEL_CAPS}><Trans context="ReasonSheet, span">To</Trans></span>
           <select className={FIELD} value={to} onChange={(e) => setTo(e.target.value)}>
             <option value="">Choose a person or a role</option>
             {targets && targets.people.length > 0 && (
-              <optgroup label="A person">
+              <optgroup label={t({ message: "A person", context: "ReasonSheet, label" })}>
                 {targets.people.map((p) => <option key={p.id} value={`p:${p.id}`}>{p.name}</option>)}
               </optgroup>
             )}
             {targets && targets.roles.length > 0 && (
-              <optgroup label="A role">
+              <optgroup label={t({ message: "A role", context: "ReasonSheet, label" })}>
                 {targets.roles.map((r) => <option key={r.id} value={`r:${r.id}`}>{r.name}</option>)}
               </optgroup>
             )}
@@ -116,18 +116,18 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
         </label>
       )}
       <label className="mt-2 block">
-        <span className={LABEL_CAPS}>A note (optional)</span>
+        <span className={LABEL_CAPS}><Trans context="ReasonSheet, span">A note (optional)</Trans></span>
         <textarea className={`${FIELD} min-h-20 py-2`} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       <p className={`${HINT} mt-1`}>
-        Your reason helps Organisational Memory learn what to send you. A note stays in the village until notes are released, and
+        <Trans context="ReasonSheet, p">Your reason helps Organisational Memory learn what to send you. A note stays in the village until notes are released, and
         emails and phone numbers are taken out before it ever leaves.
-      </p>
+      </Trans></p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" className={BTN_PRIMARY} disabled={busy || !ready} onClick={pick}>
           {mode === "remove" ? "Remove it" : "Hand it on"}
         </button>
-        <button type="button" className={BTN_QUIET} onClick={onCancel}>Cancel</button>
+        <button type="button" className={BTN_QUIET} onClick={onCancel}><Trans context="ReasonSheet, button">Cancel</Trans></button>
       </div>
     </div>
   );

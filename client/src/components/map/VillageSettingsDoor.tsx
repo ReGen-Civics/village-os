@@ -31,6 +31,7 @@ import MapSkinPanel from "@/components/MapSkinPanel";
 import WalkEditorPanel from "@/components/WalkEditorPanel";
 import MapVocabularyPanel from "@/components/admin/MapVocabularyPanel";
 import MapChipsPanel from "@/components/admin/MapChipsPanel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * Whether a route the artifact asked the site to open is the settings door.
@@ -117,6 +118,7 @@ export default function VillageSettingsDoor({ open, onClose, onOpenFullPage }: {
   onClose: () => void;
   onOpenFullPage: () => void;
 }) {
+  const { t } = useLingui();
   const mayAdminister = useIsAdmin();
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
@@ -176,7 +178,7 @@ export default function VillageSettingsDoor({ open, onClose, onOpenFullPage }: {
        */}
       <aside
         role="dialog"
-        aria-label="Village settings"
+        aria-label={t({ message: "Village settings", context: "VillageSettingsDoor, aria-label" })}
         className="h-full w-full sm:w-[400px] overflow-y-auto bg-card border-l border-border shadow-2xl"
       >
         {/*
@@ -187,14 +189,14 @@ export default function VillageSettingsDoor({ open, onClose, onOpenFullPage }: {
          */}
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 bg-card border-b border-border">
           <div>
-            <h2 className="font-display text-lg font-bold text-foreground">Village settings</h2>
-            <p className="text-xs text-muted-foreground">The village's own colours and words, changed while you watch the land.</p>
+            <h2 className="font-display text-lg font-bold text-foreground"><Trans context="VillageSettingsDoor, h2">Village settings</Trans></h2>
+            <p className="text-xs text-muted-foreground"><Trans context="VillageSettingsDoor, p">The village's own colours and words, changed while you watch the land.</Trans></p>
           </div>
           <button
             ref={closeRef}
             type="button"
             onClick={onClose}
-            aria-label="Close village settings"
+            aria-label={t({ message: "Close village settings", context: "VillageSettingsDoor, aria-label" })}
             className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg border border-border text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="w-4 h-4" aria-hidden="true" />
@@ -213,9 +215,9 @@ export default function VillageSettingsDoor({ open, onClose, onOpenFullPage }: {
             onClick={onOpenFullPage}
             className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <Trans context="VillageSettingsDoor, button"><ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
             Open the full settings page
-          </button>
+          </Trans></button>
         </div>
       </aside>
     </div>

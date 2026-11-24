@@ -51,7 +51,7 @@ import GeneKeysPrompt from "@/components/geneKeys/GeneKeysPrompt";
 import RoleStartSteps from "@/components/profile/RoleStartSteps";
 import RootTags, { RootGlyph } from "@/components/roots/RootTags";
 import { castArt, castLookFor } from "@shared/archetypeRoots";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -327,8 +327,8 @@ export default function Characters() {
     return (
       <Layout>
         <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-          <h1 className="text-3xl font-display font-bold text-teal-deep">Choose who you will be</h1>
-          <p className="mt-4 text-gray-700">Sign in to pick your paths.</p>
+          <h1 className="text-3xl font-display font-bold text-teal-deep"><Trans context="Characters, h1">Choose who you will be</Trans></h1>
+          <p className="mt-4 text-gray-700"><Trans context="Characters, p">Sign in to pick your paths.</Trans></p>
         </div>
       </Layout>
     );
@@ -461,7 +461,7 @@ export default function Characters() {
                 enforces the 44px floor.
               */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-5">
-                <div role="radiogroup" aria-label="Portrait style" className="flex items-center gap-2">
+                <div role="radiogroup" aria-label={t({ message: "Portrait style", context: "Characters, aria-label" })} className="flex items-center gap-2">
                   {(["f", "m"] as const).map((p) => (
                     <button
                       key={p}
@@ -481,7 +481,7 @@ export default function Characters() {
                     </button>
                   ))}
                 </div>
-                <div role="radiogroup" aria-label="Skin tone" className="flex items-center gap-3">
+                <div role="radiogroup" aria-label={t({ message: "Skin tone", context: "Characters, aria-label" })} className="flex items-center gap-3">
                   {TONES.map((t) => (
                     <button
                       key={t.key}
@@ -530,8 +530,8 @@ export default function Characters() {
                       href="/profile"
                       className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-teal-deep px-6 py-3 font-semibold text-teal-deep hover:bg-teal-deep/5"
                     >
-                      Continue to your profile
-                    </Link>
+                      <Trans context="Characters, Link">Continue to your profile
+                    </Trans></Link>
                   </p>
                 ) : null}
               </div>
@@ -554,7 +554,7 @@ export default function Characters() {
               folded into the name so the name stays the class, exactly as
               the visible title does, and the note is read after it.
             */}
-            <nav aria-label="Classes" className="order-2 min-w-0 lg:order-1">
+            <nav aria-label={t({ message: "Classes", context: "Characters, aria-label" })} className="order-2 min-w-0 lg:order-1">
               {castStatus === "failed" ? (
                 /*
                   THIS LINE SITS ON THE PAGE, NOT ON A CARD, so it takes the
@@ -575,8 +575,8 @@ export default function Characters() {
                     onClick={loadCast}
                     className="min-h-11 font-medium text-foreground underline underline-offset-2"
                   >
-                    Retry
-                  </button>
+                    <Trans context="Characters, button">Retry
+                  </Trans></button>
                 </p>
               ) : null}
               <ul className="flex flex-wrap justify-center gap-3 lg:flex-nowrap lg:flex-col lg:justify-start">
@@ -659,8 +659,8 @@ export default function Characters() {
                   ) : null}
 
                   <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-teal-deep">
-                    Open paths
-                  </h3>
+                    <Trans context="Characters, h3">Open paths
+                  </Trans></h3>
                   {/*
                     "Looking." WAS ALSO WHAT FAILURE LOOKED LIKE. The word was
                     gated on `paths === null`, and the read set null on every
@@ -671,7 +671,7 @@ export default function Characters() {
                     the one control that can help.
                   */}
                   {pathsStatus === "loading" ? (
-                    <p role="status" className="mt-2 text-sm text-gray-600">Looking.</p>
+                    <p role="status" className="mt-2 text-sm text-gray-600"><Trans context="Characters, p">Looking.</Trans></p>
                   ) : pathsStatus === "failed" ? (
                     <p role="status" className="mt-2 text-sm text-red-700">
                       The open paths did not load.{" "}
@@ -680,13 +680,13 @@ export default function Characters() {
                         onClick={() => loadPaths(activeKey)}
                         className="min-h-11 font-medium text-teal-deep underline"
                       >
-                        Retry
-                      </button>
+                        <Trans context="Characters, button">Retry
+                      </Trans></button>
                     </p>
                   ) : !paths || paths.roles.length === 0 ? (
                     <p className="mt-2 text-sm text-gray-700">
-                      No roles carry this tag yet. Every role is still open to you.
-                    </p>
+                      <Trans context="Characters, p">No roles carry this tag yet. Every role is still open to you.
+                    </Trans></p>
                   ) : (
                     <ul className="mt-2 space-y-2">
                       {paths.roles.map((r) => (
@@ -698,8 +698,8 @@ export default function Characters() {
                           <span className="flex-1 text-sm text-gray-800">{r.name}</span>
                           {r.recruiting ? (
                             <span className="rounded-full bg-sage-light px-2 py-0.5 text-xs font-medium text-sage">
-                              Open
-                            </span>
+                              <Trans context="Characters, span">Open
+                            </Trans></span>
                           ) : null}
                         </li>
                       ))}
@@ -728,9 +728,9 @@ export default function Characters() {
                   {paths?.powers?.length ? (
                     <>
                       <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-teal-deep">
-                        Powers it suits
-                      </h3>
-                      <p className="mt-1 text-sm text-sage">The village entrusts these, and they suit this class.</p>
+                        <Trans context="Characters, h3">Powers it suits
+                      </Trans></h3>
+                      <p className="mt-1 text-sm text-sage"><Trans context="Characters, p">The village entrusts these, and they suit this class.</Trans></p>
                       <ul className="mt-2 space-y-1.5">
                         {paths.powers.map((p) => (
                           <li key={p.key} className="rounded-lg border border-sage/30 px-3 py-2 text-sm text-teal-deep">
@@ -796,8 +796,8 @@ export default function Characters() {
                   onClick={loadParty}
                   className="min-h-11 font-medium text-foreground underline underline-offset-2"
                 >
-                  Retry
-                </button>
+                  <Trans context="Characters, button">Retry
+                </Trans></button>
               </p>
             </section>
           ) : party.length > 0 ? (
@@ -850,7 +850,7 @@ export default function Characters() {
                       */}
                       <button
                         type="button"
-                        aria-label={`Front ${label}`}
+                        aria-label={t({ message: `Front ${label}`, context: "Characters, aria-label" })}
                         aria-pressed={c.isPrimary}
                         onClick={() =>
                           act(
@@ -869,7 +869,7 @@ export default function Characters() {
                       </button>
                       <button
                         type="button"
-                        aria-label={leaving === c.id ? `Keep ${label}` : `Leave ${label}`}
+                        aria-label={leaving === c.id ? t({ message: `Keep ${label}`, context: "Characters, aria-label" }) : t({ message: `Leave ${label}`, context: "Characters, aria-label" })}
                         onClick={() => setLeaving((id) => (id === c.id ? null : c.id))}
                         className="absolute right-1 top-1 inline-flex items-center justify-center rounded-full bg-white/90 p-1.5 shadow pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                       >
@@ -878,8 +878,8 @@ export default function Characters() {
                       {leaving === c.id ? (
                         <div className="px-2 pb-2">
                           <p className="text-xs text-red-700">
-                            Leaving removes {label} from your roots for good.
-                          </p>
+                            <Trans context="Characters, p">Leaving removes {label} from your roots for good.
+                          </Trans></p>
                           <div className="mt-1.5 flex gap-1.5">
                             <button
                               type="button"
@@ -894,15 +894,15 @@ export default function Characters() {
                               }
                               className="min-h-11 flex-1 rounded-lg bg-red-700 px-2 text-xs font-semibold text-white disabled:opacity-50"
                             >
-                              Leave
-                            </button>
+                              <Trans context="Characters, button">Leave
+                            </Trans></button>
                             <button
                               type="button"
                               onClick={() => setLeaving(null)}
                               className="min-h-11 flex-1 rounded-lg border border-gray-300 px-2 text-xs font-semibold text-teal-deep"
                             >
-                              Keep
-                            </button>
+                              <Trans context="Characters, button">Keep
+                            </Trans></button>
                           </div>
                         </div>
                       ) : null}

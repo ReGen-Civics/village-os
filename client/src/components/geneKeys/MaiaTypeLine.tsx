@@ -12,6 +12,7 @@
 import type { GeneKeysView } from "@shared/geneKeys";
 import { useGuideName } from "@/hooks/useGuideName";
 import { useMyGeneKeys } from "./useMyGeneKeys";
+import { Trans } from "@lingui/react/macro";
 
 /** The line for a member's type and authority. Emotional authority leads: waiting is the one thing to say first. */
 export function maiaTypeLine(view: Pick<GeneKeysView, "type" | "authority">): string {
@@ -41,7 +42,7 @@ export default function MaiaTypeLine({ className = "" }: { className?: string })
   if (!line) return null;
   return (
     <p className={`text-sm text-muted-foreground ${className}`}>
-      <span className="font-semibold text-foreground">From {guide.name}:</span> {line}
+      <span className="font-semibold text-foreground"><Trans context="MaiaTypeLine, span">From {guide.name}:</Trans></span> {line}
     </p>
   );
 }

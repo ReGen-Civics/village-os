@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useVillageName, useVillageLocation } from "@/hooks/useVillageName";
 import LandPlanBackdrop, { useLandPlan } from "./LandPlanBackdrop";
 import { formatLatLon } from "./landPlan";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * A hash that already points somewhere on the land — a place, module, journey,
@@ -161,6 +162,7 @@ export default function EnterTheLandGate({
   slow = false,
   onEnter,
 }: EnterTheLandGateProps) {
+  const { t } = useLingui();
   const villageName = useVillageName();
   const villageLocation = useVillageLocation();
   // The land as a plan behind both the dialog and the cover, so pressing
@@ -179,7 +181,7 @@ export default function EnterTheLandGate({
         <div
           className="absolute inset-0 z-[5] flex items-center justify-center px-6"
           role="dialog"
-          aria-label="Enter the Living Map"
+          aria-label={t({ message: "Enter the Living Map", context: "EnterTheLandGate, aria-label" })}
         >
           <div className="relative text-center text-foreground">
             <h1 className="font-display text-4xl sm:text-6xl tracking-[0.42em] pl-[0.42em] uppercase text-foreground">
@@ -203,8 +205,8 @@ export default function EnterTheLandGate({
               onClick={onEnter}
               className="group mt-8 inline-flex min-h-[48px] items-center gap-2.5 px-8 py-2.5 text-[15px] font-medium tracking-wide rounded-full bg-teal-deep text-white shadow-lg hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2"
             >
-              Enter the Land
-              <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+              <Trans context="EnterTheLandGate, button">Enter the Land
+              <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span></Trans>
             </button>
           </div>
         </div>

@@ -11,8 +11,10 @@ import { PAGE_GATE_LINES } from "@/components/modules/gateCopy";
 import PlaceGallery from "@/components/places/PlaceGallery";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { Link, useRoute } from "wouter";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 export default function PlacePhotos() {
+  const { t } = useLingui();
   const modules = useModules();
   const mapModule = useModule("map");
   const [, params] = useRoute("/places/:key");
@@ -25,19 +27,19 @@ export default function PlacePhotos() {
   return (
     <Layout>
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap gap-x-4">
+        <nav aria-label={t({ message: "Breadcrumb", context: "PlacePhotos, aria-label" })} className="flex flex-wrap gap-x-4">
           <Link href="/places" className="text-sm text-teal-deep underline inline-block py-1.5 min-h-[44px]">
-            All places
-          </Link>
+            <Trans context="PlacePhotos, Link">All places
+          </Trans></Link>
           <Link href="/photographs" className="text-sm text-teal-deep underline inline-block py-1.5 min-h-[44px]">
-            Every photograph
-          </Link>
+            <Trans context="PlacePhotos, Link">Every photograph
+          </Trans></Link>
         </nav>
         <h1 className="font-serif text-3xl">{key || "This place"}</h1>
         {key ? (
           <PlaceGallery structureKey={key} placeName={key} />
         ) : (
-          <p className="text-muted-foreground">That address names no place on this map.</p>
+          <p className="text-muted-foreground"><Trans context="PlacePhotos, p">That address names no place on this map.</Trans></p>
         )}
       </div>
     </Layout>

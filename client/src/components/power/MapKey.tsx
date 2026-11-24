@@ -10,6 +10,7 @@
  * and the last line here says so.
  */
 import type { ReactNode } from "react";
+import { Trans } from "@lingui/react/macro";
 
 const AMBER = "var(--color-amber)";
 const HELD = "var(--color-teal)";
@@ -51,7 +52,7 @@ export default function MapKey({ className = "" }: { className?: string }) {
         </Swatch>
         the forming band: named, no roles yet
       </span>
-      <span className="basis-full sm:basis-auto">Step into a circle to meet each role.</span>
+      <span className="basis-full sm:basis-auto"><Trans context="MapKey, span">Step into a circle to meet each role.</Trans></span>
     </div>
   );
 }

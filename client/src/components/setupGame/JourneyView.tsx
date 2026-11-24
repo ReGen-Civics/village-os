@@ -8,6 +8,7 @@
 import type { SettingsPayload } from "@/components/admin/comms/commsSettingsApi";
 import type { LaunchItem, SeedState, SetupGameMap } from "./setupGameApi";
 import { LAYER_WORD, nextYes, orderedLayers, seedLight, type SeedLight } from "./journeyModel";
+import { Trans } from "@lingui/react/macro";
 
 interface Props {
   map: SetupGameMap;
@@ -30,23 +31,23 @@ function SeedRow({ s, l, onPlaySpring }: { s: SeedState; l: SeedLight; onPlaySpr
         </span>
       </div>
       <div className="sg-tags">
-        {l.light === "alive" ? <span className="sg-tag alive">alive</span> : null}
-        {s.keystone ? <span className="sg-tag key">keystone</span> : null}
-        {s.bootstrap ? <span className="sg-tag thin">hosting</span> : null}
-        {s.need === "optional" ? <span className="sg-tag">optional</span> : null}
+        {l.light === "alive" ? <span className="sg-tag alive"><Trans context="JourneyView, span">alive</Trans></span> : null}
+        {s.keystone ? <span className="sg-tag key"><Trans context="JourneyView, span">keystone</Trans></span> : null}
+        {s.bootstrap ? <span className="sg-tag thin"><Trans context="JourneyView, span">hosting</Trans></span> : null}
+        {s.need === "optional" ? <span className="sg-tag"><Trans context="JourneyView, span">optional</Trans></span> : null}
       </div>
       <details>
-        <summary>What it grants</summary>
+        <summary><Trans context="JourneyView, summary">What it grants</Trans></summary>
         <p>{s.consequence}</p>
         <p>
-          Cost: {s.cost} Undo: {s.undo}
+          <Trans context="JourneyView, p">Cost: {s.cost} Undo: {s.undo}</Trans>
         </p>
-        {s.byHand ? <p>By hand: {s.byHand}</p> : null}
+        {s.byHand ? <p><Trans context="JourneyView, p">By hand: {s.byHand}</Trans></p> : null}
         {l.spring ? (
           <p>
             <button type="button" className="sg-link" onClick={onPlaySpring}>
-              Plant it in the Spring plot
-            </button>
+              <Trans context="JourneyView, button">Plant it in the Spring plot
+            </Trans></button>
           </p>
         ) : l.fixAt ? (
           <p>
@@ -78,7 +79,7 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
           <section key={layer.id} className="sg-guild sg-wood">
             <header>
               <h3>{layer.title}</h3>
-              <span className="lay">platform · {LAYER_WORD[layer.layer] ?? layer.layer}</span>
+              <span className="lay"><Trans context="JourneyView, span">platform · {LAYER_WORD[layer.layer] ?? layer.layer}</Trans></span>
             </header>
             <ul>
               {layer.seeds.map((id) => map.seeds[id]).filter(Boolean).map((s) => (
@@ -88,8 +89,8 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
             {layer.layer === "water" ? (
               <div className="sg-play">
                 <button type="button" className="sg-primary" onClick={onPlaySpring}>
-                  Play the Spring plot
-                </button>
+                  <Trans context="JourneyView, button">Play the Spring plot
+                </Trans></button>
               </div>
             ) : null}
           </section>
@@ -100,7 +101,7 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
             <section key={m.id} className="sg-guild sg-wood">
               <header>
                 <h3>{m.name}</h3>
-                <span className="lay">guild · {m.lifecycle}</span>
+                <span className="lay"><Trans context="JourneyView, span">guild · {m.lifecycle}</Trans></span>
               </header>
               {own.length ? (
                 <ul>
@@ -110,9 +111,9 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
                 </ul>
               ) : (
                 <div className="sg-empty">
-                  {m.seeds.length ? "Everything it needs grows in the platform layers above. " : "No keys to plant. "}
+                  <Trans context="JourneyView, div">{m.seeds.length ? "Everything it needs grows in the platform layers above. " : "No keys to plant. "}
                   Its settings and content live on <a href={`/modules/${m.id}`}>its own page</a>.
-                </div>
+                </Trans></div>
               )}
             </section>
           );
@@ -123,7 +124,7 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
           <div className="sg-dock-head">
             <div className="sg-av" aria-hidden="true" />
             <div>
-              <div className="nm">Your next yes</div>
+              <div className="nm"><Trans context="JourneyView, div">Your next yes</Trans></div>
               <div className="rl">{next ? next.provider : "nothing waiting"}</div>
             </div>
           </div>
@@ -135,45 +136,45 @@ export default function JourneyView({ map, launch, comms, onPlaySpring }: Props)
                 <div className="sg-actions" style={{ marginTop: 10 }}>
                   {lightOf(next).spring ? (
                     <button type="button" className="sg-primary" onClick={onPlaySpring}>
-                      Do the next yes
-                    </button>
+                      <Trans context="JourneyView, button">Do the next yes
+                    </Trans></button>
                   ) : lightOf(next).fixAt ? (
                     <a className="sg-primary" href={lightOf(next).fixAt ?? undefined}>
-                      Do the next yes
-                    </a>
+                      <Trans context="JourneyView, a">Do the next yes
+                    </Trans></a>
                   ) : (
                     <span className="sg-dim">{next.byHand ?? "Ask whoever runs your hosting."}</span>
                   )}
                 </div>
               </>
             ) : (
-              <p>Every needed seed in the layers and the switched-on guilds is planted.</p>
+              <p><Trans context="JourneyView, p">Every needed seed in the layers and the switched-on guilds is planted.</Trans></p>
             )}
           </div>
         </div>
         <div className="sg-card">
-          <h3>The forest today</h3>
+          <h3><Trans context="JourneyView, h3">The forest today</Trans></h3>
           <ul className="sg-cellar">
             <li>
-              {count("alive")} alive<span>A live check passed.</span>
+              <Trans context="JourneyView, li">{count("alive")} alive<span>A live check passed.</span></Trans>
             </li>
             <li>
-              {count("planted")} planted, not proven<span>A value is set. Only a live check can say it works.</span>
+              <Trans context="JourneyView, li">{count("planted")} planted, not proven<span>A value is set. Only a live check can say it works.</span></Trans>
             </li>
             <li>
-              {count("open")} not planted<span>Waiting on a yes.</span>
+              <Trans context="JourneyView, li">{count("open")} not planted<span>Waiting on a yes.</span></Trans>
             </li>
             <li>
-              {count("unknown")} not knowable here<span>No live check is wired for these yet.</span>
+              <Trans context="JourneyView, li">{count("unknown")} not knowable here<span>No live check is wired for these yet.</span></Trans>
             </li>
           </ul>
         </div>
         {off.length ? (
           <div className="sg-card">
-            <h3>Guilds you have not planted</h3>
+            <h3><Trans context="JourneyView, h3">Guilds you have not planted</Trans></h3>
             <p className="sg-dim" style={{ margin: 0 }}>
-              Switch one on in the Module Library and its seeds join the forest here.
-            </p>
+              <Trans context="JourneyView, p">Switch one on in the Module Library and its seeds join the forest here.
+            </Trans></p>
             <div className="sg-badges" style={{ marginTop: 8 }}>
               {off.map((m) => (
                 <a key={m.id} className="sg-badge" href={`/modules/${m.id}`}>

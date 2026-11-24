@@ -22,6 +22,7 @@ import type { QuestFeedAnswer } from "@shared/seraQuestFeed";
 import { droppedWords, syncHealth, syncHealthWords } from "@shared/seraSyncHealth";
 import { API_BASE, authHeaders } from "./adminApi";
 import { LevelRing, QuestCard, ToolBadges, type QuestState } from "./SaberraBridgeQuests";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 const plural = (k: number, one: string, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
 
@@ -35,6 +36,7 @@ function countdown(ms: number): string {
 const villageDate = (iso: string | null): string => villageTime(iso);
 
 export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; onFeed?: (dryRun: boolean) => Promise<QuestFeedAnswer | string> }) {
+  const { t } = useLingui();
   const [feed, setFeed] = useState<QuestFeedAnswer | string | null>(null);
   const [feeding, setFeeding] = useState(false);
   const press = async (dryRun: boolean) => {
@@ -60,11 +62,11 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
         <LevelRing done={done} of={checks.length} />
         <div>
           <h3 id="sera-bridge-title" className="font-semibold text-gray-900">
-            Organisational Memory{allDone ? ": complete" : ""}
+            <Trans context="SaberraBridgeBoard, h3">Organisational Memory{allDone ? ": complete" : ""}</Trans>
           </h3>
           <p className="text-xs text-gray-500">
-            {plural(done, "check")} of {checks.length} done. Each check is a fact this village's server reads, never an estimate.
-          </p>
+            <Trans context="SaberraBridgeBoard, p">{plural(done, "check")} of {checks.length} done. Each check is a fact this village's server reads, never an estimate.
+          </Trans></p>
         </div>
       </div>
       <div className="text-xs text-gray-600">
@@ -91,9 +93,9 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
       </div>
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <QuestCard title="Connection" state={st(conn, 3)} steps={{ done: conn, of: 3 }}>
-          <p>Key {a.connection.mayCall ? "set" : "not set"}, address {a.connection.addressSet ? "set" : "not set"}.</p>
-          <p>{plural(a.connection.held, "fact")} held.</p>
+        <QuestCard title={t({ message: "Connection", context: "SaberraBridgeBoard, title" })} state={st(conn, 3)} steps={{ done: conn, of: 3 }}>
+          <p><Trans context="SaberraBridgeBoard, p">Key {a.connection.mayCall ? "set" : "not set"}, address {a.connection.addressSet ? "set" : "not set"}.</Trans></p>
+          <p><Trans context="SaberraBridgeBoard, p">{plural(a.connection.held, "fact")} held.</Trans></p>
           <p>
             {a.connection.privacySet
               ? "Privacy connection set: a steward can remove a member's tasks in Sera."
@@ -101,7 +103,7 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
           </p>
           {a.connection.tokens?.length ? (
             <details className="mt-1">
-              <summary className="cursor-pointer">Which key each act uses</summary>
+              <summary className="cursor-pointer"><Trans context="SaberraBridgeBoard, summary">Which key each act uses</Trans></summary>
               <ul className="mt-1 space-y-0.5">
                 {a.connection.tokens.map((t) => (
                   <li key={t.act}>
@@ -114,11 +116,11 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
           ) : null}
         </QuestCard>
 
-        <QuestCard title="Members' lists from Sera" state={a.lists.ready ? st(list, 3) : "building"} steps={a.lists.ready ? { done: list, of: 3 } : undefined}>
+        <QuestCard title={t({ message: "Members' lists from Sera", context: "SaberraBridgeBoard, title" })} state={a.lists.ready ? st(list, 3) : "building"} steps={a.lists.ready ? { done: list, of: 3 } : undefined}>
           {a.lists.ready ? (
             <>
-              <p>{plural(a.lists.linkedPeople, "member")} linked to Sera, {plural(a.lists.listsOn, "list")} turned on.</p>
-              <p>{plural(a.lists.imported, "task")} imported, {a.lists.importedOpen} still open.</p>
+              <p><Trans context="SaberraBridgeBoard, p">{plural(a.lists.linkedPeople, "member")} linked to Sera, {plural(a.lists.listsOn, "list")} turned on.</Trans></p>
+              <p><Trans context="SaberraBridgeBoard, p">{plural(a.lists.imported, "task")} imported, {a.lists.importedOpen} still open.</Trans></p>
               <p>
                 {a.lists.lastBatch
                   ? `Last import: ${plural(a.lists.lastBatch.tasks, "task")}, ${villageDate(a.lists.lastBatch.at)}.`
@@ -126,39 +128,39 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
               </p>
             </>
           ) : (
-            <p>The list tables are not in this database yet.</p>
+            <p><Trans context="SaberraBridgeBoard, p">The list tables are not in this database yet.</Trans></p>
           )}
         </QuestCard>
 
-        <QuestCard title="Sync health" state={health.state === "ok" ? "done" : health.state === "never" ? "waiting" : "active"}>
+        <QuestCard title={t({ message: "Sync health", context: "SaberraBridgeBoard, title" })} state={health.state === "ok" ? "done" : health.state === "never" ? "waiting" : "active"}>
           <p role={health.state === "stale" || health.state === "failed" ? "alert" : undefined}>{syncHealthWords(health)}</p>
           {droppedWords(a.sync ?? null) && <p>{droppedWords(a.sync ?? null)}</p>}
         </QuestCard>
 
-        <QuestCard title="Linked to Sera" state={!a.lists.ready ? "building" : a.lists.people?.length ? "done" : "waiting"}>
+        <QuestCard title={t({ message: "Linked to Sera", context: "SaberraBridgeBoard, title" })} state={!a.lists.ready ? "building" : a.lists.people?.length ? "done" : "waiting"}>
           {!a.lists.ready ? (
-            <p>The list tables are not in this database yet.</p>
+            <p><Trans context="SaberraBridgeBoard, p">The list tables are not in this database yet.</Trans></p>
           ) : a.lists.people?.length ? (
             <ul className="space-y-1">
               {a.lists.people.map((p, i) => (
                 <li key={i}>
-                  <span className="font-semibold">{p.name || "A member"}</span>: list {p.listOn ? "on" : "off"}, {plural(p.imported, "task")} imported,{" "}
+                  <Trans context="SaberraBridgeBoard, li"><span className="font-semibold">{p.name || "A member"}</span>: list {p.listOn ? "on" : "off"}, {plural(p.imported, "task")} imported,{" "}
                   {p.lastImportAt ? `last import ${villageDate(p.lastImportAt)}` : "no import yet"},{" "}
                   {p.lastSyncedAt ? `last synced ${villageDate(p.lastSyncedAt)}` : "not synced yet"}.
-                </li>
+                </Trans></li>
               ))}
             </ul>
           ) : (
-            <p>Not linked yet. No member is linked to Sera; a steward links one in Admin, Players.</p>
+            <p><Trans context="SaberraBridgeBoard, p">Not linked yet. No member is linked to Sera; a steward links one in Admin, Players.</Trans></p>
           )}
         </QuestCard>
 
-        <QuestCard title="Member feedback to Sera" state={a.feedback.ready ? (a.feedback.sent > 0 ? "done" : "active") : "building"}>
+        <QuestCard title={t({ message: "Member feedback to Sera", context: "SaberraBridgeBoard, title" })} state={a.feedback.ready ? (a.feedback.sent > 0 ? "done" : "active") : "building"}>
           {a.feedback.ready ? (
             <>
               <p>
-                {a.feedback.sent} sent, {a.feedback.queued} queued, {a.feedback.failed} failed.
-              </p>
+                <Trans context="SaberraBridgeBoard, p">{a.feedback.sent} sent, {a.feedback.queued} queued, {a.feedback.failed} failed.
+              </Trans></p>
               <p>
                 {a.feedback.membersOff
                   ? `${plural(a.feedback.membersOff, "member")} turned feedback off; nothing of theirs is sent.`
@@ -171,47 +173,47 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
               </p>
             </>
           ) : (
-            <p>Being built. Remove and Redirect reasons will be sent from day one; notes are held until the agreement.</p>
+            <p><Trans context="SaberraBridgeBoard, p">Being built. Remove and Redirect reasons will be sent from day one; notes are held until the agreement.</Trans></p>
           )}
         </QuestCard>
 
-        <QuestCard title="Quest feed" state={a.questFeed?.last ? "done" : "waiting"}>
+        <QuestCard title={t({ message: "Quest feed", context: "SaberraBridgeBoard, title" })} state={a.questFeed?.last ? "done" : "waiting"}>
           {shown ? (
             <p>
-              {shown.dryRun ? "Dry run: " : `Last run ${villageDate(shown.at)}: `}
+              <Trans context="SaberraBridgeBoard, p">{shown.dryRun ? "Dry run: " : `Last run ${villageDate(shown.at)}: `}
               {shown.read} read, {shown.queued} {shown.dryRun ? "would be queued" : "queued"}, {shown.alreadySeen} already seen,{" "}
               {shown.droppedForEmail} dropped by Sera for an email{shown.refusedHere ? `, ${shown.refusedHere} refused here` : ""}.
-              {shown.status !== "ok" && ` (${shown.status}${shown.detail ? `: ${shown.detail}` : ""})`}
+              {shown.status !== "ok" && ` (${shown.status}${shown.detail ? `: ${shown.detail}` : ""})`}</Trans>
             </p>
           ) : (
-            <p>No quest feed run yet.</p>
+            <p><Trans context="SaberraBridgeBoard, p">No quest feed run yet.</Trans></p>
           )}
           {typeof feed === "string" && <p role="alert">{feed}</p>}
-          <p>{plural(a.questFeed?.waiting ?? 0, "quest")} from Sera waiting for a steward.</p>
+          <p><Trans context="SaberraBridgeBoard, p">{plural(a.questFeed?.waiting ?? 0, "quest")} from Sera waiting for a steward.</Trans></p>
           {onFeed && (
             <div className="flex flex-wrap gap-2">
               <button type="button" disabled={feeding} onClick={() => press(true)} className="min-h-[44px] rounded px-2 text-teal-deep underline focus:outline-none focus:ring-2 focus:ring-teal-deep">
-                Dry run
-              </button>
+                <Trans context="SaberraBridgeBoard, button">Dry run
+              </Trans></button>
               {feed && typeof feed !== "string" && feed.dryRun && feed.status === "ok" && (
                 <button type="button" disabled={feeding} onClick={() => press(false)} className="min-h-[44px] rounded px-2 text-teal-deep underline focus:outline-none focus:ring-2 focus:ring-teal-deep">
-                  Bring them into review
-                </button>
+                  <Trans context="SaberraBridgeBoard, button">Bring them into review
+                </Trans></button>
               )}
             </div>
           )}
         </QuestCard>
 
-        <QuestCard title="Review queue" state={a.reviewQueue.waiting > 0 ? "active" : "done"}>
+        <QuestCard title={t({ message: "Review queue", context: "SaberraBridgeBoard, title" })} state={a.reviewQueue.waiting > 0 ? "active" : "done"}>
           <p>{a.reviewQueue.waiting > 0 ? `${plural(a.reviewQueue.waiting, "suggestion")} waiting.` : "Nothing waiting."}</p>
           {a.reviewQueue.waiting > 0 && (
             <a href="/review" className="inline-flex items-center min-h-[44px] text-teal-deep underline focus:outline-none focus:ring-2 focus:ring-teal-deep rounded">
-              Open the review queue
-            </a>
+              <Trans context="SaberraBridgeBoard, a">Open the review queue
+            </Trans></a>
           )}
         </QuestCard>
 
-        <QuestCard title="Needs Owner" state={!a.needsOwner.ready ? "building" : a.needsOwner.waiting > 0 ? "active" : "done"}>
+        <QuestCard title={t({ message: "Needs Owner", context: "SaberraBridgeBoard, title" })} state={!a.needsOwner.ready ? "building" : a.needsOwner.waiting > 0 ? "active" : "done"}>
           <p>
             {!a.needsOwner.ready
               ? "The queue is not in this database yet."
@@ -228,17 +230,17 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
           )}
         </QuestCard>
 
-        <QuestCard title="Data agreement" state={agree.phase === "before" ? "active" : "done"}>
+        <QuestCard title={t({ message: "Data agreement", context: "SaberraBridgeBoard, title" })} state={agree.phase === "before" ? "active" : "done"}>
           <p>
-            With {SERA_AGREEMENT.party}, {SERA_AGREEMENT.label}.
-          </p>
+            <Trans context="SaberraBridgeBoard, p">With {SERA_AGREEMENT.party}, {SERA_AGREEMENT.label}.
+          </Trans></p>
           <p>{agree.phase === "before" ? `Starts ${countdown(agree.ms)}.` : "The agreed time has passed. Notes release once it is signed."}</p>
         </QuestCard>
       </ul>
 
       <div className="space-y-2">
-        <h4 className="font-semibold text-gray-900 text-sm">Sera tools</h4>
-        <p className="text-xs text-gray-500">From Saberra's emails of Nov 2, not read from the service.</p>
+        <h4 className="font-semibold text-gray-900 text-sm"><Trans context="SaberraBridgeBoard, h4">Sera tools</Trans></h4>
+        <p className="text-xs text-gray-500"><Trans context="SaberraBridgeBoard, p">From Saberra's emails of Nov 2, not read from the service.</Trans></p>
         <ToolBadges tools={SERA_TOOLS} />
       </div>
     </section>
@@ -270,11 +272,11 @@ export default function SaberraBridgeBoard({ password }: { password: string }) {
   if (failed)
     return (
       <div aria-live="polite" className="text-xs text-amber-800 space-y-1">
-        <p>Organisational Memory could not be read just now. Check your connection, then try again.</p>
-        <button type="button" className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs" onClick={() => { setFailed(false); setTry((n) => n + 1); }}>Try again</button>
+        <p><Trans context="SaberraBridgeBoard, p">Organisational Memory could not be read just now. Check your connection, then try again.</Trans></p>
+        <button type="button" className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs" onClick={() => { setFailed(false); setTry((n) => n + 1); }}><Trans context="SaberraBridgeBoard, button">Try again</Trans></button>
       </div>
     );
-  if (!a) return <p className="text-xs text-gray-500">Reading Organisational Memory…</p>;
+  if (!a) return <p className="text-xs text-gray-500"><Trans context="SaberraBridgeBoard, p">Reading Organisational Memory…</Trans></p>;
   const onFeed = async (dryRun: boolean): Promise<QuestFeedAnswer | string> => {
     try {
       const r = await fetch(`${API_BASE}/saberra/quest-feed`, {
