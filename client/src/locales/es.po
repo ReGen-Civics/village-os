@@ -7,6 +7,62 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen: the one button, reloads the page"
+msgid "Refresh the page"
+msgstr "Recarga la página"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen when offline: the eyebrow"
+msgid "No connection"
+msgstr "Sin conexión"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a deploy: the eyebrow"
+msgid "A fresh version is here"
+msgstr "Ya llegó una versión nueva"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "The site just grew"
+msgstr "El sitio acaba de crecer"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "Nothing is broken. One refresh brings you the new version."
+msgstr "Nada está roto. Una recarga te trae la versión nueva."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the eyebrow"
+msgid "A small stumble"
+msgstr "Un pequeño tropiezo"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: the heading"
+msgid "This page didn't load"
+msgstr "Esta página no cargó"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "A refresh usually brings it back."
+msgstr "Una recarga casi siempre la trae de vuelta."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "refresh screen after a crash: leave for the home page"
+msgid "Go to the home page"
+msgstr "Ir a la página de inicio"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/ErrorBoundary.tsx
+msgid "Details for a bug report"
+msgstr "Detalles para un informe de error"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
