@@ -26,6 +26,7 @@ function Headed() {
 
 describe("the four cards", () => {
   it("draws the four in order, each with a line, what you bring and what you get back, and the promise once under them", () => {
+    served = true;
     render(<ContributorRoutes />);
     const cards = Array.from(document.querySelectorAll("[data-route]"));
     expect(cards.map((c) => c.getAttribute("data-route"))).toEqual(["team", "venture", "partner", "quest"]);
@@ -39,7 +40,8 @@ describe("the four cards", () => {
     // Compensation for a role; "rewarded" is for quests only.
     expect(within(cards[0] as HTMLElement).getByText("The compensation the role's terms set out, agreed together.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles#founding-team");
-    expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/roles#open-ventures");
+    // Start a venture lands on the proposal form set up for a venture (the lead, 24 Nov 2026).
+    expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/work-with-us?kind=venture");
     expect(screen.getByRole("link", { name: "Become a partner" }).getAttribute("href")).toBe("/partner");
     expect(screen.getByRole("link", { name: "Propose a quest" }).getAttribute("href")).toBe("/propose-quest");
     expect(screen.getByText("A partnership shaped together, with no role on the team and no lease.")).toBeTruthy();
@@ -67,11 +69,43 @@ describe("the four cards", () => {
   it("pitches a venture from the Open ventures button on the proposal form while the village serves it, else at the new-role door", () => {
     served = true;
     const { unmount } = render(<StartVentureButton />);
-    expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/work-with-us");
+    expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/work-with-us?kind=venture");
     unmount();
     served = false;
     render(<StartVentureButton />);
     expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/role-proposals/new");
+  });
+});
+
+describe("Start a venture lands on the venture form (the lead, 24 Nov 2026)", () => {
+  const ventureHref = () => document.querySelector('[data-route-door="venture"]')?.getAttribute("href");
+
+  it("sends every list and card to /work-with-us?kind=venture: the home page's cards, the thank-you pages' lists, the founding register", () => {
+    served = true;
+    for (const el of [
+      <ContributorRoutes key="cards" />,
+      <ContributorRoutes key="gift" except={["team"]} heading="Don't see your gift in a role? Consider these:" />,
+      <ContributorRoutes key="links" variant="links" except={["team"]} />,
+      <ContributorRoutes key="founding" variant="links" register="founding" except={["team"]} promise={false} />,
+    ]) {
+      render(el);
+      expect(ventureHref()).toBe("/work-with-us?kind=venture");
+      cleanup();
+    }
+  });
+
+  it("keeps the compact tile at the top of /roles scrolling to the open ventures, and a page's own href still wins", () => {
+    served = true;
+    render(<ContributorRoutes variant="tiles" />);
+    expect(ventureHref()).toBe("/roles#open-ventures");
+    cleanup();
+    render(<ContributorRoutes variant="tiles" hrefs={{ venture: "/work-with-us?kind=venture" }} />);
+    expect(ventureHref()).toBe("/work-with-us?kind=venture");
+  });
+
+  it("CONTROL: a village that switched the proposal page off sends a venture to the new-role door, never a page it hid", () => {
+    render(<ContributorRoutes variant="links" except={["team"]} />);
+    expect(ventureHref()).toBe("/role-proposals/new");
   });
 });
 
