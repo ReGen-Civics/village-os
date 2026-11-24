@@ -12,7 +12,7 @@
  * to the first field to fix. A sending failure is said by the button, where the press was.
  */
 import { useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useThanksInView } from "@/lib/thanksInView";
@@ -20,6 +20,7 @@ import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, TICK, WORLD }
 import { sendProposal } from "@/lib/proposals";
 import ContributorRoutes, { useReplyPromise, useRouteWords } from "@/components/ContributorRoutes";
 import { CONTRIBUTOR_SOURCE, PARTNER_FORM, PARTNER_LIMITS, PARTNER_SERVES, partnerProblems, type PartnerProblem, type PartnerProposal, type PartnerServes } from "@shared/contributorRoutes";
+import Sprout from "@/components/motion/Sprout";
 
 /** The element a problem's link moves to: the field, or the first box of the serves question. */
 const fieldIdOf = (p: PartnerProblem): string => (p === "serves" ? `partner-serves-${PARTNER_SERVES[0]}` : `partner-${p}`);
@@ -94,7 +95,7 @@ export default function Partner() {
         <section className={`${WORLD} py-16 sm:py-24`}>
           <div className="container grid max-w-3xl gap-8">
             <div className={`${CARD} grid gap-4`} role="status" data-partner-sent="">
-              <CheckCircle2 className="size-10 text-notice" aria-hidden="true" />
+              <Sprout size={64} className="text-open" />
               <h1 ref={thanks} tabIndex={-1} className="font-display text-3xl text-foreground focus:outline-none">{t({ message: "Your proposal is with us", context: "partner form: sent" })}</h1>
               <p className={LEDE}>{t({ message: "The people who hold partnerships read every proposal. We write to the email you gave.", context: "partner form: sent" })}</p>
               <p className="font-semibold text-foreground" data-route-promise="">{promise}</p>

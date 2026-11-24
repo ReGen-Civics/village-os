@@ -18,12 +18,15 @@ import { guardedFetch } from "../lib/toolcheck";
 import {
   TOUCH_ICON_MAX_SOURCE_BYTES,
   fetchableIconSource,
+  renderLogoMark,
   renderTouchIcon,
 } from "../lib/touchIcon";
 
 interface Deps {
   /** The village's favicon setting (an address), or "" for none. */
   favicon: () => string;
+  /** The village's header logo setting (an address), or "" for none: the source of /api/brand/logo-mark.png. */
+  logo?: () => string;
   /** The square's colour: the install background the manifest already uses. */
   background: () => string;
   /** The platform's own mark on disk, the fallback. */
@@ -92,6 +95,37 @@ export function register(app: express.Express, deps: Deps): void {
       } catch {
         return res.status(404).end();
       }
+    }
+  });
+
+  /*
+   * GET /api/brand/logo-mark.png: the header logo as a transparent PNG on this
+   * site's own origin, which light mode uses as a mask to repaint the mark in
+   * the light band's ink (the lead, 24 Nov 2026: recolour it "automatically").
+   * A logo on another host cannot be a CSS mask without CORS; drawn here, it
+   * can. Bounded like the icon above. With nothing to draw it answers 404, and
+   * the page then shows the logo as it is (Layout's useLogoMask waits for this
+   * image to load before it repaints anything).
+   */
+  app.get("/api/brand/logo-mark.png", async (req, res) => {
+    const src = (deps.logo?.() ?? "").trim();
+    const key = `logo|${src}`;
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    try {
+      const hit = kept.get(key);
+      if (hit && Date.now() - hit.at < KEEP_MS) return res.type("image/png").send(hit.png);
+      if (src && !(await deps.overLimit("logo-mark:render", RENDERS_PER_HOUR, 60 * 60 * 1000))) {
+        const source = await readSource(req, src);
+        if (source) {
+          const png = await renderLogoMark(source);
+          kept.set(key, { png, at: Date.now() });
+          return res.type("image/png").send(png);
+        }
+      }
+      if (hit) return res.type("image/png").send(hit.png);
+      return res.status(404).end();
+    } catch {
+      return res.status(404).end();
     }
   });
 }

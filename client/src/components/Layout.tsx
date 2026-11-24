@@ -4,12 +4,10 @@ import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "luci
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
+import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import NotificationBell from "@/components/NotificationBell";
-import NotificationToasts from "@/components/NotificationToasts";
-import RewardMoment from "@/components/RewardMoment";
-import SeasonSummaryOffer from "@/components/seasonSummary/SeasonSummaryOffer";
 import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import MessageCountBadge from "@/components/messages/MessageCountBadge";
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
@@ -19,6 +17,7 @@ import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
@@ -49,6 +48,7 @@ export default function Layout({ children }: LayoutProps) {
   // the logo boxes reserve their height (64px header / 90px footer) so the
   // page never shifts on first paint, and outside links simply don't render.
   const cfg = useGameConfig();
+  const logoMask = useLogoMask(cfg?.images?.logo);
   // The footer's sign-off is the village's own words (Admin, Pages, Whole site),
   // served inside the config. Unknown until the config answers.
   const signoff = cfg ? (cfg.site?.footerSignoff ?? SITE_FOOTER_SIGNOFF) : undefined;
@@ -243,12 +243,10 @@ export default function Layout({ children }: LayoutProps) {
             style={{ minHeight: "64px" }}
           >
             {cfg?.images?.logo ? (
-              <img
-                src={cfg.images.logo}
-                alt={altOr(cfg.images.logoAlt, villageName || "Village logo")}
-                style={{ height: "64px", width: "auto" }}
-                draggable={false}
-              />
+              /* `.village-logo`: in light mode index.css repaints the mark in the band's ink, through its own shape as a mask (useLogoMask). */
+              <span className="village-logo" {...logoMask}>
+                <img src={cfg.images.logo} alt={altOr(cfg.images.logoAlt, villageName || "Village logo")} style={{ height: "64px", width: "auto" }} draggable={false} />
+              </span>
             ) : villageName ? (
               /* A flex item of the link above, which is already `items-center`
                  inside a 64px box, so the wordmark sits on the same baseline
@@ -296,7 +294,7 @@ export default function Layout({ children }: LayoutProps) {
             )}
 
             {/* The language selector (spec i18n US2; mock approved by Rye 2026-11-06). */}
-            <LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -395,7 +393,7 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
             {user && <NotificationBell memberId={user.id} />}
             {/* Icon-only, so it needs a spoken name and a state a screen
                 reader can hear — otherwise it announces as bare "button". */}
@@ -901,9 +899,7 @@ export default function Layout({ children }: LayoutProps) {
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
-      {user && <NotificationToasts />}
-      {user && <RewardMoment />}
-      {user && <SeasonSummaryOffer /> /* idea 4: once, after a season turns */}
+      {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
     </div>
   );
 }

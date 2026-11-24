@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { contrastRatio, deriveTheme, GAME_TOKENS, LIGHT_STATUS_INKS, OVERRIDE_SLOTS, sanitizeGameTokens, sanitizeOverrides } from "../../shared/brandTokens";
 import { buildThemeCss, darkScheme, installBackground, installThemeColour, withScheme } from "./themeCss";
+import { MODE_PALETTE } from "../../shared/modePalette";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -47,9 +48,13 @@ describe("a village that sets neither mode nor overrides", () => {
   it("leaves the shell and the install manifest exactly as they were", () => {
     const shell = '<html lang="en"><meta name="theme-color" content="#0d1411" /><style>html{background-color:#0d1411;color-scheme:dark}</style>';
     expect(withScheme(shell, darkScheme({ seed: "#16342a", character: "woven" }))).toBe(shell);
-    expect(installBackground({ seed: "#16342a" })).toBe("#ffffff");
-    expect(installThemeColour({ seed: "#16342a" })).toBe(buildThemeCss({ seed: "#16342a" }).match(/--tone-brand: (#[0-9a-f]{6})/)![1]);
-    expect(installBackground(null)).toBe("#ffffff");
+    // A light village installs onto light mode's ground and band, the default a first visit opens in.
+    expect(installBackground({ seed: "#16342a" })).toBe(MODE_PALETTE.dayGround);
+    expect(installThemeColour({ seed: "#16342a" })).toBe(MODE_PALETTE.dayBand);
+    expect(installBackground(null)).toBe(MODE_PALETTE.dayGround);
+    // A village's own day palette wins.
+    expect(installBackground({ seed: "#16342a", tokens: { "day-ground": "#fafafa", "day-band": "#eeeeee" } })).toBe("#fafafa");
+    expect(installThemeColour({ seed: "#16342a", tokens: { "day-ground": "#fafafa", "day-band": "#eeeeee" } })).toBe("#eeeeee");
   });
 });
 
@@ -91,6 +96,39 @@ describe("the dark scheme, derived from a seed alone", () => {
     expect(admin).toContain(`--background: ${light["--background"]};`);
     for (const [k, v] of Object.entries(LIGHT_STATUS_INKS)) expect(admin).toContain(`${k}: ${v};`);
     expect(admin).toContain(`--primary-hover: ${light["--tone-brand-hover"]};`);
+  });
+
+  it("gives a visitor who chose light mode the village's light palette, outranking the dark root", () => {
+    const css = buildThemeCss({ seed: "#0b1a1e", character: "woven", mode: "dark" });
+    const at = css.indexOf(':root:root[data-mode="light"] {');
+    expect(at).toBeGreaterThan(css.indexOf(":root:root {"));
+    const block = css.slice(at, css.indexOf("}", at));
+    expect(block).toMatch(/color-scheme: light;/);
+    const light = deriveTheme("#0b1a1e", "woven")!.vars;
+    expect(block).toContain(`--background: ${light["--background"]};`);
+    // A light village has no dark root to answer, so it gets no such block.
+    expect(buildThemeCss({ seed: "#0b1a1e", character: "woven" })).not.toContain('[data-mode="light"]');
+  });
+
+  it("carries a village's exact light and dark palettes as tokens, measured on every surface", () => {
+    const golden = { "day-ground": "#f3ebdd", "day-panel": "#fffaf1", "day-panel-raised": "#efe0c6", "day-ink": "#2b2720", "day-ink-dim": "#5f584a", "day-edge": "#8b785a", "day-accent": "#0e5b60", "day-heading": "#0e5b60" };
+    const canopy = { "night-ground": "#14362b", "night-panel": "#0f2c23", "night-panel-raised": "#1b4335", "night-ink": "#f3ede0", "night-ink-dim": "#c4d6cc", "night-edge": "#7fa393", "night-accent": "#e0c79a" };
+    const theme = { seed: "#14362b", character: "handmade", accent: "#e0c79a", tokens: { ...golden, ...canopy } };
+    const css = buildThemeCss(theme);
+    expect(css).toContain("--day-ground: #f3ebdd;");
+    expect(css).toContain("--day-accent: #0e5b60;");
+    // The night tokens sit beside the derived night, which keeps meaning the sheet with no mode set.
+    expect(css).toContain("--night-ground: #14362b;");
+    expect(css).toContain("--night-accent: #e0c79a;");
+    const d = deriveTheme("#14362b", "handmade", "#e0c79a", { tokens: { ...golden, ...canopy } })!;
+    const mine = d.contrast.pairs.filter((p) => p.name.startsWith("day ") || p.name.startsWith("night "));
+    expect(mine.length).toBeGreaterThanOrEqual(20);
+    expect(mine.filter((p) => p.verdict === "fail")).toEqual([]);
+  });
+
+  it("reports a day palette that would not read", () => {
+    const d = deriveTheme("#14362b", "handmade", null, { tokens: { "day-ground": "#f3ebdd", "day-ink": "#c9bfa9" } })!;
+    expect(d.contrast.pairs.find((p) => p.name === "day ink on day-ground")?.verdict).toBe("fail");
   });
 
   it("marks the shell, paints its first frame in the village's ground, and gives the installer that ground", () => {

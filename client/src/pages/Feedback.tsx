@@ -11,12 +11,14 @@
 import Layout from "@/components/Layout";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
-import { Bug, Check, Lightbulb } from "lucide-react";
+import { Bug, Lightbulb } from "lucide-react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { failureWords } from "@/lib/failureWords";
 import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, LEDE, WORLD } from "@/components/journey/look";
+import Sprout from "@/components/motion/Sprout";
+import { useThanksInView } from "@/lib/thanksInView";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -33,11 +35,10 @@ export default function Feedback() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<null | { shared: boolean }>(null);
   // The panel replaces the form and its button, so focus would fall to
-  // <body> and nothing would be read. Focus goes to the panel, which reads it.
-  const received = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (sent) received.current?.focus();
-  }, [sent]);
+  // <body> and nothing would be read. Focus goes to the panel, which reads it,
+  // and the page goes back to its top first: the shorter page otherwise left a
+  // phone scrolled past the panel, where Send had been (lib/thanksInView.ts).
+  const received = useThanksInView<HTMLDivElement>(!!sent);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -80,9 +81,7 @@ export default function Feedback() {
         <div className="container max-w-xl">
           {sent ? (
             <div ref={received} tabIndex={-1} className={`${CARD} text-center outline-none`}>
-              <div className="w-12 h-12 bg-open/15 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="w-6 h-6 text-open" aria-hidden="true" />
-              </div>
+              <Sprout size={56} className="mx-auto mb-4 text-open" />
               <p className="font-semibold text-foreground mb-1">{t({ message: "Received, thank you.", context: "feedback page: after sending" })}</p>
               <p className="text-sm text-muted-foreground">
                 {sent.shared

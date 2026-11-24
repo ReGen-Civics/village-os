@@ -80,7 +80,13 @@ describe("SeasonalFestivals", () => {
       answerWith(async () => json({ current: season, seasons: [season] }));
       render(<SeasonalFestivals />);
       expect(await screen.findByText("Plant the food forest")).toBeTruthy();
-      expect(screen.getByText("Done: Open the first home")).toBeTruthy();
+      // One card per goal (the lead, 24 Nov 2026): a reached goal wears the seal and says so.
+      const reached = screen.getByText("Open the first home").closest("li")!;
+      expect(reached.hasAttribute("data-done")).toBe(true);
+      expect(reached.textContent).toContain("Reached");
+      const growing = screen.getByText("Plant the food forest").closest("li")!;
+      expect(growing.hasAttribute("data-done")).toBe(false);
+      expect(growing.textContent).toContain("Growing");
       const invite = screen.getByText(INVITE);
       expect(invite.textContent).toBe("If you can help us meet these, consider the Village Steward path.");
       expect(screen.getByRole("link", { name: "Village Steward path" }).getAttribute("href")).toBe("/steward");

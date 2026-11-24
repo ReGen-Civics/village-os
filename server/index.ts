@@ -25678,7 +25678,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
   });
 
-  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
+  registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), logo: () => String(mergedConfig().images?.logo ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
 
   /*
    * ROBOTS AND SITEMAP, as real files.
