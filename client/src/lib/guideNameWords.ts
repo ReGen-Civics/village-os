@@ -27,6 +27,8 @@ export const UNNAMED_GUIDE_SHARED = msg({
 
 /** The two neutral labels, in the reader's language. */
 export function unnamedGuideWords(i18n: I18n = appI18n): { own: string; shared: string } {
+  // No language active yet (a module read before the app's i18n starts, or a bare test): the source words.
+  if (!i18n.locale) return { own: UNNAMED_GUIDE.own, shared: UNNAMED_GUIDE.shared };
   return { own: i18n._(UNNAMED_GUIDE_OWN), shared: i18n._(UNNAMED_GUIDE_SHARED) };
 }
 

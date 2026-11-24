@@ -18515,6 +18515,24 @@ msgctxt "work with us: the button that opens a conversation with the village gui
 msgid "Talk it through with {assistantName}"
 msgstr "Háblalo con {assistantName}"
 
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the heading"
+msgid "Your village guide has no name yet"
+msgstr "Tu guía de la aldea todavía no tiene nombre"
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: what others read until the guide is named"
+msgid "Visitors and members see “{shared}” until you name it. Only founders see this note."
+msgstr "Quienes visitan y los miembros ven “{shared}” hasta que le pongas nombre. Solo quienes fundaron la aldea ven esta nota."
+
+# needs-native-review: new words, 24 Nov 2026
+#: client/src/components/NameYourGuide.tsx
+msgctxt "name your guide note, founders only: the link to the setting"
+msgid "Name your guide"
+msgstr "Ponle nombre a tu guía"
+
 #. placeholder {0}: items.length - took
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
