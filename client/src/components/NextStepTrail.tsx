@@ -44,6 +44,20 @@ export function isQuietPath(path: string, stepHref?: string | null): boolean {
 }
 
 /**
+ * THE FRONT DOOR (a reviewer's feedback, approved by the lead on 24 Nov 2026):
+ * the home page is quiet for a visitor. Its hero holds "Join the founding team"
+ * and the ways in, and a path strip above them was a third door competing with
+ * both. Every other page keeps the strip for a visitor, and a signed-in
+ * reader keeps it on the home page too, where it says their own next step.
+ */
+export const VISITOR_QUIET = new Set(["/"]);
+
+/** Whether the strip stays away from this page for this reader. */
+export function quietForReader(path: string, signedIn: boolean): boolean {
+  return !signedIn && VISITOR_QUIET.has(path.split(/[?#]/)[0] || "/");
+}
+
+/**
  * Where a visitor's one step points (shared/yourPath.ts, the visitor's path:
  * read a few roles slowly). The strip is quiet on that page, so no space is
  * held there for a visitor. NextStepTrail.test.tsx holds this equal to the
@@ -58,7 +72,7 @@ export const VISITOR_STEP_HREF = "/roles";
  * the one page their step points at; that is the only case left.
  */
 export function holdsStripSpace(path: string, signedIn: boolean): boolean {
-  if (isQuietPath(path)) return false;
+  if (isQuietPath(path) || quietForReader(path, signedIn)) return false;
   return signedIn || !isQuietPath(path, VISITOR_STEP_HREF);
 }
 
@@ -74,6 +88,7 @@ export function RootStripSlot() {
 export default function NextStepTrail() {
   const [location] = useLocation();
   const { token } = useAuth() as { token?: string | null };
+  if (quietForReader(location, !!token)) return null;
   const slot = holdsStripSpace(location, !!token) ? <RootStripSlot /> : null;
   return (
     <Suspense fallback={slot}>

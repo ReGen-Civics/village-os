@@ -117,8 +117,7 @@ const JOURNEY = [
   "client/src/components/calendar/MoonTurnings.tsx",
   "client/src/components/agent/ConnectorSetupPanel.tsx",
   "client/src/components/roleDraft/SeasonGoals.tsx",
-  // The commons (Phase D): the season's goals as circles with moss, on the landing, /roles and Your season.
-  "client/src/components/VillagePulse.tsx",
+  // The commons (Phase D): the season's goals as circles with moss, on Your season (it left the landing on 24 Nov 2026).
   "client/src/components/commons/Commons.tsx",
   "client/src/components/commons/CommonsPanel.tsx",
   "client/src/components/roleDraft/ArchetypeStep.tsx",

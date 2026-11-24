@@ -35,6 +35,8 @@ import BreathingLoader from "@/components/natural/BreathingLoader";
 import PhotoCard, { BTN, jsonHeaders } from "@/components/places/PhotoCard";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import type { PlacePhoto } from "@shared/placePhotos";
+import { useLingui } from "@lingui/react/macro";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
 
 interface IndexPage {
   photos: PlacePhoto[];
@@ -54,6 +56,7 @@ export default function Photographs() {
 }
 
 function PhotographsPage() {
+  const { t } = useLingui();
   const [pages, setPages] = useState<IndexPage[] | null>(null);
   const [locked, setLocked] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -180,9 +183,7 @@ function PhotographsPage() {
         ) : !pages ? (
           <BreathingLoader label="Opening the village's photographs" />
         ) : photos.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            No photographs yet.
-          </p>
+          <ComingSoonPanel title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })} body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })} door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }} />
         ) : (
           <>
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none p-0">

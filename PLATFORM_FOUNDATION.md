@@ -106,7 +106,6 @@ Stage computation: `computeStage()` interprets the declarative rules in
 - `client/src/components/GameDashboard.tsx` — profile: next-best-action, stage ladder, gratitude, quests
 - `client/src/components/QuestActions.tsx` — claim/submit UI on quest cards
 - `client/src/components/SeasonBanner.tsx` — homepage season strip
-- `client/src/components/VillagePulse.tsx` — homepage activity feed
 - `client/src/pages/GratitudeWall.tsx` — public wall + send form (`/gratitude`)
 - `client/src/lib/gameApi.ts` — auth fetch + types
 
