@@ -56,6 +56,9 @@ function mergeLeaves(value: unknown, prefix: string, out: string[]): string[] {
   return out;
 }
 
+/** The route that writes one translated field of the village's own words (server/routes/contentTranslations.ts). */
+export const CONTENT_TRANSLATIONS_ROUTE = "/api/admin/content-translations";
+
 const whole = (doc: string): Footprint => ({ doc, whole: true, fields: [] });
 const fields = (doc: string, list: string[]): Footprint => ({ doc, whole: false, fields: Array.from(new Set(list)) });
 
@@ -102,6 +105,12 @@ export function footprintOf(kind: ProposalKind, target: Record<string, unknown>,
       return whole(path);
     case "setting": {
       const method = String(route.method ?? "").toUpperCase();
+      // One translated field per write (PUT /api/admin/content-translations): its document is the page or card in one
+      // language, and the field is the only thing it writes, so two translations of different fields never overlap.
+      if (path === CONTENT_TRANSLATIONS_ROUTE && (method === "PUT" || method === "DELETE")) {
+        const doc = `content-translations:${String(b.kind ?? "")}:${String(b.ref ?? "")}:${String(b.locale ?? "")}`;
+        return fields(doc, [String(b.field ?? "")]);
+      }
       const calendar = faceOf(kind, route) === "calendar_event";
       if (method === "DELETE") return whole(path);
       if (method === "PUT" && !calendar) return whole(path);
