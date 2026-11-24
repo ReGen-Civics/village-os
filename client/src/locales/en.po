@@ -4524,6 +4524,11 @@ msgctxt "open proposal side by side goals"
 msgid "Named on each role above."
 msgstr "Named on each role above."
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: what a venture is, under the heading"
+msgid "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
+msgstr "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, none"
 msgid "No open quests grow this yet. Suggest one you feel this village is missing."
@@ -7548,6 +7553,11 @@ msgctxt "heading of the canvas baseline view"
 msgid "The canvas baseline"
 msgstr "The canvas baseline"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the first question"
+msgid "What the business is"
+msgstr "What the business is"
+
 #. placeholder {0}: seasonEntry.name.trim()
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page season"
@@ -9072,6 +9082,11 @@ msgstr "Amount"
 msgctxt "button that proposes a change to what closing means"
 msgid "Propose a change"
 msgstr "Propose a change"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the second question"
+msgid "Space, water, power, access, people, time or decisions, and by when."
+msgstr "Space, water, power, access, people, time or decisions, and by when."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -15232,6 +15247,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "I accept"
 msgstr "I accept"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the heading over its questions"
+msgid "Your venture"
+msgstr "Your venture"
+
 #: client/src/components/admin/OpsEmailSwitch.tsx
 msgctxt "admin ops report email option"
 msgid "Ops report email: daily"
@@ -15466,6 +15486,11 @@ msgstr "The card's words"
 msgctxt "proposed changes"
 msgid "Accept"
 msgstr "Accept"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the third question"
+msgid "How the business gives back to the village, the land and the people around it."
+msgstr "How the business gives back to the village, the land and the people around it."
 
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
@@ -19503,6 +19528,11 @@ msgctxt "notebook row kind, size and date"
 msgid "{0}, {1}, added {2}"
 msgstr "{0}, {1}, added {2}"
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the line under Your venture"
+msgid "Start with the business. The questions after it help us see what it takes."
+msgstr "Start with the business. The questions after it help us see what it takes."
+
 #: client/src/components/hiddenMap/SevenMeter.tsx
 msgctxt "hidden map, progress toward opening the map"
 msgid "{vouched} of {needed}"
@@ -20356,6 +20386,11 @@ msgstr "Edits not saved"
 msgctxt "hand-mint grants record, approve a grant"
 msgid "Sign it"
 msgstr "Sign it"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the second question"
+msgid "What it needs from the land and the village"
+msgstr "What it needs from the land and the village"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -21696,6 +21731,11 @@ msgstr "Keep each recording under 7 minutes."
 msgctxt "a decided suggestion's own words"
 msgid "What it said"
 msgstr "What it said"
+
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: the third question"
+msgid "How it gives back"
+msgstr "How it gives back"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -24023,6 +24063,11 @@ msgctxt "admin protocols editor"
 msgid "None yet. Write one, or import a file."
 msgstr "None yet. Write one, or import a file."
 
+#: client/src/pages/WorkWithUs.tsx
+msgctxt "work with us, set up for a venture: help under the first question"
+msgid "What you would build and run on the land, who it is for, and how it earns its way."
+msgstr "What you would build and run on the land, who it is for, and how it earns its way."
+
 #: client/src/components/admin/RoleCharacterTags.tsx
 msgctxt "admin role roots"
 msgid "Roots saved"
@@ -24498,6 +24543,7 @@ msgid "Saved."
 msgstr "Saved."
 
 #: client/src/components/ContributorRoutes.tsx
+#: client/src/pages/WorkWithUs.tsx
 msgctxt "four ways to build: a venture"
 msgid "Start a venture"
 msgstr "Start a venture"
@@ -25518,6 +25564,11 @@ msgstr "{fit}% would fit the role"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You meet the people the role works with, in the order the role sets, when it sets one."
 #~ msgstr "You meet the people the role works with, in the order the role sets, when it sets one."
+
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat, set up for a venture: the guide's first message"
+msgid "Hi, I'm {assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?"
+msgstr "Hi, I'm {assistantName}. Let's shape your venture together, one question at a time: what the business is, what it needs from the land and the village, and how it gives back. First, what is the business, and who is it for?"
 
 #: client/src/components/roleCard/DeliverablesGantt.tsx
 msgctxt "deliverables timeline: the line for today"
