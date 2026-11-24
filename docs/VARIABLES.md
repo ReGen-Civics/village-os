@@ -397,7 +397,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Cooling-off before a key lands with nobody to co-sign | `platform.cosign_cooling_hours` | Platform | integer | `48` | the founder or an admin |
 | How long a key waits for its co-sign | `platform.cosign_expiry_hours` | Platform | integer | `72` | the founder or an admin |
 | The guide's helper in Admin | `platform.admin_helper` | Platform | boolean | `true` | the founder or an admin |
-| Accounts that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
+| Addresses that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
 | The solar event that opens the village year | `calendar.year_anchor` | Calendar | choice | `december_solstice` | the whole village |
 | Hemisphere | `calendar.hemisphere` | Calendar | choice | `north` | the whole village |
 | Mark the cross-quarter days | `calendar.cross_quarters` | Calendar | boolean | `false` | the whole village |
@@ -5377,9 +5377,9 @@ Lets admins ask the village guide for help inside Admin: finding a page or setti
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
 
-### Accounts that hear about crashes
+### Addresses that hear about crashes
 
-The admins and founders told in the app and by email when something breaks. Email addresses, separated by commas. Blank tells every admin and founder, and so does a list that names none of them.
+Email addresses that hear about crashes. An admin or founder's address also gets the notice in the app; an address with no account gets the email only. Blank tells every admin and founder. Separate addresses with commas, at most 10. A member's address is skipped, and a list with no address left to reach tells every admin and founder.
 
 | Fact | Value |
 | --- | --- |
