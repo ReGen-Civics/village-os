@@ -257,7 +257,8 @@ describe("every field in the Business Opportunities spec reaches the page", () =
       "Five",
       "Six",
     ]);
-    expect(card.querySelector("svg.lucide-hammer")).toBeTruthy();
+    // The icon word "Hammer" still names the picture; it is drawn as tending hands now (the living glyphs).
+    expect(card.querySelector("svg.living-tending-hands")).toBeTruthy();
   });
 
   it("draws a badge only for a status the village wrote: the starter cards claim no progress", async () => {

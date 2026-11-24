@@ -26,7 +26,8 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Plus, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Plus, Trash2} from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import Layout from "@/components/Layout";
 import ModuleGate, { SignInDoors } from "@/components/modules/ModuleGate";
 import { PAGE_GATE_LINES } from "@/components/modules/gateCopy";
@@ -682,7 +683,7 @@ export default function MySeason() {
                 href="/season-plans"
                 className="ml-auto inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Users className="h-4 w-4" aria-hidden="true" />
+                <MushroomNetwork className="h-4 w-4" aria-hidden="true" />
                 {MY_SEASON_WORDS.village}
               </Link>
             </div>

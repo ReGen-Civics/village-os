@@ -30,7 +30,8 @@
  */
 import { useEffect, useRef, useState } from "react";
 import FramelessImg from "@/components/FramelessImg";
-import { Image as ImageIcon, Sparkles, Trash2, Upload } from "lucide-react";
+import { Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { prepareImageForUpload } from "@/lib/imagePrep";
 import {
   BUDGET_TOKEN_SLOTS,
@@ -425,7 +426,7 @@ function ForgePanel(p: ForgeProps) {
           onClick={p.onConfirm}
           className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-teal-deep/40 px-4 py-2 text-sm font-semibold text-teal-deep"
         >
-          <Trans context="PortraitStudio, button"><Sparkles className="h-4 w-4" aria-hidden="true" />
+          <Trans context="PortraitStudio, button"><SeedGlint className="h-4 w-4" aria-hidden="true" />
           Forge a picture
         </Trans></button>
       )}

@@ -20,7 +20,8 @@ import { Link } from "wouter";
 import { Trans } from "@lingui/react/macro";
 import type { ResolvedSection } from "@shared/pageContent/types";
 import { m } from "framer-motion";
-import { Users, ArrowRight, ExternalLink, ShieldCheck, Home } from "lucide-react";
+import { ArrowRight, ExternalLink, Home } from "lucide-react";
+import { Canopy, MushroomNetwork } from "@/components/sacred/living";
 import { useEffect, useRef, useState } from "react";
 import { usePageLang } from "@/hooks/usePageContent";
 
@@ -97,7 +98,7 @@ export default function StewardJourney() {
           <div className="max-w-2xl">
             <div className="mb-6 flex items-center gap-3">
               <span className={`${RING} size-12`} aria-hidden="true">
-                <Users className="h-6 w-6" />
+                <MushroomNetwork className="h-6 w-6" />
               </span>
               <span className={`${EYEBROW} text-sm min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
             </div>
@@ -347,7 +348,7 @@ export default function StewardJourney() {
           <div className="container">
             <div className={`${CARD} mx-auto max-w-3xl`}>
               <div className="mb-3 flex items-center gap-3">
-                <span className={RING} aria-hidden="true"><ShieldCheck className="h-5 w-5" /></span>
+                <span className={RING} aria-hidden="true"><Canopy className="h-5 w-5" /></span>
                 <h2 className="font-display text-xl font-semibold text-foreground break-words"><Trans context="steward front door">Stewarding the roles</Trans></h2>
               </div>
               <p className={`${HINT} mb-4`}><Trans>For stewards and admins: proposals waiting on you, and the tools behind the roles.</Trans></p>

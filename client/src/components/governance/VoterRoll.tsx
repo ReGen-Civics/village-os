@@ -18,7 +18,8 @@
  * shipped limitation; a limitation nobody is told about is a trap.
  */
 import { useState } from "react";
-import { CircleCheck, CircleHelp, CircleMinus, CircleX, Users } from "lucide-react";
+import { CircleCheck, CircleHelp, CircleMinus, CircleX} from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import type { VoteChoice } from "@shared/governanceEngine";
 import InfoTip from "@/components/InfoTip";
 import { weightText } from "./voteBars";
@@ -80,7 +81,7 @@ export default function VoterRoll({
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-        <Trans context="VoterRoll, h3"><Users className="w-4 h-4 text-notice" aria-hidden="true" />
+        <Trans context="VoterRoll, h3"><MushroomNetwork className="w-4 h-4 text-notice" aria-hidden="true" />
         Who may vote
         <InfoTip
           tip="This roll froze when the ballot opened. Members who joined since are not on it, and members who left still are."

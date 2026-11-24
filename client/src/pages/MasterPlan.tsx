@@ -11,9 +11,9 @@ import {
   TreePine,
   Droplets,
   Mountain,
-  Users,
   Building
 } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import { useVillageName } from "@/hooks/useVillageName";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -81,7 +81,7 @@ function withStatedUnit<T extends { key: string; label: string; note: string }>(
 }
 
 /** Icons for the zone cards, handed out in order. The words are the village's (Admin, Pages, Master Plan). */
-const ZONE_ICONS = [Users, Home, Tent, TreePine, Droplets, Mountain, Building, Map];
+const ZONE_ICONS = [MushroomNetwork, Home, Tent, TreePine, Droplets, Mountain, Building, Map];
 
 /** The pill colour a phase's status earns. Any other status reads plain. */
 function phaseStatusClass(status: string): string {

@@ -24,7 +24,8 @@ import { authToken, useGameConfig } from "@/lib/gameApi";
 import { useTokenName, useTokensWord } from "@/hooks/useTokenNames";
 import { formatMoney } from "@shared/money";
 import { useTokenNameMap } from "@/hooks/useTokenNameFor";
-import { Coins, CreditCard, ExternalLink, ReceiptText, Wallet as WalletIcon } from "lucide-react";
+import { CreditCard, ExternalLink, ReceiptText, Wallet as WalletIcon } from "lucide-react";
+import { SeedPod } from "@/components/sacred/living";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import InfoTip from "@/components/InfoTip";
@@ -300,7 +301,7 @@ export default function Wallet() {
 
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Coins className="w-4 h-4 text-teal-deep" />
+              <SeedPod className="w-4 h-4 text-teal-deep" />
               <p className="font-semibold text-foreground text-sm">
                 <Trans context="Wallet, p">Buy tokens
                 <InfoTip tip={`Money flows in and never back out: the village sells its own credit tokens and never buys them back. Nothing puts ${tokenName} up for sale.`} label="How buying works" /></Trans>

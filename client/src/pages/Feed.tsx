@@ -11,7 +11,8 @@ import { Link } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
-import { Calendar, Heart, Megaphone, MessageCircle, Sparkles, Send } from "lucide-react";
+import { Calendar, Heart, MessageCircle, Send } from "lucide-react";
+import { SeedGlint, Songbird } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
@@ -24,7 +25,7 @@ const headers = (): Record<string, string> => {
 };
 
 const SYSTEM_ICON: Record<string, React.ElementType> = {
-  quest: Sparkles, stage: Sparkles, season: Calendar, cycle: Calendar, join: Sparkles,
+  quest: SeedGlint, stage: SeedGlint, season: Calendar, cycle: Calendar, join: SeedGlint,
 };
 
 export default function Feed() {
@@ -197,7 +198,7 @@ export default function Feed() {
 
           {[...(data?.items ?? []), ...older].map((item: any) => {
             if (item.itemType === "system") {
-              const Icon = SYSTEM_ICON[item.kind] ?? Sparkles;
+              const Icon = SYSTEM_ICON[item.kind] ?? SeedGlint;
               return (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground">
                   <Icon className="w-4 h-4 text-teal-deep/60 shrink-0" />
@@ -217,7 +218,7 @@ export default function Feed() {
                   {item.isExample && <ExampleChip />}
                   {item.kind === "announcement" && (
                     <span className="inline-flex items-center gap-1 text-[10px] bg-amber/20 text-amber-800 px-1.5 py-0.5 rounded-full">
-                      <Megaphone className="w-3 h-3" /> announcement
+                      <Songbird className="w-3 h-3" /> announcement
                     </span>
                   )}
                   {item.kind === "event" && item.meta?.startsAt && (

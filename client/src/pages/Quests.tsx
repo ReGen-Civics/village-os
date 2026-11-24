@@ -9,14 +9,11 @@ import {
   Calendar,
   Compass,
   Filter,
-  Gauge,
   Heart,
-  Lightbulb,
-  Sparkles,
   Star,
   Sprout,
-  Target,
 } from "lucide-react";
+import { Gourd, GrowthRings, Seed, SeedGlint } from "@/components/sacred/living";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth, useOptionalAuth } from "@/contexts/AuthContext";
 import { fetchGameMe, QuestClaim, useGameConfig } from "@/lib/gameApi";
@@ -397,7 +394,7 @@ export default function Quests() {
           <div className="container max-w-7xl space-y-1">
             {(threadedGoals.length > 0 || activeGoal !== "All") && (
               <div className="flex gap-2 items-center overflow-x-auto flex-nowrap" data-scroll-contain role="group" aria-label={t({ message: "Season goal", context: "open work filter row" })}>
-                <Target className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                <GrowthRings className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                 {[{ id: "All", text: t({ message: "Every goal", context: "open work filter: all season goals" }) }, ...threadedGoals].map((g) => (
                   <button
                     key={g.id}
@@ -435,7 +432,7 @@ export default function Quests() {
             )}
             {sizesUsed.length > 0 && (
               <div className="flex gap-2 items-center overflow-x-auto flex-nowrap" data-scroll-contain role="group" aria-label={t({ message: "Size, easier to harder", context: "open work filter row" })}>
-                <Gauge className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                <Gourd className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                 {(["All", ...sizesUsed] as const).map((z) => (
                   <button
                     key={z}
@@ -492,7 +489,7 @@ export default function Quests() {
         <div className="container">
           <div className="max-w-2xl mx-auto bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center gap-4 text-left mt-6">
             <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
-              <Lightbulb className="w-6 h-6 text-notice" />
+              <Seed className="w-6 h-6 text-notice" />
             </div>
             <div className="flex-1">
               <h2 className="font-display text-lg font-bold text-foreground">
@@ -531,7 +528,7 @@ export default function Quests() {
               goal. The village's count, from GET /api/quests/goals. */}
           {chosenGoal && (
             <div className="max-w-7xl mx-auto mb-8 flex flex-wrap items-center gap-x-3 gap-y-2" data-goal-thread={chosenGoal.id}>
-              <Target className="w-5 h-5 text-open" aria-hidden="true" />
+              <GrowthRings className="w-5 h-5 text-open" aria-hidden="true" />
               <p className="font-display text-xl font-bold text-foreground">
                 {chosenGoal.openQuests === 0
                   ? t({ message: "No open quests grow this yet. Suggest one you feel this village is missing.", context: "open work: the goal thread, none" })
@@ -650,7 +647,7 @@ export default function Quests() {
           {signs && signs.recent.length > 0 && (
             <div className="max-w-3xl mx-auto mb-16">
               <h2 className="font-display text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Trans context="Quests, h2"><Sparkles className="w-5 h-5 text-notice" />
+                <Trans context="Quests, h2"><SeedGlint className="w-5 h-5 text-notice" />
                 Recently completed
               </Trans></h2>
               <ul className="space-y-2">

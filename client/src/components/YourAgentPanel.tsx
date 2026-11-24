@@ -15,7 +15,8 @@
  */
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useEffect, useState } from "react";
-import { Bot, Copy, KeyRound, ShieldCheck, Trash2, Webhook } from "lucide-react";
+import { Copy, KeyRound, Trash2, Webhook } from "lucide-react";
+import { Canopy, Firefly } from "@/components/sacred/living";
 import { gameFetch } from "@/lib/gameApi";
 import { useIsAdmin } from "@/contexts/AuthContext";
 import ConnectorSetupPanel from "@/components/agent/ConnectorSetupPanel";
@@ -331,7 +332,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
     <div className="bg-card rounded-2xl shadow-lg p-6 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 mb-1">
-          <Bot className="w-5 h-5 text-notice" />
+          <Firefly className="w-5 h-5 text-notice" />
           <h2 className="font-display text-xl font-bold text-card-foreground"><Trans context="YourAgentPanel, h2">Your agent</Trans></h2>
         </div>
         <button
@@ -500,7 +501,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── Run the assistant on your key ── */}
-        <Card title={t({ message: "Run the assistant on your key", context: "YourAgentPanel, title" })} icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "Run the assistant on your key", context: "YourAgentPanel, title" })} icon={<Canopy className="w-4 h-4 text-notice" />}>
           <p className="text-xs text-muted-foreground mb-3">
             <Trans context="YourAgentPanel, p">Store your own LLM key and the in-app assistant answers your questions on it, on your budget. It is encrypted at rest and only the last four characters ever come back to this page.
           </Trans></p>
@@ -538,7 +539,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── About me for my agent ── */}
-        <Card title={t({ message: "About me for my agent", context: "YourAgentPanel, title" })} icon={<Bot className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "About me for my agent", context: "YourAgentPanel, title" })} icon={<Firefly className="w-4 h-4 text-notice" />}>
           <p className="text-xs text-muted-foreground mb-2"><Trans context="YourAgentPanel, p">A note your agent reads to serve you. Yours to write, yours to clear. You choose who else may read it.</Trans></p>
           <label htmlFor="agent-about" className="sr-only"><Trans context="YourAgentPanel, label">About me for my agent</Trans></label>
           {/* The mic, for a box that saves on blur: spoken words save as they land. */}
@@ -576,7 +577,7 @@ export default function YourAgentPanel({ person }: { person?: string } = {}) {
         </Card>
 
         {/* ── What the assistant has said about you ── */}
-        <Card title={t({ message: "What the assistant has said about you", context: "YourAgentPanel, title" })} icon={<ShieldCheck className="w-4 h-4 text-notice" />}>
+        <Card title={t({ message: "What the assistant has said about you", context: "YourAgentPanel, title" })} icon={<Canopy className="w-4 h-4 text-notice" />}>
           {statements.length === 0 ? (
             <p className="text-xs text-muted-foreground"><Trans context="YourAgentPanel, p">Nothing yet. When the assistant says a sentence about you, it lands here with its source, and you can correct or withdraw it.</Trans></p>
           ) : (

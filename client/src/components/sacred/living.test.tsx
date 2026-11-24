@@ -18,7 +18,8 @@ describe("the living glyphs", () => {
       expect(svg.getAttribute("fill")).toBe("none");
       expect(svg.getAttribute("aria-hidden")).toBe("true");
       expect(svg.getAttribute("focusable")).toBe("false");
-      expect(svg.getAttribute("class")).toBe("size-6");
+      // The class passed through, after the glyph's own name (living living-<name>, like lucide's).
+      expect(svg.getAttribute("class")).toMatch(/^living living-[a-z-]+ size-6$/);
       // Any fill is currentColor (a nucleolus, a knot), never a colour of its own, so the tab bar's tint reaches it.
       for (const el of Array.from(svg.querySelectorAll("[fill]"))) expect(el.getAttribute("fill")).toBe("currentColor");
       for (const el of Array.from(svg.querySelectorAll("[stroke]"))) expect(["currentColor", "none"]).toContain(el.getAttribute("stroke"));

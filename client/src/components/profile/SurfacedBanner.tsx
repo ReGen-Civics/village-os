@@ -13,7 +13,8 @@
  * it.
  */
 import { m } from "framer-motion";
-import { Sparkles, ArrowDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { Trans } from "@lingui/react/macro";
 
 export default function SurfacedBanner({
@@ -46,7 +47,7 @@ export default function SurfacedBanner({
        */
       className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-notice/60 bg-notice/10 px-5 py-4"
     >
-      <Sparkles className="h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
+      <SeedGlint className="h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="SurfacedBanner, p">Newly open to you</Trans></p>
         <p className="font-display text-lg font-semibold leading-snug text-card-foreground">{title}</p>

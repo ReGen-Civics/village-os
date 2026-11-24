@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
 import { m } from "framer-motion";
-import { Users, ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { Image } from "@/components/Image";
 import { useEffect, useState } from "react";
@@ -147,7 +148,7 @@ export default function Team() {
             className="text-center mb-16"
           >
             <div className="w-16 h-16 rounded-full bg-open/10 flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-open" />
+              <MushroomNetwork className="w-8 h-8 text-open" />
             </div>
             {/* The heading and the sentence under it used to name one village
                 and describe that village's founding team, so every fork of this

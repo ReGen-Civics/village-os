@@ -14,7 +14,8 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { CalendarDays, Footprints, MessageCircle, Users } from "lucide-react";
+import { CalendarDays, Footprints, MessageCircle} from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { formatDate } from "@/i18n/format";
@@ -101,7 +102,7 @@ export function NextStepParts({ next, questId }: { next: ResolvedNextStep; quest
       </li>
       {crew && (
         <li className="flex gap-2.5 items-start">
-          <Users className="w-4 h-4 mt-0.5 shrink-0 text-teal-deep" aria-hidden="true" />
+          <MushroomNetwork className="w-4 h-4 mt-0.5 shrink-0 text-teal-deep" aria-hidden="true" />
           <span className="min-w-0 break-words">{crew}</span>
         </li>
       )}

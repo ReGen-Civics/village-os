@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, Clock, Sparkles } from "lucide-react";
+import { CheckCircle2, Circle, Clock} from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { CHIP, CHIP_SOFT, EYEBROW, LEDE, RING } from "@/components/journey/look";
 import { Trans } from "@lingui/react/macro";
 
@@ -27,7 +28,7 @@ const STATUS_META: Record<Milestone["status"], { label: string; chip: string; no
   complete: { label: "Complete", chip: CHIP, node: `${NODE} bg-notice text-background`, edge: "border-notice/60", Icon: CheckCircle2 },
   "in-progress": { label: "In Progress", chip: "inline-flex items-center gap-1 rounded-full border border-notice/70 px-2.5 py-0.5 text-xs font-semibold text-notice", node: RING, edge: "border-border", Icon: Clock },
   upcoming: { label: "Planned", chip: CHIP_SOFT, node: `${NODE} border-2 border-border text-muted-foreground`, edge: "border-border", Icon: Circle },
-  future: { label: "Future", chip: CHIP_SOFT, node: `${NODE} border-2 border-dashed border-border text-muted-foreground`, edge: "border-border/70", Icon: Sparkles },
+  future: { label: "Future", chip: CHIP_SOFT, node: `${NODE} border-2 border-dashed border-border text-muted-foreground`, edge: "border-border/70", Icon: SeedGlint },
 };
 
 export default function BuildProgress() {

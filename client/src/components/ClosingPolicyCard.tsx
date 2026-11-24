@@ -41,7 +41,7 @@
  */
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Landmark } from "lucide-react";
+import { CouncilCircle } from "@/components/sacred/living";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModule, useModules } from "@/modules/ModuleProvider";
@@ -71,7 +71,7 @@ export default function ClosingPolicyCard({ closing }: { closing: ClosingSection
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-2 mb-2">
-        <Landmark className="w-5 h-5 text-notice" aria-hidden="true" />
+        <CouncilCircle className="w-5 h-5 text-notice" aria-hidden="true" />
         <p className="font-display text-xl font-bold text-card-foreground">
           <Trans context="heading of the closing policy card">If the village closes</Trans>
         </p>

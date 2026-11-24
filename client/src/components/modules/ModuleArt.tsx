@@ -31,16 +31,17 @@
  */
 import { useEffect, useState } from "react";
 import {
-  Activity, Award, BedDouble, CalendarDays, Circle, Coins, Globe, Hammer,
-  Handshake, Heart, HeartHandshake, Landmark, LayoutGrid, ListChecks, Mail, MessageCircle, MessagesSquare, Mic, Newspaper,
-  Network, NotebookPen, Orbit, Sparkles, Sprout, TrendingUp, Users, Vote, Wrench, type LucideIcon,
+  Activity, BedDouble, CalendarDays, Circle, Globe,
+  Handshake, Heart, HeartHandshake, LayoutGrid, ListChecks, Mail, MessageCircle, MessagesSquare, Mic, Newspaper,
+  Network, NotebookPen, Orbit, Sprout, type LucideIcon,
 } from "lucide-react";
+import { Bloom, CouncilCircle, MushroomNetwork, Pines, SeedGlint, SeedPod, TendingHands } from "@/components/sacred/living";
 import { BUNDLED_MODULE_ART } from "./bundledModuleArt";
 
 const EMBLEMS: Record<string, LucideIcon> = {
-  Activity, Award, BedDouble, CalendarDays, Coins, Globe, Hammer, Handshake,
-  Heart, HeartHandshake, Landmark, LayoutGrid, ListChecks, Mail, MessageCircle, MessagesSquare, Mic, Network, Newspaper, NotebookPen,
-  Orbit, Sparkles, Sprout, TrendingUp, Users, Vote, Wrench,
+  Activity, Award: Bloom, BedDouble, CalendarDays, Coins: SeedPod, Globe, Hammer: TendingHands, Handshake,
+  Heart, HeartHandshake, Landmark: CouncilCircle, LayoutGrid, ListChecks, Mail, MessageCircle, MessagesSquare, Mic, Network, Newspaper, NotebookPen,
+  Orbit, Sparkles: SeedGlint, Sprout, TrendingUp: Pines, Users: MushroomNetwork, Vote: CouncilCircle, Wrench: TendingHands,
 };
 
 /** Every emblem the catalog may name, for the test that holds the two together. */

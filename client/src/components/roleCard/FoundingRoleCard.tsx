@@ -13,7 +13,8 @@
  * under "How you're chosen" leave them out.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { BadgeCheck, CalendarDays, Clock, Coins, Compass, DoorOpen, Flag, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
+import { BadgeCheck, CalendarDays, Clock, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, Sprout, UserRound} from "lucide-react";
+import { Canopy, MushroomNetwork, SeedPin, SeedPod, SunLeaf } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
@@ -154,8 +155,8 @@ function useTabs(): PieceTab[] {
   return [
     { key: "role", tab: t({ message: "The role", context: "role card tab: purpose and what it looks after" }), icon: Compass, pieces: ["purpose", "domain"] },
     { key: "deliverables", tab: t({ message: "Deliverables", context: "role card: the dated outcomes" }), icon: Handshake, pieces: ["accountabilities"] },
-    { key: "work", tab: t({ message: "How we co-create", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: Users, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
-    { key: "you", tab: t({ message: "You and compensation", context: "role card tab: who we hope for and the compensation" }), icon: Coins, pieces: ["who", "rewards"] },
+    { key: "work", tab: t({ message: "How we co-create", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: MushroomNetwork, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
+    { key: "you", tab: t({ message: "You and compensation", context: "role card tab: who we hope for and the compensation" }), icon: SeedPod, pieces: ["who", "rewards"] },
     { key: "path", tab: t({ message: "The path in", context: "role card tab: how you're chosen and once you're selected" }), icon: DoorOpen, pieces: ["chosen", "onboarding"] },
   ];
 }
@@ -182,8 +183,8 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   const nationality = rows.find((r) => r.id === "nationality")?.lines.join("\n") ?? "";
   const facts: Array<{ icon: LucideIcon; label: string; value: string; panel?: boolean; wide?: boolean }> = [
     { panel: true, icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: p.oneMinute.commitment },
-    { panel: true, icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: p.oneMinute.where },
-    { wide: true, icon: Flag, label: t({ message: "Nationality", context: "founding card fact" }), value: nationality },
+    { panel: true, icon: SeedPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: p.oneMinute.where },
+    { wide: true, icon: SunLeaf, label: t({ message: "Nationality", context: "founding card fact" }), value: nationality },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") ? trackWords(i18n, row("track")) : "" },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },
   ].filter((f) => f.value);
@@ -346,7 +347,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
       ),
     });
   }
-  if (p.pay) pieces.push({ key: "rewards", tab: t({ message: "Compensation", context: "founding card piece, short" }), icon: Coins, title: SECTION_WORDS.payShape, body: p.pay });
+  if (p.pay) pieces.push({ key: "rewards", tab: t({ message: "Compensation", context: "founding card piece, short" }), icon: SeedPod, title: SECTION_WORDS.payShape, body: p.pay });
   // Never an empty panel (screenshot check of 1.3.38): a role with no steps or goals written says so in one line.
   const chosenShown = roleCardParamsShown(chosenSeat);
   pieces.push({
@@ -371,7 +372,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
     pieces.push({
       key: "holding",
       tab: t({ message: "Holding it well", context: "founding card piece, short" }),
-      icon: ShieldCheck,
+      icon: Canopy,
       title: W.holdingWell,
       body: (
         <div className="flex flex-col gap-5">
@@ -389,7 +390,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
           {p.notMine.length > 0 && (
             <div data-testid="words-notMine">
               <Sub as={SubH}><TipText text={goesToHeading} /></Sub>
-              <Tiles lines={p.notMine} icon={ShieldCheck} />
+              <Tiles lines={p.notMine} icon={Canopy} />
             </div>
           )}
         </div>

@@ -28,7 +28,8 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Repeat, Users, Video } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Repeat, Video } from "lucide-react";
+import { MushroomNetwork, SeedPin } from "@/components/sacred/living";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
 import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
@@ -326,7 +327,7 @@ export default function Events() {
             )}
             {g.locationText && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <SeedPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {g.locationText}
               </p>
             )}
@@ -346,7 +347,7 @@ export default function Events() {
           {(g.kind === "gathering" || g.kind === "festival" || g.kind === "external") && (
             <div className="text-right shrink-0">
               <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-end">
-                <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <MushroomNetwork className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {/* The real number, always. A capacity of 0 is a real answer
                     and must not read as "no limit". */}
                 {g.capacity === null ? `${g.goingCount} going` : `${g.goingCount} of ${g.capacity} going`}

@@ -9,7 +9,8 @@
  * waits on you.
  */
 import { Link } from "wouter";
-import { ArrowRight, Clock, MapPin, Target } from "lucide-react";
+import { ArrowRight, Clock} from "lucide-react";
+import { GrowthRings, SeedPin } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, CARD_FEATURED, EYEBROW } from "@/components/journey/look";
 import { Fireflies } from "@/components/journey/nature";
@@ -64,7 +65,7 @@ export default function FitsYouCard({ lead, status, goal, footer, forYou = true 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
             {goal && (
               <span className="inline-flex items-center gap-1 font-medium text-foreground">
-                <Target className="size-3.5 text-open" aria-hidden="true" />
+                <GrowthRings className="size-3.5 text-open" aria-hidden="true" />
                 {t({ message: `Grows: ${goalText}`, context: "open work card: the season goal this quest grows" })}
               </span>
             )}
@@ -76,7 +77,7 @@ export default function FitsYouCard({ lead, status, goal, footer, forYou = true 
             )}
             {q.place && (
               <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5" aria-hidden="true" />
+                <SeedPin className="size-3.5" aria-hidden="true" />
                 {placeWords[q.place]}
               </span>
             )}

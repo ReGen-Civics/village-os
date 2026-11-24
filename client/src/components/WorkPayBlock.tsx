@@ -16,7 +16,7 @@
  * `pay` ABSENT draws nothing: an older server, or a role payload below the
  * terms tier, where a reader may not know what a role pays.
  */
-import { Award, Coins, HandCoins } from "lucide-react";
+import { Bloom, OfferingHands, SeedPod } from "@/components/sacred/living";
 import { useLingui, Trans } from "@lingui/react/macro";
 import type { WorkPay } from "@shared/workValue";
 import {
@@ -61,14 +61,14 @@ export default function WorkPayBlock({
     if (headline === "inquire") {
       return (
         <span data-work-pay="inquire" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium">
-          <Trans context="WorkPayBlock, span"><HandCoins className="w-3.5 h-3.5" aria-hidden="true" />
+          <Trans context="WorkPayBlock, span"><OfferingHands className="w-3.5 h-3.5" aria-hidden="true" />
           Inquire for payment details
         </Trans></span>
       );
     }
     return (
       <span data-work-pay={headline} className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold">
-        <Coins className="w-3.5 h-3.5" aria-hidden="true" />
+        <SeedPod className="w-3.5 h-3.5" aria-hidden="true" />
         {value && (
           <span>
             {value.own}
@@ -84,7 +84,7 @@ export default function WorkPayBlock({
         )}
         {badges.length > 0 && (
           <span data-work-pay-badges="" className="inline-flex items-center gap-1 font-normal">
-            <Award className="w-3.5 h-3.5" aria-hidden="true" />
+            <Bloom className="w-3.5 h-3.5" aria-hidden="true" />
             {badges.map(badgeWords).join(", ")}
           </span>
         )}
@@ -96,7 +96,7 @@ export default function WorkPayBlock({
     <div data-work-pay={headline} className="space-y-1.5 text-sm">
       {headline === "inquire" ? (
         <p className="text-muted-foreground">
-          <Trans context="WorkPayBlock, p"><HandCoins className="inline w-4 h-4 mr-1 align-text-bottom" aria-hidden="true" />
+          <Trans context="WorkPayBlock, p"><OfferingHands className="inline w-4 h-4 mr-1 align-text-bottom" aria-hidden="true" />
           Inquire for payment details. A steward has not set what this pays yet.
         </Trans></p>
       ) : (
@@ -156,7 +156,7 @@ export default function WorkPayBlock({
             <ul data-work-pay-badges="" className="space-y-0.5">
               {badges.map((b) => (
                 <li key={`${b.badge}:${b.token}`} className="text-foreground">
-                  <Award className="inline w-4 h-4 mr-1 align-text-bottom text-primary" aria-hidden="true" />
+                  <Bloom className="inline w-4 h-4 mr-1 align-text-bottom text-primary" aria-hidden="true" />
                   {badgeWords(b)}.
                 </li>
               ))}

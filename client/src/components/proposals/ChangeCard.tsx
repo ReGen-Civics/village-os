@@ -15,7 +15,8 @@
  * put aside, who decided and when.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bot, Check, ExternalLink, History as HistoryIcon, TriangleAlert, PenLine, Undo2, UserRound, X } from "lucide-react";
+import { Check, ExternalLink, History as HistoryIcon, TriangleAlert, PenLine, Undo2, UserRound, X } from "lucide-react";
+import { Firefly } from "@/components/sacred/living";
 import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -405,7 +406,7 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
 
 /** Who proposed it, in words: an agent account named whole, a person by first name. */
 export function ByWho({ name, kind }: { name: string; kind?: "agent" | "person" }) {
-  const Icon = kind === "agent" ? Bot : UserRound;
+  const Icon = kind === "agent" ? Firefly : UserRound;
   return (
     <span className="inline-flex items-center gap-1.5">
       <Icon className="size-3.5 text-notice" aria-hidden="true" />

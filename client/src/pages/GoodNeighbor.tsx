@@ -14,7 +14,6 @@ import {
   Heart,
   MessageCircle,
   DollarSign,
-  Users,
   Leaf,
   Globe,
   Shield,
@@ -24,6 +23,7 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 
 /** Icons and tints for the criteria, handed out in order. The words are the village's (shared/pageContent/goodNeighbor.ts). */
@@ -31,7 +31,7 @@ const CRITERION_LOOKS = [
   { icon: Heart, color: "bg-notice/10", iconColor: "text-notice" },
   { icon: MessageCircle, color: "bg-open/10", iconColor: "text-open" },
   { icon: DollarSign, color: "bg-notice/10", iconColor: "text-notice" },
-  { icon: Users, color: "bg-open/10", iconColor: "text-open" },
+  { icon: MushroomNetwork, color: "bg-open/10", iconColor: "text-open" },
   { icon: Leaf, color: "bg-open/10", iconColor: "text-open" },
   { icon: Globe, color: "bg-notice/10", iconColor: "text-notice" },
   { icon: Shield, color: "bg-muted", iconColor: "text-notice" },

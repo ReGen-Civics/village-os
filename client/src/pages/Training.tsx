@@ -3,7 +3,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Circle, ExternalLink, FileText, GraduationCap, Hand, Radio, Users, Video } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, ExternalLink, FileText, GraduationCap, Hand, Radio, Video } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { usePageContent } from "@/hooks/usePageContent";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { Emphasized } from "@/components/PageText";
@@ -70,7 +71,7 @@ const TYPE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   Video,
   Article: FileText,
   Practice: Hand,
-  Workshop: Users,
+  Workshop: MushroomNetwork,
   "Live Session": Radio,
 };
 

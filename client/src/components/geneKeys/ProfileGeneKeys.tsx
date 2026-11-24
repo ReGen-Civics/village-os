@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { withArticle, type GeneKeysView } from "@shared/geneKeys";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { readHandleGeneKeys, readPeopleGeneKeys } from "@/lib/geneKeysApi";
@@ -36,7 +36,7 @@ export function ProfileGeneKeysCard({ owner }: { owner: string | null }) {
     return (
       <section id="gene-keys" aria-labelledby="gene-keys-card-h" className={NIGHT_CARD}>
         <h2 id="gene-keys-card-h" className="flex items-center gap-2 font-display text-xl text-card-foreground">
-          <Trans context="ProfileGeneKeys, h2"><Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
+          <Trans context="ProfileGeneKeys, h2"><SeedGlint className="h-5 w-5 text-notice" aria-hidden="true" />
           Get your Gene Keys
         </Trans></h2>
         <p className="mt-1 text-sm text-foreground">

@@ -9,7 +9,8 @@
  * the same three authors.
  */
 import { useEffect, useState } from "react";
-import { Award, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
+import { Bloom } from "@/components/sacred/living";
 import { authToken } from "@/lib/gameApi";
 
 type Chip = { id: string; name: string; kind: string; expiresAt?: string | null };
@@ -82,7 +83,7 @@ export default function BylineChips({ userId }: { userId?: string | null }) {
                 : "text-teal-deep bg-teal-deep/10 border-teal-deep/20"
             }`}
           >
-            {timed ? <Clock className="w-2.5 h-2.5" /> : <Award className="w-2.5 h-2.5" />}
+            {timed ? <Clock className="w-2.5 h-2.5" /> : <Bloom className="w-2.5 h-2.5" />}
             {c.name}
             {lapsing && <span className="opacity-70">{left <= 0 ? ", ends today" : `, ${left}d`}</span>}
           </span>

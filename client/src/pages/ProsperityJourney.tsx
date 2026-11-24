@@ -26,13 +26,10 @@ import {
   Heart,
   FileText,
   PartyPopper,
-  Vote,
   Download,
-  TrendingUp,
   ChevronDown,
-  ExternalLink,
-  Users
-} from "lucide-react";
+  ExternalLink} from "lucide-react";
+import { CouncilCircle, MushroomNetwork, Pines } from "@/components/sacred/living";
 
 /*
  * EVERY WORD ON THIS PAGE IS THE VILLAGE'S OWN, from Admin, Pages, Prosperity
@@ -41,7 +38,7 @@ import {
  */
 
 /** Icons for the steps, in order; a longer list starts again from the top. */
-const STEP_ICONS = [Calendar, Download, FileText, Heart, Vote, PartyPopper, TrendingUp];
+const STEP_ICONS = [Calendar, Download, FileText, Heart, CouncilCircle, PartyPopper, Pines];
 
 /**
  * Tier card edges and heading inks, lowest first, in the sheet's tokens only
@@ -236,7 +233,7 @@ export default function ProsperityJourney() {
               transition={{ delay: 0.1 }}
               className="text-center min-w-0"
             >
-              <Users className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
+              <MushroomNetwork className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
               <h2 lang={langOf("economy.secondHeading")} className="font-display text-xl font-semibold text-foreground mb-3 break-words">
                 {page.economy.fields.secondHeading}
               </h2>

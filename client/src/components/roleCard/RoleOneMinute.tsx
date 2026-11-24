@@ -12,7 +12,8 @@
  * this panel, so the whole button is on the first screen above the tab bar (the lead, after 1.3.42; FullRoleCard).
  */
 import type { ReactNode } from "react";
-import { CalendarCheck, Clock, Coins, Flag, MapPin } from "lucide-react";
+import { CalendarCheck, Clock} from "lucide-react";
+import { SeedPin, SeedPod, SunLeaf } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import type { Deliverable } from "@shared/roleDeliverables";
 import { EYEBROW } from "@/components/journey/look";
@@ -47,8 +48,8 @@ export default function RoleOneMinute({ goal, next, commitment, price, where, ac
   const facts: Array<{ key: string; icon: typeof Clock; label: string; value: ReactNode }> = [
     { key: "commitment", icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: commitment },
     // "Compensation", never "Price" (the lead, 23 Nov 2026); the key stays, so the card's hooks and tests still find it.
-    { key: "price", icon: Coins, label: t({ message: "Compensation", context: "role in one minute: a fact" }), value: price },
-    { key: "where", icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: where },
+    { key: "price", icon: SeedPod, label: t({ message: "Compensation", context: "role in one minute: a fact" }), value: price },
+    { key: "where", icon: SeedPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: where },
   ].filter((f) => !!f.value);
   if (!goal && !next.length && !facts.length && !act) return null;
   return (
@@ -56,7 +57,7 @@ export default function RoleOneMinute({ goal, next, commitment, price, where, ac
       <H className={EYEBROW}>{t({ message: "The role in one minute", context: "role card: the summary at the top" })}</H>
       {goal && (
         <p className="mt-2 flex items-start gap-2.5 font-display text-xl leading-snug text-card-foreground @md:text-2xl" data-one-minute-goal="">
-          <Flag className="mt-1.5 size-4 shrink-0 text-notice" aria-hidden="true" />
+          <SunLeaf className="mt-1.5 size-4 shrink-0 text-notice" aria-hidden="true" />
           <span className="min-w-0">
             <span className="sr-only">{t({ message: "Goal:", context: "role in one minute: before the goal, for a screen reader" })} </span>
             <TipText text={goal} />

@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import type { WrittenWords } from "@shared/voiceNotes";
 import { STORED_TRANSCRIBE_WORDS, type TranscriptionProviderId } from "@shared/voiceTranscribe";
 
@@ -90,7 +90,7 @@ export default function StoredWords({ href, written: first, on, poster }: Stored
           className="inline-flex min-h-11 items-center gap-2 justify-self-start rounded-full border border-border px-4 text-sm font-medium text-foreground hover:border-notice disabled:opacity-60"
           data-stored-words-button=""
         >
-          <Sparkles className="size-4" aria-hidden="true" />
+          <SeedGlint className="size-4" aria-hidden="true" />
           {shown ? t({ message: "Write it down again", context: "AI transcript" }) : t({ message: "Write down the words", context: "AI transcript" })}
         </button>
       )}

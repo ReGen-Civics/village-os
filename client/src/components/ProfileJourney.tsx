@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
-import { TrendingUp, Heart, ScrollText } from "lucide-react";
+import { Heart, ScrollText } from "lucide-react";
+import { Pines } from "@/components/sacred/living";
 import ProgressionPowers from "@/components/profile/ProgressionPowers";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import { pageVarsFrom } from "@shared/pageContent/vars";
@@ -319,7 +320,7 @@ export default function ProfileJourney() {
           className="bg-card rounded-2xl shadow-lg p-8"
         >
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-notice" />
+            <Pines className="w-5 h-5 text-notice" />
             <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="ProfileJourney, h2">Your Progression</Trans></h2>
           </div>
 

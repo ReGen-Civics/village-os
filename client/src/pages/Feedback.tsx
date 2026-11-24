@@ -13,7 +13,8 @@ import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
-import { Bug, Lightbulb } from "lucide-react";
+import { Bug} from "lucide-react";
+import { Seed } from "@/components/sacred/living";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { failureWords } from "@/lib/failureWords";
 import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, LEDE, WORLD } from "@/components/journey/look";
@@ -114,7 +115,7 @@ export default function Feedback() {
                     kind === "idea" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Lightbulb className="w-4 h-4" /> {t({ message: "An idea", context: "feedback page: the kind" })}
+                  <Seed className="w-4 h-4" /> {t({ message: "An idea", context: "feedback page: the kind" })}
                 </button>
               </div>
 

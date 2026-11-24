@@ -8,17 +8,18 @@
  * the full list grouped by kind. Nothing here counts, ranks or scores anyone.
  */
 import { useLingui } from "@lingui/react/macro";
-import { ChevronDown, Coins, MapPin, MessageCircle, Sparkles, Users, Vote, Wrench, type LucideIcon } from "lucide-react";
+import { ChevronDown, MessageCircle, type LucideIcon } from "lucide-react";
+import { CouncilCircle, MushroomNetwork, SeedGlint, SeedPin, SeedPod, TendingHands } from "@/components/sacred/living";
 import { capabilityLabel } from "@shared/capabilities";
 import { powerGroups, powerKindOf, topPowers, type CatalogueRowLike, type PowerKind, type StageTurnLike } from "./powerKinds";
 
 const ICON: Record<PowerKind, LucideIcon> = {
   talk: MessageCircle,
-  decide: Vote,
-  people: Users,
-  place: MapPin,
-  value: Coins,
-  keep: Wrench,
+  decide: CouncilCircle,
+  people: MushroomNetwork,
+  place: SeedPin,
+  value: SeedPod,
+  keep: TendingHands,
 };
 
 const EYEBROW = "mb-2 text-xs font-semibold uppercase tracking-wide text-dash-gold-lit";
@@ -56,7 +57,7 @@ export default function ProgressionPowers({
           <ul className="flex flex-wrap gap-2">
             {groups.map((r) => (
               <li key={r.id} title={r.id} className="inline-flex items-center gap-1.5 rounded-full border border-notice/60 bg-muted px-3 py-1 text-sm font-medium text-notice">
-                <Users className="h-3.5 w-3.5" aria-hidden="true" /> {r.name}
+                <MushroomNetwork className="h-3.5 w-3.5" aria-hidden="true" /> {r.name}
               </li>
             ))}
           </ul>
@@ -90,7 +91,7 @@ export default function ProgressionPowers({
           {rest && (
             <details className="group mt-3" data-progression-everything="">
               <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-notice [&::-webkit-details-marker]:hidden">
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                <SeedGlint className="h-4 w-4" aria-hidden="true" />
                 {t({ message: "Show me everything", context: "progression: opens every power, grouped" })}
                 <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
               </summary>

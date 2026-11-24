@@ -30,7 +30,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { DoorOpen, FileUp, Map as MapIcon, Bot, Trash2 } from "lucide-react";
+import { DoorOpen, FileUp, Map as MapIcon, Trash2 } from "lucide-react";
+import { Firefly } from "@/components/sacred/living";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { useVillageName } from "@/hooks/useVillageName";
 import { sceneSummary } from "@shared/mapScene";
@@ -271,7 +272,7 @@ export default function BlankSlate({ slate, onOpenBoard, onLeave }: {
           <Step n={1} title={t({ message: "Upload your masterplan", context: "MapSlate, title" })} icon={<FileUp className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             <MasterplanCard />
           </Step>
-          <Step n={2} title={t({ message: "Ask your agent to draw version 1.0", context: "MapSlate, title" })} icon={<Bot className="w-5 h-5 shrink-0" aria-hidden="true" />}>
+          <Step n={2} title={t({ message: "Ask your agent to draw version 1.0", context: "MapSlate, title" })} icon={<Firefly className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             <p className="text-sm text-muted-foreground mb-3">
               <Trans context="MapSlate, p">In your profile, under Your agent, make a token with the scope to draft the village map, and give it
               to your agent with the village map skill. It reads your masterplan and the method this map was first

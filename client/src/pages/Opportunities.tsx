@@ -12,7 +12,6 @@ import {
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { 
-  Sparkles, 
   ArrowRight, 
   Calendar,
   Tent,
@@ -24,10 +23,10 @@ import {
   Palette,
   Leaf,
   Home,
-  Hammer,
   Heart,
   type LucideIcon,
 } from "lucide-react";
+import { SeedGlint, TendingHands } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
 
@@ -62,7 +61,7 @@ import { Trans } from "@lingui/react/macro";
  * to compile.
  */
 const VENTURE_ICON: Record<VentureIcon, LucideIcon> = {
-  sparkles: Sparkles,
+  sparkles: SeedGlint,
   tent: Tent,
   health: Stethoscope,
   cafe: Coffee,
@@ -72,14 +71,14 @@ const VENTURE_ICON: Record<VentureIcon, LucideIcon> = {
   art: Palette,
   farm: Leaf,
   home: Home,
-  tools: Hammer,
+  tools: TendingHands,
   heart: Heart,
 };
 
 /** A word not on the list draws the first picture, so a typo shows a plain icon instead of a hole. */
 function ventureIcon(word: string | undefined): LucideIcon {
   const key = (word ?? "").trim().toLowerCase();
-  return Object.prototype.hasOwnProperty.call(VENTURE_ICON, key) ? VENTURE_ICON[key as VentureIcon] : Sparkles;
+  return Object.prototype.hasOwnProperty.call(VENTURE_ICON, key) ? VENTURE_ICON[key as VentureIcon] : SeedGlint;
 }
 
 /** The badge colours for the three statuses the platform writes; any other word gets the quiet one. */
@@ -120,7 +119,7 @@ export default function Opportunities() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Sparkles className="w-16 h-16 mb-6 opacity-80" />
+              <SeedGlint className="w-16 h-16 mb-6 opacity-80" />
               <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
                 <Trans context="Opportunities, h1">Business Opportunities
               </Trans></h1>

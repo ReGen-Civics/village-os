@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight} from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { GuideAudience, GuideName } from "@shared/guideName";
 import { unnamedGuideWords } from "@/lib/guideNameWords";
@@ -37,7 +38,7 @@ export default function NameYourGuide({
       className="mb-6 flex flex-col gap-3 rounded-2xl border border-notice/40 bg-notice/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-3">
-        <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
+        <SeedGlint className="mt-0.5 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
         <div>
           <p id="name-your-guide-h" className="font-semibold text-foreground">
             <Trans context="name your guide note, founders only: the heading">Your village guide has no name yet</Trans>

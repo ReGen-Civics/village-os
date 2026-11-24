@@ -4,7 +4,7 @@
  * ── WHY THIS IS ITS OWN FILE ─────────────────────────────────────────────
  *
  * It has three homes now: `/places/:key`, the Living Map's place panel, and
- * `/photographs`, the one page carrying every picture in the village. Flag and
+ * `/photographs`, the one page carrying every picture in the village. SunLeaf and
  * "this is a photograph of me" have to mean the same thing in all three. A
  * second copy of this card written for the index would be a second vocabulary,
  * and a button that means one thing on a place page and something slightly
@@ -16,7 +16,8 @@
  */
 import { useState } from "react";
 import { Link } from "wouter";
-import { Flag, Pin, Trash2, Undo2, EyeOff, UserRound } from "lucide-react";
+import { Pin, Trash2, Undo2, EyeOff, UserRound } from "lucide-react";
+import { SunLeaf } from "@/components/sacred/living";
 import { Image, uploadSrcSet } from "@/components/Image";
 import CuratorImage from "@/components/places/CuratorImage";
 import { authToken } from "@/lib/gameApi";
@@ -163,7 +164,7 @@ export default function PhotoCard({
               className={BTN}
               aria-label={`Flag the photograph described as ${photo.altText}`}
             >
-              <Trans context="PhotoCard, button"><Flag className="w-3.5 h-3.5" aria-hidden="true" /> Flag this
+              <Trans context="PhotoCard, button"><SunLeaf className="w-3.5 h-3.5" aria-hidden="true" /> SunLeaf this
             </Trans></button>
           )}
           {signedIn && (

@@ -13,7 +13,8 @@
  * underlined).
  */
 import { useState, type ReactNode } from "react";
-import { ArrowDown, ArrowRight, ArrowUp, CalendarDays, Clock, ExternalLink, MapPin, Repeat } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, CalendarDays, Clock, ExternalLink, Repeat } from "lucide-react";
+import { SeedPin } from "@/components/sacred/living";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { CHIP_SOFT, LINK } from "@/components/journey/look";
 import { fieldLabel } from "@shared/proposedChanges";
@@ -326,7 +327,7 @@ export function EventCard({ body, zone }: { body: Record<string, unknown>; zone:
           )}
           {where && (
             <li className="flex items-start gap-2">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
+              <SeedPin className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
               <span className="break-words">{where}</span>
             </li>
           )}

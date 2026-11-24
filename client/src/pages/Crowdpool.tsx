@@ -12,7 +12,7 @@ import { Link } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import { ExampleChip } from "@/components/ExamplesBanner";
-import { Users } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import InfoTip from "@/components/InfoTip";
 import { CrowdpoolStyles, MiniRing, phaseLabel, pledgedIsFloor, pooledLine, timeAgo } from "@/components/crowdpool/PoolPieces";
 import BreathingLoader from "@/components/natural/BreathingLoader";
@@ -135,7 +135,7 @@ export default function Crowdpool() {
                         : ""}
                     </p>
                     <p className="text-xs mt-1 inline-flex items-center gap-1.5" style={{ color: "#c9a25e" }}>
-                      <Users className="w-3.5 h-3.5" />
+                      <MushroomNetwork className="w-3.5 h-3.5" />
                       {(c.contributorsCount ?? 0) === 1 ? "1 backer" : `${c.contributorsCount ?? 0} backers`}
                       {c.stale ? ` · numbers from ${timeAgo(c.lastSyncAt ?? null)}` : ""}
                     </p>

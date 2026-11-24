@@ -21,9 +21,10 @@ import { toast } from "sonner";
 import { reportFeedback } from "@/lib/reportFeedback";
 import { actionError } from "@/lib/actionOutcome";
 import {
-  ArrowLeft, Bell, BellOff, Crown, Flag, LogOut, Pencil, Plus, Search, Send, Trash2,
-  ListChecks, Scroll, UserMinus, UserPlus, Users, X,
+  ArrowLeft, Bell, BellOff, LogOut, Pencil, Plus, Search, Send, Trash2,
+  ListChecks, Scroll, UserMinus, UserPlus, X,
 } from "lucide-react";
+import { MushroomNetwork, SunLeaf, TreeCrown } from "@/components/sacred/living";
 import {
   canManageMembers,
   canRename,
@@ -144,7 +145,7 @@ function Inbox() {
 
         {!loading && !ordered.length && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <Users className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
+            <MushroomNetwork className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
             <p className="font-semibold text-foreground mb-1"><Trans context="Messages, p">No conversations yet</Trans></p>
             <p className="text-sm text-muted-foreground"><Trans context="Messages, p">Tap New to message anyone here.</Trans></p>
           </div>
@@ -194,7 +195,7 @@ function InboxList({ list, viewerId, now }: { list: InboxConversation[]; viewerI
                 ) : work ? (
                   c.contextType === "task" ? <ListChecks className="w-5 h-5" /> : <Scroll className="w-5 h-5" />
                 ) : (
-                  <Users className="w-5 h-5" />
+                  <MushroomNetwork className="w-5 h-5" />
                 )}
               </span>
               <span className="min-w-0 flex-1">
@@ -752,7 +753,7 @@ function ThreadView({ id }: { id: string }) {
                             className="grid place-items-center w-8 h-8 rounded-full hover:bg-muted"
                             title={`Make ${m.name ?? "them"} the owner`}
                           >
-                            <Crown className="w-3.5 h-3.5" aria-hidden="true" />
+                            <TreeCrown className="w-3.5 h-3.5" aria-hidden="true" />
                             <span className="sr-only"><Trans context="Messages, span">Make {m.name ?? "them"} the owner</Trans></span>
                           </button>
                           <button
@@ -916,7 +917,7 @@ function ThreadView({ id }: { id: string }) {
                               }}
                               className="inline-flex items-center gap-1 py-2 hover:text-destructive"
                             >
-                              <Flag className="w-3 h-3" aria-hidden="true" />
+                              <SunLeaf className="w-3 h-3" aria-hidden="true" />
                               <span className="sr-only"><Trans context="Messages, span">Report this message</Trans></span>
                             </button>
                           )}

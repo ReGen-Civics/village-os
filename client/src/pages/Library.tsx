@@ -10,7 +10,8 @@ import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import { useLadderTitle } from "@/hooks/useVillagePaths";
-import { Package, RotateCcw, Undo2, Wrench } from "lucide-react";
+import { Package, RotateCcw, Undo2} from "lucide-react";
+import { TendingHands } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import InfoTip from "@/components/InfoTip";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
@@ -176,7 +177,7 @@ export default function Library() {
                     <Image src={i.photoUrl} alt={i.name} className="rounded-lg mb-3 h-36 w-full" />
                   )}
                   <div className="flex items-center gap-2 mb-1">
-                    <Wrench className="w-4 h-4 text-teal-deep" />
+                    <TendingHands className="w-4 h-4 text-teal-deep" />
                     <p className="font-semibold text-foreground text-sm">{i.name}</p>
                     {/* gray-500 on gray-100 measured 4.39:1 at 10px, under the
                         4.5 floor. gray-600 on the same chip is 6.86:1 and the
