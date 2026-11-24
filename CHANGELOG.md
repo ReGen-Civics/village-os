@@ -52,6 +52,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **/powers is public**, with the first names of the people holding each role, and nothing more. A member who keeps their roles private is left out. The village-wide `org.public_people` switch still applies.
 - **The gratitude wall shows visitors first names only**, with no profile links or portraits. Members see no change.
 - **The festivals page** follows the season's goals with "If you can help us meet these, consider the Village Steward path."
+- **The investor page in the night look**, phone first, with the investment summary and the home page's roadmap redrawn to match. Three new optional sections in Admin, Pages: the reasons to invest, a "not an offer" line (a neutral one shows by default) and the risks.
 - **Crash alerts go to the accounts you choose.** The new setting `ops.crash_alert_recipients` lists the admin or founder emails that hear about crashes. Blank keeps today's behaviour, every admin and founder.
 - **A page left open across a release refreshes itself** instead of showing an error and emailing the admins. It reloads once, quietly.
 - **Spanish:** an unnamed village guide is called by a Spanish label, and the founders' "Name your guide" note is translated. A guide's own name is never translated.
