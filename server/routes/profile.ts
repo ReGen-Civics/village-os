@@ -53,6 +53,7 @@ import { DEPARTED_HANDLE_REFUSAL, isDepartedHandle } from "../lib/profile";
 import { FORMER_MEMBER_HOLD } from "../lib/exitResolve";
 // Village Comms: the one door to the email system (server/lib/commsSink.ts).
 import { commsSink } from "../lib/commsSink";
+import { readsAsPlainMember } from "../lib/readAsMember";
 
 type Deps = Pick<AppDeps, "authedUser" | "members" | "publicUser" | "getPool">;
 
@@ -64,6 +65,24 @@ function sessionGone(row: any, authed: any): boolean {
   return isTombstone({ email: String(row.email ?? "") }) || Number(row.tokenVersion ?? 0) !== Number(authed.tokenVersion ?? 0);
 }
 
+/** The roles whose holder the client draws admin and founder surfaces for (useIsAdmin, client/src/contexts/AuthContext.tsx). */
+const ADMIN_ROLES = new Set(["admin", "founder"]);
+
+/**
+ * A profile as a plain member's (the live view for QA reads as one, server/lib/readAsMember.ts). The server
+ * already answers every other read as a plain member, so a profile still saying admin or founder made the
+ * client draw admin surfaces whose reads the server then refused. Anything else in the profile is the
+ * holder's own and stays.
+ */
+export function asPlainMember<T extends { role?: unknown; adminAccess?: unknown } | null>(profile: T): T {
+  if (!profile) return profile;
+  return {
+    ...profile,
+    role: ADMIN_ROLES.has(String(profile.role)) ? "member" : profile.role,
+    adminAccess: false,
+  };
+}
+
 export function register(app: Express, deps: Deps): void {
   const { authedUser, members, publicUser, getPool } = deps;
 
@@ -73,7 +92,8 @@ export function register(app: Express, deps: Deps): void {
     // silently bypassed the tokenVersion revocation check.
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required" });
-    res.json(publicUser(user));
+    const profile = publicUser(user);
+    res.json(readsAsPlainMember(req) ? asPlainMember(profile) : profile);
   });
 
   // Auth: Update Profile
