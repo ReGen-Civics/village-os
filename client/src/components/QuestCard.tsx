@@ -15,9 +15,10 @@ import { Link } from "wouter";
 import { useState } from "react";
 import {
   ArrowRight, Baby, BookOpen, Brush, Calendar, Camera, CheckCircle2, ChefHat,
-  Clock, Compass, Hammer, Home, Laptop, Leaf, Music, ShieldCheck,
-  Sprout, Star, TreePine, Users,
+  Clock, Compass, Home, Laptop, Leaf, Music,
+  Sprout, TreePine,
 } from "lucide-react";
+import { Bloom, Canopy, MushroomNetwork, TendingHands } from "@/components/sacred/living";
 import type { QuestClaim } from "@/lib/gameApi";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import RootTags from "@/components/roots/RootTags";
@@ -34,12 +35,12 @@ import { questFit, type QuestFit } from "@shared/commitment";
 import ExampleStamp from "@/components/openWork/ExampleStamp";
 
 export const QUEST_ICONS: Record<string, React.ElementType> = {
-  Users, Sprout, ChefHat, TreePine, BookOpen, Home, Camera, Baby, Laptop,
-  Leaf, Hammer, Brush, Music, ShieldCheck, Star, Calendar, Compass,
+  Users: MushroomNetwork, Sprout, ChefHat, TreePine, BookOpen, Home, Camera, Baby, Laptop,
+  Leaf, Hammer: TendingHands, Brush, Music, ShieldCheck: Canopy, Star: Bloom, Calendar, Compass,
 };
 
 export const iconFor = (name: string | null | undefined): React.ElementType =>
-  QUEST_ICONS[String(name ?? "")] ?? Star;
+  QUEST_ICONS[String(name ?? "")] ?? Bloom;
 
 /*
  * SEMANTIC TOKENS ONLY (night-contrast lane, 2026-11-11). The board stands in
@@ -259,7 +260,7 @@ export default function QuestCard({
             <div className="flex flex-wrap items-center gap-3 text-xs">
               {active > 0 && (
                 <span className="inline-flex items-center gap-1 font-medium text-open">
-                  <Users className="w-3.5 h-3.5" />
+                  <MushroomNetwork className="w-3.5 h-3.5" />
                   {active === 1
                     ? t({ message: "1 hand on this", context: "open work card: one person carries this quest now" })
                     : t({ message: `${active} hands on this`, context: "open work card: people carrying this quest now" })}

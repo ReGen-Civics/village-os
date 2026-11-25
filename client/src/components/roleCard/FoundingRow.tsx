@@ -16,7 +16,8 @@
  *   - b1: the related roles as wrapping chips (lineupParts.tsx).
  */
 import type { ReactNode } from "react";
-import { ArrowRight, Clock, MapPin, Users } from "lucide-react";
+import { ArrowRight, Clock} from "lucide-react";
+import { MushroomNetwork, SeedPin } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import type { ShareNames } from "@shared/contributionToken";
@@ -60,10 +61,10 @@ export interface FoundingRowProps {
  */
 export function FactsGrouped({ circle, commitment, where }: { circle: string | null; commitment: string | null; where: string | null }) {
   const facts = [
-    [Users, circle],
+    [MushroomNetwork, circle],
     [Clock, commitment],
-    [MapPin, where],
-  ].filter((f): f is [typeof Users, string] => !!f[1]);
+    [SeedPin, where],
+  ].filter((f): f is [typeof MushroomNetwork, string] => !!f[1]);
   if (facts.length === 0) return null;
   return (
     <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-card-foreground" data-front-facts="">

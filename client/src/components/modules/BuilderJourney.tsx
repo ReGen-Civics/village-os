@@ -9,7 +9,8 @@
  */
 import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BookOpen, Bot, Check, ClipboardCopy } from "lucide-react";
+import { BookOpen, Check, ClipboardCopy } from "lucide-react";
+import { Firefly } from "@/components/sacred/living";
 import { BUILDER_EXAMPLES, BUILDER_STEPS, agentHandoffText } from "@shared/builderJourney";
 
 export const BUILDER_JOURNEY_ID = "build-a-module";
@@ -76,7 +77,7 @@ export default function BuilderJourney() {
       </ul>
 
       <h3 id="builder-agent-text" className="mt-8 flex items-center gap-2 text-lg font-semibold text-foreground">
-        <Bot className="h-5 w-5 text-notice" aria-hidden="true" />
+        <Firefly className="h-5 w-5 text-notice" aria-hidden="true" />
         <Trans context="module library, builder section">Hand this to your agent</Trans>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">

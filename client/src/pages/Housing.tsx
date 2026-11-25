@@ -17,7 +17,6 @@ import {
   Home,
   ArrowRight,
   Calendar,
-  MapPin,
   TreePine,
   Mountain,
   Droplets,
@@ -28,6 +27,7 @@ import {
   Heart,
   type LucideIcon,
 } from "lucide-react";
+import { SeedPin } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
 
@@ -80,7 +80,7 @@ const FEATURE_ICONS: Record<HousingFeatureIcon, LucideIcon> = {
   sprout: Sprout,
   wind: Wind,
   home: Home,
-  pin: MapPin,
+  pin: SeedPin,
   heart: Heart,
 };
 
@@ -334,7 +334,7 @@ export default function Housing() {
       <section className="py-20 bg-teal/10">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
-            <MapPin className="w-12 h-12 text-teal mx-auto mb-6" />
+            <SeedPin className="w-12 h-12 text-teal mx-auto mb-6" />
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4 break-words">
               {tenure.fields.heading}
             </h2>

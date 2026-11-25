@@ -11,7 +11,8 @@ import { Link, useRoute } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
-import { Calendar, ExternalLink, Flag, Gavel, Lock, MapPin, MessageCircle, Pin, Plus, Bell } from "lucide-react";
+import { Calendar, ExternalLink, Lock, MessageCircle, Pin, Plus, Bell } from "lucide-react";
+import { CouncilCircle, SeedPin, SunLeaf } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
@@ -504,7 +505,7 @@ function ThreadView({ id }: { id: string }) {
                 </p>
                 {eventMeta.location && (
                   <p className="flex items-center gap-2 text-sm text-foreground">
-                    <MapPin className="w-4 h-4 text-teal-deep shrink-0" />
+                    <SeedPin className="w-4 h-4 text-teal-deep shrink-0" />
                     {eventMeta.location}
                   </p>
                 )}
@@ -530,7 +531,7 @@ function ThreadView({ id }: { id: string }) {
                   <Trans context="Forum, button"><Bell className="w-3.5 h-3.5" /> Follow
                 </Trans></button>
                 <button onClick={() => void report()} className="inline-flex items-center gap-1 text-muted-foreground hover:text-red-500">
-                  <Trans context="Forum, button"><Flag className="w-3.5 h-3.5" /> Report
+                  <Trans context="Forum, button"><SunLeaf className="w-3.5 h-3.5" /> Report
                 </Trans></button>
               </div>
             )}
@@ -639,7 +640,7 @@ function ThreadView({ id }: { id: string }) {
 
           {user && thread.kind === "decision" && !decided && !isExample && (
             <div className="bg-card border border-purple-200 rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5"><Trans context="Forum, p"><Gavel className="w-3.5 h-3.5" /> Record the outcome</Trans></p>
+              <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5"><Trans context="Forum, p"><CouncilCircle className="w-3.5 h-3.5" /> Record the outcome</Trans></p>
               <VoiceArea value={outcome} onValue={setOutcome}>
               <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={2}
                 placeholder={t({ message: "What was decided, and by what process?", context: "Forum, placeholder" })}

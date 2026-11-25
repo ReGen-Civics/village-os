@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, CellRing, SteppingStones } from "@/components/sacred/living";
+import { Cell, CellRing, SteppingStones } from "@/components/sacred/livingCore";
 
 /**
  * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in

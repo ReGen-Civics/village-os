@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, TICK, WORLD } from "@/components/journey/look";
 import { m, AnimatePresence } from "framer-motion";
-import { Heart, CheckCircle2, ArrowRight, Users, Home, TrendingUp, Sparkles, Send } from "lucide-react";
+import { Heart, CheckCircle2, ArrowRight, Home, Send } from "lucide-react";
+import { MushroomNetwork, Pines, SeedGlint } from "@/components/sacred/living";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { authToken, gameFetch, useGameConfig, useVillageLinks } from "@/lib/gameApi";
@@ -140,12 +141,12 @@ function NextStep({ children }: { children: React.ReactNode }) {
 }
 
 /** What each path choice needs that is not words. Its label is the village's (Admin, Pages, Membership letter). */
-const PATH_LOOK: Record<(typeof LETTER_PATH_IDS)[number], { icon: typeof Users; color: string }> = {
+const PATH_LOOK: Record<(typeof LETTER_PATH_IDS)[number], { icon: typeof MushroomNetwork; color: string }> = {
   // The sheet's inks (docs/DESIGN_RULE.md): gold, living green and moonlight, which read on its night ground.
-  investor: { icon: TrendingUp, color: "border-notice text-notice" },
-  steward: { icon: Users, color: "border-open text-open" },
+  investor: { icon: Pines, color: "border-notice text-notice" },
+  steward: { icon: MushroomNetwork, color: "border-open text-open" },
   resident: { icon: Home, color: "border-foreground/70 text-foreground" },
-  prosperity: { icon: Sparkles, color: "border-muted-foreground text-muted-foreground" },
+  prosperity: { icon: SeedGlint, color: "border-muted-foreground text-muted-foreground" },
 };
 
 /**

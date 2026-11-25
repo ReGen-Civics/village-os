@@ -19,7 +19,8 @@
  */
 import { useState, type ReactNode, type Ref } from "react";
 import FramelessImg from "@/components/FramelessImg";
-import { RotateCcw, Sparkles, Star } from "lucide-react";
+import { RotateCcw, Star } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { SHEET_WORDS, speaksForGloss, speaksForLabel, type Pip, type SeatSheetView, type SeatStateWord } from "@shared/roleSheet";
 import { ExampleChip } from "@/components/ExamplesBanner";
 import Figure from "@/components/sheet/Figure";
@@ -307,7 +308,7 @@ export default function SeatCardFront({
           onPickPerson={onPickPerson}
           headerAside={
             chips.recruiting ? (
-              <GlossChip tone="open" icon={Sparkles} {...chip("recruiting")}>
+              <GlossChip tone="open" icon={SeedGlint} {...chip("recruiting")}>
                 {SHEET_WORDS.recruiting}
               </GlossChip>
             ) : null

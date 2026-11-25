@@ -36,7 +36,8 @@ import { toggleInBasket, useBasket } from "@/components/modules/planBasket";
 import { useCatalyst } from "@/lib/gameApi";
 import { POOL_REASON_COPY } from "@shared/moduleCatalog";
 import type { ModuleDataClass } from "@shared/modules";
-import { ArrowLeft, Vote } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
+import { CouncilCircle } from "@/components/sacred/living";
 import { Link, useRoute } from "wouter";
 import { Trans } from "@lingui/react/macro";
 
@@ -262,7 +263,7 @@ export default function ModuleDetail() {
         {door.kind === "running" && (
           <section id="propose" className={CARD}>
             <h2 className="flex items-center gap-2 font-semibold text-foreground">
-              <Vote className="w-5 h-5 text-teal-deep" aria-hidden="true" />
+              <CouncilCircle className="w-5 h-5 text-teal-deep" aria-hidden="true" />
               {runningLine(door.proposal)}
             </h2>
             <Link

@@ -20,7 +20,8 @@ import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { ExampleChip } from "@/components/ExamplesBanner";
-import { ArrowLeft, ExternalLink, HandHeart, Package, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, ExternalLink, HandHeart, Package} from "lucide-react";
+import { MushroomNetwork, SeedGlint } from "@/components/sacred/living";
 import InfoTip from "@/components/InfoTip";
 import {
   CrowdpoolStyles, GoldRing, GrowthStrip,
@@ -288,7 +289,7 @@ export default function CrowdpoolCampaign() {
                         <InfoTip tip={ringTip(floor)}><Trans context="CrowdpoolCampaign, InfoTip">pooled</Trans></InfoTip>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <Users className="w-4 h-4" style={{ color: "#c9a25e" }} />
+                        <MushroomNetwork className="w-4 h-4" style={{ color: "#c9a25e" }} />
                         {c.contributorsCount === 1 ? "1 backer so far" : `${c.contributorsCount} backers so far`}
                       </span>
                     </div>
@@ -493,7 +494,7 @@ export default function CrowdpoolCampaign() {
               <div className="cp-board p-5">
                 {c.events.length === 0 && (
                   <p className="text-sm inline-flex items-center gap-2" style={{ color: "#e4d3ae" }}>
-                    <Trans context="CrowdpoolCampaign, p"><Sparkles className="w-4 h-4" style={{ color: "#c9a25e" }} />
+                    <Trans context="CrowdpoolCampaign, p"><SeedGlint className="w-4 h-4" style={{ color: "#c9a25e" }} />
                     The ledger waits for its first arrival.
                   </Trans></p>
                 )}

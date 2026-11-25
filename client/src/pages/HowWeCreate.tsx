@@ -13,10 +13,8 @@ import {
   Sprout,
   ArrowRight,
   Heart,
-  Users,
   Calendar,
   CircleDot,
-  Vote,
   Repeat,
   Settings,
   Palette,
@@ -25,6 +23,7 @@ import {
   Leaf,
   Compass,
 } from "lucide-react";
+import { CouncilCircle, MushroomNetwork } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { Trans } from "@lingui/react/macro";
 
@@ -42,7 +41,7 @@ import { Trans } from "@lingui/react/macro";
  */
 const PRINCIPLE_ICONS = [CircleDot, Settings, Heart, Repeat, Leaf, Compass];
 const TOKEN_CARD_ICONS = ["🤝", "📊", "🌱"];
-const METHOD_ICONS = [Vote, Handshake, Users, Palette, CircleDot, Compass];
+const METHOD_ICONS = [CouncilCircle, Handshake, MushroomNetwork, Palette, CircleDot, Compass];
 const SEASON_LOOKS = [
   { emoji: "🌱", color: "bg-open/10 text-open" },
   { emoji: "☀️", color: "bg-notice/10 text-notice" },
@@ -224,7 +223,7 @@ export default function HowWeCreate() {
               viewport={{ once: true }}
             >
               <div className="text-center mb-12">
-                <Users className="w-12 h-12 text-open mx-auto mb-4" />
+                <MushroomNetwork className="w-12 h-12 text-open mx-auto mb-4" />
                 <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
                   {governance.fields.heading}
                 </h2>

@@ -4,7 +4,8 @@ import CircleName from "@/components/circles/CircleName";
 import { anchorCircleId } from "@shared/circlePicker";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
-import { Users, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
 import { Fragment, useEffect, useState, type ReactNode } from "react";
 import CircleScene from "@/components/CircleScene";
@@ -429,7 +430,7 @@ export default function Circles() {
             className="text-center mb-16"
           >
             <div className="w-16 h-16 rounded-full bg-notice/10 flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-notice" />
+              <MushroomNetwork className="w-8 h-8 text-notice" />
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 break-words">
               {hero.fields.headline}

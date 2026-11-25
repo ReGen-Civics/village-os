@@ -22,7 +22,8 @@
  */
 import { useId, type ReactNode } from "react";
 import FramelessImg from "@/components/FramelessImg";
-import { Bot, ChevronRight, Hourglass, Plus, UserRound } from "lucide-react";
+import { ChevronRight, Hourglass, Plus, UserRound } from "lucide-react";
+import { Firefly } from "@/components/sacred/living";
 import { SHEET_WORDS, type Spot } from "@shared/roleSheet";
 import { initialsFrom } from "./holderFace";
 import HolderGeneKeys from "@/components/geneKeys/HolderGeneKeys";
@@ -54,7 +55,7 @@ function Disc({ spot }: { spot: Spot }) {
     }
     case "agent":
     case "nameless": {
-      const Icon = spot.kind === "agent" ? Bot : UserRound;
+      const Icon = spot.kind === "agent" ? Firefly : UserRound;
       const edge = spot.ready ? READY_EDGE : "ring-[1.5px] ring-inset ring-border";
       return (
         <span aria-hidden="true" className={`${DISC} bg-muted ${edge}`}>

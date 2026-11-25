@@ -3,7 +3,8 @@
  * held now, one card per person, on the /roles index's "Holding it now". Loaded after the page's first view,
  * because it sits below the open roles. Grouping and order live in ./roster.ts.
  */
-import { ArrowRight, Bot, UserRound } from "lucide-react";
+import { ArrowRight, UserRound } from "lucide-react";
+import { Firefly } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { applyHrefForRole } from "./FullRoleCard";
@@ -37,7 +38,7 @@ function CrestSeed({ className = "" }: { className?: string }) {
 /** The crest: a gold ring around the holder's initial, or a plain mark when there is no name. Never a face. */
 function Crest({ entry, size }: { entry: RosterEntry; size: string }) {
   const initial = entry.name ? Array.from(entry.name)[0]?.toLocaleUpperCase() : null;
-  const Icon = entry.agent ? Bot : UserRound;
+  const Icon = entry.agent ? Firefly : UserRound;
   return (
     <span className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-notice/40 via-notice to-notice/40 p-[3px] shadow-[0_0_24px] shadow-notice/30 ${size}`} aria-hidden="true">
       <span className="grid size-full place-items-center rounded-full bg-background font-display text-notice">

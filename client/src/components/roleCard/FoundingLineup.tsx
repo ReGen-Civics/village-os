@@ -27,7 +27,8 @@
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { LayoutList, Target } from "lucide-react";
+import { LayoutList} from "lucide-react";
+import { GrowthRings } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import { applyByParts, frontKind, pillKind, volunteerLine } from "./frontWords";
@@ -92,7 +93,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
       {(
         [
           ["sheet", LayoutList, t({ message: "Team sheet", context: "founding team view: a list of roles" })],
-          ["formation", Target, t({ message: "Formation", context: "founding team view: the team drawn in rings" })],
+          ["formation", GrowthRings, t({ message: "Formation", context: "founding team view: the team drawn in rings" })],
         ] as const
       ).map(([v, Icon, label]) => (
         <button

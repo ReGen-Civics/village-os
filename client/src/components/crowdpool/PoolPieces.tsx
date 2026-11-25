@@ -15,7 +15,8 @@
  * capital-stack widget.
  */
 import type { CSSProperties } from "react";
-import { BookOpen, Coins, Hammer, Mountain, Package, Repeat, Sparkles, UserRound, type LucideIcon } from "lucide-react";
+import { BookOpen, Mountain, Package, Repeat, UserRound, type LucideIcon } from "lucide-react";
+import { SeedGlint, SeedPod, TendingHands } from "@/components/sacred/living";
 import Celebration from "@/components/natural/Celebration";
 import { useArrival, useMomentWindow } from "@/components/natural/moments";
 import { Trans } from "@lingui/react/macro";
@@ -51,14 +52,14 @@ export const capitalTint = (capital: string): string => CAPITAL_TINTS[capital] ?
 export const KIND_GLYPHS: Record<string, LucideIcon> = {
   loan: Repeat,
   role: UserRound,
-  shift: Hammer,
+  shift: TendingHands,
   knowledge: BookOpen,
   item: Package,
-  crypto: Coins,
+  crypto: SeedPod,
   land: Mountain,
 };
 
-export const kindGlyph = (kind: string): LucideIcon => KIND_GLYPHS[kind] ?? Sparkles;
+export const kindGlyph = (kind: string): LucideIcon => KIND_GLYPHS[kind] ?? SeedGlint;
 
 /**
  * What a kind's claim means, in one plain word for the card corner.

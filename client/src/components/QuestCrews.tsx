@@ -9,7 +9,8 @@
  * panel says so rather than implying a shared reward.
  */
 import { useEffect, useState } from "react";
-import { Copy, LogOut, Plus, Users } from "lucide-react";
+import { Copy, LogOut, Plus} from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { gameFetch } from "@/lib/gameApi";
 import { crewCodeFrom, inviteUrl } from "@/lib/crewLinks";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -126,7 +127,7 @@ export default function QuestCrews({
   return (
     <div className="bg-card border border-border rounded-2xl shadow-sm p-5">
       <h2 className="font-display text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-        <Trans context="QuestCrews, h2"><Users className="w-5 h-5 text-teal-deep" />
+        <Trans context="QuestCrews, h2"><MushroomNetwork className="w-5 h-5 text-teal-deep" />
         Walk it with a crew
       </Trans></h2>
       <p className="text-sm text-muted-foreground leading-relaxed mb-4">

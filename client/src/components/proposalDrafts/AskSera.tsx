@@ -14,7 +14,7 @@
  */
 import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { fetchGuide } from "@/lib/guideApi";
 import { askForDraft } from "@/lib/seraDraftApi";
@@ -87,7 +87,7 @@ export function AskSera({
     <div className="grid gap-1.5" data-ask-sera={kind}>
       <div>
         <button type="button" className={BTN} disabled={busy || disabled} onClick={() => void press()} aria-describedby={`ask-sera-${kind}-sends`}>
-          <Sparkles className="size-4" aria-hidden="true" />
+          <SeedGlint className="size-4" aria-hidden="true" />
           {/* Phase A, build list section 3: the line the visionary asked for, in place of "Ask Sera for a first draft". */}
           {t`Get help drafting from ${name}, our regeneratively trained digital assistant`}
         </button>

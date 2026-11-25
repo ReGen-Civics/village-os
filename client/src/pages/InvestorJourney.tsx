@@ -32,7 +32,6 @@ import { useEffect, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
-  TrendingUp,
   ArrowRight,
   CheckCircle2,
   Circle,
@@ -40,15 +39,12 @@ import {
   Calendar,
   Heart,
   Building,
-  Users,
-  Sparkles,
   ChevronDown,
   ExternalLink,
   Send,
-  MapPin,
-  Zap,
   BarChart3,
 } from "lucide-react";
+import { MushroomNetwork, Pines, SeedGlint, SeedPin, SunLeaf } from "@/components/sacred/living";
 import {
   Dialog,
   DialogContent,
@@ -73,7 +69,7 @@ import {
  */
 
 /** Icons for the steps, in order; a longer list starts again from the top. */
-const STEP_ICONS = [Sparkles, FileText, Calendar, Heart];
+const STEP_ICONS = [SeedGlint, FileText, Calendar, Heart];
 
 /*
  * KEY NUMBERS ARE THE VILLAGE'S OWN, OR THERE ARE NONE.
@@ -91,15 +87,15 @@ const STEP_ICONS = [Sparkles, FileText, Calendar, Heart];
  * honest sentence rather than an empty grid, and never a default: a number
  * nobody typed is a claim nobody made.
  */
-const METRIC_LOOKS: Record<(typeof INVESTOR_FIGURE_IDS)[number], { icon: typeof TrendingUp }> = {
-  appreciation: { icon: TrendingUp },
+const METRIC_LOOKS: Record<(typeof INVESTOR_FIGURE_IDS)[number], { icon: typeof Pines }> = {
+  appreciation: { icon: Pines },
   appraisal: { icon: Building },
   projectedReturn: { icon: BarChart3 },
-  targetRaise: { icon: Zap },
+  targetRaise: { icon: SunLeaf },
 };
 
 /** The icon for each person card, handed out in order. */
-const PERSONA_ICONS = [MapPin, Users, Heart, Sparkles, TrendingUp, Building];
+const PERSONA_ICONS = [SeedPin, MushroomNetwork, Heart, SeedGlint, Pines, Building];
 
 /** A section's heading on the night ground: the display face, never bold on the sheet. */
 const SECTION_H2 = "font-display text-3xl leading-tight text-foreground sm:text-4xl break-words";
@@ -290,7 +286,7 @@ export default function InvestorJourney() {
             >
               {/* A gold ring, the way the sheet carries its icons. It used to rock forever beside the text. */}
               <span className={RING} aria-hidden="true">
-                <TrendingUp className="size-5" />
+                <Pines className="size-5" />
               </span>
               <span className={`${EYEBROW} min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
             </m.div>
@@ -723,7 +719,7 @@ export default function InvestorJourney() {
         <div className="container">
           <div className={`${CARD_FEATURED} mx-auto max-w-2xl text-center`}>
             <span className={`${RING} mx-auto mb-5 size-12`} aria-hidden="true">
-              <Sparkles className="size-6" />
+              <SeedGlint className="size-6" />
             </span>
             <h2 className={`${SECTION_H2} mb-4`}>{closing.fields.heading}</h2>
             <p className={`${NOTE} mx-auto mb-8 max-w-xl`}>

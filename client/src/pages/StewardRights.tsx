@@ -5,18 +5,16 @@ import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { RIGHTS_STEWARD_PAGE } from "@shared/pageContent/rights";
 import {
-  Users,
   Heart,
   TreePine,
   Star,
   Compass,
   Shield,
   Leaf,
-  Sparkles,
   ArrowRight,
   CheckCircle2,
-  Crown,
 } from "lucide-react";
+import { MushroomNetwork, SeedGlint, TreeCrown } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, RING, WORLD } from "@/components/journey/look";
 
@@ -33,10 +31,10 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, RING, WORLD }
  * its own card (TOKEN_COPY_PROPOSAL row 18), and this page reads no token
  * name and no conversion sentence at all.
  */
-const RIGHT_ICONS = [Users, Heart, Star, Compass, Leaf, Shield, Sparkles, TreePine];
-const RESPONSIBILITY_ICONS = [Users, TreePine, Compass, Heart, Sparkles, Star, Leaf, Shield];
+const RIGHT_ICONS = [MushroomNetwork, Heart, Star, Compass, Leaf, Shield, SeedGlint, TreePine];
+const RESPONSIBILITY_ICONS = [MushroomNetwork, TreePine, Compass, Heart, SeedGlint, Star, Leaf, Shield];
 /** Each stage's mark, by position, in a gold ring (look.ts RING): the sheet's tokens only. */
-const STAGE_LOOKS = [{ icon: Star }, { icon: Compass }, { icon: Crown }, { icon: TreePine }, { icon: Heart }];
+const STAGE_LOOKS = [{ icon: Star }, { icon: Compass }, { icon: TreeCrown }, { icon: TreePine }, { icon: Heart }];
 
 export default function StewardRights() {
   // Null until the saved words have arrived: the hero keeps its space and

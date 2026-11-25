@@ -4,7 +4,6 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { VISIT_PAGE } from "@shared/pageContent/visit";
 import { useEffect, useState } from "react";
 import {
-  MapPin,
   Calendar,
   Clock,
   Wallet,
@@ -13,6 +12,7 @@ import {
   Home as HomeIcon,
   Backpack,
 } from "lucide-react";
+import { SeedPin } from "@/components/sacred/living";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { Trans } from "@lingui/react/macro";
 import { useVillageDoc } from "@/hooks/useVillageDocTranslation";
@@ -122,7 +122,7 @@ export default function Visit() {
       <section className="bg-teal-band text-white py-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-3">
-            <MapPin className="w-6 h-6 text-amber-on-band" />
+            <SeedPin className="w-6 h-6 text-amber-on-band" />
             <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase">
               <Trans context="Visit, span">Plan a visit
             </Trans></span>
@@ -167,7 +167,7 @@ export default function Visit() {
                       line the program left blank draws no icon on its own. */}
                   <div className="space-y-1.5 text-sm text-stone-600 mb-4">
                     {v.duration?.trim() && <p className="flex items-center gap-2"><Clock className="w-4 h-4 shrink-0 text-stone-400" /> {v.duration}</p>}
-                    {v.format?.trim() && <p className="flex items-center gap-2"><MapPin className="w-4 h-4 shrink-0 text-stone-400" /> {v.format}</p>}
+                    {v.format?.trim() && <p className="flex items-center gap-2"><SeedPin className="w-4 h-4 shrink-0 text-stone-400" /> {v.format}</p>}
                     {v.cost?.trim() && <p className="flex items-center gap-2"><Wallet className="w-4 h-4 shrink-0 text-stone-400" /> {v.cost}</p>}
                   </div>
                   {/* A cleared description draws no empty paragraph; the space

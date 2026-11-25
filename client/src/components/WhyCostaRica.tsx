@@ -1,12 +1,9 @@
 import {
-  ShieldCheck,
   Plane,
   Scale,
-  Landmark,
-  MapPin,
-  TrendingUp,
   FileQuestion,
 } from "lucide-react";
+import { Canopy, CouncilCircle, Pines, SeedPin } from "@/components/sacred/living";
 import { useVillageContent } from "@/hooks/useVillageContent";
 import { CARD, EYEBROW, HINT, LEDE, RING } from "@/components/journey/look";
 import { Trans } from "@lingui/react/macro";
@@ -46,7 +43,7 @@ import { Trans } from "@lingui/react/macro";
  */
 const SECTION = "bg-muted/40 py-16 sm:py-20";
 
-const ICONS = [ShieldCheck, Plane, Scale, Landmark, MapPin, TrendingUp];
+const ICONS = [Canopy, Plane, Scale, CouncilCircle, SeedPin, Pines];
 
 interface JurisdictionPoint {
   title: string;

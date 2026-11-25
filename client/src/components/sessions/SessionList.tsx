@@ -22,7 +22,7 @@
  * a village's own palette reaches every row.
  */
 import { Link } from "wouter";
-import { Users } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { SESSION_COPY, SESSION_LIST_COPY, type SessionListRow } from "@shared/sessions";
 import { Gloss, GlossChip, useGlossGroup } from "@/components/sheet/GlossChip";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, GLYPH, GLYPH_ICON, GLYPH_STROKE, INPUT, LABEL, PANEL } from "./roomUi";
@@ -107,7 +107,7 @@ function SessionRow({
           </Link>
           <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
             <span aria-hidden="true" className={GLYPH}>
-              <Users className={GLYPH_ICON} strokeWidth={GLYPH_STROKE} />
+              <MushroomNetwork className={GLYPH_ICON} strokeWidth={GLYPH_STROKE} />
             </span>
             <span>{metaLine(row)}</span>
           </p>

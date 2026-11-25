@@ -15,12 +15,9 @@
  *  - `roles` hides a link unless the signed-in member holds one of them.
  */
 import {
-  TrendingUp,
-  Users,
-  Home as HomeIcon,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import { SeedHand, SeedPodHome, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 
 export type NavLink = {
@@ -287,10 +284,11 @@ export const NAV: readonly NavEntry[] = [
   {
     label: "Join",
     items: [
-      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: TrendingUp },
-      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: Users },
-      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: HomeIcon },
-      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: Sparkles },
+      // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
+      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand },
+      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown },
+      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome },
+      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf },
       { href: "/opportunities", brochure: true, label: "Business Opportunities" },
       { href: "/visit", brochure: true, label: "Plan a Visit" },
       { href: "/love-letter", brochure: true, label: "Sign the Love Letter" },

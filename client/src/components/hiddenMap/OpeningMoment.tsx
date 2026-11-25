@@ -9,7 +9,8 @@
  * Under reduced motion it is a plain appearance with no movement.
  */
 import { useEffect, useRef } from "react";
-import { Footprints, Layers, ShieldCheck } from "lucide-react";
+import { Footprints, Layers} from "lucide-react";
+import { Canopy } from "@/components/sacred/living";
 import { plural } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Layer, PinDot, PinView } from "@shared/hiddenMap";
@@ -86,7 +87,7 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
               <p className={NOTE}><Trans><span className="font-semibold text-foreground">Return visits.</span> Find a place others logged and photograph how it is growing.</Trans></p>
             </li>
             <li className="flex items-start gap-3 py-3">
-              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+              <Canopy className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
               <p className={NOTE}><Trans><span className="font-semibold text-foreground">Vouching</span> for a newer member's places, with the place in view.</Trans></p>
             </li>
             {others.map((l) => (
