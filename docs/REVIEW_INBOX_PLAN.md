@@ -396,9 +396,10 @@ propose-quest, governance, sessions, canvas, moon-review. A section whose module
 never shown as empty. `server/routes/review.ts` mounts behind no module today
 (`docs/modules/quests.md:140`), and the new routes keep that: the engine is core, its sections are not.
 
-## Data: migration 0424, one file, expand only
+## Data: migration 0432, one file, expand only
 
-Number 0424 is claimed in the ops ledger's section 3 by the coordinator.
+Number 0432 is claimed in the ops ledger's section 3 by the coordinator (25 Nov 2026). 0424, claimed
+first, was released when 0425 landed ahead of this lane, and stays a gap.
 
 - **`suggestion_staging`**, new: id, stream, stream_ref, kind, canonical_key, body_ref or body_json,
   why, evidence_json, proposer_kind, proposer_principal, received_at, state, held_code,
@@ -461,7 +462,7 @@ lead's yes before merge.
 | # | Lane | Visible? |
 |---|---|---|
 | 1 | The pure engine: keys with confusable skeletons, gates 1 to 5, grouping, ordering, versions; the golden runner and first scenes | No |
-| 2 | Migration 0424; staging and outcomes repos; `recordOutcome()` in every decide route and every outside door; erasure steps; backfill | No |
+| 2 | Migration 0432; staging and outcomes repos; `recordOutcome()` in every decide route and every outside door; erasure steps; backfill | No |
 | 3 | The admin read: per-item capability, the equivalence test, code lookup with the same not-found | No |
 | 4a | `/admin/review` in its smallest form: find box, the existing cards as they are under Waiting, Needs a hand; redirects from `/admin/proposals` and `/approvals`; link rewrites | **Yes** |
 | 5 | The connector through staging; `choose` and `stale` statuses; held codes for agents | Small (chips) |
