@@ -30,7 +30,8 @@ vi.mock("@/lib/gameApi", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   authToken: () => session.token,
 }));
-vi.mock("@/modules/ModuleProvider", () => ({ useModule: () => undefined, useModuleOn: () => false }));
+// Events on, so the "join a community call" door draws; nothing else (whole-app QA, 25 Nov 2026: the door follows the module).
+vi.mock("@/modules/ModuleProvider", () => ({ useModule: () => undefined, useModuleOn: (id: string) => id === "events" }));
 vi.mock("@/components/natural/useReducedMotion", () => ({ useReducedMotion: () => true, prefersReducedMotion: () => true }));
 
 import Roles from "./Roles";
