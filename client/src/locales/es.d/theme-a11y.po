@@ -1,0 +1,11 @@
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Light mode: switch to dark"
+msgstr "Claro: cambiar al modo oscuro"
+
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Dark mode: switch to light"
+msgstr "Oscuro: cambiar al modo claro"
