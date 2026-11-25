@@ -14,7 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ModuleProvider } from "./modules/ModuleProvider";
 import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./lib/landing";
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
-import { authToken, useConfigFailed, useGameConfig } from "./lib/gameApi";
+import { useConfigFailed, useGameConfig } from "./lib/gameApi";
 import ConfigUnavailable from "./components/ConfigUnavailable";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
 
@@ -330,9 +330,8 @@ function PageLoading() {
 function NavVisits() {
   const [location] = useLocation();
   useEffect(() => {
-    const token = authToken();
-    if (!token) return;
-    const id = window.setTimeout(() => void import("@/lib/navVisits").then((m) => m.visited(location, token)).catch(() => undefined), 1500);
+    // The lazy module reads the session itself: signed out, it sends nothing.
+    const id = window.setTimeout(() => void import("@/lib/navVisits").then((m) => m.visitedNow(location)).catch(() => undefined), 1500);
     return () => window.clearTimeout(id);
   }, [location]);
   return null;

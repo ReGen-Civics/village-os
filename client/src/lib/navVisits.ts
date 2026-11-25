@@ -15,6 +15,7 @@
  * storage gives the village's bar, never an error.
  */
 import { barTabs, choosePersonal, dayKey, PATH_PATH } from "@shared/navPopularity";
+import { authToken } from "@/lib/gameApi";
 
 export const HISTORY_KEY = "village-nav-history";
 export const SENT_KEY = "village-nav-sent";
@@ -127,6 +128,18 @@ export async function loadBar(token: string, fetchImpl: typeof fetch = fetch, no
   if (!answer?.on) return null;
   const personal = answer.personal ? personalFor(answer.siteWide, answer.excluded ?? [], new Date(now)) : null;
   return barTabs(answer.siteWide, personal);
+}
+
+/** A page visited, for the session this browser holds; nothing when signed out. */
+export async function visitedNow(location: string): Promise<void> {
+  const token = authToken();
+  if (token) await visited(location, token);
+}
+
+/** The bar for the session this browser holds; the fixed bar (null) when signed out. */
+export async function loadBarNow(): Promise<string[] | null> {
+  const token = authToken();
+  return token ? loadBar(token) : null;
 }
 
 /** For tests: forget the fetched bar. */

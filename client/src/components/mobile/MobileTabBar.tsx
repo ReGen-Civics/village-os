@@ -25,7 +25,6 @@ import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
 import { useNewcomerShows } from "@/lib/newcomer";
-import { authToken } from "@/lib/gameApi";
 import { routeIcon } from "@/config/routeIcons";
 import { useEffect, useState } from "react";
 
@@ -112,15 +111,11 @@ export function responsiveSlots(pages: readonly string[], labels: Readonly<Recor
 function useResponsiveTabs(path: string): string[] | null {
   const [tabs, setTabs] = useState<string[] | null>(null);
   useEffect(() => {
-    const token = authToken();
-    if (!token) {
-      setTabs(null);
-      return;
-    }
     let live = true;
+    // The lazy module reads the session itself: signed out, it answers null.
     const id = window.setTimeout(() => {
       void import("@/lib/navVisits")
-        .then((m) => m.loadBar(token))
+        .then((m) => m.loadBarNow())
         .then((t) => live && setTabs(t))
         .catch(() => undefined);
     }, 800);
