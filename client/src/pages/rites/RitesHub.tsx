@@ -12,6 +12,7 @@ import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import type { StampView } from "@shared/rites";
+import RitesSignedOut from "@/components/rites/RitesSignedOut";
 import { useAuth } from "@/contexts/AuthContext";
 import { BottomNav, Qr, RitesWorld, Stamps, TopBar } from "@/components/rites/parts";
 import { ritesGet, ritesSend, type MeView, type RitesError } from "@/components/rites/ritesApi";
@@ -168,17 +169,7 @@ export default function RitesHub() {
     window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView({ block: "start" }));
   }, [me, requests, newcomers, open]);
 
-  if (!user && !loading) {
-    return (
-      <RitesWorld>
-        <div className="app pad" style={{ paddingTop: 40 }}>
-          <Link className="btn gold" href="/login?next=/rites">
-            <Trans context="rites">Sign in</Trans>
-          </Link>
-        </div>
-      </RitesWorld>
-    );
-  }
+  if (!user && !loading) return <RitesSignedOut next="/rites" />;
   if (off) return <ModuleGate moduleId="rites" name={t({ message: "Rites", context: "module name" })} />;
   if (!me) return <RitesWorld><div className="app pad" style={{ paddingTop: 40 }}>{note ? <p className="muted">{note}</p> : null}</div></RitesWorld>;
 

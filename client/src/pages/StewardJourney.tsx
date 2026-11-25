@@ -3,6 +3,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, DOOR, EYEBROW, HINT, LEDE, LINK, QUIE
 import { useVillageLinks } from "@/lib/gameApi";
 import { altOr, useBrandImages, useGameConfig } from "@/lib/gameApi";
 import FaqSection from "@/components/FaqSection";
+import StewardQuestionForm, { STEWARD_QUESTION_ANCHOR } from "@/components/journey/StewardQuestionForm";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { MoonText } from "@/components/MoonWord";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
@@ -45,7 +46,8 @@ export default function StewardJourney() {
   const page = useJourneyContent(STEWARD_JOURNEY);
   const hero = page?.hero.fields;
   const steps = page?.steps.lists.items ?? null;
-  const targets: TargetContext = { eventsUrl, mailTo, subject: "" };
+  // "Ask us a question" goes to the form on this page, never a mail app (UNFINISHED-AREAS 21).
+  const targets: TargetContext = { eventsUrl, mailTo, subject: "", contactForm: STEWARD_QUESTION_ANCHOR };
   const heroPrimary = buttonAction(hero?.primaryLabel, hero?.primaryTarget, targets);
   const heroSecondary = buttonAction(hero?.secondaryLabel, hero?.secondaryTarget, targets);
   const founding = page && !page.foundingTeam.hidden ? page.foundingTeam : null;
@@ -359,6 +361,15 @@ export default function StewardJourney() {
           </div>
         </section>
       )}
+
+      <section id={STEWARD_QUESTION_ANCHOR} className="scroll-mt-20 pb-16" aria-labelledby="steward-question-heading">
+        <div className="container mx-auto max-w-3xl">
+          <h2 id="steward-question-heading" className="mb-4 font-display text-2xl font-semibold text-foreground md:text-3xl">
+            <Trans context="steward page: the question form's heading">Ask us a question</Trans>
+          </h2>
+          <StewardQuestionForm />
+        </div>
+      </section>
 
       {page && <FaqSection pathway="steward" heading={page.faq.fields.heading} />}
 

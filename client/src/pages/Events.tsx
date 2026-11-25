@@ -41,6 +41,8 @@ import WeekView from "@/components/calendar/WeekView";
 import MoonGlyph from "@/components/calendar/MoonGlyph";
 import CalendarFeedCard from "@/components/calendar/CalendarFeedCard";
 import MoonSpiral from "@/components/calendar/MoonSpiral";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
+import { moonIsEmpty } from "@/lib/moonEmpty";
 import DayStrip from "@/components/calendar/DayStrip";
 import MoonTurnings from "@/components/calendar/MoonTurnings";
 import CalendarNotes, { notesUnderMoon, usePhoneWidth } from "@/components/calendar/CalendarNotes";
@@ -478,6 +480,16 @@ export default function Events() {
           </div>
 
           {payload === null && <p className="text-center text-muted-foreground py-16">{t({ message: "Opening the calendar", context: "calendar loading" })}</p>}
+
+          {/* A moon nobody has put anything in (UNFINISHED-AREAS 5a): one coming-soon line above it, in place of
+              "Nothing is on this day yet." under every day. */}
+          {payload && cursor && tab === "moon" && moon && moonIsEmpty(moon.days.map((d) => d.day.key), byDay) && (
+            <ComingSoonPanel
+              className="mb-6"
+              title={t({ message: "The village's gatherings", context: "coming soon: an empty moon on the calendar" })}
+              body={t({ message: "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day.", context: "coming soon: an empty moon on the calendar" })}
+            />
+          )}
 
           {payload && cursor && tab === "moon" && moon && (
             <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8" data-testid="moon-view">
