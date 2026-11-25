@@ -16,7 +16,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useRoute, useSearch } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
-import { authToken } from "@/lib/gameApi";
+import { authToken, useGameConfig } from "@/lib/gameApi";
+import { isMemberView, type AdmissionView } from "@/lib/newcomer";
+import MessagesMembersOnly from "@/components/messages/MessagesMembersOnly";
 import { toast } from "sonner";
 import { reportFeedback } from "@/lib/reportFeedback";
 import { actionError } from "@/lib/actionOutcome";
@@ -71,9 +73,20 @@ export default function Messages() {
   // The framework decides existence. ModuleGate keeps the ordinary 404 for
   // off and preview, and offers sign-in when the module is members-only and
   // the visitor simply is not signed in yet (R36).
+  const { user } = useAuth();
+  const cfg = useGameConfig();
   if (modules.loaded && !messagingModule) return <ModuleGate moduleId="messaging" name="Messages" />;
+  // A newcomer (signed in, not admitted yet) is told on the page itself, before any inbox or "New" button is
+  // drawn: the server already refuses them a message (`message.send`), and the page used to invite them to
+  // "message anyone here" first. Until the ladder arrives a member admitted by stage alone reads as a newcomer,
+  // so the page waits for it rather than flashing the refusal at them.
+  if (user && !isMemberView(user as AdmissionView, cfg?.stages ?? null)) {
+    if (!cfg) return <Layout><div className="container max-w-2xl py-6 sm:py-10" aria-busy="true" /></Layout>;
+    return <MessagesMembersOnly />;
+  }
   return params?.id ? <ThreadView id={params.id} /> : <Inbox />;
 }
+
 
 // ── Inbox ────────────────────────────────────────────────────────────────────
 

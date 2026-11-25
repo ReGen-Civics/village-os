@@ -60341,3 +60341,21 @@ msgstr "Participación"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Messages are for members"
+msgstr "Los mensajes son para quienes ya son miembros"
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Once the village welcomes you as a member, you can write to anyone here. Until then, your path shows the next step."
+msgstr "Cuando la aldea te reciba como miembro, podrás escribirle a cualquier persona aquí. Mientras tanto, tu camino te muestra el siguiente paso."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "See my path"
+msgstr "Ver mi camino"
