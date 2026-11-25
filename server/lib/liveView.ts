@@ -37,8 +37,10 @@
  * the token natively and opens nothing for a scope it does not know.
  */
 import type { NextFunction, Request, Response } from "express";
-import { isAgentBearer, LIVE_VIEW_SCOPE, type AgentTokenRow } from "./agentTokens";
+import { isAgentBearer, LIVE_VIEW_ADMIN_SCOPE, LIVE_VIEW_SCOPE, type AgentTokenRow } from "./agentTokens";
 import { READ_AS_MEMBER_HEADER, READ_AS_MEMBER_VALUE } from "./readAsMember";
+import { refusedForAdminView } from "./liveViewAdmin";
+import { outsideReadOnly, runReadOnly } from "../db/readOnlyRequest";
 
 /** Reads a browser crawl may make in an hour on one token. A page draws ten or twenty. */
 export const LIVE_VIEW_READS_PER_HOUR = 3000;
@@ -56,7 +58,17 @@ export interface LiveViewDeps {
   /** An in-process session for this member, for this one request. */
   sessionFor(user: any): string;
   overLimit(bucket: string, max: number, windowMs: number): Promise<boolean>;
+  /**
+   * THE ADMIN LIVE VIEW (`live.view.admin`): whether this holder may read Admin through it now, which is the live
+   * view for QA AND an admin's own access, both asked of the gate on every request. Absent, no admin token passes.
+   */
+  mayViewAdmin?(user: any): Promise<boolean>;
+  /** The admin live view's audit line, at most once an hour per token. Written outside the read-only mark. */
+  auditAdminView?(user: any, row: AgentTokenRow): Promise<void>;
 }
+
+/** How often the admin live view writes its audit line per token. */
+export const LIVE_VIEW_ADMIN_AUDIT_MS = 60 * 60 * 1000;
 
 /** What a request turned into a live view carries, for a route that wants to know. */
 export interface LiveViewMark {
@@ -78,8 +90,10 @@ export function liveViewMiddleware(deps: LiveViewDeps) {
       return;
     }
     // Not a live view token: whatever handled it before still handles it.
-    if (!verified.ok || !verified.row.scopes.includes(LIVE_VIEW_SCOPE as AgentTokenRow["scopes"][number])) return next();
+    if (!verified.ok) return next();
     const row = verified.row;
+    const asAdmin = row.scopes.includes(LIVE_VIEW_ADMIN_SCOPE as AgentTokenRow["scopes"][number]);
+    if (!asAdmin && !row.scopes.includes(LIVE_VIEW_SCOPE as AgentTokenRow["scopes"][number])) return next();
     if (!READS.has(req.method)) {
       res.status(403).json({ error: "live_view_read_only", message: "A live view token only reads. Sign in by hand to change anything." });
       return;
@@ -95,17 +109,38 @@ export function liveViewMiddleware(deps: LiveViewDeps) {
         res.status(403).json({ error: "live_view_not_held", message: "This token's holder no longer holds a role that carries the live view for QA." });
         return;
       }
+      if (asAdmin && !(deps.mayViewAdmin && (await deps.mayViewAdmin(user)))) {
+        res.status(403).json({ error: "live_view_admin_not_held", message: "This token's holder no longer holds both the live view for QA and an admin's access." });
+        return;
+      }
+      if (asAdmin) {
+        const refused = refusedForAdminView(req.path);
+        if (refused) {
+          res.status(403).json({ error: "live_view_admin_refused", message: "The admin live view never reads exports, downloads, secrets or tokens." });
+          return;
+        }
+      }
       if (await deps.overLimit(`live-view:${row.id}`, LIVE_VIEW_READS_PER_HOUR, 60 * 60 * 1000)) {
         res.status(429).json({ error: "live_view_rate_limited", message: `This token made ${LIVE_VIEW_READS_PER_HOUR} reads in the last hour. Wait a while.` });
         return;
       }
       req.headers.authorization = `Bearer ${deps.sessionFor(user)}`;
-      // Read as a PLAIN MEMBER, whatever the holder's own powers (the coordinator, 25 Nov 2026): no admin, no
-      // editor's door, no pay terms (server/lib/readAsMember.ts, the one helper for this). QA sees what a member sees.
-      req.headers[READ_AS_MEMBER_HEADER] = READ_AS_MEMBER_VALUE;
       (req as any).liveView = { tokenId: row.id, prefix: row.prefix } satisfies LiveViewMark;
-      res.setHeader("X-Live-View", "read-only");
-      next();
+      if (!asAdmin) {
+        // Read as a PLAIN MEMBER, whatever the holder's own powers (the coordinator, 25 Nov 2026): no admin, no
+        // editor's door, no pay terms (server/lib/readAsMember.ts, the one helper for this). QA sees what a member sees.
+        req.headers[READ_AS_MEMBER_HEADER] = READ_AS_MEMBER_VALUE;
+        res.setHeader("X-Live-View", "read-only");
+        next();
+        return;
+      }
+      // The admin live view: the holder's own admin access, and NO WRITE AT ALL, whatever the handler's method says
+      // (server/db/readOnlyRequest.ts). The audit line is the one write, made outside that mark, once an hour.
+      res.setHeader("X-Live-View", "read-only; admin");
+      if (deps.auditAdminView && !(await deps.overLimit(`live-view-admin-audit:${row.id}`, 1, LIVE_VIEW_ADMIN_AUDIT_MS))) {
+        await outsideReadOnly(() => deps.auditAdminView!(user, row)).catch(() => undefined);
+      }
+      runReadOnly("the admin live view", () => next());
     } catch {
       // A gate that cannot read its own record fails closed.
       res.status(503).json({ error: "unavailable", message: "This page is not available right now. Try again in a moment." });

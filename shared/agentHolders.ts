@@ -103,6 +103,7 @@ export const AGENT_SCOPE_WORDS: Readonly<Record<string, string>> = {
   "map.propose": "Proposes a map change that waits for a person",
   "sessions.write": "Adds items to the agenda library, after a yes",
   "live.view": "Reads the live game in a browser for QA, and changes nothing",
+  "live.view.admin": "Reads the live game's Admin in a browser for QA, and changes nothing",
 };
 
 export function scopeWords(scope: string): string {
