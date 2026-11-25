@@ -31,8 +31,8 @@ const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : 
 
 /** The quest line: a count, or what to do when there is none to give. */
 export function questLine(read: Read | null): string {
-  if (!read) return "Reading the quest board.";
-  if (read.quests === null) return "The quest board lists every open quest.";
+  if (!read) return "Reading the quests.";
+  if (read.quests === null) return "Quests lists every open quest.";
   if (read.quests === 0) return "No open quests yet.";
   return count(read.quests, "open quest", "open quests");
 }
@@ -73,7 +73,7 @@ export default function EarningsFromTheWork() {
   }, []);
 
   const rows = [
-    { label: "Quests", line: questLine(read), href: "/quests", link: "See the quest board" },
+    { label: "Quests", line: questLine(read), href: "/quests", link: "See the quests" },
     { label: role.plural, line: roleLine(read, role), href: "/roles", link: `See the ${role.plural.toLowerCase()}` },
   ];
 

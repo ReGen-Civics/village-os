@@ -203,7 +203,7 @@ const en: ComeAndPlayWords = {
     explore: { title: "Explore the village", line: "Wander the living map and meet the places and people.", alt: "Round green-roofed homes around a campfire" },
     events: { title: "Come to a gathering", line: "Find a call, a circle or a celebration on our calendar.", alt: "A village green strung with lanterns at dusk" },
     gratitude: { title: "Thank-yous and gratitude", line: "Read the thank-yous people share, and add your own.", alt: "A table of gifts under a leafy shelter" },
-    pooling: { title: "Pooling Resources", line: "See what we're growing together and how to pitch in.", alt: "Baskets and jars gathered under a shared roof" },
+    pooling: { title: "Crowd pooling", line: "See what we're growing together and how to pitch in.", alt: "Baskets and jars gathered under a shared roof" },
     newsletter: { title: "Read our newsletter", line: "Hear first about new roles, quests and village news.", alt: "A cottage with a little post box on its roof" },
   },
   signOff: "With love,",

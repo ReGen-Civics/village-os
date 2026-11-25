@@ -90,7 +90,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/modules": "Module Library",
   // Longest-prefix matching makes /campaigns win over /campaign for the list
   // page, so the pair costs two lines and no route can fall through them.
-  "/campaigns": "Our raisings",
+  "/campaigns": "Crowd pooling",
   "/campaign": "Crowdpool",
   // One line covers the shelf and every place, by the same longest-prefix
   // rule the module library uses above.

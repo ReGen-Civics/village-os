@@ -87,7 +87,7 @@ export default function Crowdpool() {
       <div className={WORLD}>
       <section className="py-8 md:py-12">
         <div className="container max-w-3xl text-center">
-          <h1 className={`${H1} mb-3`}><Trans context="Crowdpool, h1">Pooling Resources</Trans></h1>
+          <h1 className={`${H1} mb-3`}><Trans context="Crowdpool, h1">Crowd pooling</Trans></h1>
           {/* R47: the Trail line leads and the tooltip defines the word. The
               ring line is the Lore, last and quiet. */}
           <p className={`${LEDE} mx-auto`}>
@@ -112,7 +112,7 @@ export default function Crowdpool() {
           {cards !== null && cards.length === 0 && (
             <div className="text-left">
               <ComingSoonPanel
-                title={t({ message: "Pooling resources", context: "coming soon: the crowdpool page" })}
+                title={t({ message: "Crowd pooling", context: "coming soon: the crowdpool page" })}
                 body={t({ message: "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it.", context: "coming soon: the crowdpool page" })}
               />
             </div>

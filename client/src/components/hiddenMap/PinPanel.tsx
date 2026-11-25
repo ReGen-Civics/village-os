@@ -85,7 +85,7 @@ export default function PinPanel({ id, me, owner, onQueueVisit, onChanged, onClo
       const blobs = photos.map((p) => p.blob);
       try {
         const r = await addVisit(id, visit, blobs);
-        setVisitNote(r.claimed ? t`Saved. Your visit is waiting for a member to confirm it on the quest board.` : t({ message: `Saved.`, context: "hidden map, one place's details" }));
+        setVisitNote(r.claimed ? t`Saved. Your visit is waiting for a member to confirm it in Quests.` : t({ message: `Saved.`, context: "hidden map, one place's details" }));
       } catch (e) {
         if (!owner || !looksOffline(e)) throw e;
         await onQueueVisit({ kind: "visit", owner, createdAt: new Date().toISOString(), pinId: id, photos: blobs, ...visit });
