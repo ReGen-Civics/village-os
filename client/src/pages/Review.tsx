@@ -76,6 +76,7 @@ import { PROPOSE_QUEST_MODULE } from "@shared/questIdeas";
 import { SeraFold, SeraMemberPage, SeraTop, useSeraOnReview } from "@/components/review/SeraOnReview";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, TILE, WORLD } from "@/components/journey/look";
 import { byArrival } from "@/components/governance/deciderOrder";
+import { mayAsk } from "@/lib/myCapabilities";
 
 /** The kinds that change the chart, as the structure review reads them. */
 const CHART_KINDS: readonly string[] = STRUCTURE_KINDS;
@@ -239,6 +240,13 @@ export default function Review() {
     // answers a stranger 401, and that request was logged as a failure on
     // every signed-out visit. useConsentClaims makes the same call for the claims.
     if (!authToken()) {
+      setForbidden(true);
+      setLoadError(null);
+      setQueue(null);
+      return;
+    }
+    // Either key opens the queue (server/routes/review.ts). Holding neither, the answer is already known.
+    if (!(await mayAsk("intake.moderate", "quest.approve"))) {
       setForbidden(true);
       setLoadError(null);
       setQueue(null);

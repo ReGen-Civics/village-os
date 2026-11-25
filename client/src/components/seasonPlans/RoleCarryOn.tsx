@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
 import { CONTRIBUTION_MAX } from "@shared/moonRenewal";
+import { mayAsk } from "@/lib/myCapabilities";
 
 interface Card {
   assignmentId: string;
@@ -62,8 +63,11 @@ export default function RoleCarryOn() {
       setItems(Array.isArray(b.items) ? b.items : []);
       const tk = await fetch("/api/role-access-tasks", { headers: hdrs() });
       setTodo(tk.ok ? ((await tk.json()).tasks ?? []) : []);
-      const c = await fetch("/api/admin/role-renewals", { headers: hdrs() });
-      setFiledCount(c.ok ? ((await c.json()).filed ?? []).length : null);
+      // Only a holder of the power to fill roles (org.seat) is answered: everyone else is not asked.
+      if (await mayAsk("org.seat")) {
+        const c = await fetch("/api/admin/role-renewals", { headers: hdrs() });
+        setFiledCount(c.ok ? ((await c.json()).filed ?? []).length : null);
+      } else setFiledCount(null);
     } catch {
       /* Nothing to show is a fine answer. */
     }
