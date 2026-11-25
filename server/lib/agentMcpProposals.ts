@@ -46,7 +46,8 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
     description:
       `Puts one change, or a whole batch, in front of a person on the village's review page (/admin/proposals). Nothing changes live: the person reads each change beside what is live now, edits the words, and accepts or discards them there; accepting runs each change through its own admin route as that person. Covers every setting an admin can change. Send batch (a short title, such as Phase A content) and items, up to ${PROPOSAL_LIMITS.items}, each {kind, target, body, summary}. summary is one plain sentence a non-technical person understands. Kinds: ${KINDS_LINE} ` +
       `${DOCS_LINE} ` +
-      "Any admin write route not listed is kind setting with target {method, path}; a setting that names a listed route is read as that kind. Each item is checked by its route's own validator when proposed, and the batch is refused whole, with a reason per item, when any is broken. Never proposable: secrets and integration keys, erasure, agent accounts and tokens, powers, capability grants and badges, moving value (payments, payouts, invoices, ledger, treasury, mint, settlement), seating or unseating a person, and sending letters or email. The answer carries batchCode (such as B-27), the id of each item and its code (such as B-27.2): these are the codes the review page shows in the corner of each card, so cite them with the summary, such as B-27.2 Investor page, when you tell the person which to accept. Read read_proposal_lessons first, and read_proposal_queue to see what already waits.",
+      "Any admin write route not listed is kind setting with target {method, path}; a setting that names a listed route is read as that kind. Each item is checked by its route's own validator when proposed, and the batch is refused whole, with a reason per item, when any is broken. Never proposable: secrets and integration keys, erasure, agent accounts and tokens, powers, capability grants and badges, moving value (payments, payouts, invoices, ledger, treasury, mint, settlement), seating or unseating a person, and sending letters or email. The answer carries batchCode (such as B-27), the id of each item and its code (such as B-27.2): these are the codes the review page shows in the corner of each card, so cite them with the summary, such as B-27.2 Investor page, when you tell the person which to accept. Read read_proposal_lessons first, and read_proposal_queue to see what already waits. " +
+      "Some items are held before review and get no code: the answer's held lists each by its index, a fixed reason code and a sentence (already_live: it is live already; recently_discarded: the same was discarded in the last 30 days). To send a discarded change again, add reconsider {code: the discarded change's code, reason: what is new} to the item; a person reads the reason and may let it through. waiting lists an item you already sent that still waits, with that change's code.",
     inputSchema: {
       type: "object",
       properties: {
@@ -62,6 +63,12 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
               target: { type: "object", description: "What the change reaches; the shape depends on kind." },
               body: { type: "object", description: "The proposed fields." },
               summary: { type: "string", description: "One plain sentence saying what it changes." },
+              reconsider: {
+                type: "object",
+                description: "Only when sending again a change that was discarded: the discarded change's code and what is new. It waits in Held for a person to let it through.",
+                properties: { code: { type: "string" }, reason: { type: "string" } },
+                required: ["code", "reason"],
+              },
             },
             required: ["kind", "target", "summary"],
           },
