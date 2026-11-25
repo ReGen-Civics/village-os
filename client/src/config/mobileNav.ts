@@ -13,8 +13,11 @@
  * beat a considered order.
  */
 import { Tripoint } from "@/components/sacred/glyphs";
-import { Cell, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { Cell, EarthshipDome, LeafCompass, ScarletMacaw, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
+
+// The corner's closed-state glyph: the scarlet macaw in flight, the guide in the corner (the lead, 25 Nov 2026: "change this to a scarlet macaw outline"; option C picked).
+export const FabTriggerIcon = ScarletMacaw;
 
 export type TabSlot = {
   /** Route to navigate to, or omit and set `event` to dispatch instead. */

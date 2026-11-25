@@ -59,7 +59,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { LogIn, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { GoldenSpiral as FabTriggerIcon } from "@/components/sacred/glyphs";
+import { FabTriggerIcon } from "@/config/mobileNav";
 import { haptic } from "@/lib/haptics";
 import { useGuideName } from "@/hooks/useGuideName";
 import { CompanionsDialog, Standing, STANDING, draftsWaiting, useCompanions } from "@/components/profileDash/companionStanding";
