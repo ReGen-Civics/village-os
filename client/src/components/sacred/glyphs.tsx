@@ -13,9 +13,10 @@
  */
 import type { SVGProps } from "react";
 
-type GlyphProps = { className?: string } & Omit<SVGProps<SVGSVGElement>, "children">;
+export type GlyphProps = { className?: string } & Omit<SVGProps<SVGSVGElement>, "children">;
 
-function Svg({ className, children, ...rest }: GlyphProps & { children: React.ReactNode }) {
+/** The one hand every glyph is drawn in; components/sacred/living.tsx draws with it too. */
+export function Svg({ className, children, ...rest }: GlyphProps & { children: React.ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
