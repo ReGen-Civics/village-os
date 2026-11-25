@@ -43,6 +43,9 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
     "/api/approval-inbox": { status: 200, body: { waiting: [{ id: "ap_9", kind: "seating", title: "Seat a member in Water", at: "2026-11-20T00:00:00.000Z" }] } },
     "/api/agent-proposals/waiting": { status: 200, body: { roleChanges: [], seatings: [{ id: "ap_9", title: "Seat a member in Water", createdAt: "2026-11-20T00:00:00.000Z" }] } },
     "/api/saberra/differences": { status: 500, body: { error: "Could not read the differences." } },
+    // A draft a proposal made is on both reads: listed once, with the structure review's door waiting-on-me gives it.
+    "/api/governance/waiting-on-me": { status: 200, body: { drafts: [{ id: "dr_1", title: "Add a Seed Keeper role", circles: 0, seats: 1, href: "/review/structure/b_1" }] } },
+    "/api/admin/org/drafts": { status: 200, body: [{ id: "dr_1", status: "open", title: "Add a Seed Keeper role", changes: [{ id: "c1" }] }, { id: "dr_2", status: "open", title: "Rest the old council", changes: [{ id: "c2" }] }] },
   },
   // A member who decides nothing.
   member: Object.fromEntries(
@@ -112,7 +115,11 @@ describe("the deciders' read shows each person exactly what their own queues sho
     expect(r.body.items.map((i: any) => [i.key, i.code])).toEqual([
       ["agent:seating:ap_9", null],
       ["connector:pc_1", "B-71.1"],
+      ["structure:dr_1", null],
+      ["structure:dr_2", null],
     ]);
+    // A draft made in the admin panel is listed too, and the one both reads carry keeps the structure review's door.
+    expect(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => i.decideAt)).toEqual(["/review/structure/b_1", "/admin?tab=org-chart"]);
     const states = Object.fromEntries(r.body.sections.map((s: any) => [s.source, s.state]));
     expect(states.sera).toBe("failed");
     expect(states.approval).toBe("ok");

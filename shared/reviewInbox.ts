@@ -436,6 +436,22 @@ export function fromOpenProposalDesk(body: unknown): InboxItem[] {
  * Every queue's own read, and what each feeds. Adding a queue is one row here and one reader above; the server
  * half and the page read this list, so neither changes.
  */
+/**
+ * Every open org chart draft (`GET /api/admin/org/drafts`, an admin's read). Waiting-on-me lists only the drafts a
+ * proposal made, so a draft made in the admin panel, by the assistant or by an import was on no list before (the lead,
+ * 25 Nov 2026: "I can't even find where to publish"). Keyed as waiting-on-me keys a draft, so a draft both reads list
+ * is listed once, with the door waiting-on-me gives it.
+ */
+export function fromOrgDrafts(body: unknown): InboxItem[] {
+  return list(body).flatMap((x) => {
+    const d = obj(x);
+    const id = str(d?.id);
+    if (!d || !id || d.status !== "open") return [];
+    const changes = list(d.changes).length;
+    return [{ key: `structure:${id}`, source: "structure" as const, kind: "org_draft", code: null, summary: line(d.title, changes === 1 ? "An org chart draft with one change" : `An org chart draft with ${changes} changes`), filedAt: null, batch: null, decideAt: "/admin?tab=org-chart", touchesPerson: false }];
+  });
+}
+
 export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/admin/proposals", sources: ["connector"], read: fromConnector },
   { path: "/api/review/queue", sources: ["intake", "quest"], read: (b) => { const r = fromReviewQueue(b); return [...r.intake, ...r.quest]; } },
@@ -444,6 +460,7 @@ export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/agent-proposals/waiting", sources: ["agent"], read: fromAgentWaiting },
   { path: "/api/saberra/differences", sources: ["sera"], read: fromSeraDifferences },
   { path: "/api/governance/waiting-on-me", sources: ["application", "consent", "open", "structure", "task", "tension"], read: fromWaitingOnMe },
+  { path: "/api/admin/org/drafts", sources: ["structure"], read: fromOrgDrafts },
   { path: "/api/governance/ballots", sources: ["vote"], read: fromBallots },
   { path: "/api/moon-review/queue", sources: ["recap"], read: fromMoonQueue },
   { path: "/api/change-requests", sources: ["change"], read: fromChangeRequests },
