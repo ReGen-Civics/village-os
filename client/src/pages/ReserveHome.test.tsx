@@ -19,6 +19,11 @@ vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
+// The village's switches for its story pages (shared/brochure.ts). On by default here, as on a village that
+// serves them; one case below turns them off, as a fresh village ships.
+let config: Record<string, unknown> | null = { brochurePages: true };
+vi.mock("@/lib/gameApi", async (load) => ({ ...(await load<typeof import("@/lib/gameApi")>()), useGameConfig: () => config }));
+
 import ReserveHome from "./ReserveHome";
 
 const answering = (homes: unknown[]) =>
@@ -77,6 +82,18 @@ describe("a village that has published no homes", () => {
     const { container } = renderPage();
     await screen.findByText("The homes are not listed yet");
     expect(container.querySelector('a[href="/housing"]')).toBeTruthy();
+  });
+
+  it("draws no way back to Housing on a village that does not serve the story pages", async () => {
+    config = { brochurePages: false };
+    try {
+      vi.stubGlobal("fetch", answering([]));
+      const { container } = renderPage();
+      await screen.findByText("The homes are not listed yet");
+      expect(container.querySelector('a[href="/housing"]')).toBeNull();
+    } finally {
+      config = { brochurePages: true };
+    }
   });
 
   it("does NOT show that state while the read is still in flight", () => {
