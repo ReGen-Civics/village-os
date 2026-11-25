@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 294 open and 75 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 294 open and 78 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 342 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 345 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-369 dials in 41 categories. 186 carry a minimum and a maximum. By type: 147 integer, 21 decimal, 19 percentage, 55 boolean, 37 choice, 77 text, 13 longtext.
+372 dials in 41 categories. 186 carry a minimum and a maximum. By type: 147 integer, 21 decimal, 19 percentage, 55 boolean, 37 choice, 80 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 342 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 32 | 24 | 8 |
+| The village's people | 35 | 24 | 11 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
@@ -308,6 +308,9 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Portal entrance: Turnstile site key | `entrance.turnstile_site_key` | The village's people | text | blank | the founder or an admin |
 | Portal entrance: Brevo list | `entrance.brevo_list_id` | The village's people | integer | `0` | the founder or an admin |
 | Portal entrance: who to write to about what is kept | `entrance.privacy_contact` | The village's people | text | blank | the founder or an admin |
+| Portal entrance: background video | `entrance.background_video` | The village's people | text | blank | the founder or an admin |
+| Portal entrance: background video on phones | `entrance.background_video_mobile` | The village's people | text | blank | the founder or an admin |
+| Portal entrance: background still image | `entrance.background_poster` | The village's people | text | blank | the founder or an admin |
 | Portal entrance: minutes to look around before the code | `entrance.look_minutes` | The village's people | integer | `3` | the founder or an admin |
 | Portal entrance: pages to look at before the code | `entrance.look_pages` | The village's people | integer | `3` | the founder or an admin |
 | Portal entrance: keep the pages visitors opened for | `entrance.views_keep_days` | The village's people | integer | `365` | the founder or an admin |
@@ -3988,7 +3991,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-32 dials. 24 for the whole village, 8 for the founder or an admin.
+35 dials. 24 for the whole village, 11 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -4053,6 +4056,48 @@ The email address the entrance's privacy line names, for a visitor who wants to 
 | Fact | Value |
 | --- | --- |
 | Key | `entrance.privacy_contact` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: background video
+
+A video that plays, muted and looping, behind the entrance card. An address that starts with https://, or a file of this site such as /uploads/gate.mp4; mp4 plays in every browser. Leave it blank for the plain background. Visitors who ask their device for less motion see the still image below instead.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.background_video` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: background video on phones
+
+A smaller copy of the background video for screens 768 pixels wide or less, so a phone downloads less. Leave it blank to use the main video on phones too.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.background_video_mobile` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: background still image
+
+The still image shown while the background video loads, and in its place for visitors who ask for less motion. An address that starts with https://, or a file of this site. Leave it blank for none.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.background_poster` |
 | Type | text, free text, one line |
 | Default | blank |
 | Range | no bounds are set |

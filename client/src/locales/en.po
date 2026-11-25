@@ -383,6 +383,11 @@ msgctxt "admin protocols editor"
 msgid "A JSON file of protocols (format village-protocols/1). A step's \"who\" names a role on the org chart, or \"anyone\". Importing a protocol that already exists saves a new version of it."
 msgstr "A JSON file of protocols (format village-protocols/1). A step's \"who\" names a role on the org chart, or \"anyone\". Importing a protocol that already exists saves a new version of it."
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "{decision} decided this after it arrived."
+msgstr "{decision} decided this after it arrived."
+
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
 msgid "Planted on"
@@ -1030,6 +1035,11 @@ msgctxt "rites"
 msgid "This page isn't open yet."
 msgstr "This page isn't open yet."
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Each one is drawn against what is live now on {where}. Accepting one sets the others aside."
+msgstr "Each one is drawn against what is live now on {where}. Accepting one sets the others aside."
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Reading the history"
@@ -1471,6 +1481,11 @@ msgstr "listening"
 msgctxt "SeatSettingsFields, label"
 msgid "Rated by"
 msgstr "Rated by"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Let it through"
+msgstr "Let it through"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -2629,6 +2644,11 @@ msgctxt "portal entrance: the keep-in-touch question, its own step after enterin
 msgid "Do you want us to keep you updated, and to hear about opportunities from {village}?"
 msgstr "Do you want us to keep you updated, and to hear about opportunities from {village}?"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "More than {limit} came from one sender today. It is read again tomorrow."
+msgstr "More than {limit} came from one sender today. It is read again tomorrow."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} answered at {askedAt}."
@@ -2963,6 +2983,11 @@ msgstr "Reschedule"
 msgctxt "pasted document body field"
 msgid "The text"
 msgstr "The text"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Waiting"
+msgstr "Waiting"
 
 #: client/src/components/admin/HyphaModulePanel.tsx
 msgctxt "HyphaModulePanel, button"
@@ -3466,6 +3491,11 @@ msgstr "Sent to {0} people."
 msgctxt "GameRolesTab, p"
 msgid "Add and remove the people in each power group. Each group's stage floor still applies, and a group is one of the two ways a member gains capabilities."
 msgstr "Add and remove the people in each power group. Each group's stage floor still applies, and a group is one of the two ways a member gains capabilities."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, the code by email, shown only while the village sends codes"
+msgid "We email you a code to confirm your address, which you need to do if you want to go further in the process and stay in touch."
+msgstr "We email you a code to confirm your address, which you need to do if you want to go further in the process and stay in touch."
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, p"
@@ -4030,6 +4060,11 @@ msgctxt "visitor profile: no applications"
 msgid "No applications yet."
 msgstr "No applications yet."
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: header"
+msgid "{heldCount, plural, one {# held.} other {# held.}}"
+msgstr "{heldCount, plural, one {# held.} other {# held.}}"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Now"
@@ -4489,6 +4524,11 @@ msgstr "Module"
 msgctxt "Admin, toast"
 msgid "That did not reach the server. The tool is still on the hub."
 msgstr "That did not reach the server. The tool is still on the hub."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "{days, plural, =0 {Arrived today} one {Waiting # day} other {Waiting # days}}"
+msgstr "{days, plural, =0 {Arrived today} one {Waiting # day} other {Waiting # days}}"
 
 #: client/src/pages/Partner.tsx
 msgctxt "partner form"
@@ -5168,6 +5208,11 @@ msgctxt "HyphaModulePanel, li"
 msgid "Click your avatar, top right."
 msgstr "Click your avatar, top right."
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone button"
+msgid "Disconnect..."
+msgstr "Disconnect..."
+
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, h2"
 msgid "Keep this for later?"
@@ -5538,9 +5583,9 @@ msgid "Account"
 msgstr "Account"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the privacy line, the email list"
-msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
-msgstr "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
+#~ msgctxt "portal entrance: the privacy line, the email list"
+#~ msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
+#~ msgstr "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
 
 #. placeholder {0}: m.consulted.references.join("; ")
 #: client/src/components/journey/LaunchGuide.tsx
@@ -6364,6 +6409,11 @@ msgctxt "portal entrance: the button while sending"
 msgid "Opening the way"
 msgstr "Opening the way"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Nothing has been decided here yet."
+msgstr "Nothing has been decided here yet."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Funding-dependent, if so"
@@ -6491,6 +6541,11 @@ msgstr "to {0}"
 msgctxt "protocols page"
 msgid "Yours to tick, as {keptFor}."
 msgstr "Yours to tick, as {keptFor}."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It needs something that is itself held."
+msgstr "It needs something that is itself held."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -7051,6 +7106,11 @@ msgctxt "budget line error"
 msgid "That did not save. Try again in a moment."
 msgstr "That did not save. Try again in a moment."
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone"
+msgid "Reports Resend sends after this are refused, so bounces and tests stop being reported back until you connect again."
+msgstr "Reports Resend sends after this are refused, so bounces and tests stop being reported back until you connect again."
+
 #. placeholder {0}: dateWords(view.pausedUntil!)
 #: client/src/pages/EmailPages.tsx
 msgctxt "EmailPages, p"
@@ -7230,6 +7290,11 @@ msgctxt "VillageMap, aria-label"
 msgid "Back to the village overview"
 msgstr "Back to the village overview"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Nothing is held. When a suggestion is held back, it waits here until a person clears it."
+msgstr "Nothing is held. When a suggestion is held back, it waits here until a person clears it."
+
 #: client/src/pages/Review.tsx
 msgctxt "Review, p"
 msgid "Reviewing what an outside service proposes, and witnessing finished quests, are jobs this village hands to somebody. Ask whoever looks after the village queues, and they can pass one on."
@@ -7366,6 +7431,11 @@ msgstr "The village on Base"
 msgctxt "budget desk lines not counted"
 msgid "{0} lines touch this moon and do not count yet: {1}."
 msgstr "{0} lines touch this moon and do not count yet: {1}."
+
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone confirm"
+msgid "Disconnect delivery reports now? Mail keeps sending; only the reports stop."
+msgstr "Disconnect delivery reports now? Mail keeps sending; only the reports stop."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
@@ -7507,6 +7577,11 @@ msgstr "Newcomers"
 msgctxt "priority board, choose the role that owns an item"
 msgid "Owner role of {0}"
 msgstr "Owner role of {0}"
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Yes, discard"
+msgstr "Yes, discard"
 
 #: client/src/components/admin/comms/LetterComposer.tsx
 msgctxt "LetterComposer, button"
@@ -7988,6 +8063,11 @@ msgctxt "open proposal: an agent's proposal"
 msgid "An agent, proposed by the member who keeps it. Adopted, it is seated on these roles at once, marked as an agent, with its keeper beside it."
 msgstr "An agent, proposed by the member who keeps it. Adopted, it is seated on these roles at once, marked as an agent, with its keeper beside it."
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Accept this option"
+msgstr "Accept this option"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h2"
 msgid "Seasons"
@@ -8077,6 +8157,11 @@ msgstr "Emails that did not arrive"
 msgctxt "GameRolesTab, h2"
 msgid "Power groups"
 msgstr "Power groups"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Decided"
+msgstr "Decided"
 
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, label"
@@ -8265,6 +8350,11 @@ msgstr "Filed as suggestions on {0}. Each waits on its block's Adopt frame."
 msgctxt "Admin, button"
 msgid "Handled"
 msgstr "Handled"
+
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Accepted: {summary}"
+msgstr "Accepted: {summary}"
 
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, aria-label"
@@ -8853,9 +8943,9 @@ msgid "Last edited {0}"
 msgstr "Last edited {0}"
 
 #: client/src/components/proposals/ChangeCard.tsx
-msgctxt "proposed changes: conflict"
-msgid "Also changed by “{other}”, proposed earlier. Accept one, then look again."
-msgstr "Also changed by “{other}”, proposed earlier. Accept one, then look again."
+#~ msgctxt "proposed changes: conflict"
+#~ msgid "Also changed by “{other}”, proposed earlier. Accept one, then look again."
+#~ msgstr "Also changed by “{other}”, proposed earlier. Accept one, then look again."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Back this quest, in {unit}"
@@ -9111,9 +9201,9 @@ msgstr "Report a Bug / Share an Idea"
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
-msgctxt "portal entrance: what draws you, a founding seeder"
-msgid "Becoming a founding seeder"
-msgstr "Becoming a founding seeder"
+#~ msgctxt "portal entrance: what draws you, a founding seeder"
+#~ msgid "Becoming a founding seeder"
+#~ msgstr "Becoming a founding seeder"
 
 #. placeholder {0}: s.kind
 #. placeholder {1}: s.takenCount
@@ -9277,6 +9367,11 @@ msgstr "Badge created"
 msgctxt "roles page, other ways to join"
 msgid "Other ways to join"
 msgstr "Other ways to join"
+
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Discarded. Nothing went live."
+msgstr "Discarded. Nothing went live."
 
 #. placeholder {0}: counts.stale
 #: client/src/pages/ProposedChanges.tsx
@@ -9448,6 +9543,11 @@ msgstr "Your own word for each menu entry, which ones show, the names of the gro
 msgctxt "Places, p"
 msgid "Open a place to see its photographs. Each one carries the name of whoever took it and the month it was taken."
 msgstr "Open a place to see its photographs. Each one carries the name of whoever took it and the month it was taken."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Held {heldCount}"
+msgstr "Held {heldCount}"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -9837,6 +9937,11 @@ msgstr "Which of {roleName}'s goals will you move? Pick up to {0}, each with a t
 msgctxt "EventsAdminPanel, toast"
 msgid "Could not load the calendar"
 msgstr "Could not load the calendar"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "What it asks for is already live."
+msgstr "What it asks for is already live."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "No season goal served"
@@ -11442,6 +11547,11 @@ msgctxt "admin member emails: delivery"
 msgid "Main address only"
 msgstr "Main address only"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, link to sent mail"
+msgid "Open Sent mail"
+msgstr "Open Sent mail"
+
 #: client/src/components/roleCard/commitmentWords.ts
 msgctxt "role card rewards: the pay band at the chosen commitment, no period"
 msgid "Band at {pct}%: {min} to {max} in total comp"
@@ -11531,6 +11641,11 @@ msgctxt "sera answers"
 msgid "Nothing ticked can be taken together"
 msgstr "Nothing ticked can be taken together"
 
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Accepted: {summary} The other options are recorded as another option chosen."
+msgstr "Accepted: {summary} The other options are recorded as another option chosen."
+
 #: client/src/components/journal/PracticePicker.tsx
 msgctxt "PracticePicker, button"
 msgid "Start fresh"
@@ -11574,6 +11689,11 @@ msgstr "Title and type are required"
 msgctxt "ProposalWizard, h2"
 msgid "What kind of decision is this?"
 msgstr "What kind of decision is this?"
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test outcome label"
+msgid "The test:"
+msgstr "The test:"
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, dd"
@@ -11682,9 +11802,9 @@ msgid "Name"
 msgstr "Name"
 
 #: client/src/pages/AdminReview.tsx
-msgctxt "review inbox: lede"
-msgid "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
-msgstr "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
+#~ msgctxt "review inbox: lede"
+#~ msgid "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
+#~ msgstr "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
 
 #: client/src/components/modules/PoolStatement.tsx
 msgctxt "PoolStatement, th"
@@ -12247,6 +12367,11 @@ msgctxt "Forum, p"
 msgid "<0/> Record the outcome"
 msgstr "<0/> Record the outcome"
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed later. Accepting one sets the other aside."
+msgstr "Also changed by “{other}”, proposed later. Accepting one sets the other aside."
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Each role's circle is asked to consent, and a holder of the power to place people in roles adopts it, never their own."
 msgstr "Each role's circle is asked to consent, and a holder of the power to place people in roles adopts it, never their own."
@@ -12447,6 +12572,12 @@ msgctxt "SetupWalk, h3"
 msgid "Publish structure to the network?"
 msgstr "Publish structure to the network?"
 
+#: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "portal entrance: what draws you, a role"
+msgid "A role on our team"
+msgstr "A role on our team"
+
 #. placeholder {0}: r.liveHolders
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "{name}, held by {0, plural, one {one person} other {# people}} today"
@@ -12487,6 +12618,11 @@ msgstr "Try again"
 msgctxt "pricing desk"
 msgid "{0} open claims keep the price they were taken at."
 msgstr "{0} open claims keep the price they were taken at."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "A name mixes letters from more than one alphabet, which can hide a lookalike. A person checks it."
+msgstr "A name mixes letters from more than one alphabet, which can hide a lookalike. A person checks it."
 
 #. placeholder {0}: times(here.gratitudeMultiplier)
 #: client/src/components/profile/TheVessel.tsx
@@ -12690,6 +12826,11 @@ msgstr "The village wrote these down before you had an account here. Say which o
 msgctxt "Admin, p"
 msgid "Opened {0}, closes {1}."
 msgstr "Opened {0}, closes {1}."
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Pick an option to accept it."
+msgstr "Pick an option to accept it."
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -13059,6 +13200,11 @@ msgstr "We use these details only for this waitlist, and you can ask us to remov
 msgctxt "FeedbackReceiving, aria-label"
 msgid "Your answer to this feedback"
 msgstr "Your answer to this feedback"
+
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "That did not go through. Reload and try again."
+msgstr "That did not go through. Reload and try again."
 
 #: client/src/components/RedemptionPanel.tsx
 msgctxt "RedemptionPanel, p"
@@ -13660,6 +13806,11 @@ msgctxt "role card rewards: the pay band under the listed price, each month"
 msgid "Band: {min} to {max} a month in total comp"
 msgstr "Band: {min} to {max} a month in total comp"
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Drawn against what is live now. Accept puts these words over it."
+msgstr "Drawn against what is live now. Accept puts these words over it."
+
 #. placeholder {0}: f.name
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -13981,9 +14132,9 @@ msgstr "Tools"
 
 #. placeholder {0}: paused ? "(paused now)" : ""
 #: client/src/components/admin/comms/CommsSettings.tsx
-msgctxt "CommsSettings, h3"
-msgid "Pause all {0}"
-msgstr "Pause all {0}"
+#~ msgctxt "CommsSettings, h3"
+#~ msgid "Pause all {0}"
+#~ msgstr "Pause all {0}"
 
 #: client/src/components/roleCard/valueExplainerWords.ts
 msgctxt "role card rewards explainer: heading"
@@ -14931,9 +15082,9 @@ msgid "Anything else you want to say (optional)"
 msgstr "Anything else you want to say (optional)"
 
 #: client/src/components/proposals/ChangeCard.tsx
-msgctxt "proposed changes: conflict"
-msgid "A later change also edits this. Accept this one anyway?"
-msgstr "A later change also edits this. Accept this one anyway?"
+#~ msgctxt "proposed changes: conflict"
+#~ msgid "A later change also edits this. Accept this one anyway?"
+#~ msgstr "A later change also edits this. Accept this one anyway?"
 
 #: client/src/components/roots/RootPicker.tsx
 msgctxt "root picker coverage caption"
@@ -15189,6 +15340,11 @@ msgstr "Revoke failed"
 msgctxt "VoiceSpreadBand, label"
 msgid "Carried"
 msgstr "Carried"
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Choose one"
+msgstr "Choose one"
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "org chart breadcrumb"
@@ -15936,6 +16092,11 @@ msgctxt "ProposalWizard, button"
 msgid "<0/>Save and leave"
 msgstr "<0/>Save and leave"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "From a member"
+msgstr "From a member"
+
 #: client/src/components/QuestActions.tsx
 msgctxt "quest page: the take button on an example, disabled"
 msgid "Example quest"
@@ -16206,6 +16367,11 @@ msgstr "Dismiss"
 msgctxt "HomeBase, p"
 msgid "Updated {updated}"
 msgstr "Updated {updated}"
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, pause busy"
+msgid "Saving..."
+msgstr "Saving..."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -16483,6 +16649,11 @@ msgstr "Your signing"
 #~ msgctxt "price popup nudge, one"
 #~ msgid "You suggested 1 change to the role. If it changes the work, say how it changes the price."
 #~ msgstr "You suggested 1 change to the role. If it changes the work, say how it changes the price."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held for a reason this page does not know yet."
+msgstr "Held for a reason this page does not know yet."
 
 #: client/src/components/ProfileJourney.tsx
 msgctxt "ProfileJourney, p"
@@ -17067,6 +17238,11 @@ msgstr "Down"
 msgctxt "venture redemption button"
 msgid "Redeem"
 msgstr "Redeem"
+
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone confirm button"
+msgid "Disconnect delivery reports"
+msgstr "Disconnect delivery reports"
 
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment"
@@ -19009,6 +19185,11 @@ msgstr "Say in your own words what this token means here"
 msgid "When you can usually meet (optional)"
 msgstr "When you can usually meet (optional)"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
+msgstr "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
 msgid "This week"
@@ -19223,9 +19404,9 @@ msgid "Key: "
 msgstr "Key: "
 
 #: client/src/components/proposals/ChangeCard.tsx
-msgctxt "proposed changes: conflict"
-msgid "Also changed by “{other}”, proposed later. Accept one, then look again."
-msgstr "Also changed by “{other}”, proposed later. Accept one, then look again."
+#~ msgctxt "proposed changes: conflict"
+#~ msgid "Also changed by “{other}”, proposed later. Accept one, then look again."
+#~ msgstr "Also changed by “{other}”, proposed later. Accept one, then look again."
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: one earlier word"
@@ -19920,6 +20101,11 @@ msgctxt "founding application, coming-soon roles under the picker"
 msgid "Not open yet. Join a role's waitlist to hear when it opens."
 msgstr "Not open yet. Join a role's waitlist to hear when it opens."
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "From an agent"
+msgstr "From an agent"
+
 #: client/src/components/admin/comms/JourneyDetail.tsx
 msgctxt "JourneyDetail, button"
 msgid "Send me a test"
@@ -20294,6 +20480,11 @@ msgstr "Create an account"
 msgctxt "venture redemption state"
 msgid "Cancelled"
 msgstr "Cancelled"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held did not load. Suggestions may be waiting there."
+msgstr "Held did not load. Suggestions may be waiting there."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel, who answers"
@@ -20754,6 +20945,11 @@ msgstr "{0, plural, one {# change} other {# changes}}"
 msgid "The five columns are the Decision Matrix of the <0>{creditText}<1/></0>. The answers in this half are the platform's."
 msgstr "The five columns are the Decision Matrix of the <0>{creditText}<1/></0>. The answers in this half are the platform's."
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{total, plural, one {# suggestion for one thing} other {# suggestions for one thing}}"
+msgstr "{total, plural, one {# suggestion for one thing} other {# suggestions for one thing}}"
+
 #: client/src/pages/rites/Door.tsx
 msgid "Make a new code? The old one stops working, printed ones too."
 msgstr "Make a new code? The old one stops working, printed ones too."
@@ -20824,9 +21020,9 @@ msgid "Add a priority"
 msgstr "Add a priority"
 
 #: client/src/components/proposals/BatchCard.tsx
-msgctxt "proposed changes: confirm a batch"
-msgid "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
-msgstr "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
+#~ msgctxt "proposed changes: confirm a batch"
+#~ msgid "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
+#~ msgstr "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
 
 #: client/src/pages/Feedback.tsx
 msgctxt "feedback page: title label"
@@ -22162,9 +22358,9 @@ msgid "The quest page shows a blank box when…"
 msgstr "The quest page shows a blank box when…"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what is inside, and what is asked"
-msgid "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
-msgstr "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
+#~ msgctxt "portal entrance: what is inside, and what is asked"
+#~ msgid "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
+#~ msgstr "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
 
 #: client/src/pages/Review.tsx
 msgctxt "Review, p"
@@ -22688,6 +22884,11 @@ msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} waiting"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, never sold"
+msgid "We never sell any of it."
+msgstr "We never sell any of it."
+
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, p"
 msgid "Quests and roles are edited on their own screens. Nothing here changes a quest or a role: it only records that the one meets the other."
@@ -22793,6 +22994,11 @@ msgctxt "Admin, button"
 msgid "<0/> Look again"
 msgstr "<0/> Look again"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "A vote covers this. It is read again when the vote closes."
+msgstr "A vote covers this. It is read again when the vote closes."
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "All protocols"
@@ -22851,6 +23057,12 @@ msgstr "Try again"
 msgctxt "founding application know us push"
 msgid "Watching the last webinar recording is the easiest first step."
 msgstr "Watching the last webinar recording is the easiest first step."
+
+#: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "portal entrance: name field"
+msgid "Name or Nickname"
+msgstr "Name or Nickname"
 
 #: client/src/components/sessions/ComingUp.tsx
 msgid "Stopped. That meeting has left Coming up."
@@ -23068,6 +23280,12 @@ msgctxt "WalletCard, span"
 msgid "Claimed across so far: {0}"
 msgstr "Claimed across so far: {0}"
 
+#: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "portal entrance: what draws you, a founding seeder"
+msgid "Becoming a \"Founding Seeder\""
+msgstr "Becoming a \"Founding Seeder\""
+
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, scanning a code"
 msgid "Point your phone's camera at their code. It opens this page with their name filled in."
@@ -23199,6 +23417,11 @@ msgctxt "review inbox: section"
 msgid "Done work to accept"
 msgstr "Done work to accept"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test outcome"
+msgid "No test sent yet."
+msgstr "No test sent yet."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "I'll be there"
@@ -23293,6 +23516,11 @@ msgstr "Team sheet"
 msgctxt "SittingFlow, legend"
 msgid "Same call in another village? (optional)"
 msgstr "Same call in another village? (optional)"
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, pause button"
+msgid "Let email flow again"
+msgstr "Let email flow again"
 
 #. placeholder {0}: ROLE_LABELS[role].title
 #: client/src/components/TypographyPanel.tsx
@@ -23892,6 +24120,11 @@ msgctxt "Admin, th"
 msgid "Value"
 msgstr "Value"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Option {n} of {total}"
+msgstr "Option {n} of {total}"
+
 #. placeholder {0}: g.problem
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, p"
@@ -23983,6 +24216,11 @@ msgstr "That payment did not go through."
 msgctxt "role editor"
 msgid "Per"
 msgstr "Per"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Held"
+msgstr "Held"
 
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "ProposeQuest, label"
@@ -24634,6 +24872,11 @@ msgstr "Read again"
 msgctxt "Housing, Link"
 msgid "Learn About Residency<0/>"
 msgstr "Learn About Residency<0/>"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Decided, newest first"
+msgstr "Decided, newest first"
 
 #: client/src/components/admin/PowerGroupDialogs.tsx
 msgctxt "PowerGroupDialogs, button"
@@ -25595,6 +25838,11 @@ msgctxt "voice transcription choice"
 msgid "Free tier, fast, Spanish and English. Needs the Groq key below."
 msgstr "Free tier, fast, Spanish and English. Needs the Groq key below."
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test button"
+msgid "Send me a test"
+msgstr "Send me a test"
+
 #: client/src/pages/Quests.tsx
 msgctxt "Quests, h2"
 msgid "<0/>Pick up where you left off"
@@ -25653,6 +25901,11 @@ msgstr "{0} of {1}"
 msgctxt "a switch setting"
 msgid "Off"
 msgstr "Off"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find a decided code"
+msgid "{code} was decided. It is under Decided."
+msgstr "{code} was decided. It is under Decided."
 
 #: client/src/pages/Pay.tsx
 msgctxt "pay page"
@@ -25978,10 +26231,15 @@ msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr "Withdraw it and end the vote"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{total, plural, one {Discard this option? Nothing goes live.} other {Discard all # options? Nothing goes live.}}"
+msgstr "{total, plural, one {Discard this option? Nothing goes live.} other {Discard all # options? Nothing goes live.}}"
+
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the privacy line, the code by email, shown only while the village sends codes"
-msgid "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
-msgstr "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+#~ msgctxt "portal entrance: the privacy line, the code by email, shown only while the village sends codes"
+#~ msgid "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+#~ msgstr "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
 
 #: client/src/components/admin/OpsEmailSwitch.tsx
 msgctxt "admin ops report email"
@@ -27193,6 +27451,11 @@ msgctxt "SetPassword, p"
 msgid "Password set. Taking you to your dashboard…"
 msgstr "Password set. Taking you to your dashboard…"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find"
+msgid "Open Decided"
+msgstr "Open Decided"
+
 #. placeholder {0}: doc.ownerName
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row, who shared it"
@@ -27224,6 +27487,11 @@ msgstr "Save the menu"
 msgctxt "WordsEditor, button"
 msgid "Send me a test"
 msgstr "Send me a test"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find a decided code"
+msgid "{code} was decided on {day}. It is under Decided."
+msgstr "{code} was decided on {day}. It is under Decided."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera answers"
@@ -27522,6 +27790,11 @@ msgctxt "NeedsPanel, button"
 msgid "Open Quests"
 msgstr "Open Quests"
 
+#: client/src/components/proposals/BatchCard.tsx
+msgctxt "proposed changes: confirm a batch"
+msgid "{laterConflicts, plural, one {One of these waits on your choice on its own card, so it stays out of Accept all.} other {# of these wait on your choice on their own cards, so they stay out of Accept all.}}"
+msgstr "{laterConflicts, plural, one {One of these waits on your choice on its own card, so it stays out of Accept all.} other {# of these wait on your choice on their own cards, so they stay out of Accept all.}}"
+
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "ObjectionPanel, button"
 msgid "Not now"
@@ -27617,6 +27890,11 @@ msgctxt "thanks composer: recipient field"
 msgid "Who you are thanking, by handle"
 msgstr "Who you are thanking, by handle"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, state heading"
+msgid "Automated email is paused"
+msgstr "Automated email is paused"
+
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "IdentityPackPanel, toast"
 msgid "Reference added. Remember to save"
@@ -27683,6 +27961,11 @@ msgstr "You've recorded {max} clips, the most one application holds. Remove one 
 msgctxt "rites"
 msgid "or with your email"
 msgstr "or with your email"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held back, waiting on a person"
+msgstr "Held back, waiting on a person"
 
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Members cannot pay venture accounts yet. You can open accounts first."
@@ -28414,6 +28697,11 @@ msgctxt "OAuthAuthorize, legend"
 msgid "What it may do"
 msgstr "What it may do"
 
+#: client/src/components/admin/comms/CommsSettings.tsx
+msgctxt "Mail settings, page heading"
+msgid "Mail settings"
+msgstr "Mail settings"
+
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgid "The governing purpose statement"
 msgstr "The governing purpose statement"
@@ -29093,6 +29381,11 @@ msgctxt "founding application check, a box over its limit"
 msgid "Reference {n}: name"
 msgstr "Reference {n}: name"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, sender line"
+msgid "Sending as {sender}."
+msgstr "Sending as {sender}."
+
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
 msgid "Trying again"
@@ -29672,6 +29965,11 @@ msgstr "Back"
 msgid "The map is yours!"
 msgstr "The map is yours!"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Sent again after {discarded} was discarded, with a reason. Let it through to be read, or clear it."
+msgstr "Sent again after {discarded} was discarded, with a reason. Let it through to be read, or clear it."
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "The roles you drafted: {roleList}."
 #~ msgstr "The roles you drafted: {roleList}."
@@ -29721,6 +30019,11 @@ msgstr "A person"
 msgctxt "ProfileGeneKeys, Link"
 msgid "Find my lines"
 msgstr "Find my lines"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Let through to be read"
+msgstr "Let through to be read"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, th"
@@ -29997,9 +30300,9 @@ msgstr "Each member's cash and token pay for a month: what is owed, what was sen
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
-msgctxt "portal entrance: what draws you, a role"
-msgid "A role on the team"
-msgstr "A role on the team"
+#~ msgctxt "portal entrance: what draws you, a role"
+#~ msgid "A role on the team"
+#~ msgstr "A role on the team"
 
 #: client/src/components/review/ConsentQueue.tsx
 msgctxt "ConsentQueue, p"
@@ -30514,6 +30817,11 @@ msgctxt "GatheringEmailSettings, p"
 msgid "The host is asked for the recap after it ends."
 msgstr "The host is asked for the recap after it ends."
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, paused note"
+msgid "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
+msgstr "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
+
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, button"
 msgid "Clear the examples now"
@@ -30741,6 +31049,11 @@ msgctxt "steward question form: the list of fields to fix"
 msgid "A few things to fix before it can go:"
 msgstr "A few things to fix before it can go:"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, pause refused"
+msgid "That was not saved."
+msgstr "That was not saved."
+
 #. placeholder {0}: asksFor(unplaced)
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{0, plural, one {# ask waiting} other {# asks waiting}}"
@@ -30874,6 +31187,11 @@ msgctxt "Admin, p"
 msgid "The same checks the server proves before every boot, on demand. Faucet accounts run negative by design. Their negative balance is what they have issued, which is why everything still sums to zero."
 msgstr "The same checks the server proves before every boot, on demand. Faucet accounts run negative by design. Their negative balance is what they have issued, which is why everything still sums to zero."
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, its greeting"
+msgid "Hi friend:"
+msgstr "Hi friend:"
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "Anything you want the stewards to know (optional)"
 msgstr "Anything you want the stewards to know (optional)"
@@ -30955,6 +31273,11 @@ msgstr "ticked"
 msgctxt "HousingAdminPanel, p"
 msgid "How many homes each hamlet has, and how many are spoken for. Builder mode on the map writes the same numbers. Leave a box empty to mark it unset, and every surface showing that hamlet will call its numbers an example."
 msgstr "How many homes each hamlet has, and how many are spoken for. Builder mode on the map writes the same numbers. Leave a box empty to mark it unset, and every surface showing that hamlet will call its numbers an example."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, the email list"
+msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service."
+msgstr "If you say yes to updates on the next step, we also add you to our email list, kept with an email service."
 
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "Loading this village's conflict steps…"
@@ -31048,6 +31371,11 @@ msgstr "Everything you do lands in your tasks, even the ones nobody planned. At 
 msgctxt "BadgeMultipliersEditor, p"
 msgid "A holder is paid this many times the usual amount of each token, for quests, roles and accepted proposals. Blank is no multiplier."
 msgstr "A holder is paid this many times the usual amount of each token, for quests, roles and accepted proposals. Blank is no multiplier."
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, pause lifted"
+msgid "Email is flowing again"
+msgstr "Email is flowing again"
 
 #: client/src/pages/PlacePhotos.tsx
 msgctxt "PlacePhotos, Link"
@@ -31237,15 +31565,20 @@ msgctxt "sera answers"
 msgid "(including {nested} roles inside a new circle)"
 msgstr "(including {nested} roles inside a new circle)"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test explainer"
+msgid "It goes to {me}, from the sender above. This is the test that marks mail as ready, and this line changes when it arrives."
+msgstr "It goes to {me}, from the sender above. This is the test that marks mail as ready, and this line changes when it arrives."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{witness} finished Quests to witness"
 msgstr "{witness} finished Quests to witness"
 
 #: client/src/components/admin/comms/CommsSettings.tsx
-msgctxt "CommsSettings, h2"
-msgid "Comms Settings"
-msgstr "Comms Settings"
+#~ msgctxt "CommsSettings, h2"
+#~ msgid "Comms Settings"
+#~ msgstr "Comms Settings"
 
 #. placeholder {0}: timeAgo(p.cachedAt)
 #: client/src/pages/CrowdpoolCampaign.tsx
@@ -31813,6 +32146,11 @@ msgstr "Remove this portrait"
 msgctxt "shape the role"
 msgid "Opening the role card…"
 msgstr "Opening the role card…"
+
+#: client/src/components/admin/comms/CommsSettings.tsx
+msgctxt "Mail settings, checklist item 13 button"
+msgid "Send it from the top"
+msgstr "Send it from the top"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -32941,6 +33279,11 @@ msgctxt "open proposal sent drawing"
 msgid "You"
 msgstr "You"
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "{others, plural, one {Accept this one? The other change for the same thing is set aside, recorded as another option chosen.} other {Accept this one? The # other changes for the same thing are set aside, recorded as another option chosen.}}"
+msgstr "{others, plural, one {Accept this one? The other change for the same thing is set aside, recorded as another option chosen.} other {Accept this one? The # other changes for the same thing are set aside, recorded as another option chosen.}}"
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "Apply with your draft"
 #~ msgstr "Apply with your draft"
@@ -33501,6 +33844,11 @@ msgstr "Opening"
 msgctxt "StructureReview, span"
 msgid "Left out"
 msgstr "Left out"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, what you type"
+msgid "We keep what you type here, so it's saved for you."
+msgstr "We keep what you type here, so it's saved for you."
 
 #: client/src/components/admin/PurposeStatementPanel.tsx
 msgctxt "PurposeStatementPanel, p"
@@ -35295,6 +35643,11 @@ msgctxt "application backup file"
 msgid "Village"
 msgstr "Village"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, pause button"
+msgid "Pause all automated email"
+msgstr "Pause all automated email"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
 msgid "What people asked for and did not get"
@@ -35564,6 +35917,11 @@ msgctxt "GoLiveCard, button"
 msgid "Members only"
 msgstr "Members only"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Accept option {pickNumber}."
+msgstr "Accept option {pickNumber}."
+
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: button while saving"
 msgid "Saving"
@@ -35704,6 +36062,11 @@ msgctxt "WordsEditor, p"
 msgid "An improved version of these words is available from the platform. Your words stay yours until you take it."
 msgstr "An improved version of these words is available from the platform. Your words stay yours until you take it."
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test explainer"
+msgid "Sign in with your own account to send yourself a test."
+msgstr "Sign in with your own account to send yourself a test."
+
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment footnote"
 msgid "The contract sets the pay. As a contractor they may propose more or less than the suggested compensation."
@@ -35755,6 +36118,11 @@ msgstr "The Dials"
 msgctxt "VisitProgramEditor, span"
 msgid "(optional)"
 msgstr "(optional)"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy list, the pages opened, with the village's name"
+msgid "We note which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+msgstr "We note which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
@@ -36044,6 +36412,11 @@ msgstr "Back to the village"
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "There is not enough of your own writing to draft from yet. Add a few lines to \"Why you\" and try again."
 msgstr "There is not enough of your own writing to draft from yet. Add a few lines to \"Why you\" and try again."
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test check"
+msgid "Check again"
+msgstr "Check again"
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -36796,6 +37169,11 @@ msgctxt "ShareChoices, legend"
 msgid "Who sees your lines"
 msgstr "Who sees your lines"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Clear it"
+msgstr "Clear it"
+
 #: client/src/components/roleCard/rewardWords.ts
 #~ msgctxt "role card rewards: the one footnote"
 #~ msgid "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
@@ -37271,6 +37649,11 @@ msgctxt "player card: opens edit mode for unwritten parts"
 msgid "Write them"
 msgstr "Write them"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, state heading"
+msgid "Mail is off"
+msgstr "Mail is off"
+
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, AddButton"
 msgid "Add a week"
@@ -37382,6 +37765,11 @@ msgstr "The care role, which hears a conflict first"
 msgctxt "the day an agreement comes back for review"
 msgid "Review date: {0}."
 msgstr "Review date: {0}."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It and another suggestion each need the other first."
+msgstr "It and another suggestion each need the other first."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -37504,6 +37892,11 @@ msgstr "Waiting for {role}"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "This role lists no outcomes yet."
 #~ msgstr "This role lists no outcomes yet."
+
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone heading"
+msgid "Danger zone"
+msgstr "Danger zone"
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -38122,6 +38515,11 @@ msgctxt "Modules, aria-label"
 msgid "Filter by price"
 msgstr "Filter by price"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, sender line"
+msgid "No sender yet, so nothing is sent."
+msgstr "No sender yet, so nothing is sent."
+
 #: client/src/components/fireflyPath/RememberOnDevice.tsx
 msgctxt "founding application, remember on this device"
 msgid "Only this browser keeps them, so you can come back later. Nothing reaches us until you send."
@@ -38668,6 +39066,11 @@ msgstr "Their words"
 msgctxt "LibraryImportPanel, span"
 msgid "Member"
 msgstr "Member"
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Yes, accept it"
+msgstr "Yes, accept it"
 
 #: client/src/components/MapSkinPanel.tsx
 msgctxt "MapSkinPanel, label"
@@ -39805,6 +40208,11 @@ msgctxt "PowerAffinityPanel, h4"
 msgid "Which powers suit each class"
 msgstr "Which powers suit each class"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Not yet"
+msgstr "Not yet"
+
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "QuestsTab, button"
 msgid "Keep as a real quest"
@@ -40593,6 +41001,12 @@ msgctxt "ResourcesAdminPanel, button"
 msgid "Edit"
 msgstr "Edit"
 
+#: client/src/components/proposals/ChangeCard.tsx
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "See what is live now"
+msgstr "See what is live now"
+
 #. placeholder {0}: goals.length
 #. placeholder {1}: goals.length === 1 ? "" : "s"
 #: client/src/components/SeasonBanner.tsx
@@ -41354,6 +41768,11 @@ msgctxt "previous frame"
 msgid "Back"
 msgstr "Back"
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone confirm"
+msgid "Confirm disconnecting delivery reports"
+msgstr "Confirm disconnecting delivery reports"
+
 #: client/src/pages/Characters.tsx
 msgctxt "Characters, h1"
 msgid "Choose who you will be"
@@ -41499,9 +41918,9 @@ msgstr "See the builders' pool ↗"
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
-msgctxt "portal entrance: name field"
-msgid "Your name"
-msgstr "Your name"
+#~ msgctxt "portal entrance: name field"
+#~ msgid "Your name"
+#~ msgstr "Your name"
 
 #: client/src/components/admin/comms/CommsPeople.tsx
 msgctxt "CommsPeople, button"
@@ -41593,6 +42012,11 @@ msgstr "Send now"
 msgctxt "Admin, button"
 msgid "Post prices"
 msgstr "Post prices"
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test email refused"
+msgid "The test was not sent."
+msgstr "The test was not sent."
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint form, token picker"
@@ -41920,6 +42344,11 @@ msgctxt "admin helper, provider choice"
 msgid "Who answers"
 msgstr "Who answers"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "The options"
+msgstr "The options"
+
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "That account could not be read."
 msgstr "That account could not be read."
@@ -42207,6 +42636,11 @@ msgctxt "profile ventures you run"
 msgid "Payments for {0}"
 msgstr "Payments for {0}"
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Confirm your choice"
+msgstr "Confirm your choice"
+
 #: client/src/pages/Review.tsx
 msgctxt "review: eyebrow"
 msgid "Waiting on the village"
@@ -42448,6 +42882,11 @@ msgstr "Only an accepted change can be proposed back."
 msgctxt "steward question form: a field to fix"
 msgid "Add your name."
 msgstr "Add your name."
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "What it changes is no longer there."
+msgstr "What it changes is no longer there."
 
 #: client/src/pages/Training.tsx
 msgctxt "training chooser: the member's own path"
@@ -43187,6 +43626,11 @@ msgstr "Reset"
 msgctxt "open a notebook document"
 msgid "Open"
 msgstr "Open"
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, paused"
+msgid "Automated email is paused"
+msgstr "Automated email is paused"
 
 #: client/src/components/journey/EconomicsView.tsx
 msgid " · no key set, so this module answers 503"
@@ -45898,6 +46342,11 @@ msgctxt "the season is loading"
 msgid "Reading the season."
 msgstr "Reading the season."
 
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Discard all options"
+msgstr "Discard all options"
+
 #: client/src/components/geneKeys/CircleLines.tsx
 msgctxt "CircleLines, h4"
 msgid "Our six lines"
@@ -46558,6 +47007,11 @@ msgstr "Narrow range"
 msgctxt "HandOverPowers, p"
 msgid "Two of you can sign, so this takes two signatures."
 msgstr "Two of you can sign, so this takes two signatures."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Views"
+msgstr "Views"
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -47328,6 +47782,11 @@ msgctxt "Stay, title"
 msgid "Buy {buyNights} night(s) of {stayName}"
 msgstr "Buy {buyNights} night(s) of {stayName}"
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone keep button"
+msgid "Keep them connected"
+msgstr "Keep them connected"
+
 #. placeholder {0}: w.payRef ?? ""
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "treasury queue, payment reference the venture gave"
@@ -47538,6 +47997,11 @@ msgstr "How we evolve through conflict"
 msgctxt "first fourteen days strip, the day that is today"
 msgid "today"
 msgstr "today"
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{others, plural, one {The other option is recorded as another option chosen.} other {The # other options are recorded as another option chosen.}}"
+msgstr "{others, plural, one {The other option is recorded as another option chosen.} other {The # other options are recorded as another option chosen.}}"
 
 #: client/src/components/geneKeys/GeneKeysLines.tsx
 msgctxt "GeneKeysLines, p"
@@ -47802,6 +48266,11 @@ msgctxt "PlayerCard, h4"
 msgid "Access"
 msgstr "Access"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, link to the module library"
+msgid "Module Library"
+msgstr "Module Library"
+
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "OpenProposalsPanel, h3"
 msgid "A link for one person"
@@ -47816,6 +48285,11 @@ msgstr "The address it comes from"
 msgctxt "shape the role lede"
 msgid "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application."
 msgstr "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application."
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, test button busy"
+msgid "Sending..."
+msgstr "Sending..."
 
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, p"
@@ -49243,6 +49717,11 @@ msgctxt "Admin, toast"
 msgid "A reason is required"
 msgstr "A reason is required"
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone"
+msgid "Disconnect delivery reports"
+msgstr "Disconnect delivery reports"
+
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "No signal here"
@@ -49822,6 +50301,11 @@ msgstr "Reading the Sera links…"
 #~ msgid "Propose my own price"
 #~ msgstr "Propose my own price"
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "The same was discarded recently as {discarded}."
+msgstr "The same was discarded recently as {discarded}."
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, div"
 msgid "Compressing…"
@@ -50044,6 +50528,11 @@ msgstr "Left as it was."
 msgctxt "QuestDetail, span"
 msgid "Seasonal"
 msgstr "Seasonal"
+
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Edit its words on its own page"
+msgstr "Edit its words on its own page"
 
 #: client/src/components/review/SeraInDraft.tsx
 #: client/src/components/review/SeraMember.tsx
@@ -51041,6 +51530,11 @@ msgctxt "deliverables timeline: the line for today"
 msgid "Today"
 msgstr "Today"
 
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, state heading"
+msgid "Mail is rehearsing"
+msgstr "Mail is rehearsing"
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, a plant"
 msgid "Flowered"
@@ -51329,9 +51823,9 @@ msgid "Ends on (optional)"
 msgstr "Ends on (optional)"
 
 #: client/src/components/admin/comms/CommsSettings.tsx
-msgctxt "CommsSettings, a"
-msgid "Module Library"
-msgstr "Module Library"
+#~ msgctxt "CommsSettings, a"
+#~ msgid "Module Library"
+#~ msgstr "Module Library"
 
 #. placeholder {0}: preview.count
 #: client/src/components/admin/comms/LetterComposer.tsx
@@ -51795,6 +52289,11 @@ msgctxt "CommsLetters, button"
 msgid "Write a letter"
 msgstr "Write a letter"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Decided did not load. Try again."
+msgstr "Decided did not load. Try again."
+
 #: client/src/components/journal/PracticePicker.tsx
 msgctxt "PracticePicker, p"
 msgid "Your words here are yours. Nobody else can read them, an admin included."
@@ -51824,6 +52323,11 @@ msgstr "Your journal never goes to {outside}."
 msgctxt "CrowdpoolCampaign, p"
 msgid "You finish the claim on the hub's page."
 msgstr "You finish the claim on the hub's page."
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed earlier. Accepting one sets the other aside."
+msgstr "Also changed by “{other}”, proposed earlier. Accepting one sets the other aside."
 
 #: client/src/components/admin/PathsStagesEditor.tsx
 msgctxt "PathsStagesEditor, button"
@@ -51869,6 +52373,11 @@ msgstr "Claims are not open yet, whatever is in this box. The piece that raises 
 msgctxt "protocols page"
 msgid "That run is not on this phone. It may have been started on another phone that has not sent it yet."
 msgstr "That run is not on this phone. It may have been started on another phone that has not sent it yet."
+
+#: client/src/components/admin/comms/MailNow.tsx
+msgctxt "Mail settings, state heading"
+msgid "Mail is live"
+msgstr "Mail is live"
 
 #: client/src/pages/Mint.tsx
 msgctxt "Mint, div"
@@ -52275,6 +52784,11 @@ msgctxt "ArrangeBar, toast"
 msgid "The village already sits this way, so there was nothing to publish."
 msgstr "The village already sits this way, so there was nothing to publish."
 
+#: client/src/components/admin/comms/DeliveryDangerZone.tsx
+msgctxt "Mail settings, danger zone done"
+msgid "Delivery reports disconnected"
+msgstr "Delivery reports disconnected"
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "That link has run out or was already used. Send your application again, and open the new link within 48 hours."
@@ -52502,6 +53016,11 @@ msgctxt "admin helper, connect step"
 msgid "Come back here and open the helper again."
 msgstr "Come back here and open the helper again."
 
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "There are already {limit} options for this thing."
+msgstr "There are already {limit} options for this thing."
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Co-sign and replace"
@@ -52663,9 +53182,9 @@ msgid "Withdraw this application? It will no longer be considered."
 msgstr "Withdraw this application? It will no longer be considered."
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
-msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
-msgstr "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+#~ msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
+#~ msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+#~ msgstr "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
 
 #: client/src/pages/AdminReview.tsx
 msgctxt "review inbox"
@@ -52880,6 +53399,11 @@ msgstr "No lunation has been settled yet."
 msgctxt "founding application check, uploads"
 msgid "{name} is larger than one file can be. Remove it, or attach a smaller copy."
 msgstr "{name} is larger than one file can be. Remove it, or attach a smaller copy."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what is inside, and what is asked"
+msgid "Just inside are the village's roles, its \"game\" and the work of building it together. We share a lot about who we are and how we co-create, so we'd like to know a bit about you too!"
+msgstr "Just inside are the village's roles, its \"game\" and the work of building it together. We share a lot about who we are and how we co-create, so we'd like to know a bit about you too!"
 
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "default title of a suggestion"
@@ -53528,6 +54052,11 @@ msgstr "Yes"
 msgctxt "quests coming soon banner: the one line under the heading"
 msgid "These are examples of the quests to come. Have one in mind?"
 msgstr "These are examples of the quests to come. Have one in mind?"
+
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It needs something that does not exist yet."
+msgstr "It needs something that does not exist yet."
 
 #. placeholder {0}: me.needed
 #: client/src/pages/HiddenMap.tsx
