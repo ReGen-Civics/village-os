@@ -5803,9 +5803,9 @@ msgid "Email"
 msgstr "Email"
 
 #: client/src/components/admin/ArchetypesPanel.tsx
-msgctxt "ArchetypesPanel, toast"
-msgid "Saved. This class now carries the village's own words"
-msgstr "Saved. This class now carries the village's own words"
+#~ msgctxt "ArchetypesPanel, toast"
+#~ msgid "Saved. This class now carries the village's own words"
+#~ msgstr "Saved. This class now carries the village's own words"
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "admin mint form, what stood behind a grant"
@@ -6720,6 +6720,11 @@ msgstr "Your proposal sets your rewards. Tell us what you'd deliver each moon an
 msgctxt "role editor"
 msgid "How the conversations are held"
 msgstr "How the conversations are held"
+
+#: client/src/components/admin/PurposeStatementPanel.tsx
+msgctxt "PurposeStatementPanel, what the save bar saves"
+msgid "the purpose statement"
+msgstr "the purpose statement"
 
 #: client/src/pages/Decision.tsx
 msgctxt "Decision, p"
@@ -8337,6 +8342,11 @@ msgstr "Base URL, like https://openrouter.ai/api/v1"
 msgctxt "coming up, the seed drawing"
 msgid "{filled, plural, one {Seed of Life, # of seven circles filled} other {Seed of Life, # of seven circles filled}}"
 msgstr "{filled, plural, one {Seed of Life, # of seven circles filled} other {Seed of Life, # of seven circles filled}}"
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: what the save bar saves"
+msgid "your words for things"
+msgstr "your words for things"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "Ask the village for one copy of its database"
@@ -10915,9 +10925,9 @@ msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
 #: client/src/components/admin/MenuPanel.tsx
-msgctxt "admin menu: while it saves"
-msgid "Saving…"
-msgstr "Saving…"
+#~ msgctxt "admin menu: while it saves"
+#~ msgid "Saving…"
+#~ msgstr "Saving…"
 
 #: client/src/pages/Crowdpool.tsx
 msgctxt "Crowdpool, p"
@@ -13359,6 +13369,11 @@ msgctxt "Stay, button"
 msgid "Request a stay"
 msgstr "Request a stay"
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "ArchetypesPanel, what the save bar saves"
+msgid "the character classes"
+msgstr "the character classes"
+
 #: client/src/components/openProposal/ContractPrice.tsx
 msgctxt "open proposal: where the contract's pay comes from"
 msgid "From our counter-offer on the price, at {pct}% commitment."
@@ -14678,9 +14693,9 @@ msgid "The conflict agreement"
 msgstr "The conflict agreement"
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
-msgctxt "admin notices: the save button"
-msgid "Save the notice words"
-msgstr "Save the notice words"
+#~ msgctxt "admin notices: the save button"
+#~ msgid "Save the notice words"
+#~ msgstr "Save the notice words"
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, label"
@@ -21073,9 +21088,9 @@ msgid "Feedback"
 msgstr "Feedback"
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
-msgctxt "admin notices: while it saves"
-msgid "Saving…"
-msgstr "Saving…"
+#~ msgctxt "admin notices: while it saves"
+#~ msgid "Saving…"
+#~ msgstr "Saving…"
 
 #: client/src/components/LookPanel.tsx
 msgctxt "LookPanel, aria-label"
@@ -21642,8 +21657,8 @@ msgid "Posting and answering introductions opens at the member stage, or during 
 msgstr "Posting and answering introductions opens at the member stage, or during an active stay. The board below is yours to read meanwhile."
 
 #: client/src/components/admin/VocabularyPanel.tsx
-msgid "Your words are saved. Pages show them from the next page a member opens."
-msgstr "Your words are saved. Pages show them from the next page a member opens."
+#~ msgid "Your words are saved. Pages show them from the next page a member opens."
+#~ msgstr "Your words are saved. Pages show them from the next page a member opens."
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -21930,6 +21945,11 @@ msgstr "Could not reach the server"
 msgctxt "a request timed out"
 msgid "That took too long. Check your connection and try again."
 msgstr "That took too long. Check your connection and try again."
+
+#: client/src/components/admin/PurposeStatementPanel.tsx
+msgctxt "PurposeStatementPanel, refused"
+msgid "The statement was not saved"
+msgstr "The statement was not saved"
 
 #: client/src/components/EmailFromVillage.tsx
 msgctxt "EmailFromVillage, h3"
@@ -22347,6 +22367,11 @@ msgstr "Confirm received"
 #~ msgctxt "open proposal confirmed step"
 #~ msgid "We write to you with what comes next."
 #~ msgstr "We write to you with what comes next."
+
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "IdentityPackPanel, what the save bar saves"
+msgid "the identity pack"
+msgstr "the identity pack"
 
 #. placeholder {0}: a.status
 #: client/src/components/admin/PortalVisitorsTab.tsx
@@ -23332,8 +23357,8 @@ msgid "For your taxes or books:"
 msgstr "For your taxes or books:"
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
-msgid "Saved. New notices carry these words."
-msgstr "Saved. New notices carry these words."
+#~ msgid "Saved. New notices carry these words."
+#~ msgstr "Saved. New notices carry these words."
 
 #: client/src/components/roleEdit/CharacterTags.tsx
 #~ msgctxt "role editor characters"
@@ -25518,9 +25543,9 @@ msgid "Add a category"
 msgstr "Add a category"
 
 #: client/src/components/admin/VocabularyPanel.tsx
-msgctxt "admin identity: save the nouns"
-msgid "Save your words"
-msgstr "Save your words"
+#~ msgctxt "admin identity: save the nouns"
+#~ msgid "Save your words"
+#~ msgstr "Save your words"
 
 #: client/src/components/ProfileJourney.tsx
 msgctxt "ProfileJourney, p"
@@ -27937,9 +27962,9 @@ msgid "{0}, percent of the total"
 msgstr "{0}, percent of the total"
 
 #: client/src/components/admin/MenuPanel.tsx
-msgctxt "admin menu: the save button"
-msgid "Save the menu"
-msgstr "Save the menu"
+#~ msgctxt "admin menu: the save button"
+#~ msgid "Save the menu"
+#~ msgstr "Save the menu"
 
 #: client/src/pages/Home.tsx
 #~ msgctxt "landing hero second act"
@@ -28364,9 +28389,9 @@ msgid "Automated email is paused"
 msgstr "Automated email is paused"
 
 #: client/src/components/IdentityPackPanel.tsx
-msgctxt "IdentityPackPanel, toast"
-msgid "Reference added. Remember to save"
-msgstr "Reference added. Remember to save"
+#~ msgctxt "IdentityPackPanel, toast"
+#~ msgid "Reference added. Remember to save"
+#~ msgstr "Reference added. Remember to save"
 
 #: client/src/pages/Places.tsx
 msgctxt "Places, aria-label"
@@ -30680,6 +30705,11 @@ msgctxt "VillageHealth, h1"
 msgid "Village Health"
 msgstr "Village Health"
 
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: volume refused"
+msgid "The volume did not save."
+msgstr "The volume did not save."
+
 #: client/src/components/admin/MintDesk.tsx
 msgid "Recorded. Awaiting a second steward's sign-off"
 msgstr "Recorded. Awaiting a second steward's sign-off"
@@ -30731,9 +30761,9 @@ msgid "CTA Label"
 msgstr "CTA Label"
 
 #: client/src/components/IdentityPackPanel.tsx
-msgctxt "IdentityPackPanel, toast"
-msgid "Identity pack saved"
-msgstr "Identity pack saved"
+#~ msgctxt "IdentityPackPanel, toast"
+#~ msgid "Identity pack saved"
+#~ msgstr "Identity pack saved"
 
 #: client/src/components/admin/VocabularyPanel.tsx
 msgid "What your village calls each of these. Blank keeps the platform's word, and a blank plural is worked out from the word. Page words can use them as {circle}, {circles} and so on."
@@ -39972,6 +40002,11 @@ msgctxt "member door choice"
 msgid "Which roles are you proposing for?"
 msgstr "Which roles are you proposing for?"
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: what the save bar saves"
+msgid "the notice words"
+msgstr "the notice words"
+
 #: client/src/pages/Forum.tsx
 msgctxt "Forum, p"
 msgid "Conversations, questions, and the decisions we make together."
@@ -41284,6 +41319,11 @@ msgctxt "privacy settings: a switch"
 msgid "Show what I have borrowed and booked"
 msgstr "Show what I have borrowed and booked"
 
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: what the save bar saves"
+msgid "the sounds volume"
+msgstr "the sounds volume"
+
 #: client/src/components/pay/ReceivePanel.tsx
 msgctxt "pay page, receive, the amount asked"
 msgid "Asking for {amount} {tokenName}"
@@ -42561,8 +42601,8 @@ msgid "A percentage here is a share of the members on the roll. This screen does
 msgstr "A percentage here is a share of the members on the roll. This screen does not count them: the roll is counted on the Village Health page, and a second count taken here could disagree with the one the village measures against."
 
 #: client/src/components/admin/MenuPanel.tsx
-msgid "The menu is saved. Members see it on their next page."
-msgstr "The menu is saved. Members see it on their next page."
+#~ msgid "The menu is saved. Members see it on their next page."
+#~ msgstr "The menu is saved. Members see it on their next page."
 
 #: client/src/components/NeedCard.tsx
 msgctxt "NeedCard, p"
@@ -43826,6 +43866,11 @@ msgstr "Decline"
 msgctxt "SaberraBridgeBoard, title"
 msgid "Data agreement"
 msgstr "Data agreement"
+
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "IdentityPackPanel, toast"
+msgid "Reference added. Save it from the bar at the bottom."
+msgstr "Reference added. Save it from the bar at the bottom."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application keys"
@@ -53389,9 +53434,9 @@ msgid "Pull again"
 msgstr "Pull again"
 
 #: client/src/components/admin/VocabularyPanel.tsx
-msgctxt "admin identity: while the nouns save"
-msgid "Saving…"
-msgstr "Saving…"
+#~ msgctxt "admin identity: while the nouns save"
+#~ msgid "Saving…"
+#~ msgstr "Saving…"
 
 #: client/src/components/governance/HandOverPowers.tsx
 msgctxt "HandOverPowers, span"
@@ -54742,6 +54787,11 @@ msgstr "{linked} of {0} members linked{1}."
 msgctxt "JourneyView, li"
 msgid "{0} planted, not proven<0>A value is set. Only a live check can say it works.</0>"
 msgstr "{0} planted, not proven<0>A value is set. Only a live check can say it works.</0>"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: what the save bar saves"
+msgid "the menu"
+msgstr "the menu"
 
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: what holds now"
