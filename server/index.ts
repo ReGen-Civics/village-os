@@ -1,5 +1,6 @@
 import { anonymizeMember, backfillFinishedErasures, erasureBackfillJob } from "./lib/erasure";
 import { backfillSeasonGoalIds, SEASON_GOAL_ID_BACKFILL } from "./lib/seasonGoalIds";
+import { backfillConnectorOutcomes, CONNECTOR_OUTCOME_BACKFILL } from "./lib/suggestionOutcome";
 import { markNameFreeJournalLinesPublic } from "./repos/orgSeatErasure";
 import { leftTheVillage, withoutFormerMembers } from "./lib/formerMember";
 import { proposalsAboutMember } from "./lib/externalProposals";
@@ -26037,6 +26038,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
   void runOnce(SEASON_GOAL_ID_BACKFILL, async () => {
     const { words, rows } = await backfillSeasonGoalIds(getPool());
     console.log(`[startup] season goal ids: ${rows} link(s) across ${words} goal text(s)`);
+  });
+  // 0432: what people already decided on proposed changes, as outcomes the review engine reads. After listen for
+  // 0298's reason; idempotent by its ids (server/lib/suggestionOutcome.ts), so runOnce is a saving, not a guard.
+  void runOnce(CONNECTOR_OUTCOME_BACKFILL, async () => {
+    const { written, skipped } = await backfillConnectorOutcomes(getPool());
+    console.log(`[startup] suggestion outcomes: ${written} past decision(s) recorded, ${skipped} left out`);
   });
   /*
    * /health's orphan count, measured once per boot (page speed pass, 14 Nov
