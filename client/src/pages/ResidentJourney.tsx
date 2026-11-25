@@ -268,11 +268,8 @@ export default function ResidentJourney() {
       {page && !page.tenure.hidden && (
       <section className="py-16 bg-muted">
         <div className="container">
-          <m.div
-            className="max-w-3xl mx-auto text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-3xl mx-auto text-center"
           >
             <Key className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
             <h2 lang={langOf("tenure.heading")} className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-4 break-words">
@@ -281,7 +278,7 @@ export default function ResidentJourney() {
             <p lang={langOf("tenure.body")} className="text-muted-foreground">
               <Emphasized text={page.tenure.fields.body} />
             </p>
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -290,11 +287,8 @@ export default function ResidentJourney() {
       {page && steps && (
       <section id="home-path" className="scroll-mt-20 py-20 bg-background">
         <div className="container">
-          <m.div
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ text-center mb-8"
           >
             <h2 lang={langOf("steps.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.steps.fields.heading}
@@ -315,7 +309,7 @@ export default function ResidentJourney() {
                 <Trans context="ResidentJourney, p">{progress.doneCount} of {progress.total} steps completed
               </Trans></p>
             </div>
-          </m.div>
+          </div>
 
           <div className="max-w-3xl mx-auto">
             <div className="space-y-3">
@@ -329,13 +323,9 @@ export default function ResidentJourney() {
                 const action = buttonAction(step.actionLabel, step.actionTarget, targets);
 
                 return (
-                  <m.div
+                  <div
                     key={`${index}-${step.title}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.03 }}
-                    className={`bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
+                    className={`m-germ bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
                       isCompleted ? "border-l-4 border-notice" : "border-l-4 border-transparent hover:border-notice/50"
                     }`}
                   >
@@ -439,7 +429,7 @@ export default function ResidentJourney() {
                         </m.div>
                       )}
                     </AnimatePresence>
-                  </m.div>
+                  </div>
                 );
               })}
             </div>
@@ -454,11 +444,8 @@ export default function ResidentJourney() {
       {page && !page.titles.hidden && (
       <section className="py-20 bg-card text-foreground">
         <div className="container">
-          <m.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ text-center mb-12"
           >
             <h2 lang={langOf("titles.heading")} className="font-display text-3xl md:text-4xl font-semibold mb-4 break-words">
               {page.titles.fields.heading}
@@ -466,18 +453,14 @@ export default function ResidentJourney() {
             <p lang={langOf("titles.body")} className="text-muted-foreground max-w-2xl mx-auto">
               <Emphasized text={page.titles.fields.body} />
             </p>
-          </m.div>
+          </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {page.titles.lists.items.map((level, index) => {
               return (
-              <m.div
+              <div
                 key={`${index}-${level.level}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-muted border border-border p-6 rounded-xl text-center min-w-0"
+                className="m-germ bg-muted border border-border p-6 rounded-xl text-center min-w-0"
               >
                 {/* TREE RINGS (the prune, wave 2, C4): a title for time here grows a ring, never a badge
                     or a crown. Quiet, never compared, and nothing reads a member's years. */}
@@ -499,7 +482,7 @@ export default function ResidentJourney() {
                 <p className="text-foreground text-sm break-words">
                   {level.description}
                 </p>
-              </m.div>
+              </div>
               );
             })}
           </div>
@@ -511,11 +494,8 @@ export default function ResidentJourney() {
       {page && !page.dues.hidden && (
       <section className="py-20 bg-card">
         <div className="container">
-          <m.div
-            className="max-w-3xl mx-auto text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-3xl mx-auto text-center"
           >
             <h2 lang={langOf("dues.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.dues.fields.heading}
@@ -540,7 +520,7 @@ export default function ResidentJourney() {
                 <ArrowRight className="w-4 h-4" />
               </JourneyLink>
             )}
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -549,11 +529,8 @@ export default function ResidentJourney() {
       {page && !page.rights.hidden && (
       <section className="py-16 bg-background">
         <div className="container">
-          <m.div
-            className="max-w-3xl mx-auto text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-3xl mx-auto text-center"
           >
             <h2 lang={langOf("rights.heading")} className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 break-words">
               {page.rights.fields.heading}
@@ -562,7 +539,7 @@ export default function ResidentJourney() {
               <Emphasized text={page.rights.fields.body} />
             </p>
             <BandButton section={page.rights} targets={targets} />
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -571,11 +548,8 @@ export default function ResidentJourney() {
       {page && !page.nextStep.hidden && (
       <section className="py-20 bg-muted">
         <div className="container">
-          <m.div
-            className="max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-2xl mx-auto text-center"
           >
             <h2 lang={langOf("nextStep.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.nextStep.fields.heading}
@@ -584,7 +558,7 @@ export default function ResidentJourney() {
               <Emphasized text={page.nextStep.fields.body} />
             </p>
             <BandButton section={page.nextStep} targets={targets} icon />
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -595,11 +569,8 @@ export default function ResidentJourney() {
       {page && !page.closing.hidden && (
       <section className="py-20 bg-background">
         <div className="container">
-          <m.div
-            className="max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-2xl mx-auto text-center"
           >
             <Sprout className="w-12 h-12 text-open mx-auto mb-6" aria-hidden="true" />
             <h2 lang={langOf("closing.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
@@ -624,7 +595,7 @@ export default function ResidentJourney() {
                 </JourneyLink>
               )}
             </div>
-          </m.div>
+          </div>
         </div>
       </section>
       )}

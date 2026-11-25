@@ -6,6 +6,7 @@ import QuietLoading from "@/components/natural/QuietLoading";
 import { useLingui } from "@lingui/react/macro";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { LazyMotion, MotionConfig } from "framer-motion";
+import { LucideProvider } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -572,6 +573,10 @@ function App() {
        * run `repeat: Infinity` and never stopped for anyone.
        */}
       <MotionConfig reducedMotion="user">
+      {/* One line weight for every icon: the stock ones drawn at the living glyphs' 1.5
+          (components/sacred), so a row of the two reads as one family (QA, 25 Nov 2026).
+          An icon that names its own strokeWidth keeps it. */}
+      <LucideProvider strokeWidth={1.5}>
       <LazyMotion features={loadMotionFeatures}>
         <AuthProvider>
         {/* The visitor's language, before any page renders (internal spec i18n, US1). */}
@@ -592,6 +597,7 @@ function App() {
         </LocaleRoot>
         </AuthProvider>
       </LazyMotion>
+      </LucideProvider>
       </MotionConfig>
     </ThemeProvider>
   );

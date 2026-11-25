@@ -5,7 +5,6 @@ import MapPeek from "@/components/MapPeek";
 import { useFourWaysHeading, useRouteWords, useVentureHref } from "@/components/ContributorRoutes";
 import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { Link } from "wouter";
-import { m } from "framer-motion";
 import {
   Home as HomeIcon,
   ArrowRight,
@@ -383,12 +382,8 @@ export default function Home() {
               const Icon = STAGE_ICONS[index % STAGE_ICONS.length];
               return (
               <div key={`${index}-${item.name}`} className="flex items-center">
-                <m.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex flex-col items-center px-6 py-4"
+                <div
+                  className="m-germ flex flex-col items-center px-6 py-4"
                 >
                   <span className={`${RING} mb-3 size-14`} aria-hidden="true">
                     <Icon className="w-6 h-6" />
@@ -399,7 +394,7 @@ export default function Home() {
                   <span className="text-sm text-muted-foreground">
                     {item.description}
                   </span>
-                </m.div>
+                </div>
                 {index < all.length - 1 && (
                   <ArrowRight aria-hidden="true" className="w-5 h-5 text-muted-foreground hidden md:block" />
                 )}
@@ -421,44 +416,30 @@ export default function Home() {
       <section className="py-24">
         <div className="container">
           <div className="text-center mb-16">
-            <m.span lang={langOf("personas.eyebrow")}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className={`mb-4 inline-block ${EYEBROW}`}
+            <span lang={langOf("personas.eyebrow")}
+              className={`m-germ mb-4 inline-block ${EYEBROW}`}
             >
               {personas.fields.eyebrow}
-            </m.span>
-            <m.h2 lang={langOf("personas.heading")}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="font-display text-4xl md:text-5xl text-foreground mb-4"
+            </span>
+            <h2 lang={langOf("personas.heading")}
+              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-4"
             >
               {personas.fields.heading}
-            </m.h2>
-            <m.p lang={langOf("personas.intro")}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-xl text-muted-foreground max-w-2xl mx-auto"
+            </h2>
+            <p lang={langOf("personas.intro")}
+              className="m-germ text-xl text-muted-foreground max-w-2xl mx-auto"
             >
               <Emphasized text={personas.fields.intro} />
-            </m.p>
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {personas.lists.items.map((persona, index) => {
               const look = PERSONA_LOOKS[index % PERSONA_LOOKS.length];
               return (
-              <m.div
+              <div
                 key={`${index}-${persona.label}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.07 }}
-                className="bg-card rounded-xl p-6 shadow-sm border border-border"
+                className="m-germ bg-card rounded-xl p-6 shadow-sm border border-border"
               >
                 <span className={`${RING} mb-4`} aria-hidden="true">
                   <look.icon className="w-5 h-5" />
@@ -474,7 +455,7 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {persona.body}
                 </p>
-              </m.div>
+              </div>
               );
             })}
           </div>
@@ -505,29 +486,18 @@ export default function Home() {
       <section className="border-t border-border/60 bg-card/40 py-24">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
-            <m.h2 lang={langOf("cta.heading")}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="font-display text-4xl md:text-5xl text-foreground mb-6"
+            <h2 lang={langOf("cta.heading")}
+              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-6"
             >
               {cta.fields.heading}
-            </m.h2>
-            <m.p lang={langOf("cta.body")}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-xl text-muted-foreground mb-8"
+            </h2>
+            <p lang={langOf("cta.body")}
+              className="m-germ text-xl text-muted-foreground mb-8"
             >
               <Emphasized text={cta.fields.body} />
-            </m.p>
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-wrap justify-center gap-4"
+            </p>
+            <div
+              className="m-germ flex flex-wrap justify-center gap-4"
             >
               {eventsUrl && (
                 <a
@@ -550,7 +520,7 @@ export default function Home() {
                   {cta.fields.secondaryLabel}
                 </a>
               )}
-            </m.div>
+            </div>
           </div>
         </div>
       </section>

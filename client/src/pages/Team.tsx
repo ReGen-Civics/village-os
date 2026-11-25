@@ -186,11 +186,8 @@ export default function Team() {
 
           {/* Leadership */}
           <div className="mb-20">
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
+            <div
+              className="m-germ text-center mb-12"
             >
               <h2 className={`font-display text-3xl font-bold text-foreground mb-4 break-words${page ? "" : " invisible"}`}>
                 {page?.leadership.fields.heading || "\u00a0"}
@@ -199,7 +196,7 @@ export default function Team() {
                 <Trans context="Team, p">The full circle of roles, filled and open, lives on the{" "}
                 <Link href="/roles" className="text-open font-medium hover:underline">Roles &amp; Circles page</Link>.
               </Trans></p>
-            </m.div>
+            </div>
 
             {/* Members-only people: say so, with the counts that stay public.
                 Without this the grid below simply renders short and a visitor
@@ -265,11 +262,8 @@ export default function Team() {
             {/* Said only while a role really is open: counted from /api/org,
                 whose seat counts every reader gets. */}
             {page && seatCounts.open > 0 && (
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-center mt-10"
+            <div
+              className="m-germ text-center mt-10"
             >
               {page.leadership.fields.openNote && (
               <p lang={langOf("leadership.openNote")} className="text-muted-foreground text-sm max-w-xl mx-auto mb-4 break-words">
@@ -279,7 +273,7 @@ export default function Team() {
               <Link href="/roles" className="inline-flex items-center gap-2 text-open font-semibold hover:underline">
                 {page.leadership.fields.openLink} <ArrowRight className="w-4 h-4" />
               </Link>
-            </m.div>
+            </div>
             )}
           </div>
 
@@ -288,11 +282,8 @@ export default function Team() {
               lines, so a village that has no council never shows an empty
               box claiming one. */}
           {page && !page.advisory.hidden && page.advisory.lists.items.length > 0 && (
-          <m.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
+          <div
+            className="m-germ bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center mb-10">
               <h2 lang={langOf("advisory.heading")} className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -304,17 +295,13 @@ export default function Team() {
             </div>
             <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-8">
               {page.advisory.lists.items.map((item, index) => (
-                <m.div
+                <div
                   key={`${index}-${item.text}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex gap-3 items-start"
+                  className="m-germ flex gap-3 items-start"
                 >
                   <span className="text-notice font-bold text-lg flex-shrink-0">✦</span>
                   <p className="text-muted-foreground min-w-0 break-words">{item.text}</p>
-                </m.div>
+                </div>
               ))}
             </div>
             {page.advisory.fields.terms && (
@@ -322,16 +309,13 @@ export default function Team() {
               <Emphasized text={page.advisory.fields.terms} />
             </p>
             )}
-          </m.div>
+          </div>
           )}
 
           {/* Board: drawn once it has a column, the same rule as the council. */}
           {page && !page.board.hidden && page.board.lists.columns.length > 0 && (
-          <m.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
+          <div
+            className="m-germ bg-card rounded-2xl p-6 sm:p-8 md:p-12 border border-border mb-20"
           >
             <div className="text-center">
               <h2 lang={langOf("board.heading")} className="font-display text-3xl font-bold text-foreground mb-4 break-words">
@@ -353,16 +337,13 @@ export default function Team() {
                 ))}
               </div>
             </div>
-          </m.div>
+          </div>
           )}
 
           {/* CTA */}
           {page && !page.cta.hidden && (
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mt-16 bg-card p-6 sm:p-8 rounded-2xl border border-border"
+          <div
+            className="m-germ text-center mt-16 bg-card p-6 sm:p-8 rounded-2xl border border-border"
           >
             <h2 lang={langOf("cta.heading")} className="font-display text-2xl font-bold text-foreground mb-4 break-words">
               {page.cta.fields.heading}
@@ -389,7 +370,7 @@ export default function Team() {
                 </a>
               )}
             </div>
-          </m.div>
+          </div>
           )}
         </div>
       </section>

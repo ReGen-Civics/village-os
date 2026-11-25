@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CircleDot } from "lucide-react";
-import { Canopy, MushroomNetwork, SeedPod, TreeCrown } from "@/components/sacred/living";
+import { Canopy, CellRing, MushroomNetwork, SeedPod, TreeCrown } from "@/components/sacred/living";
 import { iconFor, knowsIcon } from "./circleIcons";
 
 describe("iconFor", () => {
@@ -20,9 +19,10 @@ describe("iconFor", () => {
   });
 
   it("falls back to a plain dot for a missing or unknown name", () => {
-    expect(iconFor(null)).toBe(CircleDot);
-    expect(iconFor("")).toBe(CircleDot);
-    expect(iconFor("NotAnIcon")).toBe(CircleDot);
+    // The circles' own mark, the ring of cells (QA, 25 Nov 2026), in place of the stock dot.
+    expect(iconFor(null)).toBe(CellRing);
+    expect(iconFor("")).toBe(CellRing);
+    expect(iconFor("NotAnIcon")).toBe(CellRing);
     expect(knowsIcon("NotAnIcon")).toBe(false);
   });
 });

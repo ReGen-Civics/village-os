@@ -209,11 +209,8 @@ export default function ProsperityJourney() {
       <section className="py-16 bg-muted">
         <div className="container">
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center min-w-0"
+            <div
+              className="m-germ text-center min-w-0"
             >
               <Heart className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
               <h2 lang={langOf("economy.firstHeading")} className="font-display text-xl font-semibold text-foreground mb-3 break-words">
@@ -224,14 +221,10 @@ export default function ProsperityJourney() {
                     what a token does; token row 27). */}
                 <Emphasized text={page.economy.fields.firstBody} />
               </p>
-            </m.div>
+            </div>
 
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-center min-w-0"
+            <div
+              className="m-germ text-center min-w-0"
             >
               <MushroomNetwork className="w-12 h-12 text-notice mx-auto mb-4" aria-hidden="true" />
               <h2 lang={langOf("economy.secondHeading")} className="font-display text-xl font-semibold text-foreground mb-3 break-words">
@@ -240,7 +233,7 @@ export default function ProsperityJourney() {
               <p lang={langOf("economy.secondBody")} className="text-muted-foreground text-sm break-words">
                 <Emphasized text={page.economy.fields.secondBody} />
               </p>
-            </m.div>
+            </div>
           </div>
         </div>
       </section>
@@ -250,11 +243,8 @@ export default function ProsperityJourney() {
       {page && steps && (
       <section className="py-20 bg-background">
         <div className="container">
-          <m.div
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ text-center mb-8"
           >
             <h2 lang={langOf("steps.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.steps.fields.heading}
@@ -276,7 +266,7 @@ export default function ProsperityJourney() {
                 <Trans context="ProsperityJourney, p">{progress.doneCount} of {progress.total} steps completed
               </Trans></p>
             </div>
-          </m.div>
+          </div>
 
           <div className="max-w-3xl mx-auto">
             <div className="space-y-3">
@@ -287,13 +277,9 @@ export default function ProsperityJourney() {
                 const action = act(step.actionLabel, step.actionTarget);
 
                 return (
-                  <m.div
+                  <div
                     key={`${index}-${step.title}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
+                    className={`m-germ bg-card rounded-xl shadow-sm overflow-hidden transition-all ${
                       isCompleted ? "border border-l-4 border-border border-l-notice" : "border border-l-4 border-border border-l-transparent hover:border-l-notice/50"
                     }`}
                   >
@@ -404,7 +390,7 @@ export default function ProsperityJourney() {
                         </m.div>
                       )}
                     </AnimatePresence>
-                  </m.div>
+                  </div>
                 );
               })}
             </div>
@@ -418,11 +404,8 @@ export default function ProsperityJourney() {
       {page && !page.tiers.hidden && (
       <section id="ari-tiers" className="py-20 bg-card">
         <div className="container">
-          <m.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ text-center mb-12"
           >
             <h2 lang={langOf("tiers.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.tiers.fields.heading}
@@ -430,17 +413,13 @@ export default function ProsperityJourney() {
             <p lang={langOf("tiers.intro")} className="text-muted-foreground max-w-2xl mx-auto">
               <Emphasized text={page.tiers.fields.intro} />
             </p>
-          </m.div>
+          </div>
 
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {page.tiers.lists.items.map((tier, index) => (
-              <m.div
+              <div
                 key={`${index}-${tier.tier}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-muted p-6 rounded-xl shadow-sm border-2 ${TIER_COLORS[index % TIER_COLORS.length]} min-w-0`}
+                className={`m-germ bg-muted p-6 rounded-xl shadow-sm border-2 ${TIER_COLORS[index % TIER_COLORS.length]} min-w-0`}
               >
                 <h3 className="font-display text-2xl font-semibold mb-2 break-words">
                   {tier.tier}
@@ -462,7 +441,7 @@ export default function ProsperityJourney() {
                     ))}
                   </ul>
                 </div>
-              </m.div>
+              </div>
             ))}
           </div>
         </div>
@@ -476,11 +455,8 @@ export default function ProsperityJourney() {
       {page && !page.packet.hidden && (
       <section id={PACKET_ANCHOR} className="scroll-mt-24 py-20 bg-muted" data-packet-band="">
         <div className="container">
-          <m.div
-            className="max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-2xl mx-auto text-center"
           >
             <h2 lang={langOf("packet.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
               {page.packet.fields.heading}
@@ -495,7 +471,7 @@ export default function ProsperityJourney() {
               </JourneyLink>
             ) : null}
             <PacketRequestForm />
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -504,11 +480,8 @@ export default function ProsperityJourney() {
       {page && !page.closing.hidden && (closingPrimary || closingSecondary) && (
       <section className="py-20 bg-background">
         <div className="container">
-          <m.div
-            className="max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+          <div
+            className="m-germ max-w-2xl mx-auto text-center"
           >
             <Sprout className="w-12 h-12 text-open mx-auto mb-6" aria-hidden="true" />
             <h2 lang={langOf("closing.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
@@ -531,7 +504,7 @@ export default function ProsperityJourney() {
                 </JourneyLink>
               )}
             </div>
-          </m.div>
+          </div>
         </div>
       </section>
       )}

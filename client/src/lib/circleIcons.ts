@@ -43,7 +43,7 @@ import {
   TreePine,
   type LucideIcon,
 } from "lucide-react";
-import { Bloom, Canopy, Cell, MushroomNetwork, Pines, Seed, SeedPod, SunLeaf, TendingHands, TreeCrown, WovenBasket } from "@/components/sacred/living";
+import { Bloom, Canopy, Cell, CellRing, MushroomNetwork, Pines, Seed, SeedPod, SunLeaf, TendingHands, TreeCrown, WovenBasket } from "@/components/sacred/living";
 
 const ICONS = {
   Baby, BookOpen, Briefcase: WovenBasket, Brush, Building, Building2, Calendar, Camera, ChefHat, CircleDot,
@@ -71,7 +71,7 @@ export function knowsIcon(name: string | null | undefined): boolean {
   return !!name && BY_KEY.has(keyOf(name));
 }
 
-/** The icon for a stored name; anything unknown or missing draws `CircleDot`. */
+/** The icon for a stored name; anything unknown or missing draws the ring of cells, the circles' own mark (QA, 25 Nov 2026). */
 export function iconFor(name: string | null | undefined): LucideIcon {
-  return (name && BY_KEY.get(keyOf(name))) || CircleDot;
+  return (name && BY_KEY.get(keyOf(name))) || CellRing;
 }

@@ -7,13 +7,12 @@ import { m } from "framer-motion";
 import {
   ArrowRight,
   Calendar,
-  Compass,
   Filter,
   Heart,
   Star,
   Sprout,
 } from "lucide-react";
-import { Gourd, GrowthRings, Seed, SeedGlint } from "@/components/sacred/living";
+import { Gourd, GrowthRings, Seed, SeedGlint, SteppingStones } from "@/components/sacred/living";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth, useOptionalAuth } from "@/contexts/AuthContext";
 import { fetchGameMe, QuestClaim, useGameConfig } from "@/lib/gameApi";
@@ -246,7 +245,8 @@ export default function Quests() {
             className="text-center mb-6"
           >
             <div className={`${RING} mx-auto mb-6 size-16`}>
-              <Compass className="size-7" aria-hidden="true" />
+              {/* The quests' one mark, the same the tab bar and the menus draw (QA, 25 Nov 2026). */}
+              <SteppingStones className="size-7" aria-hidden="true" />
             </div>
             <p className={EYEBROW}>{t({ message: "Quests", context: "open work board eyebrow" })}</p>
             <h1 className={`${H1} mb-4 mt-2`}>
@@ -566,13 +566,9 @@ export default function Quests() {
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {group.quests.map((quest, index) => (
-                    <m.div
+                    <div
                       key={quest.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: Math.min(index, 5) * 0.04 }}
-                      className="h-full"
+                      className="m-germ h-full"
                     >
                       <QuestCard
                         quest={quest}
@@ -583,7 +579,7 @@ export default function Quests() {
                         priority={gi === 0 && index === 0}
                         memberPct={memberPct}
                       />
-                    </m.div>
+                    </div>
                   ))}
                 </div>
               </div>
