@@ -5,7 +5,7 @@
 # Three jobs, since 2026-10-21 (Rye: "split the tests"):
 #
 #   verify          install, both typechecks, every guard, the build, the budgets
-#   test (i/N)      the vitest suite in N shards, each against its own MySQL
+#   test (i/N)      the vitest suite in N=6 shards, each against its own MySQL
 #   tests-ran-once  reads every shard's report back: each file once, all passed
 #
 # Each test shard builds before it tests: the e2e suites boot dist/index.js.
@@ -1261,7 +1261,13 @@ jobs:
   # from `strategy.job-total`, so a list and a --shards that disagree fail
   # tests-ran-once by name instead of passing with a shard unread.
   #
-  # Expanded job names are `test (1/4)` through `test (4/4)`.
+  # Expanded job names are `test (1/6)` through `test (6/6)`.
+  #
+  # SIX SHARDS since 2026-11-25. On the 1.3.66 batch run (45541740890) four
+  # shards took 10.8, 11.0, 16.9 and 11.1 minutes in Test, plus about a minute
+  # of build each, so the run was the slowest shard. Two more runners per run
+  # cut each shard's share of the files by a third; the timings were refreshed
+  # from that run at the same time (scripts/test-timings.json).
   #
   # WHAT EACH SHARD STILL GUARANTEES ON ITS OWN. `vitest run --shard=i/N` is a
   # WHOLE run as server/db/provisioningReport.ts reads argv (every argument is a
@@ -1283,7 +1289,7 @@ jobs:
       # a cut run, and the other shards' failures are facts worth having.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     services:
       # The same MySQL as `verify` above, for the same reasons: the
       # mirror.gcr.io pull-through cache (no credentials, no secret store that
@@ -1414,7 +1420,7 @@ jobs:
 
       - name: Every test file ran exactly once and passed
         if: ${{ !cancelled() }}
-        run: node scripts/check-test-shards.mjs --shards 4 --dir test-results
+        run: node scripts/check-test-shards.mjs --shards 6 --dir test-results
 
   # THE PAGES RENDER IN REAL BROWSERS (19 Nov 2026). Release 1.3.27 shipped a
   # page that crashed for every iOS Safari visitor of /propose-a-role while
