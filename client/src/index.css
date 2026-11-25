@@ -2116,7 +2116,8 @@ html:has(#sera-changes [data-sera-strip-on]) {
 /* Frozen light-page vocabulary the dark mode meets (QA audit, 24 Nov 2026):
    the brand's middle tone as text, and a gold fill whose text names the page's
    ink, which in dark mode is light. */
-:root[data-mode="dark"] :is(.text-teal-light, .text-sage):not(.admin-root *) {
+/* text-forest joined (whole-app QA, 25 Nov 2026): the guide's "Land Care" heading measured 1.03:1 on its remapped green tile. */
+:root[data-mode="dark"] :is(.text-teal-light, .text-sage, .text-forest):not(.admin-root *) {
   color: var(--sheet-living);
 }
 /* The brand's band colour as text (the welcome's "See the open quests" on a
