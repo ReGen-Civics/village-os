@@ -25,7 +25,7 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, EarthshipDome, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
+export { Cell, CellRing, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 
@@ -276,6 +276,15 @@ function HeartLeafDrawing(props: GlyphProps) {
     </Svg>
   );
 }
+/** A seed with its seam: an idea, something to plant. */
+function SeedDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M12 3.6c3.5 3.2 5 6.6 5 9.9s-2.2 6.7-5 6.7-5-3.3-5-6.7 1.5-6.7 5-9.9z" />
+      <path d="M12 8.2v8.6" />
+    </Svg>
+  );
+}
 /* The glyphs, each a drop-in for a lucide icon. */
 export const SeedPod = /* @__PURE__ */ asIcon("SeedPod", SeedPodDrawing);
 export const SeedPin = /* @__PURE__ */ asIcon("SeedPin", SeedPinDrawing);
@@ -301,3 +310,4 @@ export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", Mushroo
 export const Gathering = /* @__PURE__ */ asIcon("Gathering", GatheringDrawing);
 export const Sunrise = /* @__PURE__ */ asIcon("Sunrise", SunriseDrawing);
 export const HeartLeaf = /* @__PURE__ */ asIcon("HeartLeaf", HeartLeafDrawing);
+export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);

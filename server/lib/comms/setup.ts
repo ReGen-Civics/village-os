@@ -483,7 +483,13 @@ export async function commsReadiness(deps: GatherDeps): Promise<{ ready: boolean
 }
 
 /** The launch journey's three email rows, read from the same items the checklist shows. */
-export const LAUNCH_SETUP_KEYS = { sender: "sender", domain: "domain", "delivery-reports": "delivery-reports" } as const;
+/*
+ * The postal address joined these on 25 Nov 2026 (Admin evolution, launch-list
+ * fixes): mail cannot be ready without it and the comms module declares it a
+ * before-launch need, yet no launch row read it, so the journey said nothing
+ * while the checklist said "required".
+ */
+export const LAUNCH_SETUP_KEYS = { sender: "sender", domain: "domain", "delivery-reports": "delivery-reports", "postal-address": "postal-address" } as const;
 
 /** The whole checklist, built once, for a caller that reads several items from it. */
 export async function commsChecklist(deps: GatherDeps): Promise<SetupItem[]> {

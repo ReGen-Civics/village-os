@@ -1,0 +1,629 @@
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "What it does"
+msgstr "Qué hace"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Settling it releases what the cycle holds."
+msgstr "Cerrarlo libera lo que el ciclo guarda."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Something in it cannot be applied as the village stands, so it cannot be published yet."
+msgstr "Algo en él no se puede aplicar tal como está la aldea, así que todavía no se puede publicar."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Publish"
+msgstr "Publicar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Co-signing it lets the key be planted."
+msgstr "Firmarla también permite plantar la clave."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the edit"
+msgstr "Leer la edición"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "That did not go through. Reload and try again."
+msgstr "Eso no se completó. Recarga e inténtalo de nuevo."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A change request"
+msgstr "Una solicitud de cambio"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it puts it on the quest board."
+msgstr "Aprobarla la pone en el tablero de misiones."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Confirm"
+msgstr "Confirmar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Cash owed for work"
+msgstr "Efectivo adeudado por trabajo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Taking it makes it yours."
+msgstr "Aceptarla la hace tuya."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: kinds"
+msgid "What is waiting, by kind"
+msgstr "Lo que espera, por tipo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it closes the task."
+msgstr "Aceptarlo cierra la tarea."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A draft from the assistant"
+msgstr "Un borrador del asistente"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{n, plural, one {# change} other {# changes}}"
+msgstr "{n, plural, one {# cambio} other {# cambios}}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "An application for a role"
+msgstr "Una solicitud para un rol"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Paying it records the payment."
+msgstr "Pagarlo registra el pago."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Compare them"
+msgstr "Compararlas"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Feedback"
+msgstr "Comentarios"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A suggestion from Sera or an outside service"
+msgstr "Una sugerencia de Sera o de un servicio externo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Retry"
+msgstr "Reintentar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A proposal from outside the village"
+msgstr "Una propuesta de fuera de la aldea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the application"
+msgstr "Leer la solicitud"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Sending it is a person's act, on its own page."
+msgstr "Enviarla es un acto de una persona, en su propia página."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Published. The org chart has changed."
+msgstr "Publicado. El organigrama ha cambiado."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review the request"
+msgstr "Revisar la solicitud"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your vote counts toward the village's decision."
+msgstr "Tu voto cuenta para la decisión de la aldea."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it lets it go live."
+msgstr "Aprobarlo lo publica."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A suggested edit to something you hold"
+msgstr "Una edición sugerida a algo que sostienes"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put this draft to the village? A vote opens, and the village decides it."
+msgstr "¿Llevar este borrador a la aldea? Se abre una votación y la aldea lo decide."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review it"
+msgstr "Revisarla"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Decide it"
+msgstr "Decidirlo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Something an agent filed"
+msgstr "Algo que presentó un agente"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it puts it live on its page."
+msgstr "Aceptarlo lo publica en su página."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Reading it marks it seen."
+msgstr "Leerlo lo marca como visto."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put it to the village"
+msgstr "Llevarlo a la aldea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Erasures to retry"
+msgstr "Borrados por reintentar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A request to issue recognition"
+msgstr "Una solicitud para emitir reconocimiento"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Org chart drafts"
+msgstr "Borradores del organigrama"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "The village is voting on this draft."
+msgstr "La aldea está votando este borrador."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it closes it or turns it into work."
+msgstr "Responderla la cierra o la convierte en trabajo."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Publishing it changes the org chart now."
+msgstr "Publicarlo cambia el organigrama ahora."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Answer"
+msgstr "Responder"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Witness it"
+msgstr "Atestiguarlo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A place waiting for your vouch"
+msgstr "Un lugar que espera tu aval"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "An org chart draft"
+msgstr "Un borrador del organigrama"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Witnessing it records the work as done."
+msgstr "Atestiguarlo registra el trabajo como hecho."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review the recap"
+msgstr "Revisar el resumen"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A proposed change"
+msgstr "Un cambio propuesto"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Vouching for it puts it on the map."
+msgstr "Avalarlo lo pone en el mapa."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A change waiting on your approval"
+msgstr "Un cambio que espera tu aprobación"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, open the vote"
+msgstr "Sí, abrir la votación"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it turns it into a real change."
+msgstr "Aceptarlo lo convierte en un cambio real."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it issues it."
+msgstr "Aprobarla lo emite."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Co-sign"
+msgstr "Firmar también"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it adds it to the village."
+msgstr "Aceptarla la añade a la aldea."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the letter"
+msgstr "Leer la carta"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding gives them the power, or does not."
+msgstr "Decidir le da el poder, o no."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the payouts"
+msgstr "Abrir los pagos"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A tension raised with your role"
+msgstr "Una tensión planteada a tu rol"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the postings"
+msgstr "Abrir los registros"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A letter waiting to be read"
+msgstr "Una carta que espera ser leída"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "The village is voting on this draft. The vote closes {closes}."
+msgstr "La aldea está votando este borrador. La votación cierra el {closes}."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it moves it to its next stage."
+msgstr "Aprobarlo lo pasa a su siguiente etapa."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{n, plural, one {Publish this draft? Its one change goes onto the org chart now.} other {Publish this draft? Its # changes go onto the org chart now.}}"
+msgstr "{n, plural, one {¿Publicar este borrador? Su único cambio pasa al organigrama ahora.} other {¿Publicar este borrador? Sus # cambios pasan al organigrama ahora.}}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding answers the person who sent it."
+msgstr "Decidir responde a quien la envió."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Posting it gives the recognition."
+msgstr "Registrarlo otorga el reconocimiento."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A place where Sera's memory differs from the village"
+msgstr "Un punto donde la memoria de Sera difiere de la aldea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read and decide"
+msgstr "Leer y decidir"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A task handed to you"
+msgstr "Una tarea que te pasaron"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A member asking to hold a power"
+msgstr "Un miembro que pide sostener un poder"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A vote"
+msgstr "Una votación"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Done work to accept"
+msgstr "Trabajo hecho por aceptar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Decide what you can on its row. The rest opens where it is decided."
+msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Decide lo que puedas en su fila. Lo demás se abre donde se decide."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Answer it"
+msgstr "Responderla"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Retrying finishes removing a member's data."
+msgstr "Reintentar termina de quitar los datos de un miembro."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding says which one is right."
+msgstr "Decidir dice cuál es la correcta."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, publish it"
+msgstr "Sí, publicarlo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Vouch"
+msgstr "Avalar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the proposal"
+msgstr "Leer la propuesta"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Vote"
+msgstr "Votar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A quest idea"
+msgstr "Una idea de misión"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the cycle"
+msgstr "Abrir el ciclo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A moon recap"
+msgstr "Un resumen de luna"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read and approve"
+msgstr "Leer y aprobar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read it"
+msgstr "Leerlo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your review moves it toward a vote."
+msgstr "Tu revisión la acerca a una votación."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A cycle to settle"
+msgstr "Un ciclo por cerrar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Give your answer"
+msgstr "Dar tu respuesta"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A consent round"
+msgstr "Una ronda de consentimiento"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it makes the edit."
+msgstr "Aceptarla hace la edición."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding answers the applicant."
+msgstr "Decidir responde a quien solicita."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the draft"
+msgstr "Leer el borrador"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A posting owed for finished work"
+msgstr "Un registro pendiente por trabajo terminado"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A key waiting for a second signature"
+msgstr "Una clave que espera una segunda firma"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Accept it"
+msgstr "Aceptarlo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it lets it go live. Seatings are listed in the order they arrived."
+msgstr "Aprobarlo lo publica. Las asignaciones se listan en el orden en que llegaron."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the idea"
+msgstr "Leer la idea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put to the village. A vote is open."
+msgstr "Llevado a la aldea. Hay una votación abierta."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your consent, or your objection, decides whether it goes ahead."
+msgstr "Tu consentimiento, o tu objeción, decide si sigue adelante."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Finished work"
+msgstr "Trabajo terminado"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Show everything"
+msgstr "Mostrar todo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Showing only {title}."
+msgstr "Solo se muestra: {title}."

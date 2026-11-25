@@ -41,6 +41,7 @@ import { authToken } from "@/lib/gameApi";
 import { useLingui, Trans } from "@lingui/react/macro";
 import VoiceArea from "@/components/voice/VoiceArea";
 import Sprout from "@/components/motion/Sprout";
+import { useModuleOn } from "@/modules/ModuleProvider";
 
 const FIELD =
   "w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -48,6 +49,8 @@ const FIELD =
 export default function RequestMembership() {
   const villageName = useVillageName();
   const { t } = useLingui();
+  // The calls doors open only while the calendar does (whole-app QA, 25 Nov 2026): events ships off.
+  const eventsOn = useModuleOn("events");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [why, setWhy] = useState("");
@@ -114,6 +117,8 @@ export default function RequestMembership() {
                 <Trans context="RequestMembership, p">Your request is with the people who look after joining {villageName}. Someone will write to you at{" "}
                 <span className="font-medium text-card-foreground break-words">{email.trim()}</span>.
               </Trans></p>
+              {eventsOn && (
+              <>
               <p className="mt-3 text-muted-foreground">
                 <Trans context="RequestMembership, p">The best way to get to know the village while you wait is to come along to a community call or an event.
               </Trans></p>
@@ -124,6 +129,8 @@ export default function RequestMembership() {
                 <Trans context="RequestMembership, a"><CalendarDays className="h-5 w-5" aria-hidden="true" />
                 See calls and events
               </Trans></a>
+              </>
+              )}
             </section>
           ) : (
             <>
@@ -223,6 +230,7 @@ export default function RequestMembership() {
                 </button>
               </form>
 
+              {eventsOn && (
               <p className="mt-6 text-center text-muted-foreground">
                 <Trans context="RequestMembership, p">Want to meet us first?{" "}
                 <a href="/events" className={LINK}>
@@ -230,6 +238,7 @@ export default function RequestMembership() {
                 </a>
                 .
               </Trans></p>
+              )}
               {/* Somebody who already knows the role they want can propose for it, no account needed (sheet 19i). */}
               <p className="mt-3 text-center text-muted-foreground">
                 <Trans context="RequestMembership, p">Know the role you'd take on next season?{" "}

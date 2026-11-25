@@ -470,18 +470,7 @@ export function DeliveryReportsEditor(props: EditorProps) {
             </button>
           </div>
           {w.configured && w.source === "admin" && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                if (window.confirm("Disconnect delivery reports? Reports Resend sends after this are refused until you connect again.")) {
-                  void save("/admin/comms/settings/webhook", "PUT", { secret: "" }, "Delivery reports disconnected");
-                }
-              }}
-              className={secondaryCls}
-            >
-              Disconnect
-            </button>
+            <p className="text-xs text-gray-500">To disconnect, use the danger zone at the foot of this page.</p>
           )}
         </div>
       )}
@@ -489,49 +478,3 @@ export function DeliveryReportsEditor(props: EditorProps) {
   );
 }
 
-// ── 13. A test email to yourself ────────────────────────────────────────────
-
-export function TestEmailEditor(props: EditorProps) {
-  const { data, password } = props;
-  const t = data.testEmail;
-  const [checking, setChecking] = useState(false);
-  const { busy, refused, save } = useSaver(props);
-
-  const send = async () => {
-    const r = await save("/admin/comms/settings/test", "POST", {}, "");
-    if (!r?.result) return;
-    if (r.result.status === "sent") toast.success("Sent. It counts once the delivery report arrives.");
-    else toast.error(`Not sent: ${r.result.reason ?? r.result.status}.`);
-  };
-  const check = async () => {
-    setChecking(true);
-    const r = await commsCall<SettingsPayload>("/admin/comms/settings", password);
-    setChecking(false);
-    if (r.ok) props.apply(r.data);
-  };
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-gray-600">
-        {data.me.email
-          ? `The test goes to ${data.me.email}, from the sender above.`
-          : "Sign in with your own account to send yourself a test."}{" "}
-        {t ? `The last one went to ${t.toEmail} on ${whenOf(t.createdAt)} and is ${t.delivered ? "delivered" : t.status}.` : ""}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={send} disabled={busy || !data.me.email} className={primaryCls}>
-          {busy ? "Sending..." : "Send me a test"}
-        </button>
-        {t && !t.delivered && (
-          <button type="button" onClick={check} disabled={checking} className={secondaryCls}>
-            {checking ? "Checking..." : "Check again"}
-          </button>
-        )}
-      </div>
-      {t && !t.delivered && t.status === "sent" && (
-        <p className="text-xs text-gray-500">Delivery reports usually arrive within a minute of the email.</p>
-      )}
-      <Refused text={refused} />
-    </div>
-  );
-}

@@ -95,7 +95,7 @@ describe("runIsFiltered", () => {
         "--reporter=default",
         "--reporter=github-actions",
         "--reporter=json",
-        "--outputFile.json=test-results/shard-2-of-4-attempt-1.json",
+        "--outputFile.json=test-results/shard-2-of-6-attempt-1.json",
       ]),
     ).toBe(false);
   });

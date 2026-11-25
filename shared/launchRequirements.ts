@@ -118,6 +118,32 @@ export interface LaunchRequirement {
 }
 
 /**
+ * WHETHER THE VILLAGE HAS A NAME OF ITS OWN (`brand-basics`).
+ *
+ * The name a page actually shows (`mergedConfig().project.name`), set and not
+ * the template's. It used to pass on an old Identity tick in the Setup Wizard
+ * with no name at all, so a village could clear a BLOCKING row while still
+ * introducing itself as the template (Admin evolution audit, 25 Nov 2026).
+ * Reading the shown name, not the brand overlay alone, keeps a fork that named
+ * itself in shared/gameConfig.ts counted as named.
+ */
+/**
+ * The name the platform's template ships with (shared/gameConfig.ts,
+ * `project.name`). Its own constant on purpose: a fork that names itself by
+ * editing gameConfig changes that value, and comparing against it would then
+ * call the fork unnamed.
+ */
+export const TEMPLATE_VILLAGE_NAME = "Unnamed Village";
+
+export function villageNameCheck(shown: string | null | undefined, templateName: string = TEMPLATE_VILLAGE_NAME): { state: "ok" | "missing"; detail: string } {
+  const name = String(shown ?? "").trim();
+  if (!name || name === templateName.trim()) {
+    return { state: "missing", detail: `This village still introduces itself as “${templateName}”. Give it its own name in Project Settings.` };
+  }
+  return { state: "ok", detail: `This village introduces itself as “${name}”` };
+}
+
+/**
  * WHETHER THE RECOGNITION TOKEN CARRIES THIS VILLAGE'S OWN WORD.
  *
  * The `brand-token-names` resolver, as a pure function, here rather than in
@@ -422,20 +448,23 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
      * this is missing. On 2026-10-02 a founder set it in the wrong shape and
      * every message said "not set"; the check's detail now names the shape.
      *
-     * RECOMMENDED, NEVER BLOCKING, because villages are already live. Nothing
-     * reads this list to decide whether a village IS launched: `launchedAt` is
-     * written once by the launch ballot and never derived from the checks.
-     * What a blocking row CAN do is hold `readyToLaunch` false, which closes
-     * the launch vote on a village that is running its Game without having
-     * held one yet. A recommended row moves only `recommendedOpen`, so adding
-     * it changes no village's launch state, and server/lib/
-     * launchSecretsKey.test.ts holds that against a launched village and an
-     * unlaunched one. Every key also still reads from its environment
-     * variable without this, so a village with no key loses the Admin screen
-     * and not a working integration.
+     * REQUIRED, AND CARRIED BY THE VOTE (the lead, 25 Nov 2026: "the secrets
+     * sealing key made REQUIRED in both registries"; the setup game already
+     * called it required). It was recommended, because a blocking row can hold
+     * `readyToLaunch` false and so close the launch vote on a village that is
+     * running its Game without having held one yet. `carriedByVote` keeps that
+     * promise: the row reads as required on the journey and counts in
+     * `blockingOpen`, and the launch vote may carry it open, exactly as
+     * `site-address` (FRONTEND_URL) is carried, because only the host can set
+     * it and the platform survives without it (every key still reads from its
+     * environment variable). Nothing reads this list to decide whether a
+     * village IS launched: `launchedAt` is written once by the launch ballot.
+     * server/lib/launchSecretsKey.test.ts holds both against a launched
+     * village and an unlaunched one.
      */
     why: "Every key saved under Integrations is locked with it, and until it is set that screen refuses to save one. Generate it with openssl rand -hex 32 and keep a copy in a password manager. On Railway, open the web service, then Variables, then New Variable: the name is VILLAGE_SECRETS_KEY and the value is only the 64 characters, with no quotes. Deploy, wait for Active, then save your keys.",
-    severity: "recommended",
+    severity: "blocking",
+    carriedByVote: true,
     checkKey: "village-secrets-key",
     fixAt: "/admin?tab=integrations",
     fixLabel: "Open Integrations",
@@ -472,6 +501,24 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     checkKey: "comms:sender",
     fixAt: "/admin?tab=comms-settings",
     fixLabel: "Open Comms Settings",
+    runbookAnchor: "resend",
+  },
+  {
+    id: "email-postal-address",
+    group: "reach",
+    title: "Give your email a postal address",
+    /*
+     * READ FROM THE MAIL CHECKLIST (item 5, server/lib/comms/setup.ts), like
+     * the sender and the domain above, so this row and Mail settings can never
+     * disagree. Required there, and declared a before-launch need by the comms
+     * module, it reached no launch row until 25 Nov 2026. Recommended, like
+     * every email row: a village that sends no bulk email needs none.
+     */
+    why: "Every email the village sends in bulk carries a postal address in its footer, the way a letter carries a return address. Mail settings will not count email as ready without one.",
+    severity: "recommended",
+    checkKey: "comms:postal-address",
+    fixAt: "/admin?tab=comms-settings&setting=comms.postal-address",
+    fixLabel: "Open Mail settings",
     runbookAnchor: "resend",
   },
   {

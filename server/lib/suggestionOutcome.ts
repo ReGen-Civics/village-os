@@ -22,6 +22,7 @@ import type { Pool } from "mysql2/promise";
 import { valueDigestOf } from "../../shared/suggestionPipeline/engine";
 import { aimOf, keysOfAim } from "../../shared/suggestionPipeline/keys";
 import type { StoredChange } from "../repos/proposedChanges";
+import type { StagedRow } from "../repos/suggestionStaging";
 import { listDecided } from "../repos/proposedChanges";
 import { recordOutcome, type Outcome, type OutcomeInput, type OutcomeLog } from "../repos/suggestionOutcomes";
 
@@ -31,7 +32,7 @@ export const DECIDED_BEFORE_0432 = "before-0432";
 /** The one row a decided change leaves. Its id is fixed by the change, so a second write of it is a no-op. */
 export function outcomeOfChange(
   c: Pick<StoredChange, "id" | "kind" | "target" | "body" | "proposedByKind" | "createdAt">,
-  outcome: Extract<Outcome, "accepted" | "edited" | "discarded">,
+  outcome: Extract<Outcome, "accepted" | "edited" | "discarded" | "other_chosen">,
   fieldsEdited: number,
   decidedBy: string,
   decidedAt: Date | string,
@@ -57,12 +58,38 @@ export function outcomeOfChange(
 export function recordChangeOutcome(
   pool: Pool,
   c: Parameters<typeof outcomeOfChange>[0],
-  outcome: Extract<Outcome, "accepted" | "edited" | "discarded">,
+  outcome: Extract<Outcome, "accepted" | "edited" | "discarded" | "other_chosen">,
   fieldsEdited: number,
   decidedBy: string,
   log?: OutcomeLog,
 ): Promise<boolean> {
   return recordOutcome(pool, outcomeOfChange(c, outcome, fieldsEdited, decidedBy, new Date()), log);
+}
+
+/**
+ * The row a person's act on a held suggestion leaves: cleared (`discarded`, which starts the discard window on what it
+ * proposed) or let through the window (`released`). Its id is fixed by the staged row and the act.
+ */
+export function recordStagedOutcome(pool: Pool, row: StagedRow, outcome: Extract<Outcome, "discarded" | "released">, decidedBy: string, log?: OutcomeLog): Promise<boolean> {
+  const s = row.staged;
+  return recordOutcome(
+    pool,
+    {
+      id: `${outcome === "released" ? "sgr" : "sgd"}_${s.id}`,
+      stream: s.stream,
+      sourceId: s.id,
+      kind: s.kind,
+      valueDigest: valueDigestOf({ kind: s.kind, target: s.target, body: s.body }),
+      keys: keysOfAim(aimOf(s.kind, s.target, s.body)),
+      proposerKind: row.filerKind,
+      outcome,
+      fieldsEdited: 0,
+      decidedByCapability: decidedBy,
+      filedAt: s.receivedAt,
+      decidedAt: new Date(),
+    },
+    log,
+  );
 }
 
 /** The run-once key for the backfill below. */

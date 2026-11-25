@@ -218,3 +218,38 @@ export function conflictCounts(conflicts: Record<string, ConflictWith[]>, stale:
   const staleN = Object.values(stale).filter((s) => !!s && s.length > 0).length;
   return { pairs, stale: staleN };
 }
+
+// ── Deciding them (the lead, 25 Nov 2026: conflicts block, stale changes are seen first) ─────────────────────
+
+/**
+ * The version of "what is live now" a person saw before accepting a stale change: the accepts it is stale against.
+ * The server reads them again at accept and refuses an accept that carries any other version, so a person never
+ * accepts over an accept they were not shown. Empty when nothing moved under the change.
+ */
+export function staleVersionOf(stale: readonly Pick<StaleBy, "id">[]): string {
+  return stale.map((s) => s.id).sort().join(",");
+}
+
+/**
+ * Waiting changes that collide, gathered into one card each: every change linked to another by a shared write lands
+ * in the same group, oldest first, groups in the order of their oldest change. A change that collides with nothing
+ * is in no group. Accepting one option names the changes it collides with directly, and only those are set aside.
+ */
+export function conflictGroups(changes: readonly ConflictInput[]): string[][] {
+  const links = waitingConflicts(changes);
+  const order = [...changes].sort(oldestFirst).map((c) => c.id);
+  const seen = new Set<string>();
+  const groups: string[][] = [];
+  for (const start of order) {
+    if (seen.has(start) || !links[start]?.length) continue;
+    const group = new Set<string>([start]);
+    const queue = [start];
+    while (queue.length) {
+      const id = queue.shift()!;
+      for (const o of links[id] ?? []) if (!group.has(o.id)) (group.add(o.id), queue.push(o.id));
+    }
+    group.forEach((id) => seen.add(id));
+    groups.push(order.filter((id) => group.has(id)));
+  }
+  return groups;
+}

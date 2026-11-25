@@ -30,8 +30,6 @@ import { AppointToRole } from "@/components/admin/AppointToRole";
 import PlayersTab from "@/components/admin/PlayersTab";
 import { RAISED_HAND_TERM_KEYS, RaisedHandTerm } from "@/components/admin/RaisedHandTerm";
 import { POWER_HAND_KEYS, PowerHandNote } from "@/components/admin/PowerHandNote";
-import { SeatClaimAsks, type SeatClaimAsk } from "@/components/admin/SeatClaimAsks";
-import { UndrawnSeatAsks } from "@/components/admin/UndrawnSeatAsks";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { playMoment } from "@/lib/sound";
@@ -49,6 +47,7 @@ import ConnectorSetupPanel from "@/components/agent/ConnectorSetupPanel";
 import { adminRootClass, readAdminNight, writeAdminNight } from "@/components/admin/adminNight";
 import { AdminSeraChip, SeraAdminHome } from "@/components/admin/AdminSeraLink";
 import { tabFromSearch } from "@/components/admin/adminAreas";
+import AdminSearch from "@/components/admin/search/AdminSearch";
 import HealthStrip from "@/components/admin/HealthStrip";
 import AdminHelp from "@/components/admin/AdminHelp";
 import UndoBar from "@/components/admin/UndoBar";
@@ -128,7 +127,6 @@ import NeedsPanel, { NeedsSetupStep, useNeedsSetupObservation } from "@/componen
 import PurposeStatementPanel from "@/components/admin/PurposeStatementPanel";
 import ProfileImportDoor from "@/components/admin/ProfileImportDoor";
 import { takePrefill, usePrefill } from "@/lib/profilePrefill";
-import RelationsEditor from "@/components/admin/RelationsEditor";
 import HousingAdminPanel from "@/components/HousingAdminPanel";
 import { CommsJourneys, CommsLetters, CommsOverview, CommsPeople, CommsSentMail, CommsSettings, CommsWords, EmailField } from "@/components/admin/comms";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
@@ -7929,6 +7927,7 @@ export default function Admin() {
         extra={<AdminSeraChip password={password} />}
         defaultLocale={cfg?.defaultLocale ?? null}
         onHelper={() => setHelperOpen(true)}
+        search={<AdminSearch password={password} groups={shownGroups} onHelper={() => setHelperOpen(true)} />}
       />
       <AdminHelperHost
         open={helperOpen}

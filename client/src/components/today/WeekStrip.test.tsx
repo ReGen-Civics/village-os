@@ -55,6 +55,26 @@ describe("the week strip", () => {
     expect((await screen.findByRole("link", { name: "Open the calendar" })).getAttribute("href")).toBe("/events");
   });
 
+  it("says a failed calendar read failed, never a quiet week, and tries again on a tap", async () => {
+    let ok = false;
+    const f = vi.fn(async () => (ok ? new Response(JSON.stringify({ events: [{ title: "Potluck", startsAt: at(13, 17), status: "published" }] }), { status: 200 }) : new Response("{}", { status: 500 })));
+    vi.stubGlobal("fetch", f);
+    render(<WeekStrip now={NOW} eventsOn taskDue={null} meetings={[]} />);
+    expect((await screen.findByRole("alert")).textContent).toContain("The calendar did not load");
+    expect(screen.queryByText("Nothing is on the calendar for you this week.")).toBeNull();
+    ok = true;
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await vi.waitFor(() => expect(document.querySelectorAll("button[data-week-day]")[2].getAttribute("aria-label")).toContain("Potluck"));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+
+  it("treats a network failure the same way", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("offline"); }));
+    render(<WeekStrip now={NOW} eventsOn taskDue={null} meetings={[]} />);
+    expect((await screen.findByRole("alert")).textContent).toContain("The calendar did not load");
+  });
+
   it("walks the days with the arrow keys", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ events: [] }), { status: 200 })));
     render(<WeekStrip now={NOW} eventsOn taskDue={null} meetings={[]} />);

@@ -46,7 +46,9 @@ function ThreadList() {
   const { user } = useAuth();
   const feedModule = useModule("feed");
   const [categories, setCategories] = useState<any[]>([]);
-  const [threads, setThreads] = useState<any[]>([]);
+  // Null until the list answers, and a failed read is said as one (whole-app QA, 25 Nov 2026): both used to read "No threads yet".
+  const [threads, setThreads] = useState<any[] | null>(null);
+  const [threadsFailed, setThreadsFailed] = useState(false);
   const [category, setCategory] = useState("");
   const [composing, setComposing] = useState(false);
   const [draft, setDraft] = useState({ title: "", body: "", category: "", kind: "discussion" });
@@ -56,9 +58,9 @@ function ThreadList() {
   const load = () => {
     const qs = category ? `?category=${category}` : "";
     fetch(`/api/forum/threads${qs}`, { headers: headers() })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((d) => setThreads(Array.isArray(d) ? d : []))
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setThreads(Array.isArray(d) ? d : []); setThreadsFailed(false); })
+      .catch(() => setThreadsFailed(true));
   };
 
   useEffect(() => {
@@ -169,7 +171,7 @@ function ThreadList() {
           )}
 
           <div className="space-y-2">
-            {threads.map((t) => (
+            {(threads ?? []).map((t) => (
               <Link key={t.id} href={`/forum/${t.id}`}
                 className={`block bg-card border border-border rounded-xl px-4 py-3 hover:border-teal/40 transition-colors ${t.hidden ? "opacity-50" : ""}`}>
                 <div className="flex items-center gap-2">
@@ -199,7 +201,13 @@ function ThreadList() {
                 </div>
               </Link>
             ))}
-            {threads.length === 0 && (
+            {threads === null && threadsFailed && (
+              <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
+                <p className="text-sm text-foreground"><Trans context="forum: the thread list read failed">The threads didn't load. Try again in a moment.</Trans></p>
+                <button type="button" onClick={load} className="jw-btn inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"><Trans context="forum: retry the thread list read">Try again</Trans></button>
+              </div>
+            )}
+            {threads !== null && threads.length === 0 && (
               /* "Start the first one" points at the New thread button, which
                  renders on `user` above. A signed-out reader was being sent
                  to a control that is not on their page, so they get the fact

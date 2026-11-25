@@ -61,6 +61,8 @@ export default function Team() {
   // Blank hides the button rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
   const [team, setTeam] = useState<TeamMember[] | null>(null);
+  /* A team that could not be read is not an empty team (whole-app QA, 25 Nov 2026). */
+  const [teamFailed, setTeamFailed] = useState(false);
   // The tier this page's copy of /api/org came back at, plus the two counts
   // that are public on every tier. Held for the lock note below.
   const [people, setPeople] = useState<PeopleTier | null>(null);
@@ -82,8 +84,7 @@ export default function Team() {
     // capability was therefore consulted on a viewer that was always null,
     // and it had never granted anybody anything here.
     gameFetch("/api/org")
-      .then((r) => (r.ok ? r.json() : { circles: [], roles: [] }))
-      .catch(() => ({ circles: [], roles: [] }))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       // The cards are asked for only at the member tier (teamCardsShown), so a
       // visitor's browser never holds a surname or a portrait. Through the
       // section listing, so a fork that has written no team cards never
@@ -154,7 +155,7 @@ export default function Team() {
         }
         setTeam(merged);
       })
-      .catch(() => setTeam([]));
+      .catch(() => setTeamFailed(true));
   }, []);
 
   return (
@@ -209,6 +210,11 @@ export default function Team() {
                 grid used to render zero cards under three headings, which reads
                 as a broken page rather than an early one, and it read that way
                 on a fork's very first day. */}
+            {teamFailed && team === null ? (
+              <p role="alert" className="mx-auto max-w-xl rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+                <Trans context="team page: the team read failed">The team didn't load. Refresh the page in a moment to see who holds the roles.</Trans>
+              </p>
+            ) : null}
             {team !== null && team.length === 0 && people?.visible ? (
               <p className="text-center text-muted-foreground max-w-xl mx-auto">
                 <Trans context="Team, p">No one has joined the team yet. Team members appear on this
