@@ -1,0 +1,256 @@
+/**
+ * /admin/review: everything waiting on the person reading it, in one list (docs/REVIEW_INBOX_PLAN.md, lane 4a).
+ *
+ * The lead could not find B-71 because they looked on /review and it was on /admin/proposals. This page is the first,
+ * smallest answer: one find box that takes a code, and one list of what waits, from every queue, each with a door to
+ * the page where it is decided today. Deciding still happens on those pages; the cards move here in a later lane.
+ *
+ * WHO SEES WHAT is the server's (server/routes/reviewInbox.ts): each section is that queue's own read, made as this
+ * person, so the page can never show more than the queue's own page does. The `/admin/` path names the page and gates
+ * nothing: a steward who is not an admin opens it.
+ *
+ * A failed read is never an empty one: a queue that did not load says so, by name, with a way to try again.
+ */
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "wouter";
+import Layout from "@/components/Layout";
+import { useOptionalAuth } from "@/contexts/AuthContext";
+import { authToken } from "@/lib/gameApi";
+import { BTN_SECONDARY, CHIP_SOFT, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
+import type { InboxItem, InboxSource, SectionState } from "@shared/reviewInbox";
+
+interface InboxAnswer {
+  sections: { source: InboxSource; state: SectionState; count: number }[];
+  items: InboxItem[];
+}
+
+type Load = { phase: "loading" } | { phase: "failed" } | { phase: "ready"; answer: InboxAnswer };
+
+const ORDER: readonly InboxSource[] = ["connector", "intake", "sera", "quest", "claim", "approval", "agent"];
+
+function headers(): Record<string, string> {
+  const t = authToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+/** Where a door goes: a connector change opens its own page already searched for its code. */
+function doorOf(item: InboxItem): string {
+  if (item.source === "connector" && item.code) return `${item.decideAt}?find=${encodeURIComponent(item.code)}`;
+  return item.decideAt;
+}
+
+export default function AdminReview() {
+  const { t, i18n } = useLingui();
+  const auth = useOptionalAuth();
+  const signedOut = !!auth && !auth.loading && !auth.user;
+  const [load, setLoad] = useState<Load>({ phase: "loading" });
+  const [query, setQuery] = useState("");
+  const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null } | null>(null);
+
+  const titles: Record<InboxSource, string> = {
+    connector: t({ context: "review inbox: section", message: "Proposed changes" }),
+    intake: t({ context: "review inbox: section", message: "From Sera and outside services" }),
+    sera: t({ context: "review inbox: section", message: "Where Sera's memory differs" }),
+    quest: t({ context: "review inbox: section", message: "Quest ideas" }),
+    claim: t({ context: "review inbox: section", message: "Finished work to witness" }),
+    approval: t({ context: "review inbox: section", message: "Approvals" }),
+    agent: t({ context: "review inbox: section", message: "From agents" }),
+  };
+
+  const read = useCallback(async () => {
+    setLoad({ phase: "loading" });
+    try {
+      const r = await fetch("/api/admin/review/inbox", { headers: headers() });
+      if (!r.ok) return setLoad({ phase: "failed" });
+      setLoad({ phase: "ready", answer: (await r.json()) as InboxAnswer });
+    } catch {
+      setLoad({ phase: "failed" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (auth && !auth.loading && auth.user) void read();
+  }, [auth?.loading, auth?.user, read]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const find = async (e: FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return setFound(null);
+    try {
+      const r = await fetch(`/api/admin/review/find?q=${encodeURIComponent(q)}`, { headers: headers() });
+      const body = (await r.json().catch(() => ({}))) as { items?: InboxItem[]; code?: string | null };
+      setFound({ q, items: r.ok ? body.items ?? [] : [], code: body.code ?? null });
+    } catch {
+      setFound({ q, items: null, code: null });
+    }
+  };
+
+  const day = (iso: string | null) => (iso ? i18n.date(new Date(iso), { day: "numeric", month: "short" }) : null);
+
+  const answer = load.phase === "ready" ? load.answer : null;
+  const bySource = useMemo(() => {
+    const m = new Map<InboxSource, InboxItem[]>();
+    for (const item of answer?.items ?? []) m.set(item.source, [...(m.get(item.source) ?? []), item]);
+    return m;
+  }, [answer]);
+  const failed = (answer?.sections ?? []).filter((s) => s.state === "failed").map((s) => s.source);
+  const readable = (answer?.sections ?? []).filter((s) => s.state === "ok" || s.state === "failed");
+  const forbidden = !!answer && readable.length === 0;
+  const waiting = answer?.items.length ?? 0;
+  const foundCode = found?.code ?? null;
+
+  const failedNames = failed.map((s) => titles[s]).join(", ");
+
+  const row = (item: InboxItem) => {
+    const sent = day(item.filedAt);
+    return (
+    <li key={item.key} className={`${QUIET} flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`}>
+      <div className="min-w-0 space-y-1">
+        <p className="text-base text-foreground">
+          {item.code ? <span className={`${CHIP_SOFT} mr-2 align-middle`}>{item.code}</span> : null}
+          {item.summary}
+        </p>
+        {sent ? (
+          <p className={HINT}>
+            <Trans context="review inbox: item">Sent {sent}</Trans>
+          </p>
+        ) : null}
+      </div>
+      <Link href={doorOf(item)} className={`${DOOR} shrink-0 self-start sm:self-center`}>
+        <Trans context="review inbox: open the page where it is decided">Open</Trans>
+      </Link>
+    </li>
+    );
+  };
+
+  return (
+    <Layout>
+      <div className={`${WORLD} py-8 sm:py-12`}>
+        <div className="mx-auto max-w-2xl space-y-8 px-4">
+          <header className="space-y-2">
+            <p className={EYEBROW}>
+              <Trans context="review inbox: eyebrow">Waiting on the people who decide</Trans>
+            </p>
+            <h1 className={H1}>
+              <Trans context="review inbox: h1">Review</Trans>
+            </h1>
+            <p className={LEDE}>
+              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today.</Trans>
+            </p>
+            {answer && !forbidden ? (
+              <p className={HINT} role="status" aria-live="polite">
+                <Plural value={waiting} one="# waiting on you." other="# waiting on you." />
+              </p>
+            ) : null}
+          </header>
+
+          {signedOut ? (
+            <p className={HINT}>
+              <Trans context="review inbox">This page is for people who decide suggestions here.</Trans>{" "}
+              <Link href="/login" className={LINK}>
+                <Trans context="review inbox">Sign in to see it</Trans>
+              </Link>
+            </p>
+          ) : null}
+
+          {!signedOut && !forbidden ? (
+            <form onSubmit={find} className="space-y-2" role="search">
+              <label htmlFor="review-find" className={LABEL}>
+                <Trans context="review inbox: find">Find by code</Trans>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="review-find"
+                  className={`${FIELD} min-w-0 flex-1`}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t({ context: "review inbox: find, an example code", message: "B-71" })}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                />
+                <button type="submit" className={BTN_SECONDARY}>
+                  <Trans context="review inbox: find button">Find</Trans>
+                </button>
+              </div>
+              {found ? (
+                <div aria-live="polite" className="space-y-2">
+                  {found.items === null ? (
+                    <p className={HINT}>
+                      <Trans context="review inbox: find failed">The search did not run. Try again.</Trans>
+                    </p>
+                  ) : found.items.length === 0 ? (
+                    <p className={HINT}>
+                      {foundCode ? (
+                        <Trans context="review inbox: nothing found for a code">Nothing waiting is called {foundCode}, among what you may see.</Trans>
+                      ) : (
+                        <Trans context="review inbox: nothing found">Nothing waiting matches that.</Trans>
+                      )}
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">{found.items.map(row)}</ul>
+                  )}
+                </div>
+              ) : null}
+            </form>
+          ) : null}
+
+          {!signedOut && load.phase === "loading" ? (
+            <p className={HINT}>
+              <Trans context="review inbox: loading">Reading what is waiting.</Trans>
+            </p>
+          ) : null}
+
+          {!signedOut && load.phase === "failed" ? (
+            <div className={`${QUIET} space-y-2`}>
+              <p className="text-base text-foreground">
+                <Trans context="review inbox: failed">This list did not load. Suggestions may be waiting.</Trans>
+              </p>
+              <button type="button" className={BTN_SECONDARY} onClick={() => void read()}>
+                <Trans context="review inbox: try again">Try again</Trans>
+              </button>
+            </div>
+          ) : null}
+
+          {forbidden ? (
+            <p className={HINT}>
+              <Trans context="review inbox: forbidden">This page is for people who decide suggestions. What you sent waits on</Trans>{" "}
+              <Link href="/review" className={LINK}>
+                <Trans context="review inbox: forbidden link">Review</Trans>
+              </Link>
+              .
+            </p>
+          ) : null}
+
+          {answer && !forbidden ? (
+            <div className="space-y-8">
+              {failed.length ? (
+                <div className={`${QUIET} space-y-2`} role="alert">
+                  <p className="text-base text-foreground">
+                    <Trans context="review inbox: part failed">Some of what waits did not load: {failedNames}. Suggestions may be waiting there.</Trans>
+                  </p>
+                  <button type="button" className={BTN_SECONDARY} onClick={() => void read()}>
+                    <Trans context="review inbox: try again">Try again</Trans>
+                  </button>
+                </div>
+              ) : null}
+              {waiting === 0 && !failed.length ? (
+                <p className={HINT}>
+                  <Trans context="review inbox: empty">Nothing is waiting on you.</Trans>
+                </p>
+              ) : null}
+              {ORDER.filter((s) => bySource.get(s)?.length).map((s) => (
+                <section key={s} className="space-y-3" aria-labelledby={`review-${s}`}>
+                  <h2 id={`review-${s}`} className={H2}>
+                    {titles[s]}
+                  </h2>
+                  <ul className="space-y-2">{bySource.get(s)!.map(row)}</ul>
+                </section>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Layout>
+  );
+}

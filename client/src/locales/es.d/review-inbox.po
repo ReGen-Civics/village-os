@@ -1,0 +1,190 @@
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Proposed changes"
+msgstr "Cambios propuestos"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "From Sera and outside services"
+msgstr "De Sera y de servicios externos"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Where Sera's memory differs"
+msgstr "Donde la memoria de Sera difiere"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Quest ideas"
+msgstr "Ideas de misiones"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Finished work to witness"
+msgstr "Trabajo terminado por atestiguar"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Approvals"
+msgstr "Aprobaciones"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "From agents"
+msgstr "De agentes"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: item"
+msgid "Sent {sent}"
+msgstr "Enviado el {sent}"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: open the page where it is decided"
+msgid "Open"
+msgstr "Abrir"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: eyebrow"
+msgid "Waiting on the people who decide"
+msgstr "Esperando a quienes deciden"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: h1"
+msgid "Review"
+msgstr "Revisar"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
+msgstr "Todo lo que espera por usted, de cada fila, en una sola lista. Abra uno para decidirlo donde está hoy."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgid "{waiting, plural, one {# waiting on you.} other {# waiting on you.}}"
+msgstr "{waiting, plural, one {# espera por usted.} other {# esperan por usted.}}"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox"
+msgid "This page is for people who decide suggestions here."
+msgstr "Esta página es para quienes deciden sugerencias aquí."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox"
+msgid "Sign in to see it"
+msgstr "Inicie sesión para verla"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find"
+msgid "Find by code"
+msgstr "Buscar por código"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find button"
+msgid "Find"
+msgstr "Buscar"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find failed"
+msgid "The search did not run. Try again."
+msgstr "La búsqueda no se hizo. Inténtelo de nuevo."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: nothing found for a code"
+msgid "Nothing waiting is called {foundCode}, among what you may see."
+msgstr "Nada de lo que espera se llama {foundCode}, entre lo que usted puede ver."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: nothing found"
+msgid "Nothing waiting matches that."
+msgstr "Nada de lo que espera coincide con eso."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: loading"
+msgid "Reading what is waiting."
+msgstr "Leyendo lo que espera."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: failed"
+msgid "This list did not load. Suggestions may be waiting."
+msgstr "Esta lista no cargó. Puede haber sugerencias esperando."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: try again"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: forbidden"
+msgid "This page is for people who decide suggestions. What you sent waits on"
+msgstr "Esta página es para quienes deciden sugerencias. Lo que usted envió espera en"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: forbidden link"
+msgid "Review"
+msgstr "Revisar"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: part failed"
+msgid "Some of what waits did not load: {failedNames}. Suggestions may be waiting there."
+msgstr "Parte de lo que espera no cargó: {failedNames}. Puede haber sugerencias esperando allí."
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: empty"
+msgid "Nothing is waiting on you."
+msgstr "Nada espera por usted."
+
+# needs-native-review: the door from /review to the one list, 25 Nov 2026
+#: client/src/pages/Review.tsx
+msgctxt "Review, a door to the one list"
+msgid "Looking for a code such as B-71, or for everything waiting in one list?"
+msgstr "¿Busca un código como B-71, o todo lo que espera en una sola lista?"
+
+# needs-native-review: the door from /review to the one list, 25 Nov 2026
+#: client/src/pages/Review.tsx
+msgctxt "Review, a door to the one list"
+msgid "Find it here"
+msgstr "Encuéntrelo aquí"
+
+# needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find, an example code"
+msgid "B-71"
+msgstr "B-71"
+
+# needs-native-review: the door from /admin/proposals to the one list, 25 Nov 2026
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes, a door to the one list"
+msgid "These are the connector's changes. Everything waiting, from every queue, is on"
+msgstr "Estos son los cambios del conector. Todo lo que espera, de cada fila, está en"
+
+# needs-native-review: the door from /admin/proposals to the one list, 25 Nov 2026
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes, a door to the one list"
+msgid "one list"
+msgstr "una sola lista"
