@@ -16,7 +16,7 @@
  * grab focus again every time they came back, for a question answered weeks
  * ago.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /** The setting an address names, or null. Safe anywhere. */
 export function settingFromUrl(search: string): string | null {
@@ -73,8 +73,9 @@ export function useSettingFocus(key: string, elementId: string, ready: boolean):
  *
  * @param elementId the control to focus, or null when the address named none of this page's controls
  * @param ready     false until the control has rendered
+ * @param seq       moves on when the same address arrives again (useSettingFromAddress)
  */
-export function useLandingFocus(elementId: string | null, ready: boolean): void {
+export function useLandingFocus(elementId: string | null, ready: boolean, seq = 0): void {
   useEffect(() => {
     if (!elementId || !ready) return;
     const el = document.getElementById(elementId);
@@ -83,5 +84,25 @@ export function useLandingFocus(elementId: string | null, ready: boolean): void 
       el.focus({ preventScroll: true });
     }
     forgetSetting();
-  }, [elementId, ready]);
+  }, [elementId, ready, seq]);
+}
+
+/**
+ * The `setting` an address names, kept current. Read once on mount, as the
+ * landings above do, and read again whenever the address changes under a page
+ * that is already open: Admin search pushes the new address and raises
+ * `popstate`, the event Admin already follows for Back and Forward. `seq`
+ * moves on every arrival, so asking twice for the same control lands twice.
+ */
+export function useSettingFromAddress(): { setting: string | null; seq: number } {
+  const [state, setState] = useState(() => ({
+    setting: typeof window === "undefined" ? null : settingFromUrl(window.location.search),
+    seq: 0,
+  }));
+  useEffect(() => {
+    const onPop = () => setState((s) => ({ setting: settingFromUrl(window.location.search), seq: s.seq + 1 }));
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  return state;
 }

@@ -172,7 +172,13 @@ export function scanSource(rel, text) {
       const name = tagName(opening);
       const intrinsic = /^[a-z]/.test(name);
       const onClick = attr(opening, "onClick");
-      if (onClick && intrinsic && !CONTROLS.has(name)) add("clickable-non-control", opening, `<${name} onClick>`);
+      // An element that declares an interactive role (an option in a listbox, a
+      // menu item, a tab) is a control by its role, the ARIA pattern for lists
+      // a keyboard moves through; its keys live on the owning widget.
+      const roleOf = attr(opening, "role");
+      const declaredRole = roleOf?.initializer && ts.isStringLiteral(roleOf.initializer) ? roleOf.initializer.text : "";
+      const interactiveRole = ["option", "menuitem", "menuitemradio", "menuitemcheckbox", "tab", "button", "link", "switch", "checkbox", "radio"].includes(declaredRole);
+      if (onClick && intrinsic && !CONTROLS.has(name) && !interactiveRole) add("clickable-non-control", opening, `<${name} onClick>`);
       if (name === "button") {
         const cls = classOf(opening);
         const ownText = hasOwnText(n);

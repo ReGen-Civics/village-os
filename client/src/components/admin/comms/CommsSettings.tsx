@@ -34,7 +34,7 @@ import { Check, ChevronDown, ChevronUp, Circle } from "lucide-react";
 import type { SetupItem, SetupKey } from "@shared/comms/settings";
 import ModuleSettingsSection from "@/components/admin/ModuleSettingsSection";
 import { refusal } from "@/components/admin/adminApi";
-import { settingFromUrl, useLandingFocus } from "@/components/admin/settingFocus";
+import { useLandingFocus, useSettingFromAddress } from "@/components/admin/settingFocus";
 import { commsLanding, TEST_EMAIL_BUTTON_ID } from "./commsLanding";
 import MailNow from "./MailNow";
 import DeliveryDangerZone from "./DeliveryDangerZone";
@@ -179,9 +179,15 @@ export default function CommsSettings({ password, openIntegrations }: { password
   const [failed, setFailed] = useState<string | null>(null);
   /** The rows somebody opened or closed by hand. The rest follow "required and not done". */
   /** Where a search result or a link asked to land (`?setting=comms.<item>`), read once. */
-  const [landing] = useState(() => commsLanding(settingFromUrl(typeof window === "undefined" ? "" : window.location.search)));
+  const arrival = useSettingFromAddress();
+  const landing = commsLanding(arrival.setting);
   const [toggled, setToggled] = useState<Partial<Record<SetupKey, boolean>>>(() => (landing?.open ? { [landing.open]: true } : {}));
-  useLandingFocus(landing?.focus ?? null, data !== null);
+  // A search that lands here while the page is already open opens its row too.
+  const opens = landing?.open ?? null;
+  useEffect(() => {
+    if (opens) setToggled((t) => (t[opens] ? t : { ...t, [opens]: true }));
+  }, [opens, arrival.seq]);
+  useLandingFocus(landing?.focus ?? null, data !== null, arrival.seq);
 
   const load = useCallback(async () => {
     const r = await commsCall<SettingsPayload>("/admin/comms/settings", password);
