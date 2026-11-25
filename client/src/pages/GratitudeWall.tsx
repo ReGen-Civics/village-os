@@ -368,8 +368,8 @@ export default function GratitudeWall() {
               {wall === null ? (
                 wallFailed ? (
                   <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
-                    <p className="text-sm text-destructive">{t({ message: "The wall didn't load. The thanks are still there; try again in a moment.", context: "gratitude wall: the wall read failed" })}</p>
-                    <button type="button" onClick={() => load()} className={BTN_SECONDARY}>{t({ message: "Try again", context: "gratitude wall: retry the wall read" })}</button>
+                    <p className="text-sm text-destructive">{t({ message: "The wall didn't load. The thanks are still there; try again in a moment.", context: "thanks wall: the wall read failed" })}</p>
+                    <button type="button" onClick={() => load()} className={BTN_SECONDARY}>{t({ message: "Try again", context: "thanks wall: retry the wall read" })}</button>
                   </div>
                 ) : null
               ) : wall.length === 0 ? (

@@ -15,15 +15,15 @@ msgctxt "calendar: retry the events read"
 msgid "Try again"
 msgstr "Intentar de nuevo"
 
-# needs-native-review: whole-app QA, a failed gratitude wall read, 2026-11-25
+# needs-native-review: whole-app QA, a failed thanks wall read, 2026-11-25
 #: client/src/pages/GratitudeWall.tsx
-msgctxt "gratitude wall: the wall read failed"
+msgctxt "thanks wall: the wall read failed"
 msgid "The wall didn't load. The thanks are still there; try again in a moment."
 msgstr "El muro no cargó. Los agradecimientos siguen ahí; inténtalo de nuevo en un momento."
 
 # needs-native-review: whole-app QA, retry button, 2026-11-25
 #: client/src/pages/GratitudeWall.tsx
-msgctxt "gratitude wall: retry the wall read"
+msgctxt "thanks wall: retry the wall read"
 msgid "Try again"
 msgstr "Intentar de nuevo"
 
