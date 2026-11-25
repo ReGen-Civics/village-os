@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 294 open and 71 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 294 open and 75 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 338 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 342 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-365 dials in 41 categories. 182 carry a minimum and a maximum. By type: 143 integer, 21 decimal, 19 percentage, 55 boolean, 37 choice, 77 text, 13 longtext.
+369 dials in 41 categories. 186 carry a minimum and a maximum. By type: 147 integer, 21 decimal, 19 percentage, 55 boolean, 37 choice, 77 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -71,7 +71,7 @@ Each dial also says WHEN a change lands. 338 of them as soon as it is saved, and
 | Payments | 4 | 4 | 0 |
 | Health | 1 | 1 | 0 |
 | Badges | 1 | 1 | 0 |
-| Platform | 5 | 1 | 4 |
+| Platform | 9 | 1 | 8 |
 | Calendar | 4 | 4 | 0 |
 | Introductions | 4 | 4 | 0 |
 | Exit | 10 | 10 | 0 |
@@ -412,6 +412,10 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | How long a key waits for its co-sign | `platform.cosign_expiry_hours` | Platform | integer | `72` | the founder or an admin |
 | The guide's helper in Admin | `platform.admin_helper` | Platform | boolean | `true` | the founder or an admin |
 | Addresses that hear about crashes | `ops.crash_alert_recipients` | Platform | text | blank | the whole village |
+| Visitors who must hit a crash before it emails | `ops.crash_spread_visitors` | Platform | integer | `3` | the founder or an admin |
+| Window for counting visitors who hit a crash | `ops.crash_spread_minutes` | Platform | integer | `60` | the founder or an admin |
+| Hours between emails about the same crash | `ops.crash_email_every_hours` | Platform | integer | `24` | the founder or an admin |
+| Days browser crash reports are kept | `ops.crash_keep_days` | Platform | integer | `30` | the founder or an admin |
 | The solar event that opens the village year | `calendar.year_anchor` | Calendar | choice | `december_solstice` | the whole village |
 | Hemisphere | `calendar.hemisphere` | Calendar | choice | `north` | the whole village |
 | Mark the cross-quarter days | `calendar.cross_quarters` | Calendar | boolean | `false` | the whole village |
@@ -5530,7 +5534,7 @@ How many badges a member may pin to their byline (forum posts, map chips). 0 tur
 
 ## Platform
 
-5 dials. 1 for the whole village, 4 for the founder or an admin.
+9 dials. 1 for the whole village, 8 for the founder or an admin.
 
 ### Share bug reports and ideas with the platform team
 
@@ -5605,6 +5609,66 @@ Email addresses that hear about crashes. An admin or founder's address also gets
 | What it costs to change | a routine vote |
 | Shown to the public | Listed, and open to proposals. Its value stays off the public rules page because it can carry a provider key; admins still see it. |
 | Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### Visitors who must hit a crash before it emails
+
+A browser crash with no frame from this village's own code emails the crash alert list once this many different visitors hit it within the window below. A crash in our own code emails the first time. Every crash is still recorded on Village Health and counted in the daily crash digest.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ops.crash_spread_visitors` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 50 |
+| Counted in | visitors |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Window for counting visitors who hit a crash
+
+How far back the visitors above are counted, in minutes.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ops.crash_spread_minutes` |
+| Type | integer, a whole number |
+| Default | `60` |
+| Range | 5 to 1440 |
+| Counted in | minutes |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Hours between emails about the same crash
+
+One email per crash in this many hours at most, saying how many times it has happened so far. The crashes in between are counted on Village Health.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ops.crash_email_every_hours` |
+| Type | integer, a whole number |
+| Default | `24` |
+| Range | 1 to 168 |
+| Counted in | hours |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Days browser crash reports are kept
+
+Browser crash reports older than this are deleted each day, and a crash nobody has reported since is forgotten with them. They hold no names and no addresses; this keeps the record short.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ops.crash_keep_days` |
+| Type | integer, a whole number |
+| Default | `30` |
+| Range | 1 to 365 |
+| Counted in | days |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
 
 ## Calendar
 

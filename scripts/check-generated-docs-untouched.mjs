@@ -4,14 +4,15 @@
  *
  * (Rye, 2026-11-09. The rule and the reasons are in scripts/lib/generatedDocs.mjs.)
  *
- * Eight files are written by generators and `.github/workflows/generated-docs.yml`
+ * Nine files are written by generators and `.github/workflows/generated-docs.yml`
  * regenerates and commits them after every merge to main. A pull request that
  * commits one regenerated copy conflicts with the next landing, and GitHub runs
  * no CI on a conflicted pull request. So the pull request is not allowed to carry
  * them, and this says so in plain words.
  *
  * WHOLE FILES (GOVERNANCE.md, governance-lineage.md, TOKENS.md, VARIABLES.md,
- * MODULES.md, CAPABILITIES.md, en.po): any change against the merge base fails.
+ * MODULES.md, CAPABILITIES.md, en.po, es.po): any change against the merge base fails.
+ * Spanish goes in a fragment, client/src/locales/es.d/<name>.po, which main folds in.
  * ECONOMICS.md is half prose and the prose is a person's to edit, so only its
  * `<!-- generated:NAME start/end -->` regions are held; a region that is NEW in the
  * pull request (a new region needs its markers) is allowed.
@@ -46,7 +47,7 @@ export function findViolations({ changed, readBase, readHead }) {
   for (const g of GENERATED_FILES) {
     if (!changed.includes(g.path)) continue;
     if (g.kind === "whole") {
-      bad.push({ file: g.path, why: "main regenerates this file" });
+      bad.push({ file: g.path, why: g.why ?? "main regenerates this file" });
       continue;
     }
     const before = regionMap(readBase(g.path));

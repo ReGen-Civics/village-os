@@ -35,13 +35,15 @@ export interface CrashAlertEmail {
   to: string;
   title: string;
   link: string;
+  /** What a person triages from, under the title (a browser crash's page, browser, count and whether it is ours). */
+  body?: string;
   /** Stable per crash and address: the post office sends one email per key. */
   idempotencyKey: string;
 }
 
 export interface CrashAlertDeps {
   members: () => Promise<readonly CrashAlertMember[]>;
-  notify: (input: { userId: string; type: string; title: string; link: string; dedupeKey: string; actorUserId: null }) => Promise<unknown> | unknown;
+  notify: (input: { userId: string; type: string; title: string; body?: string | null; link: string; dedupeKey: string; actorUserId: null }) => Promise<unknown> | unknown;
   /** The dial's stored value: `stringVar("ops.crash_alert_recipients")`. */
   recipientsRaw: () => string;
   /** Emails one address that has no account (`crashAlertMailer`). Absent: such addresses hear nothing. */
@@ -55,8 +57,10 @@ export function crashAlertEmailKey(dedupeKey: string, address: string): string {
   return `${dedupeKey}:to:${digest}`;
 }
 
-export function crashAlertNotifier(deps: CrashAlertDeps): (title: string, dedupeKey: string) => Promise<void> {
-  return async (title, dedupeKey) => {
+export function crashAlertNotifier(deps: CrashAlertDeps): (title: string, dedupeKey: string, extras?: { body?: string; link?: string }) => Promise<void> {
+  return async (title, dedupeKey, extras) => {
+    const link = extras?.link || "/admin";
+    const body = extras?.body || undefined;
     let raw = "";
     try {
       raw = deps.recipientsRaw();
@@ -70,12 +74,12 @@ export function crashAlertNotifier(deps: CrashAlertDeps): (title: string, dedupe
     }
     for (const r of recipients) {
       // The literal, so shared/notificationKinds.test.ts sees its producer; it is CRASH_ALERT_TYPE (shared/crashAlerts.test.ts).
-      await deps.notify({ userId: String(r.id), type: "crash_alert", title, link: "/admin", dedupeKey: `${dedupeKey}:${r.id}`, actorUserId: null });
+      await deps.notify({ userId: String(r.id), type: "crash_alert", title, ...(body ? { body } : {}), link, dedupeKey: `${dedupeKey}:${r.id}`, actorUserId: null });
     }
     if (!deps.emailAddress) return;
     for (const to of addresses) {
       try {
-        await deps.emailAddress({ to, title, link: "/admin", idempotencyKey: crashAlertEmailKey(dedupeKey, to) });
+        await deps.emailAddress({ to, title, link, ...(body ? { body } : {}), idempotencyKey: crashAlertEmailKey(dedupeKey, to) });
       } catch {
         // One inbox that cannot be written to must not keep the next one from hearing.
         log("[error] a crash alert email to an address on the list could not be posted");
@@ -146,11 +150,12 @@ export function crashAlertMailer(deps: CrashAlertMailerDeps): (mail: CrashAlertE
       html: emailShell(
         escapeHtml(name),
         `<h2 style="margin:0 0 8px;font-size:17px">${escapeHtml(mail.title)}</h2>` +
+          (mail.body ? `<p style="margin:0 0 14px;color:#4b5563">${escapeHtml(mail.body)}</p>` : "") +
           `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:${accent};color:#fff;border-radius:8px;padding:9px 16px;text-decoration:none;font-weight:600">Open Admin</a></p>` +
           `<p style="color:#9ca3af;font-size:12px;margin-top:18px">${escapeHtml(why)}</p>`,
         accent,
       ),
-      text: `${mail.title}\n\nOpen Admin: ${url}\n\n${why}\n`,
+      text: `${mail.title}\n\n${mail.body ? `${mail.body}\n\n` : ""}Open Admin: ${url}\n\n${why}\n`,
       urgent: true,
     });
   };

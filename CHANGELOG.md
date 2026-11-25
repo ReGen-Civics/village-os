@@ -40,6 +40,27 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.67 (2026-11-25)
+
+### What changed for your village
+
+- **Crash alerts only for real problems.** The server now drops the same noise the page does (dropped connections, scripts injected by in-app browsers and extensions, pages from before a deploy), so browsers still running an old version are covered too. Every other report is recorded once per kind of crash, and emails only when it comes from the village's own code or when three different visitors hit it within an hour. At most one email per kind of crash per day, with a running count, and a daily digest of the rest only when there is something in it. The email names the page, the kind of browser, the count and why it was sent. Kept 30 days (`ops.crash_keep_days`). Replayed against a real day of alerts: 45 emails would have been none.
+- **Top pages get their icons in the menus:** the header menus, the account menu and the phone drawer show each page's icon from the living family.
+- **Faster delivery for everyone who builds the platform:** a release is never re-tested from scratch because a documentation update followed it, a release can be tagged straight from the tested batch when the code is identical, and draft pull requests no longer run the checks.
+- **Smaller download total:** small pieces loaded later now share files, and the total size ceiling is 8000 KB. What a visitor loads first is unchanged.
+- **Spanish translations come in small files per change,** folded into the catalog after each merge, so changes stop colliding over one file.
+- **The start of the review inbox's storage** (nothing visible yet).
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+Yes, by adding only. New tables for crash signatures and sightings (no IP addresses are stored), and for the review inbox's staging and outcomes, plus three new nullable columns on suggested changes. Nothing is removed or rewritten, so going back to 1.3.66 still works.
+
+---
+
 ## 1.3.66 (2026-11-25)
 
 ### What changed for your village

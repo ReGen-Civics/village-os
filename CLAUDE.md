@@ -138,7 +138,8 @@ strings in `client/src/components/journey/look.ts`. The rule, with "use X, not Y
 
 **Main owns `docs/GOVERNANCE.md`, `docs/knowledge/governance-lineage.md`, `docs/TOKENS.md`,
 `docs/VARIABLES.md`, `docs/MODULES.md`, `docs/CAPABILITIES.md`, the `generated:` regions of
-`docs/ECONOMICS.md`, and `client/src/locales/en.po`** (Rye, 2026-11-09). A pull request does not
+`docs/ECONOMICS.md`, and `client/src/locales/en.po`** (Rye, 2026-11-09), **and `client/src/locales/es.po`**
+(the lead, 2026-11-24: a pull request adds its Spanish as `client/src/locales/es.d/<name>.po`, which main folds in). A pull request does not
 run their generators and does not commit them; `.github/workflows/generated-docs.yml` regenerates
 them after every merge as one bot commit. Committing them is what made every landing conflict every
 open pull request. CI fails a pull request that edits one (`scripts/check-generated-docs-untouched.mjs`),
@@ -225,8 +226,18 @@ it. (Generated docs no longer conflict: main owns them, see "Generated docs" bel
 progressively, so an incomplete run reads as 5 of 5 while the sixth and seventh have not been created. Assert a
 FLOOR on the job count. And a cancelled
 run is not a red, since `ci.yml` cancels superseded
-runs per ref. Full detail, with the traps, in the fleet ledger's section 27d (private, see the
-reading order above).
+runs per ref on pull requests and integration branches. **A push run on `main` is never
+cancelled** (2026-11-25): each main commit has a concurrency group of its own, so the docs bot's
+commit no longer cancels the merge commit's run and a release can be tagged on the merge commit.
+Full detail, with the traps, in the fleet ledger's section 27d (private, see the reading order
+above).
+
+**Open a lane's pull request as a DRAFT and mark it ready when the work is done** (2026-11-25). A
+draft is not judged: every `ci.yml` job carries `if:` on the draft flag, so a draft's run creates
+the jobs and skips them all, and no runner starts. A run of skipped jobs is not a green, and a
+draft cannot be merged. Marking the pull request ready fires `ready_for_review`, and that run is
+the one to read. Put one line in every lane brief: "Open the PR as a draft; mark it ready when
+you are done." The other pull-request workflows still run on drafts.
 
 Three CI budgets cap the client: main JS, the first page's scripts (every `.js` file
 `index.html` loads, which does not move when code only changes chunk), and total `dist/public`, all

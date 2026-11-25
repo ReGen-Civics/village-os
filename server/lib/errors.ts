@@ -37,9 +37,21 @@ export interface ErrorContext {
   where: string;
   /** Anything safe to attach. NEVER tokens, bodies, or member PII. */
   detail?: Record<string, string | number | boolean | null>;
+  /**
+   * The alert's own words, when the caller has decided them (a browser crash, server/lib/crashTriage.ts): a title,
+   * a body a person triages from, a link to the thing itself, and the key it is sent once under. Absent, the alert
+   * is "Something broke in <where>" with a link to Admin, as it always was.
+   */
+  alert?: { title: string; body?: string; link?: string; dedupeKey: string };
 }
 
-type Reporter = (title: string, dedupeKey: string) => Promise<void>;
+/** What an alert carries besides its title and key. */
+export interface AlertExtras {
+  body?: string;
+  link?: string;
+}
+
+type Reporter = (title: string, dedupeKey: string, extras?: AlertExtras) => Promise<void>;
 
 /**
  * WHAT THE ALARM ACTUALLY DID, said out loud.
@@ -106,7 +118,7 @@ function errorWebhookUrl(): string {
 export async function reportError(err: unknown, ctx: ErrorContext): Promise<ErrorDelivery> {
   const e = err as any;
   const message = String(e?.message ?? e ?? "unknown error");
-  const key = fingerprint(err, ctx.where);
+  const key = ctx.alert ? `alert|${ctx.alert.dedupeKey}` : fingerprint(err, ctx.where);
   const now = Date.now();
   const seen = lastSeen.get(key) ?? 0;
   const repeat = now - seen < WINDOW_MS;
@@ -123,10 +135,8 @@ export async function reportError(err: unknown, ctx: ErrorContext): Promise<Erro
 
   if (notifyAdmins) {
     try {
-      await notifyAdmins(
-        `Something broke in ${ctx.where}: ${message.slice(0, 200)}`,
-        `error:${key.slice(0, 120)}`,
-      );
+      if (ctx.alert) await notifyAdmins(ctx.alert.title, ctx.alert.dedupeKey, { body: ctx.alert.body, link: ctx.alert.link });
+      else await notifyAdmins(`Something broke in ${ctx.where}: ${message.slice(0, 200)}`, `error:${key.slice(0, 120)}`);
       delivery.admins = "sent";
     } catch {
       /* an alarm that fails must not become the crash */
