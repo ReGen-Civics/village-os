@@ -1,5 +1,5 @@
 /**
- * THE BROWSER CRASH TABLES (drizzle/0429): every query on `client_crash_signatures` and `client_crash_sightings`.
+ * THE BROWSER CRASH TABLES (drizzle/0433): every query on `client_crash_signatures` and `client_crash_sightings`.
  * The rules that read them are server/lib/crashTriage.ts; the route is server/routes/clientCrash.ts.
  */
 import crypto from "node:crypto";
@@ -12,7 +12,7 @@ const asDate = (v: unknown): Date | null => (v == null ? null : v instanceof Dat
 /** Keeps one report: the signature's counts move, a sighting row is written, and the window's visitors are counted. */
 export async function recordSighting(pool: Pool, s: Sighting, dials: TriageDials): Promise<SignatureState> {
   const id = signatureId(s.message, s.frames);
-  const ours = s.oursHint || framesAreOurs(s.frames) ? 1 : 0;
+  const ours = !s.staleBuild && framesAreOurs(s.frames) ? 1 : 0;
   const topFrame = stableFrame(s.frames[0]);
   await pool.query(
     "INSERT INTO client_crash_signatures (id, message, top_frame, ours, first_seen_at, last_seen_at, seen_count) VALUES (?,?,?,?,?,?,1) " +
@@ -127,4 +127,17 @@ export async function signatureViews(pool: Pool, limit = 20): Promise<SignatureV
     browsers: Array.from(browsers.get(String(s.id)) ?? []).slice(0, 5),
     routes: Array.from(routes.get(String(s.id)) ?? []).slice(0, 5),
   }));
+}
+
+// ── Retention ──────────────────────────────────────────────────────────────
+
+/**
+ * Forgets reports older than `days`, and any signature no report has named since. Bounded per run, so a first sweep
+ * over a long backlog never holds the table; the next day's run takes the rest.
+ */
+export async function sweepSightings(pool: Pool, now: Date, days: number): Promise<{ sightings: number; signatures: number }> {
+  const before = new Date(now.getTime() - days * 24 * 3600_000);
+  const [a]: any = await pool.query("DELETE FROM client_crash_sightings WHERE at < ? LIMIT 5000", [before]);
+  const [b]: any = await pool.query("DELETE FROM client_crash_signatures WHERE last_seen_at < ? LIMIT 5000", [before]);
+  return { sightings: Number(a?.affectedRows ?? 0), signatures: Number(b?.affectedRows ?? 0) };
 }

@@ -1,5 +1,5 @@
 /**
- * WHICH BROWSER CRASH EMAILS, against a real MySQL (S5 harness, drizzle/0429). The rules are server/lib/crashTriage.test.ts
+ * WHICH BROWSER CRASH EMAILS, against a real MySQL (S5 harness, drizzle/0433). The rules are server/lib/crashTriage.test.ts
  * and the route's are server/routes/clientCrash.test.ts, both over an in-memory store; this proves the SQL that
  * store stands in for:
  *
@@ -7,7 +7,8 @@
  *  - different visitors are counted within the window and not outside it;
  *  - two reports racing for one window's email send one (the conditional UPDATE), and the next window sends again;
  *  - the digest holds what was recorded and not emailed, once;
- *  - Village Health reads each signature with its browsers and pages.
+ *  - Village Health reads each signature with its browsers and pages;
+ *  - the retention sweep forgets old reports and crashes nobody has reported since, and keeps the rest.
  *
  * No TEST_DATABASE_URL: skips loudly, never passes hollowly (house rule).
  */
@@ -15,7 +16,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import mysql from "mysql2/promise";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb } from "../db/testDb";
 import { TRIAGE_DEFAULTS, type Sighting } from "../lib/crashTriage";
-import { claimEmail, digestGroups, markDigested, recordSighting, signatureViews } from "./clientCrashes";
+import { claimEmail, digestGroups, markDigested, recordSighting, signatureViews, sweepSightings } from "./clientCrashes";
 
 const configured = testDbConfigured();
 let db: TestDb;
@@ -88,5 +89,17 @@ describe.skipIf(!configured)("crash triage (MySQL)", () => {
     const views = await signatureViews(pool, 50);
     const v = views.find((x) => x.message === "digest me");
     expect(v).toMatchObject({ seenCount: 2, ours: false, routes: ["/roles"], browsers: ["Chrome Android"] });
+  });
+
+  it("the retention sweep forgets reports older than the dial, and a crash nobody has reported since", async () => {
+    const old = await recordSighting(pool, sighting({ message: "long ago", visitor: "o1", now: at(-40 * 24 * 60) }), TRIAGE_DEFAULTS);
+    const kept = await recordSighting(pool, sighting({ message: "still here", visitor: "k1", now: at(-40 * 24 * 60) }), TRIAGE_DEFAULTS);
+    await recordSighting(pool, sighting({ message: "still here", visitor: "k2", now: at(0) }), TRIAGE_DEFAULTS);
+    const gone = await sweepSightings(pool, at(1), 30);
+    expect(gone).toEqual({ sightings: 2, signatures: 1 });
+    const [[o]]: any = await pool.query("SELECT COUNT(*) AS n FROM client_crash_signatures WHERE id = ?", [old.id]);
+    const [[k]]: any = await pool.query("SELECT COUNT(*) AS n FROM client_crash_sightings WHERE signature_id = ?", [kept.id]);
+    expect(Number(o.n)).toBe(0);
+    expect(Number(k.n)).toBe(1);
   });
 });

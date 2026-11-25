@@ -27,16 +27,19 @@ export const CRASH_TRIAGE_DIALS = {
   spreadVisitors: "ops.crash_spread_visitors",
   spreadMinutes: "ops.crash_spread_minutes",
   emailEveryHours: "ops.crash_email_every_hours",
+  keepDays: "ops.crash_keep_days",
 } as const;
 
 export interface TriageDials {
   spreadVisitors: number;
   spreadMinutes: number;
   emailEveryHours: number;
+  /** How long a report is kept, in days (the retention sweep). */
+  keepDays: number;
 }
 
-/** The platform's defaults, which the dials start at: three visitors in an hour, one email a day. */
-export const TRIAGE_DEFAULTS: TriageDials = { spreadVisitors: 3, spreadMinutes: 60, emailEveryHours: 24 };
+/** The platform's defaults, which the dials start at: three visitors in an hour, one email a day, kept 30 days. */
+export const TRIAGE_DEFAULTS: TriageDials = { spreadVisitors: 3, spreadMinutes: 60, emailEveryHours: 24, keepDays: 30 };
 
 /** The dials as a number reader gives them, each held to a sane range; a dial that cannot be read is its default. */
 export function readTriageDials(read: (key: string) => number): TriageDials {
@@ -53,6 +56,7 @@ export function readTriageDials(read: (key: string) => number): TriageDials {
     spreadVisitors: one(CRASH_TRIAGE_DIALS.spreadVisitors, TRIAGE_DEFAULTS.spreadVisitors, 1, 50),
     spreadMinutes: one(CRASH_TRIAGE_DIALS.spreadMinutes, TRIAGE_DEFAULTS.spreadMinutes, 5, 1440),
     emailEveryHours: one(CRASH_TRIAGE_DIALS.emailEveryHours, TRIAGE_DEFAULTS.emailEveryHours, 1, 168),
+    keepDays: one(CRASH_TRIAGE_DIALS.keepDays, TRIAGE_DEFAULTS.keepDays, 1, 365),
   };
 }
 
@@ -95,8 +99,13 @@ export interface Sighting {
   route: string;
   visitor: string;
   now: Date;
-  /** Ours by what the route knows besides the frames: a stale-build miss from the bundle this server serves. */
-  oursHint?: boolean;
+  /**
+   * A chunk or copy part that did not arrive (shared/staleBuild.ts). Never ours by its frames, which are Vite's
+   * preload helper in our own bundle: during a deploy a tab can load the new entry and miss a part on the old
+   * server, so one report proves nothing. A build that really broke its own rule reaches every visitor, and the
+   * spread rule emails it within the hour.
+   */
+  staleBuild?: boolean;
 }
 
 /** A signature as it stands after a sighting. */

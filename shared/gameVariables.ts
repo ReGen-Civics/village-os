@@ -4184,6 +4184,18 @@ export const VARIABLES: VariableDef[] = [
     max: 168,
     unit: "hours",
   },
+  {
+    key: "ops.crash_keep_days",
+    category: "Platform",
+    label: "Days browser crash reports are kept",
+    description:
+      "Browser crash reports older than this are deleted each day, and a crash nobody has reported since is forgotten with them. They hold no names and no addresses; this keeps the record short.",
+    type: "integer",
+    default: "30",
+    min: 1,
+    max: 365,
+    unit: "days",
+  },
 
   /*
    * THE VILLAGE'S OWN SOURCE-CODE LINK (AGPL-3.0-or-later, section 13,

@@ -24,8 +24,10 @@
  * message (shared/staleBuild.ts) from a bundle other than the one this server
  * serves, is a log line and nothing more: no event, no alert. The page itself
  * reloads once (client/src/lib/staleChunk.ts). The same miss from the CURRENT
- * bundle is a build that broke its own rule, and is reported like any crash, as
- * is any report when the current bundle cannot be read.
+ * bundle, or when the current bundle cannot be read, is recorded, and emails
+ * once it reaches several visitors (25 Nov 2026): during a deploy a tab can load
+ * the new entry and miss a part on the old server, so one report proves nothing,
+ * and a build that really broke its own rule reaches everyone within the hour.
  *
  * NOISE, AND WHAT EMAILS (the lead, 25 Nov 2026). A report nobody can act on (shared/crashNoise.ts: an extension, an
  * injected global, a dropped connection, an opaque cross-origin error) is dropped here as well as in the page,
@@ -47,7 +49,7 @@ import { reportError } from "../lib/errors";
 import { isStaleBuildMessage } from "../../shared/staleBuild";
 import { isCrashNoise } from "../../shared/crashNoise";
 import { alertWords, decideEmail, digestWords, readTriageDials, visitorDigest } from "../lib/crashTriage";
-import { claimEmail, digestGroups, markDigested, recordSighting, signatureViews } from "../repos/clientCrashes";
+import { claimEmail, digestGroups, markDigested, recordSighting, signatureViews, sweepSightings } from "../repos/clientCrashes";
 
 export const CLIENT_CRASH_PATH = "/api/client-crash";
 /** Reports one address may send in ten minutes. A shared village address is several people. */
@@ -179,8 +181,9 @@ function bundleFromDisk(publicDir: string | undefined): () => string | null {
   };
 }
 
-/** The job's name in `scheduled_jobs`. */
+/** The jobs' names in `scheduled_jobs`. */
 export const CRASH_DIGEST_JOB = "client-crash-digest";
+export const CRASH_RETENTION_JOB = "client-crash-retention";
 
 /**
  * The daily digest: every report recorded and not emailed since the last one, by signature, browser and page. Sent
@@ -212,6 +215,11 @@ export function register(app: Express, deps: Deps): void {
     const alertAdmins = deps.alertAdmins;
     deps.registerJob(CRASH_DIGEST_JOB, 24 * HOUR, () => sendCrashDigest(deps.getPool(), alertAdmins, now()));
   }
+  // Reports are kept `ops.crash_keep_days` (default 30), then forgotten.
+  deps.registerJob?.(CRASH_RETENTION_JOB, 24 * HOUR, async () => {
+    const gone = await sweepSightings(deps.getPool(), now(), dials().keepDays);
+    return `${gone.sightings} report(s) and ${gone.signatures} crash(es) older than ${dials().keepDays} days`;
+  });
   app.post(CLIENT_CRASH_PATH, async (req: Request, res: Response) => {
     // Always the same answer, so the route tells a prober nothing.
     res.status(204).end();
@@ -240,8 +248,8 @@ export function register(app: Express, deps: Deps): void {
       const at = now();
       const d = dials();
       const sighting = { message: crash.message, frames: crash.frames, browser: crash.browser, route: crash.route, visitor: visitorDigest(salt(), deps.clientIp(req), at), now: at,
-        // The same miss from the bundle this server serves is this build breaking its own rule: ours.
-        oursHint: isStaleBuildMessage(crash.message) && !!crash.bundle && crash.bundle === served };
+        // A miss from the bundle this server serves (a deploy in flight, or a build that broke its rule) emails once it spreads.
+        staleBuild: isStaleBuildMessage(crash.message) };
       const state = await recordSighting(deps.getPool(), sighting, d);
       const verdict = decideEmail({ ours: state.ours, visitorsInWindow: state.visitorsInWindow, emailedAt: state.emailedAt, now: at }, d);
       if (!verdict.email) return;

@@ -31,6 +31,7 @@ describe("the dials", () => {
     expect(Number(byKey.get(CRASH_TRIAGE_DIALS.spreadVisitors)?.default)).toBe(TRIAGE_DEFAULTS.spreadVisitors);
     expect(Number(byKey.get(CRASH_TRIAGE_DIALS.spreadMinutes)?.default)).toBe(TRIAGE_DEFAULTS.spreadMinutes);
     expect(Number(byKey.get(CRASH_TRIAGE_DIALS.emailEveryHours)?.default)).toBe(TRIAGE_DEFAULTS.emailEveryHours);
+    expect(Number(byKey.get(CRASH_TRIAGE_DIALS.keepDays)?.default)).toBe(TRIAGE_DEFAULTS.keepDays);
   });
 
   it("read as their defaults when unreadable, and are held to a sane range", () => {

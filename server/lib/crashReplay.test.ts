@@ -52,3 +52,42 @@ describe("the replay", () => {
     expect(parseRow("Something broke in scheduler: boom")).toBeNull();
   });
 });
+
+/**
+ * PRODUCTION, 24 to 25 Nov 2026, as the coordinator read it from Admin, Comms (origin notify.immediate): subjects and
+ * times only, the comms log keeps no stack. Before about 20:05 on 24 Nov each crash went to about four recipients;
+ * that fan-out is kept here so the replay has to collapse it. "QA forced crash" was a deliberate test and is left out.
+ * Before: 15 crash emails (about 45 with the fan-out). After: none of them emails.
+ */
+const PROD: Array<[string, number, string, string]> = [
+  ["2026-11-24T02:00:00Z", 3, "/roles", "copy part swojdC4m1sum: 404"],
+  ["2026-11-24T02:36:00Z", 4, "/", "copy part 9HvkYbcFHm-y: 404"],
+  ["2026-11-24T04:33:00Z", 4, "/", "copy part JMd_p3w6n5x6: 404"],
+  ["2026-11-24T04:53:00Z", 4, "/", "copy part JMd_p3w6n5x6: 404"],
+  ["2026-11-24T05:16:00Z", 4, "/roles", "undefined is not an object (evaluating 'window.__firefox__.reader')"],
+  ["2026-11-24T05:22:00Z", 4, "/roles", "Can't find variable: __firefox__"],
+  ["2026-11-24T06:37:00Z", 4, "/", "Failed to fetch dynamically imported module: https://village.example/assets/Home-CDRldjDs.js"],
+  ["2026-11-24T15:15:00Z", 4, "/roles", "undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')"],
+  ["2026-11-24T16:52:00Z", 1, "/roles", "undefined is not an object (evaluating 'window.__firefox__.<token>')"],
+  ["2026-11-24T16:57:00Z", 1, "/propose-a-role", "Load failed"],
+  ["2026-11-24T19:51:00Z", 1, "/", "Load failed"],
+  ["2026-11-25T00:17:00Z", 1, "/roles", "Load failed"],
+  ["2026-11-25T00:15:00Z", 1, "/roles", "window.ethereum.selectedAddress = undefined"],
+  ["2026-11-25T02:25:00Z", 1, "/roles", "window.__firefox__.<token>"],
+];
+
+describe("the replay of production's crash emails, 24 to 25 Nov 2026", () => {
+  const rows = PROD.flatMap(([at, fanOut, page, message]) =>
+    Array.from({ length: fanOut }, () => ({ text: `Something broke in browser on ${page}: ${message}`, at: new Date(at) })),
+  );
+
+  it("before: every one emailed; after: none does, and each is dropped for a named reason", () => {
+    const r = replay(rows);
+    expect(r.rows).toBe(rows.length);
+    expect(r.crashes).toBe(PROD.length);
+    expect(r.droppedAsStaleBuild).toBe(5);
+    expect(r.droppedAsNoise).toBe(9);
+    expect(r.signatures).toBe(0);
+    expect([r.wouldEmailAtLeast, r.wouldEmailAtMost]).toEqual([0, 0]);
+  });
+});

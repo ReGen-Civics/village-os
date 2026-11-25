@@ -11,7 +11,7 @@ import { CLIENT_CRASH_PATH, PER_ADDRESS, crashLine, entryBundleOf, isStaleBuildM
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
 /**
- * The two crash tables (drizzle/0429), in memory: exactly the statements server/repos/clientCrashes.ts sends. The SQL
+ * The two crash tables (drizzle/0433), in memory: exactly the statements server/repos/clientCrashes.ts sends. The SQL
  * itself is run against MySQL in server/repos/clientCrashes.db.test.ts.
  */
 export function crashTables() {
@@ -200,11 +200,23 @@ describe("a stale-build miss from an older bundle", () => {
     log.mockRestore();
   });
 
-  it("the same miss from the bundle this server serves is a broken build, and is reported", async () => {
+  it("the same miss from the bundle this server serves is recorded, and emails once it reaches three visitors (25 Nov 2026)", async () => {
+    // During a deploy a tab can load the new entry and miss a part on the old server, so one report proves nothing;
+    // a build that really broke its own rule reaches everyone within the hour.
     const h = harness({ currentBundle: "index-OLDbuild1" });
     await h.post(STALE);
-    expect(h.report).toHaveBeenCalledTimes(1);
     expect(h.inserts).toHaveLength(1);
+    expect(h.report).not.toHaveBeenCalled();
+    await h.post(STALE, "198.51.100.1");
+    await h.post(STALE, "198.51.100.2");
+    expect(h.report).toHaveBeenCalledTimes(1);
+  });
+
+  it("a chunk that did not arrive is never ours by its frames, which are Vite's preload helper in our bundle", async () => {
+    const h = harness({ currentBundle: "index-OLDbuild1" });
+    await h.post({ ...STALE, message: "Failed to fetch dynamically imported module: https://village.example/assets/Home-CDRldjDs.js", frames: ["preload@/assets/index-OLDbuild1.js:1:200"] });
+    expect(h.report).not.toHaveBeenCalled();
+    expect(Array.from(h.tables.sigs.values())[0].ours).toBe(0);
   });
 
   it("is recorded when the served bundle cannot be read, or the page sent none, and emails once it spreads (25 Nov 2026)", async () => {
