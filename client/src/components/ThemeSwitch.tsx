@@ -14,7 +14,7 @@
 import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { DaySun, NightMoon } from "@/components/sacred/glyphs";
-import { MODES_LIVE, applyMode, currentMode, storedMode, type Mode } from "@/lib/colourMode";
+import { MODES_LIVE, MODE_CHANGED, applyMode, currentMode, storedMode, type Mode } from "@/lib/colourMode";
 
 export default function ThemeSwitch({ live = MODES_LIVE }: { live?: boolean }) {
   const { t } = useLingui();
@@ -25,6 +25,12 @@ export default function ThemeSwitch({ live = MODES_LIVE }: { live?: boolean }) {
   // own day-* or night-* ground is not held under that inline colour.
   useEffect(() => {
     document.documentElement.style.removeProperty("background-color");
+  }, []);
+  // The settings page changes the same mode; the switch follows it.
+  useEffect(() => {
+    const heard = () => setMode(currentMode());
+    window.addEventListener(MODE_CHANGED, heard);
+    return () => window.removeEventListener(MODE_CHANGED, heard);
   }, []);
   if (!shown) return null;
 

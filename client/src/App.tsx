@@ -200,6 +200,7 @@ const MasterPlan = brochurePage(() => import("./pages/MasterPlan"));
 const Team = brochurePage(() => import("./pages/Team"));
 const Admin = lazyPage(() => import("./pages/Admin"));
 const Profile = lazyPage(() => import("./pages/Profile"));
+const ProfileSettings = lazyPage(() => import("./pages/ProfileSettings"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
 // Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
@@ -470,6 +471,8 @@ function Router() {
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      {/* Profile settings (Direction D). Before /profile/:handle, which would otherwise take "settings" as a handle. */}
+      <Route path="/profile/settings" component={ProfileSettings} />
       <Route path="/welcome" component={RitesWelcome} />
       <Route path="/aboard" component={RitesComeAboard} />
       <Route path="/aboard/welcome" component={RitesArrived} />

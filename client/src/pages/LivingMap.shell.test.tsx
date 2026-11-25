@@ -429,7 +429,7 @@ describe("a village with nothing published", () => {
     arrive("/map");
     expect(await screen.findByRole("heading", { name: "Make your map" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "1. Upload your masterplan" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Set up your agent" }).getAttribute("href")).toBe("/profile#your-agent");
+    expect(screen.getByRole("link", { name: "Set up your agent" }).getAttribute("href")).toBe("/profile/settings#agents");
     await waitFor(() => expect(asked).toContain("/api/map/masterplan"));
     expect(screen.getByRole("button", { name: "Open the map to draw it" })).toBeTruthy();
     expect(frame()).toBeNull();
