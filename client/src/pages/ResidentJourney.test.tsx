@@ -287,3 +287,25 @@ describe("the village dues", () => {
     expect(await screen.findByText("€300")).toBeTruthy();
   });
 });
+
+/*
+ * A STEP OPENS FROM THE KEYBOARD (whole-app QA, 25 Nov 2026). The header row is
+ * a div a mouse presses; the step's title is the button a keyboard and a screen
+ * reader reach, and it says whether the step is open.
+ */
+describe("each step's title is its disclosure", () => {
+  it("is a button that reports and toggles aria-expanded", async () => {
+    renderPage();
+    // The resident path's own steps (the "steps" list); the page's other disclosures do not count.
+    const steps = RESIDENT_JOURNEY.sections.find((sec) => sec.id === "steps")!.lists!.find((l) => l.key === "items")!.default as Array<{ title: string }>;
+    const title = steps[1].title;
+    const button = await waitFor(() => {
+      const b = [...document.querySelectorAll<HTMLButtonElement>("h3 > button[aria-expanded]")].find((x) => x.textContent?.trim() === title);
+      expect(b).toBeTruthy();
+      return b!;
+    });
+    const before = button.getAttribute("aria-expanded");
+    fireEvent.click(button);
+    expect(button.getAttribute("aria-expanded")).not.toBe(before);
+  });
+});
