@@ -11,10 +11,11 @@
  * accomplishment in the design's goal box.
  */
 import type { PlayerCard } from "@shared/playerCard";
-import { SlotView } from "./cardParts";
+import { SlotView, useShows } from "./cardParts";
 
 export function AccomplishedSection({ accomplished }: { accomplished: PlayerCard["accomplished"] }) {
-  if (accomplished.moons.kind === "unread") return null;
+  const shows = useShows();
+  if (!shows(accomplished.moons)) return null;
   return (
     <section aria-labelledby="pc-done-h" data-card-accomplished className="pc-panel">
       <h3 id="pc-done-h" className="pc-h2">

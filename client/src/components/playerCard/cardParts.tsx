@@ -58,7 +58,12 @@ export const NightContext = createContext(false);
 /** Draw a slot: nothing when unread, its words when empty, the value when shown. */
 export function SlotView<T>({ slot, children }: { slot: Slot<T>; children: (value: T) => ReactNode }) {
   const night = useContext(NightContext);
+  const { quiet } = useContext(CardEditContext);
   if (slot.kind === "unread") return null;
+  // ABSENT, NOT EMPTY (profile overhaul, Direction D): on a live card outside edit mode an unwritten
+  // part prints nothing. The owner reads one line instead (UnwrittenLine), and edit mode shows each
+  // part's "Not written yet" beside its edit control, where the words are useful.
+  if (slot.kind === "empty" && quiet) return null;
   if (slot.kind === "empty") return <p className={night ? "pc-dim pc-f14" : "text-sm text-muted-foreground"}>{slot.words}</p>;
   return <>{children(slot.value)}</>;
 }
@@ -85,9 +90,29 @@ export interface CardEditState {
   owner?: boolean;
   /** Read the card again after a save. */
   reload: () => void;
+  /**
+   * A live card read outside edit mode: unwritten parts are absent rather than printed as "Not
+   * written yet". False for a proposal or an application, where the empty words say what to fill in.
+   */
+  quiet?: boolean;
 }
 
-export const CardEditContext = createContext<CardEditState>({ editing: false, owner: false, reload: () => undefined });
+export const CardEditContext = createContext<CardEditState>({ editing: false, owner: false, reload: () => undefined, quiet: false });
+
+/** Whether a slot draws at all: written, or unwritten on a card that shows its gaps. */
+export function useShows(): (slot: Slot<unknown>) => boolean {
+  const { quiet } = useContext(CardEditContext);
+  return (slot) => slot.kind === "shown" || (slot.kind === "empty" && !quiet);
+}
+
+/** How many parts of a card are unwritten: every `{ kind: "empty" }` slot inside it. */
+export function countUnwritten(node: unknown): number {
+  if (!node || typeof node !== "object") return 0;
+  if (Array.isArray(node)) return node.reduce((n: number, x) => n + countUnwritten(x), 0);
+  const o = node as Record<string, unknown>;
+  if (o.kind === "empty" && typeof o.words === "string") return 1;
+  return Object.values(o).reduce((n: number, x) => n + countUnwritten(x), 0);
+}
 
 type Target = { kind: "personal"; key: PersonalEditKey; goal?: string } | { kind: "role"; key: RoleEditKey; roleId: string };
 
