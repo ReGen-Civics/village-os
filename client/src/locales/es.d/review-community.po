@@ -1,0 +1,201 @@
+# The community face of /review (review inbox lane 6, 25 Nov 2026).
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: a read"
+msgid "votes"
+msgstr "votaciones"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: a read"
+msgid "change requests"
+msgstr "solicitudes de cambio"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: a read"
+msgid "raised hands"
+msgstr "manos alzadas"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: a read"
+msgid "what waits on your role"
+msgstr "lo que espera a tu rol"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Closes {closes}"
+msgstr "Cierra el {closes}"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Nothing is open for your voice right now."
+msgstr "Ahora mismo no hay nada abierto a tu voz."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "This page is for members of the village."
+msgstr "Esta página es para miembros de la aldea."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "This page is for members of the village. Once you are a member, what is open for your voice shows here."
+msgstr "Esta página es para miembros de la aldea. Cuando seas miembro, aquí verás lo que está abierto a tu voz."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "You have not sent anything yet. A change request or a raised hand you send shows here, with where it stands."
+msgstr "Todavía no has enviado nada. Una solicitud de cambio o una mano alzada que envíes aparece aquí, con su estado."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Try again"
+msgstr "Inténtalo de nuevo"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Back to what you decide"
+msgstr "Volver a lo que decides"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Reading what is open for your voice."
+msgstr "Leyendo lo que está abierto a tu voz."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Sign in to see it"
+msgstr "Inicia sesión para verla"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "Some of this did not load: {failedNames}. Something may be waiting there."
+msgstr "Parte de esto no se cargó: {failedNames}. Puede que algo espere allí."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "You also decide some of what waits on the village."
+msgstr "También decides parte de lo que espera a la aldea."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community"
+msgid "This did not load. Something may be open for your voice."
+msgstr "Esto no se cargó. Puede que haya algo abierto a tu voz."
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: heading"
+msgid "Open for your voice"
+msgstr "Abierto a tu voz"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: heading"
+msgid "What you sent"
+msgstr "Lo que enviaste"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: heading"
+msgid "Waiting on your role"
+msgstr "Esperando a tu rol"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: kind"
+msgid "A vote"
+msgstr "Una votación"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: kind"
+msgid "A change request"
+msgstr "Una solicitud de cambio"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: kind"
+msgid "A tension raised with your role"
+msgstr "Una tensión planteada a tu rol"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: kind"
+msgid "Done work for your role to accept"
+msgstr "Trabajo hecho que tu rol debe aceptar"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: kind"
+msgid "A member asks to hold a power"
+msgstr "Un miembro pide asumir un poder"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: door"
+msgid "Vote"
+msgstr "Votar"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: door"
+msgid "Take part"
+msgstr "Participar"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: door"
+msgid "Answer it"
+msgstr "Responder"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: door"
+msgid "Accept it"
+msgstr "Aceptar"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: door"
+msgid "Answer"
+msgstr "Responder"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "In a vote"
+msgstr "En votación"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Being read"
+msgstr "En lectura"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Granted"
+msgstr "Concedida"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Withdrawn"
+msgstr "Retirada"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Sent"
+msgstr "Enviada"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Gathering views"
+msgstr "Reuniendo opiniones"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Open"
+msgstr "Abierta"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Accepted"
+msgstr "Aceptada"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Voting now"
+msgstr "Votándose ahora"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "review, community: stage"
+msgid "Not taken up"
+msgstr "No se adoptó"
+
+# needs-native-review: Review, community face, 2026-11-25
+msgctxt "Review, link"
+msgid "See what is open for your voice"
+msgstr "Ver lo que está abierto a tu voz"

@@ -271,8 +271,9 @@ describe("/review", () => {
   it("signed out, refuses as a whole without asking either members-only route", async () => {
     signOut();
     inRouter(<Review />);
-    await waitFor(() => expect(screen.getByText("This queue is not open to you yet")).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId("community-signed-out")).toBeTruthy());
     expect(asked.filter((u) => u.startsWith("/api/review/queue"))).toEqual([]);
+    expect(asked.filter((u) => u.startsWith("/api/review/community"))).toEqual([]);
     expect(asked.filter((u) => u.startsWith("/api/admin/quest-claims"))).toEqual([]);
   });
 

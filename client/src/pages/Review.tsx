@@ -65,7 +65,7 @@ import { authToken } from "@/lib/gameApi";
 import { toast } from "sonner";
 import { Inbox } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import AgentProposalsCard from "@/components/review/AgentProposalsCard";
 import QuestProposalCard, { type QuestCard, type QuestTyped } from "@/components/review/QuestProposalCard";
 import type { Batch, ProposalCard, Queue, StuckDraft } from "@/components/review/queueTypes";
@@ -76,6 +76,7 @@ import { PROPOSE_QUEST_MODULE } from "@shared/questIdeas";
 import { SeraFold, SeraMemberPage, SeraTop, useSeraOnReview } from "@/components/review/SeraOnReview";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, TILE, WORLD } from "@/components/journey/look";
 import { byArrival } from "@/components/governance/deciderOrder";
+import CommunityReview from "@/components/reviewInbox/CommunityReview";
 
 /** The kinds that change the chart, as the structure review reads them. */
 const CHART_KINDS: readonly string[] = STRUCTURE_KINDS;
@@ -154,6 +155,7 @@ function agedFor(oldestSince: string | null): string {
 export default function Review() {
   const { t } = useLingui();
   const { user } = useAuth();
+  const viewCommunity = new URLSearchParams(useSearch()).get("view") === "community";
   const [queue, setQueue] = useState<Queue | null>(null);
   const [loading, setLoading] = useState(true);
   /**
@@ -557,18 +559,24 @@ export default function Review() {
   // The whole page refuses only when both reads did. Somebody refused one key
   // and given the other is shown the section they hold. A member still sees
   // how many of the service's changes wait and who decides them (spec R38).
-  if (forbidden && consent.refused) {
+  // Somebody who decides none of these queues, or who asks for it (`?view=community`), is shown the community face:
+  // what is open for their voice, from its own projection (CommunityReview). A member still sees how many of the
+  // service's changes wait and who decides them (spec R38).
+  const community = forbidden && consent.refused;
+  if (community || viewCommunity) {
     return (
       <Layout>
         <div className={WORLD}>
-        <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
-          {sera.read.phase === "member" ? <SeraMemberPage sera={sera} /> : <div className={card}>
-            <h1 className="font-display text-2xl text-foreground"><Trans context="Review, h1">This queue is not open to you yet</Trans></h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              <Trans context="Review, p">Reviewing what an outside service proposes, and witnessing finished quests, are jobs this
-              village hands to somebody. Ask whoever looks after the village queues, and they can pass one on.
-            </Trans></p>
-          </div>}
+        <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-6">
+          <div>
+            <p className={`${EYEBROW} flex items-center gap-2`}>
+              <Inbox className="size-4" aria-hidden="true" />
+              <Trans context="review: eyebrow">Waiting on the village</Trans>
+            </p>
+            <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Review</Trans></h1>
+          </div>
+          <CommunityReview decides={!community} />
+          {sera.read.phase === "member" ? <SeraMemberPage sera={sera} titled={false} /> : null}
         </div>
         </div>
       </Layout>
@@ -591,6 +599,7 @@ export default function Review() {
             <Trans context="review: eyebrow">Waiting on the village</Trans>
           </p>
           <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Review</Trans></h1>
+          <p className={`${HINT} mt-1`}><Link href="/review?view=community" className={LINK}><Trans context="Review, link">See what is open for your voice</Trans></Link></p>
           {!forbidden && (
             <p className={`${LEDE} mt-2`}>
               <Trans context="Review, p">What an outside service has proposed about this village. Nothing here is true yet. Read it,
