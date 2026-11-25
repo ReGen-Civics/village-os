@@ -341,6 +341,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
         <div className="flex items-center gap-3">
           <button
             onClick={load}
+            aria-label={t({ message: "Load the saved words again", context: "ContentEditorTab, aria-label" })}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <RefreshCw className="w-4 h-4" />

@@ -1,0 +1,41 @@
+# Names for Admin's icon-only buttons (admin live pass A5, 25 Nov 2026).
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Delete this document"
+msgstr "Eliminar este documento"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Delete this module"
+msgstr "Eliminar este módulo"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Move this question up"
+msgstr "Subir esta pregunta"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Move this question down"
+msgstr "Bajar esta pregunta"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Delete this milestone"
+msgstr "Eliminar este hito"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "Admin, aria-label"
+msgid "Remove this goal"
+msgstr "Quitar este objetivo"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "WorkWithUsTab, aria-label"
+msgid "Remove this option"
+msgstr "Quitar esta opción"
+
+# needs-native-review: Admin button names, 2026-11-25
+msgctxt "ContentEditorTab, aria-label"
+msgid "Load the saved words again"
+msgstr "Volver a cargar las palabras guardadas"

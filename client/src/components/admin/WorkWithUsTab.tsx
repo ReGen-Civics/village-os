@@ -113,7 +113,7 @@ export default function WorkWithUsTab({ password }: { password: string }) {
                 <div className="flex gap-2">
                   <input type="text" value={o.title} onChange={(e) => setOpt(i, { title: e.target.value })} placeholder={t({ message: "Title (shown)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   <input type="text" value={o.value} onChange={(e) => setOpt(i, { value: e.target.value })} placeholder={t({ message: "Value (stored)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  <button onClick={() => removeOpt(i)} className="p-2 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removeOpt(i)} aria-label={t({ message: "Remove this option", context: "WorkWithUsTab, aria-label" })} className="p-2 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
                 <textarea value={o.desc} onChange={(e) => setOpt(i, { desc: e.target.value })} rows={2} placeholder={t({ message: "Description", context: "WorkWithUsTab, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
               </div>

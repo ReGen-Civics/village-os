@@ -1493,7 +1493,7 @@ function InvestorVaultTab({ password }: { password: string }) { const { t } = us
                 </span>
               </label>
               <button
-                onClick={() => remove(d.id)}
+                aria-label={t({ message: "Delete this document", context: "Admin, aria-label" })} onClick={() => remove(d.id)}
                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -1972,7 +1972,7 @@ function TrainingModulesTab({ password }: { password: string }) { const { t } = 
                   <Trans context="Admin, button">Edit
                 </Trans></button>
                 <button
-                  onClick={() => remove(m.id)}
+                  aria-label={t({ message: "Delete this module", context: "Admin, aria-label" })} onClick={() => remove(m.id)}
                   className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -2131,10 +2131,10 @@ function FaqAdminTab({ password }: { password: string }) { const { t } = useLing
               {(
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <button onClick={() => move(idx, -1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === 0}>
+                    <button aria-label={t({ message: "Move this question up", context: "Admin, aria-label" })} onClick={() => move(idx, -1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === 0}>
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => move(idx, 1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === items.length - 1}>
+                    <button aria-label={t({ message: "Move this question down", context: "Admin, aria-label" })} onClick={() => move(idx, 1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === items.length - 1}>
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -2354,7 +2354,7 @@ function MilestonesAdminTab({ password }: { password: string }) { const { t } = 
                           className="w-full text-sm text-gray-600 px-2 py-1 border border-transparent hover:border-gray-200 rounded focus:border-teal-deep/40 focus:outline-none resize-y mt-1"
                         />
                       </div>
-                      <button onClick={() => remove(m.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0">
+                      <button aria-label={t({ message: "Delete this milestone", context: "Admin, aria-label" })} onClick={() => remove(m.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -6892,7 +6892,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
                           placeholder={t({ message: "What this season is trying to achieve", context: "Admin, placeholder" })}
                           className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg"
                         />
-                        <button onClick={() => update(i, { goals: s.goals.filter((_, xi) => xi !== gi) })} className="text-gray-400 hover:text-red-600 shrink-0">
+                        <button aria-label={t({ message: "Remove this goal", context: "Admin, aria-label" })} onClick={() => update(i, { goals: s.goals.filter((_, xi) => xi !== gi) })} className="text-gray-400 hover:text-red-600 shrink-0">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
