@@ -1,0 +1,51 @@
+# The entrance's copy, at the lead's ask (25 Nov 2026): the lede, the name field, two interests and the privacy list.
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: what is inside, and what is asked"
+msgid "Just inside are the village's roles, its \"game\" and the work of building it together. We share a lot about who we are and how we co-create, so we'd like to know a bit about you too!"
+msgstr "Aquí dentro están los roles de la aldea, su \"juego\" y el trabajo de construirla juntos. Compartimos mucho sobre quiénes somos y cómo co-creamos, así que nos gustaría saber un poco sobre ti también."
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: what draws you, a founding seeder"
+msgid "Becoming a \"Founding Seeder\""
+msgstr "Ser \"Semilla Fundadora\""
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: what draws you, a role"
+msgid "A role on our team"
+msgstr "Un rol en nuestro equipo"
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: name field"
+msgid "Name or Nickname"
+msgstr "Nombre o apodo"
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, its greeting"
+msgid "Hi friend:"
+msgstr "Hola, amiga o amigo:"
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, what you type"
+msgid "We keep what you type here, so it's saved for you."
+msgstr "Guardamos lo que escribes aquí, para que no lo pierdas."
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, the pages opened, with the village's name"
+msgid "We note which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+msgstr "Anotamos qué páginas abres mientras exploras, para saber quién visita {village} y poder darte seguimiento."
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, the code by email, shown only while the village sends codes"
+msgid "We email you a code to confirm your address, which you need to do if you want to go further in the process and stay in touch."
+msgstr "Te enviamos un código por correo para confirmar tu dirección, algo necesario si quieres avanzar en el proceso y seguir en contacto."
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, the email list"
+msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service."
+msgstr "Si en el siguiente paso dices que sí a recibir novedades, también te añadimos a nuestra lista de correo, que se guarda en un servicio de correo."
+
+# needs-native-review: entrance copy, 2026-11-25
+msgctxt "portal entrance: the privacy list, never sold"
+msgid "We never sell any of it."
+msgstr "Nunca vendemos nada de esto."
