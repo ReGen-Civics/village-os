@@ -15,6 +15,21 @@ on:
   push:
     branches: ["main", "wt/*-integration*"]
   pull_request:
+    # ready_for_review is the run a draft gets when it is marked ready. The
+    # other three are the default set, named again because naming any type
+    # replaces the default.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A DRAFT PULL REQUEST IS NOT JUDGED (25 Nov 2026). About twelve open pull
+# requests ran eight jobs on every push, and the 35 to 45 minute waits that
+# night were queueing, not testing. Lanes open their pull requests as drafts
+# and mark them ready when done. Every job below carries the same `if:`, so a
+# draft's run creates every job and skips all of them: no runner starts, and
+# a run of skipped jobs is not a green (a draft cannot be merged either).
+# Marking it ready fires `ready_for_review`, and THAT run is the one to read.
+# A push run (main, integration branches) is never a draft. tests-ran-once
+# carries the condition itself rather than inheriting a skip from `test`, so a
+# shard job skipped for any OTHER reason still meets it and fails it.
 
 # WHICH BRANCHES GET A PUSH RUN, and why most do not (Rye, 2026-11-01:
 # "Yes, free fix").
@@ -101,6 +116,7 @@ defaults:
 
 jobs:
   verify:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     # 20, cut from 40 on 2026-10-21 when the suite moved out to the `test` jobs below.
     # Everything left here took 4m40s on b878eaf (the guard self-tests 2m21s of it,
@@ -1255,6 +1271,7 @@ jobs:
   # shard prints its own provisioning receipt, builds its own template schema
   # in its own MySQL, and checks its own bundle against distFreshness.
   test:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     name: test (${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-latest
     # 30: about four times the slowest shard's measured test time, with room
@@ -1366,10 +1383,11 @@ jobs:
   # its self-test runs with the others in verify.
   #
   # `!cancelled()` so it still reports when a shard went red: it then says
-  # which files failed, and confirms nothing else fell through.
+  # which files failed, and confirms nothing else fell through. The draft
+  # condition is the same one the shards carry (see the note under `on:`).
   tests-ran-once:
     needs: test
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -1409,6 +1427,7 @@ jobs:
   # single email leaving during the run. The same scripts/browser-smoke.mjs
   # runs standalone against a staging URL for the deploy repository.
   browser-smoke:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
