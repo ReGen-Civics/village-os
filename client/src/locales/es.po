@@ -2237,6 +2237,11 @@ msgctxt "limit notice under a box"
 msgid "About a minute of talking left in this answer."
 msgstr "Queda alrededor de un minuto para hablar en esta respuesta."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forgotten: every entry for {email}. Their device will meet the entrance again."
+msgstr "Olvidado: cada entrada de {email}. Su dispositivo volverá a ver la entrada."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -2864,6 +2869,11 @@ msgctxt "VariablesTab, aria-label"
 msgid "Clear search"
 msgstr "Borrar búsqueda"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Loading the visitors."
+msgstr "Cargando los visitantes."
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "Get help drafting from {name}, our regeneratively trained digital assistant"
 msgstr "Pide ayuda para redactar a {name}, nuestra asistente digital formada en lo regenerativo"
@@ -2960,6 +2970,12 @@ msgstr "Puede devolverlo al panel de administración desde esta pestaña más ad
 msgctxt "NotifyPrefsPanel, a"
 msgid "<0/>Download everything the village holds about me"
 msgstr "<0/>Descargar todo lo que la aldea guarda sobre mí"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the keep-in-touch question, its own step after entering"
+msgid "Do you want us to keep you updated, and to hear about opportunities from {village}?"
+msgstr "¿Quieres que te mantengamos al tanto y recibir noticias de oportunidades en {village}?"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraDifferences.tsx
@@ -3779,6 +3795,11 @@ msgstr "Ningún círculo ha declarado todavía una forma de decidir."
 msgctxt "circles map, today card"
 msgid "Meeting today: {names}."
 msgstr "Se reúnen hoy: {names}."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the human check is not done yet"
+msgid "Finish the check that you are a person first."
+msgstr "Primero completa la verificación de que eres una persona."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "They aligned with the membership letter when they proposed."
@@ -5257,6 +5278,12 @@ msgctxt "CommunityCalendarCard, placeholder"
 msgid "The commons"
 msgstr "Lo común"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors"
+msgid "Pages opened"
+msgstr "Páginas abiertas"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsPeople.tsx
 msgctxt "CommsPeople, aria-label"
@@ -5797,6 +5824,11 @@ msgctxt "admin helper, the Anthropic provider's name"
 msgid "Claude"
 msgstr "Claude"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Nothing is kept for {email}."
+msgstr "No hay nada guardado para {email}."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Introductions.tsx
 msgctxt "Introductions, legend"
@@ -5891,6 +5923,12 @@ msgstr "Agregar rol"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Until the Game starts, the founders write this agreement. You can read every frame here."
 msgstr "Hasta que empiece el Juego, el equipo fundador escribe este acuerdo. Aquí puede leer cada marco."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors"
+msgid "Nobody has said yes to keeping in touch yet."
+msgstr "Nadie ha dicho que sí a seguir en contacto todavía."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: plan.modules.moneyLeftOff.join(", ")
@@ -6875,6 +6913,11 @@ msgctxt "open work: why the lead quest was chosen"
 msgid "A gentle place to begin."
 msgstr "Un lugar tranquilo para empezar."
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: optional WhatsApp field"
+msgid "WhatsApp number"
+msgstr "Número de WhatsApp"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, toast"
@@ -7098,6 +7141,11 @@ msgstr "Postúlate antes para {0}"
 #~ msgid "Wants to talk about the terms: {termsNote}"
 #~ msgstr "Quiere hablar de las condiciones: {termsNote}"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the button while sending"
+msgid "Opening the way"
+msgstr "Abriendo el camino"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -7220,6 +7268,12 @@ msgstr "Enviar {0}"
 msgctxt "change request note outcome"
 msgid "Taken in"
 msgstr "Incorporada"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the keep-in-touch answer yes"
+msgid "Yes"
+msgstr "Sí"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Crowdpool.tsx
@@ -7394,6 +7448,11 @@ msgstr "Se usa para sugerir fechas para la próxima temporada."
 #~ msgid "Where"
 #~ msgstr "Dónde"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "why a budget line does not count"
@@ -7525,10 +7584,20 @@ msgstr "Los miembros fundadores llevan dos, todos los demás uno"
 msgid "The characters you picked. Show one, then choose Play this character to keep it."
 msgstr "Los personajes que elegiste. Muestra uno y luego elige Jugar este personaje para quedártelo."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forget a person, when they ask"
+msgstr "Olvidar a una persona, cuando lo pida"
+
 #: client/src/components/openWork/statusWords.ts
 msgctxt "open work board: status mark, an open quest"
 msgid "Open: nobody carries it yet"
 msgstr "Abierta: nadie la lleva todavía"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: what drew them"
+msgid "Founding seeder"
+msgstr "Sembrador fundador"
 
 #: client/src/components/voice/VoiceDrafts.tsx
 msgctxt "voice drafts"
@@ -7737,6 +7806,11 @@ msgstr "{label}, en {currency}"
 msgctxt "start a conversation"
 msgid "Why you, and why this role, in a few lines"
 msgstr "Por qué tú, y por qué este rol, en unas pocas líneas"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Entered"
+msgstr "Entró"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: h.withName
@@ -9833,6 +9907,11 @@ msgctxt "quest editor"
 msgid "Price it with the village's rule (optional)"
 msgstr "Ponerle precio con la regla de la aldea (opcional)"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Every entry kept for this address is deleted for good, and the address comes off the email list."
+msgstr "Se borra para siempre cada entrada guardada para esta dirección, y la dirección sale de la lista de correo."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/LivingMap.tsx
 msgctxt "LivingMap, aria-label"
@@ -10152,6 +10231,11 @@ msgstr "Eso no llegó al servidor"
 msgctxt "Layout, Link"
 msgid "Report a Bug / Share an Idea"
 msgstr "Reportar un error o compartir una idea"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what draws you, a founding seeder"
+msgid "Becoming a founding seeder"
+msgstr "Ser sembrador fundador"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: s.kind
@@ -10614,6 +10698,11 @@ msgctxt "SeatSettingsFields, legend"
 msgid "Gathering {0}"
 msgstr "Reunión {0}"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "That did not go through. Check your connection."
+msgstr "No se pudo completar. Revisa tu conexión."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "accessible name of the companion button on a canvas block"
@@ -10718,6 +10807,12 @@ msgstr "Mover \"{0}\" a"
 msgctxt "budget desk"
 msgid "Cash for role pay and quest pay"
 msgstr "Efectivo para pago de roles y de misiones"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: before the link to the village's public site"
+msgid "To learn more about us, visit"
+msgstr "Para saber más sobre nosotros, visita"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/reviewExtras.ts
@@ -10995,6 +11090,11 @@ msgstr "{loadError} Guardar está desactivado hasta que se lea, para que no se s
 msgctxt "admin protocols editor"
 msgid "A completed run hands in: {0}"
 msgstr "Una ejecución completa entrega: {0}"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the main button"
+msgid "Enter"
+msgstr "Entrar"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/pages/Powers.tsx
@@ -11433,6 +11533,11 @@ msgctxt "CircleCard, p"
 msgid "and {0} more, on the roles below."
 msgstr "y {0} más, en los roles de abajo."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Forget"
+msgstr "Olvidar"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup lede"
@@ -11461,6 +11566,11 @@ msgstr "Un trabajo puntual"
 msgctxt "Admin, p"
 msgid "Grants capabilities"
 msgstr "Otorga capacidades"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: what drew them"
+msgid "A role"
+msgstr "Un rol"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -11561,6 +11671,11 @@ msgstr "Pedido a un rol"
 msgctxt "PhotoReportsPanel, aria-label"
 msgid "Report status"
 msgstr "Estado del reporte"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: email list"
+msgid "{sent} of {waiting} reached the email list."
+msgstr "{sent} de {waiting} llegaron a la lista de correo."
 
 # needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
 #: client/src/pages/Feedback.tsx
@@ -12391,6 +12506,11 @@ msgctxt "ConsentQueue, p"
 msgid "No finished work is waiting for a witness."
 msgstr "Ningún trabajo terminado espera un testigo."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The list did not load."
+msgstr "La lista no cargó."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/comms/AttendanceList.tsx
 msgctxt "AttendanceList, span"
@@ -12983,6 +13103,11 @@ msgctxt "ModuleSettingsSection, span"
 msgid "founder held"
 msgstr "en manos de fundadores"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Name"
+msgstr "Nombre"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/PoolStatement.tsx
 msgctxt "PoolStatement, th"
@@ -13420,6 +13545,11 @@ msgstr "Cancelar"
 msgctxt "voice invite"
 msgid "Talk to us instead"
 msgstr "Mejor háblanos"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: filter"
+msgid "What drew them"
+msgstr "Qué les atrajo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PathsStagesEditor.tsx
@@ -15921,6 +16051,11 @@ msgctxt "PullACard, li"
 msgid "Sun in gate {0}, line {1}"
 msgstr "Sol en la puerta {0}, línea {1}"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Portal visitors"
+msgstr "Visitantes del portal"
+
 # needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: role.places
 #. placeholder {1}: role.taken
@@ -16027,6 +16162,11 @@ msgstr "Esperando para enviar"
 msgctxt "role editor, who sees the listed price hint"
 msgid "The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it."
 msgstr "El ajuste de la aldea es Mostrar rangos de pago en las tarjetas de rol: mientras esté apagado, solo quienes leen los términos ven la cifra. Todos: esta tarjeta, el equipo fundador y el formulario de solicitud muestran la cifra a todos. Solo quienes editan esta tarjeta: nadie más la ve."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what draws you, a visit"
+msgid "Visiting"
+msgstr "Visitar"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -16826,6 +16966,11 @@ msgctxt "sera answers"
 msgid "Start from {owner} instead"
 msgstr "Empezar desde {owner}"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: heading, with the village's name"
+msgid "Welcome to {village}"
+msgstr "Te damos la bienvenida a {village}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PlayersTab.tsx
 msgctxt "PlayersTab, toast"
@@ -17597,6 +17742,11 @@ msgctxt "voice note countdown"
 msgid "This take stops by itself at {0}, and it is kept."
 msgstr "Esta toma se detiene sola a los {0}, y se guarda."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Since entering"
+msgstr "Desde que entró"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/SetupSection.tsx
 msgctxt "SetupSection, title"
@@ -17782,6 +17932,12 @@ msgstr "Cómo se reparte tu pago entre efectivo, {0} y {1}. Tu compensación se 
 #: client/src/pages/StewardJourney.tsx
 #~ msgid "Start with the open roles and what each one asks of you."
 #~ msgstr "Empieza por los roles abiertos y lo que cada uno te pide."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors"
+msgid "Only the people who said yes to keeping in touch"
+msgstr "Solo las personas que dijeron que sí a seguir en contacto"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profile/HandoffRespondRow.tsx
@@ -18575,6 +18731,11 @@ msgctxt "Admin, h3"
 msgid "What the season taught"
 msgstr "Lo que enseñó la temporada"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the network failed"
+msgid "That did not go through. Check your connection and try again."
+msgstr "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Update what I will contribute"
@@ -18911,6 +19072,11 @@ msgstr "Sus decisiones: {0}."
 msgid "Something hiccuped. Ask me that again?"
 msgstr "Algo falló. ¿Me lo pregunta de nuevo?"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: email list"
+msgid "Not sent yet: see the reason"
+msgstr "Aún no enviado: mira el motivo"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsSettings.tsx
 msgctxt "CommsSettings, span"
@@ -19004,6 +19170,11 @@ msgstr "p. ej. valle de río entre robles viejos, templado y con neblina"
 msgctxt "Messages, button"
 msgid "Rename"
 msgstr "Renombrar"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the second act, for members"
+msgid "I have an account: sign in"
+msgstr "Ya tengo cuenta: iniciar sesión"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/pages/Partner.tsx
@@ -19689,6 +19860,12 @@ msgctxt "my token pay"
 msgid "Waiting for the Treasurer's approval"
 msgstr "En espera de la aprobación de la Tesorería"
 
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list"
+msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
+msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
 msgid "This phone can't write down your words while it records. Your recording is fine; use the mic on each answer for the text."
@@ -20208,6 +20385,11 @@ msgctxt "sera answers"
 msgid "Left out: {0}."
 msgstr "Quedó fuera: {0}."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: email list"
+msgid "Waiting"
+msgstr "En espera"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: nameOf(h.actorUserId)
 #. placeholder {1}: new Date(h.at).toLocaleDateString()
@@ -20443,6 +20625,13 @@ msgctxt "GameMechanics, label"
 msgid "Search the dials"
 msgstr "Buscar en los diales"
 
+#. placeholder {0}: e.name
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: make member done"
+msgid "{0} is a member now."
+msgstr "{0} ya es miembro."
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -20524,6 +20713,12 @@ msgstr "Faltan {0}, y esta aldea no se da por terminada en su nombre"
 msgctxt "role card tooltip: the word"
 msgid "consent"
 msgstr "consentimiento"
+
+#. placeholder {0}: f.type
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: a later step, naming the form"
+msgid "Sent {0}"
+msgstr "Envió {0}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/OwedCancels.tsx
@@ -20910,6 +21105,12 @@ msgctxt "signing key"
 msgid "Withdraw the request"
 msgstr "Retirar la solicitud"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: no pages opened"
+msgid "None yet"
+msgstr "Ninguna todavía"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ArtLibraryTab.tsx
 msgctxt "admin art library: a painting chosen"
@@ -21174,6 +21375,11 @@ msgstr "Vuelva y presione Revisar el cielo. El DNS puede tardar unas horas."
 msgctxt "founding application sera"
 msgid "Edit it or keep it. We cannot send your application until you have done one or the other."
 msgstr "Edítalo o consérvalo. No podemos enviar tu solicitud hasta que hagas una de las dos cosas."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the form's name for screen readers"
+msgid "Enter the portal"
+msgstr "Entrar al portal"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Events.tsx
@@ -22067,6 +22273,11 @@ msgctxt "sera answers"
 msgid "{n} go into a draft. They go live when the draft is published."
 msgstr "{n} van a un borrador. Se activan cuando se publica el borrador."
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: email field"
+msgid "Your email"
+msgstr "Tu correo electrónico"
+
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
@@ -22113,6 +22324,11 @@ msgstr "Hasta"
 msgctxt "PublicProfile, p"
 msgid "Hearths at {0}"
 msgstr "Fogones en {0}"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: what drew them"
+msgid "A home"
+msgstr "Un hogar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
@@ -22570,6 +22786,12 @@ msgstr "Claro"
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
 msgstr "Adoptado. Los miembros lo leen en la página de la política de salida, y la lista de lanzamiento lo cuenta."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors"
+msgid "Keep in touch"
+msgstr "Seguir en contacto"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/OpenProposal.tsx
@@ -23141,6 +23363,12 @@ msgctxt "companion welcome"
 msgid "Night owl. Short messages. Love metaphors."
 msgstr "De noche rindo más. Mensajes cortos. Me encantan las metáforas."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: admit a visitor with an account"
+msgid "Make member"
+msgstr "Hacer miembro"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/CarryAcross.tsx
 msgctxt "CarryAcross, aria-label"
@@ -23560,6 +23788,11 @@ msgctxt "notification settings: email cadence option"
 msgid "In-app only"
 msgstr "Solo en la app"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: filter, no interest chosen"
+msgid "Anything"
+msgstr "Cualquiera"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note kind"
@@ -23900,6 +24133,11 @@ msgstr "Volver a {0}"
 msgid "A photo of this place"
 msgstr "Una foto de este lugar"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: no later step"
+msgid "Nothing yet"
+msgstr "Nada todavía"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "The photo you are about to add"
@@ -24145,6 +24383,12 @@ msgstr "Confirmar recibido"
 #~ msgctxt "open proposal confirmed step"
 #~ msgid "We write to you with what comes next."
 #~ msgstr "Te escribimos con lo que sigue."
+
+#. placeholder {0}: a.status
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: a later step"
+msgid "Applied ({0})"
+msgstr "Postuló ({0})"
 
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: before a first word"
@@ -24589,6 +24833,11 @@ msgstr "Nombre"
 msgctxt "feedback page: title example"
 msgid "The quest page shows a blank box when…"
 msgstr "La página de misiones muestra un cuadro vacío cuando…"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what is inside, and what is asked"
+msgid "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
+msgstr "Justo adentro están los roles de la aldea, su juego y el trabajo de construirla juntos. Cuéntanos quién eres y el camino se abre."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Review.tsx
@@ -26456,6 +26705,12 @@ msgctxt "ArchetypesPanel, label"
 msgid "Description"
 msgstr "Descripción"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: keep in touch answer"
+msgid "Yes"
+msgstr "Sí"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -27181,6 +27436,11 @@ msgstr "Publicado. Los cambios ya están en el mapa."
 msgctxt "agent proposal"
 msgid "No role is open to an agent right now."
 msgstr "Ningún rol está abierto a un agente por ahora."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the human check failed to load"
+msgid "The check that you are a person did not load. Reload the page to try again."
+msgstr "La verificación de que eres una persona no cargó. Recarga la página para intentarlo de nuevo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: m.name
@@ -30904,6 +31164,11 @@ msgctxt "prosperity packet form: a field to fix"
 msgid "Say what you would like to build."
 msgstr "Cuéntanos qué te gustaría construir."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The CSV did not download."
+msgstr "El CSV no se descargó."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal why starter"
 #~ msgid "What brought me here:"
@@ -31387,6 +31652,13 @@ msgctxt "Stay, span"
 msgid "· {0} {1} a night"
 msgstr "· {0} {1} la noche"
 
+# ── The portal entrance, what draws a visitor and the email list (portal entrance lane, 24 Nov 2026).
+# needs-native-review: new words, 24 Nov 2026. The privacy line also needs legal review (Costa Rica, Law 8968).
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the optional interest question"
+msgid "What draws you here?"
+msgstr "¿Qué te atrae aquí?"
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season"
 msgid "This season"
@@ -31835,6 +32107,11 @@ msgstr "(obligatorio)"
 msgctxt "proposed changes"
 msgid "The proposed changes could not be read. Reload to try again."
 msgstr "No se pudieron leer los cambios propuestos. Recargue para intentar de nuevo."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: marks a field as optional"
+msgid "(optional)"
+msgstr "(opcional)"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/TreasurySync.tsx
@@ -32681,6 +32958,11 @@ msgctxt "admin protocols editor"
 msgid "Nothing had changed."
 msgstr "No había cambiado nada."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "their email address"
+msgstr "su dirección de correo"
+
 # needs-native-review: new words, 24 Nov 2026 (public launch QA, the feedback page)
 #: client/src/pages/Feedback.tsx
 msgctxt "feedback page: title example"
@@ -33065,6 +33347,11 @@ msgctxt "LandTab, div"
 msgid "These three settings cover the <0>coordinates only</0>. Your aerial picture is shown to visitors at every setting, including \"Nobody\". Use \"Remove the picture\" below if you would rather it were not."
 msgstr "Estas tres opciones cubren <0>solo las coordenadas</0>. Su foto aérea se muestra a los visitantes con cualquier opción, incluso \"Nadie\". Use \"Quitar la foto\" abajo si prefiere que no se muestre."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: email list"
+msgid "Send those waiting to the email list"
+msgstr "Enviar a la lista de correo a quienes esperan"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraDifferences.tsx
 msgid "A sync is already running. Try again in a minute."
@@ -33314,6 +33601,11 @@ msgstr "“{0}”"
 msgctxt "pay board"
 msgid "Each member's cash and token pay for a month: what is owed, what was sent from escrow, and the token pay to approve."
 msgstr "El pago en efectivo y en tokens de cada persona durante un mes: lo pendiente, lo enviado desde el depósito en garantía y el pago en tokens por aprobar."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what draws you, a role"
+msgid "A role on the team"
+msgstr "Un rol en el equipo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/ConsentQueue.tsx
@@ -33779,6 +34071,12 @@ msgstr "La versión de Sera y este rol dicen lo mismo."
 msgctxt "UnifiedInbox, aria-label"
 msgid "Inbox"
 msgstr "Bandeja de entrada"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors"
+msgid "First asked for"
+msgstr "Pidió primero"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/SuggestDial.tsx
@@ -34502,6 +34800,13 @@ msgstr "Quien la tenga recibe esta cantidad de veces lo usual de cada token, por
 msgctxt "PlacePhotos, Link"
 msgid "Every photograph"
 msgstr "Todas las fotografías"
+
+#. placeholder {0}: (e.views ?? []).length
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: how many pages a visitor opened"
+msgid "Opened: {0}"
+msgstr "Abiertas: {0}"
 
 #: client/src/components/roots/RootPicker.tsx
 msgctxt "root picker legend"
@@ -35243,6 +35548,11 @@ msgctxt "SwapCard, p"
 msgid "Swap tokens"
 msgstr "Intercambiar tokens"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "The list did not load. Check your connection."
+msgstr "La lista no cargó. Revisa tu conexión."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "Roles in no circle"
@@ -35504,6 +35814,12 @@ msgstr "En este dispositivo"
 msgctxt "PagesEditor, summary"
 msgid "Words you can type in curly brackets"
 msgstr "Palabras que puede escribir entre llaves"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the keep-in-touch answer no"
+msgid "No"
+msgstr "No"
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season"
@@ -36687,6 +37003,11 @@ msgstr "Un rol en el equipo, con sus propias condiciones."
 msgctxt "WalletCard, p"
 msgid "This village has no tokens yet."
 msgstr "Esta aldea todavía no tiene tokens."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: optional link field"
+msgid "Website or social link"
+msgstr "Sitio web o enlace de redes sociales"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/priorities/TeamWeek.tsx
@@ -38576,6 +38897,12 @@ msgctxt "OAuthAuthorize, h1"
 msgid "Connect an agent"
 msgstr "Conectar un agente"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: keep in touch answer"
+msgid "No"
+msgstr "No"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you reference"
 msgid "Name"
@@ -39793,6 +40120,12 @@ msgctxt "CashOwedPanel, h4"
 msgid "Owed to you"
 msgstr "Lo que se le debe"
 
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list"
+msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
+msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: row.heldUnits > 0 ? `, so yours come to ${formatMoney(p.heldValueMinor, p.currency)}` : ""
 #: client/src/components/WalletCard.tsx
@@ -40309,6 +40642,11 @@ msgstr "Cancelar"
 msgctxt "SpringPackets, button"
 msgid "Resend says it is verified"
 msgstr "Resend dice que está verificado"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Nobody has entered the portal yet."
+msgstr "Nadie ha entrado al portal todavía."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/SigningKeyCard.tsx
@@ -41426,6 +41764,11 @@ msgstr "Bajar esta tarea"
 msgctxt "four ways to build: a quest, a compact tile"
 msgid "A one-off piece of work, rewarded."
 msgstr "Un trabajo puntual, recompensado."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Link"
+msgstr "Enlace"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraOutboxPanel.tsx
@@ -44341,6 +44684,11 @@ msgctxt "talk it out: quick start button"
 msgid "Help me start"
 msgstr "Ayúdame a empezar"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: a generic failure"
+msgid "That did not go through. Try again in a moment."
+msgstr "No se pudo enviar. Inténtalo de nuevo en un momento."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/CashPayoutsTab.tsx
 msgctxt "CashPayoutsTab, button"
@@ -44611,6 +44959,11 @@ msgctxt "open proposal: where the contract's pay comes from"
 msgid "From their price ask, at {pct}% commitment."
 msgstr "De su precio propuesto, con un compromiso del {pct}%."
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what draws you, curiosity"
+msgid "Just curious"
+msgstr "Solo curiosidad"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -44794,6 +45147,12 @@ msgstr "Cada una está marcada en su tarjeta. Acepte una y luego vuelva a revisa
 msgctxt "role card: what goes to the circle for consent"
 msgid "Goes to the circle"
 msgstr "Va al círculo"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: keep in touch answer"
+msgid "Not answered"
+msgstr "Sin responder"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ModuleDetail.tsx
@@ -46162,6 +46521,11 @@ msgstr "Todavía no se ha cambiado ninguna regla. Este juego todavía funciona p
 msgctxt "Modules, a"
 msgid "See the builders' pool ↗"
 msgstr "Ver el fondo de constructores ↗"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: name field"
+msgid "Your name"
+msgstr "Tu nombre"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsPeople.tsx
@@ -48414,6 +48778,12 @@ msgctxt "VillageHealth, p"
 msgid "Regeneration ledger"
 msgstr "Registro de regeneración"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: email list"
+msgid "Nobody is waiting: everyone who said yes is on the list."
+msgstr "Nadie espera: todas las personas que dijeron que sí están en la lista."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: m.withdrawn.since
 #: client/src/components/modules/ModuleCard.tsx
@@ -49675,6 +50045,11 @@ msgctxt "admin helper, opens the Integrations page"
 msgid "Open Integrations"
 msgstr "Abrir Integraciones"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "That did not go through."
+msgstr "No se pudo completar."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: counts.hours
 #: client/src/components/valuation/PricingDesk.tsx
@@ -49834,6 +50209,11 @@ msgstr "Puede verlos al final de esta página."
 #: client/src/components/VentureAccountsCard.tsx
 msgid "The venture you run"
 msgstr "El emprendimiento que usted lleva"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: what drew them"
+msgid "Visiting"
+msgstr "Visitar"
 
 #: client/src/components/roleCard/WaitlistAdmin.tsx
 msgctxt "roles page, admins only: the waitlist"
@@ -50510,6 +50890,11 @@ msgstr "Inversionista"
 msgctxt "PhotoReportsPanel, alt"
 msgid "The reported photograph"
 msgstr "La fotografía reportada"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: what drew them"
+msgid "Curious"
+msgstr "Curiosidad"
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft button label"
@@ -53539,6 +53924,11 @@ msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "tu guía"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Email"
+msgstr "Correo electrónico"
+
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
 msgctxt "Layout, Link"
@@ -55213,6 +55603,11 @@ msgctxt "AsksPanel, p"
 msgid "{0} asks: {1}"
 msgstr "{0} pregunta: {1}"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Download CSV"
+msgstr "Descargar CSV"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PowerGroupDialogs.tsx
 msgctxt "PowerGroupDialogs, p"
@@ -55276,6 +55671,11 @@ msgstr "Círculos"
 msgctxt "roles page archetypes"
 msgid "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five."
 msgstr "Los cinco arquetipos son las raíces, y cada rol crece de uno o más de ellos. Elige el que más te represente; puedes añadir más en la página siguiente. Muchas personas crecen de dos o tres, y puedes elegir los cinco."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what draws you, a home"
+msgid "A home here"
+msgstr "Un hogar aquí"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: band.pct
@@ -56947,6 +57347,11 @@ msgctxt "feedback page: under the heading"
 msgid "Both are gifts. A bug named is a bug on its way out; an idea written down is one the village can actually weigh."
 msgstr "Ambos son regalos. Un error nombrado ya va de salida; una idea escrita es una que la aldea de verdad puede considerar."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Drawn by"
+msgstr "Le atrajo"
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "The roles you selected: {roleList}."
 msgstr "Los roles que elegiste: {roleList}."
@@ -57345,6 +57750,11 @@ msgctxt "QuestDetail, h2"
 msgid "More from {0}"
 msgstr "Más de {0}"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: a hidden field only bots fill"
+msgid "Leave this empty"
+msgstr "Deja esto vacío"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Characters.tsx
 msgctxt "characters page, your roots"
@@ -57601,6 +58011,11 @@ msgstr "Semana del {0}"
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{n, plural, one {{pledged} pledged by # backer} other {{pledged} pledged by # backers}}"
 msgstr "{n, plural, one {{pledged} comprometido por # patrocinador} other {{pledged} comprometido por # patrocinadores}}"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors"
+msgid "Everyone who gave their name and email at the portal entrance, newest first. The entrance is on while the setting Ask visitors for their name and email before the portal is on, in Game Mechanics. Nobody here has been emailed by the platform."
+msgstr "Todas las personas que dieron su nombre y correo en la entrada del portal, de la más reciente a la más antigua. La entrada está activa mientras el ajuste Pedir a los visitantes su nombre y correo antes del portal esté activado, en Mecánicas del juego. La plataforma no ha enviado ningún correo a estas personas."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
@@ -57983,6 +58398,11 @@ msgctxt "Admin, toast"
 msgid "That file could not be opened. It may have been removed."
 msgstr "No se pudo abrir ese archivo. Puede que lo hayan quitado."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: a later step"
+msgid "Has an account"
+msgstr "Tiene cuenta"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "The approval inbox could not be read. Reload to try again."
@@ -58092,6 +58512,13 @@ msgstr "Leer el de esta semana"
 msgctxt "approval inbox"
 msgid "Approve"
 msgstr "Aprobar"
+
+# ── The portal entrance (portal entrance lane, 24 Nov 2026). Its own block; the Spanish lane owns the rest of this file.
+# needs-native-review: new words, 24 Nov 2026. The privacy line also needs legal review (Costa Rica, Law 8968).
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: eyebrow"
+msgid "The portal"
+msgstr "El portal"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: supportThreshold === 1 ? "supporter" : "supporters"
@@ -58429,6 +58856,12 @@ msgstr "Devolverlo"
 msgctxt "priorities, stop editing without saving"
 msgid "Cancel"
 msgstr "Cancelar"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: what this site is, after the link to the public site"
+msgid "This site is our game, where we co-create the village."
+msgstr "Este sitio es nuestro juego, donde co-creamos la aldea."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -60257,6 +60690,11 @@ msgctxt "pricing desk"
 msgid "That price was not set."
 msgstr "Ese precio no se fijó."
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: email list"
+msgid "On the email list"
+msgstr "En la lista de correo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GeneKeys.tsx
 msgctxt "GeneKeys, p"
@@ -60341,437 +60779,3 @@ msgstr "Participación"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
-
-# ── The portal entrance (portal entrance lane, 24 Nov 2026). Its own block; the Spanish lane owns the rest of this file.
-# needs-native-review: new words, 24 Nov 2026. The privacy line also needs legal review (Costa Rica, Law 8968).
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: eyebrow"
-msgid "The portal"
-msgstr "El portal"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: heading, with the village's name"
-msgid "Welcome to {village}"
-msgstr "Te damos la bienvenida a {village}"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what is inside, and what is asked"
-msgid "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
-msgstr "Justo adentro están los roles de la aldea, su juego y el trabajo de construirla juntos. Cuéntanos quién eres y el camino se abre."
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the form's name for screen readers"
-msgid "Enter the portal"
-msgstr "Entrar al portal"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: name field"
-msgid "Your name"
-msgstr "Tu nombre"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: email field"
-msgid "Your email"
-msgstr "Tu correo electrónico"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: optional WhatsApp field"
-msgid "WhatsApp number"
-msgstr "Número de WhatsApp"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: marks a field as optional"
-msgid "(optional)"
-msgstr "(opcional)"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: optional link field"
-msgid "Website or social link"
-msgstr "Sitio web o enlace de redes sociales"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: a hidden field only bots fill"
-msgid "Leave this empty"
-msgstr "Deja esto vacío"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the main button"
-msgid "Enter"
-msgstr "Entrar"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the button while sending"
-msgid "Opening the way"
-msgstr "Abriendo el camino"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the second act, for members"
-msgid "I have an account: sign in"
-msgstr "Ya tengo cuenta: iniciar sesión"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the human check is not done yet"
-msgid "Finish the check that you are a person first."
-msgstr "Primero completa la verificación de que eres una persona."
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the human check failed to load"
-msgid "The check that you are a person did not load. Reload the page to try again."
-msgstr "La verificación de que eres una persona no cargó. Recarga la página para intentarlo de nuevo."
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: a generic failure"
-msgid "That did not go through. Try again in a moment."
-msgstr "No se pudo enviar. Inténtalo de nuevo en un momento."
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the network failed"
-msgid "That did not go through. Check your connection and try again."
-msgstr "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Portal visitors"
-msgstr "Visitantes del portal"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Everyone who gave their name and email at the portal entrance, newest first. The entrance is on while the setting Ask visitors for their name and email before the portal is on, in Game Mechanics. Nobody here has been emailed by the platform."
-msgstr "Todas las personas que dieron su nombre y correo en la entrada del portal, de la más reciente a la más antigua. La entrada está activa mientras el ajuste Pedir a los visitantes su nombre y correo antes del portal esté activado, en Mecánicas del juego. La plataforma no ha enviado ningún correo a estas personas."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Download CSV"
-msgstr "Descargar CSV"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Loading the visitors."
-msgstr "Cargando los visitantes."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Nobody has entered the portal yet."
-msgstr "Nadie ha entrado al portal todavía."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Entered"
-msgstr "Entró"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Name"
-msgstr "Nombre"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Email"
-msgstr "Correo electrónico"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "WhatsApp"
-msgstr "WhatsApp"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Link"
-msgstr "Enlace"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Forget a person, when they ask"
-msgstr "Olvidar a una persona, cuando lo pida"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "their email address"
-msgstr "su dirección de correo"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Forget"
-msgstr "Olvidar"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Nothing is kept for {email}."
-msgstr "No hay nada guardado para {email}."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Forgotten: every entry for {email}. Their device will meet the entrance again."
-msgstr "Olvidado: cada entrada de {email}. Su dispositivo volverá a ver la entrada."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "The list did not load."
-msgstr "La lista no cargó."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "The list did not load. Check your connection."
-msgstr "La lista no cargó. Revisa tu conexión."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "The CSV did not download."
-msgstr "El CSV no se descargó."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "That did not go through."
-msgstr "No se pudo completar."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "That did not go through. Check your connection."
-msgstr "No se pudo completar. Revisa tu conexión."
-
-# ── The portal entrance, what draws a visitor and the email list (portal entrance lane, 24 Nov 2026).
-# needs-native-review: new words, 24 Nov 2026. The privacy line also needs legal review (Costa Rica, Law 8968).
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the optional interest question"
-msgid "What draws you here?"
-msgstr "¿Qué te atrae aquí?"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what draws you, a founding seeder"
-msgid "Becoming a founding seeder"
-msgstr "Ser sembrador fundador"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what draws you, a home"
-msgid "A home here"
-msgstr "Un hogar aquí"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what draws you, a visit"
-msgid "Visiting"
-msgstr "Visitar"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what draws you, a role"
-msgid "A role on the team"
-msgstr "Un rol en el equipo"
-
-#: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what draws you, curiosity"
-msgid "Just curious"
-msgstr "Solo curiosidad"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Every entry kept for this address is deleted for good, and the address comes off the email list."
-msgstr "Se borra para siempre cada entrada guardada para esta dirección, y la dirección sale de la lista de correo."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: what drew them"
-msgid "Founding seeder"
-msgstr "Sembrador fundador"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: what drew them"
-msgid "A home"
-msgstr "Un hogar"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: what drew them"
-msgid "Visiting"
-msgstr "Visitar"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: what drew them"
-msgid "A role"
-msgstr "Un rol"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: what drew them"
-msgid "Curious"
-msgstr "Curiosidad"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: filter"
-msgid "What drew them"
-msgstr "Qué les atrajo"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: filter, no interest chosen"
-msgid "Anything"
-msgstr "Cualquiera"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Drawn by"
-msgstr "Le atrajo"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors"
-msgid "Since entering"
-msgstr "Desde que entró"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: a later step"
-msgid "Applied ({0})"
-msgstr "Postuló ({0})"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: a later step"
-msgid "Has an account"
-msgstr "Tiene cuenta"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: a later step, naming the form"
-msgid "Sent {0}"
-msgstr "Envió {0}"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: no later step"
-msgid "Nothing yet"
-msgstr "Nada todavía"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: email list"
-msgid "Send those waiting to the email list"
-msgstr "Enviar a la lista de correo a quienes esperan"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: email list"
-msgid "{sent} of {waiting} reached the email list."
-msgstr "{sent} de {waiting} llegaron a la lista de correo."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: email list"
-msgid "On the email list"
-msgstr "En la lista de correo"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: email list"
-msgid "Not sent yet: see the reason"
-msgstr "Aún no enviado: mira el motivo"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-msgctxt "admin portal visitors: email list"
-msgid "Waiting"
-msgstr "En espera"
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: before the link to the village's public site"
-msgid "To learn more about us, visit"
-msgstr "Para saber más sobre nosotros, visita"
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: what this site is, after the link to the public site"
-msgid "This site is our game, where we co-create the village."
-msgstr "Este sitio es nuestro juego, donde co-creamos la aldea."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, escribe a {contactEmail}."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
-msgstr "Guardamos lo que escribes aquí y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento. Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto. Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the keep-in-touch question, its own step after entering"
-msgid "Do you want us to keep you updated, and to hear about opportunities from {village}?"
-msgstr "¿Quieres que te mantengamos al tanto y recibir noticias de oportunidades en {village}?"
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the keep-in-touch answer yes"
-msgid "Yes"
-msgstr "Sí"
-
-#: client/src/pages/Entrance.tsx
-#, needs-native-review
-msgctxt "portal entrance: the keep-in-touch answer no"
-msgid "No"
-msgstr "No"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors"
-msgid "Only the people who said yes to keeping in touch"
-msgstr "Solo las personas que dijeron que sí a seguir en contacto"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors"
-msgid "Nobody has said yes to keeping in touch yet."
-msgstr "Nadie ha dicho que sí a seguir en contacto todavía."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors"
-msgid "Keep in touch"
-msgstr "Seguir en contacto"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors"
-msgid "First asked for"
-msgstr "Pidió primero"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors"
-msgid "Pages opened"
-msgstr "Páginas abiertas"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: keep in touch answer"
-msgid "Yes"
-msgstr "Sí"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: keep in touch answer"
-msgid "No"
-msgstr "No"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: keep in touch answer"
-msgid "Not answered"
-msgstr "Sin responder"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: email list"
-msgid "Nobody is waiting: everyone who said yes is on the list."
-msgstr "Nadie espera: todas las personas que dijeron que sí están en la lista."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: make member done"
-msgid "{0} is a member now."
-msgstr "{0} ya es miembro."
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: admit a visitor with an account"
-msgid "Make member"
-msgstr "Hacer miembro"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: no pages opened"
-msgid "None yet"
-msgstr "Ninguna todavía"
-
-#: client/src/components/admin/PortalVisitorsTab.tsx
-#, needs-native-review
-msgctxt "admin portal visitors: how many pages a visitor opened"
-msgid "Opened: {0}"
-msgstr "Abiertas: {0}"
