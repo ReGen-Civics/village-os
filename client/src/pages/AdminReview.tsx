@@ -331,10 +331,10 @@ export default function AdminReview() {
                   <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={count} found={foundIds} />
                 ) : (
                 <section key={s} className="space-y-3" aria-labelledby={`review-${s}`}>
-                  <h2 id={`review-${s}`} className={`${H2} flex items-baseline gap-3`}>
+                  <h2 id={`review-${s}`} className={H2}>
                     {titles[s]}
                     {" "}
-                    <span className={CHIP_SOFT}>{count}</span>
+                    <span className={`${CHIP_SOFT} ml-1 align-middle`}>{count}</span>
                   </h2>
                   <ul className="space-y-2">{items.map(row)}</ul>
                 </section>

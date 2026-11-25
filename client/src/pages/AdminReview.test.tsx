@@ -217,7 +217,7 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     stub({ changes: [PAGE], extra: [claim, draft] });
     render(<AdminReview />);
     const kinds = await screen.findByTestId("kinds");
-    expect(within(kinds).getAllByRole("link").map((a) => a.textContent)).toEqual(["Proposed changes · 1", "Org chart drafts · 1", "Finished work to witness · 1"]);
+    expect(within(kinds).getAllByRole("link").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
     expect(screen.getByRole("heading", { name: "Org chart drafts 1" })).toBeTruthy();
   });
 

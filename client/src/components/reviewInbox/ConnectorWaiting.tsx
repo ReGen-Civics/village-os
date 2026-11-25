@@ -41,10 +41,10 @@ export default function ConnectorWaiting({ desk, title, count, found }: { desk: 
   if (!slots.length) return null;
   return (
     <section className="space-y-3" aria-labelledby="review-connector">
-      <h2 id="review-connector" className={`${H2} flex items-baseline gap-3`}>
+      <h2 id="review-connector" className={H2}>
         {title}
         {" "}
-        <span className={CHIP_SOFT}>{count}</span>
+        <span className={`${CHIP_SOFT} ml-1 align-middle`}>{count}</span>
       </h2>
       {desk.notice ? (
         <p className="text-sm text-foreground" role="status" data-testid="decide-notice">
