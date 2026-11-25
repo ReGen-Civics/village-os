@@ -574,8 +574,11 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
   it("HELD: lists the connector's held suggestions by code, never another stream's, and a person clears or releases each", async () => {
     await q("DELETE FROM suggestion_staging");
+    // Each arrives a second after the one before: Held lists oldest first, and two rows staged in one millisecond would
+    // tie on their arrival and fall back to their random ids (CI, 25 Nov 2026).
+    let arrival = Date.now() - 60_000;
     const stage = async (stream: "connector" | "sera", body: Record<string, unknown>, reconsider: { code: string; reason: string } | null = null) =>
-      (await stageSuggestion(pool, { stream, streamRef: `ref-${JSON.stringify(body)}`, filer: AGENT.id, filerKind: "agent", kind: "page_content", target: { section: "page-home" }, body, reconsider, now: new Date() })).id;
+      (await stageSuggestion(pool, { stream, streamRef: `ref-${JSON.stringify(body)}`, filer: AGENT.id, filerKind: "agent", kind: "page_content", target: { section: "page-home" }, body, reconsider, now: new Date((arrival += 1000)) })).id;
     const discarded = await stage("connector", { hero: { headline: "Sent again" } }, { code: "B-9.1", reason: "Shorter now." });
     const live = await stage("connector", { hero: { headline: "Already there" } });
     const sera = await stage("sera", { hero: { headline: "Another stream" } });
