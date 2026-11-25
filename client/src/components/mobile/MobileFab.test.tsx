@@ -254,8 +254,13 @@ describe("the shut menu", () => {
   it("stops being drawn only after the rows have faded", () => {
     renderAt();
     openMenu();
-    expect(menu().getAttribute("style") ?? "").toMatch(/visibility 0s linear 0s/);
+    // Read the parsed longhands, not the serialized attribute: jsdom 31 writes
+    // the shortest form ("visibility linear"), which drops the 0s we care about.
+    expect(menu().style.transitionProperty).toBe("visibility");
+    expect(menu().style.transitionDuration).toBe("0s");
+    expect(menu().style.transitionDelay).toBe("0s");
     fireEvent.click(screen.getByRole("button", { name: "Close shortcuts" }));
-    expect(menu().getAttribute("style") ?? "").toMatch(/visibility 0s linear 400ms/);
+    expect(menu().style.transitionProperty).toBe("visibility");
+    expect(menu().style.transitionDelay).toBe("400ms");
   });
 });
