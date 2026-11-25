@@ -104,6 +104,14 @@ export interface ChunkFacts {
   css: readonly string[];
   /** Parts of moved English this chunk reads when it runs (client/src/i18n/copySplit.ts). */
   copyParts?: readonly string[];
+  /**
+   * True for a chunk made of CSS modules alone (a component's own stylesheet, such as
+   * components/motion/motion.css). Vite removes such a chunk's empty script after this
+   * table is built and keeps only its CSS, so the table lists the CSS and never the
+   * script: listing it preloaded a file that was never written, a 404 on every page
+   * (/assets/motion-*.js on main at 004e28f, 24 Nov 2026).
+   */
+  cssOnly?: boolean;
 }
 
 /** Where a part of moved English is served, relative to `base` (server/routes/i18n.ts). */
@@ -148,7 +156,7 @@ export function routePreloadTable(routes: readonly LazyRoute[], chunks: readonly
   const loaded = new Set<string>();
   for (const e of chunks.filter((c) => c.isEntry)) {
     for (const c of closure(e)) {
-      loaded.add(c.fileName);
+      if (!c.cssOnly) loaded.add(c.fileName);
       for (const css of c.css) loaded.add(css);
     }
   }
@@ -177,7 +185,7 @@ export function routePreloadTable(routes: readonly LazyRoute[], chunks: readonly
     const want: string[] = [];
     for (const c of closure(chunk)) {
       if (loaded.has(c.fileName)) continue;
-      want.push(c.fileName);
+      if (!c.cssOnly) want.push(c.fileName);
       for (const css of c.css) if (!loaded.has(css)) want.push(css);
       for (const part of c.copyParts ?? []) want.push(copyPartPath(part));
     }

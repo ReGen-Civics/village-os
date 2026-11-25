@@ -159,6 +159,12 @@ async function checkPage(context, url, timeoutMs) {
   page.on("request", (req) => {
     if (new URL(req.url()).pathname === "/api/client-crash") problems.push(`the page sent a crash report: ${(req.postData() ?? "").slice(0, 300)}`);
   });
+  // A built file the page asks for and the server does not have: a preload naming a chunk the build never wrote
+  // (route-preload.js listed /assets/motion-*.js on every page, 24 Nov 2026), or a stale reference after a deploy.
+  page.on("response", (res) => {
+    const u = new URL(res.url());
+    if (u.origin === new URL(url).origin && u.pathname.startsWith("/assets/") && res.status() >= 400) problems.push(`a built file is missing: HTTP ${res.status()} ${u.pathname}`);
+  });
   const started = Date.now();
   try {
     const res = await page.goto(url, { waitUntil: "load", timeout: timeoutMs });
