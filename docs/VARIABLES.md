@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 67 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 71 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 327 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 331 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-354 dials in 41 categories. 176 carry a minimum and a maximum. By type: 137 integer, 21 decimal, 19 percentage, 53 boolean, 37 choice, 74 text, 13 longtext.
+358 dials in 41 categories. 179 carry a minimum and a maximum. By type: 140 integer, 21 decimal, 19 percentage, 53 boolean, 37 choice, 75 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 327 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 28 | 24 | 4 |
+| The village's people | 32 | 24 | 8 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
@@ -300,6 +300,10 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Ask visitors for their name and email before the portal | `entrance.required` | The village's people | boolean | `false` | the founder or an admin |
 | Portal entrance: Turnstile site key | `entrance.turnstile_site_key` | The village's people | text | blank | the founder or an admin |
 | Portal entrance: Brevo list | `entrance.brevo_list_id` | The village's people | integer | `0` | the founder or an admin |
+| Portal entrance: who to write to about what is kept | `entrance.privacy_contact` | The village's people | text | blank | the founder or an admin |
+| Portal entrance: minutes to look around before the code | `entrance.look_minutes` | The village's people | integer | `3` | the founder or an admin |
+| Portal entrance: pages to look at before the code | `entrance.look_pages` | The village's people | integer | `3` | the founder or an admin |
+| Portal entrance: keep the pages visitors opened for | `entrance.views_keep_days` | The village's people | integer | `365` | the founder or an admin |
 | Ask the circle to consent after the conversations | `org.consent_after_interviews` | The village's people | boolean | `false` | the whole village |
 | The role that sends first replies to applicants | `org.onboarding_role` | The village's people | text | blank | the whole village |
 | The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
@@ -3873,7 +3877,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-28 dials. 24 for the whole village, 4 for the founder or an admin.
+32 dials. 24 for the whole village, 8 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3919,7 +3923,7 @@ The public half of a Cloudflare Turnstile widget, which checks that a visitor at
 
 ### Portal entrance: Brevo list
 
-The number of the Brevo list that portal visitors join when they tick "send me updates". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.
+The number of the Brevo list that portal visitors join when they answer Yes to keeping in touch. It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.
 
 | Fact | Value |
 | --- | --- |
@@ -3927,6 +3931,62 @@ The number of the Brevo list that portal visitors join when they tick "send me u
 | Type | integer, a whole number |
 | Default | `0` |
 | Range | 0 to 100000000 |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: who to write to about what is kept
+
+The email address the entrance's privacy line names, for a visitor who wants to see what is kept about them or have it deleted. Leave it blank to name the village's contact address.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.privacy_contact` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: minutes to look around before the code
+
+While the village can send email, entering the portal sends a 6-digit code to the visitor's address, and they go straight in. They can look around for this many minutes, or until they open the number of pages below, whichever comes first. The next page they open asks for the code. The step never covers a page they are reading.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.look_minutes` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 60 |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: pages to look at before the code
+
+How many pages a visitor can open after entering, before the next one asks for the 6-digit code we sent them. Works together with the minutes above: whichever runs out first.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.look_pages` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 50 |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: keep the pages visitors opened for
+
+How many days the list of pages each portal visitor opened is kept, shown under Admin, Portal visitors. Older page views are deleted once a day. The visitor's name and email are kept until somebody asks for them to be forgotten; this setting covers only the pages.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.views_keep_days` |
+| Type | integer, a whole number |
+| Default | `365` |
+| Range | 1 to 3650 |
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

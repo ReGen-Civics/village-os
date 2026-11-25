@@ -458,6 +458,11 @@ msgctxt "founding application sera"
 msgid "three draft value items"
 msgstr "three draft value items"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: the code field"
+msgid "Your code"
+msgstr "Your code"
+
 #: client/src/components/characters/PortraitStudio.tsx
 msgctxt "PortraitStudio, p"
 msgid "Forging a picture is not switched on in this village yet. Your gifts are kept for when it is. Uploading your own picture always works."
@@ -2703,6 +2708,11 @@ msgstr "What you answered"
 msgctxt "MapSlate, p"
 msgid "Looking for your masterplan..."
 msgstr "Looking for your masterplan..."
+
+#: client/src/components/map/MapMembersDoor.tsx
+msgctxt "map members only: the main button"
+msgid "See the circles"
+msgstr "See the circles"
 
 #: client/src/components/setupGame/SpringPlot.tsx
 msgctxt "SpringPlot, h3"
@@ -5358,6 +5368,11 @@ msgstr "Europe/Lisbon"
 msgctxt "ModuleConfigPanels, h3"
 msgid "Where requests go, and who sees the flows"
 msgstr "Where requests go, and who sees the flows"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, the email list"
+msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
+msgstr "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
 
 #. placeholder {0}: m.consulted.references.join("; ")
 #: client/src/components/journey/LaunchGuide.tsx
@@ -8331,6 +8346,11 @@ msgctxt "your path, the next act"
 msgid "Read the terms"
 msgstr "Read the terms"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact"
+msgid "To see it or have it deleted, write to {contact}."
+msgstr "To see it or have it deleted, write to {contact}."
+
 #: client/src/components/admin/RolePowerGroupsEditor.tsx
 msgctxt "RolePowerGroupsEditor, p"
 msgid "Loading the Power groups…"
@@ -9268,6 +9288,11 @@ msgctxt "Modules, InfoTip"
 msgid "turns on"
 msgstr "turns on"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: entered while no code could be sent"
+msgid "Not checked"
+msgstr "Not checked"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "By {day}"
@@ -9320,9 +9345,9 @@ msgid "Cash for role pay and quest pay"
 msgstr "Cash for role pay and quest pay"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: before the link to the village's public site"
-msgid "To learn more about us, visit"
-msgstr "To learn more about us, visit"
+#~ msgctxt "portal entrance: before the link to the village's public site"
+#~ msgid "To learn more about us, visit"
+#~ msgstr "To learn more about us, visit"
 
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
@@ -10135,6 +10160,11 @@ msgstr "A decision. It goes into a draft before it is live."
 msgctxt "ProposalWizard, h2"
 msgid "<0/>It is in front of the village"
 msgstr "<0/>It is in front of the village"
+
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: resend"
+msgid "Send a new code"
+msgstr "Send a new code"
 
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "venture redemption"
@@ -13700,6 +13730,11 @@ msgctxt "SaberraConfigPanel, a"
 msgid "Add the key in Integrations"
 msgstr "Add the key in Integrations"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: Google instead"
+msgid "Use Google instead"
+msgstr "Use Google instead"
+
 #: client/src/components/admin/ContentEditorTab.tsx
 msgctxt "ContentEditorTab, p"
 msgid "Edits here go live once you press Save in the bar at the bottom."
@@ -13836,6 +13871,11 @@ msgstr "Sun in gate {0}, line {1}"
 msgctxt "admin portal visitors"
 msgid "Portal visitors"
 msgstr "Portal visitors"
+
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: the code is the wrong shape"
+msgid "The code is 6 digits."
+msgstr "The code is 6 digits."
 
 #. placeholder {0}: role.places
 #. placeholder {1}: role.taken
@@ -14206,6 +14246,11 @@ msgctxt "open work: the one card chosen for the reader"
 msgid "Fits you"
 msgstr "Fits you"
 
+#: client/src/components/map/MapMembersDoor.tsx
+msgctxt "map members only: eyebrow"
+msgid "The living map"
+msgstr "The living map"
+
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgctxt "admin venture accounts"
 msgid "Nothing held yet"
@@ -14382,6 +14427,11 @@ msgstr "{0} of {MAX_COMPARE} ticked, all in {1}."
 #~ msgctxt "role card tab: who we hope for and the rewards"
 #~ msgid "You and rewards"
 #~ msgstr "You and rewards"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: what this site is, after the link to the public site"
+msgid "This is our game, where we co-create the village."
+msgstr "This is our game, where we co-create the village."
 
 #: client/src/components/NeedCard.tsx
 msgctxt "NeedCard, span"
@@ -15798,6 +15848,11 @@ msgctxt "task handed to a role"
 msgid "It waits for the role's holder to accept it. You'll see where it stands under Sent."
 msgstr "It waits for the role's holder to accept it. You'll see where it stands under Sent."
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: heading"
+msgid "Type the code we emailed you"
+msgstr "Type the code we emailed you"
+
 #. placeholder {0}: done.created
 #. placeholder {1}: done.updated
 #. placeholder {2}: done.queued
@@ -16150,6 +16205,7 @@ msgid "What the season taught"
 msgstr "What the season taught"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/EntranceCode.tsx
 msgctxt "portal entrance: the network failed"
 msgid "That did not go through. Check your connection and try again."
 msgstr "That did not go through. Check your connection and try again."
@@ -16942,6 +16998,11 @@ msgctxt "RedemptionPanel, span"
 msgid "Token"
 msgstr "Token"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: the main button"
+msgid "Keep exploring"
+msgstr "Keep exploring"
+
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
 msgid "Add a photo"
@@ -17116,9 +17177,9 @@ msgid "Waiting for the Treasurer's approval"
 msgstr "Waiting for the Treasurer's approval"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
-msgstr "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
+#~ msgctxt "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list"
+#~ msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
+#~ msgstr "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
@@ -21326,6 +21387,11 @@ msgstr "Members can pay venture accounts now."
 msgid "Book your first conversation"
 msgstr "Book your first conversation"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: the code has not come"
+msgid "Unverified"
+msgstr "Unverified"
+
 #: client/src/components/fireflyPath/SafetyNet.tsx
 msgctxt "application safety net"
 msgid "Something went wrong sending your application. Your answers are safe on this device."
@@ -22356,6 +22422,11 @@ msgctxt "profile, set your top priority for this week"
 msgid "Set this week's"
 msgstr "Set this week's"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: change the address"
+msgid "Use a different email"
+msgstr "Use a different email"
+
 #: client/src/components/admin/RolePowerGroupsEditor.tsx
 msgctxt "RolePowerGroupsEditor, span"
 msgid "(opens the admin panel)"
@@ -22593,6 +22664,11 @@ msgstr "Only you can read this. The village sees how many members are doing well
 msgctxt "ConsentQueue, p"
 msgid "“{0}”"
 msgstr "“{0}”"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: verified or not"
+msgid "Address"
+msgstr "Address"
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: every role is paid through one agreement"
@@ -24314,6 +24390,12 @@ msgctxt "sign in: for someone with no invitation"
 msgid "Ask to join"
 msgstr "Ask to join"
 
+#. placeholder {0}: e.name
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: invite to join done"
+msgid "An invitation for {0} is ready. Copy the link and send it to them yourself: nothing has been emailed."
+msgstr "An invitation for {0} is ready. Copy the link and send it to them yourself: nothing has been emailed."
+
 #. placeholder {0}: dayWords(g.day, locale)
 #. placeholder {0}: dayWords(r.start, locale)
 #: client/src/components/roleCard/DeliverablesGantt.tsx
@@ -24977,6 +25059,11 @@ msgstr "Applications close {whenLong}"
 #~ msgid "Hiring first: the founding team"
 #~ msgstr "Hiring first: the founding team"
 
+#: client/src/components/map/MapMembersDoor.tsx
+msgctxt "map members only: heading"
+msgid "The living map is for members"
+msgstr "The living map is for members"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Review after (days)"
@@ -25040,6 +25127,11 @@ msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr "Withdraw it and end the vote"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, the code by email, shown only while the village sends codes"
+msgid "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+msgstr "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+
 #: client/src/components/admin/OpsEmailSwitch.tsx
 msgctxt "admin ops report email"
 msgid "That did not save. Try again."
@@ -25065,6 +25157,11 @@ msgstr "That's the whole place, {firstName}! My first question is waiting for yo
 msgctxt "VoteClock, span"
 msgid "Voting ended {closedOn}"
 msgstr "Voting ended {closedOn}"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: before a suggested email address"
+msgid "Did you mean"
+msgstr "Did you mean"
 
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "IdentityPackPanel, label"
@@ -26616,6 +26713,11 @@ msgstr "No departures yet, and the policy is already published. Good."
 msgctxt "SeatSettingsFields, label"
 msgid "Lowest"
 msgstr "Lowest"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: make an invitation link for a verified visitor"
+msgid "Invite to join"
+msgstr "Invite to join"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -28230,6 +28332,11 @@ msgstr "Roles and circles your guide proposes land here for you to read before t
 msgctxt "AsksPanel, label"
 msgid "Who"
 msgstr "Who"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: the link just made"
+msgid "Invitation link, to copy"
+msgstr "Invitation link, to copy"
 
 #: client/src/components/admin/MintDesk.tsx
 msgid "Could not sign that grant"
@@ -30011,6 +30118,11 @@ msgstr "The chain reports outcomes by proposal number, not by title. This link i
 msgctxt "CashOwedPanel, p"
 msgid "{0}: {1}, owed since {2}"
 msgstr "{0}: {1}, owed since {2}"
+
+#: client/src/components/map/MapMembersDoor.tsx
+msgctxt "map members only: what the map holds, and what is open instead"
+msgid "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now."
+msgstr "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now."
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
@@ -34355,6 +34467,11 @@ msgctxt "applicant's application status, while you wait"
 msgid "Read the role again"
 msgstr "Read the role again"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: what to do, naming the address"
+msgid "We sent a 6-digit code to {sentTo}. Type it here to keep exploring."
+msgstr "We sent a 6-digit code to {sentTo}. Type it here to keep exploring."
+
 #: client/src/pages/Wallet.tsx
 msgctxt "Wallet, p"
 msgid "Buy tokens<0/>"
@@ -34521,9 +34638,9 @@ msgid "Owed to you"
 msgstr "Owed to you"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list"
-msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
-msgstr "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
+#~ msgctxt "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list"
+#~ msgid "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
+#~ msgstr "We keep what you type here, and which pages you open while you explore, so we know who is visiting {village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to {contactEmail}."
 
 #. placeholder {0}: row.heldUnits > 0 ? `, so yours come to ${formatMoney(p.heldValueMinor, p.currency)}` : ""
 #: client/src/components/WalletCard.tsx
@@ -36440,6 +36557,11 @@ msgstr "Status of {0}"
 #: client/src/components/hiddenMap/OpeningMoment.tsx
 msgid "Here is every place the members have logged."
 msgstr "Here is every place the members have logged."
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, how to see or delete it, when the village has no contact address"
+msgid "To see it or have it deleted, ask anyone at the village."
+msgstr "To see it or have it deleted, ask anyone at the village."
 
 #: client/src/pages/VillageMap.tsx
 msgctxt "VillageMap, aria-label"
@@ -38440,6 +38562,11 @@ msgctxt "new role from a card"
 msgid "Read the card"
 msgstr "Read the card"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: before the link to the village's public site"
+msgid "To know more about us, visit"
+msgstr "To know more about us, visit"
+
 #: client/src/components/governance/SeatSettingsFields.tsx
 msgctxt "SeatSettingsFields, label"
 msgid "How it ends"
@@ -38451,6 +38578,7 @@ msgid "Help me start"
 msgstr "Help me start"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/EntranceCode.tsx
 msgctxt "portal entrance: a generic failure"
 msgid "That did not go through. Try again in a moment."
 msgstr "That did not go through. Try again in a moment."
@@ -39535,6 +39663,11 @@ msgstr "What it needs from the land and the village"
 msgctxt "Decisions, h2"
 msgid "What the village has decided"
 msgstr "What the village has decided"
+
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: a new code was sent"
+msgid "A new code is on its way to {sentTo}."
+msgstr "A new code is on its way to {sentTo}."
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -40842,6 +40975,11 @@ msgstr "Which changes"
 #~ msgid "Up to {max} roles in one application, in any circle, each with its own commitment, price and agreement. The prices add up: two roles at 50% are rewarded like one whole role."
 #~ msgstr "Up to {max} roles in one application, in any circle, each with its own commitment, price and agreement. The prices add up: two roles at 50% are rewarded like one whole role."
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: eyebrow"
+msgid "One more step"
+msgstr "One more step"
+
 #: client/src/pages/RequestMembership.tsx
 msgctxt "join page link"
 msgid "Find your roles"
@@ -41754,6 +41892,11 @@ msgstr "Previous"
 msgctxt "CommsWords, aria-label"
 msgid "Emails"
 msgstr "Emails"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: a second invitation link"
+msgid "Invite again"
+msgstr "Invite again"
 
 #. placeholder {0}: STATE_LABEL[r.state] ?? r.state
 #. placeholder {1}: r.holderCount
@@ -43263,6 +43406,11 @@ msgctxt "CashPayoutsTab, p"
 msgid "Owed {0}{1}"
 msgstr "Owed {0}{1}"
 
+#: client/src/pages/EntranceCode.tsx
+msgctxt "portal code step: resend, counting down"
+msgid "Send a new code in {secondsLeft} s"
+msgstr "Send a new code in {secondsLeft} s"
+
 #. placeholder {0}: r.pending.amount === null ? "read from the source" : `${r.pending.amount} ${r.tokenName}`
 #. placeholder {1}: r.pending.enabled ? "" : ", paused"
 #: client/src/pages/Mint.tsx
@@ -43318,6 +43466,11 @@ msgstr "Approved, issues at launch"
 msgctxt "hand-mint form, member picker"
 msgid "Member to mint to"
 msgstr "Member to mint to"
+
+#: client/src/components/map/MapMembersDoor.tsx
+msgctxt "map members only: sign in"
+msgid "I am a member: sign in"
+msgstr "I am a member: sign in"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "Decision Matrix column, before its answer"
@@ -47131,6 +47284,11 @@ msgctxt "InvestorJourney, label"
 msgid "Preferred Time"
 msgstr "Preferred Time"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: told up front that a code was emailed, before the keep-in-touch question"
+msgid "We have sent a 6-digit code to {sentTo}. Have a look around. You will need the code to keep exploring."
+msgstr "We have sent a 6-digit code to {sentTo}. Have a look around. You will need the code to keep exploring."
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar legend"
 msgid "a gathering"
@@ -50150,6 +50308,11 @@ msgctxt "open proposal attachments"
 msgid "Files (optional)"
 msgstr "Files (optional)"
 
+#: client/src/components/admin/PortalVisitorsTab.tsx
+msgctxt "admin portal visitors: the address is proved"
+msgid "Verified"
+msgstr "Verified"
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "1 pay change is left out. Pay is set by a person."
@@ -50693,9 +50856,9 @@ msgid "Cancel"
 msgstr "Cancel"
 
 #: client/src/pages/Entrance.tsx
-msgctxt "portal entrance: what this site is, after the link to the public site"
-msgid "This site is our game, where we co-create the village."
-msgstr "This site is our game, where we co-create the village."
+#~ msgctxt "portal entrance: what this site is, after the link to the public site"
+#~ msgid "This site is our game, where we co-create the village."
+#~ msgstr "This site is our game, where we co-create the village."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -50784,6 +50947,11 @@ msgstr "Adds {0}: {1}, {2}"
 msgctxt "roles page archetypes, before the village's own examples"
 msgid "You might pick this if you are drawn to:"
 msgstr "You might pick this if you are drawn to:"
+
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
+msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+msgstr "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
 
 #: client/src/components/admin/SeasonTimezoneField.tsx
 msgctxt "SeasonTimezoneField, p"
