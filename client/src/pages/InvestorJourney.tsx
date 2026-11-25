@@ -574,7 +574,19 @@ export default function InvestorJourney() {
                         <h3 className={`font-display text-xl break-words ${
                           isCompleted ? "text-muted-foreground line-through" : "text-foreground"
                         }`}>
-                          {step.title}
+                          {/* The title is the step's disclosure for a keyboard and a screen reader (whole-app QA, 25 Nov 2026):
+                              the header row is a div a mouse can press, and it was the only way to open a step. */}
+                          <button
+                            type="button"
+                            aria-expanded={isExpanded}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedStep(isExpanded ? null : index);
+                            }}
+                            className="w-full rounded-lg text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {step.title}
+                          </button>
                         </h3>
                         <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words sm:text-base">
                           {step.description}

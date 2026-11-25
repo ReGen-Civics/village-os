@@ -250,11 +250,9 @@ export default function HowWeCreate() {
                 <div
                   className="m-germ text-center"
                 >
-                  <Link href="/roles">
-                    <a className="inline-flex items-center gap-2 px-6 py-3 bg-notice text-background rounded-xl hover:bg-notice/90 transition-colors font-medium">
+                  <Link href="/roles" className="inline-flex items-center gap-2 px-6 py-3 bg-notice text-background rounded-xl hover:bg-notice/90 transition-colors font-medium">
                       {governance.fields.buttonLabel}
                       <ArrowRight className="w-4 h-4" />
-                    </a>
                   </Link>
                 </div>
               )}
