@@ -3011,3 +3011,16 @@ html:has(#sera-changes [data-sera-strip-on]) {
   35% { transform: translateY(-2px) rotate(-1.2deg); }
   65% { transform: translateY(0) rotate(0.8deg); }
 }
+
+/* Follow-ups (profile overhaul, Direction D): a ticked row's sprout grows from the soil. Reduced motion shows it
+   grown, with no movement. */
+@media (prefers-reduced-motion: no-preference) {
+  .follow-sprout {
+    transform-origin: 50% 90%;
+    animation: follow-sprout var(--m-grow) var(--m-ease-sprout);
+  }
+  @keyframes follow-sprout {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+  }
+}
