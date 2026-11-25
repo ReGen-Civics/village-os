@@ -1,0 +1,63 @@
+{
+  "synthetic": true,
+  "name": "different-fields-same-role-stay-apart",
+  "why": "A change to the purpose and a change to the pay of one role are different things: two cards, no conflict.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "name": "Water Keeper"
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ]
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s2"
+          ]
+        ]
+      }
+    ],
+    "held": []
+  }
+}

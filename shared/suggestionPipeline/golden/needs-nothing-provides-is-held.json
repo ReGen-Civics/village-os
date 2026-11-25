@@ -1,0 +1,31 @@
+{
+  "synthetic": true,
+  "name": "needs-nothing-provides-is-held",
+  "why": "A card for a role that neither exists nor is being created is held.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "nowhere"
+      },
+      "body": {
+        "words": {
+          "purpose": "x"
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    }
+  ],
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "needs_missing"
+      }
+    ]
+  }
+}
