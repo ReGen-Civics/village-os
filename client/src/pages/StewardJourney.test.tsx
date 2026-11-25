@@ -7,7 +7,7 @@
  * no second journey, no ladder of levels and no intake form.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
 import { Router } from "wouter";
@@ -26,6 +26,7 @@ vi.mock("@/lib/gameApi", () => ({
   useBrandImages: () => ({}),
   altOr: (a: string | undefined, b: string) => a || b,
   useGameConfig: () => ({ project: { name: "Hollow Oak", adminPath: "/admin" } }),
+  authToken: () => null,
 }));
 const stored = vi.hoisted(() => ({ doc: null as unknown }));
 vi.mock("@/hooks/useVillageContent", () => ({
@@ -248,13 +249,40 @@ describe("/steward", () => {
     expect(document.body.textContent).not.toMatch(/co-owner|real ownership/i);
   });
 
-  it("has no ladder of levels, no festival copy and no intake form", async () => {
+  it("has no ladder of levels, no festival copy and no intake form; its one form is the question form", async () => {
     show();
     await screen.findByText("Get to know us");
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/Role Holder|\bSage\b|\bGuide\b|highest voice|Path of Growth|every 3 months|Begin My Stewardship/i);
-    expect(document.querySelector("form")).toBeNull();
-    expect(screen.getByRole("link", { name: /Ask us a question/ })).toHaveAttribute("href", expect.stringMatching(/^mailto:/));
+    expect(document.querySelectorAll("form")).toHaveLength(1);
+    expect(document.querySelector("form[data-steward-question-form]")).not.toBeNull();
+  });
+
+  it("sends \"Ask us a question\" to the form on the page, never a mail app (UNFINISHED-AREAS 21)", async () => {
+    show();
+    const ask = await screen.findByRole("link", { name: /Ask us a question/ });
+    expect(ask).toHaveAttribute("href", "#steward-question");
+    expect(document.querySelector('a[href^="mailto:"]')).toBeNull();
+    expect(document.getElementById("steward-question")).not.toBeNull();
+  });
+
+  it("posts a question to the steward inbox as the steward form type, and says it is with us", async () => {
+    const sent: Array<{ url: string; body: any }> = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (String(url).includes("/api/forms/submit")) sent.push({ url: String(url), body: JSON.parse(String(init?.body)) });
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+    show();
+    await screen.findByText("Get to know us");
+    fireEvent.click(screen.getByRole("button", { name: "Send my question" }));
+    expect(await screen.findByText("Write your question, in under 2,000 characters.", { selector: "a" })).toBeTruthy();
+    expect(sent).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "TEST Wren" } });
+    fireEvent.change(screen.getByLabelText("Your email"), { target: { value: "wren@example.test" } });
+    fireEvent.change(screen.getByLabelText("Your question"), { target: { value: "How long is a role held?" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send my question" }));
+    expect(await screen.findByText("Your question is with us")).toBeTruthy();
+    expect(sent).toEqual([{ url: "/api/forms/submit", body: { type: "steward", data: { name: "TEST Wren", email: "wren@example.test", message: "How long is a role held?" }, hp: "" } }]);
   });
 });
 

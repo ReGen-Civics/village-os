@@ -61062,3 +61062,108 @@ msgstr "Tiempo completo o parcial, por contrato"
 msgctxt "role card commitment label"
 msgid "Contract"
 msgstr "Por contrato"
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Add your name."
+msgstr "Escriba su nombre."
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Escriba un correo al que podamos escribirle."
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Write your question, in under 2,000 characters."
+msgstr "Escriba su pregunta, en menos de 2.000 caracteres."
+
+#: client/src
+msgctxt "steward question form: sent"
+msgid "Your question is with us"
+msgstr "Su pregunta ya está con nosotros"
+
+#: client/src
+msgctxt "steward question form: sent"
+msgid "The people who look after the roles read every question. We will write to the email you gave."
+msgstr "Las personas que cuidan los roles leen cada pregunta. Le escribiremos al correo que nos dio."
+
+#: client/src
+msgctxt "steward question form"
+msgid "No account needed. We write back to the email you give."
+msgstr "No necesita una cuenta. Le respondemos al correo que nos dé."
+
+#: client/src
+msgctxt "steward question form: the list of fields to fix"
+msgid "A few things to fix before it can go:"
+msgstr "Hay que corregir algunas cosas antes de enviarla:"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your name"
+msgstr "Su nombre"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your email"
+msgstr "Su correo"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your question"
+msgstr "Su pregunta"
+
+#: client/src
+msgctxt "steward question form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "No se envió. Inténtelo de nuevo en unos minutos."
+
+#: client/src
+msgctxt "steward question form: the button while it sends"
+msgid "Sending"
+msgstr "Enviando"
+
+#: client/src
+msgctxt "steward question form: the button"
+msgid "Send my question"
+msgstr "Enviar mi pregunta"
+
+#: client/src
+msgctxt "steward page: the question form's heading"
+msgid "Ask us a question"
+msgstr "Háganos una pregunta"
+
+#: client/src
+msgctxt "coming soon: the decisions page"
+msgid "The village's decisions"
+msgstr "Las decisiones de la aldea"
+
+#: client/src
+msgctxt "coming soon: the decisions page"
+msgid "When somebody takes a proposal to a vote, it appears here with a clock on it, and every vote the village settles stays on the record below."
+msgstr "Cuando alguien lleva una propuesta a votación, aparece aquí con su reloj, y cada votación que la aldea resuelve queda en el registro de abajo."
+
+#: client/src
+msgctxt "coming soon: the decisions page, the door meanwhile"
+msgid "Start a proposal"
+msgstr "Iniciar una propuesta"
+
+#: client/src
+msgctxt "coming soon: the introductions board"
+msgid "Introductions"
+msgstr "Presentaciones"
+
+#: client/src
+msgctxt "coming soon: the introductions board"
+msgid "When members say what they seek and what they offer, it gathers here, and both people say yes before a conversation opens."
+msgstr "Cuando los miembros dicen lo que buscan y lo que ofrecen, se reúne aquí, y ambas personas dicen que sí antes de abrir una conversación."
+
+#: client/src
+msgctxt "coming soon: an empty moon on the calendar"
+msgid "The village's gatherings"
+msgstr "Los encuentros de la aldea"
+
+#: client/src
+msgctxt "coming soon: an empty moon on the calendar"
+msgid "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day."
+msgstr "Todavía no hay nada en esta luna. Los encuentros, festivales y llamadas aparecen aquí a medida que la aldea los planea, cada uno en su día."

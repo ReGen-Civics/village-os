@@ -26,6 +26,12 @@ export interface TargetContext {
   subject: string;
   /** The `#name` forms this page can open. */
   forms?: readonly string[];
+  /**
+   * The id of this page's own contact form. Set, a target that would open a mail app (`#contact`, or a `mailto:`
+   * typed in) goes to that form instead: a phone with no mail app opens nothing from a mailto (UNFINISHED-AREAS 21,
+   * the lead: one form type per page).
+   */
+  contactForm?: string;
 }
 
 /**
@@ -34,6 +40,12 @@ export interface TargetContext {
  * buttons on /resident were.
  */
 export function resolveTarget(raw: string | undefined, ctx: TargetContext): JourneyAction | null {
+  const action = resolveTargetAsTyped(raw, ctx);
+  if (ctx.contactForm && (action?.kind === "mail" || (raw ?? "").trim() === JOURNEY_TARGETS.contact)) return { kind: "anchor", href: `#${ctx.contactForm}` };
+  return action;
+}
+
+function resolveTargetAsTyped(raw: string | undefined, ctx: TargetContext): JourneyAction | null {
   const target = (raw ?? "").trim();
   if (!target || target === "#") return null;
   if (target === JOURNEY_TARGETS.events) return ctx.eventsUrl ? { kind: "external", href: ctx.eventsUrl } : null;

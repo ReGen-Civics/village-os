@@ -33,6 +33,7 @@
  * trail is one list now and it marks the reader's rows; see `WeightRecord`.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
 import { Link } from "wouter";
 import { PenLine, Scale } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -208,18 +209,13 @@ export default function Decisions() {
                 </p>
               )}
 
+              {/* No ballot has ever run here, open or closed (UNFINISHED-AREAS 13): the area is coming, said plainly. */}
               {ballots.length === 0 && (
-                <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-                  <h2 className="text-lg font-bold text-foreground"><Trans context="Decisions, h2">Nothing is being decided right now</Trans></h2>
-                  <p className="mx-auto mt-2 max-w-md text-muted-foreground leading-relaxed">
-                    <Trans context="Decisions, p">That is a real state, not an empty page. When somebody takes a proposal to a vote, it appears here
-                    with a clock on it.
-                  </Trans></p>
-                  <Link href="/propose" className={`${BTN_NOTICE} mt-5`}>
-                    <Trans context="Decisions, Link"><PenLine className="w-4 h-4" aria-hidden="true" />
-                    Start one
-                  </Trans></Link>
-                </div>
+                <ComingSoonPanel
+                  title={t({ message: "The village's decisions", context: "coming soon: the decisions page" })}
+                  body={t({ message: "When somebody takes a proposal to a vote, it appears here with a clock on it, and every vote the village settles stays on the record below.", context: "coming soon: the decisions page" })}
+                  door={{ href: "/propose", label: t({ message: "Start a proposal", context: "coming soon: the decisions page, the door meanwhile" }) }}
+                />
               )}
 
               <Group
