@@ -7711,7 +7711,7 @@ msgstr "Elija de una a cinco. Cada rol y cada misión crecen de estas raíces, y
 #: client/src/components/path/RootLine.tsx
 msgctxt "your path, the strip under the header"
 msgid "Your path"
-msgstr "Tu camino"
+msgstr "Su camino"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -26824,7 +26824,7 @@ msgstr "Guardado"
 #: client/src/components/path/YourPathCard.tsx
 msgctxt "your path, the profile card"
 msgid "Your path"
-msgstr "Tu camino"
+msgstr "Su camino"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageHealth.tsx
@@ -60341,3 +60341,39 @@ msgstr "Participación"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Investor"
+msgstr "Inversionista"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Steward"
+msgstr "Custodio"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Resident"
+msgstr "Residente"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Prosperity"
+msgstr "Prosperidad"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path"
+msgstr "Su camino"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Choose your path"
+msgstr "Elija su camino"

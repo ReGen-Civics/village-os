@@ -65,12 +65,18 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
   useEffect(() => {
     const go = () => {
       const hash = window.location.hash.replace(/^#/, "");
-      const t = TAB_OF_ANCHOR[hash];
+      // A path's own card (/profile#path-<id>, the bar's path slot) lives on the Sheet.
+      const t = TAB_OF_ANCHOR[hash] ?? (hash.startsWith("path-") ? "sheet" : undefined);
       if (t) onTab(t);
     };
     go();
     window.addEventListener("hashchange", go);
-    return () => window.removeEventListener("hashchange", go);
+    // wouter's own event: tapping the bar's path slot while already on the profile changes only the hash.
+    window.addEventListener("pushState", go);
+    return () => {
+      window.removeEventListener("hashchange", go);
+      window.removeEventListener("pushState", go);
+    };
   }, [onTab]);
 
   return (

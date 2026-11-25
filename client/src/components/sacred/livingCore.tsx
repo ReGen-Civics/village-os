@@ -5,7 +5,7 @@
  *
  * Split out for the bundle, not for meaning. A module lands in one chunk whole,
  * so while the tab bar imported living.tsx, every glyph any page used rode on
- * the first page with it. The first page now carries these seven and nothing
+ * the first page with it. The first page now carries these ten and nothing
  * else; the others stay in the lazy chunks of the pages that draw them.
  * living.tsx says how they are drawn and holds the test of the house style.
  */
@@ -133,6 +133,44 @@ function CellRingDrawing(props: GlyphProps) {
   );
 }
 
+/** The crown of a tree on its trunk: leadership that shelters. */
+function TreeCrownDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 20.8v-6.2M12 16.8l-2.4-1.6M12 18.2l2.2-1.4" />
+      <path {...WASH} d="M6.8 14.6c-2.4 0-3.8-1.8-3.4-3.8.3-1.5 1.6-2.4 2.9-2.4.4-2.6 2.6-4.4 5.4-4.2 2.4.2 4.2 1.8 4.6 4 2 0 3.7 1.4 3.8 3.3.1 1.8-1.4 3.1-3.3 3.1z" />
+    </Svg>
+  );
+}
+/** A seed with its seam: an idea, something to plant. */
+function SeedDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M12 3.6c3.5 3.2 5 6.6 5 9.9s-2.2 6.7-5 6.7-5-3.3-5-6.7 1.5-6.7 5-9.9z" />
+      <path d="M12 8.2v8.6" />
+    </Svg>
+  );
+}
+/** A hand holding a heap of seeds: value you can hold and plant (money, where a price must be clear). */
+function SeedHandDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 14.4c2.2 0 3.6.6 5 1.6h3c1 0 1.4 1.3.4 1.6l-3.2.4M3.6 19.4h4.8c2.4 0 4.6-.6 6.6-1.8l4.2-2.8c.9-.6.2-2-.9-1.6l-4.6 2" />
+      {[
+        [10.8, 13.3, -20],
+        [13.3, 13.5, 10],
+        [15.8, 12.8, 35],
+        [12, 11.1, 60],
+        [14.6, 10.7, -30],
+        [13.2, 8.8, 15],
+      ].map(([x, y, a]) => (
+        <ellipse key={`${x}-${y}`} cx={x} cy={y} rx={1.3} ry={0.9} transform={`rotate(${a} ${x} ${y})`} fill="currentColor" stroke="none" />
+      ))}
+    </Svg>
+  );
+}
+
+/* The path tab's glyphs ride here too: the bar draws the reader's path (config/mobileNav.ts, PATH_GLYPHS). */
 export const Cell = /* @__PURE__ */ asIcon("Cell", CellDrawing);
 export const CellRing = /* @__PURE__ */ asIcon("CellRing", CellRingDrawing);
 export const SteppingStones = /* @__PURE__ */ asIcon("SteppingStones", SteppingStonesDrawing);
@@ -140,3 +178,6 @@ export const Pines = /* @__PURE__ */ asIcon("Pines", PinesDrawing);
 export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", MushroomNetworkDrawing);
 export const SeedPodHome = /* @__PURE__ */ asIcon("SeedPodHome", SeedPodHomeDrawing);
 export const SunLeaf = /* @__PURE__ */ asIcon("SunLeaf", SunLeafDrawing);
+export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
+export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);
+export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);

@@ -17,7 +17,7 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, MushroomNetwork, Pines, SeedPodHome, SteppingStones, SunLeaf } from "./livingCore";
+export { Cell, CellRing, MushroomNetwork, Pines, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 
@@ -64,15 +64,6 @@ function FireflyDrawing(props: GlyphProps) {
     </Svg>
   );
 }
-/** The crown of a tree on its trunk: leadership that shelters. */
-function TreeCrownDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path d="M12 20.8v-6.2M12 16.8l-2.4-1.6M12 18.2l2.2-1.4" />
-      <path {...WASH} d="M6.8 14.6c-2.4 0-3.8-1.8-3.4-3.8.3-1.5 1.6-2.4 2.9-2.4.4-2.6 2.6-4.4 5.4-4.2 2.4.2 4.2 1.8 4.6 4 2 0 3.7 1.4 3.8 3.3.1 1.8-1.4 3.1-3.3 3.1z" />
-    </Svg>
-  );
-}
 /** Growth rings in a cut trunk: a goal reached ring by ring. */
 function GrowthRingsDrawing(props: GlyphProps) {
   return (
@@ -111,15 +102,6 @@ function WovenBasketDrawing(props: GlyphProps) {
     <Svg {...props}>
       <path d="M4 10.4h16l-1.7 9.2H5.7z" />
       <path d="M8 10.4c0-4.2 8-4.2 8 0M5 13.6h14M5.5 16.6h13M9 10.4l.8 9.2M12 10.4v9.2M15 10.4l-.8 9.2" />
-    </Svg>
-  );
-}
-/** A seed with its seam: an idea, something to plant. */
-function SeedDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path {...WASH} d="M12 3.6c3.5 3.2 5 6.6 5 9.9s-2.2 6.7-5 6.7-5-3.3-5-6.7 1.5-6.7 5-9.9z" />
-      <path d="M12 8.2v8.6" />
     </Svg>
   );
 }
@@ -168,24 +150,6 @@ function GourdDrawing(props: GlyphProps) {
     <Svg {...props}>
       <path d="M12 3.4c1 0 1.6.8 1.6 1.8 0 1-.6 1.6-.6 2.4 0 .8 4 2 4 6.6 0 3.6-2.4 6.2-5 6.2s-5-2.6-5-6.2c0-4.6 4-5.8 4-6.6 0-.8-.6-1.4-.6-2.4 0-1 .6-1.8 1.6-1.8z" />
       <path {...WASH} d="M7.4 14.6c1.5-.8 3-.8 4.6 0s3.1.8 4.6 0c0 3.2-2.1 5.8-4.6 5.8s-4.6-2.6-4.6-5.8z" />
-    </Svg>
-  );
-}
-/** A hand holding a heap of seeds: value you can hold and plant (money, where a price must be clear). */
-function SeedHandDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path d="M3.6 14.4c2.2 0 3.6.6 5 1.6h3c1 0 1.4 1.3.4 1.6l-3.2.4M3.6 19.4h4.8c2.4 0 4.6-.6 6.6-1.8l4.2-2.8c.9-.6.2-2-.9-1.6l-4.6 2" />
-      {[
-        [10.8, 13.3, -20],
-        [13.3, 13.5, 10],
-        [15.8, 12.8, 35],
-        [12, 11.1, 60],
-        [14.6, 10.7, -30],
-        [13.2, 8.8, 15],
-      ].map(([x, y, a]) => (
-        <ellipse key={`${x}-${y}`} cx={x} cy={y} rx={1.3} ry={0.9} transform={`rotate(${a} ${x} ${y})`} fill="currentColor" stroke="none" />
-      ))}
     </Svg>
   );
 }
@@ -255,18 +219,15 @@ export const SeedPod = /* @__PURE__ */ asIcon("SeedPod", SeedPodDrawing);
 export const SeedPin = /* @__PURE__ */ asIcon("SeedPin", SeedPinDrawing);
 export const Bloom = /* @__PURE__ */ asIcon("Bloom", BloomDrawing);
 export const Firefly = /* @__PURE__ */ asIcon("Firefly", FireflyDrawing);
-export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
 export const GrowthRings = /* @__PURE__ */ asIcon("GrowthRings", GrowthRingsDrawing);
 export const CouncilCircle = /* @__PURE__ */ asIcon("CouncilCircle", CouncilCircleDrawing);
 export const Songbird = /* @__PURE__ */ asIcon("Songbird", SongbirdDrawing);
 export const WovenBasket = /* @__PURE__ */ asIcon("WovenBasket", WovenBasketDrawing);
-export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);
 export const Taproot = /* @__PURE__ */ asIcon("Taproot", TaprootDrawing);
 export const Held = /* @__PURE__ */ asIcon("Held", HeldDrawing);
 export const SeedGlint = /* @__PURE__ */ asIcon("SeedGlint", SeedGlintDrawing);
 export const TendingHands = /* @__PURE__ */ asIcon("TendingHands", TendingHandsDrawing);
 export const Gourd = /* @__PURE__ */ asIcon("Gourd", GourdDrawing);
-export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
 export const Canopy = /* @__PURE__ */ asIcon("Canopy", CanopyDrawing);
 export const OfferingHands = /* @__PURE__ */ asIcon("OfferingHands", OfferingHandsDrawing);
 export const Splash = /* @__PURE__ */ asIcon("Splash", SplashDrawing);

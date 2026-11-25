@@ -27,7 +27,8 @@ import {
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, CellRing, SteppingStones } from "@/components/sacred/livingCore";
+import { Cell, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import type { LucideIcon } from "lucide-react";
 
 /**
  * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in
@@ -47,7 +48,37 @@ export type TabSlot = {
   /** Named after a token: the bar paints the village's word for it and keeps
    *  `path` exactly where it is. See NavLink.token in config/nav.ts. */
   token?: "recognition";
+  /** The reader's own slot: the bar draws THEIR path here (PATH_SLOT below). */
+  personal?: "path";
 };
+
+/**
+ * THE PATH SLOT (the lead, 25 Nov 2026: "swap out Circles with whatever path a
+ * player has chosen to bring them back to that path's progress screen with a
+ * unique Icon for each path").
+ *
+ * `path` is the slot's fixed identity, the way Admin's menu picker and a
+ * village's chosen tabs name it. The bar never links there as it stands: it
+ * reads the reader's first claimed path (their primary) and draws that path's
+ * glyph and the village's name for it, linking to the path's own card and
+ * ladder on the profile. With no path yet it offers the choice instead, with
+ * the seed. Circles is in the menu behind More.
+ */
+export const PATH_SLOT: TabSlot = { path: "/path", label: "Your path", Icon: Seed, personal: "path" };
+
+/** One glyph per path, so the slot shows WHICH path it is without a second icon. A path this map does not know takes the seed. */
+export const PATH_GLYPHS: Readonly<Record<string, LucideIcon>> = {
+  investor: SeedHand,
+  steward: TreeCrown,
+  resident: SeedPodHome,
+  "prosperity-creator": SunLeaf,
+};
+
+/** Where a path's progress is drawn: its card on the profile, with its ladder (components/profile/PathsPanel.tsx). */
+export const pathProgressHref = (pathId: string): string => `/profile#path-${pathId}`;
+
+/** Where a path is chosen: the profile's paths for someone signed in, the front page's four ways for a visitor. */
+export const CHOOSE_PATH_HREF = { signedIn: "/profile#sheet-paths", visitor: "/#choose-path" } as const;
 
 /**
  * Exactly five slots. Four routes plus More, which opens the existing header
@@ -57,7 +88,7 @@ export const TAB_SLOTS: TabSlot[] = [
   { path: "/", label: "Home", Icon: Lotus },
   { path: "/quests", label: "Quests", Icon: SteppingStones },
   { path: "/gratitude", label: "Gratitude", Icon: Heart, token: "recognition" },
-  { path: "/circles", label: "Circles", Icon: CellRing },
+  PATH_SLOT,
   { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 
