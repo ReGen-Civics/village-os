@@ -52,6 +52,7 @@ import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
 import { heldButRecruiting, relatedRolesShown, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
+import CommitmentChip from "@/components/roleCard/CommitmentChip";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
@@ -190,6 +191,7 @@ function RoleCard({ role, expanded, onToggle, canTagNeeds, sheet }: RoleCardProp
                     {stateWords[role.status]}
                   </span>
                 )}
+                <CommitmentChip role={role.raw} />
                 <NotListedChip role={role.raw} />
                 <HeldByAgentLine role={role.raw} className="basis-full" />
                 {/* 0374: the card says an agent may hold it (a card that has not said shows nothing). */}

@@ -35,6 +35,7 @@ import { applyByParts, frontKind, pillKind, volunteerLine } from "./frontWords";
 import { cardPay, NO_VILLAGE_PAY, type VillagePay } from "@shared/roleCardSections";
 import { useShareNames } from "@/components/ContributionWord";
 import { roleCardView } from "@shared/roleCardView";
+import { commitmentLabel } from "./rewardWords";
 import { roleArtFor } from "@shared/roleDraft";
 import { useRoleArt } from "@/lib/natureArt";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
@@ -161,7 +162,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                   volunteer={volunteerLine(i18n, kind)}
                   applyBy={applyBy}
                   circle={r.circleName}
-                  commitment={typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null}
+                  commitment={commitmentLabel(i18n, r.seat) || (typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null)}
                   where={where}
                   fill={fill[id] ?? null}
                   seat={r.seat}
@@ -220,6 +221,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                     </span>
                     <span className="mt-2 font-semibold leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>
                   </button>
+                  {commitmentLabel(i18n, r.seat) && <p className="text-sm text-muted-foreground" data-commitment-label="">{commitmentLabel(i18n, r.seat)}</p>}
                   {fill[id] && <FillMeter f={fill[id]} center />}
                   <Domains seat={r.seat} center />
                 </li>
