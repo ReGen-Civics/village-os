@@ -28,7 +28,8 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Repeat, Users, Video } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Repeat, Video } from "lucide-react";
+import { MushroomNetwork, SeedPin } from "@/components/sacred/living";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
 import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
@@ -41,6 +42,8 @@ import WeekView from "@/components/calendar/WeekView";
 import MoonGlyph from "@/components/calendar/MoonGlyph";
 import CalendarFeedCard from "@/components/calendar/CalendarFeedCard";
 import MoonSpiral from "@/components/calendar/MoonSpiral";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
+import { moonIsEmpty } from "@/lib/moonEmpty";
 import DayStrip from "@/components/calendar/DayStrip";
 import MoonTurnings from "@/components/calendar/MoonTurnings";
 import CalendarNotes, { notesUnderMoon, usePhoneWidth } from "@/components/calendar/CalendarNotes";
@@ -326,7 +329,7 @@ export default function Events() {
             )}
             {g.locationText && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <SeedPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {g.locationText}
               </p>
             )}
@@ -346,7 +349,7 @@ export default function Events() {
           {(g.kind === "gathering" || g.kind === "festival" || g.kind === "external") && (
             <div className="text-right shrink-0">
               <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-end">
-                <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <MushroomNetwork className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {/* The real number, always. A capacity of 0 is a real answer
                     and must not read as "no limit". */}
                 {g.capacity === null ? `${g.goingCount} going` : `${g.goingCount} of ${g.capacity} going`}
@@ -478,6 +481,16 @@ export default function Events() {
           </div>
 
           {payload === null && <p className="text-center text-muted-foreground py-16">{t({ message: "Opening the calendar", context: "calendar loading" })}</p>}
+
+          {/* A moon nobody has put anything in (UNFINISHED-AREAS 5a): one coming-soon line above it, in place of
+              "Nothing is on this day yet." under every day. */}
+          {payload && cursor && tab === "moon" && moon && moonIsEmpty(moon.days.map((d) => d.day.key), byDay) && (
+            <ComingSoonPanel
+              className="mb-6"
+              title={t({ message: "The village's gatherings", context: "coming soon: an empty moon on the calendar" })}
+              body={t({ message: "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day.", context: "coming soon: an empty moon on the calendar" })}
+            />
+          )}
 
           {payload && cursor && tab === "moon" && moon && (
             <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8" data-testid="moon-view">

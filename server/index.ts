@@ -122,6 +122,8 @@ import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } f
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
+import { register as registerMemberEmailRoutes } from "./routes/memberEmails";
+import { ownerOfAddress } from "./repos/memberEmails";
 import { matchOnEvent } from "./lib/seraPersonMatch";
 import { register as registerPulseRoutes } from "./routes/pulse";
 import { register as registerPlayersRoutes } from "./routes/players";
@@ -299,6 +301,8 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerTouchIconRoutes } from "./routes/touchIcon";
+import { register as registerNavBarRoutes } from "./routes/navBar";
+import { countVisit, visitTotals } from "./repos/navVisits";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
 import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions";
 import { register as registerPayRoutes } from "./routes/pay";
@@ -579,6 +583,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
+import { TEAM_SECTION, teamCardsFor } from "./lib/teamCards";
 import { hidesFirstNameFromVisitors, livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingFirstName, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
@@ -7938,6 +7943,13 @@ async function startServer() {
       return res.status(404).json({ error: "Section not found" });
     }
     if (await isAdmin(req)) return res.json(section);
+    // The team cards carry surnames, portraits and bios: only for a reader who may see people (server/lib/teamCards.ts).
+    if (req.params.section === TEAM_SECTION) {
+      noSharedCache(res); // the answer differs by reader, so no shared cache may hold a member's copy for a stranger
+      const viewer = await authedUser(req);
+      const viewerCtx = viewer ? await capabilityCtx(viewer) : null;
+      return res.json(teamCardsFor(section, viewerCtx ? hasCapability("map.viewPeople", viewerCtx) : false));
+    }
     if (Array.isArray(section)) {
       return res.json(
         section.map((card: any) => {
@@ -8234,6 +8246,7 @@ async function startServer() {
     clientIp,
     resetPerIpHourly: () => numberVar("abuse.password_reset_per_ip_hourly"),
     recordAudit: recordAuthAudit,
+    attachedAddress: (email) => ownerOfAddress(getPool(), email), // a reset asked at an extra address goes to that address
   });
   const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify, stageName });
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
@@ -8261,8 +8274,10 @@ async function startServer() {
     endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), // R104: ending an unproved password ends what its sessions planted
     onPasswordEnded: (m) => void sendPasswordEndedLetter(letters, m),
     portalVisitor: portalGoogleVisitor({ getPool, secret: AUTH_TOKEN_SECRET }), // "Continue with Google" at the entrance: a proved portal entry, no account
+    attachedAddress: (email) => ownerOfAddress(getPool(), email), // Google at an extra address the member proved
   });
   registerVerifyEmailRoutes(app, { ...letters, members, authedUser, verifyPassword, overLimit, clientIp, recordAudit: recordAuthAudit });
+  registerMemberEmailRoutes(app, { ...letters, getPool, members, authedUser, isAdmin, overLimit, clientIp, recordAudit: recordAuthAudit }); // one account, more than one proved address (0430)
 
   /**
    * Sign out. tokenVersion is the only revocation lever there is (no session
@@ -25683,6 +25698,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
 
   registerTouchIconRoutes(app, { favicon: () => String(mergedConfig().images?.favicon ?? ""), logo: () => String(mergedConfig().images?.logo ?? ""), background: () => installBackground(getBrand().theme), platformIconFile: path.join(staticPath, "assets", "images", "platform-favicon.svg"), overLimit });
+  // The responsive bottom bar: visits counted per page per day with no person, and the village's most visited pages (server/routes/navBar.ts).
+  registerNavBarRoutes(app, { getPool, authedUser, overLimit, connectionKey: clientIp, boolVar, numberVar, stringVar, countVisit, visitTotals, readDoc: (p, k) => readConfigDocument(p, k), writeDoc: (p, k, doc) => writeConfigDocument(p, k, doc), now: () => new Date(), fixedRoutes: (() => { let set: ReadonlySet<string> | null = null; return () => (set ??= (() => { try { return new Set((JSON.parse(fs.readFileSync(path.resolve(staticPath, "..", "client-routes.json"), "utf8")).patterns as string[]).filter((p) => !/[:*]/.test(p))); } catch { return new Set<string>(); } })()); })() });
 
   /*
    * ROBOTS AND SITEMAP, as real files.

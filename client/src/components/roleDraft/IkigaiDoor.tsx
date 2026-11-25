@@ -11,7 +11,7 @@
  */
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { DISCOVER_WORDS, IKIGAI_IDS, IKIGAI_LABELS, clipAnswer, hasIkigai, type GuideSuggestionOut, type IkigaiId, type IkigaiState } from "@shared/roleDiscover";
@@ -112,7 +112,7 @@ export default function IkigaiDoor({
               onClick={ask}
               className={`${BTN_SECONDARY} disabled:border-dashed`}
             >
-              <Sparkles className="size-4" aria-hidden="true" />
+              <SeedGlint className="size-4" aria-hidden="true" />
               {DISCOVER_WORDS.askGuide}
             </button>
             <p className="mt-1 text-xs text-muted-foreground">{DISCOVER_WORDS.guideNote}</p>

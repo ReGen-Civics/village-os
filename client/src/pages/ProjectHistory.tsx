@@ -44,8 +44,8 @@ import {
   LayoutGrid,
   StickyNote,
   ClipboardList,
-  TrendingUp,
 } from "lucide-react";
+import { Pines } from "@/components/sacred/living";
 
 // ─── External Resource Links ─────────────────────────────────────────────────
 
@@ -1006,7 +1006,7 @@ export default function ProjectHistory() {
                   : "text-stone-600 hover:bg-stone-100"
               }`}
             >
-              <TrendingUp className="w-4 h-4 shrink-0" />
+              <Pines className="w-4 h-4 shrink-0" />
               <span>Economics</span>
               {activeView === "economics" && <ChevronRight className="w-3 h-3 ml-auto" />}
             </button>

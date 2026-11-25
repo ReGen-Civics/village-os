@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
+import RitesSignedOut from "@/components/rites/RitesSignedOut";
 import { useAuth } from "@/contexts/AuthContext";
 import { Chip, Qr, RitesWorld, Sigil, TopBar, type Look, type Places } from "@/components/rites/parts";
 import { ritesGet, ritesSend } from "@/components/rites/ritesApi";
@@ -124,17 +125,7 @@ export function Packet() {
     ritesGet<{ sigil: string }>("/api/rites/me").then((m) => setSigil(m.sigil)).catch(() => undefined);
   }, [user]);
 
-  if (!user && !loading) {
-    return (
-      <RitesWorld>
-        <div className="app pad" style={{ paddingTop: 40 }}>
-          <Link className="btn gold" href="/login?next=/rites/packet">
-            <Trans context="rites">Sign in</Trans>
-          </Link>
-        </div>
-      </RitesWorld>
-    );
-  }
+  if (!user && !loading) return <RitesSignedOut next="/rites/packet" />;
   if (!mine) return <RitesWorld><div className="app pad" style={{ paddingTop: 40 }}>{error ? <p className="muted">{error}</p> : null}</div></RitesWorld>;
   if (!mine.mayInvite || !mine.path) {
     return (

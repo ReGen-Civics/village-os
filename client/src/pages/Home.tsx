@@ -7,25 +7,20 @@ import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gam
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import {
-  TrendingUp,
-  Users,
   Home as HomeIcon,
-  Sparkles,
   ArrowRight,
   Heart,
   Calendar,
-  MapPin,
   TreePine,
   CheckCircle2,
   FileText,
   Laptop,
   GraduationCap,
   Sunset,
-  Zap,
-  Briefcase,
   Globe
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MushroomNetwork, Pines, SeedGlint, SeedPin, SunLeaf, WovenBasket } from "@/components/sacred/living";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
 import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
@@ -38,6 +33,9 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
 import Mycelium from "@/components/motion/Mycelium";
+import { airWelcomeHere } from "@/lib/airWelcome";
+
+const Air = lazy(() => import("@/components/motion/Air"));
 
 
 
@@ -110,10 +108,10 @@ function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcS
 
 /** What each path card needs that is not words: where it goes, its icon, its picture. */
 const PATH_CARD_LOOK = {
-  investor: { icon: TrendingUp, href: "/investor", color: "bg-amber", imageKey: "investorHero", altKey: "investorHeroAlt", focusKey: "investorHeroFocus" },
-  steward: { icon: Users, href: "/steward", color: "bg-sage", imageKey: "stewardHero", altKey: "stewardHeroAlt", focusKey: "stewardHeroFocus" },
+  investor: { icon: Pines, href: "/investor", color: "bg-amber", imageKey: "investorHero", altKey: "investorHeroAlt", focusKey: "investorHeroFocus" },
+  steward: { icon: MushroomNetwork, href: "/steward", color: "bg-sage", imageKey: "stewardHero", altKey: "stewardHeroAlt", focusKey: "stewardHeroFocus" },
   resident: { icon: HomeIcon, href: "/resident", color: "bg-teal", imageKey: "residentHero", altKey: "residentHeroAlt", focusKey: "residentHeroFocus" },
-  prosperity: { icon: Sparkles, href: "/prosperity", color: "bg-teal-light", imageKey: "prosperityHero", altKey: "prosperityHeroAlt", focusKey: "prosperityHeroFocus" },
+  prosperity: { icon: SeedGlint, href: "/prosperity", color: "bg-teal-light", imageKey: "prosperityHero", altKey: "prosperityHeroAlt", focusKey: "prosperityHeroFocus" },
 } as const;
 
 /**
@@ -129,15 +127,15 @@ function headlineSize(text: string): string {
 }
 
 /** Icons for the stages and the people cards, handed out in order. */
-const STAGE_ICONS = [Heart, Calendar, Users, CheckCircle2, HomeIcon, TreePine];
+const STAGE_ICONS = [Heart, Calendar, MushroomNetwork, CheckCircle2, HomeIcon, TreePine];
 const PERSONA_LOOKS = [
   { icon: Laptop, color: "bg-teal/10", iconColor: "text-teal-deep" },
   { icon: GraduationCap, color: "bg-sage/20", iconColor: "text-sage" },
   { icon: Sunset, color: "bg-amber/20", iconColor: "text-amber-ink" },
-  { icon: Zap, color: "bg-primary/10", iconColor: "text-primary" },
-  { icon: Briefcase, color: "bg-teal-light/20", iconColor: "text-teal-deep" },
+  { icon: SunLeaf, color: "bg-primary/10", iconColor: "text-primary" },
+  { icon: WovenBasket, color: "bg-teal-light/20", iconColor: "text-teal-deep" },
   { icon: Globe, color: "bg-sage-light/40", iconColor: "text-sage" },
-  { icon: MapPin, color: "bg-teal/10", iconColor: "text-teal-deep" },
+  { icon: SeedPin, color: "bg-teal/10", iconColor: "text-teal-deep" },
   { icon: FileText, color: "bg-sage/20", iconColor: "text-sage" },
   { icon: Heart, color: "bg-amber/20", iconColor: "text-amber-ink" },
 ];
@@ -146,7 +144,21 @@ export default function Home() {
   const { t } = useLingui();
   // Blank hides both buttons rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
-  const project = useGameConfig()?.project;
+  const config = useGameConfig();
+  const project = config?.project;
+  // The hero's air comes after the first paint, when the browser is idle, and only where it is welcome.
+  const [air, setAir] = useState(false);
+  useEffect(() => {
+    if (!airWelcomeHere()) return;
+    // requestIdleCallback is missing in Safari, so a timer stands in there.
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (n: number) => void };
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => setAir(true), { timeout: 2500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(() => setAir(true), 1200);
+    return () => window.clearTimeout(id);
+  }, []);
   const brand = useBrandImages();
   // Every word on this page is the village's own, from Admin, Pages, Home
   // (shared/pageContent/home.ts). Null until the saved words have arrived:
@@ -205,6 +217,13 @@ export default function Home() {
           and never an empty frame. */}
       <section className="relative overflow-hidden" data-landing-hero="">
         <div className="absolute inset-0 z-0">
+          {/* The air over the land: canopy light by the village's hour, spores by day, fireflies by night.
+              Loaded after first paint and only on a capable device with motion allowed (lib/airWelcome.ts). */}
+          {air && (
+            <Suspense fallback={null}>
+              <Air timeZone={config?.season?.timezone} />
+            </Suspense>
+          )}
           {/* THE HERO RENDERS ONLY WHEN THERE IS ONE, the same rule the four
               journey pages follow. A village with no uploaded art gets the
               night ground and nothing that reads as a broken photograph. A

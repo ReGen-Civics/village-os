@@ -1,0 +1,59 @@
+{
+  "synthetic": true,
+  "name": "lookalike-letters-land-on-the-same-key",
+  "why": "An agenda title typed wholly in Cyrillic lookalikes is the same item as the Latin one, so it becomes an option beside it and cannot slip past.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "session_agenda",
+      "target": {
+        "circleId": "garden"
+      },
+      "body": {
+        "items": [
+          {
+            "title": "Seed swap",
+            "kind": "discussion"
+          }
+        ]
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "agent",
+      "filer": "p-other",
+      "kind": "session_agenda",
+      "target": {
+        "circleId": "garden"
+      },
+      "body": {
+        "items": [
+          {
+            "title": "Ѕееԁ ѕԝар",
+            "kind": "discussion"
+          }
+        ]
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "expect": {
+    "cards": [
+      {
+        "shape": "choose",
+        "options": [
+          [
+            "s1"
+          ],
+          [
+            "s2"
+          ]
+        ]
+      }
+    ],
+    "held": []
+  }
+}

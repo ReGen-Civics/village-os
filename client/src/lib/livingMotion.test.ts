@@ -102,7 +102,7 @@ describe("LIVING MOTION in index.css and motion.css", () => {
   });
 
   it("moves only compositor properties in its keyframes", () => {
-    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight", "m-breathe", "m-breathe-ring", "m-seed-land", "m-draw", "m-unfurl-l", "m-unfurl-r", "m-knot-in", "m-knot-glow", "m-root", "m-reroot", "m-page-in"]) {
+    for (const name of ["m-germinate", "m-touch-light", "m-touch-relight", "m-breathe", "m-breathe-ring", "m-seed-land", "m-draw", "m-unfurl-l", "m-unfurl-r", "m-knot-in", "m-knot-glow", "m-root", "m-reroot", "m-page-in", "m-dapple", "m-firefly", "m-spore"]) {
       keyframes(name).walkDecls((d) => {
         expect(MOVES_ONLY.has(d.prop), `${name} animates ${d.prop}`).toBe(true);
       });
@@ -113,7 +113,8 @@ describe("LIVING MOTION in index.css and motion.css", () => {
     const moving = rulesFor((s) => /(^|\s)\.m-/.test(s));
     expect(moving.length).toBeGreaterThan(5);
     for (const r of moving) {
-      const moves = r.nodes.some((n) => n.type === "decl" && /^(transition|animation)/.test(n.prop));
+      // animation-play-state only ever stops motion (the air pausing), so it may stand outside the guard.
+      const moves = r.nodes.some((n) => n.type === "decl" && /^(transition|animation)/.test(n.prop) && n.prop !== "animation-play-state");
       if (moves) expect(guards(r), r.selector).toContain(NO_PREFERENCE);
     }
   });
@@ -178,5 +179,14 @@ describe("LIVING MOTION in index.css and motion.css", () => {
     const from = (keyframes("m-page-in").nodes ?? []).find((n): n is Rule => n.type === "rule" && n.selector === "from");
     const op = (from?.nodes ?? []).find((n): n is Declaration => n.type === "decl" && n.prop === "opacity");
     expect(Number(op?.value)).toBeGreaterThanOrEqual(0.4);
+  });
+
+  it("lets the air pause: every looping air animation has a paused form", () => {
+    const pause = rulesFor((s) => s.startsWith(".m-air[data-paused]"));
+    expect(pause.length).toBeGreaterThan(0);
+    expect(pause[0].toString()).toMatch(/animation-play-state:\s*paused/);
+    const loops = rulesFor((s) => s.includes(".m-air")).filter((r) => r.nodes.some((n) => n.type === "decl" && n.prop === "animation" && /infinite/.test(n.value)));
+    expect(loops.length).toBeGreaterThan(0);
+    for (const r of loops) expect(guards(r), r.selector).toContain(NO_PREFERENCE);
   });
 });

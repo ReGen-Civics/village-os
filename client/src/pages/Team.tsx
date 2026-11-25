@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
 import { m } from "framer-motion";
-import { Users, ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { Image } from "@/components/Image";
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import { readVillageSection } from "@/hooks/useVillageContent";
 import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { TEAM_PAGE } from "@shared/pageContent/team";
-import { orgRowIsAgent } from "@shared/roleSheetInputs";
+import { orgRowIsAgent, seatHistoryShown } from "@shared/roleSheetInputs";
 import { Trans } from "@lingui/react/macro";
 
 interface TeamMember {
@@ -30,6 +31,20 @@ interface TeamMember {
  */
 export function openRoleCount(roles: ReadonlyArray<{ seats?: unknown; holderCount?: unknown; isExample?: unknown }>): number {
   return roles.filter((r) => !r.isExample && Number(r.holderCount ?? 0) < Number(r.seats ?? 1)).length;
+}
+
+/**
+ * WHETHER THIS READER GETS THE TEAM CARDS: photos, bios and the full names on them (the lead, 25 Nov 2026).
+ *
+ * A visitor reads first names only on /team, from /api/org, which already says "A member" for whoever turned off
+ * "Show my first name to visitors". The cards carry what a stranger must not get: a surname, a portrait, a bio.
+ * They used to merge for everyone, and because a public holder row is a first name and a card is a full name the
+ * two never matched, so each card was drawn again on its own, surname and photo included. A member keeps today's
+ * page. The member tier is proved the way the seat history proves it: signed in, and rows that carry `kind`.
+ * The server holds the same line (`teamCardsFor`, server/lib/teamCards.ts); this is the page's half.
+ */
+export function teamCardsShown(people: PeopleTier | null | undefined, roles: unknown): boolean {
+  return !!people?.signedIn && seatHistoryShown(people, roles);
 }
 
 /** A board column's lines, blanks left out. */
@@ -66,12 +81,17 @@ export default function Team() {
     // alone with no cookie fallback, and this page had never sent one: the
     // capability was therefore consulted on a viewer that was always null,
     // and it had never granted anybody anything here.
-    Promise.all([
-      gameFetch("/api/org").then((r) => (r.ok ? r.json() : { circles: [], roles: [] })).catch(() => ({ circles: [], roles: [] })),
-      // Through the section listing, so a fork that has written no team cards
-      // never requests them (see client/src/hooks/useVillageContent.ts).
-      readVillageSection("team").then((cards) => (Array.isArray(cards) ? cards : [])),
-    ])
+    gameFetch("/api/org")
+      .then((r) => (r.ok ? r.json() : { circles: [], roles: [] }))
+      .catch(() => ({ circles: [], roles: [] }))
+      // The cards are asked for only at the member tier (teamCardsShown), so a
+      // visitor's browser never holds a surname or a portrait. Through the
+      // section listing, so a fork that has written no team cards never
+      // requests them (see client/src/hooks/useVillageContent.ts).
+      .then(async (org: any) => [
+        org,
+        teamCardsShown(org.people, org.roles) ? await readVillageSection("team").then((cards) => (Array.isArray(cards) ? cards : [])).catch(() => []) : [],
+      ] as const)
       .then(([org, cards]) => {
         setPeople(org.people ?? null);
         setSeatCounts({
@@ -79,8 +99,10 @@ export default function Team() {
           held: (org.roles ?? []).reduce((n: number, r: any) => n + Number(r.holderCount ?? 0), 0),
           open: openRoleCount(org.roles ?? []),
         });
+        // A visitor never gets the cards, so nothing below can draw a surname or a photo for them.
+        const shownCards: any[] = teamCardsShown(org.people, org.roles) ? [...cards] : [];
         const profileByName = new Map<string, any>();
-        for (const c of Array.isArray(cards) ? cards : []) {
+        for (const c of shownCards) {
           if (c?.name) profileByName.set(String(c.name).trim().toLowerCase(), c);
         }
         const circleName = new Map<string, string>(
@@ -126,7 +148,7 @@ export default function Team() {
           };
         });
         // A card for somebody who holds no seat still belongs on the page.
-        for (const c of Array.isArray(cards) ? cards : []) {
+        for (const c of shownCards) {
           if (!c?.name) continue;
           if (!seatsByPerson.has(String(c.name).trim().toLowerCase())) merged.push(c);
         }
@@ -147,7 +169,7 @@ export default function Team() {
             className="text-center mb-16"
           >
             <div className="w-16 h-16 rounded-full bg-open/10 flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-open" />
+              <MushroomNetwork className="w-8 h-8 text-open" />
             </div>
             {/* The heading and the sentence under it used to name one village
                 and describe that village's founding team, so every fork of this

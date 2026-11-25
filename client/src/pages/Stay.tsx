@@ -12,7 +12,8 @@ import { Link } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
-import { BedDouble, CreditCard, Hammer, Moon, Send } from "lucide-react";
+import { BedDouble, CreditCard, Moon, Send } from "lucide-react";
+import { TendingHands } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
@@ -331,7 +332,7 @@ export default function Stay() {
           {(data?.earnQuests ?? []).length > 0 && (
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Hammer className="w-4 h-4 text-teal-deep" />
+                <TendingHands className="w-4 h-4 text-teal-deep" />
                 <p className="font-semibold text-foreground text-sm"><Trans context="Stay, p">Earn your nights</Trans></p>
               </div>
               <div className="space-y-2">

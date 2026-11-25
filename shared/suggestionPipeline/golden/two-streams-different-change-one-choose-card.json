@@ -1,0 +1,58 @@
+{
+  "synthetic": true,
+  "name": "two-streams-different-change-one-choose-card",
+  "why": "Two different wordings for one field become one card with two options, never two cards that could both be accepted.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Keeps the wells."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "choose",
+        "options": [
+          [
+            "s1"
+          ],
+          [
+            "s2"
+          ]
+        ]
+      }
+    ],
+    "held": []
+  }
+}

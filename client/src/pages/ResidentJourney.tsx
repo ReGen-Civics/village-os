@@ -26,10 +26,8 @@ import {
   Circle,
   Calendar,
   Heart,
-  Users,
   FileCheck,
   Baby,
-  Award,
   Key,
   Building,
   ChevronDown,
@@ -39,6 +37,7 @@ import {
   Wallet,
   Flame
 } from "lucide-react";
+import { Bloom, MushroomNetwork } from "@/components/sacred/living";
 
 /*
  * EVERY WORD ON THIS PAGE IS THE VILLAGE'S OWN, from Admin, Pages, Resident
@@ -64,7 +63,7 @@ import {
  */
 
 /** Icons for the steps, in order; a longer list starts again from the top. */
-const STEP_ICONS = [Calendar, Users, Sprout, BookOpen, Heart, Home, Wallet, FileCheck, Flame, Baby, Award, Key, Building, Heart];
+const STEP_ICONS = [Calendar, MushroomNetwork, Sprout, BookOpen, Heart, Home, Wallet, FileCheck, Flame, Baby, Bloom, Key, Building, Heart];
 
 /*
  * THE TENURE TITLES, AND WHAT THEY ARE NOT (founder ruling, 2026-09-03).

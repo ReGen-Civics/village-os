@@ -32,7 +32,8 @@ import { termOf, type OpenProposalTerm } from "@shared/openProposalTerm";
 import { civilDayWords } from "@shared/seasonPlans";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowRight, Check, Compass, MapPin, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Compass, X } from "lucide-react";
+import { SeedGlint, SeedPin } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import InfoTip from "@/components/InfoTip";
@@ -524,7 +525,7 @@ export default function RoleDraft() {
                         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/55 to-transparent" aria-hidden="true" />
                         {fits.length > 0 && (
                           <span className="absolute right-2 top-2 rounded-full bg-notice px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-background">
-                            <Sparkles className="mr-1 inline size-3" aria-hidden="true" />
+                            <SeedGlint className="mr-1 inline size-3" aria-hidden="true" />
                             {t({ message: `Fits ${fitsNames}`, context: "role draft badge" })}
                           </span>
                         )}
@@ -730,7 +731,7 @@ export default function RoleDraft() {
                 {places.length > 0 ? (
                   <li>
                     <p className="flex items-center gap-2 font-semibold text-foreground">
-                      <MapPin className="size-4" aria-hidden="true" />
+                      <SeedPin className="size-4" aria-hidden="true" />
                       {t`Places looking for a steward:`}
                     </p>
                     <ul className="mt-1 flex flex-wrap gap-2 pl-6">
@@ -744,7 +745,7 @@ export default function RoleDraft() {
                 ) : (
                   <li>
                     <Link href="/map" className={`jw-btn min-h-14 ${DOOR}`}>
-                      <MapPin className="size-5 shrink-0 text-notice" aria-hidden="true" />
+                      <SeedPin className="size-5 shrink-0 text-notice" aria-hidden="true" />
                       <span className="min-w-0 flex-1">{t`See the places and their open roles on the Living Map`}</span>
                       <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                     </Link>

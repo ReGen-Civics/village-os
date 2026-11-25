@@ -21,7 +21,8 @@ import { authToken } from "@/lib/gameApi";
  */
 import { DOUGHNUT, DOUGHNUT_VIEWBOX, TAU, outerLabelPlacement } from "@/lib/doughnutLayout";
 import { SNAPSHOT_METRICS, snapshotTileLabel } from "@shared/healthMetrics";
-import { Activity, CheckCircle2, Circle, Leaf, Moon, Sprout, Users } from "lucide-react";
+import { Activity, CheckCircle2, Circle, Leaf, Moon, Sprout} from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { ExampleChip, ExamplesBanner } from "@/components/ExamplesBanner";
 import { BrowserCrashesCard } from "@/components/health/BrowserCrashesCard";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -227,7 +228,7 @@ export default function VillageHealth() {
           {/* Governance reads, framed honestly */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-1">
-              <Users className="w-4 h-4 text-teal-deep" />
+              <MushroomNetwork className="w-4 h-4 text-teal-deep" />
               <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">Governance health</Trans></p>
             </div>
             <p className="text-sm text-foreground">
@@ -252,7 +253,7 @@ export default function VillageHealth() {
           {data?.structure?.seatingsLive > 0 && (
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-1">
-                <Users className="w-4 h-4 text-teal-deep" />
+                <MushroomNetwork className="w-4 h-4 text-teal-deep" />
                 <p className="font-semibold text-foreground text-sm"><Trans context="VillageHealth, p">What the village depends on</Trans></p>
               </div>
               <p className="text-sm text-foreground">

@@ -27,7 +27,7 @@ import { authToken } from "@/lib/gameApi";
 import LongText from "@/components/LongText";
 import { formatHumanAmount } from "@/lib/tokenAmount";
 import { formatMoney } from "@shared/money";
-import { HandCoins } from "lucide-react";
+import { OfferingHands } from "@/components/sacred/living";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
@@ -264,7 +264,7 @@ export default function RedemptionPanel() {
   return (
     <div className="bg-card border border-border rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <HandCoins className="w-4 h-4 text-teal-deep" />
+        <OfferingHands className="w-4 h-4 text-teal-deep" />
         <p className="font-semibold text-foreground text-sm"><Trans context="RedemptionPanel, p">Redeem</Trans></p>
       </div>
 

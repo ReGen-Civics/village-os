@@ -17,9 +17,9 @@ import Layout from "@/components/Layout";
 import { Link, useRoute } from "wouter";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft, CheckCircle2, ClipboardCheck, Clock, Compass, Footprints,
-  Lightbulb, ListChecks, MapPin, Send, Sparkles, Sprout, Target, Users,
+  ArrowLeft, CheckCircle2, ClipboardCheck, Clock, Compass, Footprints, ListChecks, Send, Sprout,
 } from "lucide-react";
+import { GrowthRings, MushroomNetwork, Seed, SeedGlint, SeedPin } from "@/components/sacred/living";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATALYST_FALLBACK, fetchGameMe, gameFetch, QuestClaim, useGameConfig, villageWord } from "@/lib/gameApi";
 import WorkPayBlock from "@/components/WorkPayBlock";
@@ -283,7 +283,7 @@ export default function QuestDetail() {
             )}
             {place && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm" data-place={place}>
-                <MapPin className="w-4 h-4" aria-hidden="true" />
+                <SeedPin className="w-4 h-4" aria-hidden="true" />
                 {placeWords[place]}
               </span>
             )}
@@ -302,7 +302,7 @@ export default function QuestDetail() {
               <span className="inline-flex items-center gap-3 text-sm text-muted-foreground ml-1">
                 {active > 0 && (
                   <span className="inline-flex items-center gap-1 font-medium text-teal-deep">
-                    <Users className="w-4 h-4" />{" "}
+                    <MushroomNetwork className="w-4 h-4" />{" "}
                     {active === 1
                       ? t({ message: "1 hand on this", context: "open work card: one person carries this quest now" })
                       : t({ message: `${active} hands on this`, context: "open work card: people carrying this quest now" })}
@@ -326,7 +326,7 @@ export default function QuestDetail() {
               quests grow it with this one (the village's count). */}
           {goal && (
             <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-foreground" data-goal={goal.id}>
-              <Target className="w-4 h-4 text-open" aria-hidden="true" />
+              <GrowthRings className="w-4 h-4 text-open" aria-hidden="true" />
               <span className="font-medium">{t({ message: `Grows: ${goalText}`, context: "open work card: the season goal this quest grows" })}</span>
               <Link href={`/quests?goal=${encodeURIComponent(goal.id)}`} className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
                 {t({ message: "See all the open work for this goal", context: "quest page: link to the board filtered to one season goal" })}
@@ -439,13 +439,13 @@ export default function QuestDetail() {
             {tips.length > 0 && (
               <div>
                 <h2 className="font-display text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Trans context="QuestDetail, h2"><Lightbulb className="w-5 h-5 text-gold" />
+                  <Trans context="QuestDetail, h2"><Seed className="w-5 h-5 text-gold" />
                   Worth knowing
                 </Trans></h2>
                 <ul className="space-y-2">
                   {tips.map((tip, i) => (
                     <li key={i} className="flex gap-2.5 text-sm text-muted-foreground leading-relaxed">
-                      <Sparkles className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+                      <SeedGlint className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                       <span>{tip}</span>
                     </li>
                   ))}

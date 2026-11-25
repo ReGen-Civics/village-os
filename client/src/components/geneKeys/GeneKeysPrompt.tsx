@@ -16,7 +16,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useMyGeneKeys } from "./useMyGeneKeys";
 import { useGuideName } from "@/hooks/useGuideName";
@@ -76,7 +76,7 @@ export default function GeneKeysPrompt({ picked, characterName }: GeneKeysPrompt
     <>
       <section aria-labelledby="gene-keys-invite-h" className={NIGHT_CARD}>
         <h2 id="gene-keys-invite-h" className="flex items-center gap-2 font-display text-xl text-card-foreground">
-          <Trans context="GeneKeysPrompt, h2"><Sparkles className="h-5 w-5 text-notice" aria-hidden="true" />
+          <Trans context="GeneKeysPrompt, h2"><SeedGlint className="h-5 w-5 text-notice" aria-hidden="true" />
           Get your Gene Keys
         </Trans></h2>
         <p className="mt-1 text-sm text-foreground">

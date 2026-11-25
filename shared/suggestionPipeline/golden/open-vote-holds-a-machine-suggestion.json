@@ -1,0 +1,53 @@
+{
+  "synthetic": true,
+  "name": "open-vote-holds-a-machine-suggestion",
+  "why": "A village vote is open on this role's words: the suggestion waits for the vote, and a steward cannot accept over it.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ],
+    "openVotes": [
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "water"
+          },
+          "body": {
+            "words": {
+              "purpose": "x"
+            }
+          }
+        },
+        "ref": "ballot:41",
+        "closesAt": "2026-11-28T00:00:00.000Z"
+      }
+    ]
+  },
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "under_vote"
+      }
+    ]
+  }
+}

@@ -46,11 +46,10 @@ import {
   ScrollText,
   ChevronDown,
   Lock,
-  Users,
-  Megaphone,
   Copy,
   X,
 } from "lucide-react";
+import { MushroomNetwork, Songbird } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { useCatalyst, useGameConfig, authToken } from "@/lib/gameApi";
 import { ballotReturn } from "./gameMechanicsBallotCopy";
@@ -849,7 +848,7 @@ export default function GameMechanics() {
                 <p className="text-sm text-stone-600 mb-2 max-w-2xl">
                   <Trans context="GameMechanics, p">Every tunable rule, grouped by the part of the Game it shapes.{" "}
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 text-xs align-middle">
-                    <Users className="w-3 h-3" /> community
+                    <MushroomNetwork className="w-3 h-3" /> community
                   </span>{" "}
                   dials can be changed by proposal. Adjust one below to begin.{" "}
                   <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 text-stone-600 px-2 py-0.5 text-xs align-middle">
@@ -984,7 +983,7 @@ export default function GameMechanics() {
                                   <p className="text-[11px] text-stone-500 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                                     {v.ring === "open" ? (
                                       <span className="inline-flex items-center gap-1 text-emerald-700">
-                                        <Trans context="GameMechanics, span"><Users className="w-3 h-3" /> community dial
+                                        <Trans context="GameMechanics, span"><MushroomNetwork className="w-3 h-3" /> community dial
                                       </Trans></span>
                                     ) : (
                                       <span className="inline-flex items-center gap-1">
@@ -1014,7 +1013,7 @@ export default function GameMechanics() {
               {/* 3 — Open proposals */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Megaphone className="w-5 h-5 text-teal-deep" />
+                  <Songbird className="w-5 h-5 text-teal-deep" />
                   <h2 className="font-display text-2xl font-bold text-teal-deep"><Trans context="GameMechanics, h2">Proposals</Trans></h2>
                 </div>
                 {/* The venue, from the server, in the one place the page has

@@ -38,7 +38,8 @@ import { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import { Link } from "wouter";
-import { Home, ArrowLeft, Check, MapPin } from "lucide-react";
+import { Home, ArrowLeft, Check} from "lucide-react";
+import { SeedPin } from "@/components/sacred/living";
 import { hamletNumbers, homeChoices, preselectedHome, type PublicHome } from "@/lib/housingForm";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import VoiceArea from "@/components/voice/VoiceArea";
@@ -311,7 +312,7 @@ export default function ReserveHome() {
           {hamlet && (
             <div className="mb-8 p-5 rounded-2xl bg-card shadow-sm">
               <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-4 h-4 text-teal" />
+                <SeedPin className="w-4 h-4 text-teal" />
                 <span className="font-display font-semibold text-foreground">{hamletName}</span>
               </div>
               {numbers.kind === "set" ? (

@@ -78,7 +78,7 @@ function store(rows: any[]) {
   };
 }
 
-function mount(members: any, invites?: any) {
+function mount(members: any, invites?: any, extra: Record<string, unknown> = {}) {
   const routes = new Map<string, (req: any, res: any) => Promise<unknown>>();
   const app = {
     get: (p: string, h: any) => routes.set(`GET ${p}`, h),
@@ -115,6 +115,7 @@ function mount(members: any, invites?: any) {
       release: async () => {},
       welcome: async () => {},
     } as any),
+    ...extra,
   } as any);
   log.mockRestore();
 
@@ -355,5 +356,51 @@ describe("the invited person arriving by Google on an account nobody proved (aud
     const b = invites();
     await mount(store([planted({ emailVerifiedAt: PROVED })]), b.door).callback(EMAIL, "inv-gv-1");
     expect(b.claimed).toEqual([]);
+  });
+});
+
+describe("a Google sign-in at an EXTRA address the member proved (0430)", () => {
+  beforeEach(() => vi.spyOn(console, "warn").mockImplementation(() => {}));
+  afterEach(() => vi.restoreAllMocks());
+
+  /** Wren's account: main address at home, the Google address attached as an extra one. */
+  const withExtra = () => {
+    const members = store([planted({ email: "wren.home@example.test", emailVerifiedAt: PROVED })]);
+    const lookup = { ...members, byEmail: async (e: string) => (e.toLowerCase() === EMAIL || e === "wrén@example.test" ? structuredClone(members.rows.get("u-wren")) : members.byEmail(e)) };
+    return { members, lookup };
+  };
+
+  it("signs in to the same account, links Google, and leaves the proved password alone", async () => {
+    const { members, lookup } = withExtra();
+    const flow = mount(lookup, undefined, { attachedAddress: async () => ({ userId: "u-wren", email: EMAIL }) });
+    const out = await flow.callback();
+    expect(out.redirect).toBe("/login?oauth=complete&next=%2Fprofile");
+    const row = members.rows.get("u-wren");
+    expect(readGoogleLink(SECRET, row)).toBe(SUB);
+    expect(row.passwordHash).toBe("hash-of-a-password-somebody-else-typed");
+    expect(row.email, "the main address moved").toBe("wren.home@example.test");
+    expect(flow.reachEnded).toEqual([]);
+  });
+
+  it("CONTROL: without the attached-address reader the same sign-in is refused, as before 0430", async () => {
+    const { members, lookup } = withExtra();
+    const out = await mount(lookup).callback();
+    expect(out.redirect).toBe("/login?oauth=error&reason=account_unavailable");
+    expect(readGoogleLink(SECRET, members.rows.get("u-wren"))).toBeNull();
+  });
+
+  it("refuses a lookalike that only folds to the attached address", async () => {
+    const { members, lookup } = withExtra();
+    const out = await mount(lookup, undefined, { attachedAddress: async () => ({ userId: "u-wren", email: EMAIL }) }).callback("wrén@example.test");
+    expect(out.redirect).toBe("/login?oauth=error&reason=account_unavailable");
+    expect(readGoogleLink(SECRET, members.rows.get("u-wren"))).toBeNull();
+  });
+
+  it("refuses an account holding a password nobody proved, even at an attached address", async () => {
+    const members = store([planted({ email: "wren.home@example.test" })]);
+    const lookup = { ...members, byEmail: async () => structuredClone(members.rows.get("u-wren")) };
+    const out = await mount(lookup, undefined, { attachedAddress: async () => ({ userId: "u-wren", email: EMAIL }) }).callback();
+    expect(out.redirect).toBe("/login?oauth=error&reason=account_unavailable");
+    expect(members.rows.get("u-wren").passwordHash).toBe("hash-of-a-password-somebody-else-typed");
   });
 });

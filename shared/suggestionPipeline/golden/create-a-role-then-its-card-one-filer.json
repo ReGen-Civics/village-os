@@ -1,0 +1,64 @@
+{
+  "synthetic": true,
+  "name": "create-a-role-then-its-card-one-filer",
+  "why": "One filer creates a role and writes its card: one batch, the role first, even when the card arrived first.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water-steward"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "setting",
+      "target": {
+        "method": "POST",
+        "path": "/api/admin/org/roles"
+      },
+      "body": {
+        "name": "Water Steward"
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z",
+      "provides": [
+        "role:water-steward"
+      ]
+    }
+  ],
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s2"
+          ]
+        ],
+        "batch": 0,
+        "position": 0
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ],
+        "batch": 0,
+        "position": 1
+      }
+    ],
+    "held": []
+  }
+}

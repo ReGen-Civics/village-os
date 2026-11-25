@@ -1,0 +1,30 @@
+{
+  "synthetic": true,
+  "name": "mixed-script-name-is-held",
+  "why": "A name that mixes Latin and Cyrillic letters inside one word is held, never guessed at.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "How dо I join?",
+        "answer": "Ask the circle."
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    }
+  ],
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "mixed_script"
+      }
+    ]
+  }
+}

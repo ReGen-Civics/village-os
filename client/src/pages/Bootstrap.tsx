@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
-import { KeyRound, ArrowRight, Mail, ShieldCheck } from "lucide-react";
+import { KeyRound, ArrowRight, Mail} from "lucide-react";
+import { Canopy } from "@/components/sacred/living";
 import { useState } from "react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { claimLinkHere } from "@/lib/claimLink";
@@ -132,7 +133,7 @@ export default function Bootstrap() {
               <div className="space-y-4" role="status">
                 <div className="rounded-lg bg-teal-deep/5 p-4">
                   <p className="flex items-start gap-2 text-sm font-medium text-teal-deep">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <Canopy className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <span><Trans context="Bootstrap, span">You are this village&rsquo;s founder. One step left: set a password.</Trans></span>
                   </p>
                 </div>

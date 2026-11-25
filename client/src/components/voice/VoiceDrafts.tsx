@@ -11,7 +11,8 @@
  */
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { Check, Sparkles } from "lucide-react";
+import { Check} from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import GrowingField from "@/components/form/GrowingField";
 import { BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
 import { OPEN_AIM_MAX, OPEN_WHY_MAX } from "@shared/openProposals";
@@ -93,7 +94,7 @@ export function VoiceDrafts({ heard, drafting }: { heard: string; drafting: Voic
     <div className="grid gap-3" data-voice-drafts="">
       <div className="grid gap-1.5">
         <button type="button" onClick={() => void press()} disabled={busy} className={`${BTN_SECONDARY} min-h-12 justify-center`} aria-describedby="voice-draft-sends" data-voice-draft="">
-          <Sparkles className="size-4" aria-hidden="true" />
+          <SeedGlint className="size-4" aria-hidden="true" />
           {VOICE_DRAFT_WORDS.button}
         </button>
         <p id="voice-draft-sends" className="text-xs text-muted-foreground">

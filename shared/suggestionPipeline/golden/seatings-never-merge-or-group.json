@@ -1,0 +1,69 @@
+{
+  "synthetic": true,
+  "name": "seatings-never-merge-or-group",
+  "why": "Two identical seating suggestions stay two cards in arrival order: nothing is merged, grouped or judged about a person.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "approval",
+      "filer": "p-agent",
+      "kind": "setting",
+      "target": {
+        "method": "POST",
+        "path": "/api/admin/org/seatings"
+      },
+      "body": {
+        "roleId": "water",
+        "subject": "member-1"
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z",
+      "touchesPerson": true
+    },
+    {
+      "id": "s2",
+      "stream": "approval",
+      "filer": "p-agent",
+      "kind": "setting",
+      "target": {
+        "method": "POST",
+        "path": "/api/admin/org/seatings"
+      },
+      "body": {
+        "roleId": "water",
+        "subject": "member-1"
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z",
+      "touchesPerson": true
+    }
+  ],
+  "context": {
+    "alreadyLive": [
+      "s1"
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ],
+        "batch": 0,
+        "position": 0
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s2"
+          ]
+        ],
+        "batch": 0,
+        "position": 1
+      }
+    ],
+    "held": []
+  }
+}

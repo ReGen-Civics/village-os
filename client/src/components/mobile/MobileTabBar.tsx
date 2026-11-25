@@ -17,7 +17,7 @@
  */
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
-import { BARE_ROUTES, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
+import { BARE_ROUTES, CHOOSE_PATH_HREF, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_GLYPHS, PATH_SLOT, TAB_SLOTS, pathProgressHref, type TabSlot } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
 import { Compass } from "lucide-react";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
@@ -25,6 +25,11 @@ import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
 import { useNewcomerShows } from "@/lib/newcomer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGameConfig } from "@/lib/gameApi";
+import { GAME_CONFIG } from "@shared/gameConfig";
+import { routeIcon } from "@/config/routeIcons";
+import { useEffect, useState } from "react";
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -59,6 +64,73 @@ export function villageSlots(tabs: readonly string[], labels: Readonly<Record<st
 }
 
 /**
+ * The bar's places the responsive choice may fill (shared/navPopularity.ts,
+ * MOVING_PLACES): the two after Home. Every other place is the platform's and
+ * never moves: Home, the member's path (the lead, 24 Nov 2026) and More.
+ */
+const MOVING_INDEXES = [1, 2] as const;
+
+/**
+ * THE RESPONSIVE BAR (nav.responsive_bar): the platform's bar with its moving
+ * places filled by the pages chosen, in order. A page that is no menu entry,
+ * hidden, closed, or already on the bar is skipped, and a place left empty
+ * keeps a platform tab not already on the bar. Each chosen page wears its own
+ * icon where one is drawn.
+ */
+export function responsiveSlots(pages: readonly string[], labels: Readonly<Record<string, string>>, hidden: readonly string[], open: (module?: string) => boolean): TabSlot[] {
+  const out = TAB_SLOTS.slice();
+  const fixed = new Set(out.filter((_, i) => !(MOVING_INDEXES as readonly number[]).includes(i)).map((s) => s.path).filter(Boolean) as string[]);
+  const taken = new Set(fixed);
+  const drawn: TabSlot[] = [];
+  for (const href of pages) {
+    if (drawn.length >= MOVING_INDEXES.length || taken.has(href)) continue;
+    const entry = ENTRY_BY_HREF.get(href);
+    if (!entry || hidden.includes(href) || !open(entry.module) || (entry.unlessModule && open(entry.unlessModule))) continue;
+    const platform = TAB_SLOTS.find((t) => t.path === href);
+    const slot = platform ?? { path: href, label: labels[href] || entry.label, Icon: entry.icon ?? Compass, ...(entry.token ? { token: entry.token } : {}) };
+    taken.add(href);
+    drawn.push({ ...slot, Icon: routeIcon(href, slot.Icon) });
+  }
+  // Empty places keep the platform's own tab there, or the next one not on the bar.
+  for (const i of MOVING_INDEXES) {
+    const own = TAB_SLOTS[i];
+    if (drawn.length >= MOVING_INDEXES.length) break;
+    if (own.path && !taken.has(own.path)) {
+      taken.add(own.path);
+      drawn.push(own);
+    }
+  }
+  MOVING_INDEXES.forEach((i, k) => {
+    if (drawn[k]) out[i] = drawn[k];
+  });
+  return out;
+}
+
+/**
+ * The responsive bar's places for a signed-in member, asked after the first
+ * paint so the first page's scripts stay as they were; null is the village's
+ * fixed bar (the setting off, signed out, or the server not answering).
+ */
+function useResponsiveTabs(path: string): string[] | null {
+  const [tabs, setTabs] = useState<string[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    // The lazy module reads the session itself: signed out, it answers null.
+    const id = window.setTimeout(() => {
+      void import("@/lib/navVisits")
+        .then((m) => m.loadBarNow())
+        .then((t) => live && setTabs(t))
+        .catch(() => undefined);
+    }, 800);
+    return () => {
+      live = false;
+      window.clearTimeout(id);
+    };
+  }, [path]);
+  return tabs;
+}
+
+/**
  * A newcomer's bar (config/nav.ts, `newcomers`): a slot whose page is a member's
  * working area, or an area not in use yet, becomes the roles, once; a second
  * such slot keeps its place only if it is not already on the bar, else it goes
@@ -83,6 +155,27 @@ export function newcomerSlots(slots: readonly TabSlot[], shown: (entry: NavLink)
   return out;
 }
 
+/** The path slot as one reader sees it: where it leads, what it says, what it draws. */
+export interface PathTab {
+  href: string;
+  label: string;
+  Icon: TabSlot["Icon"];
+  /** The path it stands for, or null while the reader has none. */
+  pathId: string | null;
+}
+
+/**
+ * The path slot for a reader who walks `claimed` (their paths, primary first).
+ * The FIRST path is the one drawn, by its own glyph and name, and never a stack
+ * of several: the profile marks the first as the primary the same way. No path
+ * yet means the choice, with the seed. Pure, so the test reads it directly.
+ */
+export function pathTab(claimed: readonly string[] | undefined, signedIn: boolean, nameOf: (id: string) => string, choose: string): PathTab {
+  const id = claimed?.find((p) => p.trim());
+  if (id) return { href: pathProgressHref(id), label: nameOf(id), Icon: PATH_GLYPHS[id] ?? PATH_SLOT.Icon, pathId: id };
+  return { href: signedIn ? CHOOSE_PATH_HREF.signedIn : CHOOSE_PATH_HREF.visitor, label: choose, Icon: PATH_SLOT.Icon, pathId: null };
+}
+
 export default function MobileTabBar() {
   const [location] = useLocation();
   const currentPath = normalisePath(location);
@@ -100,13 +193,34 @@ export default function MobileTabBar() {
     "open-mobile-menu": t({ message: "More", context: "bottom tab bar" }),
   };
 
+  // THE PATH SLOT: the reader's own path, in the village's name for it. A name the
+  // village never changed is said in the reader's language, short enough for the
+  // bar; a name the village wrote is its own word and shown as it wrote it.
+  const { user } = useAuth();
+  const config = useGameConfig();
+  const shortName: Record<string, string> = {
+    investor: t({ message: "Investor", context: "bottom tab bar, a path" }),
+    steward: t({ message: "Steward", context: "bottom tab bar, a path" }),
+    resident: t({ message: "Resident", context: "bottom tab bar, a path" }),
+    "prosperity-creator": t({ message: "Prosperity", context: "bottom tab bar, a path" }),
+  };
+  const nameOf = (id: string) => {
+    const own = config?.paths?.find((p) => p.id === id)?.label?.trim();
+    const platform = GAME_CONFIG.paths.find((p) => p.id === id)?.label;
+    return own && own !== platform ? own : shortName[id] ?? own ?? platform ?? id;
+  };
+  const mine = pathTab(user?.paths, !!user, nameOf, t({ message: "Your path", context: "bottom tab bar, no path chosen yet" }));
+  const chooseSaid = t({ message: "Choose your path", context: "bottom tab bar, no path chosen yet" });
+
   // The village's own four tabs (gap G5), each in the place it chose. A tab
   // whose page is not open (its module off, or hidden) keeps the platform's
   // tab in that place, so the bar never offers a door that does not open.
   const menu = useVillageMenu();
   const modules = useModules();
   const { newcomer, shows } = useNewcomerShows();
-  const chosen = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+  const responsive = useResponsiveTabs(currentPath);
+  const isOpen = (m?: string) => !m || moduleIsOn(modules, m);
+  const chosen = responsive ? responsiveSlots(responsive, menu.labels, menu.hidden, isOpen) : villageSlots(menu.tabs, menu.labels, menu.hidden, isOpen);
   const slots = newcomer ? newcomerSlots(chosen, shows) : chosen;
 
   // Sign-in and the other focused, signed-out screens render no bar at all.
@@ -128,7 +242,10 @@ export default function MobileTabBar() {
       <div className="grid grid-cols-[repeat(5,minmax(0,1fr))] h-16 items-stretch max-w-2xl mx-auto min-w-0">
         {slots.map((s) => {
           const own = s.path ? menu.labels[s.path] : undefined;
-          const slot = own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
+          const personal = s.personal === "path";
+          const slot = personal
+            ? { ...s, label: mine.label, Icon: mine.Icon }
+            : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
           const active =
             !!slot.path &&
             (slot.path === "/"
@@ -184,9 +301,10 @@ export default function MobileTabBar() {
           if (slot.path) {
             return (
               <Link
-                key={slot.label}
-                href={slot.path}
-                aria-label={slot.label}
+                key={slot.path}
+                href={personal ? mine.href : slot.path}
+                aria-label={personal && !mine.pathId ? chooseSaid : slot.label}
+                {...(personal ? { "data-path-slot": mine.pathId ?? "" } : {})}
                 aria-current={active ? "page" : undefined}
                 className={cls}
               >

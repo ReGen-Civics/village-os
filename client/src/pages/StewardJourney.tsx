@@ -3,6 +3,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, DOOR, EYEBROW, HINT, LEDE, LINK, QUIE
 import { useVillageLinks } from "@/lib/gameApi";
 import { altOr, useBrandImages, useGameConfig } from "@/lib/gameApi";
 import FaqSection from "@/components/FaqSection";
+import StewardQuestionForm, { STEWARD_QUESTION_ANCHOR } from "@/components/journey/StewardQuestionForm";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { MoonText } from "@/components/MoonWord";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
@@ -20,7 +21,8 @@ import { Link } from "wouter";
 import { Trans } from "@lingui/react/macro";
 import type { ResolvedSection } from "@shared/pageContent/types";
 import { m } from "framer-motion";
-import { Users, ArrowRight, ExternalLink, ShieldCheck, Home } from "lucide-react";
+import { ArrowRight, ExternalLink, Home } from "lucide-react";
+import { Canopy, MushroomNetwork } from "@/components/sacred/living";
 import { useEffect, useRef, useState } from "react";
 import { usePageLang } from "@/hooks/usePageContent";
 
@@ -45,7 +47,8 @@ export default function StewardJourney() {
   const page = useJourneyContent(STEWARD_JOURNEY);
   const hero = page?.hero.fields;
   const steps = page?.steps.lists.items ?? null;
-  const targets: TargetContext = { eventsUrl, mailTo, subject: "" };
+  // "Ask us a question" goes to the form on this page, never a mail app (UNFINISHED-AREAS 21).
+  const targets: TargetContext = { eventsUrl, mailTo, subject: "", contactForm: STEWARD_QUESTION_ANCHOR };
   const heroPrimary = buttonAction(hero?.primaryLabel, hero?.primaryTarget, targets);
   const heroSecondary = buttonAction(hero?.secondaryLabel, hero?.secondaryTarget, targets);
   const founding = page && !page.foundingTeam.hidden ? page.foundingTeam : null;
@@ -97,7 +100,7 @@ export default function StewardJourney() {
           <div className="max-w-2xl">
             <div className="mb-6 flex items-center gap-3">
               <span className={`${RING} size-12`} aria-hidden="true">
-                <Users className="h-6 w-6" />
+                <MushroomNetwork className="h-6 w-6" />
               </span>
               <span className={`${EYEBROW} text-sm min-w-0 break-words${waiting}`}>{hero?.eyebrow || " "}</span>
             </div>
@@ -347,7 +350,7 @@ export default function StewardJourney() {
           <div className="container">
             <div className={`${CARD} mx-auto max-w-3xl`}>
               <div className="mb-3 flex items-center gap-3">
-                <span className={RING} aria-hidden="true"><ShieldCheck className="h-5 w-5" /></span>
+                <span className={RING} aria-hidden="true"><Canopy className="h-5 w-5" /></span>
                 <h2 className="font-display text-xl font-semibold text-foreground break-words"><Trans context="steward front door">Stewarding the roles</Trans></h2>
               </div>
               <p className={`${HINT} mb-4`}><Trans>For stewards and admins: proposals waiting on you, and the tools behind the roles.</Trans></p>
@@ -359,6 +362,15 @@ export default function StewardJourney() {
           </div>
         </section>
       )}
+
+      <section id={STEWARD_QUESTION_ANCHOR} className="scroll-mt-20 pb-16" aria-labelledby="steward-question-heading">
+        <div className="container mx-auto max-w-3xl">
+          <h2 id="steward-question-heading" className="mb-4 font-display text-2xl font-semibold text-foreground md:text-3xl">
+            <Trans context="steward page: the question form's heading">Ask us a question</Trans>
+          </h2>
+          <StewardQuestionForm />
+        </div>
+      </section>
 
       {page && <FaqSection pathway="steward" heading={page.faq.fields.heading} />}
 

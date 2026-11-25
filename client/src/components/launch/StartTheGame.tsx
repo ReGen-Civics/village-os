@@ -6,7 +6,7 @@
  * Nothing about it changed in the move except those two additions.
  */
 import { Link } from "wouter";
-import { Rocket } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -89,7 +89,7 @@ export default function StartTheGame({
       <div className="flex items-center gap-3 flex-wrap justify-between">
         <div>
           <p className="font-semibold text-stone-900 flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-teal-deep" /> {launchName}
+            <SeedGlint className="w-4 h-4 text-teal-deep" /> {launchName}
           </p>
           {!running && governanceOff && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">

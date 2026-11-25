@@ -1,0 +1,57 @@
+{
+  "synthetic": true,
+  "name": "discarded-long-ago-may-come-back",
+  "why": "Outside the 30 days, the same change is shown again.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ],
+    "discarded": [
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "water"
+          },
+          "body": {
+            "words": {
+              "purpose": "Tends the springs."
+            }
+          }
+        },
+        "at": "2026-09-01T09:00:00.000Z",
+        "code": "B-12.1"
+      }
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ]
+      }
+    ],
+    "held": []
+  }
+}

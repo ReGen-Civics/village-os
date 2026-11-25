@@ -40,6 +40,31 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.66 (2026-11-25)
+
+### What changed for your village
+
+- **A visitor entrance, off until a person turns it on** (`entrance.required`). Before seeing the game site, a visitor gives a name and an email, or continues with Google. Shared links still work: after entering, the visitor lands on the page they asked for. An email visitor gets a 6-digit code and may look around for a short while (3 minutes or 3 pages, both adjustable), then confirms the code to keep exploring. Keeping in touch is its own Yes or No step, and only a confirmed address that said Yes reaches the email list. Sign-in, application status, legal pages and link previews stay open. Admin, Portal visitors lists each visitor, the page they first asked for and the pages they opened, with "Invite to join" and "Make member". The privacy line has its own contact setting (`entrance.privacy_contact`). Visitors never get an account; joining stays by invitation.
+- **The living map can be for members only** through the map module's own setting, with a calm page for everyone else.
+- **One account, more than one email address.** A member proves a second address with a code, can sign in with either, and chooses where village mail goes.
+- **New icons from the living family.** The tab bar reads lotus, stepping stones (Quests), cell (Roles) and the player's own path, with one icon per path everywhere; Circles moves to More. Approved icons replace stock ones across the pages.
+- **A bottom bar that can follow what players use,** off by default (`nav.responsive_bar`). Pages are counted per day with nobody in the count, and each player's personal page is chosen on their own device.
+- **Living motion, parts 5 and 6:** air, canopy light, spores and fireflies; the living network behind Circles; Bloom as the monoline lotus.
+- **Role cards say the commitment plainly:** "Full time", "Part time or fractional", "Full or part time", with ", contract" where it applies.
+- **The full-access role's agent** can change settings and send email on its holder's yes, with recipients shown first. Secrets, money, removing members, sign-in powers and applicant data stay a person's act.
+- **Privacy and newcomers:** /team shows visitors first names only, /messages is for members, and a newcomer's menu no longer offers Badges or the Cash Budget.
+- **Smaller fixes:** /steward asks its question in an inline form; empty Decisions, Introductions and Events say "Coming soon"; module-off pages show a heading; crash alerts ignore dropped connections and scripts injected by in-app browsers; two unreliable tests fixed at their causes; the start of the review inbox engine (nothing visible yet).
+
+### What you must do
+
+Nothing to upgrade. To use the entrance, set `entrance.privacy_contact`, then turn on `entrance.required`. To make the map members only, set the map module to Members.
+
+### Does it touch your data
+
+Yes, by adding only. New tables for portal visitors and their codes, extra email addresses and daily page counts, and new nullable columns. Nothing is removed or rewritten, so going back to 1.3.65 still works.
+
+---
+
 ## 1.3.65 (2026-11-24)
 
 ### What changed for your village

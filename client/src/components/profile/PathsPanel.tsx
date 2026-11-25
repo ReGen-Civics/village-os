@@ -46,7 +46,9 @@
  * pair, which is the only high-contrast marker in this build that answers to
  * `.dark` in both directions.
  */
+import { useEffect } from "react";
 import { Link } from "wouter";
+import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import type { PathLadder as PathLadderPayload } from "@shared/pathLadders";
 import PathLadder from "./PathLadder";
@@ -90,6 +92,45 @@ export default function PathsPanel({
 }) {
   const walked = tiles.filter((t) => claimedIds.includes(t.id)).length;
 
+  // THE PATH SLOT's door (config/mobileNav.ts, pathProgressHref): /profile#path-<id>
+  // brings that path's card into view. The page is lazy and the card waits for the
+  // member, so the shell's own anchor scroll can come too early; the card answers
+  // its own address once it is drawn, and again when the bar is tapped from here.
+  const tileIds = tiles.map((t) => t.id).join("|");
+  useEffect(() => {
+    let wait = 0;
+    const land = () => {
+      const hash = decodeURIComponent(window.location.hash.replace(/^#/, ""));
+      if (!hash.startsWith("path-")) return;
+      const el = document.getElementById(hash);
+      if (!el) return;
+      el.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+    };
+    // After the phone's tab strip has switched to the Sheet (ProfileTabs), so the card is showing,
+    // and once more when the sections above it have arrived and pushed it down, unless the
+    // reader has started moving the page themselves by then.
+    let again = 0;
+    const theirs = () => window.clearTimeout(again);
+    const go = () => {
+      window.clearTimeout(wait);
+      window.clearTimeout(again);
+      wait = window.setTimeout(land, 60);
+      again = window.setTimeout(land, 900);
+    };
+    const moves = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+    for (const m of moves) window.addEventListener(m, theirs, { passive: true });
+    go();
+    window.addEventListener("hashchange", go);
+    window.addEventListener("pushState", go);
+    return () => {
+      window.clearTimeout(wait);
+      window.clearTimeout(again);
+      for (const m of moves) window.removeEventListener(m, theirs);
+      window.removeEventListener("hashchange", go);
+      window.removeEventListener("pushState", go);
+    };
+  }, [tileIds]);
+
   return (
     <section aria-labelledby="paths-h" className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
       <h2 id="paths-h" className="font-display text-2xl font-bold text-card-foreground">
@@ -121,7 +162,8 @@ export default function PathsPanel({
           return (
             <div
               key={tile.id}
-              className={`flex flex-col rounded-xl border p-4 ${
+              id={`path-${tile.id}`}
+              className={`flex scroll-mt-32 flex-col rounded-xl border p-4 ${
                 claimed ? "border-foreground bg-muted" : "border-dashed border-border"
               }`}
             >

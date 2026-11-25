@@ -254,11 +254,22 @@ export function usersRepo(pool: Pool = getPool()): UsersRepo {
     async byEmail(email) {
       // Collation is case-insensitive, matching the JSON repo's sameEmail().
       const r = await rows(`${select} WHERE email = ?`, [String(email ?? "")]);
-      return r[0] ? rowToMember(r[0]) : null;
+      if (r[0]) return rowToMember(r[0]);
+      // ANY ADDRESS THE ACCOUNT PROVED finds it (0430): one account, more than
+      // one address, and every door that looks a member up by address (sign-in,
+      // recovery, Google, sign-up's "already exists") reaches the same account.
+      // Rows in member_emails exist only once a mailed code came back.
+      const x = await rows(`${select} WHERE id = (SELECT user_id FROM member_emails WHERE email = ? LIMIT 1)`, [
+        String(email ?? "").trim().toLowerCase(),
+      ]);
+      return x[0] ? rowToMember(x[0]) : null;
     },
 
     async existsByEmail(email) {
-      const r = await rows("SELECT 1 FROM users WHERE email = ? LIMIT 1", [String(email ?? "")]);
+      const r = await rows(
+        "SELECT 1 FROM users WHERE email = ? UNION ALL SELECT 1 FROM member_emails WHERE email = ? LIMIT 1",
+        [String(email ?? ""), String(email ?? "").trim().toLowerCase()],
+      );
       return r.length > 0;
     },
 

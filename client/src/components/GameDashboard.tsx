@@ -3,7 +3,8 @@ import { useTokenName } from "@/hooks/useTokenNames";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useLingui, Trans } from "@lingui/react/macro";
-import { ArrowRight, Compass, Heart, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, Heart} from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import StageAdvanced from "@/components/StageAdvanced";
 import { claimMoment } from "@/lib/celebrated";
 import { onProfileRefresh } from "@/lib/profileRefresh";
@@ -270,7 +271,7 @@ export default function GameDashboard({
       <div>
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-gold" />
+            <SeedGlint className="w-5 h-5 text-gold" />
             <h2 className="font-display text-lg font-bold text-card-foreground"><Trans context="GameDashboard, h2">Quests</Trans></h2>
           </div>
           {me.quests.length === 0 ? (

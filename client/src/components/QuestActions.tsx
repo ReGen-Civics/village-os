@@ -1,7 +1,8 @@
 import { gameFetch, QuestClaim } from "@/lib/gameApi";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { CheckCircle2, Send, Sparkles } from "lucide-react";
+import { CheckCircle2, Send} from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import Celebration from "@/components/natural/Celebration";
 import { useCountUp, useMomentWindow } from "@/components/natural/moments";
 import { claimMoment } from "@/lib/celebrated";
@@ -233,7 +234,7 @@ export default function QuestActions({
           disabled={busy}
           className="inline-flex items-center gap-2 text-sm font-semibold bg-teal-deep text-white px-4 py-2 rounded-lg hover:bg-teal-deep-dark disabled:opacity-50 transition-colors pointer-coarse:min-h-11"
         >
-          <Sparkles className="w-4 h-4" /> {busy ? "Taking it…" : "Take this Quest"}
+          <SeedGlint className="w-4 h-4" /> {busy ? "Taking it…" : "Take this Quest"}
         </button>
       ) : claim.status === "claimed" ? (
         showSubmit ? (

@@ -12,7 +12,7 @@ import { areaInUse } from "./areasInUse";
 import { eventsInUse } from "./areasInUseReads";
 import { newcomerSlots } from "@/components/mobile/MobileTabBar";
 import { resolve } from "@/components/mobile/MobileFab";
-import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS } from "@/config/mobileNav";
+import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_SLOT, TAB_SLOTS } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup } from "@/config/nav";
 
 const STAGES = [{ id: "guest" }, { id: "explorer" }, { id: "member" }, { id: "steward" }];
@@ -64,6 +64,15 @@ describe("when an area is in use", () => {
     expect(areaInUse({ href: "/seasonal-festivals" }, { exampleModules: null, seasons: 0 })).toBe(false);
   });
 
+  it("keeps Badges (examples only) and the Cash Budget (refused before admission) out of a newcomer's account menu", () => {
+    // The every-page audit (24 Nov 2026) found both on a newcomer's phone menu: Badges showed only standing examples,
+    // and /budget answered the newcomer's read with 403.
+    const at = (href: string) => ACCOUNT_MENU.find((l) => l.href === href);
+    expect(at("/badges")?.newcomers).toBe("in-use");
+    expect(at("/budget")?.newcomers).toBe("never");
+    expect(areaInUse(at("/badges")!, { exampleModules: ["badges"], seasons: 0 }), "hidden while badges shows examples").toBe(false);
+  });
+
   it("every in-use entry in the menu has an answer here: a module with examples, or a read of its own", () => {
     const entries = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].filter((l) => l.newcomers === "in-use");
     for (const e of entries) {
@@ -76,7 +85,7 @@ describe("when an area is in use", () => {
 describe("a newcomer's phone tab bar", () => {
   it("takes the roles in place of Gratitude, keeps five distinct slots and More last", () => {
     const slots = newcomerSlots(TAB_SLOTS, () => false);
-    expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", "/quests", NEWCOMER_SLOT.path, "/circles", "open-mobile-menu"]);
+    expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", "/quests", NEWCOMER_SLOT.path, PATH_SLOT.path, "open-mobile-menu"]);
   });
 
   it("CONTROL: an in-use slot stays for a newcomer; only the swapped tabs give way to the roles", () => {

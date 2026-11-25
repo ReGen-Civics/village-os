@@ -22,26 +22,25 @@ import {
   BookOpen,
   ArrowRight,
   Heart,
-  Users,
   Calendar,
   Star,
   Compass,
-  Crown,
   Home,
   TreePine,
   Circle,
   MessageCircle,
   Leaf,
   DollarSign,
-  TrendingUp,
   AlertCircle,
   ExternalLink,
   ClipboardList,
   Receipt,
   UserCheck,
-  Vote,
 } from "lucide-react";
+import { CouncilCircle, MushroomNetwork, Pines, TreeCrown } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { Feather, Splash, Sprout as LivingSprout } from "@/components/sacred/living";
+import type { LucideIcon } from "lucide-react";
 
 /*
  * Every word on this page is the village's own, from Admin, Pages,
@@ -113,12 +112,14 @@ const HYPHA_ACTION_LOOK: Record<HyphaActionId, { icon: typeof Heart; suffix: str
   },
 };
 
-const LOOP_EMOJI: Record<LoopId, string> = { sense: "🌀", propose: "✍️", create: "🌱" };
+// The co-creator loop in the living glyphs (the lead, 24 Nov 2026): sensing is a stone landing in a pond,
+// proposing is a feather, creating is a sprout. Drawn, so every phone shows the same thing.
+const LOOP_GLYPH: Record<LoopId, LucideIcon> = { sense: Splash, propose: Feather, create: LivingSprout };
 
 const VOICE_PRINCIPLE_LOOKS = [
   { box: "border-primary bg-primary/5", icon: Circle, iconColor: "text-primary" },
   { box: "border-teal-light bg-teal-light/5", icon: MessageCircle, iconColor: "text-teal-deep" },
-  { box: "border-sage bg-sage/5", icon: Users, iconColor: "text-sage" },
+  { box: "border-sage bg-sage/5", icon: MushroomNetwork, iconColor: "text-sage" },
   { box: "border-amber bg-amber/5", icon: AlertCircle, iconColor: "text-amber" },
 ];
 
@@ -135,9 +136,9 @@ const VOICE_PRINCIPLE_LOOKS = [
    text-green-600 for the same reason: both are light accents that disappear on
    a light panel. Handed out by position. */
 const SPACE_LOOKS = [
-  { color: "bg-aqua-light", textColor: "text-teal-deep", icon: Users },
+  { color: "bg-aqua-light", textColor: "text-teal-deep", icon: MushroomNetwork },
   { color: "bg-sage-light", textColor: "text-sage", icon: Home },
-  { color: "bg-amber-light", textColor: "text-gold", icon: TrendingUp },
+  { color: "bg-amber-light", textColor: "text-gold", icon: Pines },
   { color: "bg-green-light", textColor: "text-forest", icon: TreePine },
 ];
 
@@ -152,10 +153,10 @@ const STAGE_TINTS = [
 
 const ELDER_LOOK: Record<ElderId, { card: string; icon: typeof Heart; title: string; body: string; duties: string }> = {
   guide: { card: "bg-blue-50 border-blue-200", icon: Compass, title: "text-blue-900", body: "text-blue-800", duties: "text-blue-700" },
-  sage: { card: "bg-amber-50 border-amber-200", icon: Crown, title: "text-amber-900", body: "text-amber-800", duties: "text-amber-700" },
+  sage: { card: "bg-amber-50 border-amber-200", icon: TreeCrown, title: "text-amber-900", body: "text-amber-800", duties: "text-amber-700" },
 };
 
-const PILLAR_ICONS = [Heart, MessageCircle, DollarSign, Users];
+const PILLAR_ICONS = [Heart, MessageCircle, DollarSign, MushroomNetwork];
 
 /** The headline steps down a size when long, so it wraps between words on a phone. Short ones keep today's size. */
 function headlineSize(text: string): string {
@@ -422,7 +423,7 @@ export default function CoCreatorsGuide() {
               >
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+                    <Pines className="w-6 h-6 text-green-600" />
                   </div>
                   <h3 className="font-bold text-xl text-foreground min-w-0 break-words">{recognition.fields.cardTitle}</h3>
                 </div>
@@ -567,7 +568,7 @@ export default function CoCreatorsGuide() {
               <div className="max-w-3xl mx-auto mb-12 rounded-2xl border border-white/20 bg-white/10 p-6 md:p-8">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Vote className="w-5 h-5 text-cream" />
+                    <CouncilCircle className="w-5 h-5 text-cream" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-semibold text-cream text-lg mb-2 break-words">{hyphaSection.fields.valueHeading}</h3>
@@ -627,7 +628,10 @@ export default function CoCreatorsGuide() {
                 <div className="grid sm:grid-cols-3 gap-4 text-center">
                   {hyphaSection.lists.loop.map((step) => (
                     <div key={step.id} className="rounded-xl bg-white/10 border border-white/20 p-5 min-w-0">
-                      <div className="text-2xl mb-2">{LOOP_EMOJI[step.id as LoopId]}</div>
+                      {(() => {
+                        const Glyph = LOOP_GLYPH[step.id as LoopId];
+                        return <Glyph className="mx-auto mb-2 size-8 text-cream" aria-hidden="true" />;
+                      })()}
                       <div className="text-lg font-display font-bold text-cream mb-2 break-words">{step.label}</div>
                       <p className="text-cream/80 text-sm leading-relaxed">
                         <Emphasized text={step.description} />

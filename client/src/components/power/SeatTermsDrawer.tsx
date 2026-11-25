@@ -29,15 +29,14 @@ import {
   CalendarDays,
   ChevronDown,
   Clock,
-  Coins,
   DoorOpen,
-  Gauge,
   Gem,
   ListChecks,
   SlidersHorizontal,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { Gourd, SeedPod } from "@/components/sacred/living";
 import { NOT_SET, PAY_TBD_WORDS, settingsWords, type SeatSettings, type SettingsGroup, type SettingsRow } from "@shared/seatSettings";
 import { payHeadlineIn } from "@/lib/payTbdWords";
 import { withAgreedWords } from "@shared/termsWords";
@@ -51,11 +50,11 @@ const GROUP_ICONS: Record<SettingsGroup, LucideIcon> = {
   term: CalendarClock,
   clocks: Clock,
   rhythm: CalendarDays,
-  pay: Coins,
+  pay: SeedPod,
   allowance: Wallet,
   bonus: Gem,
   quests: ListChecks,
-  scoreboard: Gauge,
+  scoreboard: Gourd,
   ending: DoorOpen,
 };
 

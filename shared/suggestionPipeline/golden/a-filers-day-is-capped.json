@@ -1,0 +1,103 @@
+{
+  "synthetic": true,
+  "name": "a-filers-day-is-capped",
+  "why": "Past the day's cap, a filer's suggestions are held, never dropped.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "Question 1?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "Question 2?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    },
+    {
+      "id": "s3",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "Question 3?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:03:00.000Z"
+    },
+    {
+      "id": "s4",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "Question 4?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:04:00.000Z"
+    }
+  ],
+  "context": {
+    "caps": {
+      "perFilerPerDay": 3,
+      "optionsPerThing": 5
+    }
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ]
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s2"
+          ]
+        ]
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s3"
+          ]
+        ]
+      }
+    ],
+    "held": [
+      {
+        "stagedId": "s4",
+        "code": "over_cap"
+      }
+    ]
+  }
+}
