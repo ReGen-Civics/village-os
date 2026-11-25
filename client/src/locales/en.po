@@ -4097,7 +4097,7 @@ msgctxt "RedemptionPanel, p"
 msgid "You have opened {0} redemptions this moon, which is what this village allows. The count starts again at the new moon."
 msgstr "You have opened {0} redemptions this moon, which is what this village allows. The count starts again at the new moon."
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Offer your gifts"
 msgstr "Offer your gifts"
@@ -5360,6 +5360,12 @@ msgstr "Sign in with your admin account to open the Mint."
 msgctxt "SaberraBridgeBoard, p"
 msgid "Reading Organisational Memory…"
 msgstr "Reading Organisational Memory…"
+
+#. placeholder {0}: roles.length
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "founding team tally: open roles"
+msgid "{0} open now"
+msgstr "{0} open now"
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
@@ -10547,6 +10553,11 @@ msgctxt "ResourcesAdminPanel, h2"
 msgid "Measured inflows"
 msgstr "Measured inflows"
 
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "A picture of the village's circles and their roles"
+msgstr "A picture of the village's circles and their roles"
+
 #: client/src/components/NotifyPrefsPanel.tsx
 msgctxt "notification settings: email cadence option"
 msgid "Daily digest"
@@ -11575,6 +11586,11 @@ msgstr "Reject"
 msgctxt "funding rounds"
 msgid "Who might do it?"
 msgstr "Who might do it?"
+
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "empty thanks wall under the example lines"
+msgid "The lines above marked Example show what a thanks looks like. The first real one lands here."
+msgstr "The lines above marked Example show what a thanks looks like. The first real one lands here."
 
 #: client/src/components/governance/SeatSettingsFields.tsx
 msgctxt "SeatSettingsFields, label"
@@ -19430,7 +19446,7 @@ msgctxt "portal entrance: email field"
 msgid "Your email"
 msgstr "Your email"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Volunteer or work-trade: tell us what you would like to give."
 msgstr "Volunteer or work-trade: tell us what you would like to give."
@@ -22108,6 +22124,11 @@ msgstr "Rhythm"
 msgctxt "role card tooltip: Founding Seeder"
 msgid "Someone who means to live in the village one day and starts on the resident path now."
 msgstr "Someone who means to live in the village one day and starts on the resident path now."
+
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "founding team tally: roles opening after the founding team"
+msgid "{laterCount} opening next"
+msgstr "{laterCount} opening next"
 
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
@@ -27082,7 +27103,7 @@ msgctxt "role card: book a conversation"
 msgid "Book a time"
 msgstr "Book a time"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
 msgstr "Propose a new role"
@@ -29548,7 +29569,7 @@ msgctxt "Admin, h3"
 msgid "Token-for-token swapping is {0}"
 msgstr "Token-for-token swapping is {0}"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Take a quest, alone or with others"
 msgstr "Take a quest, alone or with others"
@@ -35327,6 +35348,11 @@ msgctxt "Library, p"
 msgid "<0/>No items on the shelf yet."
 msgstr "<0/>No items on the shelf yet."
 
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "The living map opens to members. This picture shows each circle and its roles: a hollow dot is a role still open."
+msgstr "The living map opens to members. This picture shows each circle and its roles: a hollow dot is a role still open."
+
 #: client/src/components/proposals/CodeChip.tsx
 msgctxt "proposed changes: a short code"
 msgid "Tap to copy"
@@ -38132,7 +38158,7 @@ msgctxt "LoveLetter, label"
 msgid "Phone / WhatsApp (optional)"
 msgstr "Phone / WhatsApp (optional)"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Live here one day? Start on the resident path."
 msgstr "Live here one day? Start on the resident path."
@@ -40279,6 +40305,11 @@ msgstr "Open the role application"
 msgid "Risk tags, separated by commas (optional)"
 msgstr "Risk tags, separated by commas (optional)"
 
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "empty thanks wall under the example lines"
+msgid "Nobody here has carried a thanks yet"
+msgstr "Nobody here has carried a thanks yet"
+
 #: client/src/components/MapSkinPanel.tsx
 msgctxt "MapSkinPanel, placeholder"
 msgid "high desert, red rock and juniper"
@@ -40549,6 +40580,11 @@ msgstr "Document uploaded"
 msgctxt "Bootstrap, label"
 msgid "Your email"
 msgstr "Your email"
+
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "How the circles sit together"
+msgstr "How the circles sit together"
 
 #: client/src/pages/Register.tsx
 msgctxt "register, invitation needed: the second button"
@@ -50313,7 +50349,7 @@ msgctxt "site header"
 msgid "Skip to content"
 msgstr "Skip to content"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose is for a role we don't list. Tell us the role you see, and the village decides."
 msgstr "Propose is for a role we don't list. Tell us the role you see, and the village decides."
@@ -50367,9 +50403,9 @@ msgstr "Undo my changes"
 
 #. placeholder {0}: roles.length
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team tally: open roles"
-msgid "{0} open"
-msgstr "{0} open"
+#~ msgctxt "founding team tally: open roles"
+#~ msgid "{0} open"
+#~ msgstr "{0} open"
 
 #: client/src/components/QuestActions.tsx
 msgctxt "quest page: under the disabled take button on an example"
@@ -50750,6 +50786,11 @@ msgstr "Something you attached did not reach us whole. Please send again."
 msgctxt "under a steward's card: a role someone already holds"
 msgid "Held"
 msgstr "Held"
+
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the kind"
+msgid "What kind of feedback"
+msgstr "What kind of feedback"
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -52999,7 +53040,7 @@ msgstr "A batch"
 #~ msgid "1 goal for your first moon"
 #~ msgstr "1 goal for your first moon"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Become a Founding Seeder"
