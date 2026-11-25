@@ -11,7 +11,11 @@ import { Router } from "wouter";
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <main id="main">{children}</main> }));
 vi.mock("@/hooks/useVillageName", () => ({ useVillageName: () => "Hollow Oak" }));
-vi.mock("@/lib/gameApi", () => ({ useVillageLinks: () => ({ siteUrl: "", eventsUrl: "", contactEmail: "", mailTo: () => "" }), TOKEN_KEY: "village-auth-token" }));
+// The session token's key comes from the module that owns it: no other client file may spell it (SetPassword.test.ts).
+vi.mock("@/lib/gameApi", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  useVillageLinks: () => ({ siteUrl: "", eventsUrl: "", contactEmail: "", mailTo: () => "" }),
+}));
 vi.mock("@/components/auth/GoogleSignInButton", () => ({ default: () => null }));
 
 import Entrance, { KeepInTouch } from "./Entrance";
