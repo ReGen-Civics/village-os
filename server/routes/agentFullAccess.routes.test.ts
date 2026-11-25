@@ -17,7 +17,7 @@ import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/
 import { usersRepo } from "../repos/users";
 import { register as registerAccounts } from "./agentAccounts";
 import { register as registerProposals } from "./proposedChanges";
-import { fullAccessFor } from "../lib/agentFullAccess";
+import { fullAccessFor, readsOpenFor } from "../lib/agentFullAccess";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[agentFullAccess] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -162,6 +162,39 @@ describe.skipIf(!configured)("the full-access switch, on a real schema", () => {
     await q("DELETE FROM org_role_assignments WHERE id = 'a-lead'");
     await seatLead("2020-01-01 00:00:00");
     expect(await fullAccessFor(pool, LEAD.id)).toBe(false); // the term ran out
+  });
+
+  describe("reads open, beside the switch (the lead, 25 Nov 2026)", () => {
+    it("is closed by default, a person opens it, an agent account may not, and naming a role keeps it", async () => {
+      expect((await call("GET", "/api/admin/agent-accounts/full-access")).body).toMatchObject({ readsOpen: false });
+      expect((await call("PUT", "/api/admin/agent-accounts/full-access/reads-open", { on: true }, AGENT.id)).status).toBe(403);
+      expect((await call("PUT", "/api/admin/agent-accounts/full-access/reads-open", { on: "yes" })).status).toBe(400);
+      await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-ops" });
+      const on = await call("PUT", "/api/admin/agent-accounts/full-access/reads-open", { on: true });
+      expect(on.body).toMatchObject({ readsOpen: true, anchorNotified: 1 });
+      expect(notices.at(-1)).toMatchObject({ userId: ANCHOR.id, title: "Reads are open for the agent of whoever holds Operations Lead Steward" });
+      const read = (await call("GET", "/api/admin/agent-accounts/full-access")).body;
+      expect(read).toMatchObject({ readsOpen: true, readsSetBy: "Fern Oak" });
+      expect(read.readsKept.length).toBe(8);
+      // Changing the role is one act, and reads open is another: it stays as a person left it.
+      await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-other" });
+      expect((await call("GET", "/api/admin/agent-accounts/full-access")).body).toMatchObject({ roleId: "r-other", readsOpen: true });
+      const [ev] = await q("SELECT text, actor_user_id, audience FROM health_events WHERE entity_ref = 'agent-full-access' AND text LIKE 'opened reads%' ORDER BY at DESC LIMIT 1");
+      expect(ev).toMatchObject({ actor_user_id: LEAD.id, audience: "admin" });
+    });
+
+    it("reaches only the seat's agent, and only while full access is theirs", async () => {
+      await call("PUT", "/api/admin/agent-accounts/full-access/reads-open", { on: true });
+      expect(await readsOpenFor(pool, LEAD.id)).toBe(false); // no role named
+      await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-ops" });
+      expect(await readsOpenFor(pool, LEAD.id)).toBe(false); // no seat
+      await seatLead();
+      expect(await readsOpenFor(pool, LEAD.id)).toBe(true);
+      expect(await readsOpenFor(pool, OTHER.id)).toBe(false);
+      expect(await readsOpenFor(pool, AGENT.id)).toBe(false);
+      await call("PUT", "/api/admin/agent-accounts/full-access/reads-open", { on: false });
+      expect(await readsOpenFor(pool, LEAD.id)).toBe(false);
+    });
   });
 
   describe("the agent's accept door", () => {

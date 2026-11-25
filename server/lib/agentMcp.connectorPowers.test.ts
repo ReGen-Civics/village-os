@@ -10,6 +10,9 @@
  *   24 nov     the lead's ruling of 24 Nov 2026: a variable, a module and an email send in two calls for the full-access
  *              holder, each send naming its recipients at the first call and covered by the token; refused for any
  *              other agent; a send with no recipients, or whose audience moved, sends nothing; the floor lists what it keeps
+ *   25 nov     reads open: a read with no list goes through as a plain member outside /api/admin/, marked "read (open)"
+ *              for the audit; HEAD stays HEAD; closed for any other agent and with reads closed; the read floor
+ *              refused with its words listed; a write still asks first
  *   accept     accept_proposals refuses without full access, lists every change first, and needs a note that
  *              names the batch code or every change's code before it sends anything
  */
@@ -17,7 +20,7 @@ import { describe, expect, it } from "vitest";
 import { handleMcpMessage, MCP_TOOLS, toolsFor, WITHDRAW_MAX, type RouteAnswer, type ToolContext } from "./agentMcp";
 import { CONFIRM_REASON_SENTENCE, createConfirmSpendBook, mintConfirmToken, verifyConfirmToken, type AgentScope } from "./agentTokens";
 import { DEFAULT_AGENT_ADMIN_PATHS, type AgentAdminPathsDoc } from "../../shared/agentAdmin";
-import { FULL_ACCESS_KEPT, FULL_ACCESS_WORDS, type FullAccessRecipients } from "../../shared/agentFullAccess";
+import { FULL_ACCESS_KEPT, FULL_ACCESS_WORDS, READS_OPEN_KEPT, type FullAccessRecipients } from "../../shared/agentFullAccess";
 import { ACCEPT_AS_HOLDER_PATH } from "./agentMcpProposals";
 
 const SECRET = "test-secret-for-connector-powers"; // module-review-ok: a throwaway confirm-token key; every route here is a stand-in
@@ -31,15 +34,15 @@ type Route = (method: string, path: string, body?: any) => RouteAnswer | undefin
 /** A holder whose routes are `route`, with real confirm tokens spent once, and the connector's ports recorded. */
 function holder(
   route: Route,
-  opts: { full?: boolean; recordFails?: boolean; doc?: AgentAdminPathsDoc; lead?: boolean; recipients?: NonNullable<ToolContext["fullAccess"]>["recipients"] } = {},
+  opts: { full?: boolean; readsOpen?: boolean; recordFails?: boolean; doc?: AgentAdminPathsDoc; lead?: boolean; recipients?: NonNullable<ToolContext["fullAccess"]>["recipients"] } = {},
 ) {
-  const calls: Array<{ method: string; path: string; body?: any }> = [];
+  const calls: Array<{ method: string; path: string; body?: any; asMember?: true }> = [];
   const audits: Array<Record<string, unknown>> = [];
   const order: string[] = [];
   const spend = createConfirmSpendBook();
   const ctx: ToolContext = {
-    dispatch: async (method, path, body) => {
-      calls.push({ method, path, body });
+    dispatch: async (method, path, body, o) => {
+      calls.push({ method, path, body, ...(o?.asMember ? { asMember: true as const } : {}) });
       order.push(`dispatch ${method} ${path}`);
       return route(method, path, body) ?? { status: 404, body: { error: "Not found" } };
     },
@@ -61,6 +64,7 @@ function holder(
     },
     fullAccess: {
       on: async () => opts.full === true,
+      ...(opts.readsOpen !== undefined ? { readsOpen: async () => opts.readsOpen === true } : {}),
       recorded: async (a) => {
         order.push("audit");
         if (opts.recordFails) throw new Error("the events table is down");
@@ -358,6 +362,72 @@ describe("admin_request, 24 Nov 2026: settings and email for the full-access hol
     const h = holder(routes, { full: true });
     const r = out(await ask("admin_request", { ...variable, path: "/api/admin/integrations/resend_api_key" }, ["admin"], h.ctx));
     expect(r.detail).toEqual({ code: "always_a_person", stillAPersons: FULL_ACCESS_KEPT });
+    expect(h.calls).toEqual([]);
+  });
+});
+
+// ── The lead's ruling of 25 Nov 2026: reads open ──────────────────────────────
+
+describe("admin_request, 25 Nov 2026: reads open for the full-access seat", () => {
+  const routes: Route = (method, path) => {
+    if ((method === "GET" || method === "HEAD") && path === "/api/org/drafts") return { status: 200, body: method === "HEAD" ? null : { drafts: [{ id: "d-1", title: "The new circles", authorEmail: "fern@example.test" }] } };
+    if (method === "GET" && path === "/api/admin/events") return { status: 200, body: { events: [{ title: "Potluck" }] } };
+    if (method === "POST" && path === "/api/org/drafts") return { status: 200, body: { id: "d-2" } };
+    return undefined;
+  };
+
+  it("reads a path on no list as a plain member, without contact data, and marks it for the audit", async () => {
+    const h = holder(routes, { full: true, readsOpen: true });
+    const reply = await ask("admin_request", { method: "GET", path: "/api/org/drafts" }, ["admin"], h.ctx);
+    expect(reply.result.isError).toBe(false);
+    expect(out(reply)).toEqual({ drafts: [{ id: "d-1", title: "The new circles" }] });
+    expect(h.calls).toEqual([{ method: "GET", path: "/api/org/drafts", body: undefined, asMember: true }]);
+  });
+
+  it("reads an admin path as the holder, and HEAD as HEAD", async () => {
+    const h = holder(routes, { full: true, readsOpen: true });
+    expect((await ask("admin_request", { method: "GET", path: "/api/admin/events" }, ["admin"], h.ctx)).result.isError).toBe(false);
+    expect((await ask("admin_request", { method: "HEAD", path: "/api/org/drafts" }, ["admin"], h.ctx)).result.isError).toBe(false);
+    expect(h.calls).toEqual([
+      { method: "GET", path: "/api/admin/events", body: undefined },
+      { method: "HEAD", path: "/api/org/drafts", body: undefined, asMember: true },
+    ]);
+  });
+
+  it("hands the audit line its mark, read (open), and nothing else gets it", async () => {
+    const marks: Array<string | undefined> = [];
+    const h = holder(routes, { full: true, readsOpen: true });
+    const onToolCall = async (_t: unknown, outcome: any) => {
+      marks.push(outcome.ok ? outcome.mark : undefined);
+    };
+    await handleMcpMessage(rpc("admin_request", { method: "GET", path: "/api/org/drafts" }), { scopes: ["admin"], info, ctx: h.ctx, onToolCall } as any);
+    await handleMcpMessage(rpc("admin_request", { method: "GET", path: "/api/admin/member-tasks/access" }), { scopes: ["admin"], info, ctx: holder(() => ({ status: 200, body: {} }), { full: true, readsOpen: false }).ctx, onToolCall } as any);
+    expect(marks).toEqual(["read (open)", undefined]);
+  });
+
+  it("refuses the read to any other agent, and to the seat with reads closed", async () => {
+    for (const o of [{ full: false, readsOpen: true }, { full: true, readsOpen: false }, { full: true }]) {
+      const h = holder(routes, o);
+      const r = out(await ask("admin_request", { method: "GET", path: "/api/org/drafts" }, ["admin"], h.ctx));
+      expect(r.detail?.code, JSON.stringify(o)).toBe("not_allowed");
+      expect(h.calls).toEqual([]);
+    }
+  });
+
+  it("refuses the read floor with reads open, and lists what stays closed", async () => {
+    const h = holder(routes, { full: true, readsOpen: true });
+    for (const path of ["/api/admin/payouts", "/api/admin/integrations", "/api/admin/agent-admin-paths", "/api/new-thing/token-list"]) {
+      const r = out(await ask("admin_request", { method: "GET", path }, ["admin"], h.ctx));
+      expect(r.detail?.code, path).toBe("always_a_person");
+      expect(r.detail?.stillAPersons, path).toEqual([...FULL_ACCESS_KEPT, ...READS_OPEN_KEPT]);
+    }
+    expect(h.calls).toEqual([]);
+  });
+
+  it("still asks first for a write, and with no list a write stays closed", async () => {
+    const h = holder(routes, { full: true, readsOpen: true });
+    const r = out(await ask("admin_request", { summary: "Add a potluck on Friday.", method: "POST", path: "/api/events", body: { title: "Potluck" } }, ["admin"], h.ctx));
+    expect(r.detail?.code).toBe("not_allowed");
     expect(h.calls).toEqual([]);
   });
 });
