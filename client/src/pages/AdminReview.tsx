@@ -18,7 +18,8 @@ import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { BTN_SECONDARY, CHIP_SOFT, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
-import type { InboxItem, InboxSource, SectionState } from "@shared/reviewInbox";
+import type { InboxItem, SectionState } from "@shared/reviewInbox";
+import { INBOX_ORDER as ORDER, type InboxSource } from "@shared/reviewInboxSources";
 
 interface InboxAnswer {
   sections: { source: InboxSource; state: SectionState; count: number }[];
@@ -26,8 +27,6 @@ interface InboxAnswer {
 }
 
 type Load = { phase: "loading" } | { phase: "failed" } | { phase: "ready"; answer: InboxAnswer };
-
-const ORDER: readonly InboxSource[] = ["connector", "intake", "sera", "quest", "claim", "approval", "agent"];
 
 function headers(): Record<string, string> {
   const t = authToken();
@@ -56,6 +55,28 @@ export default function AdminReview() {
     claim: t({ context: "review inbox: section", message: "Finished work to witness" }),
     approval: t({ context: "review inbox: section", message: "Approvals" }),
     agent: t({ context: "review inbox: section", message: "From agents" }),
+    vote: t({ context: "review inbox: section", message: "Votes waiting on you" }),
+    consent: t({ context: "review inbox: section", message: "Asked to consent" }),
+    application: t({ context: "review inbox: section", message: "Applications for a role" }),
+    open: t({ context: "review inbox: section", message: "Proposals from outside the village" }),
+    structure: t({ context: "review inbox: section", message: "Drafts to publish" }),
+    change: t({ context: "review inbox: section", message: "Change requests in review" }),
+    suggestion: t({ context: "review inbox: section", message: "Suggested edits to what you hold" }),
+    hand: t({ context: "review inbox: section", message: "Members asking to hold a power" }),
+    tension: t({ context: "review inbox: section", message: "Tensions raised with your role" }),
+    task: t({ context: "review inbox: section", message: "Done work to accept" }),
+    handoff: t({ context: "review inbox: section", message: "Tasks handed to you" }),
+    recap: t({ context: "review inbox: section", message: "Moon recaps to review" }),
+    cash: t({ context: "review inbox: section", message: "Cash owed" }),
+    owed: t({ context: "review inbox: section", message: "Postings owed" }),
+    mint: t({ context: "review inbox: section", message: "Mint requests" }),
+    cycle: t({ context: "review inbox: section", message: "Gratitude cycles to settle" }),
+    cosign: t({ context: "review inbox: section", message: "Keys waiting for a co-sign" }),
+    letter: t({ context: "review inbox: section", message: "Letters waiting to be read" }),
+    assistant: t({ context: "review inbox: section", message: "Drafts from the assistant" }),
+    feedback: t({ context: "review inbox: section", message: "Feedback to read" }),
+    vouch: t({ context: "review inbox: section", message: "Places waiting for your vouch" }),
+    erasure: t({ context: "review inbox: section", message: "Erasures to retry" }),
   };
 
   const read = useCallback(async () => {

@@ -19,18 +19,15 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import {
   findInInbox,
-  fromAgentWaiting,
-  fromApprovals,
-  fromClaims,
-  fromConnector,
-  fromReviewQueue,
-  fromSeraDifferences,
   INBOX_READS,
+  INBOX_SOURCES,
   mergeSections,
   searchedCode,
   stateOfStatus,
+  type InboxItem,
   type InboxSection,
   type InboxSource,
+  type SectionState,
 } from "../../shared/reviewInbox";
 
 type Deps = Pick<AppDeps, "authedUser" | "overLimit"> & {
@@ -68,44 +65,41 @@ function readAs(req: express.Request, deps: Deps): Read {
   };
 }
 
-/** Every queue, read as the person, in one shape. Exported for the test that holds the visibility rule. */
+/**
+ * Every queue, read as the person, in one shape. Exported for the test that holds the visibility rule.
+ *
+ * A source fed by more than one read (the agent's items are on the approvals read and the agent read; open proposals
+ * on waiting-on-me and the intake desk) is `ok` when every read that answered it answered, `failed` when any of them
+ * failed (and still lists what the others gave), `refused` when none would let this person in, and `off` when its
+ * module is off.
+ */
 export async function readInbox(read: Read): Promise<InboxSection[]> {
   const answers = await Promise.all(INBOX_READS.map(async (r) => ({ r, a: await read(r.path) })));
-  const sections: InboxSection[] = [];
+  const states = new Map<InboxSource, SectionState[]>();
+  const items = new Map<InboxSource, Map<string, InboxItem>>();
   for (const { r, a } of answers) {
     const state = stateOfStatus(a.status);
-    const items = (source: InboxSource) => {
-      if (state !== "ok") return [];
-      switch (source) {
-        case "connector":
-          return fromConnector(a.body);
-        case "intake":
-          return fromReviewQueue(a.body).intake;
-        case "quest":
-          return fromReviewQueue(a.body).quest;
-        case "claim":
-          return fromClaims(a.body);
-        case "approval":
-          return fromApprovals(a.body);
-        case "agent":
-          return fromAgentWaiting(a.body);
-        case "sera":
-          return fromSeraDifferences(a.body);
+    let got: InboxItem[] = [];
+    if (state === "ok") {
+      try {
+        got = r.read(a.body);
+      } catch {
+        got = [];
       }
-    };
-    for (const source of r.sources) sections.push({ source, state, items: items(source) });
-  }
-  // The approvals read lists the agent's seatings and role changes too: they belong to the agent section.
-  const fromApprovalRead = sections.find((s) => s.source === "approval");
-  const agent = sections.find((s) => s.source === "agent");
-  if (fromApprovalRead && agent) {
-    const moved = fromApprovalRead.items.filter((i) => i.source === "agent");
-    fromApprovalRead.items = fromApprovalRead.items.filter((i) => i.source !== "agent");
-    if (agent.state === "ok") agent.items = [...agent.items, ...moved.filter((m) => !agent.items.some((x) => x.key === m.key))];
-    else if (moved.length) {
-      agent.state = "ok";
-      agent.items = moved;
     }
+    for (const source of r.sources) {
+      states.set(source, [...(states.get(source) ?? []), state]);
+      const bucket = items.get(source) ?? new Map<string, InboxItem>();
+      for (const item of got) if (item.source === source && !bucket.has(item.key)) bucket.set(item.key, item);
+      items.set(source, bucket);
+    }
+  }
+  const sections: InboxSection[] = [];
+  for (const source of INBOX_SOURCES) {
+    const s = states.get(source);
+    if (!s) continue;
+    const state: SectionState = s.includes("failed") ? "failed" : s.includes("ok") ? "ok" : s.includes("refused") ? "refused" : "off";
+    sections.push({ source, state, items: Array.from(items.get(source)?.values() ?? []) });
   }
   return sections;
 }
