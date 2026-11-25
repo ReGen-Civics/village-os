@@ -20,7 +20,7 @@ import {
   Globe
 } from "lucide-react";
 import { MushroomNetwork, Pines, SeedGlint, SeedPin, SunLeaf, WovenBasket } from "@/components/sacred/living";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
 import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
@@ -33,6 +33,9 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
 import Mycelium from "@/components/motion/Mycelium";
+import { airWelcomeHere } from "@/lib/airWelcome";
+
+const Air = lazy(() => import("@/components/motion/Air"));
 
 
 
@@ -141,7 +144,21 @@ export default function Home() {
   const { t } = useLingui();
   // Blank hides both buttons rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
-  const project = useGameConfig()?.project;
+  const config = useGameConfig();
+  const project = config?.project;
+  // The hero's air comes after the first paint, when the browser is idle, and only where it is welcome.
+  const [air, setAir] = useState(false);
+  useEffect(() => {
+    if (!airWelcomeHere()) return;
+    // requestIdleCallback is missing in Safari, so a timer stands in there.
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (n: number) => void };
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => setAir(true), { timeout: 2500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(() => setAir(true), 1200);
+    return () => window.clearTimeout(id);
+  }, []);
   const brand = useBrandImages();
   // Every word on this page is the village's own, from Admin, Pages, Home
   // (shared/pageContent/home.ts). Null until the saved words have arrived:
@@ -200,6 +217,13 @@ export default function Home() {
           and never an empty frame. */}
       <section className="relative overflow-hidden" data-landing-hero="">
         <div className="absolute inset-0 z-0">
+          {/* The air over the land: canopy light by the village's hour, spores by day, fireflies by night.
+              Loaded after first paint and only on a capable device with motion allowed (lib/airWelcome.ts). */}
+          {air && (
+            <Suspense fallback={null}>
+              <Air timeZone={config?.season?.timezone} />
+            </Suspense>
+          )}
           {/* THE HERO RENDERS ONLY WHEN THERE IS ONE, the same rule the four
               journey pages follow. A village with no uploaded art gets the
               night ground and nothing that reads as a broken photograph. A
