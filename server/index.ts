@@ -311,6 +311,7 @@ import { register as registerOrgRedemptionRoutes } from "./routes/orgRedemptions
 import { register as registerPayRoutes } from "./routes/pay";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
+import { register as registerMyCardRoutes } from "./routes/myCard"; // today's card for yourself (profile overhaul)
 import { register as registerBudgetRoutes } from "./routes/budgets";
 import { register as registerValuationRoutes } from "./routes/valuation";
 import { earnedEquityMeaningWritten } from "./lib/valuationStore";
@@ -17975,6 +17976,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     return out.ok ? { ok: true } : { ok: false, error: out.error };
   };
   registerMemberTimeZoneRoutes(app, { authedUser, getPool, overLimit });
+  registerMyCardRoutes(app, { authedUser, getPool, overLimit });
   registerCashOwedRoutes(app, { authedUser, getPool, guardCapability, members, notify, overLimit, cashKeyHolders: () => liveHoldersOf("cash.pay"), rolesCarrying, roleHolders: loadRoleHolders });
   registerBudgetRoutes(app, { authedUser, capabilityCtx, getPool, overLimit, seasonState, guardCapability, liveHoldersOf, projectCurrency: () => String(mergedConfig().project.fiatCurrency ?? ""), rolesCarrying, roleHolders: loadRoleHolders, revisionSecret: AUTH_TOKEN_SECRET }); // the cash budget (0360): every write through one door, role.pay (server/routes/budgets.ts)
   registerValuationRoutes(app, { authedUser, getPool, guardCapability, capabilityCtx, overLimit, liveHoldersOf, projectCurrency: () => mergedConfig().project.fiatCurrency, eeMeaningWritten: earnedEquityMeaningWritten, tokenName: (s: string) => tokenDef(s)?.name ?? s, quests: questsRepo, claims: claimsRepo }); // 0336, 0342

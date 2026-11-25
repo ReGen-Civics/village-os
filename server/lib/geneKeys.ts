@@ -337,6 +337,16 @@ export async function cardChartsFor(pool: Pool, ids: string[]): Promise<Map<stri
   return out;
 }
 
+/**
+ * A member's own chart, for their own card (profile overhaul, today's card). Read for nobody else, so the
+ * sharing choices do not apply: what is shown to others, Maia's yes and the session cards' yes all stay as
+ * they are. Null with no lines, or a stored chart the save's checks would no longer accept.
+ */
+export async function ownChartOf(pool: Pool, userId: string): Promise<Chart | null> {
+  const row = await readGeneKeys(pool, userId);
+  return row ? chartOf(row) : null;
+}
+
 /** Why a card does not read this member, in the order they would fix it, or null when it does. */
 export async function cardStandingOf(pool: Pool, userId: string): Promise<"no-lines" | "hidden" | "no-maia" | "left-out" | "not-asked" | null> {
   const row = await readGeneKeys(pool, userId);

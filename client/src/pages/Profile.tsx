@@ -69,6 +69,7 @@ import { roleWithHolders } from "@shared/roleHolderLabel";
 import type { StageAdvance } from "@/components/StageAdvanced";
 import StagePanel from "@/components/profileDash/StagePanel";
 import TodayStrip from "@/components/profileDash/TodayStrip";
+const TodayCard = lazy(() => import("@/components/todayCard/TodayCard"));
 import AsksPanel from "@/components/asks/AsksPanel";
 import MyWeekCard from "@/components/priorities/MyWeekCard";
 import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
@@ -170,6 +171,7 @@ export default function Profile() {
   /** The reader's own onboarding day: undefined until the path is read, null with none. */
   const [pathDay, setPathDay] = useState<number | null | undefined>(undefined);
   const eventsOn = useModuleOn("events");
+  const geneKeysOn = useModuleOn("gene-keys");
 
   /**
    * The progression read, once for the page.
@@ -549,6 +551,15 @@ export default function Profile() {
                 }
               />
             </div>
+
+            {/* TODAY'S CARD, near the top: drawn only for a member who has found their lines (Direction D). */}
+            {geneKeysOn ? (
+              <div className={`empty:hidden ${tabOf("today")}`}>
+                <Suspense fallback={null}>
+                  <TodayCard />
+                </Suspense>
+              </div>
+            ) : null}
 
             {/* The stat row (Paths walked, Quests done, Badges, Tokens, Powers open) is retired: the prune
                 keeps no totals beside a person's name. What they hold is drawn where it lives. */}
