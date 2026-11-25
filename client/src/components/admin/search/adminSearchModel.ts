@@ -2,8 +2,9 @@
  * What Admin search searches, built from two halves (Admin evolution, PR 3):
  *
  *   the pages     the tabs this person's menu shows (already filtered by the
- *                 modules that are on), named as the menu names them, with
- *                 their old names and synonyms (shared/adminSearch.ts)
+ *                 modules that are on), each by its one name in adminAreas.ts,
+ *                 with the menu's label, old names and synonyms
+ *                 (shared/adminSearch.ts) as the words it is also found by
  *   the rest      controls, dials and steward pages outside /admin, from
  *                 GET /api/admin/search-index, which asked the one gate
  *
@@ -28,13 +29,15 @@ export function pageEntries(groups: readonly NavGroup[]): AdminSearchEntry[] {
       if (seen.has(item.key)) continue;
       seen.add(item.key);
       const known = tabEntry(item.key);
-      // The area list's name becomes a synonym when the menu names it differently.
-      const extra = known && known.name.toLowerCase() !== item.label.toLowerCase() ? [known.name] : [];
+      // The page's one name is the area list's (adminAreas.ts): the menu's label
+      // can be as bare as "Settings" under a heading the result does not show.
+      // The menu's label stays findable as a synonym.
+      const extra = known && known.name.toLowerCase() !== item.label.toLowerCase() ? [item.label] : [];
       out.push({
         id: `tab.${item.key}`,
         kind: "page",
         tab: item.key,
-        title: item.label,
+        title: known?.name ?? item.label,
         help: known?.help ?? g.title,
         synonyms: [...(TAB_SYNONYMS[item.key] ?? []), ...extra, g.title],
       });

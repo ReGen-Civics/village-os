@@ -52,7 +52,7 @@ describe("Admin search", () => {
     render(<AdminSearch password="pw" groups={GROUPS} />);
     const dialog = await open();
     await userEvent.type(within(dialog).getByRole("combobox"), "mail settings");
-    await waitFor(() => expect(within(dialog).getAllByRole("option")[0].textContent).toContain("Settings"));
+    await waitFor(() => expect(within(dialog).getAllByRole("option")[0].textContent).toContain("Mail settings"));
     await userEvent.keyboard("{Enter}");
     expect(window.location.pathname + window.location.search).toBe("/admin?tab=comms-settings&setting=comms.test-email");
     expect(pops).toBe(1);

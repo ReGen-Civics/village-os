@@ -4,13 +4,13 @@ import { navGroups } from "../adminNavGroups";
 import { isSearchShortcut, pageEntries, searchEntries } from "./adminSearchModel";
 
 describe("pageEntries", () => {
-  it("names each menu page once, as the menu names it, with the area list's name as a synonym", () => {
+  it("names each menu page once, by its one name, with the menu's own label as a synonym", () => {
     const pages = pageEntries(navGroups(true));
     const ids = pages.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
     const mail = pages.find((p) => p.tab === "comms-settings")!;
-    expect(mail.title).toBe("Settings");
-    expect(mail.synonyms).toContain("Mail settings");
+    expect(mail.title).toBe("Mail settings");
+    expect(mail.synonyms).toContain("Settings");
   });
 });
 

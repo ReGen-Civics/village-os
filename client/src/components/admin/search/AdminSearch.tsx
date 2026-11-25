@@ -194,7 +194,10 @@ export default function AdminSearch({
                 // The field takes the focus the moment it mounts, so the first
                 // key typed after "/" or Ctrl K is already a search.
                 autoFocus
-                type="search"
+                // text, not search: a search field draws the browser's own clear
+                // cross beside the close button, two crosses for two acts.
+                type="text"
+                enterKeyHint="go"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKeyDown}
