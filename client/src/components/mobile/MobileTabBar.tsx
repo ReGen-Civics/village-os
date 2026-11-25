@@ -28,6 +28,8 @@ import { useNewcomerShows } from "@/lib/newcomer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGameConfig } from "@/lib/gameApi";
 import { GAME_CONFIG } from "@shared/gameConfig";
+import { routeIcon } from "@/config/routeIcons";
+import { useEffect, useState } from "react";
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -59,6 +61,73 @@ export function villageSlots(tabs: readonly string[], labels: Readonly<Record<st
     out[i] = platform ?? { path: href, label: labels[href] || entry.label, Icon: entry.icon ?? Compass, ...(entry.token ? { token: entry.token } : {}) };
   });
   return out;
+}
+
+/**
+ * The bar's places the responsive choice may fill (shared/navPopularity.ts,
+ * MOVING_PLACES): the two after Home. Every other place is the platform's and
+ * never moves: Home, the member's path (the lead, 24 Nov 2026) and More.
+ */
+const MOVING_INDEXES = [1, 2] as const;
+
+/**
+ * THE RESPONSIVE BAR (nav.responsive_bar): the platform's bar with its moving
+ * places filled by the pages chosen, in order. A page that is no menu entry,
+ * hidden, closed, or already on the bar is skipped, and a place left empty
+ * keeps a platform tab not already on the bar. Each chosen page wears its own
+ * icon where one is drawn.
+ */
+export function responsiveSlots(pages: readonly string[], labels: Readonly<Record<string, string>>, hidden: readonly string[], open: (module?: string) => boolean): TabSlot[] {
+  const out = TAB_SLOTS.slice();
+  const fixed = new Set(out.filter((_, i) => !(MOVING_INDEXES as readonly number[]).includes(i)).map((s) => s.path).filter(Boolean) as string[]);
+  const taken = new Set(fixed);
+  const drawn: TabSlot[] = [];
+  for (const href of pages) {
+    if (drawn.length >= MOVING_INDEXES.length || taken.has(href)) continue;
+    const entry = ENTRY_BY_HREF.get(href);
+    if (!entry || hidden.includes(href) || !open(entry.module) || (entry.unlessModule && open(entry.unlessModule))) continue;
+    const platform = TAB_SLOTS.find((t) => t.path === href);
+    const slot = platform ?? { path: href, label: labels[href] || entry.label, Icon: entry.icon ?? Compass, ...(entry.token ? { token: entry.token } : {}) };
+    taken.add(href);
+    drawn.push({ ...slot, Icon: routeIcon(href, slot.Icon) });
+  }
+  // Empty places keep the platform's own tab there, or the next one not on the bar.
+  for (const i of MOVING_INDEXES) {
+    const own = TAB_SLOTS[i];
+    if (drawn.length >= MOVING_INDEXES.length) break;
+    if (own.path && !taken.has(own.path)) {
+      taken.add(own.path);
+      drawn.push(own);
+    }
+  }
+  MOVING_INDEXES.forEach((i, k) => {
+    if (drawn[k]) out[i] = drawn[k];
+  });
+  return out;
+}
+
+/**
+ * The responsive bar's places for a signed-in member, asked after the first
+ * paint so the first page's scripts stay as they were; null is the village's
+ * fixed bar (the setting off, signed out, or the server not answering).
+ */
+function useResponsiveTabs(path: string): string[] | null {
+  const [tabs, setTabs] = useState<string[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    // The lazy module reads the session itself: signed out, it answers null.
+    const id = window.setTimeout(() => {
+      void import("@/lib/navVisits")
+        .then((m) => m.loadBarNow())
+        .then((t) => live && setTabs(t))
+        .catch(() => undefined);
+    }, 800);
+    return () => {
+      live = false;
+      window.clearTimeout(id);
+    };
+  }, [path]);
+  return tabs;
 }
 
 /**
@@ -149,7 +218,9 @@ export default function MobileTabBar() {
   const menu = useVillageMenu();
   const modules = useModules();
   const { newcomer, shows } = useNewcomerShows();
-  const chosen = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+  const responsive = useResponsiveTabs(currentPath);
+  const isOpen = (m?: string) => !m || moduleIsOn(modules, m);
+  const chosen = responsive ? responsiveSlots(responsive, menu.labels, menu.hidden, isOpen) : villageSlots(menu.tabs, menu.labels, menu.hidden, isOpen);
   const slots = newcomer ? newcomerSlots(chosen, shows) : chosen;
 
   // Sign-in and the other focused, signed-out screens render no bar at all.
