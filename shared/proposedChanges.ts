@@ -556,4 +556,8 @@ export const REVIEW_WORDS = {
   /** The apply threw or timed out: it may have landed before the answer was lost (audit, 15 Nov 2026). */
   unknown: "We could not tell whether this change reached its page. Open that page and look. If the change is there, put this one aside. If it is not, tick that you checked and accept it again.",
   checkFirst: "Check its page first: this change may already be there. Tick that you checked, then accept it again.",
+  /** Conflicts block (the lead, 25 Nov 2026): one card, one accept, and a person makes the choice. */
+  chooseFirst: "Another waiting change writes the same thing. A person chooses one on the review page, and the others are recorded as another option chosen.",
+  /** A stale change is accepted only after the person has seen what is live now (the lead, 25 Nov 2026). */
+  seeLiveFirst: "Something was accepted over this since it was proposed. See what is live now on the review page, then accept.",
 } as const;

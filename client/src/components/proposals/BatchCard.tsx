@@ -135,7 +135,7 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
                 </p>
                 {confirming === "accept" && laterConflicts > 0 && (
                   <p className="text-sm text-foreground" data-testid="batch-confirm-conflict">
-                    <Plural context="proposed changes: confirm a batch" value={laterConflicts} one="A later change also edits one of these." other="A later change also edits # of these." />
+                    <Plural context="proposed changes: confirm a batch" value={laterConflicts} one="One of these waits on your choice on its own card, so it stays out of Accept all." other="# of these wait on your choice on their own cards, so they stay out of Accept all." />
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2">

@@ -1,9 +1,14 @@
 /**
  * /admin/review: everything waiting on the person reading it, in one list (docs/REVIEW_INBOX_PLAN.md, lane 4a).
  *
- * The lead could not find B-71 because they looked on /review and it was on /admin/proposals. This page is the first,
- * smallest answer: one find box that takes a code, and one list of what waits, from every queue, each with a door to
- * the page where it is decided today. Deciding still happens on those pages; the cards move here in a later lane.
+ * The lead could not find B-71 because they looked on /review and it was on /admin/proposals. This page answers it:
+ * one find box that takes a code, and one list of what waits, from every queue.
+ *
+ * THREE VIEWS (lane 4b), as links (`?view=`): Waiting, Held and Decided. Under Waiting the connector's changes are
+ * decided here, on the same cards /admin/proposals draws, and changes that write the same thing are one card with
+ * options (conflicts block, the lead, 25 Nov 2026). Every other queue keeps its door to the page it is decided on.
+ * Held is what the engine held back, with its reason and its age; Decided is the connector's history, newest first.
+ * Find also finds a decided code and says which view holds it.
  *
  * WHO SEES WHAT is the server's (server/routes/reviewInbox.ts): each section is that queue's own read, made as this
  * person, so the page can never show more than the queue's own page does. The `/admin/` path names the page and gates
@@ -13,13 +18,27 @@
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { BTN_SECONDARY, CHIP_SOFT, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import type { InboxItem, SectionState } from "@shared/reviewInbox";
 import { INBOX_ORDER as ORDER, type InboxSource } from "@shared/reviewInboxSources";
+import { matchesFind } from "@shared/proposedChanges";
+import { DecidedCard } from "@/components/proposals/ChangeCard";
+import ConnectorWaiting from "@/components/reviewInbox/ConnectorWaiting";
+import HeldList from "@/components/reviewInbox/HeldList";
+import { useConnectorDesk } from "@/components/reviewInbox/useConnectorDesk";
+
+type View = "waiting" | "held" | "decided";
+const viewOf = (search: string): View => {
+  const v = new URLSearchParams(search).get("view");
+  return v === "held" || v === "decided" ? v : "waiting";
+};
+const TAB = "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium";
+const TAB_ON = `${TAB} bg-notice text-background`;
+const TAB_OFF = `${TAB} border border-border bg-card text-foreground hover:bg-muted`;
 
 interface InboxAnswer {
   sections: { source: InboxSource; state: SectionState; count: number }[];
@@ -45,7 +64,8 @@ export default function AdminReview() {
   const signedOut = !!auth && !auth.loading && !auth.user;
   const [load, setLoad] = useState<Load>({ phase: "loading" });
   const [query, setQuery] = useState("");
-  const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null } | null>(null);
+  const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null; decided?: { code: string; at: string | null } } | null>(null);
+  const view = viewOf(useSearch());
 
   const titles: Record<InboxSource, string> = {
     connector: t({ context: "review inbox: section", message: "Proposed changes" }),
@@ -90,9 +110,19 @@ export default function AdminReview() {
     }
   }, []);
 
+  // Keyed on being signed in, never on the user object, which a context may hand out anew on every render.
+  const signedIn = !!auth && !auth.loading && !!auth.user;
   useEffect(() => {
-    if (auth && !auth.loading && auth.user) void read();
-  }, [auth?.loading, auth?.user, read]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (signedIn) void read();
+  }, [signedIn, read]);
+
+  // The connector's own read, made only when the inbox says this person may read it: the page never asks for more.
+  const desk = useConnectorDesk(() => void read());
+  const connectorState = load.phase === "ready" ? load.answer.sections.find((s) => s.source === "connector")?.state : undefined;
+  const mayDecide = connectorState === "ok" || connectorState === "failed";
+  useEffect(() => {
+    if (mayDecide) void desk.loadAll();
+  }, [mayDecide]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const find = async (e: FormEvent) => {
     e.preventDefault();
@@ -101,7 +131,10 @@ export default function AdminReview() {
     try {
       const r = await fetch(`/api/admin/review/find?q=${encodeURIComponent(q)}`, { headers: headers() });
       const body = (await r.json().catch(() => ({}))) as { items?: InboxItem[]; code?: string | null };
-      setFound({ q, items: r.ok ? body.items ?? [] : [], code: body.code ?? null });
+      const items = r.ok ? body.items ?? [] : [];
+      // Nothing waiting has it: it may have been decided. Only the history this person was already sent is searched.
+      const done = items.length ? undefined : desk.decided.find((d) => d.code && matchesFind(q, { id: d.id, code: d.code, batchId: d.batchId, batchCode: d.batchCode }));
+      setFound({ q, items, code: body.code ?? null, ...(done ? { decided: { code: body.code ?? done.code!, at: done.at } } : {}) });
     } catch {
       setFound({ q, items: null, code: null });
     }
@@ -119,6 +152,8 @@ export default function AdminReview() {
   const readable = (answer?.sections ?? []).filter((s) => s.state === "ok" || s.state === "failed");
   const forbidden = !!answer && readable.length === 0;
   const waiting = answer?.items.length ?? 0;
+  const heldCount = desk.heldState === "ok" ? desk.held.length : 0;
+  const foundIds = useMemo(() => new Set((found?.items ?? []).filter((i) => i.source === "connector").map((i) => i.key.slice(i.key.lastIndexOf(":") + 1))), [found]);
   const foundCode = found?.code ?? null;
 
   const failedNames = failed.map((s) => titles[s]).join(", ");
@@ -157,11 +192,17 @@ export default function AdminReview() {
               <Trans context="review inbox: h1">Review</Trans>
             </h1>
             <p className={LEDE}>
-              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today.</Trans>
+              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live.</Trans>
             </p>
             {answer && !forbidden ? (
               <p className={HINT} role="status" aria-live="polite">
                 <Plural value={waiting} one="# waiting on you." other="# waiting on you." />
+                {heldCount ? (
+                  <>
+                    {" "}
+                    <Plural context="review inbox: header" value={heldCount} one="# held." other="# held." />
+                  </>
+                ) : null}
               </p>
             ) : null}
           </header>
@@ -199,6 +240,13 @@ export default function AdminReview() {
                   {found.items === null ? (
                     <p className={HINT}>
                       <Trans context="review inbox: find failed">The search did not run. Try again.</Trans>
+                    </p>
+                  ) : found.items.length === 0 && found.decided ? (
+                    <p className={HINT} data-testid="found-decided">
+                      <FoundDecided code={found.decided.code} day={day(found.decided.at)} />{" "}
+                      <Link href="/admin/review?view=decided" className={LINK}>
+                        <Trans context="review inbox: find">Open Decided</Trans>
+                      </Link>
                     </p>
                   ) : found.items.length === 0 ? (
                     <p className={HINT}>
@@ -244,6 +292,47 @@ export default function AdminReview() {
           ) : null}
 
           {answer && !forbidden ? (
+            <nav aria-label={t({ context: "review inbox: views", message: "Views" })} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+              <Link href="/admin/review" className={view === "waiting" ? TAB_ON : TAB_OFF} aria-current={view === "waiting" ? "page" : undefined}>
+                <Trans context="review inbox: views">Waiting</Trans>
+              </Link>
+              {mayDecide ? (
+                <>
+                  <Link href="/admin/review?view=held" className={view === "held" ? TAB_ON : TAB_OFF} aria-current={view === "held" ? "page" : undefined} data-testid="tab-held">
+                    {heldCount ? <Trans context="review inbox: views">Held {heldCount}</Trans> : <Trans context="review inbox: views">Held</Trans>}
+                  </Link>
+                  <Link href="/admin/review?view=decided" className={view === "decided" ? TAB_ON : TAB_OFF} aria-current={view === "decided" ? "page" : undefined} data-testid="tab-decided">
+                    <Trans context="review inbox: views">Decided</Trans>
+                  </Link>
+                </>
+              ) : null}
+            </nav>
+          ) : null}
+
+          {answer && !forbidden && view === "held" && mayDecide ? <HeldList desk={desk} /> : null}
+
+          {answer && !forbidden && view === "decided" && mayDecide ? (
+            desk.state === "ok" && desk.decided.length ? (
+              <section className="space-y-4" aria-labelledby="review-decided">
+                <h2 id="review-decided" className={H2}>
+                  <Trans context="review inbox: decided">Decided, newest first</Trans>
+                </h2>
+                {desk.decided.map((d) => (
+                  <DecidedCard key={d.id} d={d} zone={desk.zone} onPutBack={desk.putBack} found={!!found?.decided && matchesFind(found.q, { id: d.id, code: d.code, batchId: d.batchId, batchCode: d.batchCode })} />
+                ))}
+              </section>
+            ) : desk.state === "failed" ? (
+              <p className={HINT} role="alert">
+                <Trans context="review inbox: decided">Decided did not load. Try again.</Trans>
+              </p>
+            ) : desk.state === "ok" ? (
+              <p className={HINT}>
+                <Trans context="review inbox: decided">Nothing has been decided here yet.</Trans>
+              </p>
+            ) : null
+          ) : null}
+
+          {answer && !forbidden && (view === "waiting" || !mayDecide) ? (
             <div className="space-y-8">
               {failed.length ? (
                 <div className={`${QUIET} space-y-2`} role="alert">
@@ -260,18 +349,31 @@ export default function AdminReview() {
                   <Trans context="review inbox: empty">Nothing is waiting on you.</Trans>
                 </p>
               ) : null}
-              {ORDER.filter((s) => bySource.get(s)?.length).map((s) => (
+              {ORDER.filter((s) => bySource.get(s)?.length).map((s) =>
+                s === "connector" && desk.state === "ok" ? (
+                  <ConnectorWaiting key={s} desk={desk} title={titles[s]} found={foundIds} />
+                ) : (
                 <section key={s} className="space-y-3" aria-labelledby={`review-${s}`}>
                   <h2 id={`review-${s}`} className={H2}>
                     {titles[s]}
                   </h2>
                   <ul className="space-y-2">{bySource.get(s)!.map(row)}</ul>
                 </section>
-              ))}
+                ),
+              )}
             </div>
           ) : null}
         </div>
       </div>
     </Layout>
+  );
+}
+
+/** "B-71 was decided on 20 Nov. It is under Decided." A code decided on no known day says so without the day. */
+function FoundDecided({ code, day }: { code: string; day: string | null }) {
+  return day ? (
+    <Trans context="review inbox: find a decided code">{code} was decided on {day}. It is under Decided.</Trans>
+  ) : (
+    <Trans context="review inbox: find a decided code">{code} was decided. It is under Decided.</Trans>
   );
 }
