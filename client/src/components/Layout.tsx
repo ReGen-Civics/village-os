@@ -26,6 +26,7 @@ import { storyPageShown } from "@/lib/brochure";
 import { MachineTranslationNote } from "@/i18n/machineTranslation";
 import { useNewcomerShows } from "@/lib/newcomer";
 import FooterBlurb from "@/components/FooterBlurb";
+import MenuIcon from "@/components/nav/MenuIcon";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -287,9 +288,9 @@ export default function Layout({ children }: LayoutProps) {
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className="inline-flex min-h-6 items-center text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+                  className="inline-flex min-h-6 items-center gap-1.5 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                 >
-                  {entry.label}
+                  <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
                 </Link>
               )
             )}
@@ -345,10 +346,10 @@ export default function Layout({ children }: LayoutProps) {
                           <Link
                             key={item.href}
                             href={item.href}
-                            className="block px-4 py-2.5 text-sm text-foreground hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-gray-50 transition-colors"
                             onClick={() => setAccountOpen(false)}
                           >
-                            {item.label}
+                            <MenuIcon href={item.href} fallback={item.icon} />{item.label}
                             {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
                             {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                           </Link>
@@ -457,10 +458,10 @@ export default function Layout({ children }: LayoutProps) {
                               <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`block transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"}`}
+                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"}`}
                                 onClick={() => { setMobileMenuOpen(false); setOpenMobileGroup(null); }}
                               >
-                                {item.label}
+                                <MenuIcon href={item.href} fallback={item.icon} />{item.label}
                                 {lifecycleOf(item.module) === "preview" ? " (preview)" : ""}
                               </Link>
                             ))}
@@ -472,10 +473,10 @@ export default function Layout({ children }: LayoutProps) {
                     <Link
                       key={entry.href}
                       href={entry.href}
-                      className="block text-white hover:underline transition-colors text-sm py-2"
+                      className="flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {entry.label}
+                      <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
                     </Link>
                   )
                 )}
@@ -492,10 +493,10 @@ export default function Layout({ children }: LayoutProps) {
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="flex min-h-11 items-center text-white hover:underline transition-colors text-sm py-2"
+                          className="flex min-h-11 items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {item.label === "My Profile" ? `My Profile (${user.name.split(" ")[0]})` : item.label}
+                          <MenuIcon href={item.href} fallback={item.icon} />{item.label === "My Profile" ? `My Profile (${user.name.split(" ")[0]})` : item.label}
                           {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
                           {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                         </Link>
@@ -969,11 +970,7 @@ function NavDropdown({
                 className="flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group"
                 onClick={() => setOpen(false)}
               >
-                {item.icon && (
-                  <span className="mt-0.5 w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <item.icon className="w-3.5 h-3.5 text-primary" />
-                  </span>
-                )}
+                <MenuIcon href={item.href} fallback={item.icon} chip />
                 <span className="min-w-0">
                   <span className={`block text-sm font-semibold ${item.accent ? "text-gold" : "text-foreground"}`}>
                     {item.label}
