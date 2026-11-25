@@ -79,7 +79,7 @@ import TodayStrip from "@/components/profileDash/TodayStrip";
 import AsksPanel from "@/components/asks/AsksPanel";
 import MyWeekCard from "@/components/priorities/MyWeekCard";
 import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
-import YourCompanions from "@/components/profileDash/YourCompanions";
+import CompanionCorner from "@/components/profileDash/CompanionCorner";
 import GuideChoiceCard from "@/components/guide/GuideChoiceCard";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
 import LevelUpMoment from "@/components/profileDash/LevelUpMoment";
@@ -579,10 +579,7 @@ export default function Profile() {
               <RaisedAsksCard />
             </div>
 
-            {/* YOUR COMPANIONS, beside the tasks on a desktop and on the Quests tab on a phone. */}
-            <div className={tabOf("quests")}>
-              <YourCompanions />
-            </div>
+            {/* YOUR COMPANIONS stand in the corner now (CompanionCorner, Direction D), drawn with MoonDock below. */}
 
             <div className={tabOf("treasury")}>
               <TreasuryPanel
@@ -965,6 +962,7 @@ export default function Profile() {
           </m.div>
         </div>
         <MoonDock />
+        <CompanionCorner />
       </div>
       {advance ? (
         <LevelUpMoment

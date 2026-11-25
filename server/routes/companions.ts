@@ -33,6 +33,7 @@
  * The item is claimed before the door opens, so two yeses open it once, and
  * given back if the door refuses, so a refusal leaves the draft as it was.
  */
+import { roleArt } from "./natureArt";
 import { seraGuideAsk } from "../lib/seraGuideCall";
 import http from "node:http";
 import type { Express, Request, Response } from "express";
@@ -191,6 +192,8 @@ export function register(app: Express, deps: Deps): void {
       outsideGuideName: saberraAgentName(),
       // The member's own guide (prefs.guide, saved by the chooser at /api/guide), read fresh each time.
       guideOf: async (userId) => companionGuideOf((await members.byId(userId))?.prefs?.guide, saberraGuideReach().available),
+      // Each role companion wears its role card's painting (Direction D), the same one /roles shows.
+      roleArtOf: async () => (await roleArt(getPool())).roles,
       timeZone: v.timeZone,
       villageName: v.name,
     };

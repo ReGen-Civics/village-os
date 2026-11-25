@@ -6,6 +6,9 @@ import {
   applyEdits,
   carriesContact,
   daysBetweenKeys,
+  defaultLook,
+  isUntouchedLook,
+  SCARLET_LOOK,
   effectiveCap,
   outsideAddressesOf,
   parseLook,
@@ -132,5 +135,22 @@ describe("the look", () => {
     expect(parseLook({ source: "choose", pet: "dragon", tint: "gold" })).toBeNull();
     expect(parseLook({ source: "forge", portraitKey: "../etc" })).toBeNull();
     expect(parseLook("not json")).toBeNull();
+  });
+});
+
+describe("the village's animals (Direction D)", () => {
+  it("dresses a new personal companion as Scarlet, the scarlet macaw, a look that reads back as itself", () => {
+    expect(SCARLET_LOOK).toEqual({ source: "nature", art: "scarlet-macaw" });
+    expect(parseLook(JSON.stringify(SCARLET_LOOK))).toEqual(SCARLET_LOOK);
+  });
+
+  it("counts as untouched only the pet a companion was created with", () => {
+    expect(isUntouchedLook(defaultLook(0), 0)).toBe(true);
+    expect(isUntouchedLook(defaultLook(2), 2)).toBe(true);
+    // The member chose another pet, a portrait or a painting: never touched.
+    expect(isUntouchedLook(defaultLook(1), 0)).toBe(false);
+    expect(isUntouchedLook({ source: "upload", portraitKey: "me" }, 0)).toBe(false);
+    expect(isUntouchedLook(SCARLET_LOOK, 0)).toBe(false);
+    expect(isUntouchedLook(null, 0)).toBe(false);
   });
 });
