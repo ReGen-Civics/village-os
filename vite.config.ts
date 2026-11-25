@@ -819,7 +819,8 @@ function lazyGroupPlan(g: {
     extra.set(id, `lazy-${Array.from(new Set(m.dynamicImporters.flatMap((by) => areaOf(by)))).sort().join("-")}`);
   }
 
-  // Each "lazy-" group takes its smallest pieces first and stops at LAZY_GROUP_BYTES; the rest keep their own chunks.
+  // Each "lazy-" group takes its smallest pieces first and stops at LAZY_GROUP_BYTES; the rest go to the pool below.
+  const leftOver = new Set<string>();
   const seedsOf = new Map<string, string[]>();
   for (const [id, name] of Array.from(extra)) if (name.startsWith("lazy-")) seedsOf.set(name, [...(seedsOf.get(name) ?? []), id]);
   for (const seeds of Array.from(seedsOf.values())) {
@@ -827,23 +828,59 @@ function lazyGroupPlan(g: {
     let total = 0;
     for (const id of seeds.sort((a, b) => (weight.get(a) ?? 0) - (weight.get(b) ?? 0) || a.localeCompare(b))) {
       total += weight.get(id) ?? 0;
-      if (total > LAZY_GROUP_BYTES) extra.delete(id);
+      if (total > LAZY_GROUP_BYTES) {
+        extra.delete(id);
+        leftOver.add(id);
+      }
     }
   }
 
   // A new group keeps only the members that, together, need no first-page module a static group would not already load.
   const isNew = (name: string) => name.startsWith("lazy-");
-  for (let changed = true; changed; ) {
-    changed = false;
-    const byGroup = new Map<string, string[]>();
-    for (const [id, name] of Array.from(extra)) if (isNew(name)) byGroup.set(name, [...(byGroup.get(name) ?? []), id]);
-    for (const members of Array.from(byGroup.values())) {
-      // A group of one saves nothing: its member keeps the chunk rollup gives it.
-      const drop = members.length < 2 ? members : unfit(members);
-      for (const id of drop) extra.delete(id);
-      if (drop.length) changed = true;
+  const settle = (): void => {
+    for (let changed = true; changed; ) {
+      changed = false;
+      const byGroup = new Map<string, string[]>();
+      for (const [id, name] of Array.from(extra)) if (isNew(name)) byGroup.set(name, [...(byGroup.get(name) ?? []), id]);
+      for (const members of Array.from(byGroup.values())) {
+        // A group of one saves nothing: its member keeps the chunk rollup gives it, or tries the pool.
+        const alone = members.length < 2;
+        const drop = alone ? members : unfit(members);
+        for (const id of drop) {
+          extra.delete(id);
+          if (alone) leftOver.add(id);
+        }
+        if (drop.length) changed = true;
+      }
     }
+  };
+  settle();
+  /*
+   * THE POOL (dist diet, 25 Nov 2026). A piece whose area holds no other
+   * piece (a shell's lazy flourish, one tab's one dialog) was left a file of
+   * its own and paid up to 4 KB of padding for a few hundred bytes. Those
+   * pieces now share "lazy-pool" files, smallest first, up to LAZY_GROUP_BYTES
+   * each, and the same first-page check as every other "lazy-" group (`unfit`)
+   * runs on each pool, so a pool never splits a first-page file. The cost: the
+   * first lazy piece a visit opens fetches its pool, at most LAZY_GROUP_BYTES
+   * of source, and every later piece in that pool comes from cache.
+   */
+  // Not a piece the shell itself imports lazily: pooled, its import grows the first page's files.
+  const pool = Array.from(leftOver).filter((id) => !extra.has(id) && !(info(id)?.dynamicImporters ?? []).some((by) => eager.has(by)));
+  const poolWeight = new Map(pool.map((id) => [id, weightOf(id)]));
+  let poolNo = 1;
+  let poolTotal = 0;
+  for (const id of pool.sort((a, b) => (poolWeight.get(a) ?? 0) - (poolWeight.get(b) ?? 0) || a.localeCompare(b))) {
+    const w = poolWeight.get(id) ?? 0;
+    if (poolTotal > 0 && poolTotal + w > LAZY_GROUP_BYTES) {
+      poolNo += 1;
+      poolTotal = 0;
+    }
+    extra.set(id, `lazy-pool${poolNo}`);
+    poolTotal += w;
   }
+  leftOver.clear();
+  settle();
 
   // Rule 2: a module only one named chunk imports rides in it, until nothing more moves.
   for (let changed = true; changed; ) {

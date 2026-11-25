@@ -404,7 +404,7 @@ first, was released when 0425 landed ahead of this lane, and stays a gap.
 - **`suggestion_staging`**, new: id, stream, stream_ref, kind, canonical_key, body_ref or body_json,
   why, evidence_json, proposer_kind, proposer_principal, received_at, state, held_code,
   held_fields_json, published_change_id, dedupe_key. `UNIQUE (stream, dedupe_key)`, both NOT NULL.
-  Index on `(canonical_key, state)`. A contributor adapter stores a **reference** to the submission,
+  Indexed by state and by filer; what a row is about is kept as `keys_json` and compared in memory over the open set, which is how the engine stays one pure function. A contributor adapter stores a **reference** to the submission,
   never a copy of its text.
 - **`suggestion_outcomes`**, new: `id` is the decision id (primary key). A non-unique index on
   `(stream, source_id)`, so a put-back or a reconsider of the same item records a second decision
@@ -529,4 +529,6 @@ Relayed by the coordinator, the lead accepting the coordinator's suggestions:
 
 | Lane | Branch | State |
 |---|---|---|
-| 1, the pure engine and the golden set | `wt/review-engine` | built: `shared/suggestionPipeline/` (keys, engine, 18 synthetic golden scenes) |
+| 1, the pure engine and the golden set | `wt/review-engine` | merged, PR #1615 |
+| 2a, migration 0432, the staging and outcomes repos, the erasure step | `wt/review-engine` | built |
+| 2b, `recordOutcome()` at every door, and the backfill of past decisions | | next |

@@ -6,7 +6,7 @@
  *   node scripts/build-i18n-catalogs.mjs --out DIR
  *
  * Reads the PO files under client/src/locales (written by `lingui extract`
- * and by translators) and writes one JSON file per language: the compiled
+ * and by translators), each with the fragments in `<tag>.d/` folded in and writes one JSON file per language: the compiled
  * messages keyed by the same hashed id the client macro gives each string,
  * the ids no person has reviewed yet (PO's `fuzzy` flag, shown to readers as
  * "Translated automatically"), and a content version for cache busting.
@@ -28,6 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createCompiledCatalog } from "@lingui/cli/api";
 import { formatter } from "@lingui/format-po";
+import { catalogLocales, mergedPoText } from "./lib/poFragments.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = "en";
@@ -65,10 +66,10 @@ function write(outDir, locale, messages, unreviewed) {
 export async function compileCatalogs({ srcDir = path.join(ROOT, "client/src/locales"), outDir = path.join(ROOT, "dist/i18n") } = {}) {
   fs.mkdirSync(outDir, { recursive: true });
   const written = [];
-  for (const file of fs.readdirSync(srcDir).filter((f) => f.endsWith(".po")).sort()) {
-    const locale = file.slice(0, -3);
-    if (locale === SOURCE) continue;
-    const entries = await readPo(path.join(srcDir, file), locale);
+  // Each language's catalog with its pull requests' fragments folded in (scripts/lib/poFragments.mjs).
+  for (const locale of catalogLocales(srcDir, SOURCE)) {
+    const file = path.join(srcDir, `${locale}.po`);
+    const entries = await po.parse(mergedPoText(srcDir, locale), { locale, sourceLocale: SOURCE, filename: file });
     const messages = {};
     const unreviewed = [];
     for (const [id, e] of Object.entries(entries)) {
