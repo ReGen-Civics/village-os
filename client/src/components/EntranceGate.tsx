@@ -24,23 +24,15 @@ import { lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { useVillageName } from "@/hooks/useVillageName";
-import { EVENT_PASS_PARAM, GATE_HINT_COOKIE, KEEP_IN_TOUCH_PARAM, lookOver, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
+import { EVENT_PASS_PARAM, KEEP_IN_TOUCH_PARAM, lookOver, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
+import { forgetEntranceStatusRead, gateHinted, readEntranceStatus } from "@/lib/entranceStatus";
 
 const Entrance = lazy(() => import("@/pages/Entrance"));
 const KeepInTouch = lazy(() => import("@/pages/Entrance").then((m) => ({ default: m.KeepInTouch })));
 const EntranceCode = lazy(() => import("@/pages/EntranceCode"));
 
-let statusRead: Promise<EntranceStatus | null> | null = null;
-
-/** The entrance's status, asked once per page load. Entering reloads the page, which asks again. */
-function readStatus(): Promise<EntranceStatus | null> {
-  if (!statusRead) {
-    statusRead = fetch("/api/entrance", { credentials: "same-origin" })
-      .then((r) => (r.ok ? (r.json() as Promise<EntranceStatus>) : null))
-      .catch(() => null);
-  }
-  return statusRead;
-}
+/** The entrance's status, asked once per page load (lib/entranceStatus.ts, shared with the front door's reads). */
+const readStatus = readEntranceStatus;
 
 /**
  * An invited guest's link (`/events?pass=`, server/lib/comms/gatheringVars.ts): the pass is traded
@@ -74,18 +66,9 @@ function notePage(path: string): void {
     .catch(() => false);
 }
 
-/** Whether the server said, on this page's own response, that the village keeps an entrance. */
-function gateHinted(): boolean {
-  try {
-    return document.cookie.split(";").some((c) => c.trim() === `${GATE_HINT_COOKIE}=1`);
-  } catch {
-    return true;
-  }
-}
-
 /** For tests: forget the status. */
 export function forgetEntranceStatus(): void {
-  statusRead = null;
+  forgetEntranceStatusRead();
   lastNoted = "";
 }
 

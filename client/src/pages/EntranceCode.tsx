@@ -88,7 +88,7 @@ export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: 
   return (
     <Layout>
       <div className={WORLD}>
-        <main className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-code="">
+        <section className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-code="">
           <form onSubmit={submit} noValidate className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-h`}>
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <KeyRound className="size-6" />
@@ -137,7 +137,7 @@ export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: 
             </p>
             <GoogleSignInButton next={next} portal label={t({ message: "Use Google instead", context: "portal code step: Google instead" })} />
           </form>
-        </main>
+        </section>
       </div>
     </Layout>
   );

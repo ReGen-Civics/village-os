@@ -26,8 +26,9 @@
  * Unknown is not in use: while an answer is on its way, or when it fails, the
  * entry stays out for a newcomer, so nothing flashes in and then away.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGameConfig } from "@/lib/gameApi";
+import { useModules } from "@/modules/ModuleProvider";
 
 /** What the reads answered (areasInUseReads.ts). `exampleModules` is null while unknown or when the read failed. */
 export interface AreaAnswers {
@@ -60,18 +61,23 @@ export function areaInUse(entry: { href: string; module?: string }, known: AreaA
  */
 export function useAreaInUse(active: boolean): (entry: { href: string; module?: string }) => boolean {
   const cfg = useGameConfig();
+  const catalog = useModules();
+  // The modules this reader's catalog serves as public: a read whose module is not here would be refused, so it is
+  // not asked (areasInUseReads.ts). Waits for the catalog, so nothing is asked on a guess.
+  const publicKey = catalog.loaded ? catalog.modules.filter((m) => m.lifecycle === "public").map((m) => m.id).sort().join(",") : null;
+  const publicModules = useMemo(() => new Set(publicKey ? publicKey.split(",") : []), [publicKey]);
   const [known, setKnown] = useState<AreaAnswers>({ exampleModules: null });
   useEffect(() => {
-    if (!active) return;
+    if (!active || publicKey === null) return;
     let live = true;
     import("./areasInUseReads")
-      .then((m) => m.readAreas())
+      .then((m) => m.readAreas(publicModules))
       .then((answers) => live && setKnown(answers))
       .catch(() => {});
     return () => {
       live = false;
     };
-  }, [active]);
+  }, [active, publicKey, publicModules]);
   const seasons = cfg?.season?.seasons?.length ?? 0;
   return (entry) => areaInUse(entry, { ...known, seasons });
 }
