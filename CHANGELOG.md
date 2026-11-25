@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.70 (2026-11-25)
+
+### What changed for your village
+
+- **Up-to-date libraries.** Fourteen routine updates to the libraries the platform is built on (icons, animation, styling, payments plumbing, PDF reading, the test runner and others), plus the newer page simulator the tests run in. Nothing a member sees changes; what a visitor loads first is the same size within a few kilobytes.
+- **Steadier checks for everyone who builds the platform:** the browser smoke test no longer picks a port that browsers refuse to open, which failed about one run in fifty, and the nightly rehearsal's cache steps run on the current runtime.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No database changes. Going back to 1.3.69 still works.
+
+---
+
 ## 1.3.69 (2026-11-25)
 
 ### What changed for your village
