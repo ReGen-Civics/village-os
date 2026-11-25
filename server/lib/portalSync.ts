@@ -2,7 +2,7 @@
  * THE PORTAL'S VISITORS INTO THE VILLAGE'S EMAIL LIST (ops, 24 Nov 2026: "so that we can build our
  * CRM"). Brevo, because it is the list the village already keeps.
  *
- * WHO GOES: only a visitor who ticked "send me updates", never a test entry, and only while the
+ * WHO GOES: only a visitor who answered Yes to keeping in touch, never a test entry, and only while the
  * village has set both halves: the key under Admin, Integrations (`brevo_api_key`, sealed) and the
  * list's number in the dial `entrance.brevo_list_id` (0 is off, the default).
  *
@@ -82,7 +82,7 @@ export const BREVO_CARD = {
   key: "brevo_api_key" as const,
   title: "Brevo, the village's email list",
   unlocks:
-    "Visitors who enter the portal and tick \"send me updates\" are added to one Brevo list, with their name and, if Brevo has them, the attributes PORTAL_SOURCE, PORTAL_INTEREST and WHATSAPP. Set the list's number in Game Mechanics (Portal entrance: Brevo list). Nothing here sends an email; a welcome only goes out if that list has one set up inside Brevo.",
+    "Visitors who enter the portal and answer Yes to keeping in touch are added to one Brevo list, with their name and, if Brevo has them, the attributes PORTAL_SOURCE, PORTAL_INTEREST and WHATSAPP. Set the list's number below, beside the key. Nothing here sends an email; a welcome only goes out if that list has one set up inside Brevo.",
   getAt: "app.brevo.com → SMTP & API → API keys",
   placeholder: "xkeysib-…",
 };

@@ -79,6 +79,7 @@ import NoticeWordsPanel from "@/components/admin/NoticeWordsPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import BrevoListNumber from "@/components/admin/BrevoListNumber";
 import { saveBlob } from "@/lib/notebookCopy";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminQueueState from "@/components/admin/AdminQueueState";
@@ -1015,8 +1016,7 @@ export function IntegrationsTab({ password }: { password: string }) {
                     </span>
                   ) : (
                     <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                      <Trans context="Admin, span">Not connected
-                    </Trans></span>
+                      <Trans context="Admin, span">Not connected</Trans></span>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mb-3">{c.unlocks}</p>
@@ -1067,11 +1067,11 @@ export function IntegrationsTab({ password }: { password: string }) {
                         disabled={busy === c.key}
                         className="text-sm text-gray-500 bg-gray-100 rounded-lg px-3 py-2 font-medium"
                       >
-                        <Trans context="Admin, button">Clear
-                      </Trans></button>
+                        <Trans context="Admin, button">Clear</Trans></button>
                     )}
                   </div>
                 )}
+                {c.key === "brevo_api_key" && <BrevoListNumber password={password} />}
                 {/* Steps a founder performs inside the other product. Every one
                     of these is a permanent per-village human cost, which is why
                     the listing has to declare them where a founder can see. */}
