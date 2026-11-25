@@ -9,6 +9,7 @@
  * products show the instructions and record the intent.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
@@ -42,6 +43,10 @@ export default function Contribute() {
   const commerce = useModule("commerce");
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   const [amounts, setAmounts] = useState<Record<string, string>>({});
   const [emails, setEmails] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
@@ -56,13 +61,13 @@ export default function Contribute() {
   useEffect(() => {
     if (!commerce) return;
     fetch("/api/products", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then(setData)
-      .catch(() => {});
+      .catch(() => setLoadFailed(true));
     const q = new URLSearchParams(window.location.search).get("paid");
     if (q === "success") setNotice("Payment received, thank you. Your receipt is on its way.");
     if (q === "cancelled") setNotice("Checkout cancelled. Nothing was charged.");
-  }, [commerce?.id]);
+  }, [commerce?.id, attempt]);
 
   if (modules.loaded && !commerce) return <ModuleGate moduleId="commerce" name="Payments & Donations" />;
 
@@ -125,7 +130,8 @@ export default function Contribute() {
             </div>
           )}
 
-          {(data?.products ?? []).length === 0 && (
+          {loadFailed && !data && <LoadFailed onRetry={retry} />}
+          {data && (data.products ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8"><Trans context="Contribute, p">Nothing is offered right now.</Trans></p>
           )}
 

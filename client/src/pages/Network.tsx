@@ -14,6 +14,7 @@
  * consent rows — not by loosening this page.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useCallback, useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
@@ -49,6 +50,8 @@ export default function Network() {
   const networkModule = useModule("network");
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [peers, setPeers] = useState<any[]>([]);
   const [form, setForm] = useState({ type: "need", title: "", detail: "", contact: "" });
   const [peerUrl, setPeerUrl] = useState("");
@@ -62,9 +65,9 @@ export default function Network() {
 
   const load = useCallback(() => {
     fetch("/api/network", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setData)
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setData(d); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
   }, []);
   const loadPeers = useCallback(() => {
     fetch("/api/admin/network/peers", { headers: headers() })
@@ -131,7 +134,8 @@ export default function Network() {
                 <Trans context="Network, p">What {data?.village ?? "this village"} shares with the network
               </Trans></p>
             </div>
-            {(data?.mine ?? []).length === 0 && (
+            {loadFailed && !data && <LoadFailed onRetry={load} />}
+            {data && (data.mine ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground"><Trans context="Network, p">Nothing published yet.</Trans></p>
             )}
             <div className="space-y-2.5">

@@ -7,6 +7,7 @@
  * zero would be shown as a WARNING, not a win.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
@@ -55,19 +56,23 @@ export default function VillageHealth() {
   const modules = useModules();
   const healthModule = useModule("health");
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   const [season, setSeason] = useState<any>(null);
 
   useEffect(() => {
     if (!healthModule) return;
     fetch("/api/health/summary", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then(setData)
-      .catch(() => {});
+      .catch(() => setLoadFailed(true));
     fetch("/api/season")
       .then((r) => (r.ok ? r.json() : null))
       .then(setSeason)
       .catch(() => {});
-  }, [healthModule?.id]);
+  }, [healthModule?.id, attempt]);
 
   if (modules.loaded && !healthModule) return <ModuleGate moduleId="health" name="Village Health" />;
 
@@ -149,7 +154,9 @@ export default function VillageHealth() {
                 it said "Nothing recorded yet". Everything else here (vital
                 signs, governance reads, season goals) is the village's own. */}
             <ExamplesBanner moduleId="health" noun="measurement" layout="mb-3 text-left" />
-            {Object.keys(data?.regen?.totals ?? {}).length === 0 ? (
+            {loadFailed && !data ? (
+              <LoadFailed onRetry={retry} />
+            ) : Object.keys(data?.regen?.totals ?? {}).length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 <Trans context="VillageHealth, p"><Sprout className="w-4 h-4 inline mr-1 text-teal-deep/60" />
                 Nothing recorded yet. The stewards log plantings, water and

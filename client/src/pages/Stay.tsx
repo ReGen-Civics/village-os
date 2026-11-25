@@ -5,6 +5,7 @@
  * consent gate as every other reward.
  */
 import WorkPayBlock from "@/components/WorkPayBlock";
+import LoadFailed from "@/components/LoadFailed";
 import Layout from "@/components/Layout";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
@@ -39,6 +40,8 @@ export default function Stay() {
   const registryNames = useTokenNameMap();
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [requesting, setRequesting] = useState<string>("");
@@ -54,9 +57,9 @@ export default function Stay() {
 
   const load = () => {
     fetch("/api/stays", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setData)
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setData(d); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
   };
   useEffect(() => {
     if (staysModule) load();
@@ -325,6 +328,7 @@ export default function Stay() {
               );
             })}
           </div>
+          {loadFailed && !data && <LoadFailed onRetry={load} />}
           {data && data.accommodations.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-12"><Trans context="Stay, p">No rooms posted yet. Check back soon.</Trans></p>
           )}
