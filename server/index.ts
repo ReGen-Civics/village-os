@@ -579,6 +579,7 @@ import {
 import { seatChargeFor, seatEscrowDrift, seatPriceFor, settleFinishedSeats } from "./lib/eventSeats";
 import { allowanceFor, applyMintRuleChanges, checkIn, cycleWindow, economyReady, finerThanScale, fromLedgerUnits, give, HEARTS, mintRulesByIds, mintView, publicRules, publicSupply, queueRuleChange, rulesFor, runSettlement, toLedgerUnits, villageId, type StageMultiplierFor } from "./lib/economy";
 import { addCharacter, avatarFor, listArchetypes, openNowCounts, openPathsFor, partyFor, removeCharacter, setPrimary } from "./lib/characters";
+import { TEAM_SECTION, teamCardsFor } from "./lib/teamCards";
 import { hidesFirstNameFromVisitors, livingHandle, loadGratitude, loadProfile, loadStanding, membersHidingFirstName, membersHidingRoles, publicView, userIdForHandle } from "./lib/profile";
 import { loadInventory } from "./repos/profileInventory";
 import { register as registerProfilePrivacyRoutes } from "./routes/profilePrivacy";
@@ -7937,6 +7938,13 @@ async function startServer() {
       return res.status(404).json({ error: "Section not found" });
     }
     if (await isAdmin(req)) return res.json(section);
+    // The team cards carry surnames, portraits and bios: only for a reader who may see people (server/lib/teamCards.ts).
+    if (req.params.section === TEAM_SECTION) {
+      noSharedCache(res); // the answer differs by reader, so no shared cache may hold a member's copy for a stranger
+      const viewer = await authedUser(req);
+      const viewerCtx = viewer ? await capabilityCtx(viewer) : null;
+      return res.json(teamCardsFor(section, viewerCtx ? hasCapability("map.viewPeople", viewerCtx) : false));
+    }
     if (Array.isArray(section)) {
       return res.json(
         section.map((card: any) => {

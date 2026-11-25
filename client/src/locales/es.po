@@ -61167,3 +61167,21 @@ msgstr "Los encuentros de la aldea"
 msgctxt "coming soon: an empty moon on the calendar"
 msgid "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day."
 msgstr "Todavía no hay nada en esta luna. Los encuentros, festivales y llamadas aparecen aquí a medida que la aldea los planea, cada uno en su día."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Messages are for members"
+msgstr "Los mensajes son para quienes ya son miembros"
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Once the village welcomes you as a member, you can write to anyone here. Until then, your path shows the next step."
+msgstr "Cuando la aldea te reciba como miembro, podrás escribirle a cualquier persona aquí. Mientras tanto, tu camino te muestra el siguiente paso."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "See my path"
+msgstr "Ver mi camino"

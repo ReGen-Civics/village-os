@@ -677,11 +677,17 @@ describe.skipIf(!DB_CONFIGURED)("a village with its own people still publishes t
       },
     ]);
     expect(put.status, "the village may write its own team page").toBe(200);
-    const anon = await http("/api/content/team").then((r) => r.json());
+    const asFounder = await call("GET", "/api/content/team");
     expect(
-      (anon ?? []).map((c: any) => c.name),
-      "a village that wrote a team page publishes it",
+      (asFounder.json ?? []).map((c: any) => c.name),
+      "a village that wrote a team page publishes it to the people who may see its people",
     ).toContain("Rowan Ashfield");
+    // A stranger reads first names only on /team, from /api/org (the lead, 25 Nov 2026), so the cards with a
+    // surname, a portrait and a bio never reach them (server/lib/teamCards.ts).
+    const anonRes = await http("/api/content/team");
+    expect(anonRes.headers.get("cache-control"), "an answer that differs by reader is never shared-cached").toBe("no-store");
+    const anon = await anonRes.json();
+    expect(JSON.stringify(anon), "a stranger reads no team card").not.toContain("Ashfield");
   });
 });
 
