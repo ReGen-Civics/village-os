@@ -139,7 +139,7 @@ export function BadgeDefinitionRow({
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <p className="text-sm font-medium text-gray-900">
-            {b.name} <span className="text-xs text-gray-400">({b.kind})</span>
+            {b.name} <span className="text-xs text-muted-foreground">({b.kind})</span>
             {b.isExample && <ExampleChip className="ml-2 align-middle" />}
           </p>
           <p className="text-xs text-gray-500">

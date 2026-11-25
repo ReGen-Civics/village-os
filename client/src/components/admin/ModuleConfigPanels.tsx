@@ -246,7 +246,7 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
             </div>
           ))}
           {rows.length === 0 && (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               <Trans context="ModuleConfigPanels, p">No campaigns linked. /campaigns shows its empty board until one is.
             </Trans></p>
           )}
@@ -304,14 +304,14 @@ export function CrowdpoolAdminTab({ password }: { password: string }) {
         <h3 className="font-semibold text-gray-900 mb-1"><Trans context="ModuleConfigPanels, h3">What the hub answered</Trans></h3>
         <p className="text-xs text-gray-500 mb-3"><Trans context="ModuleConfigPanels, p">Hub: {status?.hubBaseUrl || "not set"}</Trans></p>
         {(status?.campaigns ?? []).length === 0 && (
-          <p className="text-sm text-gray-400"><Trans context="ModuleConfigPanels, p">Nothing synced yet. The sync runs every ten minutes.</Trans></p>
+          <p className="text-sm text-muted-foreground"><Trans context="ModuleConfigPanels, p">Nothing synced yet. The sync runs every ten minutes.</Trans></p>
         )}
         <ul className="space-y-1">
           {(status?.campaigns ?? []).map((c: any) => (
             <li key={c.key} className="text-sm text-gray-700">
               <span className="font-medium">{c.key}</span>
               {c.title ? <span className="text-gray-500"> · {c.title}</span> : null}
-              <span className="text-gray-400"> · {c.lastSyncAt ? `last read ${new Date(c.lastSyncAt).toLocaleString()}` : "never read"}</span>
+              <span className="text-muted-foreground"> · {c.lastSyncAt ? `last read ${new Date(c.lastSyncAt).toLocaleString()}` : "never read"}</span>
             </li>
           ))}
         </ul>
@@ -403,7 +403,7 @@ export function CategoryListEditor({
                   aria-describedby={locked ? `category-${i}-locked` : undefined}
                   onChange={(e) => set(i, { id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
                   placeholder={t({ message: "village-life", context: "ModuleConfigPanels, placeholder" })} className={`${inputCls} w-full mt-1 disabled:bg-gray-50 disabled:text-gray-500`} />
-                {locked && <span id={`category-${i}-locked`} className="block text-[11px] text-gray-400 mt-0.5"><Trans context="ModuleConfigPanels, span">Fixed. Threads and tools already point at it.</Trans></span>}
+                {locked && <span id={`category-${i}-locked`} className="block text-[11px] text-muted-foreground mt-0.5"><Trans context="ModuleConfigPanels, span">Fixed. Threads and tools already point at it.</Trans></span>}
               </label>
               <label className="text-xs text-gray-500 sm:col-span-5">
                 What people read
@@ -436,7 +436,7 @@ export function CategoryListEditor({
         onDiscard={() => setRows(toCategories(config?.categories))}
         what={t({ message: `the ${moduleName} categories`, context: "ModuleConfigPanels, save bar" })}
       />
-      <p className="text-[11px] text-gray-400 mt-2">
+      <p className="text-[11px] text-muted-foreground mt-2">
         <Trans context="ModuleConfigPanels, p">Removing a category leaves anything already filed under it pointing at a
         name nobody can pick again. Rename the label instead when what you want
         is different words for the same shelf.

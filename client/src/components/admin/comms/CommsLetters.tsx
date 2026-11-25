@@ -125,7 +125,7 @@ export default function CommsLetters({ password }: { password: string }) {
   }, [load]);
 
   if (error) return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  if (!data) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsLetters, p">Loading...</Trans></p>;
+  if (!data) return <p className="py-12 text-center text-sm text-muted-foreground"><Trans context="CommsLetters, p">Loading...</Trans></p>;
 
   const editing = open && open !== "new" ? data.letters.find((l) => l.id === open) ?? null : null;
   const done = async (line: string, keepOpen: boolean) => {

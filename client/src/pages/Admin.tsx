@@ -247,7 +247,7 @@ function ForumModerationTab({ password }: { password: string }) {
         ))}
       </div>
 
-      {reports === null && <p className="text-sm text-gray-400"><Trans context="Admin, p">Loading…</Trans></p>}
+      {reports === null && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Loading…</Trans></p>}
       {reports?.length === 0 && (
         <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
           <Trans context="Admin, p">Nothing {status}. A quiet queue is the good outcome.
@@ -417,7 +417,7 @@ function MessageReportsTab({ password }: { password: string }) {
         ))}
       </div>
 
-      {reports === null && <p className="text-sm text-gray-400"><Trans context="Admin, p">Loading…</Trans></p>}
+      {reports === null && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Loading…</Trans></p>}
       {reports?.length === 0 && (
         <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
           {emptyQueueLine(status)}
@@ -774,7 +774,7 @@ export function SubmissionsTab({ password }: { password: string }) { const { t }
     <SubmissionDesk password={password} filter={filter} onFilter={setFilter} rows={visible} onChanged={load}>
       <OpenProposalsPanel password={password} />
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : problem ? (
         <AdminQueueState kind="error" message={problem} onRetry={load} />
       ) : visible.length === 0 ? (
@@ -800,14 +800,14 @@ export function SubmissionsTab({ password }: { password: string }) { const { t }
                     {s.data.name || s.data.firstName || s.data.email || "Anonymous"}
                   </span>
                   {s.userId && <span className="text-xs text-emerald-600" title="Submitted while signed in"><Trans context="Admin, span">● member</Trans></span>}
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     {new Date(s.submittedAt).toLocaleDateString("en-US", {
                       month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
                     })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {expanded === s.id ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                  {expanded === s.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </div>
               </button>
               <SubmissionHandling password={password} submission={s} onChanged={load} />
@@ -957,7 +957,7 @@ export function IntegrationsTab({ password }: { password: string }) {
       <Suspense fallback={null}>
         <VoiceTranscriptionPicker password={password} />
       </Suspense>
-      {loading && !data ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div> : (
+      {loading && !data ? <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading…</Trans></div> : (
         <div className="w-full space-y-5">
           {/* The one value that flows the OTHER way: what to paste into Stripe. */}
           <div className="bg-teal-deep/5 border border-teal-deep/20 rounded-xl p-4">
@@ -1079,7 +1079,7 @@ export function IntegrationsTab({ password }: { password: string }) {
                   </ul>
                 )}
                 {c.support?.party === "vendor" && (
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     <Trans context="Admin, p">Supported by {c.support.vendorName}:{" "}
                     <a href={c.support.supportUrl} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:underline">{c.support.supportUrl}</a>
                     {c.support.supportEmail ? ` · ${c.support.supportEmail}` : ""}</Trans>
@@ -1098,8 +1098,8 @@ export function IntegrationsTab({ password }: { password: string }) {
                     )}
                   </p>
                 )}
-                {c.builtBy && <p className="text-xs text-gray-400 mt-1"><Trans context="Admin, p">Built by {c.builtBy}</Trans></p>}
-                {c.getAt && <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">Get it at: {c.getAt}</Trans></p>}
+                {c.builtBy && <p className="text-xs text-muted-foreground mt-1"><Trans context="Admin, p">Built by {c.builtBy}</Trans></p>}
+                {c.getAt && <p className="text-xs text-muted-foreground mt-2"><Trans context="Admin, p">Get it at: {c.getAt}</Trans></p>}
               </div>
             );
           })}
@@ -1445,9 +1445,9 @@ function InvestorVaultTab({ password }: { password: string }) { const { t } = us
       </form>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : docs.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-muted-foreground">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p><Trans context="Admin, p">No documents in the vault yet.</Trans></p>
         </div>
@@ -1476,7 +1476,7 @@ function InvestorVaultTab({ password }: { password: string }) { const { t } = us
                     </a>
                   )}
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5 truncate">
+                <div className="text-xs text-muted-foreground mt-0.5 truncate">
                   {d.url.split("/").pop()}
                   {d.uploadedAt ? ` · ${new Date(d.uploadedAt).toLocaleDateString()}` : ""}
                 </div>
@@ -1488,13 +1488,13 @@ function InvestorVaultTab({ password }: { password: string }) { const { t } = us
                   onChange={(e) => setInPacket(d.id, e.target.checked)}
                   className="w-4 h-4 accent-teal-deep cursor-pointer"
                 />
-                <span className={`text-xs font-medium ${d.inPacket ? "text-teal-deep" : "text-gray-400"}`}>
+                <span className={`text-xs font-medium ${d.inPacket ? "text-teal-deep" : "text-muted-foreground"}`}>
                   {d.inPacket ? "In the packet" : "Private"}
                 </span>
               </label>
               <button
                 onClick={() => remove(d.id)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -1605,7 +1605,7 @@ function UploadedFilesTab({ password }: { password: string }) { const { t } = us
       </div>
 
       {loading || !report ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Looking...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Looking...</Trans></div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -1631,7 +1631,7 @@ function UploadedFilesTab({ password }: { password: string }) { const { t } = us
             </div>
           </div>
 
-          <p className="text-xs text-gray-400 mb-6">
+          <p className="text-xs text-muted-foreground mb-6">
             <Trans context="Admin, p">Read at {new Date(report.scannedAt).toLocaleString()} against {report.scan.columns} column(s) of{" "}
             {report.scan.tables} table(s), {report.scan.values} stored value(s). A file is left alone for its first{" "}
             {report.graceDays} days and for as long as any row points at it.{" "}
@@ -1947,7 +1947,7 @@ function TrainingModulesTab({ password }: { password: string }) { const { t } = 
       {editingId === "new" && <div className="mb-6">{renderForm()}</div>}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-2">
           {mods.map((m) => editingId === m.id ? (
@@ -1956,13 +1956,13 @@ function TrainingModulesTab({ password }: { password: string }) { const { t } = 
             <div key={m.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-5 py-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-gray-400 w-6">#{m.order}</span>
+                  <span className="text-xs font-bold text-muted-foreground w-6">#{m.order}</span>
                   <span className="font-medium text-gray-900 truncate">{m.title}</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-deep/10 text-teal-deep">
                     {m.type}
                   </span>
                 </div>
-                {m.url && <div className="text-xs text-gray-400 mt-0.5 truncate">{m.url}</div>}
+                {m.url && <div className="text-xs text-muted-foreground mt-0.5 truncate">{m.url}</div>}
               </div>
               <div className="flex items-center gap-1">
                 <button
@@ -1973,7 +1973,7 @@ function TrainingModulesTab({ password }: { password: string }) { const { t } = 
                 </Trans></button>
                 <button
                   onClick={() => remove(m.id)}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -2121,9 +2121,9 @@ function FaqAdminTab({ password }: { password: string }) { const { t } = useLing
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">No questions yet.</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">No questions yet.</Trans></div>
       ) : (
         <div className="space-y-2">
           {items.map((item, idx) => (
@@ -2145,7 +2145,7 @@ function FaqAdminTab({ password }: { password: string }) { const { t } = useLing
                       className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-deep/40 resize-y" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => remove(item.id)} aria-label={t({ message: "Remove this question", context: "Admin, aria-label" })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                    <button onClick={() => remove(item.id)} aria-label={t({ message: "Remove this question", context: "Admin, aria-label" })} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -2328,12 +2328,12 @@ function MilestonesAdminTab({ password }: { password: string }) { const { t } = 
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-6">
           {Object.entries(grouped).map(([phase, mils]) => (
             <div key={phase}>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{phase}</h3>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">{phase}</h3>
               <div className="space-y-2">
                 {mils.map((m) => (
                   <div key={m.id} className="border border-gray-200 rounded-xl p-4 space-y-2">
@@ -2354,7 +2354,7 @@ function MilestonesAdminTab({ password }: { password: string }) { const { t } = 
                           className="w-full text-sm text-gray-600 px-2 py-1 border border-transparent hover:border-gray-200 rounded focus:border-teal-deep/40 focus:outline-none resize-y mt-1"
                         />
                       </div>
-                      <button onClick={() => remove(m.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0">
+                      <button onClick={() => remove(m.id)} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -2399,7 +2399,7 @@ function MilestonesAdminTab({ password }: { password: string }) { const { t } = 
                       if (d === null) return null;
                       const isStale = m.status === "in-progress" && d >= STALE_AFTER_DAYS;
                       return (
-                        <p className={`text-[11px] ${isStale ? "text-amber-600 font-medium" : "text-gray-400"}`}>
+                        <p className={`text-[11px] ${isStale ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                           {d === 0 ? "Updated today" : `Updated ${d} day${d === 1 ? "" : "s"} ago`}
                           {isStale && ", worth a fresh look"}
                         </p>
@@ -2489,7 +2489,7 @@ function VisitAdminTab({ password }: { password: string }) { const { t } = useLi
         </button>
       </div>
       {loading || !cfg ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-6">
           <div>
@@ -2608,7 +2608,7 @@ function InvestorSummaryAdminTab({ password }: { password: string }) { const { t
         </button>
       </div>
       {loading || !cfg ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
       ) : (
         <div className="space-y-5">
           <div>
@@ -2625,7 +2625,7 @@ function InvestorSummaryAdminTab({ password }: { password: string }) { const { t
             <div className="space-y-3">
               {cfg.details.map((d, idx) => (
                 <div key={d.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-                  <div className="text-xs uppercase tracking-widest text-gray-400">{d.id}</div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">{d.id}</div>
                   <input type="text" value={d.label} onChange={(e) => updateDetail(idx, { label: e.target.value })} placeholder={t({ message: "Label", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   <input type="text" value={d.value} onChange={(e) => updateDetail(idx, { value: e.target.value })} placeholder={t({ message: "Value (large text)", context: "Admin, placeholder" })} className="w-full px-3 py-2 text-sm font-semibold border border-gray-200 rounded-lg" />
                   <textarea value={d.note} onChange={(e) => updateDetail(idx, { note: e.target.value })} placeholder={t({ message: "Explanation note", context: "Admin, placeholder" })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
@@ -2859,7 +2859,7 @@ export function VillageBrainTab({ password }: { password: string }) { const { t 
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-medium text-gray-900">{s.title}</h4>
-                  <span className="text-xs text-gray-400">{s.id}</span>
+                  <span className="text-xs text-muted-foreground">{s.id}</span>
                   {s.minimum && (
                     <span className="text-xs bg-amber-50 text-amber-700 rounded px-1.5 py-0.5"><Trans context="Admin, span">essential</Trans></span>
                   )}
@@ -2911,7 +2911,7 @@ export function VillageBrainTab({ password }: { password: string }) { const { t 
                   <Trans context="Admin, button">Save without confirming
                 </Trans></button>
               )}
-              {s.revision > 1 && <span className="text-xs text-gray-400"><Trans context="Admin, span">revision {s.revision}</Trans></span>}
+              {s.revision > 1 && <span className="text-xs text-muted-foreground"><Trans context="Admin, span">revision {s.revision}</Trans></span>}
             </div>
           </div>
         );
@@ -3149,7 +3149,7 @@ function SeasonPatternsTab({ password }: { password: string }) { const { t } = u
     } finally { setBusy(false); }
   };
 
-  if (!data) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div>;
+  if (!data) return <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading…</Trans></div>;
 
   const members: any[] = data.members ?? [];
   const inCurrent = (kind: string, id: string) =>
@@ -3204,7 +3204,7 @@ function SeasonPatternsTab({ password }: { password: string }) { const { t } = u
             onClick={async () => { const made = await call("/admin/seasons/patterns", { name: newName }); if (made) setNewName(""); void load(); }}
             className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40"><Trans context="Admin, button">Create</Trans></button>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           <Trans context="Admin, p">A shape becomes a season's by setting its id on the season itself, in Admin, Season.
         </Trans></p>
       </div>
@@ -3222,7 +3222,7 @@ function SeasonPatternsTab({ password }: { password: string }) { const { t } = u
                 <input type="checkbox" checked={inCurrent(r.kind, r.id)}
                   onChange={(e) => void toggle(r.kind, r.id, e.target.checked)} />
                 <span className={governed(r.kind, r.id) ? "" : "text-gray-500"}>{r.name}</span>
-                <span className="text-[11px] text-gray-400">
+                <span className="text-[11px] text-muted-foreground">
                   {r.kind === "circle" ? "circle" : "role"}
                   {!governed(r.kind, r.id) && " · permanent"}
                 </span>
@@ -3296,7 +3296,7 @@ function SeasonPatternsTab({ password }: { password: string }) { const { t } = u
               <div key={o.id} className="border-l-2 border-gray-200 pl-3">
                 <p className="text-sm font-medium text-gray-900">{o.name}</p>
                 <p className="text-xs text-gray-600">{o.reading}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{o.meaning}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{o.meaning}</p>
                 <p className="text-[11px] text-teal-deep mt-1">{String(o.action).replace(/_/g, " ")}</p>
               </div>
             ))}
@@ -3404,7 +3404,7 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
           concierge couldn't route (your role-creation demand signal).
         </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : (
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
             <Trans context="Admin, div">Pre-scale requirement: a per-member block list for the contact relay is
@@ -3417,12 +3417,12 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold text-gray-900 text-sm">
-                      {c.name} <span className="text-xs text-gray-400 font-mono">{c.id}</span>
+                      {c.name} <span className="text-xs text-muted-foreground font-mono">{c.id}</span>
                       {(c as any).isExample && <ExampleChip className="ml-2 align-middle" />}
                     </h3>
                     <p className="text-xs text-gray-500">{c.purpose}</p>
                   </div>
-                  <span className="text-[10px] uppercase tracking-wide text-gray-400">{c.status}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{c.status}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   {(c.aliases ?? []).map((a: string) => (
@@ -3472,7 +3472,7 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
           <div className="grid md:grid-cols-2 gap-4">
             <div className="border border-gray-200 rounded-xl p-4">
               <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="Admin, h3">Unrouted concierge asks</Trans></h3>
-              {unmatched.length === 0 ? <p className="text-xs text-gray-400"><Trans context="Admin, p">None. The map covers what people ask for.</Trans></p> : (
+              {unmatched.length === 0 ? <p className="text-xs text-muted-foreground"><Trans context="Admin, p">None. The map covers what people ask for.</Trans></p> : (
                 <ul className="space-y-1 text-xs text-gray-600">
                   {unmatched.slice(0, 12).map((q: any) => (
                     <li key={q.id}>"{q.query}" <span className="text-gray-300">· {new Date(q.created_at).toLocaleDateString()}</span></li>
@@ -3482,12 +3482,12 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
             </div>
             <div className="border border-gray-200 rounded-xl p-4">
               <h3 className="font-semibold text-gray-900 text-sm mb-2"><Trans context="Admin, h3">Contact relay log</Trans></h3>
-              {contacts.length === 0 ? <p className="text-xs text-gray-400"><Trans context="Admin, p">No introductions yet.</Trans></p> : (
+              {contacts.length === 0 ? <p className="text-xs text-muted-foreground"><Trans context="Admin, p">No introductions yet.</Trans></p> : (
                 <ul className="space-y-1 text-xs text-gray-600">
                   {contacts.slice(0, 12).map((ct: any) => (
                     <li key={ct.id}>
                       {ct.from_user_id.slice(-6)} → {ct.to_user_id.slice(-6)}
-                      <span className={`ml-2 ${ct.email_status === "sent" ? "text-emerald-600" : ct.email_status === "failed" ? "text-red-500" : "text-gray-400"}`}>
+                      <span className={`ml-2 ${ct.email_status === "sent" ? "text-emerald-600" : ct.email_status === "failed" ? "text-red-500" : "text-muted-foreground"}`}>
                         {ct.email_status}
                       </span>
                     </li>
@@ -3644,7 +3644,7 @@ function ToolsAdminTab({ password }: { password: string }) { const { t } = useLi
           {checking ? "Checking…" : "Check links now"}
         </button>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : (
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           {/* The category list the tool form's picker reads. Validated on every
               write, refused by name when a tool names one that is missing, and
@@ -3667,7 +3667,7 @@ function ToolsAdminTab({ password }: { password: string }) { const { t } = useLi
                     <td className="px-4 py-2.5">
                       <span className="font-medium text-gray-900">{t.name}</span>
                       {t.isExample && <ExampleChip className="ml-2 align-middle" />}
-                      <div className="text-xs text-gray-400">{t.purpose}</div>
+                      <div className="text-xs text-muted-foreground">{t.purpose}</div>
                     </td>
                     <td className="px-4 py-2.5 text-xs text-gray-600">
                       {t.visibility}{t.visibility === "roles" ? `: ${(t.roleIds ?? []).join(", ")}` : ""}
@@ -3675,15 +3675,15 @@ function ToolsAdminTab({ password }: { password: string }) { const { t } = useLi
                     <td className="px-4 py-2.5 text-gray-600">{t.clicks?.d30 ?? 0}</td>
                     <td className="px-4 py-2.5">{statusDot(t)}</td>
                     <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                      <button onClick={() => move(t.id, -1)} disabled={i === 0} className="text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1">↑</button>
-                      <button onClick={() => move(t.id, 1)} disabled={i === (data?.tools ?? []).length - 1} className="text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30 px-1">↓</button>
+                      <button onClick={() => move(t.id, -1)} disabled={i === 0} className="text-xs text-muted-foreground hover:text-gray-700 disabled:opacity-30 px-1">↑</button>
+                      <button onClick={() => move(t.id, 1)} disabled={i === (data?.tools ?? []).length - 1} className="text-xs text-muted-foreground hover:text-gray-700 disabled:opacity-30 px-1">↓</button>
                       <button onClick={() => { setEditingId(t.id); setForm({ ...EMPTY_TOOL, ...t }); }} className="text-xs text-teal-deep font-medium px-2"><Trans context="Admin, button">Edit</Trans></button>
                       <button onClick={() => remove(t.id)} className="text-xs text-red-500 px-1"><Trans context="Admin, button">Remove</Trans></button>
                     </td>
                   </tr>
                 ))}
                 {(data?.tools ?? []).length === 0 && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs"><Trans context="Admin, td">No tools yet. Add the first one below.</Trans></td></tr>
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground text-xs"><Trans context="Admin, td">No tools yet. Add the first one below.</Trans></td></tr>
                 )}
               </tbody>
             </table>
@@ -3936,12 +3936,12 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
             <div key={a.id} className={`border rounded-lg p-4 ${a.active ? "border-gray-200" : "border-gray-100 opacity-60"}`}>
               <div className="flex items-center justify-between mb-2">
                 <p className="font-medium text-gray-900">
-                  {a.name} {!a.active && <span className="text-xs text-gray-400"><Trans context="Admin, span">(inactive)</Trans></span>}
+                  {a.name} {!a.active && <span className="text-xs text-muted-foreground"><Trans context="Admin, span">(inactive)</Trans></span>}
                   {a.isExample && <ExampleChip className="ml-2 align-middle" />}
                   {/* Capacity was recorded and never shown anywhere. A flag,
                       not a block: whoever activates a stay is the one who
                       knows whether the room is really full. */}
-                  <span className={`ml-2 text-xs font-normal ${a.overCapacity ? "text-amber-700" : "text-gray-400"}`}>
+                  <span className={`ml-2 text-xs font-normal ${a.overCapacity ? "text-amber-700" : "text-muted-foreground"}`}>
                     <Trans context="Admin, span">{a.activeStays ?? 0} of {a.capacity} {a.overCapacity ? "over capacity" : "in residence"}</Trans>
                   </span>
                 </p>
@@ -4047,7 +4047,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
         <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Stays</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-400">
+            <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-1 pr-3"><Trans context="Admin, th">Guest</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Room</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Rate</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Balance</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Nights left</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Autopay</Trans></th><th className="py-1" />
@@ -4108,7 +4108,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
               ))}
             </tbody>
           </table>
-          {(data?.stays ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No stays yet.</Trans></p>}
+          {(data?.stays ?? []).length === 0 && <p className="text-sm text-muted-foreground py-3"><Trans context="Admin, p">No stays yet.</Trans></p>}
         </div>
       </div>
 
@@ -4161,7 +4161,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
         <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Purchases</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-400">
+            <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-1 pr-3"><Trans context="Admin, th">When</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Nights</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Paid</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Credits</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Via</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th><th className="py-1" />
@@ -4189,7 +4189,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
               ))}
             </tbody>
           </table>
-          {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No purchases yet.</Trans></p>}
+          {(data?.purchases ?? []).length === 0 && <p className="text-sm text-muted-foreground py-3"><Trans context="Admin, p">No purchases yet.</Trans></p>}
         </div>
       </div>
 
@@ -4209,7 +4209,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
           </div>
         ))}
         {(payments?.suspensions ?? []).filter((s: any) => !s.lifted_at).length === 0 && (
-          <p className="text-sm text-gray-400"><Trans context="Admin, p">No active suspensions.</Trans></p>
+          <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No active suspensions.</Trans></p>
         )}
         {(payments?.log ?? []).length > 0 && (
           <details className="mt-3">
@@ -4463,7 +4463,7 @@ function ExchangeAdminTab({ password }: { password: string }) { const { t } = us
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <p className="font-medium text-gray-900">
-                      {t.name} <span className="text-xs text-gray-400">({t.slug} · {t.kind})</span>
+                      {t.name} <span className="text-xs text-muted-foreground">({t.slug} · {t.kind})</span>
                     </p>
                     {t.reason ? (
                       <p className="text-xs text-amber-700 mt-0.5">{t.reason}</p>
@@ -4565,7 +4565,7 @@ function ExchangeAdminTab({ password }: { password: string }) { const { t } = us
                             </Trans></button>
                           )}
                         </div>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           <Trans context="Admin, p">0 means ZERO, never unlimited. A cap of 0 keeps this token from being
                           swapped out at all, even while it is open. The spread the village keeps
                           on every swap is one setting for all tokens, in basis points: Game
@@ -4654,7 +4654,7 @@ function ExchangeAdminTab({ password }: { password: string }) { const { t } = us
         <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Orders</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-400">
+            <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-1 pr-3">#</th><th className="py-1 pr-3"><Trans context="Admin, th">When</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Token</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Qty</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Paid</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
             </tr></thead>
@@ -4672,14 +4672,14 @@ function ExchangeAdminTab({ password }: { password: string }) { const { t } = us
                   </td>
                   {/* A swap's amount_minor is a VALUATION, not a charge. */}
                   <td className="py-2 pr-3">
-                    {o.kind === "swap" ? <span className="text-gray-400"><Trans context="Admin, span">{money(o.amount_minor)} of value</Trans></span> : money(o.amount_minor)}
+                    {o.kind === "swap" ? <span className="text-muted-foreground"><Trans context="Admin, span">{money(o.amount_minor)} of value</Trans></span> : money(o.amount_minor)}
                   </td>
                   <td className={`py-2 pr-3 ${["disputed", "reversed"].includes(o.status) ? "text-red-600 font-semibold" : ""}`}>{o.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {(data?.orders ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No orders yet.</Trans></p>}
+          {(data?.orders ?? []).length === 0 && <p className="text-sm text-muted-foreground py-3"><Trans context="Admin, p">No orders yet.</Trans></p>}
         </div>
         {(data?.priceHistory ?? []).length > 0 && (
           <details className="mt-3">
@@ -4806,7 +4806,7 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
           {(data?.badges ?? []).map((b: any) => (
             <BadgeDefinitionRow key={b.id} badge={b} call={call} onSaved={load} />
           ))}
-          {(data?.badges ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No badges yet.</Trans></p>}
+          {(data?.badges ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No badges yet.</Trans></p>}
         </div>
 
         <div className="border-t border-gray-100 pt-4 space-y-3">
@@ -4937,7 +4937,7 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
         <h3 className="font-semibold text-gray-900 mb-2"><Trans context="Admin, h3">Current awards</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-400">
+            <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-1 pr-3"><Trans context="Admin, th">Member</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Badge</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Tier</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">By</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Note</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Expires</Trans></th><th className="py-1" />
             </tr></thead>
@@ -4945,7 +4945,7 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
               {(data?.awards ?? []).map((a: any) => (
                 <tr key={a.id} className={`border-t border-gray-50 ${a.badge_kind === "warning" ? "bg-red-50/50" : ""}`}>
                   <td className="py-2 pr-3 font-medium text-gray-900">{a.user_name ?? "(anonymized)"}</td>
-                  <td className="py-2 pr-3">{a.badge_name} <span className="text-xs text-gray-400">({a.badge_kind})</span></td>
+                  <td className="py-2 pr-3">{a.badge_name} <span className="text-xs text-muted-foreground">({a.badge_kind})</span></td>
                   <td className="py-2 pr-3">{a.count > 1 ? `×${a.count}` : "-"}</td>
                   <td className="py-2 pr-3 text-gray-500">{String(a.awarded_by ?? "").startsWith("ballot:") ? "vote" : a.awarded_by ? "steward" : "engine"}</td>
                   <td className="py-2 pr-3 text-gray-500">{a.note ?? ""}</td>
@@ -4961,7 +4961,7 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
               ))}
             </tbody>
           </table>
-          {(data?.awards ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No awards yet.</Trans></p>}
+          {(data?.awards ?? []).length === 0 && <p className="text-sm text-muted-foreground py-3"><Trans context="Admin, p">No awards yet.</Trans></p>}
         </div>
       </div>
     </div>
@@ -5110,7 +5110,7 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
         <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Shelves</Trans></h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-400">
+            <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-1 pr-3"><Trans context="Admin, th">Item</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Value</Trans></th><th className="py-1 pr-3"><Trans context="Admin, th">Status</Trans></th>
               <th className="py-1 pr-3"><Trans context="Admin, th">Donor</Trans></th><th className="py-1" />
             </tr></thead>
@@ -5138,7 +5138,7 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
               ))}
             </tbody>
           </table>
-          {(data?.items ?? []).length === 0 && <p className="text-sm text-gray-400 py-3"><Trans context="Admin, p">No items yet.</Trans></p>}
+          {(data?.items ?? []).length === 0 && <p className="text-sm text-muted-foreground py-3"><Trans context="Admin, p">No items yet.</Trans></p>}
         </div>
       </div>
 
@@ -5179,7 +5179,7 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
               </div>
             </div>
           ))}
-          {liveLoans.length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing out.</Trans></p>}
+          {liveLoans.length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Nothing out.</Trans></p>}
         </div>
         {doneLoans.length > 0 && (
           <details className="mt-4">
@@ -5321,7 +5321,7 @@ function HealthAdminTab({ password }: { password: string }) { const { t } = useL
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {metrics.filter((m) => data?.totals?.[m.key]).map((m) => (
             <div key={m.key} className="border border-gray-200 rounded-lg px-3 py-2">
-              <p className="text-lg font-bold text-gray-900">{Number(data.totals[m.key].total).toLocaleString()} <span className="text-xs font-normal text-gray-400">{data.totals[m.key].unit}</span></p>
+              <p className="text-lg font-bold text-gray-900">{Number(data.totals[m.key].total).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{data.totals[m.key].unit}</span></p>
               <p className="text-xs text-gray-500">{m.label}</p>
             </div>
           ))}
@@ -5331,12 +5331,12 @@ function HealthAdminTab({ password }: { password: string }) { const { t } = useL
             <div key={e.id} className="flex items-center justify-between text-sm border-t border-gray-50 py-1.5">
               <span className="text-gray-600">
                 {new Date(e.recordedAt).toLocaleDateString()}: <b>{e.value} {e.unit}</b> {metrics.find((m) => m.key === e.metricKey)?.label?.toLowerCase() ?? e.metricKey}
-                {e.note ? <span className="text-gray-400"> · {e.note}</span> : null}
+                {e.note ? <span className="text-muted-foreground"> · {e.note}</span> : null}
               </span>
-              <button onClick={() => retract(e.id)} className="text-xs text-gray-400 hover:text-red-600"><Trans context="Admin, button">Withdraw</Trans></button>
+              <button onClick={() => retract(e.id)} className="text-xs text-muted-foreground hover:text-red-600"><Trans context="Admin, button">Withdraw</Trans></button>
             </div>
           ))}
-          {(data?.entries ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing recorded yet.</Trans></p>}
+          {(data?.entries ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Nothing recorded yet.</Trans></p>}
         </div>
       </div>
     </div>
@@ -5517,7 +5517,7 @@ export function ExitsAdminTab({ password }: { password: string }) { const { t } 
             <div key={e.id}>
               <p className="text-sm text-gray-600">
                 <b className="text-gray-900">{e.userName}</b>: {e.kind}, {e.status}{e.formerMember ? ", former member" : ""}
-                <span className="text-xs text-gray-400"> <Trans context="Admin, span">· opened {new Date(e.openedAt).toLocaleDateString()}{e.resolvedAt ? `, closed ${new Date(e.resolvedAt).toLocaleDateString()}` : ""}</Trans></span>
+                <span className="text-xs text-muted-foreground"> <Trans context="Admin, span">· opened {new Date(e.openedAt).toLocaleDateString()}{e.resolvedAt ? `, closed ${new Date(e.resolvedAt).toLocaleDateString()}` : ""}</Trans></span>
                 {e.agreementRef && <span className="text-xs text-teal-deep"> <Trans context="Admin, span">· agreement: {e.agreementRef}</Trans></span>}
               </p>
               {/* THE REASON, WHICH NOTHING SHOWED. `resolution` has been on the
@@ -5533,7 +5533,7 @@ export function ExitsAdminTab({ password }: { password: string }) { const { t } 
               )}
             </div>
           ))}
-          {(data?.exits ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No departures yet, and the policy is already published. Good.</Trans></p>}
+          {(data?.exits ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No departures yet, and the policy is already published. Good.</Trans></p>}
         </div>
       </div>
 
@@ -5579,7 +5579,7 @@ export function ExitsAdminTab({ password }: { password: string }) { const { t } 
               aria-describedby="exit-valuation-hint"
               onChange={(e) => setVol({ valuationMethod: e.target.value })}
               className={`${inputCls} w-full mt-1`} />
-            <span id="exit-valuation-hint" className="block text-[11px] text-gray-400 mt-1">
+            <span id="exit-valuation-hint" className="block text-[11px] text-muted-foreground mt-1">
               <Trans context="Admin, span">What a departing member is owed for what they built, and how it is worked out.
             </Trans></span>
           </label>
@@ -5908,7 +5908,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
             <button key={r.id} onClick={() => setSelected(selected === r.id ? "" : r.id)}
               className={`w-full text-left flex items-center justify-between border rounded-lg px-4 py-2.5 text-sm ${selected === r.id ? "border-teal-deep bg-teal-deep/5" : "border-gray-200 hover:bg-gray-50"}`}>
               <span className="font-medium text-gray-900">
-                {r.title} <span className="text-xs text-gray-400">({r.source})</span>
+                {r.title} <span className="text-xs text-muted-foreground">({r.source})</span>
                 {flagged(r) && <ExampleChip className="ml-2 align-middle" />}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === "published" ? "bg-emerald-50 text-emerald-700" : r.status === "synthesized" ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
@@ -5916,7 +5916,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
               </span>
             </button>
           ))}
-          {(data?.recordings ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing ingested yet.</Trans></p>}
+          {(data?.recordings ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Nothing ingested yet.</Trans></p>}
         </div>
       </div>
 
@@ -5946,7 +5946,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
             <details className="border border-gray-200 rounded-lg" open={!detail.synthesis}>
               <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-gray-900">
                 <Trans context="Admin, summary">Transcript
-                <span className="ml-2 text-xs font-normal text-gray-400">
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
                   {(detail.transcript.segments ?? []).length} segment(s)
                   {detail.recording.durationS ? `, ${fmtTs(detail.recording.durationS * 1000)} long` : ""}
                 </span></Trans>
@@ -5955,7 +5955,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
                 {(detail.transcript.segments ?? []).length > 0 ? (
                   detail.transcript.segments.map((s: any, i: number) => (
                     <p key={i} className="text-sm text-gray-600">
-                      <span className="mr-2 text-xs tabular-nums text-gray-400">{fmtTs(s.startMs ?? 0)}</span>
+                      <span className="mr-2 text-xs tabular-nums text-muted-foreground">{fmtTs(s.startMs ?? 0)}</span>
                       {s.text}
                     </p>
                   ))
@@ -5965,20 +5965,20 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
               </div>
             </details>
           ) : (
-            <p className="text-sm text-gray-400"><Trans context="Admin, p">No transcript yet. Paste one via the transcript endpoint or re-ingest with it.</Trans></p>
+            <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No transcript yet. Paste one via the transcript endpoint or re-ingest with it.</Trans></p>
           )}
 
           {detail.synthesis && (
             <>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1"><Trans context="Admin, p">AI body (write-once, untouchable)</Trans></p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1"><Trans context="Admin, p">AI body (write-once, untouchable)</Trans></p>
                   <div className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3 whitespace-pre-wrap max-h-64 overflow-y-auto">
                     {detail.synthesis.ai_body}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1"><Trans context="Admin, p">Your edit (what actually publishes)</Trans></p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1"><Trans context="Admin, p">Your edit (what actually publishes)</Trans></p>
                   <textarea rows={10} value={bodyDraft} onChange={(e) => setBodyDraft(e.target.value)}
                     disabled={!!detail.synthesis.published_at || exampleDetail}
                     className={`${inputCls} w-full`} />
@@ -5996,12 +5996,12 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
                 <div className="grid md:grid-cols-2 gap-4">
                   {asArray(detail.synthesis.chapters).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2"><Trans context="Admin, p">What the call covered</Trans></p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2"><Trans context="Admin, p">What the call covered</Trans></p>
                       <ol className="space-y-1">
                         {asArray(detail.synthesis.chapters).map((c: any, i: number) => (
                           <li key={i} className="flex gap-2 text-sm text-gray-600">
                             {c?.startMs != null && (
-                              <span className="shrink-0 pt-px text-xs tabular-nums text-gray-400">{fmtTs(c.startMs)}</span>
+                              <span className="shrink-0 pt-px text-xs tabular-nums text-muted-foreground">{fmtTs(c.startMs)}</span>
                             )}
                             <span>{typeof c === "string" ? c : c?.title}</span>
                           </li>
@@ -6011,7 +6011,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
                   )}
                   {asArray(detail.synthesis.decisions).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2"><Trans context="Admin, p">Decisions the call reached</Trans></p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2"><Trans context="Admin, p">Decisions the call reached</Trans></p>
                       <ul className="space-y-1.5">
                         {asArray(detail.synthesis.decisions).map((d: any, i: number) => (
                           <li key={i} className="rounded-lg border border-purple-100 bg-purple-50 px-3 py-2 text-sm text-purple-900">
@@ -6025,7 +6025,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
               )}
 
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                   Suggested tasks, each one evidenced from the tape
                   {detail.synthesis.dropped_task_count > 0 && (
                     <span className="text-amber-700"> <Trans context="Admin, span">· {detail.synthesis.dropped_task_count} suggestion(s) dropped for failing the evidence rule</Trans></span>
@@ -6048,17 +6048,17 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
                               <button onClick={async () => { const d = await call(`/admin/call-tasks/${t.id}/accept`); if (d) loadDetail(selected); }}
                                 className="text-xs text-emerald-700 font-medium hover:underline"><Trans context="Admin, button">Accept</Trans></button>
                               <button onClick={async () => { const d = await call(`/admin/call-tasks/${t.id}/dismiss`); if (d) loadDetail(selected); }}
-                                className="text-xs text-gray-400 hover:text-red-600"><Trans context="Admin, button">Dismiss</Trans></button>
+                                className="text-xs text-muted-foreground hover:text-red-600"><Trans context="Admin, button">Dismiss</Trans></button>
                             </>
                           ) : (
-                            <span className={`text-xs ${t.status === "accepted" ? "text-emerald-700" : "text-gray-400"}`}>{t.status}</span>
+                            <span className={`text-xs ${t.status === "accepted" ? "text-emerald-700" : "text-muted-foreground"}`}>{t.status}</span>
                           )}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1 italic"><Trans context="Admin, p">“{t.quote}”, at {fmtTs(t.timestamp_ms)}</Trans></p>
                     </div>
                   ))}
-                  {detail.tasks.length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No suggestions survived, or none were made.</Trans></p>}
+                  {detail.tasks.length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No suggestions survived, or none were made.</Trans></p>}
                 </div>
               </div>
             </>
@@ -6131,7 +6131,7 @@ function IntentsAdminTab({ password }: { password: string }) {
           quest or module lives in this list.
         </Trans></p>
         {(demand?.unmatchedByTopic ?? []).length === 0 && (
-          <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing is waiting. Every active intent has seen a proposal.</Trans></p>
+          <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Nothing is waiting. Every active intent has seen a proposal.</Trans></p>
         )}
         <div className="flex flex-wrap gap-2">
           {(demand?.unmatchedByTopic ?? []).map((t: any) => (
@@ -6143,8 +6143,8 @@ function IntentsAdminTab({ password }: { password: string }) {
         <ul className="divide-y divide-gray-100">
           {(demand?.unmatched ?? []).map((i: any, idx: number) => (
             <li key={idx} className="py-2 text-sm text-gray-700">
-              <span className="text-xs uppercase text-gray-400 mr-2">{i.kind}</span>
-              {i.text ?? <span className="italic text-gray-400"><Trans context="Admin, span">incognito: topics only ({(i.topics ?? []).join(", ") || "untagged"})</Trans></span>}
+              <span className="text-xs uppercase text-muted-foreground mr-2">{i.kind}</span>
+              {i.text ?? <span className="italic text-muted-foreground"><Trans context="Admin, span">incognito: topics only ({(i.topics ?? []).join(", ") || "untagged"})</Trans></span>}
             </li>
           ))}
         </ul>
@@ -6153,10 +6153,10 @@ function IntentsAdminTab({ password }: { password: string }) {
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
         <h3 className="font-semibold text-gray-900"><Trans context="Admin, h3">The concierge's own gaps</Trans></h3>
         {mapOff ? (
-          <p className="text-sm text-gray-400"><Trans context="Admin, p">The map is off, so there is no concierge log to read.</Trans></p>
+          <p className="text-sm text-muted-foreground"><Trans context="Admin, p">The map is off, so there is no concierge log to read.</Trans></p>
         ) : (
           <>
-            {(conciergeGaps ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No unmatched queries.</Trans></p>}
+            {(conciergeGaps ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No unmatched queries.</Trans></p>}
             <ul className="divide-y divide-gray-100">
               {(conciergeGaps ?? []).slice(0, 30).map((q: any) => (
                 <li key={q.id} className="py-2 text-sm text-gray-700">{q.query}</li>
@@ -6377,7 +6377,7 @@ function CyclesTab({ password }: { password: string }) { const { t } = useLingui
                     <Trans context="Admin, p">{openCycle.daysRemaining} {openCycle.daysRemaining === 1 ? "day" : "days"} left.
                     {openCycle.moonPhaseName ? ` The moon is ${String(openCycle.moonPhaseName).toLowerCase()}.` : ""}</Trans>
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     <Trans context="Admin, p">A lunation settles once it has ended. This one is still running.
                   </Trans></p>
                 </>
@@ -6618,14 +6618,14 @@ function CyclesTab({ password }: { password: string }) { const { t } = useLingui
                         : ""}
                       .
                     </p>
-                    <p className="text-xs text-gray-400 mt-1 break-words">
+                    <p className="text-xs text-muted-foreground mt-1 break-words">
                       {(c.totals ?? []).map((t: any) => `${t.name} ${t.received}`).join(" · ")}
                     </p>
                   </div>
                 ))}
               </div>
             )}
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-muted-foreground mt-3">
               <Trans context="Admin, p">This is the report the founders carry to Hypha, where the project's real
               value is governed. It is public, and it carries first names only.
             </Trans></p>
@@ -6668,7 +6668,7 @@ function LedgerTab({ password }: { password: string }) {
           <Trans context="Admin, button">Re-check
         </Trans></button>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div> : !data ? (
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div> : !data ? (
         <p className="text-sm text-red-600"><Trans context="Admin, p">Could not load reconciliation.</Trans></p>
       ) : (
         <div className="space-y-6">
@@ -6700,14 +6700,14 @@ function LedgerTab({ password }: { password: string }) {
               <tbody>
                 {(data.tokens ?? []).map((t: any) => (
                   <tr key={t.tokenType} className="border-t border-gray-100">
-                    <td className="px-4 py-2 font-medium text-gray-900">{t.name} <span className="text-xs text-gray-400 font-mono">{t.tokenType}</span></td>
+                    <td className="px-4 py-2 font-medium text-gray-900">{t.name} <span className="text-xs text-muted-foreground font-mono">{t.tokenType}</span></td>
                     <td className="px-4 py-2 text-gray-600">{t.transfers}</td>
                     <td className="px-4 py-2 text-gray-600">{t.volume}</td>
                     <td className="px-4 py-2 text-gray-600">{t.heldByMembers}</td>
                   </tr>
                 ))}
                 {(data.tokens ?? []).length === 0 && (
-                  <tr><td colSpan={4} className="px-4 py-4 text-center text-gray-400 text-xs"><Trans context="Admin, td">No transfers yet.</Trans></td></tr>
+                  <tr><td colSpan={4} className="px-4 py-4 text-center text-muted-foreground text-xs"><Trans context="Admin, td">No transfers yet.</Trans></td></tr>
                 )}
               </tbody>
             </table>
@@ -6730,7 +6730,7 @@ function LedgerTab({ password }: { password: string }) {
                     <td className="px-4 py-2">
                       <span className="font-mono text-xs text-gray-700">{s.id}</span>
                       {s.faucet && <span className="ml-2 text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full"><Trans context="Admin, span">faucet</Trans></span>}
-                      <div className="text-xs text-gray-400">{s.label}</div>
+                      <div className="text-xs text-muted-foreground">{s.label}</div>
                     </td>
                     <td className="px-4 py-2 text-gray-600 font-mono text-xs">{s.tokenType ?? "-"}</td>
                     <td className="px-4 py-2 text-gray-600">{s.balance ?? "-"}</td>
@@ -6795,7 +6795,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
     } catch { setSaving(false); return { ok: false, reason: "The seasons did not reach the server." }; }
   };
 
-  if (!cfg) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
+  if (!cfg) return <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>;
   const seasonChanges = changedKeys(base, cfg, ["cadence", "timezone"]).length + Math.abs((cfg.seasons ?? []).length - (base.seasons ?? []).length) +
     (cfg.seasons ?? []).filter((x: any, i: number) => JSON.stringify(x) !== JSON.stringify((base.seasons ?? [])[i])).length;
 
@@ -6841,7 +6841,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
           >
             {CADENCES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
-          <p className="text-[11px] text-gray-400 mt-1"><Trans context="Admin, p">Used to suggest dates for the next season.</Trans></p>
+          <p className="text-[11px] text-muted-foreground mt-1"><Trans context="Admin, p">Used to suggest dates for the next season.</Trans></p>
         </div>
         <SeasonTimezoneField
           value={cfg.timezone ?? ""}
@@ -6892,7 +6892,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
                           placeholder={t({ message: "What this season is trying to achieve", context: "Admin, placeholder" })}
                           className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg"
                         />
-                        <button onClick={() => update(i, { goals: s.goals.filter((_, xi) => xi !== gi) })} className="text-gray-400 hover:text-red-600 shrink-0">
+                        <button onClick={() => update(i, { goals: s.goals.filter((_, xi) => xi !== gi) })} className="text-muted-foreground hover:text-red-600 shrink-0">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -6914,7 +6914,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
       <button onClick={addSeason} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
         <Plus className="w-4 h-4" /> Queue the next season
         {cfg.suggestion?.endsOn && (
-          <span className="text-xs text-gray-400">({cfg.suggestion.startsOn} → {cfg.suggestion.endsOn})</span>
+          <span className="text-xs text-muted-foreground">({cfg.suggestion.startsOn} → {cfg.suggestion.endsOn})</span>
         )}
       </button>
       <SaveBar count={saving ? Math.max(seasonChanges, 1) : seasonChanges} onSave={() => save()} onDiscard={() => setCfg(base)} />
@@ -6982,7 +6982,7 @@ function BrandImageField({
       <div className="relative aspect-[16/9] w-full rounded-lg bg-gray-100 overflow-hidden border border-gray-200 mb-2">
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-[11px] text-gray-400"><Trans context="Admin, div">No image yet</Trans></div>}
+          : <div className="w-full h-full flex items-center justify-center text-[11px] text-muted-foreground"><Trans context="Admin, div">No image yet</Trans></div>}
         {uploading && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs text-gray-600">
             <Trans context="Admin, div">Compressing…
@@ -7036,7 +7036,7 @@ function BrandImageField({
       )}
 
       {note && <p className="text-[11px] text-emerald-600 mt-1">{note}</p>}
-      <p className="text-[11px] text-gray-400 mt-0.5">
+      <p className="text-[11px] text-muted-foreground mt-0.5">
         <Trans context="Admin, p">Landscape works best. Big photos are resized and compressed automatically.
       </Trans></p>
     </div>
@@ -7100,7 +7100,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
     void saveBrand("setup", { setup: next }).then((why) => { if (why) toast.error(why); });
   };
 
-  if (!brand || !defaults) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
+  if (!brand || !defaults) return <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>;
 
   /* Identity and Pictures are read from `brand`; the other four still come from
      the flags a founder ticks. See client/src/components/admin/setupProgress.ts. */
@@ -7242,7 +7242,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             writes it. The route merges rather than replaces, so an old stored
             value stays exactly where it is; nothing reads it, and this screen
             no longer adds to it. */}
-        <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">Instantly updates the game layer (profile, recognition, season banner, pulse). Page marketing copy is edited under Content below.</Trans></p>
+        <p className="text-xs text-muted-foreground mt-2"><Trans context="Admin, p">Instantly updates the game layer (profile, recognition, season banner, pulse). Page marketing copy is edited under Content below.</Trans></p>
       </SetupSection>
 
       {/* 0219: the sentence every later change is judged against, and the one
@@ -7267,7 +7267,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             "A tab icon has no alt text. Browsers name the tab from the page title, so there is nothing here for a screen reader to read.",
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-2"><Trans context="Admin, p">The logo, footer mark and tab icon apply live, no deploy. Alt text ships with the pictures and is what a screen reader reads aloud in place of the image. What a shared link shows (its sentence and picture) is set in Make it yours, Pages, Whole site, and falls back to your Tagline and homepage picture.</Trans></p>
+        <p className="text-xs text-muted-foreground mt-2"><Trans context="Admin, p">The logo, footer mark and tab icon apply live, no deploy. Alt text ships with the pictures and is what a screen reader reads aloud in place of the image. What a shared link shows (its sentence and picture) is set in Make it yours, Pages, Whole site, and falls back to your Tagline and homepage picture.</Trans></p>
         {/* Typography lives with Pictures: both are "how the village looks".
             Self-contained component — see client/src/components/TypographyPanel.tsx. */}
         <LookPanel password={password} />
@@ -7399,7 +7399,7 @@ function SettingsTab({ password }: { password: string }) { const { t } = useLing
     } catch { return { ok: false, reason: "The save could not reach the server." }; }
   };
 
-  if (!settings) return <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading...</Trans></div>;
+  if (!settings) return <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>;
 
   const dues = settings.villageDues ?? {};
   const setDues = (patch: any) => setSettings({ ...settings, villageDues: { ...dues, ...patch } });
@@ -7502,7 +7502,7 @@ function SettingsTab({ password }: { password: string }) { const { t } = useLing
             <div key={f.key} className="grid grid-cols-[1fr_1fr] gap-3 items-end">
               <div>
                 <label className="text-xs font-medium text-gray-500 block mb-1">
-                  {f.label} <span className="text-gray-400">({f.where})</span>
+                  {f.label} <span className="text-muted-foreground">({f.where})</span>
                 </label>
                 <input
                   type="text"
@@ -7573,7 +7573,7 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
           Money flows in only. The public page is /contribute.
         </Trans></p>
       </div>
-      {loading && !data ? <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div> : (
+      {loading && !data ? <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading…</Trans></div> : (
         <div className="space-y-6 max-w-3xl">
           <div className="bg-white border border-gray-100 rounded-xl p-5">
             <h3 className="font-semibold text-gray-900 mb-3"><Trans context="Admin, h3">Products</Trans></h3>
@@ -7582,7 +7582,7 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
                 <div key={p.id} className="border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {p.name} <span className="text-xs text-gray-400">({p.kind}{p.recurring !== "none" ? ` · ${p.recurring}ly` : ""} · {p.provider})</span>
+                      {p.name} <span className="text-xs text-muted-foreground">({p.kind}{p.recurring !== "none" ? ` · ${p.recurring}ly` : ""} · {p.provider})</span>
                       {/* The payload is SELECT *, so the flag is snake-cased. */}
                       {!!p.is_example && <ExampleChip className="ml-2 align-middle" />}
                     </p>
@@ -7600,7 +7600,7 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
                   </button>
                 </div>
               ))}
-              {(data?.products ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">Nothing defined yet.</Trans></p>}
+              {(data?.products ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Nothing defined yet.</Trans></p>}
             </div>
 
             <div className="border-t border-gray-100 mt-4 pt-4 grid grid-cols-2 gap-2">
@@ -7674,7 +7674,7 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
                   )}
                 </div>
               ))}
-              {(data?.purchases ?? []).length === 0 && <p className="text-sm text-gray-400"><Trans context="Admin, p">No purchases yet.</Trans></p>}
+              {(data?.purchases ?? []).length === 0 && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">No purchases yet.</Trans></p>}
             </div>
           </div>
         </div>
@@ -7740,9 +7740,9 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
         </Trans></p>
       </div>
       {loading && !data ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="Admin, div">Loading…</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading…</Trans></div>
       ) : (data?.items ?? []).length === 0 ? (
-        <p className="text-sm text-gray-400 py-8"><Trans context="Admin, p">Nothing yet. The door is at /feedback (also linked in the footer).</Trans></p>
+        <p className="text-sm text-muted-foreground py-8"><Trans context="Admin, p">Nothing yet. The door is at /feedback (also linked in the footer).</Trans></p>
       ) : (
         <div className="space-y-3 max-w-3xl">
           {(data?.items ?? []).map((f: any) => (
@@ -7756,7 +7756,7 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
                     {f.title}
                   </p>
                   <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{f.detail}</p>
-                  <p className="text-[11px] text-gray-400 mt-1.5">
+                  <p className="text-[11px] text-muted-foreground mt-1.5">
                     {new Date(f.created_at).toLocaleString()}
                     {f.submitter_name && ` · from ${f.submitter_name}`}
                     {f.page_url && ` · at ${f.page_url}`}

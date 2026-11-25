@@ -133,7 +133,7 @@ export default function VillagePresetsEditor({ password }: { password: string })
 
       <ul className="mt-3 space-y-2">
         {unread && <li className="text-xs text-amber-800">{PRESET_EDITOR_WORDS.unread}</li>}
-        {!unread && rows !== null && rows.length === 0 && <li className="text-xs text-gray-400">{PRESET_EDITOR_WORDS.none}</li>}
+        {!unread && rows !== null && rows.length === 0 && <li className="text-xs text-muted-foreground">{PRESET_EDITOR_WORDS.none}</li>}
         {(rows ?? []).map((r) => {
           const p = readable.get(r.id);
           const headline = p ? settingsWords({ v: 1, [p.group]: p.values } as SeatSettings).find((w) => w.group === p.group)?.headline : null;
@@ -145,7 +145,7 @@ export default function VillagePresetsEditor({ password }: { password: string })
               </span>
               {headline && <span className="text-xs text-gray-600">{headline}</span>}
               {r.retiredAt ? (
-                <span className="ml-auto text-xs text-gray-400">{PRESET_EDITOR_WORDS.retired} {r.retiredAt}</span>
+                <span className="ml-auto text-xs text-muted-foreground">{PRESET_EDITOR_WORDS.retired} {r.retiredAt}</span>
               ) : (
                 <button
                   type="button"

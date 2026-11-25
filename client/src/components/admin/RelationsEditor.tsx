@@ -205,7 +205,7 @@ export default function RelationsEditor({
       </p>
 
       {loading ? (
-        <p className="text-sm text-gray-400 mt-3">Reading the links...</p>
+        <p className="text-sm text-muted-foreground mt-3">Reading the links...</p>
       ) : (
         <>
           <div className="mt-4 space-y-2">

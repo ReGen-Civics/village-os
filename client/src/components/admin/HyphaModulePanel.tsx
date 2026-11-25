@@ -283,7 +283,7 @@ export default function HyphaModulePanel({ password, vars, onVariableSaved }: {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-400"><Trans context="HyphaModulePanel, p">Loading the bridge…</Trans></p>;
+  if (loading) return <p className="text-sm text-muted-foreground"><Trans context="HyphaModulePanel, p">Loading the bridge…</Trans></p>;
   if (!status) return null;
   /*
    * MODULE OFF IS NO LONGER AN EARLY RETURN, and that is the point of the

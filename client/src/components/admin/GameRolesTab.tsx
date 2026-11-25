@@ -207,8 +207,8 @@ export default function GameRolesTab({ password }: { password: string }) {
           still applies, and a group is one of the two ways a member gains capabilities.
         </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="GameRolesTab, div">Loading...</Trans></div> : roles.length === 0 ? (
-        <p className="text-sm text-gray-400"><Trans context="GameRolesTab, p">No power groups yet.</Trans></p>
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="GameRolesTab, div">Loading...</Trans></div> : roles.length === 0 ? (
+        <p className="text-sm text-muted-foreground"><Trans context="GameRolesTab, p">No power groups yet.</Trans></p>
       ) : (
         <div className="space-y-4">
           {roles.map((r) => (
@@ -247,7 +247,7 @@ export default function GameRolesTab({ password }: { password: string }) {
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {(r.holders ?? []).length === 0 && (
-                  <span className="text-xs text-gray-400 italic"><Trans context="GameRolesTab, span">Vacant, an open call</Trans></span>
+                  <span className="text-xs text-muted-foreground italic"><Trans context="GameRolesTab, span">Vacant, an open call</Trans></span>
                 )}
                 {(r.holders ?? []).map((h: any) => (
                   <span key={h.userId} className="inline-flex items-center gap-0.5 text-xs bg-gray-100 text-gray-700 pl-2.5 py-1 rounded-full">

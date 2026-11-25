@@ -228,9 +228,9 @@ export default function QuestsTab({ password }: { password: string }) {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="QuestsTab, div">Loading…</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="QuestsTab, div">Loading…</Trans></div>
       ) : quests.length === 0 ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="QuestsTab, div">No quests on the board yet.</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="QuestsTab, div">No quests on the board yet.</Trans></div>
       ) : (
         <div className="space-y-3">
           {quests.map((q: any) => {

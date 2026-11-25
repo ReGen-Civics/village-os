@@ -276,7 +276,7 @@ export default function WordsEditor({
   };
 
   if (loadError) return <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</p>;
-  if (!detail) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="WordsEditor, p">Loading the words...</Trans></p>;
+  if (!detail) return <p className="py-12 text-center text-sm text-muted-foreground"><Trans context="WordsEditor, p">Loading the words...</Trans></p>;
 
   const box = (name: FieldName) => ({
     ref: (el: HTMLInputElement | HTMLTextAreaElement | null) => {

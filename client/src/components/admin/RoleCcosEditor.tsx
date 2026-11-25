@@ -169,7 +169,7 @@ export default function RoleCcosEditor({
           {CCOS_EDITOR_WORDS.open}
           <span className="ml-2 text-xs font-normal text-gray-500">{CCOS_EDITOR_WORDS.written(written, ROLE_CCOS_FIELDS.length)}</span>
         </span>
-        <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="border-t border-gray-100 p-3 grid gap-2">

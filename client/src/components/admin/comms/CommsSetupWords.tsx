@@ -111,7 +111,7 @@ export function ReplyToEditor(props: EditorProps) {
     return { ok: true };
   };
 
-  if (loading) return <p className="text-sm text-gray-400"><Trans context="CommsSetupWords, p">Loading...</Trans></p>;
+  if (loading) return <p className="text-sm text-muted-foreground"><Trans context="CommsSetupWords, p">Loading...</Trans></p>;
   return (
     <div className="space-y-4">
       <EmailField

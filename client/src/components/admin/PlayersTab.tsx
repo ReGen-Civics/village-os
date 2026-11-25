@@ -169,8 +169,8 @@ export default function PlayersTab({ password }: { password: string }) {
           <Trans context="PlayersTab, p">Everyone with an account: what they may do on this site, and where they stand in village life.
         </Trans></p>
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="PlayersTab, div">Loading...</Trans></div> : players.length === 0 ? (
-        <p className="text-sm text-gray-400"><Trans context="PlayersTab, p">No players yet.</Trans></p>
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="PlayersTab, div">Loading...</Trans></div> : players.length === 0 ? (
+        <p className="text-sm text-muted-foreground"><Trans context="PlayersTab, p">No players yet.</Trans></p>
       ) : (
         <>
           <PersonalListsPanel password={password} players={players} />

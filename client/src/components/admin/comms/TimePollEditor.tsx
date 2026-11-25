@@ -222,7 +222,7 @@ export default function TimePollEditor({
     </div>
   );
 
-  if (!loaded) return <p className="text-xs text-gray-400 mt-3"><Trans context="TimePollEditor, p">Loading...</Trans></p>;
+  if (!loaded) return <p className="text-xs text-muted-foreground mt-3"><Trans context="TimePollEditor, p">Loading...</Trans></p>;
 
   if (!poll) {
     return (
@@ -359,7 +359,7 @@ export default function TimePollEditor({
           <Trans context="TimePollEditor, button">End the vote
         </Trans></button>
       </div>
-      <p className="text-[11px] text-gray-400 mt-2">
+      <p className="text-[11px] text-muted-foreground mt-2">
         <Trans context="TimePollEditor, p">Each person is invited once per vote. Members follow their own email settings.
       </Trans></p>
     </div>

@@ -260,7 +260,7 @@ export default function VariablesTab({ password }: { password: string }) {
               type="button"
               onClick={() => setSearch("")}
               aria-label={t({ message: "Clear search", context: "VariablesTab, aria-label" })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm px-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-600 text-sm px-1"
             >
               ✕
             </button>
@@ -279,11 +279,11 @@ export default function VariablesTab({ password }: { password: string }) {
           </p>
         )}
       </div>
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="VariablesTab, div">Loading...</Trans></div> : (
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="VariablesTab, div">Loading...</Trans></div> : (
         <div className="space-y-8">
           {categoryEntries.map(([cat, list]) => (
             <div key={cat}>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{cat}</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">{cat}</h3>
               <div className="space-y-3">
                 {list.map((v) => {
                   const draft = drafts[v.key] ?? v.value;
@@ -307,11 +307,11 @@ export default function VariablesTab({ password }: { password: string }) {
                           <div className="font-medium text-gray-900 text-sm">
                             {v.label}
                             {v.isDefault && (
-                              <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded"><Trans context="VariablesTab, span">platform default</Trans></span>
+                              <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-muted-foreground px-1.5 py-0.5 rounded"><Trans context="VariablesTab, span">platform default</Trans></span>
                             )}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5 max-w-xl">{v.description}</p>
-                          <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
+                          <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
                             {v.key}
                             {v.min !== undefined && v.max !== undefined && ` · ${v.min}-${v.max}`}
                             {v.unit ? ` ${v.unit}` : ""}

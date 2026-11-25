@@ -48,7 +48,7 @@ export default function CommsJourneys({ password }: { password: string }) {
       </div>
 
       {error && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      {!journeys && !error && <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsJourneys, p">Loading...</Trans></p>}
+      {!journeys && !error && <p className="py-12 text-center text-sm text-muted-foreground"><Trans context="CommsJourneys, p">Loading...</Trans></p>}
 
       {journeys && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">

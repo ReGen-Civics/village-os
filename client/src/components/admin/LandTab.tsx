@@ -299,7 +299,7 @@ export default function LandTab({ password }: { password: string }) {
     await load();
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-400"><Trans context="LandTab, div">Loading...</Trans></div>;
+  if (loading) return <div className="text-center py-12 text-muted-foreground"><Trans context="LandTab, div">Loading...</Trans></div>;
 
   return (
     <div className="space-y-6">
@@ -562,7 +562,7 @@ export default function LandTab({ password }: { password: string }) {
             <Trans context="LandTab, button">Add
           </Trans></button>
           {newLabel.trim() && parcelSlug(newLabel) && (
-            <span className="text-[11px] text-gray-400 font-mono">/{parcelSlug(newLabel)}</span>
+            <span className="text-[11px] text-muted-foreground font-mono">/{parcelSlug(newLabel)}</span>
           )}
         </div>
       </div>
