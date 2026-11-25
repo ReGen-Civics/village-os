@@ -1,0 +1,422 @@
+# The visitor's profile, code sign-in and invitation requests (visitor profile lane, 25 Nov 2026).
+# Every entry is new, for native review.
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: before the member sign-in link"
+msgid "A member with a password?"
+msgstr "¿Eres miembro y tienes contraseña?"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "That did not go through. Check your connection."
+msgstr "No se pudo completar. Revisa tu conexión."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the badge that says this is a visitor, not a member"
+msgid "Visitor"
+msgstr "Visitante"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: pages noted"
+msgid "Pages you opened: {0}"
+msgstr "Páginas que abriste: {0}"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: Google for a visitor who entered with it"
+msgid "Came in with Google? Continue with Google"
+msgstr "¿Entraste con Google? Continúa con Google"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: an application's status"
+msgid "Accepted"
+msgstr "Aceptada"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "sign in: link to a visitor's code sign-in"
+msgid "Sign in with a code"
+msgstr "Inicia sesión con un código"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: heading, with their name"
+msgid "Hi {0}"
+msgstr "Hola, {0}"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: no applications"
+msgid "No applications yet."
+msgstr "Todavía no hay solicitudes."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: no interest chosen"
+msgid "Not said"
+msgstr "Sin indicar"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: details section"
+msgid "What you shared with us"
+msgstr "Lo que compartiste con nosotros"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: an application's status"
+msgid "Waiting for you to confirm your email"
+msgstr "Esperando que confirmes tu correo"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: invitation declined, no words written"
+msgid "Not this time. Thank you for asking."
+msgstr "Esta vez no. Gracias por preguntar."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: promoted"
+msgid "You are a member now. Check your email for the link to set your password, then sign in as a member."
+msgstr "Ya eres miembro. Revisa tu correo para encontrar el enlace y crear tu contraseña; después inicia sesión como miembro."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: an application's status"
+msgid "Withdrawn"
+msgstr "Retirada"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: withdrawn"
+msgid "Your application is withdrawn."
+msgstr "Tu solicitud está retirada."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: delete confirmation field"
+msgid "Type {DELETE_WORD} to confirm"
+msgstr "Escribe {DELETE_WORD} para confirmar"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: delete"
+msgid "Delete my data"
+msgstr "Borrar mis datos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: bulk promote"
+msgid "Promote the {0} picked"
+msgstr "Hacer miembros a los {0} elegidos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the invitation offer"
+msgid "If you want full access and full membership, request an invitation here."
+msgstr "Si quieres acceso completo y ser miembro, pide una invitación aquí."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "Loading the requests."
+msgstr "Cargando las solicitudes."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: details saved"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: select all"
+msgid "Pick every request"
+msgstr "Elegir todas las solicitudes"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: a form they sent"
+msgid "Sent {0}, {1}"
+msgstr "Enviaste {0}, {1}"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: activity section"
+msgid "What you did here"
+msgstr "Lo que hiciste aquí"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: heading"
+msgid "Sign back in with your email"
+msgstr "Vuelve a entrar con tu correo"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: select one"
+msgid "Pick {0}"
+msgstr "Elegir a {0}"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: promote one"
+msgid "Promote to member"
+msgstr "Hacer miembro"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "Promote"
+msgstr "Hacer miembro"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: take the code"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: link to the roles"
+msgid "See the open roles"
+msgstr "Ver los roles abiertos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "Has an account: promoting admits it"
+msgstr "Tiene cuenta: al hacerle miembro se admite esa cuenta"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "sign in: before the visitor's way in"
+msgid "Visiting us, without a member account?"
+msgstr "¿Nos visitas, sin cuenta de miembro?"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: bulk decline"
+msgid "Decline the {0} picked"
+msgstr "Declinar a los {0} elegidos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: an application's status"
+msgid "With us, waiting on a decision"
+msgstr "Con nosotros, esperando una decisión"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: when a declined visitor may ask again"
+msgid "You can ask again from {0}."
+msgstr "Puedes volver a pedirla a partir del {0}."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "portal entrance: a returning visitor signs in by email code"
+msgid "Sign back in with a code"
+msgstr "Vuelve a entrar con un código"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: promoted"
+msgid "Promoted {done} of {0}. Each was emailed a link to set a password and fill out their profile."
+msgstr "Se hizo miembros a {done} de {0}. Cada persona recibió por correo un enlace para crear su contraseña y completar su perfil."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: confirm editing an application, which withdraws and resubmits"
+msgid "Editing withdraws this application and opens the form with your answers, so you can change them and send it again. Any files you attached need attaching again. Go ahead?"
+msgstr "Editar retira esta solicitud y abre el formulario con tus respuestas, para que las cambies y la envíes de nuevo. Los archivos que adjuntaste hay que adjuntarlos otra vez. ¿Seguimos?"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: keep in touch answer"
+msgid "You said no."
+msgstr "Dijiste que no."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: what this is"
+msgid "Visitors who asked for full membership from their visitor profile. Promote makes them a member and emails them a link to set a password. Promoting asks the power to admit members."
+msgstr "Visitantes que pidieron la membresía completa desde su perfil de visitante. Hacer miembro les da su cuenta de miembro y les envía por correo un enlace para crear su contraseña. Para hacerlo hace falta el poder de admitir miembros."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "The requests did not load."
+msgstr "Las solicitudes no se cargaron."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: what delete does"
+msgid "Delete removes your details, your answers and the pages we noted, and takes you off our email list. Applications still waiting are withdrawn; your name and address come off every application 90 days after its decision. Type {DELETE_WORD} to confirm."
+msgstr "Borrar elimina tus datos, tus respuestas y las páginas que anotamos, y te saca de nuestra lista de correo. Las solicitudes que siguen esperando se retiran; tu nombre y dirección se quitan de cada solicitud 90 días después de su decisión. Escribe {DELETE_WORD} para confirmar."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the verified email, not editable"
+msgid "Your email: {0}. Verified {1}."
+msgstr "Tu correo: {0}. Verificado el {1}."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: heading with the count"
+msgid "Invitation requests ({0})"
+msgstr "Solicitudes de invitación ({0})"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: what this page is"
+msgid "You are visiting {village}. This is your visitor profile: what you have shared with us, and your applications. Full membership is by invitation."
+msgstr "Estás visitando {village}. Este es tu perfil de visitante: lo que compartiste con nosotros y tus solicitudes. La membresía completa es por invitación."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: link to the member sign-in"
+msgid "Sign in as a member"
+msgstr "Iniciar sesión como miembro"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "Invitation requests"
+msgstr "Solicitudes de invitación"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: eyebrow"
+msgid "Your visit"
+msgstr "Tu visita"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: eyebrow"
+msgid "Your visit"
+msgstr "Tu visita"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: heading when not signed in"
+msgid "Your visit"
+msgstr "Tu visita"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the invitation section"
+msgid "Full membership"
+msgstr "Membresía completa"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: the code was asked for, naming the address"
+msgid "If {sent} has a visitor profile here, a 6-digit code is on its way to it."
+msgstr "Si {sent} tiene un perfil de visitante aquí, va camino un código de 6 dígitos."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: the note"
+msgid "Their words"
+msgstr "Sus palabras"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: declined"
+msgid "Declined {done} of {0}. They read your words on their profile."
+msgstr "Se declinó a {done} de {0}. Leerán tus palabras en su perfil."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: edit an application"
+msgid "Edit and send again"
+msgstr "Editar y enviar de nuevo"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: applications section"
+msgid "Your applications"
+msgstr "Tus solicitudes"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: sign out"
+msgid "Sign out of your visit on this device"
+msgstr "Cerrar tu visita en este dispositivo"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the invitation button"
+msgid "Request an invitation"
+msgstr "Pedir una invitación"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "No requests waiting."
+msgstr "No hay solicitudes esperando."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: withdraw an application"
+msgid "Withdraw"
+msgstr "Retirar"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: the invitation note"
+msgid "A few words for us"
+msgstr "Unas palabras para nosotros"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "That did not go through."
+msgstr "No se pudo completar."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: keep in touch answer"
+msgid "You said yes."
+msgstr "Dijiste que sí."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: when"
+msgid "Asked"
+msgstr "Pedida"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: not signed in"
+msgid "Sign in with the email you gave us when you entered. We send a 6-digit code to it."
+msgstr "Inicia sesión con el correo que nos diste al entrar. Te enviamos un código de 6 dígitos."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: keep in touch"
+msgid "Updates and opportunities by email"
+msgstr "Noticias y oportunidades por correo"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "The requests did not load. Check your connection."
+msgstr "Las solicitudes no se cargaron. Revisa tu conexión."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "site header: a visitor's link to their visitor profile"
+msgid "Your visit"
+msgstr "Tu visita"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "portal entrance: before the returning visitor's link"
+msgid "Been here before?"
+msgstr "¿Ya estuviste aquí?"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: what happens"
+msgid "No password needed. We send a 6-digit code to the email you gave us when you entered."
+msgstr "No necesitas contraseña. Te enviamos un código de 6 dígitos al correo que nos diste al entrar."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: when an application was sent"
+msgid "Sent {0}"
+msgstr "Enviada el {0}"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: data section"
+msgid "Your data"
+msgstr "Tus datos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: an application's status"
+msgid "Not this time"
+msgstr "Esta vez no"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests: decline words"
+msgid "Words for the people you decline (optional, they read it on their profile)"
+msgstr "Palabras para quienes declinas (opcional, las leen en su perfil)"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: the main button"
+msgid "Send me a code"
+msgstr "Envíame un código"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: keep in touch answer"
+msgid "You have not answered."
+msgstr "No has respondido."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: confirm withdrawing an application"
+msgid "Withdraw this application? It will no longer be considered."
+msgstr "¿Retirar esta solicitud? Dejará de considerarse."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "admin invitation requests"
+msgid "Applications"
+msgstr "Solicitudes"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: save details"
+msgid "Save"
+msgstr "Guardar"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: invitation requested"
+msgid "Your request for an invitation is with us, since {0}. We will let you know."
+msgstr "Tu solicitud de invitación está con nosotros desde el {0}. Te avisaremos."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor profile: export"
+msgid "Download everything we keep"
+msgstr "Descargar todo lo que guardamos"
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: already signed in"
+msgid "This browser is already signed in as a visitor."
+msgstr "Este navegador ya tiene tu sesión de visitante abierta."
+
+# needs-native-review: visitor profile, 2026-11-25
+msgctxt "visitor sign-in: link to the visitor profile"
+msgid "Open your visit"
+msgstr "Abrir tu visita"

@@ -304,6 +304,8 @@ const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
 const SessionSeason = lazyPage(() => import("./pages/SessionSeason"));
 // A fresh start for one device, by a link we hand to a stuck member (lib/deviceReset.ts).
 const Reset = lazyPage(() => import("./pages/Reset"));
+const VisitorProfile = lazyPage(() => import("./pages/VisitorProfile"));
+const VisitorSignIn = lazyPage(() => import("./pages/VisitorSignIn"));
 
 /**
  * Shown while a page chunk arrives: the breathing leaf and a few words
@@ -481,6 +483,9 @@ function Router() {
           class select into a lookup for a member called "characters". */}
       <Route path="/profile/:handle" component={PublicProfile} />
       <Route path="/login" component={Login} />
+      {/* A visitor's own profile and their way back in (shared/visitorProfile.ts). The sign-in is open; the profile stands behind the entrance. */}
+      <Route path="/visitor/sign-in" component={VisitorSignIn} />
+      <Route path="/visitor" component={VisitorProfile} />
       {/* A connector's sign-in (addendum v6, B4): the member allows or refuses. */}
       <Route path="/oauth/authorize" component={OAuthAuthorize} />
       <Route path="/register" component={Register} />
