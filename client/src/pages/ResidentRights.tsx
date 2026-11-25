@@ -112,11 +112,8 @@ export default function ResidentRights() {
       {ownership && !ownership.hidden && (
       <section className="py-16 bg-muted">
         <div className="container max-w-3xl">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className={`${CARD_FEATURED} text-center break-words`}
+          <div
+            className={`m-germ ${CARD_FEATURED} text-center break-words`}
           >
             <Home className="w-10 h-10 text-notice mx-auto mb-4" aria-hidden="true" />
             <h2 lang={langOf("ownership.heading")} className="font-display text-2xl font-semibold text-foreground mb-3">
@@ -125,7 +122,7 @@ export default function ResidentRights() {
             <p lang={langOf("ownership.body")} className="text-muted-foreground leading-relaxed max-w-xl mx-auto">
               <Emphasized text={ownership.fields.body} />
             </p>
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -149,13 +146,9 @@ export default function ResidentRights() {
             {rightsSection.lists.items.map((right, i) => {
               const Icon = RIGHT_ICONS[i % RIGHT_ICONS.length];
               return (
-                <m.div
+                <div
                   key={`${i}-${right.title}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className={CARD}
+                  className={`m-germ ${CARD}`}
                 >
                   <div className="flex items-start gap-4">
                     <span className={`${RING} size-10 flex-shrink-0 mt-0.5`} aria-hidden="true">
@@ -168,7 +161,7 @@ export default function ResidentRights() {
                       </p>
                     </div>
                   </div>
-                </m.div>
+                </div>
               );
             })}
           </div>
@@ -195,13 +188,9 @@ export default function ResidentRights() {
             {responsibilities.lists.items.map((item, i) => {
               const Icon = RESPONSIBILITY_ICONS[i % RESPONSIBILITY_ICONS.length];
               return (
-                <m.div
+                <div
                   key={`${i}-${item.title}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className={CARD}
+                  className={`m-germ ${CARD}`}
                 >
                   <div className="flex items-start gap-4">
                     <span className="inline-flex size-10 flex-shrink-0 mt-0.5 items-center justify-center rounded-full border border-open/50 text-open" aria-hidden="true">
@@ -214,7 +203,7 @@ export default function ResidentRights() {
                       </p>
                     </div>
                   </div>
-                </m.div>
+                </div>
               );
             })}
           </div>
@@ -226,11 +215,8 @@ export default function ResidentRights() {
       {finances && !finances.hidden && (
       <section className="py-20 bg-background">
         <div className="container max-w-3xl">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className={`${CARD_FEATURED} break-words`}
+          <div
+            className={`m-germ ${CARD_FEATURED} break-words`}
           >
             <div className="flex items-center gap-3 mb-5">
               <span className={`${RING} size-10 flex-shrink-0`} aria-hidden="true">
@@ -245,7 +231,7 @@ export default function ResidentRights() {
                 <Emphasized text={para} />
               </p>
             ))}
-          </m.div>
+          </div>
         </div>
       </section>
       )}
@@ -269,13 +255,9 @@ export default function ResidentRights() {
             {progression.lists.stages.map((stage, i) => {
               const Icon = STAGE_ICONS[i % STAGE_ICONS.length];
               return (
-                <m.div
+                <div
                   key={`${i}-${stage.level}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-5 rounded-2xl border border-border bg-card p-5 shadow-sm"
+                  className="m-germ flex items-center gap-5 rounded-2xl border border-border bg-card p-5 shadow-sm"
                 >
                   <span className={`${RING} size-12 flex-shrink-0`} aria-hidden="true">
                     <Icon className="w-6 h-6" />
@@ -293,7 +275,7 @@ export default function ResidentRights() {
                       </span>
                     )}
                   </div>
-                </m.div>
+                </div>
               );
             })}
           </div>

@@ -530,5 +530,6 @@ Relayed by the coordinator, the lead accepting the coordinator's suggestions:
 | Lane | Branch | State |
 |---|---|---|
 | 1, the pure engine and the golden set | `wt/review-engine` | merged, PR #1615 |
-| 2a, migration 0432, the staging and outcomes repos, the erasure step | `wt/review-engine` | built |
-| 2b, `recordOutcome()` at every door, and the backfill of past decisions | | next |
+| 2a, migration 0432, the staging and outcomes repos, the erasure step | `wt/review-engine` | merged, PR #1617 |
+| 2b, outcomes at the connector's doors (accept, discard, the full-access agent's), and the backfill of its past decisions | `wt/review-engine` | built |
+| 2b, the other streams' doors | | each with the lane that moves its stream through staging (7, 8) |

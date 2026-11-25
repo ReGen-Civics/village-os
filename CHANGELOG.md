@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.68 (2026-11-25)
+
+### What changed for your village
+
+- **Motion that rests and never hides content.** Every fade-in now grows in through the shared motion style, so a reader who asks for reduced motion sees every word at once. The gratitude glow takes two breaths and rests, night motes rest after 20 seconds and keep to the margins, and the circles network dims behind the words on a phone. Thank-yous arrive instantly, and every line icon draws at the same weight.
+- **Colours and focus in light and dark.** A village with no brand colour of its own now takes Golden Hour by day and Canopy at Night in the welcome page and footer. Keyboard focus rings are clearly visible on the header and the bottom bar in both modes, the path strip shows focus, and the mode switch's spoken name starts with the word you see. The companion's welcome keeps the night in dark mode and waits until you stop tapping before it opens.
+- **A steadier shell.** While a page loads, the header and bottom bar stay in place and only the content area shows a loader. With story pages off, the front door no longer waits on a large shared file.
+- **A quieter entrance.** While a visitor has not passed the entrance, the page no longer asks the server for areas it cannot read, and each gated page has one main landmark.
+- **The review inbox, two more steps** (not yet visible): every decision on the review page and by the full-access agent records its outcome, and deciders get one combined read and a find by code.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No new tables. A one-time backfill records the outcomes of past review decisions. Going back to 1.3.67 still works.
+
+---
+
 ## 1.3.67 (2026-11-25)
 
 ### What changed for your village

@@ -144,13 +144,9 @@ export default function Opportunities() {
               const details = detailLines(opp.details);
               const range = investmentFor(opp.id);
               return (
-              <m.div
+              <div
                 key={opp.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-card p-8 rounded-2xl shadow-sm min-w-0"
+                className="m-germ bg-card p-8 rounded-2xl shadow-sm min-w-0"
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="w-14 h-14 shrink-0 rounded-xl bg-teal-light/10 flex items-center justify-center">
@@ -184,7 +180,7 @@ export default function Opportunities() {
                   ))}
                 </ul>
                 )}
-              </m.div>
+              </div>
               );
             })}
           </div>

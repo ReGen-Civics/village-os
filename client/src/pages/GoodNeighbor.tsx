@@ -169,13 +169,9 @@ export default function GoodNeighbor() {
                 const look = CRITERION_LOOKS[index % CRITERION_LOOKS.length];
                 const practices = numberedLines(criterion, "practice");
                 return (
-                  <m.div
+                  <div
                     key={`${index}-${criterion.title}`}
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border"
+                    className="m-germ bg-card rounded-2xl overflow-hidden shadow-sm border border-border"
                   >
                     <div className="p-6 md:p-8">
                       <div className="flex items-start gap-4 mb-4">
@@ -216,7 +212,7 @@ export default function GoodNeighbor() {
                         </div>
                       )}
                     </div>
-                  </m.div>
+                  </div>
                 );
               })}
             </div>
@@ -271,12 +267,9 @@ export default function GoodNeighbor() {
               </p>
               <div className="space-y-4">
                 {process.lists.steps.map((item, i) => (
-                  <m.div
+                  <div
                     key={`${i}-${item.title}`}
-                    initial={{ opacity: 0, x: -16 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-sm"
+                    className="m-germ flex items-start gap-4 bg-card rounded-xl p-5 shadow-sm"
                   >
                     <div className="w-10 h-10 rounded-full bg-notice/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-notice font-bold text-sm">{i + 1}</span>
@@ -287,7 +280,7 @@ export default function GoodNeighbor() {
                         <Emphasized text={item.body} />
                       </p>
                     </div>
-                  </m.div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -324,7 +317,7 @@ export default function GoodNeighbor() {
         <section className="py-24">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
-              <m.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <div className="m-germ">
                 <h2 className="font-display text-4xl font-bold text-foreground mb-6 break-words">
                   {closing.fields.heading}
                 </h2>
@@ -358,7 +351,7 @@ export default function GoodNeighbor() {
                     </a>
                   )}
                 </div>
-              </m.div>
+              </div>
             </div>
           </div>
         </section>

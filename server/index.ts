@@ -1,5 +1,6 @@
 import { anonymizeMember, backfillFinishedErasures, erasureBackfillJob } from "./lib/erasure";
 import { backfillSeasonGoalIds, SEASON_GOAL_ID_BACKFILL } from "./lib/seasonGoalIds";
+import { backfillConnectorOutcomes, CONNECTOR_OUTCOME_BACKFILL } from "./lib/suggestionOutcome";
 import { markNameFreeJournalLinesPublic } from "./repos/orgSeatErasure";
 import { leftTheVillage, withoutFormerMembers } from "./lib/formerMember";
 import { proposalsAboutMember } from "./lib/externalProposals";
@@ -258,6 +259,7 @@ import { register as registerAgentProposalsRoutes } from "./routes/agentProposal
 import { register as registerLetterDraftsRoutes } from "./routes/letterDrafts";
 import { register as registerApprovalInboxRoutes } from "./routes/approvalInbox";
 import { register as registerProposedChangesRoutes } from "./routes/proposedChanges";
+import { register as registerReviewInboxRoutes } from "./routes/reviewInbox";
 import { post as postToOffice } from "./lib/comms/postOffice";
 import { register as registerAgentAccountRoutes } from "./routes/agentAccounts";
 import { register as registerAgentOAuthRoutes } from "./routes/agentOAuth";
@@ -10933,6 +10935,7 @@ async function startServer() {
   app.use("/api/admin/events", requireModule("events"));
   registerApprovalInboxRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10), today: () => villageDayKey(new Date(), getSeasonConfig().timezone), filing: () => ({ variable: (key) => { const v = allVariables().find((x) => x.key === key); return v ? { key: v.key, label: v.label, value: String(v.value) } : null; }, module: (id) => { const d = MODULES_BY_ID[id]; return d ? { id: d.id, name: d.name, core: !!d.core, lifecycle: d.core ? "public" : storedLifecycle(d.id), sellsToken: !!d.sellsToken } : null; }, openTerm: async () => { const d = dbDocument(getPool(), "open-proposals", {} as any); await d.load(); const t = (d.get() as any)?.term; return t === "moon" ? "moon" : "season"; }, content: (section) => contentRepo.get()[section], contentVersion, pageProblem: pageContentProblem }) }); // role journey L13: the one-tap approval inbox and the filing routes behind the connector's propose tools (server/routes/approvalInbox.ts)
   registerProposedChangesRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, contentRepo, faqsRepo, seasonState, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10) }); // proposed changes, reviewed on /admin/proposals (server/routes/proposedChanges.ts)
+  registerReviewInboxRoutes(app, { authedUser, overLimit, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10) }); // the deciders' one list, each queue read as the person (server/routes/reviewInbox.ts)
   registerLetterDraftsRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, escapeHtml, postEmail: (email) => postToOffice(commsPostOffice, email) }); // role journey L13: a person reads, edits and sends a drafted letter (server/routes/letterDrafts.ts)
   registerCommsEventRoutes(app, { authedUser, overLimit, clientIp, isAdmin, guardCapability, mayStillSee, capabilityCtx, getPool, commsPostOffice, members, deploymentOrigin, isPresent: (m: any) => isPresentMember(m, AUTH_TOKEN_SECRET), notify });
 
@@ -26037,6 +26040,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
   void runOnce(SEASON_GOAL_ID_BACKFILL, async () => {
     const { words, rows } = await backfillSeasonGoalIds(getPool());
     console.log(`[startup] season goal ids: ${rows} link(s) across ${words} goal text(s)`);
+  });
+  // 0432: what people already decided on proposed changes, as outcomes the review engine reads. After listen for
+  // 0298's reason; idempotent by its ids (server/lib/suggestionOutcome.ts), so runOnce is a saving, not a guard.
+  void runOnce(CONNECTOR_OUTCOME_BACKFILL, async () => {
+    const { written, skipped } = await backfillConnectorOutcomes(getPool());
+    console.log(`[startup] suggestion outcomes: ${written} past decision(s) recorded, ${skipped} left out`);
   });
   /*
    * /health's orphan count, measured once per boot (page speed pass, 14 Nov

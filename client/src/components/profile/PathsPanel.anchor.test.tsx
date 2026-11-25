@@ -56,6 +56,24 @@ describe("a path's card answers its address", () => {
     expect(scrolled).toEqual(["path-steward"]);
   });
 
+  it("takes the focus with it, so the next Tab starts on the card", () => {
+    window.history.replaceState(null, "", "/profile#path-steward");
+    panel();
+    vi.advanceTimersByTime(100);
+    expect(document.activeElement?.id).toBe("path-steward");
+  });
+
+  it("lands on the paths as a whole for a member who walks none yet (the bar's \"Your path\")", () => {
+    window.history.replaceState(null, "", "/profile#sheet-paths");
+    const holder = document.createElement("div");
+    holder.id = "sheet-paths";
+    document.body.appendChild(holder);
+    panel();
+    vi.advanceTimersByTime(100);
+    expect(scrolled).toEqual(["sheet-paths"]);
+    holder.remove();
+  });
+
   it("CONTROL: any other anchor is left to the page", () => {
     window.history.replaceState(null, "", "/profile#about");
     panel();

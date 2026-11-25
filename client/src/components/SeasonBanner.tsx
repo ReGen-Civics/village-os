@@ -1,4 +1,5 @@
-import { Sun, Sunrise } from "lucide-react";
+import { Sunrise } from "lucide-react";
+import { DaySun } from "@/components/sacred/glyphs";
 import { Link } from "wouter";
 import { useSeason } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,7 +74,8 @@ export default function SeasonBanner() {
     <section className="bg-teal-band text-white py-4">
       <div className="container flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center">
         <span className="inline-flex items-center gap-2 text-amber-on-band font-semibold text-sm tracking-widest uppercase">
-          <Sun className="w-4 h-4" /> {active.name}
+          {/* The header's own sun, so one screen draws the sun one way (QA, 25 Nov 2026). */}
+          <DaySun className="w-4 h-4" /> {active.name}
         </span>
         {active.focus && <span className="text-white text-sm">{active.focus}</span>}
         {goals.length > 0 && !newcomer && (

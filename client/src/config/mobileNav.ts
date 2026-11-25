@@ -77,8 +77,13 @@ export const PATH_GLYPHS: Readonly<Record<string, LucideIcon>> = {
 /** Where a path's progress is drawn: its card on the profile, with its ladder (components/profile/PathsPanel.tsx). */
 export const pathProgressHref = (pathId: string): string => `/profile#path-${pathId}`;
 
-/** Where a path is chosen: the profile's paths for someone signed in, the front page's four ways for a visitor. */
-export const CHOOSE_PATH_HREF = { signedIn: "/profile#sheet-paths", visitor: "/#choose-path" } as const;
+/**
+ * Where a path is chosen: the profile's paths for someone signed in, and for a visitor the
+ * whole-path page, whose first chapter is the way in. The front page's own four ways exist
+ * only while a village shows its brochure pages, so `/#choose-path` landed a visitor at the
+ * top of the welcome page with Home lit instead (QA, 25 Nov 2026).
+ */
+export const CHOOSE_PATH_HREF = { signedIn: "/profile#sheet-paths", visitor: "/path" } as const;
 
 /**
  * Exactly five slots. Four routes plus More, which opens the existing header

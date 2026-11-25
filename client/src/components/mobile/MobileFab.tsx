@@ -230,6 +230,12 @@ export default function MobileFab() {
       }
       // Hysteresis, so a thumb resting on the glass does not flicker it.
       if (Math.abs(y - last) < 12) return;
+      // Never away from a keyboard that has reached it: the scroll that focus itself causes used to
+      // tuck it straight back, leaving the focus on nothing visible (QA, 25 Nov 2026).
+      if (document.activeElement === triggerRef.current) {
+        last = y;
+        return;
+      }
       setTucked(y > last);
       last = y;
     };

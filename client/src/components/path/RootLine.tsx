@@ -54,7 +54,10 @@ export default function RootLine({ quiet, pending = null }: { quiet: (path: stri
   return (
     <aside aria-label={eyebrow} data-root-line="" data-path-state={path.state} className="sheet-night">
       {/* Phone: one line, one target, the whole path a thumb away. */}
-      <Link href="/path" aria-label={`${eyebrow}: ${said.step}. ${openWords}`} className="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:hidden" data-root-phone="">
+      {/* The ring rides an ::after above the strip: the strip is positioned and
+          paints over its link's own inset outline, so a focused strip showed
+          nothing (QA, 25 Nov 2026). */}
+      <Link href="/path" aria-label={`${eyebrow}: ${said.step}. ${openWords}`} className="relative block focus-visible:outline-none focus-visible:after:absolute focus-visible:after:inset-0 focus-visible:after:z-10 focus-visible:after:pointer-events-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring sm:hidden" data-root-phone="">
         <RootStrip seed={glyph}>{said.step}</RootStrip>
       </Link>
       {/* Desktop: the step is its own door, with what comes after, the companion and the stops. */}

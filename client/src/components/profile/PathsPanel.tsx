@@ -101,10 +101,14 @@ export default function PathsPanel({
     let wait = 0;
     const land = () => {
       const hash = decodeURIComponent(window.location.hash.replace(/^#/, ""));
-      if (!hash.startsWith("path-")) return;
+      // A path's own card, or the paths as a whole when the member walks none yet (the slot's "Your path").
+      if (!hash.startsWith("path-") && hash !== "sheet-paths") return;
       const el = document.getElementById(hash);
       if (!el) return;
       el.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+      // Focus follows the reader there, as it does to <main> on every other tab (ScrollToTop).
+      if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: true });
     };
     // After the phone's tab strip has switched to the Sheet (ProfileTabs), so the card is showing,
     // and once more when the sections above it have arrived and pushed it down, unless the
@@ -163,7 +167,7 @@ export default function PathsPanel({
             <div
               key={tile.id}
               id={`path-${tile.id}`}
-              className={`flex scroll-mt-32 flex-col rounded-xl border p-4 ${
+              className={`flex scroll-mt-40 flex-col rounded-xl border p-4 focus-visible:outline-2 focus-visible:outline-ring ${
                 claimed ? "border-foreground bg-muted" : "border-dashed border-border"
               }`}
             >

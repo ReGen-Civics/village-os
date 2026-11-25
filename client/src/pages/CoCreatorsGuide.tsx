@@ -281,12 +281,8 @@ export default function CoCreatorsGuide() {
       {!ikigai.hidden && (
         <section id="r-ikigai" className="scroll-mt-40 py-20 bg-background">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="max-w-5xl mx-auto"
+            <div
+              className="m-germ max-w-5xl mx-auto"
             >
               <div className="mb-12">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -382,7 +378,7 @@ export default function CoCreatorsGuide() {
                   })}
                 </div>
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}
@@ -391,11 +387,7 @@ export default function CoCreatorsGuide() {
       {!recognition.hidden && (
         <section id="recognition" className="scroll-mt-40 py-20 bg-primary/5">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -415,11 +407,8 @@ export default function CoCreatorsGuide() {
                 )}
               </div>
 
-              <m.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="max-w-xl mx-auto bg-card rounded-xl p-8 border border-muted hover:shadow-lg transition-shadow"
+              <div
+                className="m-germ max-w-xl mx-auto bg-card rounded-xl p-8 border border-muted hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -428,8 +417,8 @@ export default function CoCreatorsGuide() {
                   <h3 className="font-bold text-xl text-foreground min-w-0 break-words">{recognition.fields.cardTitle}</h3>
                 </div>
                 <EarningsFromTheWork />
-              </m.div>
-            </m.div>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -438,11 +427,7 @@ export default function CoCreatorsGuide() {
       {!voice.hidden && (
         <section id="voice" className="scroll-mt-40 py-20 bg-background overflow-x-clip">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -455,12 +440,8 @@ export default function CoCreatorsGuide() {
 
               <div className="grid md:grid-cols-2 gap-12">
                 {/* HOW PROPOSALS WORK */}
-                <m.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0 }}
-                  className="min-w-0"
+                <div
+                  className="m-germ min-w-0"
                 >
                   <h3 className="font-bold text-2xl text-foreground mb-6 break-words">{voice.fields.stepsHeading}</h3>
                   <div className="space-y-4">
@@ -486,15 +467,11 @@ export default function CoCreatorsGuide() {
                       </p>
                     </div>
                   )}
-                </m.div>
+                </div>
 
                 {/* KEY PRINCIPLES */}
-                <m.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-4 min-w-0"
+                <div
+                  className="m-germ space-y-4 min-w-0"
                 >
                   <h3 className="font-bold text-2xl text-foreground mb-6 break-words">{voice.fields.principlesHeading}</h3>
 
@@ -512,9 +489,9 @@ export default function CoCreatorsGuide() {
                       </div>
                     );
                   })}
-                </m.div>
+                </div>
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}
@@ -523,11 +500,7 @@ export default function CoCreatorsGuide() {
       {showHypha && (
         <section id="hypha" className="scroll-mt-40 py-20 bg-teal-deep">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center max-w-3xl mx-auto">
                 {hyphaSection.fields.eyebrow && (
@@ -586,13 +559,9 @@ export default function CoCreatorsGuide() {
                   if (!look) return null;
                   const Icon = look.icon;
                   return (
-                    <m.div
+                    <div
                       key={action.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.08 }}
-                      className={`rounded-2xl border-2 p-6 min-w-0 ${look.color}`}
+                      className={`m-germ rounded-2xl border-2 p-6 min-w-0 ${look.color}`}
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className={`w-10 h-10 rounded-xl ${look.iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -615,7 +584,7 @@ export default function CoCreatorsGuide() {
                         {action.cta}
                         <ExternalLink className="w-4 h-4 opacity-60" />
                       </a>
-                    </m.div>
+                    </div>
                   );
                 })}
               </div>
@@ -640,7 +609,7 @@ export default function CoCreatorsGuide() {
                   ))}
                 </div>
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}
@@ -654,11 +623,7 @@ export default function CoCreatorsGuide() {
       {!spaces.hidden && (
         <section id="spaces" className="scroll-mt-40 py-20 bg-primary/5">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -673,13 +638,9 @@ export default function CoCreatorsGuide() {
                 {spaces.lists.items.map((space, idx) => {
                   const look = SPACE_LOOKS[idx % SPACE_LOOKS.length];
                   return (
-                    <m.div
+                    <div
                       key={`${idx}-${space.title}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
-                      className={`${look.color} rounded-xl p-8 border border-muted/20 hover:shadow-lg transition-shadow min-w-0`}
+                      className={`m-germ ${look.color} rounded-xl p-8 border border-muted/20 hover:shadow-lg transition-shadow min-w-0`}
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="w-12 h-12 rounded-lg bg-white/70 flex items-center justify-center flex-shrink-0">
@@ -688,11 +649,11 @@ export default function CoCreatorsGuide() {
                         <h3 className={`font-bold text-xl min-w-0 break-words ${look.textColor}`}>{space.title}</h3>
                       </div>
                       <p className="text-foreground text-sm leading-relaxed break-words">{space.description}</p>
-                    </m.div>
+                    </div>
                   );
                 })}
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}
@@ -701,11 +662,7 @@ export default function CoCreatorsGuide() {
       {!progression.hidden && (
         <section id="progression" className="scroll-mt-40 py-20 bg-background">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -723,19 +680,15 @@ export default function CoCreatorsGuide() {
                     {progression.lists.stages.map((stage, idx) => {
                       const tint = STAGE_TINTS[Math.min(idx, STAGE_TINTS.length - 1)];
                       return (
-                        <m.div
+                        <div
                           key={`${idx}-${stage.label}`}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="text-center min-w-0"
+                          className="m-germ text-center min-w-0"
                         >
                           <div className={`${tint.bg} rounded-lg p-3 mb-2`}>
                             <p className={`text-xs md:text-sm font-semibold break-words ${tint.text}`}>{stage.label}</p>
                             {stage.note && <p className={`text-xs break-words ${tint.text}`}>{stage.note}</p>}
                           </div>
-                        </m.div>
+                        </div>
                       );
                     })}
                   </div>
@@ -748,13 +701,9 @@ export default function CoCreatorsGuide() {
                   const look = ELDER_LOOK[elder.id as ElderId];
                   if (!look) return null;
                   return (
-                    <m.div
+                    <div
                       key={elder.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
-                      className={`rounded-xl p-8 border min-w-0 ${look.card}`}
+                      className={`m-germ rounded-xl p-8 border min-w-0 ${look.card}`}
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <look.icon className={`w-8 h-8 flex-shrink-0 ${look.title}`} />
@@ -768,11 +717,11 @@ export default function CoCreatorsGuide() {
                           <Emphasized text={elder.duties} strongClassName="font-semibold" />
                         </p>
                       )}
-                    </m.div>
+                    </div>
                   );
                 })}
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}
@@ -781,11 +730,7 @@ export default function CoCreatorsGuide() {
       {!goodNeighbor.hidden && (
         <section id="good-neighbor" className="scroll-mt-40 py-20 bg-primary/5">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="mb-12 text-center">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -802,31 +747,24 @@ export default function CoCreatorsGuide() {
                   {goodNeighbor.lists.pillars.map((pillar, idx) => {
                     const Icon = PILLAR_ICONS[idx % PILLAR_ICONS.length];
                     return (
-                      <m.div
+                      <div
                         key={`${idx}-${pillar.title}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="text-center min-w-0"
+                        className="m-germ text-center min-w-0"
                       >
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                           <Icon className="w-8 h-8 text-primary" />
                         </div>
                         <h3 className="font-semibold text-foreground mb-2 break-words">{pillar.title}</h3>
                         <p className="text-sm text-muted-foreground break-words">{pillar.description}</p>
-                      </m.div>
+                      </div>
                     );
                   })}
                 </div>
               )}
 
               {/* LINK TO FULL DOCUMENT */}
-              <m.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-xl p-8 border border-muted text-center max-w-2xl mx-auto"
+              <div
+                className="m-germ bg-card rounded-xl p-8 border border-muted text-center max-w-2xl mx-auto"
               >
                 <p className="text-muted-foreground mb-6">
                   <Emphasized text={goodNeighbor.fields.body} />
@@ -839,8 +777,8 @@ export default function CoCreatorsGuide() {
                     </a>
                   </Link>
                 )}
-              </m.div>
-            </m.div>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -849,11 +787,7 @@ export default function CoCreatorsGuide() {
       {!cta.hidden && (
         <section className="py-20 bg-background">
           <div className="container">
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+            <div className="m-germ"
             >
               <div className="text-center mb-12">
                 <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3 break-words">
@@ -882,13 +816,9 @@ export default function CoCreatorsGuide() {
                   const cardClass =
                     "h-full block bg-card rounded-xl p-8 border border-muted hover:border-primary hover:shadow-lg hover:translate-y-1 transition-all duration-300 cursor-pointer";
                   return (
-                    <m.div
+                    <div
                       key={card.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="group min-w-0"
+                      className="m-germ group min-w-0"
                     >
                       {card.external ? (
                         <a href={card.href} target="_blank" rel="noopener noreferrer" className={cardClass}>
@@ -899,11 +829,11 @@ export default function CoCreatorsGuide() {
                           <a className={cardClass}>{inner}</a>
                         </Link>
                       )}
-                    </m.div>
+                    </div>
                   );
                 })}
               </div>
-            </m.div>
+            </div>
           </div>
         </section>
       )}

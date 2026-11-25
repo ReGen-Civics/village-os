@@ -87,7 +87,7 @@ export default function RootStrip({ seed, children, detail, aside, onOpen, openL
         type="button"
         onClick={onOpen}
         aria-label={openLabel}
-        className={`${shell} focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring`}
+        className={`${shell} focus-visible:outline-none focus-visible:after:absolute focus-visible:after:inset-0 focus-visible:after:z-10 focus-visible:after:pointer-events-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring`}
         data-motion={still ? "still" : "live"}
         data-testid="root-strip"
       >

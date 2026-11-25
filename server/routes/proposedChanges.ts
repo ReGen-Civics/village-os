@@ -71,6 +71,7 @@ import { staleAgainst, type AcceptedRecord, type StaleBy } from "../../shared/pr
 import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
 import { seatTermsRead } from "../../shared/seatTermsProposal";
 import { listOrgRoles } from "../lib/orgChart";
+import { recordChangeOutcome } from "../lib/suggestionOutcome";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -122,6 +123,16 @@ export function register(app: Express, deps: Deps): void {
     seasons: () => (deps.seasonState().seasons ?? []) as ReturnType<KindDeps["seasons"]>,
     routeExists,
   });
+
+  /**
+   * The key a decision is recorded under (suggestion_outcomes names a capability, never a person): `admin` when an
+   * admin reads the page as one, otherwise the first reader key the person holds live, the same order `reader` asks.
+   */
+  async function decidingKey(req: express.Request, uid: string): Promise<string> {
+    if (await isAdmin(req)) return "admin";
+    for (const cap of READERS) if ((await liveHoldersOf(cap)).includes(uid)) return cap;
+    return "unknown";
+  }
 
   /** The signed-in member who may open the page, or null after answering. */
   async function reader(req: express.Request, res: express.Response): Promise<any | null> {
@@ -495,6 +506,8 @@ export function register(app: Express, deps: Deps): void {
     approvalNote: string;
     /** "accepted by Ana, accepted on the review page" or "accepted by Ana's agent, on the approval: ...". */
     said: string;
+    /** The capability the decision is recorded under in suggestion_outcomes (`decidingKey`). */
+    decidedBy: string;
   }
 
   /**
@@ -552,6 +565,8 @@ export function register(app: Express, deps: Deps): void {
     }
     const lessons = fieldDiffs(c.body, body);
     await store.markAccepted(pool, id, { by: uid, accepted: body, lessons, approvedBy: as.approvedBy, approvalNote: as.approvalNote });
+    // After the change has landed, never before, and never able to fail it (server/lib/suggestionOutcome.ts).
+    await recordChangeOutcome(pool, c, lessons.length ? "edited" : "accepted", lessons.length, as.decidedBy);
     await recordEvent(pool, {
       kind: "proposed_change",
       text: `A proposed change was ${as.said}${lessons.length ? `, with ${lessons.length} field${lessons.length === 1 ? "" : "s"} edited` : ""}: ${c.summary.slice(0, 140)}`,
@@ -572,7 +587,7 @@ export function register(app: Express, deps: Deps): void {
     const items = Array.isArray(req.body?.items) ? (req.body.items as unknown[]).slice(0, 100) : [];
     if (!items.length) return res.status(400).json({ error: "bad_request", message: "Send items: the changes to accept, in order." });
     const name = String(user.name ?? "").trim() || "A person";
-    const as: AcceptAs = { actorKind: "human", approvedBy: name, approvalNote: ACCEPT_NOTE, said: `accepted by ${firstName(name)}, ${ACCEPT_NOTE}` };
+    const as: AcceptAs = { actorKind: "human", approvedBy: name, approvalNote: ACCEPT_NOTE, said: `accepted by ${firstName(name)}, ${ACCEPT_NOTE}`, decidedBy: await decidingKey(req, uid) };
     const results: AcceptResult[] = [];
     // One after another, each through its own route. A failure stops nothing and undoes nothing.
     for (const it of items) results.push(await acceptOne(req, uid, it, as));
@@ -612,6 +627,7 @@ export function register(app: Express, deps: Deps): void {
       approvedBy: approval.approvedBy,
       approvalNote: approval.approvalNote,
       said: `accepted by ${firstName(name)}'s agent with full access, approved by ${approval.approvedBy.slice(0, 80)}: "${approval.approvalNote.slice(0, 300)}"`,
+      decidedBy: await decidingKey(req, uid),
     };
     const results: AcceptResult[] = [];
     for (let i = 0; i < ids.length; i++) {
@@ -631,6 +647,7 @@ export function register(app: Express, deps: Deps): void {
       if (action === "discard") {
         const ok = await store.markDiscarded(pool, id, uid);
         if (ok) {
+          await recordChangeOutcome(pool, c, "discarded", 0, as.decidedBy);
           await recordEvent(pool, { kind: "proposed_change", text: `A proposed change was put aside by ${firstName(name)}'s agent with full access, approved by ${approval.approvedBy.slice(0, 80)}: "${approval.approvalNote.slice(0, 300)}"`, actorUserId: uid, actorKind: "agent", entityType: "proposed_change", entityRef: id, audience: "admin" });
         }
         results.push({ id, ok, ...(ok ? {} : { error: REVIEW_WORDS.notProposed }), ...(code ? { code } : {}) });
@@ -686,10 +703,13 @@ export function register(app: Express, deps: Deps): void {
     const ids = Array.isArray(req.body?.ids) ? (req.body.ids as unknown[]).map((x) => String(x).slice(0, 60)).slice(0, 100) : [];
     if (!ids.length) return res.status(400).json({ error: "bad_request", message: "Send ids: the changes to put aside." });
     const pool = getPool();
+    const decidedBy = await decidingKey(req, uid);
     const results = [];
     for (const id of ids) {
+      const c = await store.changeById(pool, id);
       const ok = await store.markDiscarded(pool, id, uid);
       if (ok) {
+        if (c) await recordChangeOutcome(pool, c, "discarded", 0, decidedBy);
         await recordEvent(pool, { kind: "proposed_change", text: "A proposed change was discarded on the review page", actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
       }
       results.push({ id, ok, ...(ok ? {} : { error: REVIEW_WORDS.notProposed }) });

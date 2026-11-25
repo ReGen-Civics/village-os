@@ -100,9 +100,11 @@
   from { opacity: 0; transform: scale(0); }
   to { opacity: 1; transform: none; }
 }
+/* Opacity only: scaling an SVG circle is not composited, and measured at 4x CPU it forced a layout
+   every frame for the length of the glow, even scrolled out of view (QA, 25 Nov 2026). */
 @keyframes m-knot-glow {
-  0%, 100% { opacity: 1; transform: none; }
-  50% { opacity: 0.7; transform: scale(1.6); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -141,6 +143,16 @@
 .m-air[data-day="noon"] { --m-light: var(--m-light-noon); --m-shade: var(--m-shade-noon); }
 .m-air[data-day="golden"] { --m-light: var(--m-light-golden); --m-shade: var(--m-shade-golden); }
 .m-air[data-day="dusk"] { --m-light: var(--m-light-dusk); --m-shade: var(--m-shade-dusk); }
+/* The reader's mode caps the palette, so the village's hour never fights it (QA, 25 Nov 2026): at the
+   village's noon, a dark page showed a broad pale fog, and at its night a light page showed sooty shade.
+   Canopy at night keeps evening light; golden hour keeps daytime shade. */
+:root[data-mode="dark"] .m-air:is([data-day="morning"], [data-day="noon"], [data-day="golden"]) {
+  --m-light: var(--m-light-dusk);
+  --m-shade: var(--m-shade-dusk);
+}
+:root:not([data-mode="dark"]) .m-air:is([data-day="night"], [data-day="dawn"], [data-day="dusk"]) {
+  --m-shade: var(--m-shade-morning);
+}
 .m-air {
   position: absolute;
   inset: 0;
@@ -231,4 +243,13 @@
   /* The words sit in the middle: the threads keep to the edges around them. */
   -webkit-mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
   mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
+}
+/* On a phone the paragraph is wider than that clear ellipse and the threads crossed the words (QA,
+   25 Nov 2026): there the band the words sit in, the full width, dims the threads to a fifth, and above
+   and below it they keep their strength. */
+@media (max-width: 639px) {
+  .m-network {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 30%, rgb(0 0 0 / 0.18) 40%, rgb(0 0 0 / 0.18) 84%, #000 94%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 30%, rgb(0 0 0 / 0.18) 40%, rgb(0 0 0 / 0.18) 84%, #000 94%);
+  }
 }

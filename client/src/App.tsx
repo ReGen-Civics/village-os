@@ -3,9 +3,11 @@ import BreakGlass from "@/components/BreakGlass";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import QuietLoading from "@/components/natural/QuietLoading";
+import Layout from "@/components/Layout";
 import { useLingui } from "@lingui/react/macro";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { LazyMotion, MotionConfig } from "framer-motion";
+import { LucideProvider } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -318,10 +320,21 @@ const Reset = lazyPage(() => import("./pages/Reset"));
  * ring's hidden label did. Every later wait is inside the provider and speaks
  * the visitor's language.
  */
-function PageLoading() {
+export function PageLoading() {
   const { t } = useLingui();
-  return <QuietLoading world label={t({ message: "Gathering your page", context: "loading: a page is on its way" })} />;
+  const [location] = useLocation();
+  const quiet = <QuietLoading world label={t({ message: "Gathering your page", context: "loading: a page is on its way" })} />;
+  // THE SHELL STAYS UP (the five-reviewer QA pass, 25 Nov 2026). Every page draws its own Layout, so this fallback
+  // used to stand in for the header and the bar too, and the first tap to a page not yet loaded blanked the whole
+  // screen. It draws the same shell now, with the quiet wait in the content area only. Layout ships in the boot set
+  // (Login and NotFound import it), so this costs the first page nothing. The few pages that draw no shell of their
+  // own wait without one, so a shell does not flash up and vanish.
+  if (SHELL_LESS.test(location)) return quiet;
+  return <Layout>{quiet}</Layout>;
 }
+
+/** The pages that draw without the site's header and bar (Admin, OAuthAuthorize, ChangeRequests, Reset). */
+const SHELL_LESS = /^\/(?:admin|oauth\/authorize|changes|reset)(?:\/|$)/;
 
 /**
  * The responsive bottom bar's visit count (client/src/lib/navVisits.ts): after a
@@ -572,6 +585,10 @@ function App() {
        * run `repeat: Infinity` and never stopped for anyone.
        */}
       <MotionConfig reducedMotion="user">
+      {/* One line weight for every icon: the stock ones drawn at the living glyphs' 1.5
+          (components/sacred), so a row of the two reads as one family (QA, 25 Nov 2026).
+          An icon that names its own strokeWidth keeps it. */}
+      <LucideProvider strokeWidth={1.5}>
       <LazyMotion features={loadMotionFeatures}>
         <AuthProvider>
         {/* The visitor's language, before any page renders (internal spec i18n, US1). */}
@@ -592,6 +609,7 @@ function App() {
         </LocaleRoot>
         </AuthProvider>
       </LazyMotion>
+      </LucideProvider>
       </MotionConfig>
     </ThemeProvider>
   );

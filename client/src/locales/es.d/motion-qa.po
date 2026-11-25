@@ -1,0 +1,5 @@
+# needs-native-review: the bottom bar's path slot, its accessible name, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path: choose one"
+msgstr "Su camino: elija uno"

@@ -412,11 +412,13 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
     ) : null;
 
   // ── the tour renders over the real page ──
+  // The page stays live under the tour (the card is aria-modal="false"), so neither the
+  // spotlight nor the plain scrim takes a tap: QA (25 Nov 2026) found the scrim blocking them.
   if (beat === 5) {
     const s = stops[stop];
     return (
       <div className="sheet-night" style={{ background: "transparent" }}>
-        {spot ? <div className="cw-spot" style={spot} aria-hidden="true" /> : <div className="fixed inset-0 z-[70] bg-black/70" aria-hidden="true" />}
+        {spot ? <div className="cw-spot" style={spot} aria-hidden="true" /> : <div className="pointer-events-none fixed inset-0 z-[70] bg-black/70" aria-hidden="true" />}
         <button
           type="button"
           onClick={() => leave("skipped")}
@@ -785,6 +787,9 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
+        // A whole night scene, not a dialogue box: dark mode keeps it in the night
+        // palette rather than the sand every other dialog takes (index.css, "DIALOGUE IS SAND").
+        data-scene=""
         aria-label={t({ message: `Meet your companion`, context: "companion welcome" })}
         className="relative flex h-full w-full max-w-[420px] flex-col overflow-hidden bg-background outline-none sm:h-[min(780px,100%)] sm:rounded-[32px] sm:border sm:border-dash-edge sm:shadow-[0_30px_80px_rgba(0,0,0,0.55)]"
       >
