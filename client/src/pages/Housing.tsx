@@ -217,13 +217,9 @@ export default function Housing() {
             {features.lists.items.map((feature, index) => {
               const Icon = featureIcon(feature.icon);
               return (
-              <m.div
+              <div
                 key={`${index}-${feature.title}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center min-w-0"
+                className="m-germ text-center min-w-0"
               >
                 <div className="w-14 h-14 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-4">
                   <Icon className="w-7 h-7 text-teal" />
@@ -234,7 +230,7 @@ export default function Housing() {
                 <p className="text-sm text-muted-foreground break-words">
                   {feature.body}
                 </p>
-              </m.div>
+              </div>
               );
             })}
           </div>
@@ -271,13 +267,9 @@ export default function Housing() {
 
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {choices.homes.map((home, index) => (
-                <m.div
+                <div
                   key={home.homeType}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-card rounded-2xl shadow-sm"
+                  className="m-germ bg-card rounded-2xl shadow-sm"
                 >
                   <Link
                     href={reserveHref(home.homeType)}
@@ -322,7 +314,7 @@ export default function Housing() {
                       <ArrowRight className="w-4 h-4" /></Trans>
                     </span>
                   </Link>
-                </m.div>
+                </div>
               ))}
             </div>
           </div>

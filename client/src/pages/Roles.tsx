@@ -857,11 +857,8 @@ export default function Roles() {
               </Suspense>
             )}
             {/* How it works */}
-            <m.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="mb-14 grid sm:grid-cols-2 gap-4"
+            <div
+              className="m-germ mb-14 grid sm:grid-cols-2 gap-4"
             >
               {[
                 { label: t({ message: `Roles`, context: "roles page, how it works" }), description: t`Specific responsibilities inside a circle. One person can hold many roles. If a person leaves, the role stays and gets reassigned.` },
@@ -872,7 +869,7 @@ export default function Roles() {
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
               ))}
-            </m.div>
+            </div>
 
             {showAll && (
               <div>
@@ -974,11 +971,8 @@ export default function Roles() {
                 tensions up to a "Leadership Circle" no fork is given and
                 promising a trial period and an evaluation that nothing in the
                 platform schedules. The reasoning is in VillageConflictSteps. */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className={`mt-4 ${CARD}`}
+            <div
+              className={`m-germ mt-4 ${CARD}`}
             >
               <h2 className={`${H2} mb-4`}>
                 {t({ message: "How we evolve through conflict", context: "roles page, conflict steps heading" })}
@@ -986,7 +980,7 @@ export default function Roles() {
               <Suspense fallback={null}>
                 <VillageConflictSteps />
               </Suspense>
-            </m.div>
+            </div>
           </div>
 
         </div>

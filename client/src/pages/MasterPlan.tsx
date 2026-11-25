@@ -188,20 +188,16 @@ export default function MasterPlan() {
               column at 320px wide and pushed the whole page sideways. */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {stats.map((stat, index) => (
-              <m.div
+              <div
                 key={stat.key}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center min-w-0"
+                className="m-germ text-center min-w-0"
               >
                 <stat.icon className="w-8 h-8 mx-auto mb-2 opacity-80" />
                 <div className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-1 break-words">
                   {stat.value}
                 </div>
                 <div className="text-sm text-white break-words">{stat.label}</div>
-              </m.div>
+              </div>
             ))}
           </div>
         </div>
@@ -230,12 +226,9 @@ export default function MasterPlan() {
             {vision.lists.zones.map((zone, index) => {
               const Icon = ZONE_ICONS[index % ZONE_ICONS.length];
               return (
-              <m.div
+              <div
                 key={`${index}-${zone.title}`}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="bg-card p-6 sm:p-8 rounded-2xl shadow-sm"
+                className="m-germ bg-card p-6 sm:p-8 rounded-2xl shadow-sm"
               >
                 <div className="flex flex-wrap items-start gap-4 sm:gap-6">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-teal-deep/10 flex items-center justify-center flex-shrink-0">
@@ -260,7 +253,7 @@ export default function MasterPlan() {
                     </div>
                   </div>
                 </div>
-              </m.div>
+              </div>
               );
             })}
           </div>
@@ -338,13 +331,9 @@ export default function MasterPlan() {
           <div className="max-w-3xl mx-auto">
             <div className="space-y-4">
               {phases.lists.phases.map((item, index) => (
-                <m.div
+                <div
                   key={`${index}-${item.phase}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-4 bg-card rounded-lg"
+                  className="m-germ flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-4 bg-card rounded-lg"
                 >
                   <div className="flex-1 min-w-[10rem]">
                     <div className="font-semibold text-foreground break-words">{item.phase}</div>
@@ -355,7 +344,7 @@ export default function MasterPlan() {
                     {item.status}
                   </span>
                   )}
-                </m.div>
+                </div>
               ))}
             </div>
           </div>

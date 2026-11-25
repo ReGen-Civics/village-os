@@ -154,11 +154,8 @@ export default function HowWeCreate() {
 
           {/* Our tokens: named, with a link to the rules the village set. */}
           {!tokens.hidden && (
-            <m.div
-              className="bg-card border border-border rounded-2xl p-8 md:p-12 mb-20 shadow-sm"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+            <div
+              className="m-germ bg-card border border-border rounded-2xl p-8 md:p-12 mb-20 shadow-sm"
             >
               <div className={`text-center${tokenCards.length ? " mb-12" : ""}`}>
                 <m.div
@@ -211,16 +208,13 @@ export default function HowWeCreate() {
                   ))}
                 </div>
               )}
-            </m.div>
+            </div>
           )}
 
           {/* Governance Structure */}
           {!governance.hidden && (
-            <m.div
-              className="bg-card rounded-2xl p-8 md:p-12 mb-20 border border-border"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+            <div
+              className="m-germ bg-card rounded-2xl p-8 md:p-12 mb-20 border border-border"
             >
               <div className="text-center mb-12">
                 <MushroomNetwork className="w-12 h-12 text-open mx-auto mb-4" />
@@ -235,12 +229,9 @@ export default function HowWeCreate() {
               {governance.lists.phases.length > 0 && (
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                   {governance.lists.phases.map((phase, i) => (
-                    <m.div
+                    <div
                       key={`${i}-${phase.title}`}
-                      initial={{ opacity: 0, x: i % 2 ? 20 : -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      className="bg-card p-6 rounded-xl border border-border min-w-0"
+                      className="m-germ bg-card p-6 rounded-xl border border-border min-w-0"
                     >
                       <h3 className="font-display text-lg font-semibold text-foreground mb-3 break-words">{phase.title}</h3>
                       <ul className="space-y-2 text-sm text-muted-foreground">
@@ -250,17 +241,14 @@ export default function HowWeCreate() {
                           </li>
                         ))}
                       </ul>
-                    </m.div>
+                    </div>
                   ))}
                 </div>
               )}
 
               {governance.fields.buttonLabel && (
-                <m.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="text-center"
+                <div
+                  className="m-germ text-center"
                 >
                   <Link href="/roles">
                     <a className="inline-flex items-center gap-2 px-6 py-3 bg-notice text-background rounded-xl hover:bg-notice/90 transition-colors font-medium">
@@ -268,19 +256,16 @@ export default function HowWeCreate() {
                       <ArrowRight className="w-4 h-4" />
                     </a>
                   </Link>
-                </m.div>
+                </div>
               )}
-            </m.div>
+            </div>
           )}
 
           {/* Flexible Governance with Hypha */}
           {showHypha && (
             <div className="max-w-4xl mx-auto mb-20">
-              <m.div
-                className="text-center mb-12"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+              <div
+                className="m-germ text-center mb-12"
               >
                 <Scale className="w-12 h-12 text-open mx-auto mb-4" />
                 <h2 lang={langOf("hypha.heading")} className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 break-words">
@@ -289,7 +274,7 @@ export default function HowWeCreate() {
                 <p lang={langOf("hypha.intro")} className="text-muted-foreground max-w-2xl mx-auto">
                   <Emphasized text={hyphaSection.fields.intro} />
                 </p>
-              </m.div>
+              </div>
 
               {hyphaSection.lists.methods.length > 0 && (
                 <m.div
@@ -328,12 +313,8 @@ export default function HowWeCreate() {
                 </m.div>
               )}
 
-              <m.div
-                className="mt-8 p-6 bg-card rounded-xl border border-border"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
+              <div
+                className="m-germ mt-8 p-6 bg-card rounded-xl border border-border"
               >
                 <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-open flex-shrink-0" />
@@ -342,7 +323,7 @@ export default function HowWeCreate() {
                 <p lang={langOf("hypha.boxBody")} className="text-muted-foreground text-sm leading-relaxed">
                   <Emphasized text={hyphaSection.fields.boxBody} />
                 </p>
-              </m.div>
+              </div>
             </div>
           )}
           {!hyphaSection.hidden && <HyphaAdminNote />}
@@ -350,11 +331,8 @@ export default function HowWeCreate() {
           {/* Seasonal Rhythm */}
           {!seasons.hidden && (
             <div className="max-w-3xl mx-auto mb-20">
-              <m.div
-                className="text-center mb-8"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+              <div
+                className="m-germ text-center mb-8"
               >
                 <m.div
                 >
@@ -366,7 +344,7 @@ export default function HowWeCreate() {
                 <p className="text-muted-foreground max-w-xl mx-auto">
                   <Emphasized text={seasons.fields.intro} />
                 </p>
-              </m.div>
+              </div>
               <div className="grid sm:grid-cols-2 gap-6">
                 {seasons.lists.seasons.map((item, index) => {
                   const look = SEASON_LOOKS[index % SEASON_LOOKS.length];
@@ -395,28 +373,21 @@ export default function HowWeCreate() {
                 })}
               </div>
               {seasons.fields.note && (
-                <m.div
-                  className="mt-8 p-5 bg-muted rounded-xl text-center border border-border/40"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
+                <div
+                  className="m-germ mt-8 p-5 bg-muted rounded-xl text-center border border-border/40"
                 >
                   <p className="text-sm text-muted-foreground">
                     <Emphasized text={seasons.fields.note} />
                   </p>
-                </m.div>
+                </div>
               )}
             </div>
           )}
 
           {/* CTA */}
           {!cta.hidden && (
-            <m.div
-              className="max-w-3xl mx-auto text-center bg-muted border border-border p-8 rounded-2xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <div
+              className="m-germ max-w-3xl mx-auto text-center bg-muted border border-border p-8 rounded-2xl"
             >
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-4 break-words">
                 {cta.fields.heading}
@@ -446,7 +417,7 @@ export default function HowWeCreate() {
                   </a>
                 )}
               </div>
-            </m.div>
+            </div>
           )}
         </div>
       </section>

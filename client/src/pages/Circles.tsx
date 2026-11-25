@@ -139,11 +139,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
    */
   const hue = cssColourForCircle({ id: circle.id, color: circle.color ?? null });
   return (
-    <m.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.05 }}
+    <div className="m-germ"
     >
       <button
         onClick={onToggle}
@@ -250,7 +246,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
           </m.div>
         )}
       </AnimatePresence>
-    </m.div>
+    </div>
   );
 }
 
@@ -587,11 +583,8 @@ export default function Circles() {
           </div>
 
           {!together.hidden && (
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-16 bg-card p-8 rounded-2xl border border-border"
+          <div
+            className="m-germ mt-16 bg-card p-8 rounded-2xl border border-border"
           >
             <h2 className="font-display text-2xl font-bold text-foreground mb-4 break-words">
               {together.fields.heading}
@@ -603,15 +596,12 @@ export default function Circles() {
                 </p>
               ))}
             </div>
-          </m.div>
+          </div>
           )}
 
           {!closing.hidden && (
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 text-center"
+          <div
+            className="m-germ mt-12 text-center"
           >
             <Link href="/roles">
               <a className={BTN_PRIMARY}>
@@ -619,7 +609,7 @@ export default function Circles() {
                 <ArrowRight className="w-4 h-4" />
               </a>
             </Link>
-          </m.div>
+          </div>
           )}
         </div>
       </section>

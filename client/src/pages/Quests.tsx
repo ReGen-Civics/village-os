@@ -566,13 +566,9 @@ export default function Quests() {
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {group.quests.map((quest, index) => (
-                    <m.div
+                    <div
                       key={quest.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: Math.min(index, 5) * 0.04 }}
-                      className="h-full"
+                      className="m-germ h-full"
                     >
                       <QuestCard
                         quest={quest}
@@ -583,7 +579,7 @@ export default function Quests() {
                         priority={gi === 0 && index === 0}
                         memberPct={memberPct}
                       />
-                    </m.div>
+                    </div>
                   ))}
                 </div>
               </div>
