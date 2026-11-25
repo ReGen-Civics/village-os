@@ -231,6 +231,22 @@ describe("PowersMap", () => {
   });
 });
 
+describe("PowersMap: folded (profile overhaul, Direction D)", () => {
+  it("keeps the climb and the entrusted list in closed folds, each with a summary line", () => {
+    const catalogue = [
+      cap("forum.post", "Start a thread in the forum", true, { via: "stage", stage: "guest" }),
+      cap("org.seat", "Seat and unseat holders", false, { via: "appointment" }),
+    ];
+    const { container } = render(<PowersMap catalogue={catalogue} stages={stages} stageIndex={3} />);
+    const climb = container.querySelector<HTMLDetailsElement>('[data-powers-fold="climb"]');
+    const entrusted = container.querySelector<HTMLDetailsElement>('[data-powers-fold="entrusted"]');
+    expect(climb?.open).toBe(false);
+    expect(entrusted?.open).toBe(false);
+    expect(climb?.querySelector("summary")?.textContent).toContain("You are at");
+    expect(entrusted?.querySelector("summary")?.textContent).toContain("1");
+  });
+});
+
 describe("PowersMap: which class a power suits", () => {
   const entrusted = (over: Partial<ProgressionCapability>): ProgressionCapability =>
     ({ ...cap("library.keep", "Keep the shared library and its loans", false, { via: "appointment" }), ...over }) as ProgressionCapability;

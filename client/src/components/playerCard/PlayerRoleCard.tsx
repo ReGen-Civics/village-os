@@ -38,10 +38,12 @@ import type { PlayerCardPayload } from "@shared/playerCardPayload";
 import {
   CardEditContext,
   ChangedContext,
+  countUnwritten,
   Eyebrow,
   NightContext,
   type ChangedWords,
 } from "./cardParts";
+import { useLingui } from "@lingui/react/macro";
 import { CardHero, RoleTiles } from "./CardHeader";
 import { AcrossSection } from "./AcrossSection";
 import { RoleInFull } from "./RoleInFull";
@@ -69,6 +71,30 @@ export const CARD_LOAD_WORDS = {
  */
 export type CardViewMode = "live" | "proposal" | "adopted";
 
+/**
+ * THE ONE LINE IN PLACE OF EVERY "NOT WRITTEN YET" (profile overhaul, Direction D, 25 Nov 2026).
+ * The live card used to print each unwritten part under its own heading, dozens of lines across a
+ * holder's roles. Now those parts are absent, and the owner alone reads how many wait and one door that
+ * opens edit mode, where each part shows its gap beside its edit control. Anyone else reads nothing.
+ */
+export function UnwrittenLine({ count, onWrite }: { count: number; onWrite: () => void }) {
+  const { t } = useLingui();
+  if (count <= 0) return null;
+  const words =
+    count === 1
+      ? t({ message: "One part of your card is not written yet.", context: "player card: unwritten parts, one" })
+      : t({ message: `${count} parts of your card are not written yet.`, context: "player card: unwritten parts, many" });
+  return (
+    <p className="pc-f14 pc-dim" data-card-unwritten="">
+      {words}{" "}
+      <button type="button" onClick={onWrite} className="pc-tab">
+        <Pencil aria-hidden="true" />
+        {t({ message: "Write them", context: "player card: opens edit mode for unwritten parts" })}
+      </button>
+    </p>
+  );
+}
+
 /** The card itself, from a payload already read. Exported so tests draw it without a fetch. */
 export function PlayerRoleCardView({
   data,
@@ -87,6 +113,7 @@ export function PlayerRoleCardView({
   const [editing, setEditing] = useState(false);
   const { card, sheets, links, viewer, timeZone } = data;
   const mayEdit = viewer.isSelf && mode === "live";
+  const unwritten = countUnwritten(card);
   const walletHref = mode === "live" ? links.wallet : undefined;
   const health = new Map(
     card.tiles.items.kind === "shown"
@@ -116,7 +143,7 @@ export function PlayerRoleCardView({
     ) : null;
   return (
     <CardEditContext.Provider
-      value={{ editing: mayEdit && editing, owner: mayEdit, reload }}
+      value={{ editing: mayEdit && editing, owner: mayEdit, reload, quiet: mode !== "proposal" && !(mayEdit && editing) }}
     >
       <NightContext.Provider value={true}>
         <div
@@ -127,6 +154,7 @@ export function PlayerRoleCardView({
           <div className="pc-wrap">
             <CardHero header={card.header} actions={actions} />
             <RoleTiles tiles={card.tiles} />
+            {mayEdit && !editing ? <UnwrittenLine count={unwritten} onWrite={() => setEditing(true)} /> : null}
 
             <AcrossSection
               across={card.across}

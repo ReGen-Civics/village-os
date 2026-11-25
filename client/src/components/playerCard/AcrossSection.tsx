@@ -19,7 +19,7 @@ import {
 } from "@shared/playerCard";
 import { EDIT_WORDS } from "@shared/playerCardEdit";
 import type { SignSheetOut } from "@shared/playerCardPayload";
-import { CardEditContext, EditInPlace, Eyebrow, SlotView } from "./cardParts";
+import { CardEditContext, EditInPlace, Eyebrow, SlotView, useShows } from "./cardParts";
 import { savePersonalWords } from "./playerCardApi";
 import { SignList } from "./SignList";
 
@@ -165,10 +165,11 @@ export function AcrossSection({
   sheets: Record<string, SignSheetOut>;
   timeZone: string;
 }) {
+  const shows = useShows();
   const seasonRead =
-    across.aim.kind !== "unread" ||
-    across.seasonalGoals.items.kind !== "unread" ||
-    across.goals.kind !== "unread";
+    shows(across.aim) ||
+    shows(across.seasonalGoals.items) ||
+    shows(across.goals);
   return (
     <section aria-label={across.heading} className="pc-panel">
       <Eyebrow gold>{across.heading}</Eyebrow>
@@ -183,11 +184,11 @@ export function AcrossSection({
       ) : null}
 
       {/* A reader who may not read the plan or the tasks gets neither heading: nothing is drawn over nothing. */}
-      {seasonRead || across.tasks.kind !== "unread" ? (
+      {seasonRead || shows(across.tasks) ? (
         <div className="pc-season">
           {seasonRead ? (
             <div className="pc-col">
-              {across.aim.kind !== "unread" && (
+              {shows(across.aim) && (
                 <>
                   <h3 id="pc-across-h" className="pc-h2">
                     {W.aim}
@@ -203,7 +204,7 @@ export function AcrossSection({
                 </>
               )}
 
-              {across.seasonalGoals.items.kind !== "unread" && (
+              {shows(across.seasonalGoals.items) && (
                 <div className="pc-stack">
                   <Eyebrow gold>{across.seasonalGoals.heading}</Eyebrow>
                   <p className="pc-dim pc-f13">{across.seasonalGoals.lede}</p>
@@ -228,7 +229,7 @@ export function AcrossSection({
                 </div>
               )}
 
-              {across.goals.kind !== "unread" && (
+              {shows(across.goals) && (
                 <div className="pc-stack">
                   <Eyebrow>{W.goals}</Eyebrow>
                   <SlotView slot={across.goals}>
@@ -271,7 +272,7 @@ export function AcrossSection({
             </div>
           ) : null}
 
-          {across.tasks.kind !== "unread" && (
+          {shows(across.tasks) && (
             <div className="pc-col pc-tasks">
               <h3 className="pc-h2">{W.tasks}</h3>
               <p className="pc-dim pc-f13" data-moon-line="">{across.moonLine}</p>
@@ -304,7 +305,7 @@ export function AcrossSection({
         </div>
       ) : null}
 
-      {across.signs.kind !== "unread" && (
+      {shows(across.signs) && (
         <div className="pc-stack pc-signsblock">
           <h3 className="pc-h2">{W.signs}</h3>
           <p className="pc-lede pc-f14">{across.signsLede}</p>
@@ -322,7 +323,7 @@ export function AcrossSection({
           <p className="pc-f14">{across.load.words}</p>
           <LoadRead load={across.load} />
         </div>
-        {across.growingEdge.text.kind !== "unread" && (
+        {shows(across.growingEdge.text) && (
           <div className="pc-mini">
             <Eyebrow>{across.growingEdge.heading}</Eyebrow>
             <SlotView slot={across.growingEdge.text}>
@@ -335,7 +336,7 @@ export function AcrossSection({
             />
           </div>
         )}
-        {across.whoCouldHoldNext.text.kind !== "unread" && (
+        {shows(across.whoCouldHoldNext.text) && (
           <div className="pc-mini">
             <Eyebrow>{across.whoCouldHoldNext.heading}</Eyebrow>
             <SlotView slot={across.whoCouldHoldNext.text}>

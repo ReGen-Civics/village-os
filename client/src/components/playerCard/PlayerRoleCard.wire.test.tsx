@@ -91,11 +91,18 @@ describe("Accomplished, on the live card", () => {
     expect(text).not.toMatch(/[–—]/);
   });
 
-  it("sits after the moon cycle, says so plainly when nothing is accepted, and draws nothing when unread", () => {
+  it("sits after the moon cycle, is absent when nothing is accepted, and draws nothing when unread", () => {
+    // Absent, not empty (profile overhaul, Direction D): an empty Accomplished prints no box on a live card.
     render(<PlayerRoleCardView data={fixturePayload(1)} />);
+    expect(screen.queryByText("Nothing accepted as accomplished yet")).toBeNull();
+    expect(document.querySelector("[data-card-accomplished]")).toBeNull();
+    cleanup();
+    // With something accepted it draws, after the moon cycle.
+    const moon = { id: "m10", startsAt: "2026-10-01T00:00:00Z", endsAt: "2026-10-31T00:00:00Z", items: [{ entryId: 1, text: "A memo", ownerNo: null, roleId: null, doneByNo: null, doneAt: null, acceptedAt: "2026-11-02T12:00:00Z", note: null }] };
+    render(<PlayerRoleCardView data={fixturePayload(1, "self", { accomplished: [moon] })} />);
+    expect(document.querySelector("[data-card-accomplished]")).toBeTruthy();
     const all = document.querySelector("[data-player-card]")!.textContent ?? "";
     expect(all.indexOf("My moon cycle")).toBeLessThan(all.indexOf("Accomplished"));
-    expect(screen.getByText("Nothing accepted as accomplished yet")).toBeTruthy();
     cleanup();
     render(<PlayerRoleCardView data={fixturePayload(1, "stranger", { accomplished: undefined })} />);
     expect(document.querySelector("[data-card-accomplished]")).toBeNull();
