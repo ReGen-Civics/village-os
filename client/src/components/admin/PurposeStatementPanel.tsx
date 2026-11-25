@@ -37,13 +37,14 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { countWords, PURPOSE_MIN_WORDS } from "@shared/governingPurpose";
 import { usePrefill } from "@/lib/profilePrefill";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 export default function PurposeStatementPanel({ password }: { password: string }) {
   const { t } = useLingui();
   const [statement, setStatement] = useState("");
+  /** As the server holds it. The page's one save bar counts against this. */
+  const [saved, setSaved] = useState("");
   const [founderHoldsPen, setFounderHoldsPen] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [note, setNote] = useState("");
   /*
    * A STATEMENT HANDED OVER FROM A REGEN CIVICS FILE (ProfileImport.tsx) goes
    * into this box unsaved, and the statement the village saved is kept here so
@@ -57,6 +58,7 @@ export default function PurposeStatementPanel({ password }: { password: string }
       .then((d) => {
         if (!d) return;
         setStatement(String(d.statement ?? ""));
+        setSaved(String(d.statement ?? ""));
         setFounderHoldsPen(d.founderHoldsPen !== false);
       })
       .catch(() => {});
@@ -64,14 +66,11 @@ export default function PurposeStatementPanel({ password }: { password: string }
   useEffect(() => { load(); }, [load]);
   usePrefill("purpose", (p) => {
     if (!founderHoldsPen) return;
-    setHanded({ fromFirstLine: p.fromFirstLine, saved: statement });
+    setHanded({ fromFirstLine: p.fromFirstLine, saved });
     setStatement(p.text);
-    setNote("");
   });
 
-  const save = async () => {
-    setSaving(true);
-    setNote("");
+  const save = async (): Promise<SaveResult> => {
     try {
       const res = await fetch(`${API_BASE}/admin/purpose`, {
         method: "PUT",
@@ -79,14 +78,13 @@ export default function PurposeStatementPanel({ password }: { password: string }
         body: JSON.stringify({ statement }),
       });
       const d = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(refusal(d, "The statement was not saved"));
-      setNote("Saved. Every later change is judged against this.");
+      if (!res.ok) return { ok: false, reason: refusal(d, t({ message: "The statement was not saved", context: "PurposeStatementPanel, refused" })) };
+      setSaved(statement);
       setHanded(null);
       load();
-    } catch (e: any) {
-      setNote(e?.message || "The statement was not saved");
-    } finally {
-      setSaving(false);
+      return { ok: true };
+    } catch {
+      return { ok: false, reason: t({ message: "The statement was not saved", context: "PurposeStatementPanel, refused" }) };
     }
   };
 
@@ -152,21 +150,18 @@ export default function PurposeStatementPanel({ password }: { password: string }
           </p>
         )}
         {founderHoldsPen ? (
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving}
-            className="mt-3 px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save the statement"}
-          </button>
+          <SaveBar
+            count={statement !== saved ? 1 : 0}
+            onSave={save}
+            onDiscard={() => { setStatement(saved); setHanded(null); }}
+            what={t({ message: "the purpose statement", context: "PurposeStatementPanel, what the save bar saves" })}
+          />
         ) : (
           <p className="mt-3 text-sm text-gray-700">
             <Trans context="PurposeStatementPanel, p">This village looks after all of its powers now, so the statement is the village's to
             change. Anybody who can open a proposal can take a change of purpose to the whole roll.
           </Trans></p>
         )}
-        {note && <p className="text-xs text-gray-600 mt-2">{note}</p>}
       </div>
     </div>
   );

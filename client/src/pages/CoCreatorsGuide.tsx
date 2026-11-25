@@ -770,11 +770,9 @@ export default function CoCreatorsGuide() {
                   <Emphasized text={goodNeighbor.fields.body} />
                 </p>
                 {!pageOff("/good-neighbor") && (
-                  <Link href="/good-neighbor">
-                    <a className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition">
+                  <Link href="/good-neighbor" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition">
                       {goodNeighbor.fields.buttonLabel}
                       <ArrowRight className="w-4 h-4 flex-shrink-0" />
-                    </a>
                   </Link>
                 )}
               </div>
@@ -825,8 +823,8 @@ export default function CoCreatorsGuide() {
                           {inner}
                         </a>
                       ) : (
-                        <Link href={card.href}>
-                          <a className={cardClass}>{inner}</a>
+                        <Link href={card.href} className={cardClass}>
+                          {inner}
                         </Link>
                       )}
                     </div>

@@ -5,6 +5,7 @@
  * as every written acknowledgment.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -34,6 +35,8 @@ export default function Feed() {
   const introModule = useModule("introductions");
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
 
@@ -67,9 +70,9 @@ export default function Feed() {
   const load = () => {
     setOlder([]); // a changed filter starts a new list, not an appended one
     fetch(query(), { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { setData(d); setMore(d?.nextBefore ?? null); })
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setData(d); setMore(d?.nextBefore ?? null); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
   };
   const loadMore = () => {
     if (!more || loadingMore) return;
@@ -166,6 +169,7 @@ export default function Feed() {
           )}
 
           {/* The filters the API always understood and the page never sent. */}
+          {loadFailed && !data && <LoadFailed onRetry={load} />}
           {data && (
             <div className="flex flex-wrap items-center gap-2 px-1">
               {[

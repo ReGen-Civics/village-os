@@ -8,23 +8,26 @@
  * before.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { NOTIFICATION_GROUPS, NOTIFICATION_KINDS } from "@shared/notificationKinds";
 import { kindWordsOf } from "@shared/notificationKindWords";
 import { NOTICE_BLURB_MAX, NOTICE_SECTION, NOTICE_TITLE_MAX, type NoticeWords } from "@shared/noticeWords";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
+import { useDraftDoc } from "@/lib/unsavedChanges";
 
 export default function NoticeWordsPanel({ password }: { password: string }) {
   const { t } = useLingui();
-  const [draft, setDraft] = useState<NoticeWords | null>(null);
+  const [loaded, setLoaded] = useState<NoticeWords | null>(null);
+  const doc = useDraftDoc<NoticeWords>(loaded);
+  const draft = doc.draft;
+  const setDraft = doc.setDraft;
   const [filter, setFilter] = useState("");
-  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/content/${NOTICE_SECTION}`, { cache: "no-cache" }).catch(() => null);
     const d = res?.ok ? await res.json().catch(() => null) : null;
-    setDraft(d && typeof d === "object" ? (d as NoticeWords) : {});
+    setLoaded(d && typeof d === "object" ? (d as NoticeWords) : {});
   }, []);
   useEffect(() => {
     void load();
@@ -42,16 +45,15 @@ export default function NoticeWordsPanel({ password }: { password: string }) {
   };
   const groupTitle = (id: string) => NOTIFICATION_GROUPS.find((g) => g.id === id)?.title ?? id;
 
-  const save = async () => {
-    setSaving(true);
+  const save = async (): Promise<SaveResult> => {
     const res = await fetch(`${API_BASE}/admin/content/${NOTICE_SECTION}`, {
       method: "PUT",
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify(draft),
     }).catch(() => null);
-    setSaving(false);
-    if (!res?.ok) return toast.error(refusal(await res?.json().catch(() => null), t`The notice words did not save.`));
-    toast.success(t`Saved. New notices carry these words.`);
+    if (!res?.ok) return { ok: false, reason: refusal(await res?.json().catch(() => null), t`The notice words did not save.`) };
+    doc.accept(draft);
+    return { ok: true };
   };
 
   return (
@@ -98,14 +100,7 @@ export default function NoticeWordsPanel({ password }: { password: string }) {
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={() => void save()}
-        disabled={saving}
-        className="mt-3 min-h-[44px] px-4 text-sm rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-40"
-      >
-        {saving ? <Trans context="admin notices: while it saves">Saving…</Trans> : <Trans context="admin notices: the save button">Save the notice words</Trans>}
-      </button>
+      <SaveBar count={doc.count} onSave={save} onDiscard={doc.discard} what={t({ message: "the notice words", context: "admin notices: what the save bar saves" })} />
     </div>
   );
 }

@@ -98,3 +98,19 @@ describe("the powers page is calm for a visitor (public launch, 24 Nov 2026)", (
     expect(document.body.textContent).not.toMatch(/admin panel/i);
   });
 });
+
+/*
+ * A FAILED READ IS SAID AS ONE (whole-app QA, 25 Nov 2026). The page used to set an empty list on a failed
+ * read, so the reader met no powers and no sentence at all. It now says the page did not load and offers to
+ * ask again, and never draws the list.
+ */
+describe("a powers list that could not be read", () => {
+  it("says the page did not load, offers to try again, and draws no list", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) }) as Response));
+    render(<Powers />);
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("didn't load");
+    expect(screen.getByRole("button", { name: /try again/i })).toBeTruthy();
+    expect(screen.queryByTestId("powers-list")).toBeNull();
+  });
+});

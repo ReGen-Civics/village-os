@@ -38,6 +38,7 @@
  * tests are pure logic; there is no jsdom).
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken, useCatalyst } from "@/lib/gameApi";
@@ -53,6 +54,10 @@ export default function Powers() {
   // act by the same people, and it still writes the same line on the feed.
   const catalyst = useCatalyst();
   const [powers, setPowers] = useState<PowerRow[] | null>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   // Families group by what a power does, never by who holds it (R55), and
   // the guidance is a village's usual choice at launch (Rye, Q11).
   const [families, setFamilies] = useState<Array<{ id: string; title: string }>>([]);
@@ -76,15 +81,15 @@ export default function Powers() {
   useEffect(() => {
     const token = authToken();
     fetch("/api/village/powers", token ? { headers: { Authorization: `Bearer ${token}` } } : undefined)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d) => {
         setPowers(d?.powers ?? []);
         setFamilies(d?.families ?? []);
         setGuidance(d?.guidance ?? {});
       })
-      .catch(() => setPowers([]));
+      .catch(() => setLoadFailed(true));
     readHands();
-  }, [user?.id, readHands]);
+  }, [user?.id, readHands, attempt]);
 
   /*
    * THE VISITOR'S VIEW (public launch, 24 Nov 2026). The page is public now,
@@ -123,7 +128,8 @@ export default function Powers() {
       </section>
 
       <section className="container max-w-3xl pb-16">
-        {powers === null && (
+        {powers === null && loadFailed && <LoadFailed onRetry={retry} />}
+        {powers === null && !loadFailed && (
           <p className={HINT}>
             <Trans>Reading the village's own record.</Trans>
           </p>

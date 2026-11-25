@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.74 (2026-11-25)
+
+### What changed for your village
+
+- **One save bar on Make this yours.** Your words for things, notices, the menu and the other panels on Make this yours now feed the single bottom save bar: edits across panels gather into one count and one Save writes each of them.
+- **Links that behave like links.** Ten places that rendered a link inside a link (on the quests, circles, governance, good neighbour and guide pages) are now single links that take focus cleanly, and the joining journey's steps open from the keyboard.
+- **Honest pages, second round.** Eleven more pages, among them contribute, village health, network, exit policy and campaigns, say when a read failed in place of "nothing here yet" or a loader that never stops.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.73 still works.
+
+---
+
 ## 1.3.73 (2026-11-25)
 
 ### What changed for your village

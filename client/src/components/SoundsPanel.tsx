@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { SOUND_MANIFEST } from "@/lib/sound";
 import { SOUND_MOMENT_IDS, type SoundMomentId } from "@shared/soundMoments";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 interface Sounds {
   volume: number;
@@ -31,11 +32,20 @@ export default function SoundsPanel({ password }: { password: string }) {
   const { t } = useLingui();
   const [sounds, setSounds] = useState<Sounds | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  /*
+   * The volume waits on the page's one save bar like every other setting. It
+   * used to save on mouse-up and key-up, which a touch drag never fires, so on
+   * a phone it did not save at all. A file is different: adding or silencing
+   * one is an act, and it lands at once.
+   */
+  const [volume, setVolume] = useState<number | null>(null);
   const auth = { Authorization: `Bearer ${password}` };
 
   const load = useCallback(async () => {
     const res = await fetch("/api/brand/sounds", { cache: "no-cache" }).catch(() => null);
-    setSounds(soundsFrom(res?.ok ? await res.json().catch(() => null) : null));
+    const s = soundsFrom(res?.ok ? await res.json().catch(() => null) : null);
+    setSounds(s);
+    setVolume(s.volume);
   }, []);
   useEffect(() => {
     void load();
@@ -59,17 +69,21 @@ export default function SoundsPanel({ password }: { password: string }) {
     if (res?.ok) setSounds(soundsFrom(d?.sounds));
   };
 
-  const setVolume = async (volume: number) => {
+  const saveVolume = async (): Promise<SaveResult> => {
     const res = await fetch("/api/admin/brand/sounds", {
       method: "PUT",
       headers: { ...auth, "Content-Type": "application/json" },
       body: JSON.stringify({ volume }),
     }).catch(() => null);
     const d = await res?.json().catch(() => null);
-    if (res?.ok) setSounds(soundsFrom(d?.sounds));
+    if (!res?.ok) return { ok: false, reason: d?.error ?? t({ message: "The volume did not save.", context: "admin sounds: volume refused" }) };
+    const s = soundsFrom(d?.sounds);
+    setSounds(s);
+    setVolume(s.volume);
+    return { ok: true };
   };
 
-  if (!sounds) return null;
+  if (!sounds || volume === null) return null;
   return (
     <div className="bg-card border border-border rounded-2xl p-6 mt-6">
       <h3 className="font-semibold text-foreground mb-1">
@@ -88,12 +102,11 @@ export default function SoundsPanel({ password }: { password: string }) {
           min={0}
           max={1}
           step={0.05}
-          defaultValue={sounds.volume}
-          onMouseUp={(e) => void setVolume(Number((e.target as HTMLInputElement).value))}
-          onKeyUp={(e) => void setVolume(Number((e.target as HTMLInputElement).value))}
+          value={volume}
+          onChange={(e) => setVolume(Number(e.target.value))}
           className="w-40"
         />
-        <span className="text-xs text-muted-foreground">{Math.round(sounds.volume * 100)}%</span>
+        <span className="text-xs text-muted-foreground">{Math.round(volume * 100)}%</span>
       </label>
       <ul className="grid gap-3 sm:grid-cols-2 list-none p-0 m-0">
         {SOUND_MOMENT_IDS.map((m) => {
@@ -119,7 +132,7 @@ export default function SoundsPanel({ password }: { password: string }) {
                   {busy === m ? <Trans context="admin sounds: while a sound uploads">Uploading…</Trans> : name ? <Trans context="admin sounds: replace a moment's sound">Replace</Trans> : <Trans context="admin sounds: add a moment's sound">Add a sound</Trans>}
                 </label>
                 {name ? (
-                  <button type="button" onClick={() => void remove(m)} className="text-xs underline text-muted-foreground">
+                  <button type="button" onClick={() => void remove(m)} className="text-xs rounded-lg border border-border px-2.5 py-1.5 text-foreground hover:bg-muted">
                     <Trans context="admin sounds: make a moment silent again">Silence</Trans>
                   </button>
                 ) : null}
@@ -128,6 +141,12 @@ export default function SoundsPanel({ password }: { password: string }) {
           );
         })}
       </ul>
+      <SaveBar
+        count={volume !== sounds.volume ? 1 : 0}
+        onSave={saveVolume}
+        onDiscard={() => setVolume(sounds.volume)}
+        what={t({ message: "the sounds volume", context: "admin sounds: what the save bar saves" })}
+      />
     </div>
   );
 }
