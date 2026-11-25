@@ -48,6 +48,13 @@ afterEach(() => {
 });
 
 describe("ErrorBoundary crash reports", () => {
+  it("shows the card and sends nothing for a query the network dropped (Safari's \"Load failed\")", () => {
+    // Live 1.3.64 emailed \"Something broke in browser on /roles: Load failed\" from this path (25 Nov 2026).
+    mount(new TypeError("Load failed"));
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(beacon).not.toHaveBeenCalled();
+  });
+
   it("sends exactly one report when a page crashes", async () => {
     mount(new ReferenceError("Cannot access uninitialized variable."));
     expect(screen.getByRole("alert").textContent).toContain("didn't load");

@@ -169,6 +169,12 @@ export function reportCrash(err: unknown, source: CrashSource, sender: CrashSend
       now: new Date(sender.now()),
       bundle: bootedBundle(typeof document !== "undefined" ? document : undefined),
     });
+    // Noise is told nowhere, whichever path found it (crash-alert sweep, 25 Nov 2026): the window listeners checked it,
+    // and the error boundary did not, so a query that rejected with Safari's "Load failed" and rendered into the
+    // boundary still emailed the admins. The member still sees the boundary's card; only the report is dropped.
+    const raw = err && typeof err === "object" ? (err as { message?: unknown; stack?: unknown }) : { message: String(err) };
+    const rawMessage = typeof raw.message === "string" ? raw.message : "";
+    if (rawMessage && isNoise(rawMessage, typeof raw.stack === "string" ? raw.stack : "")) return false;
     const key = `${report.message}|${report.frames[0] ?? ""}`;
     const now = sender.now();
     if (seen.has(key) || sent >= MAX_PER_PAGE || now - lastAt < MIN_GAP_MS) return false;
@@ -193,8 +199,17 @@ export function isNoise(message: string, stack: string): boolean {
   // whole message for it, and nothing about the page. Matched whole, so a real error that merely
   // mentions a fetch is still told.
   if (NETWORK_DROP.test(message)) return true;
+  // A global an in-app browser injects (a wallet's window.ethereum, Firefox for iOS's __firefox__, Chrome for iOS's
+  // __gCrWeb) failing in its own script: no extension:// frame to show for it, and nothing of ours in its stack.
+  // A message that names one of these AND carries a frame from our own bundle is still told.
+  if (INJECTED_GLOBAL.test(message) && !OUR_BUNDLE.test(stack)) return true;
   return /(?:chrome|moz|safari(?:-web)?)-extension:\/\//.test(stack);
 }
+
+/** The globals in-app browsers and wallets put on a page, named in their own errors. */
+const INJECTED_GLOBAL = /\b(?:window\.)?(?:ethereum|__firefox__|__gCrWeb|__crWeb|webkit\.messageHandlers)\b/;
+/** A frame from the page's own built scripts. */
+const OUR_BUNDLE = /\/assets\/[\w.-]+\.js/;
 
 /** "TypeError: Failed to fetch" (Chromium), "Load failed" (Safari), "NetworkError when attempting to fetch resource." (Firefox). */
 const NETWORK_DROP = /^(?:TypeError: )?(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?)$/;
