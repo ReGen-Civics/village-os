@@ -4,7 +4,8 @@
     "A first view is every chunk index.html loads plus the page chunk and its static imports, which route-preload.js asks for.",
     "everyPage lists the lazy pieces the shell draws on every page (the root strip under the header); each route counts them too, and nothing they reach joins a merged group either.",
     "maxGzipKB is the gzipped JS of that set (gzip -9 of each chunk). known lists modules that ride the view without being imported by the entry or the page: a ratchet, so it only ever shrinks.",
-    "Set on 2026-11-14 at the measured figure plus about 10 KB: 247.7 (/), 373.0 (/roles), 300.2 (/propose-a-role), 269.8 (/steward). The same measure on the tree before the page speed pass read 423.5, 493.5, 447.4 and 433.5. Never raise a number to make a build pass."
+    "Set on 2026-11-14 at the measured figure plus about 10 KB: 247.7 (/), 373.0 (/roles), 300.2 (/propose-a-role), 269.8 (/steward). The same measure on the tree before the page speed pass read 423.5, 493.5, 447.4 and 433.5. Never raise a number to make a build pass.",
+    "2026-11-25 (the five-reviewer QA pass): \"/ (story pages off)\" is the front door a village shows while its story pages are off, VillageWelcome. As a small page it rode the merged \"smallpages\" chunk, 577 KB the first visitor waited on (9.6 s to text on slow 4G). Named here, it and what it imports never join a merged group, and its first view is held to a budget like the other front doors."
   ],
   "everyPage": [
     "client/src/components/path/RootLine.tsx"
@@ -14,6 +15,17 @@
       "path": "/",
       "page": "client/src/pages/Home.tsx",
       "maxGzipKB": 260,
+      "known": [
+        "client/src/components/natural/index.ts",
+        "client/src/components/natural/moments.ts",
+        "client/src/lib/celebrated.ts",
+        "shared/capabilities.ts"
+      ]
+    },
+    {
+      "path": "/ (story pages off)",
+      "page": "client/src/pages/VillageWelcome.tsx",
+      "maxGzipKB": 226,
       "known": [
         "client/src/components/natural/index.ts",
         "client/src/components/natural/moments.ts",
