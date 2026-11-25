@@ -208,6 +208,31 @@ describe("Comms Settings", () => {
     expect(put.body).toEqual({ paused: true });
   });
 
+  // Admin search (PR 1): `?setting=comms.test-email` is where "mail settings"
+  // lands. The lead could not find the button because item 13 folds shut once
+  // a test has been delivered; the address opens it anyway and puts the focus
+  // on the button, then takes the key back out of the address.
+  it("lands on Send me a test from its address, even when the test was already delivered", async () => {
+    current = payload([...SETUP_KEYS]);
+    window.history.replaceState({}, "", "/admin?tab=comms-settings&setting=comms.test-email");
+    render(<CommsSettings password="secret" openIntegrations={() => undefined} />);
+    await screen.findByRole("heading", { name: /^13\. / });
+    const button = within(row("test-email")).getByRole("button", { name: "Send me a test" });
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(window.location.search).toBe("?tab=comms-settings");
+    // Every other done item stays folded.
+    expect(within(row("consent-words")).getByRole("button", { name: /Change/ })).toBeTruthy();
+    window.history.replaceState({}, "", "/");
+  });
+
+  it("lands on Pause all from its address", async () => {
+    window.history.replaceState({}, "", "/admin?tab=comms-settings&setting=comms.pause-all");
+    render(<CommsSettings password="secret" openIntegrations={() => undefined} />);
+    const button = await screen.findByRole("button", { name: "Pause all automated email" });
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    window.history.replaceState({}, "", "/");
+  });
+
   it("says why the screen could not be read, in the server's words", async () => {
     vi.stubGlobal(
       "fetch",
