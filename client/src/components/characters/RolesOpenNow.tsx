@@ -106,7 +106,7 @@ export default function RolesOpenNow({ archetypeKey, alsoOpen }: { archetypeKey:
         <p className="mt-2 text-sm text-sage">
           <Trans context="character card, nothing open right now">No role is open right now.</Trans>{" "}
           <Link href="/quests" className="font-medium text-teal-deep underline">
-            <Trans context="character card, link to the quest board">Try a quest on the board</Trans>
+            <Trans context="character card, link to the quest board">Try a quest</Trans>
           </Link>{" "}
           <Trans context="character card, joins two links">or</Trans>{" "}
           <Link href="/roles" className="font-medium text-teal-deep underline">

@@ -61,9 +61,9 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     const declared = [...APP.matchAll(/<Route\s+path=/g)].length;
     // Everything except the eager three (/, /login, /404), the /seat-applications/:id redirect
     // to /role-applications/:id (members say role, 2026-10-21) and the /roles/draft redirect
-    // to /roles/select (the board is "select" now, 2026-11-10) and the /join and /apply redirects to /roles
-    // is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 7);
+    // to /roles/select (the board is "select" now, 2026-11-10), the /join and /apply redirects to /roles
+    // and the /tokens redirect to /wallet (one page called Wallet, 2026-11-25) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 8);
     expect(routes.length).toBeGreaterThan(60);
   });
 

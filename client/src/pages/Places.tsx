@@ -13,6 +13,7 @@
  * people who might.
  */
 import { useEffect, useState } from "react";
+import LoadFailed from "@/components/LoadFailed";
 import { Link } from "wouter";
 import Layout from "@/components/Layout";
 import ModuleGate from "@/components/modules/ModuleGate";
@@ -51,6 +52,10 @@ export default function Places() {
 function PlacesPage() {
   const { t } = useLingui();
   const [data, setData] = useState<ShelfPayload | null>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   const [locked, setLocked] = useState(false);
 
   useEffect(() => {
@@ -61,16 +66,18 @@ function PlacesPage() {
           if (live) setLocked(true);
           return null;
         }
-        return r.ok ? r.json() : null;
+        return r.ok ? r.json() : Promise.reject(new Error(String(r.status)));
       })
       .then((payload) => {
         if (live && payload) setData(payload);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (live) setLoadFailed(true);
+      });
     return () => {
       live = false;
     };
-  }, []);
+  }, [attempt]);
 
   return (
     <Layout>
@@ -101,6 +108,8 @@ function PlacesPage() {
             </Link>{" "}
             to see the places this village has photographed.
           </Trans></p>
+        ) : !data && loadFailed ? (
+          <LoadFailed onRetry={retry} />
         ) : !data ? (
           <BreathingLoader label={t({ message: "Opening the places", context: "Places, label" })} />
         ) : data.places.length === 0 ? (

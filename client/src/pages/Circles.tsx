@@ -626,11 +626,9 @@ export default function Circles() {
           <div
             className="m-germ mt-12 text-center"
           >
-            <Link href="/roles">
-              <a className={BTN_PRIMARY}>
+            <Link href="/roles" className={BTN_PRIMARY}>
                 {closing.fields.label}
                 <ArrowRight className="w-4 h-4" />
-              </a>
             </Link>
           </div>
           )}

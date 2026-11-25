@@ -54,7 +54,7 @@ describe("the work, counted", () => {
     render(<EarningsFromTheWork />);
     expect(await screen.findByText("2 open quests")).toBeTruthy();
     expect(await screen.findByText("2 roles")).toBeTruthy();
-    expect(screen.getByText("See the quest board").getAttribute("href")).toBe("/quests");
+    expect(screen.getByText("See the quests").getAttribute("href")).toBe("/quests");
     expect(screen.getByText("See the roles").getAttribute("href")).toBe("/roles");
     expect(document.body.textContent).not.toMatch(PAY_WORDS);
   });
@@ -73,7 +73,7 @@ describe("the work, counted", () => {
     ctl.orgOk = false;
     ctl.org = null;
     render(<EarningsFromTheWork />);
-    expect(await screen.findByText("The quest board lists every open quest.")).toBeTruthy();
+    expect(await screen.findByText("Quests lists every open quest.")).toBeTruthy();
     expect(await screen.findByText("The roles page lists every role.")).toBeTruthy();
     expect(document.body.textContent).not.toMatch(PAY_WORDS);
   });
@@ -95,6 +95,6 @@ describe("the work, counted", () => {
       expect(line).not.toMatch(PAY_WORDS);
     }
     expect(questLine({ quests: 0, roles: 0 })).toBe("No open quests yet.");
-    expect(questLine(null)).toBe("Reading the quest board.");
+    expect(questLine(null)).toBe("Reading the quests.");
   });
 });

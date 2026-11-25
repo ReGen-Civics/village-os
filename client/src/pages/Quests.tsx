@@ -252,7 +252,7 @@ export default function Quests() {
             </div>
             <p className={EYEBROW}>{t({ message: "Quests", context: "open work board eyebrow" })}</p>
             <h1 className={`${H1} mb-4 mt-2`}>
-              {t({ message: "Open work", context: "open work board heading" })}
+              {t({ message: "Quests", context: "open work board heading" })}
             </h1>
             {/* R47: the Trail line leads, the reward word keeps its tooltip,
                 and the Lore line comes last, after the numbers. */}
@@ -505,11 +505,9 @@ export default function Quests() {
                 Tell us what you want to bring and what you'd need to make it real.
               </Trans></p>
             </div>
-            <Link href="/propose-quest">
-              <a className={`${BTN_PRIMARY} shrink-0`}>
+            <Link href="/propose-quest" className={`${BTN_PRIMARY} shrink-0`}>
                 <Trans context="Quests, a">Propose a Quest
                 <ArrowRight className="w-4 h-4" /></Trans>
-              </a>
             </Link>
           </div>
         </div>
@@ -596,7 +594,7 @@ export default function Quests() {
           {filtered.length === 0 &&
             (boardFailed ? (
               <div className="text-center py-16 text-muted-foreground" role="alert">
-                <p>{t`The Quest Board didn't load. Reload to try again.`}</p>
+                <p>{t`Quests didn't load. Reload to try again.`}</p>
               </div>
             ) : quests.length === 0 ? (
               <>
@@ -697,11 +695,9 @@ export default function Quests() {
                 </Trans></a>
               )}
               {letterOn && (
-                <Link href="/love-letter">
-                  <a className="px-6 py-3 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors flex items-center gap-2">
+                <Link href="/love-letter" className="px-6 py-3 bg-muted text-foreground rounded-lg font-semibold hover:bg-muted/80 transition-colors flex items-center gap-2">
                     <Trans context="Quests, a"><Heart className="w-5 h-5" />
                     Sign the {pageVarsFrom(cfg ?? {}).commitment}</Trans>
-                  </a>
                 </Link>
               )}
             </div>

@@ -708,7 +708,7 @@ export default function Characters() {
                   {paths ? (
                     <p className="mt-4 text-sm text-gray-700">
                       {paths.questCount === 0
-                        ? "The whole quest board is open to you."
+                        ? "Every quest is open to you."
                         : `${paths.questCount} quests on the land welcome these hands.`}
                     </p>
                   ) : null}

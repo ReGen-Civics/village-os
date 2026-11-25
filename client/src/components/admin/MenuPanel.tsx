@@ -8,12 +8,13 @@
  * out of the menu: its page stays where it was.
  */
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { NAV, ACCOUNT_MENU, isGroup } from "@/config/nav";
 import { TAB_SLOTS } from "@/config/mobileNav";
 import { MENU_LABEL_MAX, MENU_SECTION, MENU_TABS, menuDocOf, type MenuDoc } from "@shared/menuDoc";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
+import { useDraftDoc } from "@/lib/unsavedChanges";
 
 const GROUPS = NAV.filter(isGroup);
 const ENTRIES = Array.from(
@@ -22,12 +23,14 @@ const ENTRIES = Array.from(
 
 export default function MenuPanel({ password }: { password: string }) {
   const { t } = useLingui();
-  const [doc, setDoc] = useState<MenuDoc | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState<MenuDoc | null>(null);
+  const draftDoc = useDraftDoc<MenuDoc & Record<string, unknown>>(loaded as (MenuDoc & Record<string, unknown>) | null);
+  const doc = draftDoc.draft;
+  const setDoc = draftDoc.setDraft as (d: MenuDoc) => void;
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/content/${MENU_SECTION}`, { cache: "no-cache" }).catch(() => null);
-    setDoc(menuDocOf(res?.ok ? await res.json().catch(() => null) : null));
+    setLoaded(menuDocOf(res?.ok ? await res.json().catch(() => null) : null));
   }, []);
   useEffect(() => {
     void load();
@@ -54,16 +57,15 @@ export default function MenuPanel({ password }: { password: string }) {
     setDoc({ ...doc, tabs });
   };
 
-  const save = async () => {
-    setSaving(true);
+  const save = async (): Promise<SaveResult> => {
     const res = await fetch(`${API_BASE}/admin/content/${MENU_SECTION}`, {
       method: "PUT",
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify(doc),
     }).catch(() => null);
-    setSaving(false);
-    if (!res?.ok) return toast.error(refusal(await res?.json().catch(() => null), t`The menu did not save.`));
-    toast.success(t`The menu is saved. Members see it on their next page.`);
+    if (!res?.ok) return { ok: false, reason: refusal(await res?.json().catch(() => null), t`The menu did not save.`) };
+    draftDoc.accept(doc);
+    return { ok: true };
   };
 
   return (
@@ -141,14 +143,7 @@ export default function MenuPanel({ password }: { password: string }) {
         ))}
       </ul>
 
-      <button
-        type="button"
-        onClick={() => void save()}
-        disabled={saving}
-        className="min-h-[44px] px-4 text-sm rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-40"
-      >
-        {saving ? <Trans context="admin menu: while it saves">Saving…</Trans> : <Trans context="admin menu: the save button">Save the menu</Trans>}
-      </button>
+      <SaveBar count={draftDoc.count} onSave={save} onDiscard={draftDoc.discard} what={t({ message: "the menu", context: "admin menu: what the save bar saves" })} />
     </div>
   );
 }

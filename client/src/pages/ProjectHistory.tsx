@@ -212,24 +212,24 @@ function getBucket(
 }
 
 const buildBuckets = (villageName: string): { id: BucketId; emoji: string; label: string; goal: string; tone: string }[] => [
-  { id: "urgent", emoji: "🔴", label: "Urgent", goal: "Pending items that need attention now.", tone: "bg-red-50 border-red-200 text-red-700" },
-  { id: "in-motion", emoji: "🟡", label: "In Motion", goal: `Currently in progress. Delivered, awaiting ${villageName}.`, tone: "bg-amber-50 border-amber-200 text-amber-800" },
-  { id: "completed", emoji: "🟢", label: "Completed", goal: `Done and confirmed by ${villageName}.`, tone: "bg-emerald-50 border-emerald-200 text-emerald-700" },
-  { id: "amora-call", emoji: "🔵", label: `${villageName}'s Call`, goal: `Decisions or actions for the ${villageName} team to lead.`, tone: "bg-violet-50 border-violet-200 text-violet-700" },
+  { id: "urgent", emoji: "🔴", label: "Urgent", goal: "Pending items that need attention now.", tone: "bg-destructive/10 border-destructive text-foreground" },
+  { id: "in-motion", emoji: "🟡", label: "In Motion", goal: `Currently in progress. Delivered, awaiting ${villageName}.`, tone: "bg-amber/15 border-amber/40 text-amber-ink" },
+  { id: "completed", emoji: "🟢", label: "Completed", goal: `Done and confirmed by ${villageName}.`, tone: "bg-open/10 border-open/40 text-open" },
+  { id: "amora-call", emoji: "🔵", label: `${villageName}'s Call`, goal: `Decisions or actions for the ${villageName} team to lead.`, tone: "bg-notice/10 border-notice/40 text-notice" },
 ];
 
 // Two axes, read at a glance: WHO owns an item (from the status dropdown) and
 // WHAT STAGE it's at (from the checkbox). The pills below derive from those.
 // The build side is named by the plan's `partnerName`, which an admin edits.
 function ownerMeta(status: DeliveryStatus, villageName: string, partnerName: string): { label: string; cls: string } {
-  if (status === VILLAGE_OWNED) return { label: villageName, cls: "bg-amber/20 text-amber-800 border-amber/40" };
-  if (status === "collab") return { label: "Both", cls: "bg-violet-100 text-violet-700 border-violet-200" };
+  if (status === VILLAGE_OWNED) return { label: villageName, cls: "bg-amber/20 text-amber-ink border-amber/40" };
+  if (status === "collab") return { label: "Both", cls: "bg-notice/10 text-notice border-notice/40" };
   return { label: partnerName, cls: "bg-teal-deep/10 text-teal-deep border-teal-deep/20" };
 }
 function stageMeta(state: 0 | 1 | 2, status: DeliveryStatus): { label: string; cls: string } {
-  if (state === 2) return { label: "Confirmed", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" };
-  if (state === 1 || status === "done") return { label: "In progress", cls: "bg-teal/10 text-teal-700 border-teal/20" };
-  return { label: "To do", cls: "bg-stone-100 text-stone-500 border-stone-200" };
+  if (state === 2) return { label: "Confirmed", cls: "bg-open/10 text-open border-open/40" };
+  if (state === 1 || status === "done") return { label: "In progress", cls: "bg-teal/10 text-notice border-teal/20" };
+  return { label: "To do", cls: "bg-muted text-muted-foreground border-border" };
 }
 
 interface DiscussionTopic {
@@ -286,7 +286,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
               {/* The name the page gives itself once it opens, so the gate and the page behind it agree.
                   The gate's own h1, so a signed-out page still has its heading (QA P1-16). */}
               <h1 className="font-display text-xl font-bold text-teal-deep">Command Centre</h1>
-              <p className="text-stone-500 text-sm mt-1">
+              <p className="text-muted-foreground text-sm mt-1">
                 {loading || isAdmin
                   ? "Checking your access…"
                   : user
@@ -774,7 +774,7 @@ export default function ProjectHistory() {
                 maxLength={PLAN_LIMITS.intro}
                 rows={2}
                 onChange={(e) => setPlanDraft({ ...planDraft, intro: e.target.value })}
-                className="w-full text-sm px-3 py-2 rounded-lg bg-white text-stone-700 border border-white outline-none resize-y font-sans"
+                className="w-full text-sm px-3 py-2 rounded-lg bg-card text-foreground border border-white outline-none resize-y font-sans"
               />
               <p className="text-white text-[11px] text-right">{Array.from(planDraft.intro).length}/{PLAN_LIMITS.intro}</p>
             </div>
@@ -791,11 +791,11 @@ export default function ProjectHistory() {
               inherits nobody else's links. */}
           <div className="mb-6">
             {editingResources ? (
-              <div className="bg-white rounded-xl p-4 max-w-2xl">
-                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
+              <div className="bg-card rounded-xl p-4 max-w-2xl">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                   Working documents
                 </p>
-                <p className="text-xs text-stone-500 mb-3">
+                <p className="text-xs text-muted-foreground mb-3">
                   Sheets, docs and boards this team works from. They are stored with the rest of this tracker and shown
                   only to whoever is signed in as {catalyst.aName}. Nothing here is built into the site, so a village that clones this platform starts with an empty list.
                 </p>
@@ -812,7 +812,7 @@ export default function ProjectHistory() {
                             prev.map((row, j) => (j === i ? { ...row, label: e.target.value } : row)),
                           )
                         }
-                        className="sm:w-48 shrink-0 text-sm px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
+                        className="sm:w-48 shrink-0 text-sm px-3 py-2 border border-border rounded-lg outline-none focus:border-teal-deep"
                       />
                       <input
                         type="url"
@@ -824,11 +824,11 @@ export default function ProjectHistory() {
                             prev.map((row, j) => (j === i ? { ...row, url: e.target.value } : row)),
                           )
                         }
-                        className="flex-1 text-sm px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
+                        className="flex-1 text-sm px-3 py-2 border border-border rounded-lg outline-none focus:border-teal-deep"
                       />
                       <button
                         onClick={() => setResourceDraft((prev) => prev.filter((_, j) => j !== i))}
-                        className="shrink-0 px-3 py-2 text-xs rounded-lg bg-stone-100 text-stone-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="shrink-0 px-3 py-2 text-xs rounded-lg bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         aria-label={`Remove ${r.label || "this link"}`}
                       >
                         Remove
@@ -839,7 +839,7 @@ export default function ProjectHistory() {
                 <div className="flex flex-wrap gap-2 mt-3">
                   <button
                     onClick={() => setResourceDraft((prev) => [...prev, { label: "", url: "" }])}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
                   >
                     Add a link
                   </button>
@@ -852,7 +852,7 @@ export default function ProjectHistory() {
                   </button>
                   <button
                     onClick={() => setEditingResources(false)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
                   >
                     Cancel
                   </button>
@@ -914,7 +914,7 @@ export default function ProjectHistory() {
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row min-h-screen bg-stone-50">
+      <div className="flex flex-col md:flex-row min-h-screen bg-muted">
 
         {/* ── Sidebar ───────────────────────────────────────────────────── */}
         {/* A fixed 224px rail beside the content leaves about 145px at 393px, and
@@ -923,7 +923,7 @@ export default function ProjectHistory() {
             internal tool, and it was still the one route on the site where content
             was unreadable. Below md the rail becomes a full-width strip that
             scrolls sideways on its own, and the content gets the whole viewport. */}
-          <aside className="w-full md:w-56 shrink-0 bg-white border-b md:border-b-0 md:border-r border-stone-200 md:sticky md:top-0 md:h-screen overflow-y-auto">
+          <aside className="w-full md:w-56 shrink-0 bg-card border-b md:border-b-0 md:border-r border-border md:sticky md:top-0 md:h-screen overflow-y-auto">
           {/* Timeline nav */}
           <div className="p-3 space-y-1">
             <button
@@ -931,7 +931,7 @@ export default function ProjectHistory() {
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeView === "timeline"
                   ? "bg-teal-deep text-white"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <Calendar className="w-4 h-4 shrink-0" />
@@ -943,7 +943,7 @@ export default function ProjectHistory() {
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeView === "kanban"
                   ? "bg-teal-deep text-white"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <LayoutGrid className="w-4 h-4 shrink-0" />
@@ -955,7 +955,7 @@ export default function ProjectHistory() {
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeView === "decisions"
                   ? "bg-teal-deep text-white"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <ClipboardList className="w-4 h-4 shrink-0" />
@@ -980,7 +980,7 @@ export default function ProjectHistory() {
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeView === "discussion"
                   ? "bg-teal-deep text-white"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <StickyNote className="w-4 h-4 shrink-0" />
@@ -1003,7 +1003,7 @@ export default function ProjectHistory() {
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 activeView === "economics"
                   ? "bg-teal-deep text-white"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <Pines className="w-4 h-4 shrink-0" />
@@ -1014,7 +1014,7 @@ export default function ProjectHistory() {
 
           {/* Quick Links to live pages */}
           <div className="px-3 pb-1 mt-2">
-            <p className="text-xs font-semibold text-stone-400 uppercase tracking-widest px-1 mb-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1 mb-2">
               Quick Links
             </p>
           </div>
@@ -1025,11 +1025,11 @@ export default function ProjectHistory() {
                 href={p.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-stone-600 hover:bg-stone-100 transition-colors"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-muted transition-colors"
               >
                 <span>{p.emoji}</span>
                 <span className="text-left leading-tight truncate flex-1">{p.title}</span>
-                <ExternalLink className="w-3 h-3 text-stone-300 shrink-0" />
+                <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
               </a>
             ))}
           </div>
@@ -1043,12 +1043,12 @@ export default function ProjectHistory() {
           {writeNote && (
             <div
               role="alert"
-              className="max-w-4xl mx-auto mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+              className="max-w-4xl mx-auto mb-4 flex items-start gap-3 rounded-xl border border-destructive bg-destructive/10 px-4 py-3 text-sm text-foreground"
             >
               <span className="flex-1">{writeNote}</span>
               <button
                 onClick={() => setWriteNote("")}
-                className="shrink-0 text-red-400 hover:text-red-700"
+                className="shrink-0 text-destructive hover:text-destructive"
                 aria-label="Dismiss this message"
               >
                 ×
@@ -1060,7 +1060,7 @@ export default function ProjectHistory() {
           )}
           {loadingState ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-stone-400 text-sm">Loading...</div>
+              <div className="text-muted-foreground text-sm">Loading...</div>
             </div>
           ) : (
             <>
@@ -1082,24 +1082,24 @@ export default function ProjectHistory() {
               {activeView === "timeline" && !planDraft && (
                 <div className="max-w-4xl mx-auto">
                   {/* Legend — two things to read on every row: who owns it, and what stage it's at */}
-                  <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 mb-6 text-xs text-stone-600">
+                  <div className="bg-card rounded-xl border border-border shadow-sm p-4 mb-6 text-xs text-muted-foreground">
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       <div className="flex-1">
-                        <p className="font-semibold text-stone-500 uppercase tracking-wide mb-2">Who owns it</p>
+                        <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-2">Who owns it</p>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 rounded-full border font-semibold bg-teal-deep/10 text-teal-deep border-teal-deep/20 break-all">{serverState.plan.partnerName}</span>
-                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-amber/20 text-amber-800 border-amber/40">{villageName}</span>
-                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-violet-100 text-violet-700 border-violet-200">Both</span>
-                          <span className="text-stone-400">(set with the dropdown on each row)</span>
+                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-amber/20 text-amber-ink border-amber/40">{villageName}</span>
+                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-notice/10 text-notice border-notice/40">Both</span>
+                          <span className="text-muted-foreground">(set with the dropdown on each row)</span>
                         </div>
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-stone-500 uppercase tracking-wide mb-2">What stage</p>
+                        <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-2">What stage</p>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-stone-100 text-stone-500 border-stone-200">To do</span>
-                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-teal/10 text-teal-700 border-teal/20">In progress</span>
-                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-emerald-100 text-emerald-700 border-emerald-200">Confirmed</span>
-                          <span className="text-stone-400">(advance with the checkbox)</span>
+                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-muted text-muted-foreground border-border">To do</span>
+                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-teal/10 text-notice border-teal/20">In progress</span>
+                          <span className="px-2 py-0.5 rounded-full border font-semibold bg-open/10 text-open border-open/40">Confirmed</span>
+                          <span className="text-muted-foreground">(advance with the checkbox)</span>
                         </div>
                       </div>
                     </div>
@@ -1113,28 +1113,28 @@ export default function ProjectHistory() {
                         return getBucket(d, st, serverState.owners) === bucket.id;
                       });
                       return (
-                      <div key={bucket.id} className="mb-8 bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+                      <div key={bucket.id} className="mb-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
                         {/* Bucket header */}
-                        <div className={`border-b border-stone-200 px-5 py-4 ${bucket.tone}`}>
+                        <div className={`border-b border-border px-5 py-4 ${bucket.tone}`}>
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-center gap-3">
                               <span className="text-2xl leading-none">{bucket.emoji}</span>
                               <div>
                                 <h2 className="font-display font-bold text-lg">{bucket.label}</h2>
-                                <p className="text-stone-600 text-sm mt-0.5">{bucket.goal}</p>
+                                <p className="text-muted-foreground text-sm mt-0.5">{bucket.goal}</p>
                               </div>
                             </div>
                             <div className="shrink-0 text-right">
-                              <span className="text-stone-800 font-bold text-sm">{bucketItems.length}</span>
-                              <p className="text-stone-500 text-xs">items</p>
+                              <span className="text-foreground font-bold text-sm">{bucketItems.length}</span>
+                              <p className="text-muted-foreground text-xs">items</p>
                             </div>
                           </div>
                         </div>
 
                         {/* Deliverables */}
-                        <div className="divide-y divide-stone-100">
+                        <div className="divide-y divide-border">
                           {bucketItems.length === 0 && (
-                            <p className="text-center text-xs text-stone-400 py-6 italic">Nothing here right now.</p>
+                            <p className="text-center text-xs text-muted-foreground py-6 italic">Nothing here right now.</p>
                           )}
                           {bucketItems.map((d) => {
                             const effStatus = getEffectiveStatus(d, serverState.owners);
@@ -1153,12 +1153,12 @@ export default function ProjectHistory() {
                                     isVillageOwned
                                       ? "bg-amber/5"
                                       : isCollab
-                                      ? "bg-violet-50/30"
+                                      ? "bg-notice/5"
                                       : state === 2
-                                      ? "bg-emerald-50/50"
+                                      ? "bg-open/10"
                                       : state === 1
                                       ? "bg-teal-deep/5"
-                                      : "hover:bg-stone-50"
+                                      : "hover:bg-muted"
                                   }`}
                                 >
                                   {/* 3-state checkbox */}
@@ -1174,11 +1174,11 @@ export default function ProjectHistory() {
                                     }
                                   >
                                     {state === 2 ? (
-                                      <XSquare className="w-5 h-5 text-emerald-600" />
+                                      <XSquare className="w-5 h-5 text-open" />
                                     ) : state === 1 ? (
                                       <CheckSquare className="w-5 h-5 text-teal" />
                                     ) : (
-                                      <Square className="w-5 h-5 text-stone-300 hover:text-teal transition-colors" />
+                                      <Square className="w-5 h-5 text-muted-foreground hover:text-teal transition-colors" />
                                     )}
                                   </button>
 
@@ -1192,14 +1192,14 @@ export default function ProjectHistory() {
                                   <span
                                     className={`flex-1 min-w-0 break-words text-sm leading-relaxed ${
                                       isVillageOwned
-                                        ? "text-amber-800 font-medium"
+                                        ? "text-amber-ink font-medium"
                                         : isCollab
-                                        ? "text-violet-800 font-medium"
+                                        ? "text-notice font-medium"
                                         : state === 2
-                                        ? "text-stone-400 line-through"
+                                        ? "text-muted-foreground line-through"
                                         : state === 1
-                                        ? "text-stone-600"
-                                        : "text-stone-700"
+                                        ? "text-muted-foreground"
+                                        : "text-foreground"
                                     }`}
                                   >
                                     {fill(d.text)}
@@ -1232,10 +1232,10 @@ export default function ProjectHistory() {
                                       isVillageOwned
                                         ? "bg-amber text-foreground border-amber"
                                         : isCollab
-                                        ? "bg-violet-100 text-violet-700 border-violet-200"
+                                        ? "bg-notice/10 text-notice border-notice/40"
                                         : effStatus === "done"
                                         ? "bg-teal-deep/10 text-teal-deep border-teal-deep/20"
-                                        : "bg-stone-100 text-stone-600 border-stone-200"
+                                        : "bg-muted text-muted-foreground border-border"
                                     }`}
                                   >
                                     <option value="pending">{serverState.plan.partnerName} · to do</option>
@@ -1244,7 +1244,7 @@ export default function ProjectHistory() {
                                     <option value="collab">Collab (both)</option>
                                   </select>
                                   {assigneeName && (
-                                    <span className="max-w-full truncate text-xs bg-stone-100 text-stone-600 font-medium px-2 py-0.5 rounded-full border border-stone-200">
+                                    <span className="max-w-full truncate text-xs bg-muted text-muted-foreground font-medium px-2 py-0.5 rounded-full border border-border">
                                       {assigneeName}
                                     </span>
                                   )}
@@ -1254,7 +1254,7 @@ export default function ProjectHistory() {
                                   {/* Expand toggle */}
                                   <button
                                     onClick={() => toggleExpanded(d.id)}
-                                    className="shrink-0 text-stone-300 hover:text-stone-500 transition-colors ml-1"
+                                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors ml-1"
                                     title={isExpanded ? "Collapse" : "Expand notes"}
                                   >
                                     <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${isExpanded ? "rotate-180" : ""}`} />
@@ -1263,10 +1263,10 @@ export default function ProjectHistory() {
 
                                 {/* Expandable notes panel */}
                                 {isExpanded && (
-                                  <div className="px-5 py-3 bg-stone-50 border-t border-stone-100">
+                                  <div className="px-5 py-3 bg-muted border-t border-border">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <StickyNote className="w-3.5 h-3.5 text-stone-400" />
-                                      <span className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Notes</span>
+                                      <StickyNote className="w-3.5 h-3.5 text-muted-foreground" />
+                                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notes</span>
                                     </div>
 
                                     {isEditingThisNote ? (
@@ -1276,7 +1276,7 @@ export default function ProjectHistory() {
                                           onChange={(e) => setNoteDraft(e.target.value)}
                                           autoFocus
                                           placeholder="Add notes, decisions, or context here..."
-                                          className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none resize-y min-h-20 focus:border-teal-deep font-sans"
+                                          className="w-full px-3 py-2 text-sm border border-border rounded-lg outline-none resize-y min-h-20 focus:border-teal-deep font-sans"
                                         />
                                         <div className="flex gap-2">
                                           <button
@@ -1288,7 +1288,7 @@ export default function ProjectHistory() {
                                           </button>
                                           <button
                                             onClick={() => setEditingNote(null)}
-                                            className="text-xs px-3 py-1.5 rounded-lg bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                                            className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
                                           >
                                             Cancel
                                           </button>
@@ -1296,12 +1296,12 @@ export default function ProjectHistory() {
                                       </div>
                                     ) : (
                                       <div>
-                                        <p className="text-sm text-stone-500 whitespace-pre-wrap leading-relaxed min-h-8">
-                                          {noteContent || <span className="italic text-stone-300">No notes yet.</span>}
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed min-h-8">
+                                          {noteContent || <span className="italic text-muted-foreground">No notes yet.</span>}
                                         </p>
                                         <button
                                           onClick={() => startEditNote(d.id)}
-                                          className="flex items-center gap-1.5 text-xs mt-2 px-2.5 py-1 rounded-md bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                                          className="flex items-center gap-1.5 text-xs mt-2 px-2.5 py-1 rounded-md border border-border bg-card text-foreground hover:bg-muted transition-colors"
                                         >
                                           <Edit2 className="w-3 h-3" />
                                           {noteContent ? "Edit notes" : "Add notes"}
@@ -1319,7 +1319,7 @@ export default function ProjectHistory() {
                     });
                   })()}
 
-                  <p className="text-stone-400 text-xs text-center mt-4">
+                  <p className="text-muted-foreground text-xs text-center mt-4">
                     The <strong>checkbox</strong> advances the stage: To do → In progress → Confirmed → back to To do. The <strong>dropdown</strong> sets who owns it (the build side, {villageName}, or both), which sorts it into the buckets above. Both are saved to the server and shared with everyone who opens this page.
                   </p>
                 </div>
@@ -1328,16 +1328,16 @@ export default function ProjectHistory() {
               {/* ── KANBAN VIEW ─────────────────────────────────────────── */}
               {activeView === "kanban" && (() => {
                 const kanbanCols: { id: KanbanColumn; label: string; color: string; headerColor: string }[] = [
-                  { id: "assigned", label: "Assigned", color: "bg-stone-50", headerColor: "bg-stone-200 text-stone-700" },
-                  { id: "actioning", label: "Actioning", color: "bg-blue-50", headerColor: "bg-blue-200 text-blue-800" },
-                  { id: "needs-support", label: "Needs Support", color: "bg-red-50", headerColor: "bg-red-200 text-red-800" },
-                  { id: "completed", label: "Completed", color: "bg-emerald-50", headerColor: "bg-emerald-200 text-emerald-800" },
+                  { id: "assigned", label: "Assigned", color: "bg-muted", headerColor: "bg-muted text-foreground" },
+                  { id: "actioning", label: "Actioning", color: "bg-muted", headerColor: "bg-muted text-foreground" },
+                  { id: "needs-support", label: "Needs Support", color: "bg-destructive/10", headerColor: "bg-destructive/20 text-foreground" },
+                  { id: "completed", label: "Completed", color: "bg-open/10", headerColor: "bg-open/10 text-open" },
                 ];
                 return (
                   <div className="max-w-full">
                     <div className="mb-6">
                       <h2 className="font-display text-2xl font-bold text-teal-deep">Kanban Board</h2>
-                      <p className="text-stone-500 text-sm mt-1">
+                      <p className="text-muted-foreground text-sm mt-1">
                         Assign tasks to team members and track progress. Moving a card to Completed auto-marks the timeline item as confirmed.
                       </p>
                     </div>
@@ -1348,14 +1348,14 @@ export default function ProjectHistory() {
                           return entry ? entry.column === col.id : col.id === "assigned";
                         });
                         return (
-                          <div key={col.id} className={`rounded-xl border border-stone-200 ${col.color} flex flex-col`}>
+                          <div key={col.id} className={`rounded-xl border border-border ${col.color} flex flex-col`}>
                             <div className={`flex items-center justify-between px-4 py-2.5 rounded-t-xl ${col.headerColor}`}>
                               <span className="font-semibold text-sm">{col.label}</span>
                               <span className="text-xs font-normal opacity-70">{colCards.length}</span>
                             </div>
                             <div className="p-3 space-y-2 flex-1 overflow-y-auto max-h-screen">
                               {colCards.length === 0 && (
-                                <p className="text-center text-xs text-stone-400 py-4 italic">No tasks here</p>
+                                <p className="text-center text-xs text-muted-foreground py-4 italic">No tasks here</p>
                               )}
                               {colCards.map((d) => {
                                 const entry = serverState.kanban[d.id];
@@ -1369,23 +1369,23 @@ export default function ProjectHistory() {
                                 return (
                                   <div
                                     key={d.id}
-                                    className={`bg-white rounded-lg border shadow-sm p-3 ${
+                                    className={`bg-card rounded-lg border shadow-sm p-3 ${
                                       isVillageOwned
-                                        ? "border-l-4 border-l-amber border-r border-t border-b border-stone-200"
+                                        ? "border-l-4 border-l-amber border-r border-t border-b border-border"
                                         : isCollab
-                                        ? "border-l-4 border-l-violet-400 border-r border-t border-b border-stone-200"
-                                        : "border-stone-200"
+                                        ? "border-l-4 border-l-notice border-r border-t border-b border-border"
+                                        : "border-border"
                                     }`}
                                   >
-                                    <p className="text-xs text-stone-700 leading-relaxed mb-2 break-words">{fill(d.text)}</p>
-                                    <div className="text-xs text-stone-400 mb-2 break-words" title={fill(d.weekGoal)}>{fill(d.weekLabel)}</div>
+                                    <p className="text-xs text-foreground leading-relaxed mb-2 break-words">{fill(d.text)}</p>
+                                    <div className="text-xs text-muted-foreground mb-2 break-words" title={fill(d.weekGoal)}>{fill(d.weekLabel)}</div>
                                     {isVillageOwned && (
                                       <span className="inline-block text-xs bg-amber text-foreground font-semibold px-1.5 py-0.5 rounded mb-2">
                                         {villageName}
                                       </span>
                                     )}
                                     {isCollab && (
-                                      <span className="inline-block text-xs bg-violet-100 text-violet-700 font-semibold px-1.5 py-0.5 rounded mb-2">
+                                      <span className="inline-block text-xs bg-notice/10 text-notice font-semibold px-1.5 py-0.5 rounded mb-2">
                                         Collab
                                       </span>
                                     )}
@@ -1398,14 +1398,14 @@ export default function ProjectHistory() {
                                         onChange={(e) =>
                                           updateKanban(d.id, entry?.column ?? "assigned", e.target.value)
                                         }
-                                        className="text-xs px-2 py-1 border border-stone-200 rounded-md w-full outline-none focus:border-teal-deep"
+                                        className="text-xs px-2 py-1 border border-border rounded-md w-full outline-none focus:border-teal-deep"
                                       />
                                       <select
                                         value={entry?.column ?? "assigned"}
                                         onChange={(e) =>
                                           updateKanban(d.id, e.target.value as KanbanColumn, entry?.assignee ?? "")
                                         }
-                                        className="text-xs px-2 py-1 border border-stone-200 rounded-md w-full outline-none focus:border-teal-deep bg-white"
+                                        className="text-xs px-2 py-1 border border-border rounded-md w-full outline-none focus:border-teal-deep bg-card"
                                       >
                                         <option value="assigned">Assigned</option>
                                         <option value="actioning">Actioning</option>
@@ -1436,28 +1436,28 @@ export default function ProjectHistory() {
                 <div className="max-w-3xl mx-auto">
                   <div className="mb-6">
                     <h2 className="font-display text-2xl font-bold text-teal-deep">Decision Log</h2>
-                    <p className="text-stone-500 text-sm mt-1">
+                    <p className="text-muted-foreground text-sm mt-1">
                       Track key decisions for the {villageName} launch. Marking a decision as decided will reflect on the timeline.
                     </p>
                   </div>
 
                   {/* Summary stats */}
                   <div className="flex gap-2 sm:gap-4 mb-6">
-                    <div className="bg-white border border-stone-200 rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
+                    <div className="bg-card border border-border rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
                       <p className="text-2xl font-bold text-teal-deep">
                         {DECISIONS.filter((dec) => serverState.decisions[dec.id]?.status === "decided").length}
                       </p>
-                      <p className="text-stone-400 text-xs mt-0.5">Decided</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">Decided</p>
                     </div>
-                    <div className="bg-white border border-stone-200 rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
-                      <p className="text-2xl font-bold text-amber-600">
+                    <div className="bg-card border border-border rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
+                      <p className="text-2xl font-bold text-amber-ink">
                         {DECISIONS.filter((dec) => !serverState.decisions[dec.id] || serverState.decisions[dec.id]?.status === "open").length}
                       </p>
-                      <p className="text-stone-400 text-xs mt-0.5">Open</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">Open</p>
                     </div>
-                    <div className="bg-white border border-stone-200 rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
-                      <p className="text-2xl font-bold text-stone-400">{DECISIONS.length}</p>
-                      <p className="text-stone-400 text-xs mt-0.5">Total</p>
+                    <div className="bg-card border border-border rounded-xl px-3 sm:px-5 py-4 flex-1 min-w-0 text-center shadow-sm">
+                      <p className="text-2xl font-bold text-muted-foreground">{DECISIONS.length}</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">Total</p>
                     </div>
                   </div>
 
@@ -1476,34 +1476,34 @@ export default function ProjectHistory() {
                       return (
                         <div
                           key={dec.id}
-                          className={`bg-white border rounded-xl overflow-hidden shadow-sm ${
-                            isDecided ? "border-emerald-200" : "border-stone-200"
+                          className={`bg-card border rounded-xl overflow-hidden shadow-sm ${
+                            isDecided ? "border-open/40" : "border-border"
                           }`}
                         >
-                          <div className={`px-5 py-4 border-b ${isDecided ? "border-emerald-100 bg-emerald-50/50" : "border-stone-100 bg-stone-50"}`}>
+                          <div className={`px-5 py-4 border-b ${isDecided ? "border-open/40 bg-open/10" : "border-border bg-muted"}`}>
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
                                   <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
                                     isDecided
-                                      ? "bg-emerald-100 text-emerald-700"
-                                      : "bg-amber-100 text-amber-700"
+                                      ? "bg-open/10 text-open"
+                                      : "bg-amber/15 text-amber-ink"
                                   }`}>
                                     {isDecided ? "Decided" : "Open"}
                                   </span>
                                   {linkedDeliverable && (
                                     <span className={`text-xs px-2 py-0.5 rounded ${
                                       linkedState === 2
-                                        ? "bg-emerald-100 text-emerald-600"
+                                        ? "bg-open/10 text-open"
                                         : linkedState === 1
                                         ? "bg-teal-deep/10 text-teal-deep"
-                                        : "bg-stone-100 text-stone-500"
+                                        : "bg-muted text-muted-foreground"
                                     }`}>
                                       Timeline: {fill(linkedDeliverable.text).slice(0, 40)}{fill(linkedDeliverable.text).length > 40 ? "..." : ""}
                                     </span>
                                   )}
                                 </div>
-                                <h3 className="font-semibold text-stone-800 text-sm break-words">{fill(dec.title)}</h3>
+                                <h3 className="font-semibold text-foreground text-sm break-words">{fill(dec.title)}</h3>
                               </div>
                               <button
                                 onClick={() => {
@@ -1519,7 +1519,7 @@ export default function ProjectHistory() {
                                 }}
                                 className={`shrink-0 text-xs px-3 py-1.5 rounded-lg transition-colors ${
                                   isEditing
-                                    ? "bg-stone-200 text-stone-600 hover:bg-stone-300"
+                                    ? "border border-border bg-card text-foreground hover:bg-muted"
                                     : "bg-teal-deep text-white hover:bg-teal-deep-dark"
                                 }`}
                               >
@@ -1529,11 +1529,11 @@ export default function ProjectHistory() {
                           </div>
 
                           <div className="px-5 py-4">
-                            <p className="text-stone-500 text-sm mb-3 break-words">{fill(dec.description)}</p>
+                            <p className="text-muted-foreground text-sm mb-3 break-words">{fill(dec.description)}</p>
 
                             {dec.options.length > 0 && (
                               <div className="mb-3">
-                                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5">Suggested options</p>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Suggested options</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {dec.options.map((opt) => (
                                     <button
@@ -1552,7 +1552,7 @@ export default function ProjectHistory() {
                                       className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                                         (isEditing ? decisionDraft.chosen : entry?.chosen) === opt
                                           ? "bg-teal-deep text-white border-teal-deep"
-                                          : "border-stone-200 text-stone-600 hover:border-teal hover:text-teal"
+                                          : "border-border text-muted-foreground hover:border-teal hover:text-teal"
                                       }`}
                                     >
                                       {opt}
@@ -1565,47 +1565,47 @@ export default function ProjectHistory() {
                             {isEditing ? (
                               <div className="space-y-3">
                                 <div>
-                                  <label className="text-xs font-semibold text-stone-500 block mb-1">Decision chosen</label>
+                                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Decision chosen</label>
                                   <input
                                     type="text"
                                     value={decisionDraft.chosen}
                                     onChange={(e) => setDecisionDraft((prev) => ({ ...prev, chosen: e.target.value }))}
                                     placeholder="What was decided?"
                                     autoFocus
-                                    className="w-full text-sm px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
+                                    className="w-full text-sm px-3 py-2 border border-border rounded-lg outline-none focus:border-teal-deep"
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-xs font-semibold text-stone-500 block mb-1">Notes / rationale</label>
+                                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Notes / rationale</label>
                                   <textarea
                                     value={decisionDraft.notes}
                                     onChange={(e) => setDecisionDraft((prev) => ({ ...prev, notes: e.target.value }))}
                                     placeholder="Context, rationale, or next steps..."
-                                    className="w-full text-sm px-3 py-2 border border-stone-200 rounded-lg outline-none resize-y min-h-20 focus:border-teal-deep font-sans"
+                                    className="w-full text-sm px-3 py-2 border border-border rounded-lg outline-none resize-y min-h-20 focus:border-teal-deep font-sans"
                                   />
                                 </div>
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => updateDecision(dec.id, "decided", decisionDraft.chosen, decisionDraft.notes)}
-                                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-teal-deep text-white hover:bg-teal-deep-dark transition-colors"
                                   >
                                     <CheckCircle2 className="w-3 h-3" />
                                     Mark as Decided
                                   </button>
                                   <button
                                     onClick={() => updateDecision(dec.id, "open", decisionDraft.chosen, decisionDraft.notes)}
-                                    className="text-xs px-3 py-1.5 rounded-lg bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                                    className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
                                   >
                                     Save as Open
                                   </button>
                                 </div>
                               </div>
                             ) : isDecided ? (
-                              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3">
-                                <p className="text-xs font-semibold text-emerald-700 mb-0.5">Decision</p>
-                                <p className="text-sm text-emerald-800 font-medium">{entry.chosen || "No decision text recorded"}</p>
+                              <div className="bg-open/10 border border-open/40 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-open mb-0.5">Decision</p>
+                                <p className="text-sm text-open font-medium">{entry.chosen || "No decision text recorded"}</p>
                                 {entry.notes && (
-                                  <p className="text-xs text-emerald-600 mt-1.5 whitespace-pre-wrap">{entry.notes}</p>
+                                  <p className="text-xs text-open mt-1.5 whitespace-pre-wrap">{entry.notes}</p>
                                 )}
                               </div>
                             ) : null}
@@ -1628,24 +1628,24 @@ export default function ProjectHistory() {
                     );
                     if (carried.length === 0) return null;
                     return (
-                      <div className="mt-6 bg-white border border-stone-200 rounded-xl p-5">
-                        <h3 className="text-sm font-bold text-stone-700 uppercase tracking-wide mb-1">
+                      <div className="mt-6 bg-card border border-border rounded-xl p-5">
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-wide mb-1">
                           Carried over
                         </h3>
-                        <p className="text-xs text-stone-400 mb-3">
+                        <p className="text-xs text-muted-foreground mb-3">
                           Written against a decision that has since been renamed. Kept here so
                           nothing anyone recorded is lost.
                         </p>
                         <div className="space-y-3">
                           {carried.map(([id, entry]) => (
-                            <div key={`carried-${id}`} className="border-t border-stone-100 pt-3 first:border-0 first:pt-0">
-                              <p className="text-sm text-stone-700 font-medium">
+                            <div key={`carried-${id}`} className="border-t border-border pt-3 first:border-0 first:pt-0">
+                              <p className="text-sm text-foreground font-medium">
                                 {entry.chosen || "No decision text recorded"}
                               </p>
                               {entry.notes && (
-                                <p className="text-xs text-stone-500 mt-1 whitespace-pre-wrap">{entry.notes}</p>
+                                <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{entry.notes}</p>
                               )}
-                              <p className="text-xs text-stone-400 mt-1">
+                              <p className="text-xs text-muted-foreground mt-1">
                                 Recorded as {entry.status === "decided" ? "decided" : "open"}
                                 {" · "}
                                 {/* The stored key, which is data rather than
@@ -1667,19 +1667,19 @@ export default function ProjectHistory() {
                 <div className="max-w-3xl mx-auto">
                   <div className="mb-6">
                     <h2 className="font-display text-2xl font-bold text-teal-deep">Your Discussion Topics</h2>
-                    <p className="text-stone-500 text-sm mt-1">
+                    <p className="text-muted-foreground text-sm mt-1">
                       Topics you add here stay in this browser only: nobody else on the team sees them, and another device starts without them. Put anything the team needs to see in the Decision Log, which is saved on the server for every admin.
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 mb-6">
-                    <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2 block">Add a topic</label>
+                  <div className="bg-card rounded-xl border border-border shadow-sm p-5 mb-6">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Add a topic</label>
                     <textarea
                       value={newTopic}
                       onChange={(e) => setNewTopic(e.target.value)}
                       placeholder="What needs to be discussed?"
                       rows={3}
-                      className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg outline-none focus:border-teal-deep resize-y"
+                      className="w-full px-3 py-2 text-sm border border-border rounded-lg outline-none focus:border-teal-deep resize-y"
                     />
                     <div className="mt-3 flex justify-end">
                       <button
@@ -1699,13 +1699,13 @@ export default function ProjectHistory() {
                       <>
                         <div className="space-y-2 mb-6">
                           {open.length === 0 && (
-                            <p className="text-center text-sm text-stone-400 italic py-6">No open topics. Add one above.</p>
+                            <p className="text-center text-sm text-muted-foreground italic py-6">No open topics. Add one above.</p>
                           )}
                           {open.map((t) => (
-                            <div key={t.id} className="bg-white rounded-xl border border-stone-200 shadow-sm px-5 py-3 flex items-start gap-3">
+                            <div key={t.id} className="bg-card rounded-xl border border-border shadow-sm px-5 py-3 flex items-start gap-3">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-stone-700 whitespace-pre-wrap">{t.text}</p>
-                                <p className="text-xs text-stone-400 mt-1">{new Date(t.createdAt).toLocaleString()}</p>
+                                <p className="text-sm text-foreground whitespace-pre-wrap">{t.text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{new Date(t.createdAt).toLocaleString()}</p>
                               </div>
                               <button
                                 onClick={() => toggleTopicResolved(t.id)}
@@ -1715,7 +1715,7 @@ export default function ProjectHistory() {
                               </button>
                               <button
                                 onClick={() => deleteTopic(t.id)}
-                                className="shrink-0 text-stone-300 hover:text-red-500 transition-colors text-xs"
+                                className="shrink-0 text-muted-foreground hover:text-destructive transition-colors text-xs"
                                 title="Delete"
                               >
                                 ×
@@ -1725,27 +1725,27 @@ export default function ProjectHistory() {
                         </div>
 
                         {resolved.length > 0 && (
-                          <details className="bg-stone-50 rounded-xl border border-stone-200 px-5 py-3">
-                            <summary className="cursor-pointer text-sm font-semibold text-stone-500 select-none">
+                          <details className="bg-muted rounded-xl border border-border px-5 py-3">
+                            <summary className="cursor-pointer text-sm font-semibold text-muted-foreground select-none">
                               Resolved ({resolved.length})
                             </summary>
                             <div className="space-y-2 mt-3">
                               {resolved.map((t) => (
                                 <div key={t.id} className="flex items-start gap-3 py-1">
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                  <CheckCircle2 className="w-4 h-4 text-open shrink-0 mt-0.5" />
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-stone-500 line-through whitespace-pre-wrap">{t.text}</p>
-                                    <p className="text-xs text-stone-400 mt-0.5">{new Date(t.createdAt).toLocaleString()}</p>
+                                    <p className="text-sm text-muted-foreground line-through whitespace-pre-wrap">{t.text}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{new Date(t.createdAt).toLocaleString()}</p>
                                   </div>
                                   <button
                                     onClick={() => toggleTopicResolved(t.id)}
-                                    className="shrink-0 text-xs text-stone-400 hover:text-teal-deep"
+                                    className="shrink-0 text-xs text-muted-foreground hover:text-teal-deep"
                                   >
                                     Reopen
                                   </button>
                                   <button
                                     onClick={() => deleteTopic(t.id)}
-                                    className="shrink-0 text-stone-300 hover:text-red-500 transition-colors text-xs"
+                                    className="shrink-0 text-muted-foreground hover:text-destructive transition-colors text-xs"
                                   >
                                     ×
                                   </button>

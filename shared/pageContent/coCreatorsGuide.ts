@@ -516,7 +516,7 @@ export const CO_CREATORS_GUIDE_PAGE: PageSpec = {
         {
           key: "cards",
           label: "Cards",
-          help: "In this order: your {commitment} page, the quest board, your events page.",
+          help: "In this order: your {commitment} page, Quests, your events page.",
           itemLabel: "Card",
           titleKey: "title",
           fixed: GUIDE_CTA_IDS,

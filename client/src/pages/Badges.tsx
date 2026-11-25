@@ -5,6 +5,7 @@
  * resolved — shown honestly, not hidden).
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import { Link } from "wouter";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
@@ -107,14 +108,16 @@ export default function Badges() {
   const badgesModule = useModule("badges");
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [skill, setSkill] = useState("");
   const [error, setError] = useState("");
 
   const load = () => {
     fetch("/api/badges", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setData)
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setData(d); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
   };
   useEffect(() => { if (badgesModule) load(); }, [badgesModule?.id]);
 
@@ -312,6 +315,7 @@ export default function Badges() {
                 </div>
               );
             })}
+          {loadFailed && !data && <LoadFailed onRetry={load} />}
             {data && data.badges.length === 0 && (
               <p className="text-center text-sm text-muted-foreground py-12"><Trans context="Badges, p">No badges yet.</Trans></p>
             )}

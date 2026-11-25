@@ -5,6 +5,7 @@ import { listenForThemeChanges } from "./lib/liveTheme";
 import { installCrashReporting } from "./lib/crashReport";
 import { installStaleChunkRecovery } from "./lib/staleChunk";
 import { installRouteGrowth } from "./lib/routeGrowth";
+import { installSignedReads } from "./lib/signedReads";
 import "./index.css";
 
 /**
@@ -97,6 +98,9 @@ import { warmFirstScreenFonts } from "./fontWarmup";
  */
 warmFirstScreenFonts();
 
+// Every read of the village's own API carries the sign-in, bare fetch or not
+// (lib/signedReads.ts). Before the first read.
+installSignedReads();
 // Consume the preloaded config now, so it has usually resolved before the
 // first render and useGameConfig/useBrandImages start with it (gameApi.ts).
 fetchConfigCached();

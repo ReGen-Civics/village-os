@@ -5,7 +5,7 @@
  * /api/assistant/coordinate, exactly as the concierge always has, for the
  * questions a substring cannot answer.
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Compass, Search } from "lucide-react";
 import MicButton from "@/components/MicButton";
 import { authToken } from "@/lib/gameApi";
@@ -198,6 +198,10 @@ export default function SearchBar({
   const [askAnswer, setAskAnswer] = useState<any>(null);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  // The corner's "Ask {guide}" lands here as /map/circles#ask: the box takes focus, ready for the question.
+  useEffect(() => {
+    if (window.location.hash === "#ask") inputRef.current?.focus();
+  }, []);
 
   const hits = useMemo(() => searchHits(data, query), [data, query]);
 

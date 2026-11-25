@@ -16,8 +16,15 @@ import { Svg, type GlyphProps } from "./glyphs";
 /**
  * A drawing made a drop-in for a lucide icon: the same props (size, color,
  * strokeWidth) and lucide's default 24px box, so a page swaps the import and
- * nothing else. Our 1.5 stroke stays unless the page asks for another.
+ * nothing else. The family's line is LIVING_STROKE unless the page asks for another.
+ *
+ * The family's line: 1.75 on the 24 box. At 1.5 the glyphs read as scratches at
+ * the sizes the bar and the menus draw them (the lead, 25 Nov 2026: "the icons need
+ * to be a bit bigger otherwise they just look like scratches"). App.tsx gives the
+ * remaining stock icons the same line, so a row of the two is one weight.
  */
+export const LIVING_STROKE = 1.75;
+
 export function asIcon(name: string, Drawing: (props: GlyphProps) => ReactElement): LucideIcon {
   // Like lucide's `lucide lucide-<name>`, so a test or a stylesheet can find a glyph by what it draws.
   const named = `living living-${name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()}`;
@@ -30,7 +37,7 @@ export function asIcon(name: string, Drawing: (props: GlyphProps) => ReactElemen
         height={size}
         className={className ? `${named} ${className}` : named}
         {...(color ? { stroke: color } : {})}
-        {...(strokeWidth !== undefined ? { strokeWidth } : {})}
+        strokeWidth={strokeWidth ?? LIVING_STROKE}
         {...rest}
       />
     );
@@ -169,6 +176,24 @@ function LeafCompassDrawing(props: GlyphProps) {
     </Svg>
   );
 }
+/** A scarlet macaw in flight, its deep hooked beak forward, one wing raised with the feather tips spread, the long tail streaming: the guide in the corner (the lead's pick, 25 Nov 2026). */
+function ScarletMacawDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      {/* The head and the great hooked beak. */}
+      <path d="M5 8.2c.8-1.8 2.8-2.6 4.6-1.8 1.2.5 1.9 1.6 2 2.8" />
+      <path {...WASH} d="M5 8.2c-2.2-.1-3.6 1.6-3.4 3.6.1 1 .6 1.8 1.2 2.2-.1-1 .3-1.9 1.2-2.2.6-.2 1.2-.1 1.8.3" />
+      <Dot cx={7.8} cy={8.4} r={1} />
+      {/* The body. */}
+      <path d="M3.9 12.1c.6 1 1.6 1.4 2.6 1.2 1.8 1.4 4.2 1.8 6.8 1.2 1.4-.4 2.6-1 3.4-2" />
+      <path d="M11.6 9.4c2 .2 3.8 1 5.2 2.4" />
+      {/* The raised wing, its feather tips spread. */}
+      <path {...WASH} d="M11 9.6c.2-2.4 1.4-4.6 3.6-6.2l.4 2.4 1.8-1.8.2 2.6 2.4-1.2c-.6 2.6-2.4 4.6-5.2 5.4" />
+      {/* The long tail. */}
+      <path d="M16.6 12.6L21.8 21 15 14.4" />
+    </Svg>
+  );
+}
 /* The four paths' glyphs and the seed: the menu draws each path by one, and the bar draws the reader's (config/nav.ts, config/mobileNav.ts PATH_GLYPHS). */
 export const Cell = /* @__PURE__ */ asIcon("Cell", CellDrawing);
 export const CellRing = /* @__PURE__ */ asIcon("CellRing", CellRingDrawing);
@@ -179,3 +204,4 @@ export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
 export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
 export const EarthshipDome = /* @__PURE__ */ asIcon("EarthshipDome", EarthshipDomeDrawing);
 export const LeafCompass = /* @__PURE__ */ asIcon("LeafCompass", LeafCompassDrawing);
+export const ScarletMacaw = /* @__PURE__ */ asIcon("ScarletMacaw", ScarletMacawDrawing);

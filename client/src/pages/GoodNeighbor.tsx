@@ -332,11 +332,9 @@ export default function GoodNeighbor() {
 
                 <div className="flex flex-wrap justify-center gap-4">
                   {!pageOff("/love-letter") && (
-                    <Link href="/love-letter">
-                      <a className="px-8 py-4 bg-notice text-background rounded-xl font-semibold text-lg hover:bg-notice/90 transition-all duration-200 flex items-center gap-2">
+                    <Link href="/love-letter" className="px-8 py-4 bg-notice text-background rounded-xl font-semibold text-lg hover:bg-notice/90 transition-all duration-200 flex items-center gap-2">
                         {closing.fields.commitLabel}
                         <ArrowRight className="w-5 h-5" />
-                      </a>
                     </Link>
                   )}
                   {eventsUrl && closing.fields.eventsLabel && (

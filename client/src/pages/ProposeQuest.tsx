@@ -178,10 +178,9 @@ export default function ProposeQuest() {
                 >
                   <Trans context="ProposeQuest, button">Change it and send again
                 </Trans></button>
-                <Link href="/quests">
-                  <a className={BTN_SECONDARY}>
-                    <Trans context="ProposeQuest, a">Back to the Quest Board
-                  </Trans></a>
+                <Link href="/quests" className={BTN_SECONDARY}>
+                    <Trans context="ProposeQuest, a">Back to Quests
+                  </Trans>
                 </Link>
               </div>
             </div>
@@ -210,10 +209,9 @@ export default function ProposeQuest() {
               </Trans></p>
               <p className="-mt-5 mb-8 font-semibold text-foreground" data-route-promise="">{replyPromise}</p>
               <div className="flex flex-wrap justify-center gap-3">
-                <Link href="/quests">
-                  <a className={BTN_PRIMARY}>
-                    <Trans context="ProposeQuest, a">Back to the Quest Board
-                  </Trans></a>
+                <Link href="/quests" className={BTN_PRIMARY}>
+                    <Trans context="ProposeQuest, a">Back to Quests
+                  </Trans>
                 </Link>
                 <button
                   onClick={() => {
@@ -255,11 +253,10 @@ export default function ProposeQuest() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl mx-auto text-center"
           >
-            <Link href="/quests">
-              <a className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+            <Link href="/quests" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
                 <Trans context="ProposeQuest, a"><ArrowLeft className="w-4 h-4" />
-                Back to the Quest Board
-              </Trans></a>
+                Back to Quests
+              </Trans>
             </Link>
             <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
               <Seed className="w-8 h-8 text-notice" />

@@ -667,7 +667,7 @@ export async function holder(w, ctx) {
   // starter quests are examples, which never lead and never count, so the
   // "Fits you" card and the count are the board's own tests' to prove.
   await w.step("filter the open work by a season goal", async () => {
-    await page.getByRole("heading", { name: "Open work" }).waitFor();
+    await page.getByRole("heading", { name: "Quests", exact: true }).waitFor();
     if (!(await page.locator("[data-circle-group]").count())) throw new Error("the open work is not grouped by circle");
     if (!(await page.locator("article [data-status]").count())) throw new Error("the cards carry no status mark");
     const goal = page.locator("[data-goal-filter]:not([data-goal-filter=All])").first();

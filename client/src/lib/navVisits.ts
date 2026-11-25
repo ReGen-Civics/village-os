@@ -66,11 +66,22 @@ function sentThisSession(): Set<string> {
 }
 
 /**
+ * The prefix every agent token carries (TOKEN_PREFIX in server/lib/agentTokens.ts;
+ * navVisits.test.ts holds the two together). A member signs in with a session
+ * token, so a browser holding an agent token is the live view for QA
+ * (server/lib/liveView.ts): it only reads, and an agent's look is not a member's
+ * visit.
+ */
+export const AGENT_TOKEN_PREFIX = "vat_";
+
+/**
  * A page was visited by a signed-in member. Counted once per page per session,
  * on the device and (the address alone) on the server. Home is not counted: its
- * place on the bar is fixed.
+ * place on the bar is fixed. A live view counts nothing and sends nothing, so
+ * looking at a page never tries a write.
  */
 export async function visited(location: string, token: string, fetchImpl: typeof fetch = fetch): Promise<void> {
+  if (token.startsWith(AGENT_TOKEN_PREFIX)) return;
   const path = clean(location);
   if (path === "/" || path === PATH_PATH || !/^\/[\w\-/]*$/.test(path)) return;
   const sent = sentThisSession();

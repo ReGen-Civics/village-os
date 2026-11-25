@@ -6,6 +6,7 @@
  * has never synced says so plainly.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -60,6 +61,10 @@ export default function Crowdpool() {
   const modules = useModules();
   const crowdpool = useModule("crowdpool");
   const [cards, setCards] = useState<CampaignCard[] | null>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   // A campaign that names no currency is shown in the village's own (readiness R154).
   const villageCurrency = String(useGameConfig()?.project?.fiatCurrency ?? "");
 
@@ -67,11 +72,11 @@ export default function Crowdpool() {
     if (!crowdpool) return;
     let live = true;
     fetch("/api/crowdpool/campaigns", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (live && d) setCards(d.campaigns ?? []); })
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { if (live) setCards(d?.campaigns ?? []); })
+      .catch(() => { if (live) setLoadFailed(true); });
     return () => { live = false; };
-  }, [crowdpool?.id]);
+  }, [crowdpool?.id, attempt]);
 
   if (modules.loaded && !crowdpool) return <ModuleGate moduleId="crowdpool" name="Crowdpool" />;
 
@@ -82,7 +87,7 @@ export default function Crowdpool() {
       <div className={WORLD}>
       <section className="py-8 md:py-12">
         <div className="container max-w-3xl text-center">
-          <h1 className={`${H1} mb-3`}><Trans context="Crowdpool, h1">Pooling Resources</Trans></h1>
+          <h1 className={`${H1} mb-3`}><Trans context="Crowdpool, h1">Crowd pooling</Trans></h1>
           {/* R47: the Trail line leads and the tooltip defines the word. The
               ring line is the Lore, last and quiet. */}
           <p className={`${LEDE} mx-auto`}>
@@ -97,7 +102,8 @@ export default function Crowdpool() {
       </section>
       <section className="pb-16 pt-2">
         <div className="container max-w-3xl space-y-4">
-          {cards === null && (
+          {cards === null && loadFailed && <LoadFailed onRetry={retry} />}
+          {cards === null && !loadFailed && (
             <div className="cp-board p-8 flex flex-col items-center gap-2">
               <BreathingLoader label={t({ message: "Reading the ledger", context: "Crowdpool, label" })} size={48} />
               <p className="cp-smallcaps text-sm"><Trans context="Crowdpool, p">Reading the ledger…</Trans></p>
@@ -106,7 +112,7 @@ export default function Crowdpool() {
           {cards !== null && cards.length === 0 && (
             <div className="text-left">
               <ComingSoonPanel
-                title={t({ message: "Pooling resources", context: "coming soon: the crowdpool page" })}
+                title={t({ message: "Crowd pooling", context: "coming soon: the crowdpool page" })}
                 body={t({ message: "When the village opens its first raising, its ring appears here, and you can see what it still needs and add to it.", context: "coming soon: the crowdpool page" })}
               />
             </div>

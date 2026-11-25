@@ -533,3 +533,8 @@ Relayed by the coordinator, the lead accepting the coordinator's suggestions:
 | 2a, migration 0432, the staging and outcomes repos, the erasure step | `wt/review-engine` | merged, PR #1617 |
 | 2b, outcomes at the connector's doors (accept, discard, the full-access agent's), and the backfill of its past decisions | `wt/review-engine` | built |
 | 2b, the other streams' doors | | each with the lane that moves its stream through staging (7, 8) |
+| 3, the deciders' read | `wt/review-engine` | merged, PR #1629 |
+| 4a, `/admin/review`, one list and find by code | `wt/review-page` | merged, PR #1634 |
+| 4b, deciding on the page; conflicts block, stale seen first; Held and Decided | `wt/review-decide` | merged, PR #1653 |
+| 4c, every row says what it is; org chart drafts publish on their row; `useReviewInbox` | `wt/review-rows` | merged, PR #1667 |
+| 5, the connector through staging: held before review, re-sends answered, reconsider | `wt/review-staging` | built; `choose` and `stale` statuses not needed (4b reads conflicts live); `under_vote` and caps not read yet |

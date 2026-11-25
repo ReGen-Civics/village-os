@@ -13,6 +13,7 @@ import { connectionRows, glanceSentence, readLastGlance, rememberGlance, sinceLa
 import { waitingRequests } from "./waitingWork";
 import UnifiedInbox from "./UnifiedInbox";
 import RoleApplicationsList from "./RoleApplicationsList";
+import NeedsYouNow from "./NeedsYouNow";
 import { fetchWaitingRoleApplications, type RoleApplicationRow } from "./roleApplicationsWaiting";
 import { AllClear, FeelSettings, GentleQuests, WeekRecap } from "./AdminFeel";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -125,6 +126,8 @@ export default function HomeBase({
         <p className="text-base text-gray-600"><Trans context="HomeBase, p">Reading what is waiting...</Trans></p>
       )}
       {!problem && needs && <RoleApplicationsList rows={roleApps} heading="Role applications waiting" />}
+      {/* The review lane's one list, read as this person (NeedsYouNow.tsx). */}
+      <NeedsYouNow />
       <div className="grid gap-2 sm:grid-cols-2">
         {ADMIN_AREAS.map((item) => (
           <button
