@@ -2624,12 +2624,16 @@ html:has(#sera-changes [data-sera-strip-on]) {
   from { opacity: 0.55; }
   to { opacity: 1; }
 }
+/* The bud sits on the shoot, centred and pointing up: a leaf on the stem. At the pill's top-right corner,
+   where a phone shows unread counts, two reviewers read it as a notification (QA, 25 Nov 2026). */
 .m-bud {
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 7px;
-  height: 7px;
+  /* Centred on the line, a leaf with its points up and down: a bud on the stem. */
+  top: -2px;
+  left: 50%;
+  translate: -50% 0;
+  width: 6px;
+  height: 6px;
   border-radius: 50% 0;
   rotate: -45deg;
   pointer-events: none;

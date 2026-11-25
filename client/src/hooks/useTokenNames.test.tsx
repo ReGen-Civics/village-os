@@ -33,7 +33,7 @@ vi.mock("@/lib/gameApi", () => ({
 // A member's bar: a newcomer's bar shows Roles in the token slot's place (the front door, 24 Nov 2026).
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u1", name: "Ora", role: "member", membershipGranted: true }, token: "t", loading: false }) }));
 import { useTokenName, useTokenNameLower, useValueTokenName } from "./useTokenNames";
-import MobileTabBar from "@/components/mobile/MobileTabBar";
+import MobileTabBar, { villageSlots } from "@/components/mobile/MobileTabBar";
 import { TAB_SLOTS } from "@/config/mobileNav";
 import { NAV, isGroup, type NavLink } from "@/config/nav";
 
@@ -115,7 +115,10 @@ describe("a village whose config has not answered", () => {
  * route in the same object, which makes it the cheapest place to prove that
  * one moves and the other does not.
  */
-describe("the bottom tab bar", () => {
+describe("the bottom tab bar, for a village that put the gratitude wall on it", () => {
+  // The platform's bar is Home, Your path, Roles, Quests, More (the lead, 25 Nov 2026), so the wall is on
+  // it only when a village chooses it (villageSlots): that is where its token's word must still follow.
+  const CHOSEN = { tabs: ["/", "/path", "/gratitude", "/quests"] };
   const bar = () =>
     render(
       <Router>
@@ -124,21 +127,21 @@ describe("the bottom tab bar", () => {
     );
 
   it("labels the token slot with the village's word", () => {
-    useGameConfigMock.mockReturnValue(RENAMED);
+    useGameConfigMock.mockReturnValue({ ...RENAMED, menu: CHOSEN });
     bar();
     expect(screen.getByLabelText("Seeds")).toBeTruthy();
     expect(screen.queryByLabelText("Gratitude")).toBeNull();
   });
 
-  it("labels it with a generic noun before the config answers", () => {
-    useGameConfigMock.mockReturnValue(null);
+  it("labels it with a generic noun before the village's word has arrived", () => {
+    useGameConfigMock.mockReturnValue({ menu: CHOSEN });
     bar();
     expect(screen.queryByLabelText("Gratitude")).toBeNull();
     expect(screen.getByLabelText("Recognition")).toBeTruthy();
   });
 
   it("keeps the route at /gratitude through a rename", () => {
-    useGameConfigMock.mockReturnValue(RENAMED);
+    useGameConfigMock.mockReturnValue({ ...RENAMED, menu: CHOSEN });
     bar();
     expect(screen.getByLabelText("Seeds").getAttribute("href")).toBe("/gratitude");
   });
@@ -150,7 +153,7 @@ describe("the bottom tab bar", () => {
  */
 describe("what a rename must never touch", () => {
   it("leaves the tab slot's path alone", () => {
-    const slot = TAB_SLOTS.find((s) => s.token === "recognition");
+    const slot = villageSlots(["/", "/path", "/gratitude"], {}, [], () => true).find((s) => s.token === "recognition");
     expect(slot?.path).toBe("/gratitude");
   });
 
@@ -163,6 +166,8 @@ describe("what a rename must never touch", () => {
   it("marks exactly one entry per config as token-named, so nothing else drifts", () => {
     const links: NavLink[] = NAV.flatMap((e) => (isGroup(e) ? [...e.items] : [e]));
     expect(links.filter((l) => l.token).length).toBe(1);
-    expect(TAB_SLOTS.filter((s) => s.token).length).toBe(1);
+    // The platform's own bar names no token; a village that chooses the wall gets exactly one.
+    expect(TAB_SLOTS.filter((s) => s.token).length).toBe(0);
+    expect(villageSlots(["/", "/path", "/gratitude"], {}, [], () => true).filter((s) => s.token).length).toBe(1);
   });
 });

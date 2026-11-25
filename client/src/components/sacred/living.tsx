@@ -6,9 +6,17 @@
  * Drawn with glyphs.tsx's own Svg, by agreement with the lane that owns it: a fine
  * monoline in currentColor, 1.5 stroke, round caps and joins, on a 24 grid,
  * aria-hidden, so each drops in wherever a lucide or sacred glyph sat and takes
- * the tab bar's active tint. The only fills are a few small dots in
- * currentColor (a nucleolus, an organelle, a knot), which read at 22px where a
- * stroke ring would close up.
+ * the tab bar's active tint.
+ *
+ * THE FAMILY'S RULES (the lead, 25 Nov 2026, from the QA pass):
+ *   - Fills are small dots in currentColor (a nucleolus, a seed, a knot), which
+ *     read at 22px where a stroke ring would close up, and the soft WASH, which
+ *     is ONLY for what is held or nourishing: a seed, a leaf, a home, a heart,
+ *     a hand's gift, a shelter. Anything else is line alone.
+ *   - One optical size: a glyph fills about 14 to 17 units of the 24 box, so
+ *     no one of them reads a size smaller in a row of them.
+ *   - Biology for the everyday; the sacred geometry (glyphs.tsx) is for emblems
+ *     and empty states.
  *
  * Each one is the still form of a movement in the motion system (index.css,
  * LIVING MOTION): the cell's membrane breathes, the mycelium's threads draw,
@@ -17,19 +25,19 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
+export { Cell, CellRing, EarthshipDome, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 
-/** A seed pod, three seeds showing: value as seed that grows (tokens, contributions, the investor's journey). */
+/** A pea pod, split along its seam with three seeds showing: value as seed that grows (tokens, contributions). */
 function SeedPodDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path d="M3.6 13c2.6-4.6 14.2-4.6 16.8 0-2.6 4.6-14.2 4.6-16.8 0z" />
-      <Dot cx={8.6} cy={13} r={1.4} />
-      <Dot cx={12} cy={13} r={1.4} />
-      <Dot cx={15.4} cy={13} r={1.4} />
-      <path d="M20.4 13c.8-1.6 1.2-3 1-4.4" />
+      <path d="M4.2 15.8c1.6-5.6 8-9.6 14.6-9 .6 6.6-4.4 12.2-11.2 12.4-1.4 0-2.6-.6-3.4-1.4z" />
+      <path d="M5.8 17.6c3.6-1.6 8.2-5.6 11.8-10.2M18.8 6.8c.6-1 1.6-1.8 2.6-2" />
+      <Dot cx={8.8} cy={14.4} r={1.25} />
+      <Dot cx={11.6} cy={12.2} r={1.25} />
+      <Dot cx={14.4} cy={10} r={1.25} />
     </Svg>
   );
 }
@@ -192,7 +200,7 @@ function SeedEyeDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
       <path d="M2.8 12c2.4-4 5.6-6 9.2-6s6.8 2 9.2 6c-2.4 4-5.6 6-9.2 6s-6.8-2-9.2-6z" /> {/* village-ok: an SVG path command, not a unit */}
-      <path {...WASH} d="M12 8.6c1.8 1.6 2.6 3.1 2.6 4.4s-1.1 2.6-2.6 2.6-2.6-1.2-2.6-2.6.8-2.8 2.6-4.4z" />
+      <path d="M12 8.6c1.8 1.6 2.6 3.1 2.6 4.4s-1.1 2.6-2.6 2.6-2.6-1.2-2.6-2.6.8-2.8 2.6-4.4z" />
     </Svg>
   );
 }
@@ -200,7 +208,7 @@ function SeedEyeDrawing(props: GlyphProps) {
 function FeatherDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path {...WASH} d="M19.4 4.2c-6.6.2-11.2 4.6-12 11.4 4.8 0 9.2-2.8 11.2-7.4z" />
+      <path d="M19.4 4.2c-6.6.2-11.2 4.6-12 11.4 4.8 0 9.2-2.8 11.2-7.4z" />
       <path d="M7.4 15.6l-2.6 4.6M9.6 12.4l4.6-1.2M11.8 9.2l4-1.4" />
     </Svg>
   );
@@ -219,7 +227,7 @@ function PinesDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
       <path d="M3 20.6h18M6 20.6v-1.6M12 20.6v-2M18 20.6v-2.4" />
-      <path {...WASH} d="M6 13.8l2.4 5.2H3.6zM12 9.6l3.2 9H8.8zM18 4.6l3.8 13.8h-7.6z" />
+      <path d="M6 13.8l2.4 5.2H3.6zM12 9.6l3.2 9H8.8zM18 4.6l3.8 13.8h-7.6z" />
     </Svg>
   );
 }
@@ -233,6 +241,41 @@ function MushroomNetworkDrawing(props: GlyphProps) {
   );
 }
 
+/** A small fire in a ring of stones: people gathered (events). */
+function GatheringDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path {...WASH} d="M12 3c2.8 2.6 4.2 5 4.2 7.4a4.2 4.2 0 0 1-8.4 0c0-1.6.8-3 2-4.1.3 1.3 1 2.1 1.9 2.4-.5-2-.3-3.9.3-5.7z" />
+      <path d="M8.2 17.2l7.6-2.4M8.2 14.8l7.6 2.4" />
+      <Dot cx={4.4} cy={16.6} r={0.9} />
+      <Dot cx={6.6} cy={19.4} r={0.9} />
+      <Dot cx={12} cy={20.4} r={0.9} />
+      <Dot cx={17.4} cy={19.4} r={0.9} />
+      <Dot cx={19.6} cy={16.6} r={0.9} />
+    </Svg>
+  );
+}
+/** The sun rising over the land: the turn of a season (the seasonal festivals). */
+function SunriseDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 17h18M7 20.2h10" />
+      <path {...WASH} d="M7 17a5 5 0 0 1 10 0z" />
+      <path d="M12 6.4v2.4M5.6 9.2l1.6 1.6M18.4 9.2l-1.6 1.6M3.2 13.6h2.2M18.6 13.6h2.2" />
+    </Svg>
+  );
+}
+
+/** Two leaves that meet as a heart on one stem: thanks that grows between two people (gratitude). */
+function HeartLeafDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 19.4C7.6 16.4 4.2 13.2 4.4 9.4c.2-2.8 3-4.2 5.2-3.2 1.2.5 2 1.4 2.4 2.4" />
+      <path {...WASH} d="M12 19.4c4.4-3 7.8-6.2 7.6-10-.2-2.8-3-4.2-5.2-3.2-1.2.5-2 1.4-2.4 2.4z" />
+      <path d="M12 17.2c-1.8-1.6-3.6-3.6-5-6.2M12 19.4v1.8" />
+    </Svg>
+  );
+}
 /* The glyphs, each a drop-in for a lucide icon. */
 export const SeedPod = /* @__PURE__ */ asIcon("SeedPod", SeedPodDrawing);
 export const SeedPin = /* @__PURE__ */ asIcon("SeedPin", SeedPinDrawing);
@@ -255,3 +298,6 @@ export const Feather = /* @__PURE__ */ asIcon("Feather", FeatherDrawing);
 export const Sprout = /* @__PURE__ */ asIcon("Sprout", SproutDrawing);
 export const Pines = /* @__PURE__ */ asIcon("Pines", PinesDrawing);
 export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", MushroomNetworkDrawing);
+export const Gathering = /* @__PURE__ */ asIcon("Gathering", GatheringDrawing);
+export const Sunrise = /* @__PURE__ */ asIcon("Sunrise", SunriseDrawing);
+export const HeartLeaf = /* @__PURE__ */ asIcon("HeartLeaf", HeartLeafDrawing);
