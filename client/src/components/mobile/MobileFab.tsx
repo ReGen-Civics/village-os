@@ -1,18 +1,29 @@
 /**
- * MobileFab: floating action button, bottom right, at EVERY width.
+ * THE CORNER: your companions, and help (phone doors v4; the lead approved it
+ * 25 Nov 2026, https://claude.ai/artifact/ADtgLo9i5uu5DLNrRz2mXL). Bottom
+ * right, at EVERY width: on a phone just above the tab bar, from `md` up in the
+ * corner itself. The file keeps its old name (it was the lotus of shortcuts),
+ * so every hide rule keyed on `data-mobile-fab` in index.css still holds it.
  *
- * The name is historical. It was phones only (`md:hidden`) until the Journal
- * shortcut gave desktop members a reason to want it too, so it now serves
- * every width: on a phone it sits above the tab bar as before, and from `md`
- * up, where there is no tab bar, it sits in the bottom-right corner itself.
- * Shortcut rows can carry a `module`, and a row whose module is off for this
- * viewer is never offered.
+ * ONE corner element. The lotus used to open a column of shortcuts that
+ * repeated the menu, and the profile drew its companions in a corner of their
+ * own just above it (#1646). Now the companions ARE the button, standing
+ * together with a count of drafts waiting for a yes, and a tap opens:
  *
- * Tapping the Amora lotus opens a column of labeled shortcut rows that springs
- * upward from the trigger, nearest row first, behind a soft focus scrim. Each
- * row is one large tap target: a readable label plus a round icon button.
+ *   Your companions   one row each; a row opens the companions panel.
+ *   Ask {guide}       the village concierge, who answers how things work here
+ *                     and who to ask (/map/circles#ask). A visitor's goes to
+ *                     the guide's conversation on Work with us.
+ *   Ask {guide} about Admin
+ *                     for an admin only, tagged Admin. It goes to
+ *                     /admin?helper=open, where the Admin helper opens (agreed
+ *                     with the Admin evolution lane); it is never mounted over
+ *                     a member page.
+ *   Sign in           for a visitor.
  *
- * Shortcuts come from config/mobileNav.ts (FAB_ACTIONS).
+ * A member with no companions yet, and a visitor, see the guide's spiral in the
+ * same spot. Inside Admin the corner draws nothing: Admin's own Ask holds it.
+ * Everything a shortcut used to offer is a tab or a tile in More (MoreSheet).
  *
  * Ported from regen-civics WizardRadialMenu. Four things are carried over from
  * that implementation on purpose, because each one is a fix for a real failure:
@@ -46,13 +57,13 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { X } from "lucide-react";
+import { LogIn, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useModules } from "@/modules/ModuleProvider";
-import { FAB_ACTIONS, FabTriggerIcon, type FabAction } from "@/config/mobileNav";
-import { useStoryPageShown } from "@/lib/brochure";
+import { GoldenSpiral as FabTriggerIcon } from "@/components/sacred/glyphs";
 import { haptic } from "@/lib/haptics";
-import { useNewcomer } from "@/lib/newcomer";
+import { useGuideName } from "@/hooks/useGuideName";
+import { CompanionsDialog, Standing, STANDING, draftsWaiting, useCompanions } from "@/components/profileDash/companionStanding";
+import type { CompanionView } from "@shared/companionItems";
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 import { useLingui } from "@lingui/react/macro";
 
@@ -68,46 +79,60 @@ export function isFoundingRoute(location: string): boolean {
   return FOUNDING_ROUTES.some((r) => here === r || here.startsWith(`${r}/`));
 }
 
-/** Springy easing so rows feel like they pop up out of the lotus. */
+/** Springy easing so rows feel like they pop up out of the corner. */
 const SPRING = "cubic-bezier(0.34, 1.4, 0.64, 1)";
 
-type ResolvedAction = {
+/** Where the Admin helper opens from outside Admin (the Admin evolution lane's address). */
+export const ADMIN_HELPER_HREF = "/admin?helper=open";
+/** Where a member asks the concierge: the village map's search, focused (power/SearchBar.tsx reads the hash). */
+export const ASK_GUIDE_HREF = "/map/circles#ask";
+
+/** Inside Admin the corner draws nothing: the header's Ask and Admin's phone bar hold it. */
+export function isAdminRoute(location: string): boolean {
+  const here = normalisePath(location);
+  return here === "/admin" || here.startsWith("/admin/");
+}
+
+export type CornerRow = {
   key: string;
   label: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  sub?: string;
   href?: string;
-  event?: string;
+  /** Opens the companions panel instead of navigating. */
+  companion?: CompanionView;
+  admin?: boolean;
 };
 
-export function resolve(
-  actions: FabAction[],
-  currentPath: string,
-  isAuthenticated: boolean,
-  moduleOn: (id?: string) => boolean = () => true,
-  newcomer = false,
-): ResolvedAction[] {
-  const out: ResolvedAction[] = [];
-  for (const a of actions) {
-    if (a.membersOnly && newcomer) continue;
-    if (a.requiresAuth === true && !isAuthenticated) continue;
-    if (a.requiresAuth === false && isAuthenticated) continue;
-    if (!moduleOn(a.module)) continue;
-
-    const onAnchor =
-      !!a.anchorPath &&
-      (currentPath === a.anchorPath || currentPath.startsWith(a.anchorPath + "/"));
-
-    if (onAnchor && a.insteadOf) {
-      out.push({ key: `${a.key}-alt`, label: a.insteadOf.label, Icon: a.insteadOf.Icon, href: a.insteadOf.href });
-      continue;
-    }
-    // Already on this page and no useful alternative: drop the row rather than
-    // offer a link back to where the person already is.
-    if (onAnchor) continue;
-
-    out.push({ key: a.key, label: a.label, Icon: a.Icon, href: a.href, event: a.event });
+/** The corner's rows, for who is asking. Pure, so the order and the gates are tested without a page. */
+export function cornerRows(o: { signedIn: boolean; admin: boolean; army: readonly CompanionView[] | null; guide: string; t: (d: { message: string; context?: string }) => string }): CornerRow[] {
+  const rows: CornerRow[] = [];
+  for (const c of o.army ?? []) {
+    const waiting = draftsWaiting([c]);
+    rows.push({
+      key: `companion-${c.id}`,
+      label: c.name,
+      sub: waiting === 0 ? undefined : waiting === 1 ? o.t({ message: "One draft waits for your yes", context: "the corner: under a companion's name" }) : o.t({ message: `${waiting} drafts wait for your yes`, context: "the corner: under a companion's name" }),
+      companion: c,
+    });
   }
-  return out;
+  const guide = o.guide;
+  rows.push({
+    key: "ask-guide",
+    label: o.t({ message: `Ask ${guide}`, context: "the corner: the help row, the village guide's name follows Ask" }),
+    sub: o.t({ message: "How things work here, and who to ask", context: "the corner: under the help row" }),
+    href: o.signedIn ? ASK_GUIDE_HREF : "/work-with-us",
+  });
+  if (o.admin) {
+    rows.push({
+      key: "ask-admin",
+      label: o.t({ message: `Ask ${guide} about Admin`, context: "the corner: the Admin helper's row, for an admin" }),
+      sub: o.t({ message: "Find any setting, or get a change drafted for you to save", context: "the corner: under the Admin helper's row" }),
+      href: ADMIN_HELPER_HREF,
+      admin: true,
+    });
+  }
+  if (!o.signedIn) rows.push({ key: "signin", label: o.t({ message: "Sign in", context: "the corner: a visitor's row" }), href: "/login" });
+  return rows;
 }
 
 export default function MobileFab() {
@@ -115,30 +140,18 @@ export default function MobileFab() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { user } = useAuth();
-  // The front door (24 Nov 2026): a member's working areas stay out of a newcomer's shortcuts (lib/newcomer.ts).
-  const newcomer = useNewcomer();
-  // The header menu's test (Layout.tsx `moduleOn`): a module is on for this
-  // viewer when the viewer's manifest carries it, and, as `moduleIsOn` reads
-  // it, its lifecycle is not off. Read defensively, since a catalog still in
-  // flight has no list yet and the row should wait for it.
-  const { modules } = useModules();
-  const moduleOn = (id?: string) =>
-    !id || (Array.isArray(modules) && modules.some((m) => m.id === id && m.lifecycle !== "off"));
-  const currentPath = normalisePath(location);
-  // A shortcut into a brochure page goes with the pages (shared/brochure.ts),
-  // and with its own page when that one is switched off alone.
-  const storyShown = useStoryPageShown();
-  // BOTH sides of this line, which is what #404 asked for: keep #406's brochure
-  // filter on the list, and take #404's `moduleOn` as the fourth argument. The
-  // two are independent questions about the same shortcut row - whether a page
-  // exists on this village at all, and whether the module behind it is on.
-  const actions = resolve(
-    FAB_ACTIONS.filter((a) => !a.href || storyShown(a.href)),
-    currentPath,
-    !!user,
-    moduleOn,
-    newcomer,
-  );
+  // The same rule as AuthContext's useIsAdmin, read off the user the page already has (no second import to mock).
+  const admin = user?.role === "admin" || user?.role === "founder";
+  const { name: guideName } = useGuideName();
+  const { army, reread } = useCompanions(!!user);
+  const [panel, setPanel] = useState(false);
+  const rows = cornerRows({ signedIn: !!user, admin, army, guide: guideName, t });
+  const standing = (army ?? []).slice(0, STANDING);
+  const waiting = draftsWaiting(army ?? []);
+  // A link to /profile#companions (and the welcome tour) opens the panel once the companions are read.
+  useEffect(() => {
+    if (army?.length && window.location.hash === "#companions") setPanel(true);
+  }, [army]);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -252,6 +265,8 @@ export default function MobileFab() {
   // The founding team's pages keep their own quiet register and their one act;
   // the button sat over their hero words on a phone (go-live pass, M4).
   if (isFoundingRoute(location)) return null;
+  // Inside Admin its own Ask button and phone bar hold this corner (the Admin evolution lane).
+  if (isAdminRoute(location)) return null;
 
   return (
     <>
@@ -282,7 +297,7 @@ export default function MobileFab() {
         <div
           ref={menuRef}
           role="menu"
-          aria-label={t({ message: "Shortcuts", context: "MobileFab, aria-label" })}
+          aria-label={t({ message: "Your companions and help", context: "the corner: the menu, read aloud" })}
           aria-hidden={!open}
           onKeyDown={onMenuKey}
           // THE SHUT MENU TAKES NO ROOM AND IS NOT DRAWN.
@@ -301,9 +316,9 @@ export default function MobileFab() {
           }`}
           style={{ transition: `visibility 0s linear ${open ? "0s" : "400ms"}` }}
         >
-          {actions.map((a, i) => {
+          {rows.map((a, i) => {
             // Nearest the trigger reveals first, so the stack springs upward.
-            const delay = open ? `${(actions.length - 1 - i) * 38}ms` : `${i * 18}ms`;
+            const delay = open ? `${(rows.length - 1 - i) * 38}ms` : `${i * 18}ms`;
             const cls =
               "group/row flex items-center gap-2.5 outline-none transition-[transform,opacity] duration-300 focus-visible:opacity-100 " +
               (open ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-5 scale-90");
@@ -311,11 +326,19 @@ export default function MobileFab() {
 
             const inner = (
               <>
-                <span className="select-none whitespace-nowrap rounded-xl border border-white/15 bg-teal-band/95 px-3 py-1.5 text-sm font-semibold text-cream shadow-lg backdrop-blur-sm transition-colors group-hover/row:bg-teal-deep group-hover/row:text-white">
-                  {a.label}
+                <span className="flex max-w-[16rem] select-none flex-col items-end rounded-xl border border-border bg-card px-3 py-1.5 text-right shadow-lg transition-colors group-hover/row:bg-muted">
+                  <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+                    {a.label}
+                    {a.admin ? (
+                      <span className="rounded border border-notice px-1 text-[10px] font-semibold uppercase tracking-wider text-notice">
+                        {t({ message: "Admin", context: "the corner: the tag on the Admin helper's row" })}
+                      </span>
+                    ) : null}
+                  </span>
+                  {a.sub ? <span className="text-xs text-muted-foreground">{a.sub}</span> : null}
                 </span>
-                <span className="w-12 h-12 flex-shrink-0 rounded-full border border-teal/60 bg-teal-deep text-cream flex items-center justify-center shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-hover/row:border-teal group-active/row:scale-95">
-                  <a.Icon className="w-[18px] h-[18px]" />
+                <span className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card text-card-foreground shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-active/row:scale-95">
+                  {a.companion ? <Standing c={a.companion} lead={false} small /> : a.key === "signin" ? <LogIn aria-hidden="true" className="w-[18px] h-[18px]" /> : <FabTriggerIcon className="w-[18px] h-[18px]" />}
                 </span>
               </>
             );
@@ -323,84 +346,92 @@ export default function MobileFab() {
             const closeThenRun = () => {
               // "tick" is 6ms, the number this line used to spell out.
               haptic("tick");
-              // A row for the page already showing (Profile on /profile) keeps
-              // this component mounted, and focus would stay on a row that is
-              // now invisible and aria-hidden. Hand it back to the trigger
-              // first, the way Escape does.
+              // Focus goes back to the trigger first, the way Escape does: the rows are about to hide.
               if (menuRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
               setOpen(false);
-              if (a.event) window.dispatchEvent(new CustomEvent(a.event));
+              if (a.companion) setPanel(true);
             };
 
             if (a.href) {
               return (
-                <Link
-                  key={a.key}
-                  href={a.href}
-                  onClick={closeThenRun}
-                  className={cls}
-                  style={style}
-                  role="menuitem"
-                  aria-label={a.label}
-                  tabIndex={open ? 0 : -1}
-                >
+                <Link key={a.key} href={a.href} onClick={closeThenRun} className={cls} style={style} role="menuitem" tabIndex={open ? 0 : -1}>
                   {inner}
                 </Link>
               );
             }
             return (
-              <button
-                key={a.key}
-                type="button"
-                onClick={closeThenRun}
-                className={cls}
-                style={style}
-                role="menuitem"
-                aria-label={a.label}
-                tabIndex={open ? 0 : -1}
-              >
+              <button key={a.key} type="button" onClick={closeThenRun} className={cls} style={style} role="menuitem" tabIndex={open ? 0 : -1}>
                 {inner}
               </button>
             );
           })}
         </div>
 
-        {/* Trigger. The lotus rotates and the ring lights up when open, so the
-            state is unmistakable without a label. */}
+        {/* Trigger: the companions standing, or the guide's spiral for anybody without one yet. The ring
+            lights up when open, so the state is clear without a label. */}
         <button
           ref={triggerRef}
           type="button"
           onClick={toggle}
           onFocus={() => setTucked(false)}
           data-fab-trigger
+          // The welcome tour finds the companions by this id (CompanionWelcome.tsx).
+          id={standing.length ? "companions" : undefined}
           // Named properties, never `all`: `all` also animates the visibility
           // this button inherits from the hide rule in index.css, which held
           // it on screen through a dialog's opening and late after it closed.
-          className={`relative w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-[transform,opacity,box-shadow] duration-300 motion-reduce:transition-none hover:scale-105 active:scale-95 ${
-            hidden ? "pointer-events-none scale-0 opacity-0" : "pointer-events-auto"
-          } ${open ? "scale-105" : ""}`}
-          style={{
-            background: "linear-gradient(to top, var(--tone-brand-band, #105e5d), var(--tone-brand, #157f7d))",
-            boxShadow: open
-              ? "0 0 0 4px rgba(236,177,99,0.45), 0 12px 32px rgba(0,0,0,0.4)"
-              : "0 10px 24px rgba(0,0,0,0.35)",
-          }}
-          aria-label={open ? t({ message: "Close shortcuts", context: "MobileFab, aria-label" }) : t({ message: "Open shortcuts", context: "MobileFab, aria-label" })}
+          className={`relative flex items-end justify-center transition-[transform,opacity,box-shadow] duration-300 motion-reduce:transition-none hover:scale-105 active:scale-95 ${
+            standing.length ? "min-h-14 rounded-full p-1.5 pb-2" : "w-14 h-14 rounded-full shadow-xl items-center"
+          } ${hidden ? "pointer-events-none scale-0 opacity-0" : "pointer-events-auto"} ${open ? "scale-105" : ""}`}
+          style={
+            standing.length
+              ? { boxShadow: open ? "0 0 0 4px color-mix(in srgb, var(--color-notice) 45%, transparent)" : undefined }
+              : {
+                  background: "linear-gradient(to top, var(--tone-brand-band, var(--mode-brand-band, #105e5d)), var(--tone-brand, var(--mode-brand, #157f7d)))",
+                  boxShadow: open ? "0 0 0 4px rgba(236,177,99,0.45), 0 12px 32px rgba(0,0,0,0.4)" : "0 10px 24px rgba(0,0,0,0.35)",
+                }
+          }
+          aria-label={
+            open
+              ? t({ message: "Close your companions and help", context: "the corner: the button while open, read aloud" })
+              : standing.length === 0
+                ? t({ message: "Open help", context: "the corner: the button with no companions, read aloud" })
+                : waiting === 0
+                  ? t({ message: `Your companions: ${(army ?? []).map((c) => c.name).join(", ")}, and help`, context: "the corner: the button, read aloud" })
+                  : t({ message: `Your companions: ${(army ?? []).map((c) => c.name).join(", ")}. ${waiting} waiting for your yes. And help`, context: "the corner: the button, read aloud" })
+          }
           aria-expanded={open}
           aria-haspopup="menu"
         >
-          {/* No rotation between states: an X rotated is just a plus sign, which
-              is what happened the first time. The glow ring, the lift, and the
-              scrim already carry the open state. */}
-          <span className="flex items-center justify-center">
-            {open ? (
-              <X className="w-7 h-7 text-cream" />
-            ) : (
-              <FabTriggerIcon className="w-7 h-7 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />
-            )}
-          </span>
+          {standing.length ? (
+            <>
+              {standing.map((c, i) => (
+                <Standing key={c.id} c={c} lead={i === 0} />
+              ))}
+              {waiting > 0 ? (
+                <span aria-hidden="true" className="absolute -top-1 right-1 inline-flex min-w-5 items-center justify-center rounded-full bg-notice px-1.5 text-xs font-bold leading-5 text-background ring-2 ring-card">
+                  {waiting}
+                </span>
+              ) : null}
+              {/* The soft shadow they stand on. */}
+              <span aria-hidden="true" className="absolute inset-x-2 bottom-0 -z-10 h-3 rounded-[50%] bg-black/25 blur-[3px]" />
+            </>
+          ) : (
+            <span className="flex items-center justify-center">
+              {open ? <X className="w-7 h-7 text-cream" /> : <FabTriggerIcon className="w-7 h-7 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />}
+            </span>
+          )}
         </button>
       </div>
+      {panel ? (
+        <CompanionsDialog
+          onClose={() => {
+            setPanel(false);
+            reread(); // a yes in the panel changes what waits; the count follows
+            window.setTimeout(() => triggerRef.current?.focus(), 0);
+          }}
+        />
+      ) : null}
     </>
   );
 }

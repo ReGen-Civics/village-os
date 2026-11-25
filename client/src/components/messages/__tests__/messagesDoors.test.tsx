@@ -1,17 +1,11 @@
 // @vitest-environment jsdom
 /**
  * The doors into Messages: the avatar menu's entry with its unread count, the
- * shortcuts button's row (which becomes "New conversation" on /messages), and
- * the inbox's split into Shared work and everything else.
- *
- * The FAB cases read the RENDERED rows, opened the way a member opens them,
- * because FAB_ACTIONS alone decides nothing: `resolve()` in MobileFab.tsx turns
- * `requiresAuth`, `module` and `anchorPath` into a row a person can tap.
+ * phone's More tile (phone doors v4; the corner no longer carries it), and the
+ * inbox's split into Shared work and everything else.
  */
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Router } from "wouter";
-import { memoryLocation } from "wouter/memory-location";
 
 const session = vi.hoisted(() => ({
   token: "t" as string | null,
@@ -36,11 +30,10 @@ vi.mock("@/lib/gameApi", async (importOriginal) => {
   return { ...actual, authToken: () => session.token, gameFetch };
 });
 
-import MobileFab from "@/components/mobile/MobileFab";
+import { cornerRows } from "@/components/mobile/MobileFab";
 import MessageCountBadge, { MESSAGES_UNREAD_URL, readUnread, unreadWords } from "@/components/messages/MessageCountBadge";
 import { sharedByTwo } from "@/components/tasks/TaskCard";
 import { ACCOUNT_MENU } from "@/config/nav";
-import { FAB_ACTIONS } from "@/config/mobileNav";
 import { TASK_BOARD_PATH } from "@shared/sessionTasks";
 import { isWorkThread, splitInbox, workHref, workLabel, type InboxConversation } from "@/lib/messaging";
 
@@ -61,16 +54,6 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-function fabAt(path: string) {
-  const { hook } = memoryLocation({ path });
-  render(
-    <Router hook={hook}>
-      <MobileFab />
-    </Router>,
-  );
-  fireEvent.click(screen.getByRole("button", { name: "Open shortcuts" }));
-}
-const row = (name: string) => screen.queryByRole("menuitem", { name });
 
 describe("the avatar menu", () => {
   it("carries Messages, behind the messaging module, with the member's own count", () => {
@@ -83,31 +66,15 @@ describe("the avatar menu", () => {
   });
 });
 
-describe("the shortcuts button", () => {
-  it("offers Messages to a signed-in member while messaging is on", () => {
-    fabAt("/");
-    expect(row("Messages")).toHaveAttribute("href", "/messages");
-    expect(row("Profile"), "a neighbour, so a vanished menu fails here").not.toBeNull();
+describe("the phone's doors (v4)", () => {
+  // Messages left the corner: the corner is companions and help now, and Messages is a tile in More
+  // with its count (MoreSheet.test.tsx pins the tile).
+  it("never puts Messages in the corner", () => {
+    const keys = cornerRows({ signedIn: true, admin: true, army: null, guide: "the guide", t: ({ message }) => message }).map((r) => r.key);
+    expect(keys).not.toContain("messages");
+    expect(keys).toEqual(["ask-guide", "ask-admin"]);
   });
 
-  it("starts a new conversation instead, on /messages and inside a thread", () => {
-    fabAt("/messages");
-    expect(row("Messages")).toBeNull();
-    expect(row("New conversation")).toHaveAttribute("href", "/messages?new=1");
-  });
-
-  it("offers neither while messaging is off, or to a visitor", () => {
-    session.modules = [];
-    fabAt("/");
-    expect(row("Messages")).toBeNull();
-    expect(row("Profile")).not.toBeNull();
-  });
-
-  it("is declared once, for members only", () => {
-    const rows = FAB_ACTIONS.filter((a) => a.key === "messages");
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ requiresAuth: true, module: "messaging", anchorPath: "/messages" });
-  });
 });
 
 describe("MessageCountBadge", () => {

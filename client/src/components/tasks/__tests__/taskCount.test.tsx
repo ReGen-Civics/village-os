@@ -28,7 +28,6 @@ vi.mock("@/lib/gameApi", async (importOriginal) => {
 import { readTaskCount, tasksChanged, tasksChangedFrom, TASKS_CHANGED_EVENT, useTaskCount } from "@/components/tasks/useTaskCount";
 import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import { ACCOUNT_MENU } from "@/config/nav";
-import { FAB_ACTIONS } from "@/config/mobileNav";
 
 const fetchMock = vi.fn();
 beforeEach(() => {
@@ -180,12 +179,4 @@ describe("the menu entries", () => {
     expect(ACCOUNT_MENU.filter((l) => l.count).map((l) => l.count).sort()).toEqual(["messages", "tasks"]);
   });
 
-  it("puts My tasks in the shortcuts, for a signed-in member with the module on, beside Profile", () => {
-    const row = FAB_ACTIONS.find((a) => a.key === "tasks");
-    expect(row).toMatchObject({ label: TASK_COPY.menu.label, href: TASK_BOARD_PATH, requiresAuth: true, module: "sessions" });
-    const keys = FAB_ACTIONS.map((a) => a.key);
-    expect(keys.indexOf("tasks")).toBe(keys.indexOf("profile") + 1);
-    // The daily pair still sits nearest the thumb.
-    expect(keys.slice(-2)).toEqual(["journal", "quests"]);
-  });
 });
