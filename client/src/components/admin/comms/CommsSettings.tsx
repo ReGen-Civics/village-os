@@ -31,20 +31,19 @@
  */
 import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { Check, ChevronDown, ChevronUp, Circle } from "lucide-react";
-import { toast } from "sonner";
 import type { SetupItem, SetupKey } from "@shared/comms/settings";
 import ModuleSettingsSection from "@/components/admin/ModuleSettingsSection";
 import { refusal } from "@/components/admin/adminApi";
 import { settingFromUrl, useLandingFocus } from "@/components/admin/settingFocus";
-import { commsLanding, PAUSE_ALL_BUTTON_ID } from "./commsLanding";
+import { commsLanding, TEST_EMAIL_BUTTON_ID } from "./commsLanding";
+import MailNow from "./MailNow";
+import DeliveryDangerZone from "./DeliveryDangerZone";
 import { commsCall, type SettingsPayload } from "./commsSettingsApi";
 import {
   ApiKeyEditor,
   DeliveryReportsEditor,
   DomainEditor,
   SenderEditor,
-  TestEmailEditor,
-  primaryCls,
   secondaryCls,
   type EditorProps,
 } from "./CommsSetupEditors";
@@ -64,8 +63,12 @@ import { Trans } from "@lingui/react/macro";
 // same field, and imports it from here through the comms barrel.
 export { EmailField } from "./EmailField";
 
-/** One editor per checklist item. Keyed by the union, so an item with no editor does not compile. */
-const EDITORS: Record<SetupKey, ComponentType<EditorProps>> = {
+/**
+ * One editor per checklist item. Keyed by the union, so an item with no editor
+ * does not compile. The test email has none: it is an act, and it lives at the
+ * top of the page in Mail now.
+ */
+const EDITORS: Record<Exclude<SetupKey, "test-email">, ComponentType<EditorProps>> = {
   "api-key": ApiKeyEditor,
   domain: DomainEditor,
   sender: SenderEditor,
@@ -78,7 +81,6 @@ const EDITORS: Record<SetupKey, ComponentType<EditorProps>> = {
   "who-runs-comms": WhoRunsCommsEditor,
   "investor-words": InvestorWordsEditor,
   "rehearsal-inbox": RehearsalInboxEditor,
-  "test-email": TestEmailEditor,
 };
 
 /** What the comms module's lifecycle means for what this screen sets up. */
@@ -109,6 +111,7 @@ function ChecklistRow({
   onToggle: () => void;
   children: ReactNode;
 }) {
+  const isTest = item.key === "test-email";
   const panelId = `comms-setup-${item.key}`;
   return (
     <li className={`border rounded-xl bg-white ${item.done ? "border-gray-200" : item.required ? "border-amber-300" : "border-gray-200"}`}>
@@ -134,58 +137,40 @@ function ChecklistRow({
           <p className="text-sm text-gray-700 mt-1">{item.detail}</p>
           {!item.done && <p className="text-xs text-gray-500 mt-1">{item.fix}</p>}
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className={`${secondaryCls} shrink-0 max-w-full inline-flex items-center gap-1`}
-        >
-          {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {open ? "Close" : item.done ? "Change" : "Set up"}
-          <span className="sr-only"> {item.label}</span>
-        </button>
+        {isTest ? (
+          // The test is an act, and an act is never behind Change: it lives at
+          // the top of the page, in Mail now. This takes the person there.
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById(TEST_EMAIL_BUTTON_ID);
+              el?.scrollIntoView?.({ block: "center" });
+              el?.focus({ preventScroll: true });
+            }}
+            className={`${secondaryCls} shrink-0 max-w-full`}
+          >
+            <Trans context="Mail settings, checklist item 13 button">Send it from the top</Trans>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className={`${secondaryCls} shrink-0 max-w-full inline-flex items-center gap-1`}
+          >
+            {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {open ? "Close" : item.done ? "Edit" : "Set up"}
+            <span className="sr-only"> {item.label}</span>
+          </button>
+        )}
       </div>
-      {open && (
+      {open && !isTest && (
         <div id={panelId} tabIndex={-1} className="border-t border-gray-100 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep">
           {children}
         </div>
       )}
     </li>
-  );
-}
-
-function PauseAll({ data, password, apply }: { data: SettingsPayload; password: string; apply: (d: SettingsPayload) => void }) {
-  const [busy, setBusy] = useState(false);
-  const paused = data.settings.paused;
-  const flip = async () => {
-    setBusy(true);
-    const r = await commsCall<SettingsPayload>("/admin/comms/settings", password, { method: "PUT", body: { paused: !paused } });
-    setBusy(false);
-    if (!r.ok) {
-      toast.error(refusal(r.data, "That was not saved."));
-      return;
-    }
-    apply(r.data);
-    toast.success(paused ? "Email is flowing again" : "Automated email is paused");
-  };
-  return (
-    <section
-      aria-labelledby="comms-pause-all"
-      className={`border rounded-xl p-4 ${paused ? "border-amber-300 bg-amber-50" : "border-gray-200 bg-white"}`}
-    >
-      <h3 id="comms-pause-all" className="text-sm font-semibold text-gray-900">
-        <Trans context="CommsSettings, h3">Pause all {paused ? "(paused now)" : ""}</Trans>
-      </h3>
-      <p className="text-sm text-gray-700 mt-1">
-        {paused
-          ? "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
-          : "Holds every gathering email, path email and letter at once, for when something has gone wrong. Password links, confirmations people asked for and member notices keep going."}
-      </p>
-      <button id={PAUSE_ALL_BUTTON_ID} type="button" onClick={flip} disabled={busy} className={`${paused ? primaryCls : secondaryCls} mt-3`}>
-        {busy ? "Saving..." : paused ? "Let email flow again" : "Pause all automated email"}
-      </button>
-    </section>
   );
 }
 
@@ -215,7 +200,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
   if (!data) {
     return (
       <div>
-        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsSettings, h2">Comms Settings</Trans></h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Mail settings, page heading">Mail settings</Trans></h2>
         {failed ? (
           <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4" role="alert">
             {failed}
@@ -234,28 +219,16 @@ export default function CommsSettings({ password, openIntegrations }: { password
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900"><Trans context="CommsSettings, h2">Comms Settings</Trans></h2>
+        <h2 className="text-xl font-bold text-gray-900"><Trans context="Mail settings, page heading">Mail settings</Trans></h2>
         <p className="text-sm text-gray-500 mt-1">
           <Trans context="CommsSettings, p">Everything the village's email needs from you, in one place. Every item can be changed again later.{" "}
           <a href="/setup-game" className="text-teal-deep underline">
             Or plant it step by step in the setup game.
           </a></Trans>
         </p>
-        <p
-          className={`text-sm mt-3 rounded-lg px-3 py-2 border ${
-            note.tone === "amber"
-              ? "bg-amber-50 border-amber-200 text-amber-900"
-              : note.tone === "teal"
-                ? "bg-white border-teal-deep/30 text-gray-800"
-                : "bg-gray-50 border-gray-200 text-gray-700"
-          }`}
-        >
-          {note.text}{" "}
-          <a href="/admin?tab=modules" className="text-teal-deep underline">
-            <Trans context="CommsSettings, a">Module Library
-          </Trans></a>
-        </p>
       </div>
+
+      <MailNow data={data} password={password} apply={setData} note={note.text} />
 
       <section aria-labelledby="comms-setup-checklist">
         <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
@@ -270,7 +243,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
         </div>
         <ol className="space-y-3">
           {data.checklist.map((item) => {
-            const Editor = EDITORS[item.key];
+            const Editor = item.key === "test-email" ? null : EDITORS[item.key];
             const open = toggled[item.key] ?? (item.required && !item.done);
             return (
               <ChecklistRow
@@ -279,7 +252,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
                 open={open}
                 onToggle={() => setToggled((t) => ({ ...t, [item.key]: !open }))}
               >
-                <Editor data={data} password={password} apply={setData} />
+                {Editor && <Editor data={data} password={password} apply={setData} />}
               </ChecklistRow>
             );
           })}
@@ -297,7 +270,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
         <ModuleSettingsSection moduleId="comms" moduleName="Village Comms" lifecycle={data.lifecycle} moduleNames={{}} password={password} />
       </section>
 
-      <PauseAll data={data} password={password} apply={setData} />
+      <DeliveryDangerZone data={data} password={password} apply={setData} />
 
       <p className="text-sm text-gray-600 border-t border-gray-100 pt-5">
         Other keys, such as Stripe and the AI guide, are in{" "}

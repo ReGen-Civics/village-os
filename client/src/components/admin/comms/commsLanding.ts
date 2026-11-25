@@ -3,8 +3,8 @@
  *
  * The address is `/admin?tab=comms-settings&setting=comms.<item>`, the ids in
  * shared/adminSearch.ts. A checklist item opens and its first control takes
- * the focus; the test email lands on the "Send me a test" button itself, and
- * Pause all on its own button. Anything else lands on nothing, and the page
+ * the focus; the test email and Pause all land on their own buttons at the
+ * top of the page (MailNow), with nothing opened. Anything else lands on nothing, and the page
  * opens as it always did.
  */
 import { COMMS_SETTING_PREFIX } from "@shared/adminSearch";
@@ -33,5 +33,7 @@ export function commsLanding(setting: string | null | undefined): CommsLanding |
   if (rest === "pause-all") return { open: null, focus: PAUSE_ALL_BUTTON_ID };
   if (!(SETUP_KEYS as readonly string[]).includes(rest)) return null;
   const key = rest as SetupKey;
-  return { open: key, focus: key === "test-email" ? TEST_EMAIL_BUTTON_ID : setupPanelId(key) };
+  // The test email is an act at the top of the page (MailNow), never inside a row.
+  if (key === "test-email") return { open: null, focus: TEST_EMAIL_BUTTON_ID };
+  return { open: key, focus: setupPanelId(key) };
 }
