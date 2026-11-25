@@ -53,6 +53,22 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
   ),
 };
 
+/** What the community face reads, as each person (lane 6). */
+const COMMUNITY: Record<string, Record<string, Answer>> = {
+  // A member who takes part in the village.
+  neighbour: {
+    "/api/governance/ballots": { status: 200, body: [
+      { id: "b1", subjectType: "power_return", title: "Give the dial power back", status: "running", myWeight: 1, myVote: null, tally: { yes: 4 }, closesAt: "2026-11-30T12:00:00.000Z" },
+      { id: "b2", subjectType: "role_application", title: "Seat Ana Applicant", status: "running", myWeight: 1, myVote: null },
+    ] },
+    "/api/change-requests": { status: 200, body: { open: [{ id: "c1", title: "Shorter quiet hours", state: "voting", author: "Cy Author" }], mine: [{ id: "c2", title: "My own request", state: "in_review", author: "Me" }] } },
+    "/api/powers/hands": { status: 200, body: { hands: [{ id: "h1", powerLabel: "Turn the dials", userId: "ben", userName: "Ben Raiser", note: "Ben's note", status: "open", youMayPut: true }] } },
+    "/api/governance/waiting-on-me": { status: 500, body: { error: "boom" } },
+  },
+  // Signed in, but a visitor: the community face is for members.
+  visitor: {},
+};
+
 describe("the deciders' read shows each person exactly what their own queues show them", () => {
   let queues: http.Server;
   let inbox: http.Server;
@@ -64,7 +80,7 @@ describe("the deciders' read shows each person exactly what their own queues sho
     fake.use((req, res) => {
       const who = String(req.headers.authorization ?? "").replace("Bearer ", "");
       seenAuth.push(who);
-      const a = ANSWERS[who]?.[req.path] ?? REFUSED;
+      const a = ANSWERS[who]?.[req.path] ?? COMMUNITY[who]?.[req.path] ?? REFUSED;
       res.status(a.status).json(a.body);
     });
     queues = http.createServer(fake);
@@ -75,11 +91,12 @@ describe("the deciders' read shows each person exactly what their own queues sho
     register(app, {
       authedUser: async (req: any) => {
         const who = String(req.headers.authorization ?? "").replace("Bearer ", "");
-        return ANSWERS[who] ? { id: who } : null;
+        return ANSWERS[who] || COMMUNITY[who] ? { id: who } : null;
       },
       overLimit: async () => false,
       clientIp: () => null,
       port: () => queuesPort,
+      isMember: async (u: { id: string }) => u.id !== "visitor",
     } as any);
     inbox = http.createServer(app);
     await new Promise<void>((r) => inbox.listen(0, "127.0.0.1", r));
@@ -150,5 +167,23 @@ describe("the deciders' read shows each person exactly what their own queues sho
     expect(missing.status).toBe(404);
     expect(Object.keys(hidden.body).sort()).toEqual(Object.keys(missing.body).sort());
     expect(hidden.body.error).toBe(missing.body.error);
+  });
+
+  it("THE COMMUNITY FACE (lane 6): members only, read as the member, and nothing outside the allowlist reaches them", async () => {
+    expect((await get("/api/review/community", null)).status).toBe(401);
+    seenAuth.length = 0;
+    expect((await get("/api/review/community", "visitor")).status).toBe(403);
+    expect(seenAuth, "a visitor is refused before any queue is read").toEqual([]);
+
+    const r = await get("/api/review/community", "neighbour");
+    expect(r.status).toBe(200);
+    expect(Object.keys(r.body).sort()).toEqual(["open", "reads", "waiting", "yours"]);
+    expect(r.body.open.map((i: any) => [i.kind, i.id])).toEqual([["vote", "b1"], ["change", "c1"], ["hand", "h1"]]);
+    expect(r.body.yours.map((i: any) => [i.kind, i.id])).toEqual([["change", "c2"]]);
+    // A read that failed says so, and is never shown as nothing waiting.
+    expect(r.body.reads.find((x: any) => x.name === "waiting").state).toBe("failed");
+    for (const i of [...r.body.open, ...r.body.yours, ...r.body.waiting]) expect(Object.keys(i).sort()).toEqual(["closesAt", "href", "id", "kind", "state", "title"]);
+    const text = JSON.stringify(r.body);
+    for (const leak of ["Ana Applicant", "Ben Raiser", "Ben's note", "Cy Author", "tally", "myWeight", "boom"]) expect(text, leak).not.toContain(leak);
   });
 });

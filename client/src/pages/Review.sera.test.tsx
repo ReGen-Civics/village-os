@@ -204,7 +204,8 @@ describe("a member the queue refuses", () => {
   it("still sees the refusal when the module is off", async () => {
     serve({ queue: [403, { error: "auth_required" }], count: [404, { error: "module_disabled" }] });
     renderReview();
-    expect(await screen.findByText("This queue is not open to you yet")).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "Review" })).toBeTruthy();
+    expect(screen.queryByText("Nothing waiting")).toBeNull();
   });
 });
 

@@ -136,7 +136,8 @@ describe("the review queue tells three states apart", () => {
     // either of the other two things would be false.
     answerWith(403, { error: "auth_required" });
     renderReview();
-    await waitFor(() => expect(screen.getByText("This queue is not open to you yet")).toBeTruthy());
+    // Lane 6: somebody no queue is open to is shown the community face instead, never the deciders' list.
+    await waitFor(() => expect(screen.getByTestId("community-not-member")).toBeTruthy());
     expect(screen.queryByText("Nothing waiting")).toBeNull();
     expect(screen.queryByText("The queue did not load")).toBeNull();
   });

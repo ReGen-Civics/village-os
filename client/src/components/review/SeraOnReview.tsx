@@ -110,10 +110,10 @@ export function SeraTop({
 }
 
 /** The page a member the queue refuses is shown: how many changes wait and who decides them (R38). */
-export function SeraMemberPage({ sera }: { sera: SeraOnReview }) {
+export function SeraMemberPage({ sera, titled = true }: { sera: SeraOnReview; titled?: boolean }) {
   return (
     <>
-      <h1 className="text-2xl font-bold text-foreground"><Trans context="review page">Review</Trans></h1>
+      {titled ? <h1 className="text-2xl font-bold text-foreground"><Trans context="review page">Review</Trans></h1> : null}
       <SeraDifferences read={sera.read} draftOpen={false} onRetry={sera.load} />
     </>
   );

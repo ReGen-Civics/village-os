@@ -29,10 +29,13 @@ import {
   type InboxSource,
   type SectionState,
 } from "../../shared/reviewInbox";
+import { communityChanges, communityHands, communityVotes, communityWaiting, type CommunityAnswer, type CommunityRead } from "../../shared/communityReview";
 
 type Deps = Pick<AppDeps, "authedUser" | "overLimit"> & {
   port: () => number;
   clientIp: (req: express.Request) => string | null;
+  /** A member at the member stage or past it who has not left: the community face's gate (the lead, 25 Nov 2026). */
+  isMember: (user: any) => Promise<boolean>;
 };
 
 type Read = (path: string) => Promise<{ status: number; body: unknown }>;
@@ -104,6 +107,43 @@ export async function readInbox(read: Read): Promise<InboxSection[]> {
   return sections;
 }
 
+/**
+ * THE COMMUNITY FACE'S READ (lane 6, shared/communityReview.ts): the four reads a member takes part through, made as
+ * the member, each projected by its allowlist. A read that failed says so; nothing else of the source row survives.
+ */
+export async function readCommunity(read: Read, me: string): Promise<CommunityAnswer> {
+  const [ballots, changes, hands, waiting] = await Promise.all([
+    read("/api/governance/ballots"),
+    read("/api/change-requests"),
+    read("/api/powers/hands"),
+    read("/api/governance/waiting-on-me"),
+  ]);
+  const ok = (a: { status: number }) => stateOfStatus(a.status) === "ok";
+  const safe = <T,>(f: () => T, empty: T): T => {
+    try {
+      return f();
+    } catch {
+      return empty;
+    }
+  };
+  const c = ok(changes) ? safe(() => communityChanges(changes.body), { open: [], yours: [] }) : { open: [], yours: [] };
+  const h = ok(hands) ? safe(() => communityHands(hands.body, me), { open: [], yours: [] }) : { open: [], yours: [] };
+  const reads: CommunityAnswer["reads"] = (
+    [
+      ["ballots", ballots],
+      ["changes", changes],
+      ["hands", hands],
+      ["waiting", waiting],
+    ] as [CommunityRead, { status: number }][]
+  ).map(([name, a]) => ({ name, state: stateOfStatus(a.status) }));
+  return {
+    open: [...(ok(ballots) ? safe(() => communityVotes(ballots.body), []) : []), ...c.open, ...h.open],
+    waiting: ok(waiting) ? safe(() => communityWaiting(waiting.body), []) : [],
+    yours: [...c.yours, ...h.yours],
+    reads,
+  };
+}
+
 export function register(app: Express, deps: Deps): void {
   const { authedUser, overLimit } = deps;
 
@@ -119,6 +159,16 @@ export function register(app: Express, deps: Deps): void {
       items,
       counts: { waiting: items.length },
     });
+  });
+
+  // Members only: signed out is asked to sign in, and a visitor or a former member is refused, reading nothing.
+  app.get("/api/review/community", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in first." });
+    if (!(await deps.isMember(user))) return res.status(403).json({ error: "members_only", message: "This is for members of the village." });
+    if (await overLimit(`review-community:${String(user.id)}`, 60, 60_000)) return res.status(429).json({ error: "too_many" });
+    res.set("Cache-Control", "no-store");
+    res.json(await readCommunity(readAs(req, deps), String(user.id)));
   });
 
   app.get("/api/admin/review/find", async (req, res) => {
