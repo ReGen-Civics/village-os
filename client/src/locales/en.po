@@ -464,6 +464,7 @@ msgid "three draft value items"
 msgstr "three draft value items"
 
 #: client/src/pages/EntranceCode.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal code step: the code field"
 msgid "Your code"
 msgstr "Your code"
@@ -477,6 +478,11 @@ msgstr "Forging a picture is not switched on in this village yet. Your gifts are
 msgctxt "SeatSettingsFields, label"
 msgid "Amount"
 msgstr "Amount"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: try again"
+msgid "Try again"
+msgstr "Try again"
 
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgid "That date could not be read."
@@ -727,7 +733,7 @@ msgstr "What goes on the board, where anyone can read it. Take out anything that
 msgid "Change yours on your profile"
 msgstr "Change yours on your profile"
 
-#: client/src/components/profile/VisitorNameCard.tsx
+#: client/src/components/profile/PrivacyPanel.tsx
 msgctxt "profile, show my first name to visitors"
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
@@ -853,6 +859,11 @@ msgctxt "budget category"
 msgid "Role pay"
 msgstr "Role pay"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Erasures to retry"
+msgstr "Erasures to retry"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Add a safety contact"
 msgstr "Add a safety contact"
@@ -892,9 +903,9 @@ msgid "{needs}. Turning it on turns those on first."
 msgstr "{needs}. Turning it on turns those on first."
 
 #: client/src/pages/Profile.tsx
-msgctxt "Profile, h2"
-msgid "How your sheet works for you"
-msgstr "How your sheet works for you"
+#~ msgctxt "Profile, h2"
+#~ msgid "How your sheet works for you"
+#~ msgstr "How your sheet works for you"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -1205,6 +1216,11 @@ msgstr "{0} (future venture)"
 msgctxt "admin open proposals"
 msgid "Writing down {0} recordings. Each appears here as it finishes."
 msgstr "Writing down {0} recordings. Each appears here as it finishes."
+
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: before the member sign-in link"
+msgid "A member with a password?"
+msgstr "A member with a password?"
 
 #: client/src/components/admin/comms/WordsEditor.tsx
 msgctxt "WordsEditor, label"
@@ -1533,6 +1549,11 @@ msgstr "Main Website"
 #~ msgid "We are hiring these roles first. More roles open after them."
 #~ msgstr "We are hiring these roles first. More roles open after them."
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "That did not go through. Check your connection."
+msgstr "That did not go through. Check your connection."
+
 #: client/src/pages/Messages.tsx
 msgctxt "Messages, h2"
 msgid "Shared work"
@@ -1721,6 +1742,11 @@ msgctxt "AI transcript refusal"
 msgid "Writing recordings down isn't switched on. An admin can switch it on under Integrations."
 msgstr "Writing recordings down isn't switched on. An admin can switch it on under Integrations."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the badge that says this is a visitor, not a member"
+msgid "Visitor"
+msgstr "Visitor"
+
 #: client/src/components/map/TodayOnTheMap.tsx
 msgctxt "circles map, today card"
 msgid "Your light is off."
@@ -1757,6 +1783,11 @@ msgstr "Add another value item"
 msgctxt "Admin, h3"
 msgid "Shapes"
 msgstr "Shapes"
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show my standing"
+msgstr "Show my standing"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "What harm could this do to the village, or what would it stop us doing?"
@@ -1976,6 +2007,12 @@ msgctxt "CrowdpoolCampaign, p"
 msgid "Each open need is a quest waiting to be written. The solid bar is what arrived; the faint bar is what someone has spoken for."
 msgstr "Each open need is a quest waiting to be written. The solid bar is what arrived; the faint bar is what someone has spoken for."
 
+#. placeholder {0}: p.pages.length
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: pages noted"
+msgid "Pages you opened: {0}"
+msgstr "Pages you opened: {0}"
+
 #: client/src/components/TypographyPanel.tsx
 msgctxt "TypographyPanel, p"
 msgid "A village worth co-creating"
@@ -2002,9 +2039,9 @@ msgstr "{vouched} of {needed} vouched"
 #~ msgstr "Add a task"
 
 #: client/src/components/CycleClock.tsx
-msgctxt "cycle clock: a village on calendar months, the day the month turns"
-msgid "Allowances refill when this calendar month turns, on {date}."
-msgstr "Allowances refill when this calendar month turns, on {date}."
+#~ msgctxt "cycle clock: a village on calendar months, the day the month turns"
+#~ msgid "Allowances refill when this calendar month turns, on {date}."
+#~ msgstr "Allowances refill when this calendar month turns, on {date}."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, quiet"
@@ -2383,6 +2420,11 @@ msgctxt "AdminFeel, aria-label"
 msgid "On this device"
 msgstr "On this device"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: Google for a visitor who entered with it"
+msgid "Came in with Google? Continue with Google"
+msgstr "Came in with Google? Continue with Google"
+
 #: client/src/components/admin/PlayerCard.tsx
 msgctxt "PlayerCard, button"
 msgid "<0/>Sign out everywhere"
@@ -2456,6 +2498,11 @@ msgstr "Add these words to the answer"
 #: client/src/components/journey/TestRun.tsx
 msgid "Every rule this run reached would pay what it says it pays."
 msgstr "Every rule this run reached would pay what it says it pays."
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the mode choice, read aloud"
+msgid "Light or dark"
+msgstr "Light or dark"
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript"
@@ -2798,6 +2845,11 @@ msgstr "Check {sentTo}. We sent a link to confirm it's you. Your application rea
 msgctxt "RedemptionPanel, p"
 msgid "This village has no token it redeems yet. A steward chooses which ones in the village's dials."
 msgstr "This village has no token it redeems yet. A steward chooses which ones in the village's dials."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: an application's status"
+msgid "Accepted"
+msgstr "Accepted"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
@@ -3200,6 +3252,12 @@ msgctxt "Introductions, button"
 msgid "Pause for two weeks"
 msgstr "Pause for two weeks"
 
+#: client/src/pages/Login.tsx
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "sign in: link to a visitor's code sign-in"
+msgid "Sign in with a code"
+msgstr "Sign in with a code"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "Change the amount"
@@ -3445,6 +3503,12 @@ msgstr "The {count} steps of your application"
 #~ msgid "Delivers"
 #~ msgstr "Delivers"
 
+#. placeholder {0}: p.name
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: heading, with their name"
+msgid "Hi {0}"
+msgstr "Hi {0}"
+
 #: client/src/components/canvas/DecisionMatrix.tsx
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "a risk tag on a decision"
@@ -3465,6 +3529,11 @@ msgstr "see the founding team."
 msgctxt "open proposal: the contract's pay"
 msgid "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
 msgstr "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Drafts to publish"
+msgstr "Drafts to publish"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -3570,9 +3639,9 @@ msgid "Publishing"
 msgstr "Publishing"
 
 #: client/src/pages/Profile.tsx
-msgctxt "Profile, p"
-msgid "Settings"
-msgstr "Settings"
+#~ msgctxt "Profile, p"
+#~ msgid "Settings"
+#~ msgstr "Settings"
 
 #: client/src/components/TakeCurrentPrice.tsx
 msgid "Take the new price"
@@ -3665,6 +3734,11 @@ msgstr "On in this village"
 msgctxt "funding rounds"
 msgid "What the village chose"
 msgstr "What the village chose"
+
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number"
+msgid "Save number"
+msgstr "Save number"
 
 #. placeholder {0}: Math.min(c.dailyCap, ceiling)
 #: client/src/components/profileDash/YourCompanions.tsx
@@ -3951,6 +4025,11 @@ msgctxt "sera answers"
 msgid "Take {owner} for 1 change?"
 msgstr "Take {owner} for 1 change?"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: no applications"
+msgid "No applications yet."
+msgstr "No applications yet."
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Now"
@@ -4054,6 +4133,11 @@ msgstr "Nothing waiting. When the assistant proposes an RSVP for you, it appears
 msgctxt "WorkPayBlock, p"
 msgid "{0} is your say in the village's decisions."
 msgstr "{0} is your say in the village's decisions."
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: under the heading"
+msgid "Members signed in always see your first name."
+msgstr "Members signed in always see your first name."
 
 #. placeholder {0}: comms?.webhook.configured ? "Planted" : "Not planted yet"
 #: client/src/components/setupGame/SpringPlot.tsx
@@ -4275,6 +4359,11 @@ msgstr "Both ways"
 msgid "Could not reach the server."
 msgstr "Could not reach the server."
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Votes waiting on you"
+msgstr "Votes waiting on you"
+
 #: client/src/components/calendar/DayStrip.tsx
 msgctxt "calendar day strip"
 msgid "The days of this moon"
@@ -4429,6 +4518,10 @@ msgctxt "TypographyPanel, p"
 msgid "For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best; .woff, .ttf and .otf also work). It's stored with your deployment and set as the face for the role you pick, one face per role."
 msgstr "For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best; .woff, .ttf and .otf also work). It's stored with your deployment and set as the face for the role you pick, one face per role."
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Open reads for the agent of whoever holds {roleName}? The Anchor Circle is told."
+msgstr "Open reads for the agent of whoever holds {roleName}? The Anchor Circle is told."
+
 #: client/src/components/admin/comms/JourneyOutcomes.tsx
 msgctxt "JourneyOutcomes, p"
 msgid "Nothing from this journey has been sent yet."
@@ -4438,6 +4531,11 @@ msgstr "Nothing from this journey has been sent yet."
 msgctxt "EmailPages, title"
 msgid "Stop {what}?"
 msgstr "Stop {what}?"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Postings owed"
+msgstr "Postings owed"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The vote is open. <0>Read it and vote</0>."
@@ -4545,6 +4643,16 @@ msgstr "Counted by Voice, with each person's share capped. One member, one vote 
 #~ msgctxt "open proposal card"
 #~ msgid "e.g. roughly 25 hours a week"
 #~ msgstr "e.g. roughly 25 hours a week"
+
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number field"
+msgid "List number"
+msgstr "List number"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: no interest chosen"
+msgid "Not said"
+msgstr "Not said"
 
 #: client/src/components/admin/SecretsKeyBanner.tsx
 msgctxt "SecretsKeyBanner, button"
@@ -4920,6 +5028,11 @@ msgstr "Say it"
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "A gathering with a seat fee"
 msgstr "A gathering with a seat fee"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: details section"
+msgid "What you shared with us"
+msgstr "What you shared with us"
 
 #: client/src/components/governance/TransferCeremony.tsx
 msgctxt "TransferCeremony, p"
@@ -5418,6 +5531,11 @@ msgstr "Europe/Lisbon"
 msgctxt "ModuleConfigPanels, h3"
 msgid "Where requests go, and who sees the flows"
 msgstr "Where requests go, and who sees the flows"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Account"
+msgstr "Account"
 
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: the privacy line, the email list"
@@ -5957,6 +6075,11 @@ msgctxt "a public line is being saved"
 msgid "Saving"
 msgstr "Saving"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the search box"
+msgid "Search, like: email"
+msgstr "Search, like: email"
+
 #. placeholder {0}: l.label
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line button"
@@ -6031,6 +6154,7 @@ msgid "A gentle place to begin."
 msgstr "A gentle place to begin."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: optional WhatsApp field"
 msgid "WhatsApp number"
 msgstr "WhatsApp number"
@@ -6159,6 +6283,11 @@ msgstr "Help me make it clearer"
 msgctxt "a circle's own calendar, change its title filter"
 msgid "Which events count"
 msgstr "Which events count"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Keys waiting for a co-sign"
+msgstr "Keys waiting for a co-sign"
 
 #: client/src/components/admin/comms/JourneyDetail.tsx
 msgctxt "JourneyDetail, aria-label"
@@ -6342,6 +6471,7 @@ msgid "Taken in"
 msgstr "Taken in"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: the keep-in-touch answer yes"
 msgid "Yes"
 msgstr "Yes"
@@ -6600,6 +6730,11 @@ msgstr "1 open quest grows {goalName}"
 msgctxt "ContentEditorTab, button"
 msgid "Remove"
 msgstr "Remove"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: eyebrow"
+msgid "Only you see this"
+msgstr "Only you see this"
 
 #. placeholder {0}: money(value.monthly)
 #. placeholder {1}: askPeriod(value)
@@ -6947,6 +7082,10 @@ msgctxt "open proposal side by side"
 msgid "Terms to talk through"
 msgstr "Terms to talk through"
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads open for the full-access role's agent"
+msgstr "Reads open for the full-access role's agent"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading on the change requests page"
 msgid "Start a change request"
@@ -7007,6 +7146,11 @@ msgstr "Stages"
 msgctxt "VillageMap, button"
 msgid "Now"
 msgstr "Now"
+
+#: client/src/pages/Profile.tsx
+msgctxt "Profile: the last band's eyebrow"
+msgid "Your sheet"
+msgstr "Your sheet"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
@@ -7451,6 +7595,11 @@ msgstr "{beyondCount} roles need more time than you have right now."
 #~ msgid "What you would ask (optional)"
 #~ msgstr "What you would ask (optional)"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: an application's status"
+msgid "Waiting for you to confirm your email"
+msgstr "Waiting for you to confirm your email"
+
 #: client/src/components/journal/EntryCard.tsx
 msgctxt "EntryCard, span"
 msgid "Private"
@@ -7602,6 +7751,11 @@ msgctxt "open work filter row"
 msgid "Season goal"
 msgstr "Season goal"
 
+#: client/src/components/GlossaryTip.tsx
+msgctxt "glossary tip: the info mark beside a word the village explains"
+msgid "What \"{word}\" means"
+msgstr "What \"{word}\" means"
+
 #: client/src/components/admin/TokenMeaningField.tsx
 msgctxt "TokenMeaningField, button"
 msgid "Save"
@@ -7630,6 +7784,11 @@ msgstr "#0369a1"
 msgctxt "AdminMobileNav, span"
 msgid "Sections"
 msgstr "Sections"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: invitation declined, no words written"
+msgid "Not this time. Thank you for asking."
+msgstr "Not this time. Thank you for asking."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: tooltip label"
@@ -7692,6 +7851,11 @@ msgstr "week {0}"
 msgctxt "moon renewal action"
 msgid "Take it back"
 msgstr "Take it back"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: failed"
+msgid "This list did not load. Suggestions may be waiting."
+msgstr "This list did not load. Suggestions may be waiting."
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -8308,6 +8472,16 @@ msgctxt "founding application carried over"
 msgid "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
 msgstr "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: promoted"
+msgid "You are a member now. Check your email for the link to set your password, then sign in as a member."
+msgstr "You are a member now. Check your email for the link to set your password, then sign in as a member."
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the notifications group matches"
+msgid "email, digest, reminders, delete, leave, data"
+msgstr "email, digest, reminders, delete, leave, data"
+
 #: client/src/components/admin/HyphaModulePanel.tsx
 msgctxt "HyphaModulePanel, p"
 msgid "What this village reads from Base, who reads it, and where an outcome goes when it comes home. Everything here is read only. The platform displays what the chain says and links you out to Hypha to act."
@@ -8595,6 +8769,11 @@ msgctxt "CircleLabel, text"
 msgid "forming"
 msgstr "forming"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: an application's status"
+msgid "Withdrawn"
+msgstr "Withdrawn"
+
 #. placeholder {0}: comms?.settings.domain || "your web address"
 #: client/src/components/setupGame/SpringPlot.tsx
 msgctxt "SpringPlot, span"
@@ -8732,6 +8911,11 @@ msgctxt "companion welcome"
 msgid "Send"
 msgstr "Send"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: withdrawn"
+msgid "Your application is withdrawn."
+msgstr "Your application is withdrawn."
+
 #. placeholder {0}: money(value.monthly)
 #. placeholder {1}: suggested ? ` (${signedPct(priceDifferencePct(suggested, value.monthly) ?? 0)} on the suggestion)` : ""
 #: client/src/components/governance/PriceAsk.tsx
@@ -8866,6 +9050,11 @@ msgctxt "ModuleSettingsSection, p"
 msgid "That link asked for a setting this card does not hold any more. Everything {moduleName} reads is below."
 msgstr "That link asked for a setting this card does not hold any more. Everything {moduleName} reads is below."
 
+#: client/src/components/playerCard/PlayerRoleCard.tsx
+msgctxt "player card: unwritten parts, many"
+msgid "{count} parts of your card are not written yet."
+msgstr "{count} parts of your card are not written yet."
+
 #: client/src/pages/WorkWithUs.tsx
 msgctxt "work with us, set up for a venture: what a venture is, under the heading"
 msgid "A venture is your own business on the land. You run it and keep its upside; {projectName} shares in it through a lease or profit share."
@@ -8921,6 +9110,7 @@ msgid "Report a Bug / Share an Idea"
 msgstr "Report a Bug / Share an Idea"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, a founding seeder"
 msgid "Becoming a founding seeder"
 msgstr "Becoming a founding seeder"
@@ -9186,6 +9376,11 @@ msgctxt "sign in: for someone with no invitation"
 msgid "No invitation yet?"
 msgstr "No invitation yet?"
 
+#: client/src/pages/Profile.tsx
+msgctxt "Profile: the hero's door to the settings page"
+msgid "Settings"
+msgstr "Settings"
+
 #: client/src/components/profileDash/YourCompanions.tsx
 msgctxt "YourCompanions, button"
 msgid "Customize this section"
@@ -9359,6 +9554,11 @@ msgctxt "Places, Link"
 msgid "See every photograph on one page, newest first"
 msgstr "See every photograph on one page, newest first"
 
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: the fold under the card"
+msgid "Today's sky"
+msgstr "Today's sky"
+
 #: client/src/pages/Modules.tsx
 msgctxt "Modules, InfoTip"
 msgid "turns on"
@@ -9530,6 +9730,11 @@ msgctxt "approval inbox"
 msgid "Decline"
 msgstr "Decline"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: delete confirmation field"
+msgid "Type {DELETE_WORD} to confirm"
+msgstr "Type {DELETE_WORD} to confirm"
+
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, p"
 msgid "Not connected yet. Set the address under this module's settings (hypha.org_url), and every Hypha button appears."
@@ -9683,6 +9888,11 @@ msgstr "three draft goals for your first moon"
 msgctxt "FirstWalk, p"
 msgid "Looking at what your village is showing…"
 msgstr "Looking at what your village is showing…"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the privacy group matches"
+msgid "who sees what, visitors, first name, roles, badges, standing, borrowed, booked, calendar, home"
+msgstr "who sees what, visitors, first name, roles, badges, standing, borrowed, booked, calendar, home"
 
 #. placeholder {0}: l.user_name ?? l.user_id
 #. placeholder {1}: l.item_name
@@ -9883,6 +10093,11 @@ msgstr "Create {0}"
 msgctxt "EmailPages, button"
 msgid "Start again"
 msgstr "Start again"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: forbidden"
+msgid "This page is for people who decide suggestions. What you sent waits on"
+msgstr "This page is for people who decide suggestions. What you sent waits on"
 
 #. placeholder {0}: decides.label.toLowerCase()
 #: client/src/components/power/Legend.tsx
@@ -10363,6 +10578,11 @@ msgctxt "the commons: fold the list"
 msgid "Show fewer goals"
 msgstr "Show fewer goals"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: link to the visitor profile"
+msgid "Open your visit"
+msgstr "Open your visit"
+
 #. placeholder {0}: role.name
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms commitment, one of several roles"
@@ -10478,6 +10698,11 @@ msgctxt "ProfileSheet, p"
 msgid "{tokenName}: held, never spent. A record of what the village noticed."
 msgstr "{tokenName}: held, never spent. A record of what the village noticed."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: delete"
+msgid "Delete my data"
+msgstr "Delete my data"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
 #~ msgid "A little about you, so the people who decide can meet you. Links, files and references are all optional."
@@ -10542,6 +10767,11 @@ msgstr "Undo"
 msgctxt "PracticePicker, aria-label"
 msgid "An unfinished page"
 msgstr "An unfinished page"
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes, a door to the one list"
+msgid "These are the connector's changes. Everything waiting, from every queue, is on"
+msgstr "These are the connector's changes. Everything waiting, from every queue, is on"
 
 #: client/src/components/asks/AsksPanel.tsx
 msgctxt "AsksPanel, label"
@@ -11091,6 +11321,15 @@ msgctxt "open proposal attachments"
 msgid "Files and recordings together: {0} of {1}."
 msgstr "Files and recordings together: {0} of {1}."
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Close reads again? The Anchor Circle is told."
+msgstr "Close reads again? The Anchor Circle is told."
+
+#: client/src/components/profileDash/CompanionCorner.tsx
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}. {waiting} drafts wait for your yes."
+msgstr "Your companions: {names}. {waiting} drafts wait for your yes."
+
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
 msgid "Waiting for you"
@@ -11110,6 +11349,12 @@ msgstr "No threads yet this moon. The first thanks carried draws one."
 msgctxt "ModuleStewardPanel, a"
 msgid "Terms ↗"
 msgstr "Terms ↗"
+
+#. placeholder {0}: pickedIds.length
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: bulk promote"
+msgid "Promote the {0} picked"
+msgstr "Promote the {0} picked"
 
 #: client/src/pages/Budget.tsx
 msgctxt "budget page"
@@ -11244,6 +11489,12 @@ msgstr "Talk and share"
 msgctxt "CommsWords, p"
 msgid "Every email's footer carries your village's postal address, and none is set yet. Add it in Comms Settings."
 msgstr "Every email's footer carries your village's postal address, and none is set yet. Add it in Comms Settings."
+
+#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Circles.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "domain"
+msgstr "domain"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -11405,6 +11656,11 @@ msgstr "Stay With Us"
 #~ msgid "The terms on offer"
 #~ msgstr "The terms on offer"
 
+#: client/src/pages/Profile.tsx
+msgctxt "Profile: the door to the settings page"
+msgid "Profile settings"
+msgstr "Profile settings"
+
 #: client/src/pages/StructureReview.tsx
 msgid "When this is published: {updateSays}"
 msgstr "When this is published: {updateSays}"
@@ -11419,10 +11675,16 @@ msgctxt "ModuleSettingsSection, span"
 msgid "founder held"
 msgstr "founder held"
 
+#: client/src/components/admin/InvitationRequests.tsx
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
 msgid "Name"
 msgstr "Name"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
+msgstr "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
 
 #: client/src/components/modules/PoolStatement.tsx
 msgctxt "PoolStatement, th"
@@ -11631,6 +11893,11 @@ msgctxt "coming-soon waitlist field"
 msgid "WhatsApp number (optional)"
 msgstr "WhatsApp number (optional)"
 
+#: client/src/pages/Events.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "moon"
+msgstr "moon"
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Send"
@@ -11687,6 +11954,11 @@ msgstr "<0/>Get your Gene Keys"
 msgctxt "pay page"
 msgid "Credits"
 msgstr "Credits"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the invitation offer"
+msgid "If you want full access and full membership, request an invitation here."
+msgstr "If you want full access and full membership, request an invitation here."
 
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
@@ -11867,6 +12139,11 @@ msgstr "I'll move: {text}"
 msgid "{0} pins close together. Zoom in to tell them apart."
 msgstr "{0} pins close together. Zoom in to tell them apart."
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "Loading the requests."
+msgstr "Loading the requests."
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: after the lantern arrived"
 msgid "Carry another thanks"
@@ -11924,6 +12201,11 @@ msgstr "yourvillage.org"
 msgctxt "founding application, later role note"
 msgid "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
 msgstr "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: details saved"
+msgid "Saved."
+msgstr "Saved."
 
 #: client/src/components/setupGame/JourneyView.tsx
 msgctxt "JourneyView, span"
@@ -12265,6 +12547,11 @@ msgctxt "Admin, toast"
 msgid "That did not reach the server. The row is back to what it holds."
 msgstr "That did not reach the server. The row is back to what it holds."
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: select all"
+msgid "Pick every request"
+msgstr "Pick every request"
+
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Choose"
@@ -12318,6 +12605,11 @@ msgstr "Counts and totals the ledger and the charges table already knew. Read on
 msgctxt "CarryAcross, span"
 msgid "Your pick"
 msgstr "Your pick"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the language choice"
+msgid "Language"
+msgstr "Language"
 
 #: client/src/components/admin/SeraLinkPanel.tsx
 msgctxt "SeraLinkPanel, label"
@@ -12458,6 +12750,11 @@ msgstr "Side by side"
 msgctxt "proposed changes: filter"
 msgid "From"
 msgstr "From"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Feedback to read"
+msgstr "Feedback to read"
 
 #: client/src/components/mobile/MobileTabBar.tsx
 msgctxt "bottom tab bar, a path"
@@ -12819,6 +13116,11 @@ msgctxt "GeneKeys, p"
 msgid "Even a rough answer narrows it down. Somebody who was there may know."
 msgstr "Even a rough answer narrows it down. Somebody who was there may know."
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the first name switch"
+msgid "Turned off, the public pages say \"A member\" instead."
+msgstr "Turned off, the public pages say \"A member\" instead."
+
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, button"
 msgid "Clear them"
@@ -12867,6 +13169,11 @@ msgstr "Only the people who decide your proposal can see your links and files. N
 msgctxt "partner form"
 msgid "A link to it"
 msgstr "A link to it"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: part failed"
+msgid "Some of what waits did not load: {failedNames}. Suggestions may be waiting there."
+msgstr "Some of what waits did not load: {failedNames}. Suggestions may be waiting there."
 
 #: client/src/components/ContributionWord.tsx
 msgctxt "tooltip on the contribution token's name"
@@ -12940,6 +13247,11 @@ msgstr "to"
 msgctxt "roles page goals"
 msgid "Show all {0} goals"
 msgstr "Show all {0} goals"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Inner life"
+msgstr "Inner life"
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, p"
@@ -13485,6 +13797,13 @@ msgctxt "PlayersTab, toast"
 msgid "Stage updated"
 msgstr "Stage updated"
 
+#. placeholder {0}: f.type
+#. placeholder {1}: when(f.at)
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: a form they sent"
+msgid "Sent {0}, {1}"
+msgstr "Sent {0}, {1}"
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "The protocols work offline"
@@ -13611,6 +13930,11 @@ msgstr "Done"
 msgctxt "VoiceSpreadBand, span"
 msgid "The top <0>{0}%</0> of voters hold <1>{1}%</1> of the Voice"
 msgstr "The top <0>{0}%</0> of voters hold <1>{1}%</1> of the Voice"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: inner life door"
+msgid "Your character"
+msgstr "Your character"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: a turning"
@@ -13927,9 +14251,9 @@ msgid "Moved down from {0}"
 msgstr "Moved down from {0}"
 
 #: client/src/components/roleCard/FoundingTeam.tsx
-msgctxt "founding team section lede"
-msgid "We're forming the founding roles who will hold critical domains from foundation building through to completion."
-msgstr "We're forming the founding roles who will hold critical domains from foundation building through to completion."
+#~ msgctxt "founding team section lede"
+#~ msgid "We're forming the founding roles who will hold critical domains from foundation building through to completion."
+#~ msgstr "We're forming the founding roles who will hold critical domains from foundation building through to completion."
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, h3"
@@ -13998,12 +14322,18 @@ msgctxt "PullACard, li"
 msgid "Sun in gate {0}, line {1}"
 msgstr "Sun in gate {0}, line {1}"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox"
+msgid "This page is for people who decide suggestions here."
+msgstr "This page is for people who decide suggestions here."
+
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
 msgid "Portal visitors"
 msgstr "Portal visitors"
 
 #: client/src/pages/EntranceCode.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal code step: the code is the wrong shape"
 msgid "The code is 6 digits."
 msgstr "The code is 6 digits."
@@ -14059,6 +14389,11 @@ msgctxt "voice invite"
 msgid "What we heard, in your words"
 msgstr "What we heard, in your words"
 
+#: client/src/components/profileDash/CompanionCorner.tsx
+msgctxt "companion corner: the panel's close button"
+msgid "Close your companions"
+msgstr "Close your companions"
+
 #. placeholder {0}: count(season.daysLeft, "day")
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, span"
@@ -14108,6 +14443,7 @@ msgid "The village setting is Show pay ranges on role cards: while it is off, on
 msgstr "The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, a visit"
 msgid "Visiting"
 msgstr "Visiting"
@@ -14314,6 +14650,11 @@ msgctxt "voice note"
 msgid "Recording {0} of {VOICE_NOTES_MAX}"
 msgstr "Recording {0} of {VOICE_NOTES_MAX}"
 
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: a village on calendar months, the day the month turns"
+msgid "Allowances<0/> refill when this calendar month turns, on {date}."
+msgstr "Allowances<0/> refill when this calendar month turns, on {date}."
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The key is stored unsealed, so it travels in every database dump. Set VILLAGE_SECRETS_KEY and restart to seal it in place; that keeps the same key."
@@ -14355,6 +14696,11 @@ msgstr "A rough idea is enough. Each member may share {allowance} in this round.
 msgctxt "Admin, toast"
 msgid "Question required"
 msgstr "Question required"
+
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number"
+msgid "That number was not saved. Check your connection."
+msgstr "That number was not saved. Check your connection."
 
 #. placeholder {0}: l.label
 #: client/src/components/budgets/BudgetEditor.tsx
@@ -14813,6 +15159,11 @@ msgctxt "YourCompanions, p"
 msgid "Question {n} of {of}{0}"
 msgstr "Question {n} of {of}{0}"
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the borrowed and booked switch"
+msgid "Loans and stays."
+msgstr "Loans and stays."
+
 #. placeholder {0}: m.index
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, span"
@@ -15166,6 +15517,11 @@ msgctxt "EventsAdminPanel, label"
 msgid "Who sees it"
 msgstr "Who sees it"
 
+#: client/src/components/profile/PowersMap.tsx
+msgctxt "PowersMap: the climb fold's summary"
+msgid "You are at {hereName}"
+msgstr "You are at {hereName}"
+
 #. placeholder {0}: card.commitmentPct
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -15186,6 +15542,11 @@ msgstr "No pay on offer"
 #~ msgctxt "role card rewards explainer: your agreement"
 #~ msgid "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each month you recap what you delivered, and pay follows what you deliver."
 #~ msgstr "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each month you recap what you delivered, and pay follows what you deliver."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: activity section"
+msgid "What you did here"
+msgstr "What you did here"
 
 #: client/src/components/profile/InventoryCard.tsx
 msgctxt "InventoryCard, h3"
@@ -15278,6 +15639,11 @@ msgstr "Yes, discard"
 msgctxt "pay board status"
 msgid "Sent from escrow"
 msgstr "Sent from escrow"
+
+#: client/src/pages/Quests.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "Quest"
+msgstr "Quest"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -15652,6 +16018,11 @@ msgctxt "Review, h2"
 msgid "A draft from this queue is waiting to publish"
 msgstr "A draft from this queue is waiting to publish"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: heading"
+msgid "Sign back in with your email"
+msgstr "Sign back in with your email"
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
 msgid "How to switch it off"
@@ -15739,9 +16110,9 @@ msgid "Close"
 msgstr "Close"
 
 #: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile settings heading: what signed-out visitors see"
-msgid "Visitors"
-msgstr "Visitors"
+#~ msgctxt "profile settings heading: what signed-out visitors see"
+#~ msgid "Visitors"
+#~ msgstr "Visitors"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
@@ -15951,6 +16322,12 @@ msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
 msgstr "Send the suggestion"
 
+#. placeholder {0}: r.name
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: select one"
+msgid "Pick {0}"
+msgstr "Pick {0}"
+
 #: client/src/components/governance/CloseBeat.tsx
 msgctxt "CloseBeat, dt"
 msgid "Of a possible"
@@ -16005,6 +16382,7 @@ msgid "It waits for the role's holder to accept it. You'll see where it stands u
 msgstr "It waits for the role's holder to accept it. You'll see where it stands under Sent."
 
 #: client/src/pages/EntranceCode.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal code step: heading"
 msgid "Type the code we emailed you"
 msgstr "Type the code we emailed you"
@@ -16920,6 +17298,11 @@ msgctxt "EventsAdminPanel, div"
 msgid "Loading..."
 msgstr "Loading..."
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the home switch"
+msgid "Your home on the land."
+msgstr "Your home on the land."
+
 #: client/src/components/NotifyPrefsPanel.tsx
 msgctxt "NotifyPrefsPanel, aria-label"
 msgid "Contactable through the Village Map"
@@ -16950,6 +17333,11 @@ msgstr "Come as a guest. No account needed."
 msgctxt "ModuleStewardPanel, p"
 msgid "Built by {0}"
 msgstr "Built by {0}"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: empty"
+msgid "Nothing is waiting on you."
+msgstr "Nothing is waiting on you."
 
 #: client/src/pages/StructureReview.tsx
 msgid "{liveName} stays as it is. {source}'s role is added beside it as a new role, under a name you type."
@@ -17252,6 +17640,11 @@ msgctxt "founding application refusal"
 msgid "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
 msgstr "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
 
+#: client/src/components/profileDash/CompanionCorner.tsx
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}"
+msgstr "Your companions: {names}"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, div"
 msgid "Loading…"
@@ -17488,6 +17881,11 @@ msgctxt "ReserveHome, p"
 msgid "Loading the homes."
 msgstr "Loading the homes."
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: item"
+msgid "Sent {sent}"
+msgstr "Sent {sent}"
+
 #: client/src/pages/Partner.tsx
 msgctxt "partner form: a field to fix"
 msgid "The link starts with https:// and has no spaces."
@@ -17667,6 +18065,11 @@ msgctxt "Admin, h3"
 msgid "Contact relay log"
 msgstr "Contact relay log"
 
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number"
+msgid "Saved."
+msgstr "Saved."
+
 #: client/src/pages/Housing.tsx
 msgctxt "Housing, Link"
 msgid "Resident Journey"
@@ -17771,6 +18174,11 @@ msgstr "With {0}. Done when: {1}"
 msgctxt "SubmissionHandling, label"
 msgid "A person"
 msgstr "A person"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Where Sera's memory differs"
+msgstr "Where Sera's memory differs"
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: the search box"
@@ -17897,6 +18305,11 @@ msgctxt "open work filter: all season goals"
 msgid "Every goal"
 msgstr "Every goal"
 
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "Formation"
+msgstr "Formation"
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget desk"
 msgid "Every line that touches this moon. A withdrawn line stays on the record and can be restored."
@@ -17931,6 +18344,11 @@ msgstr "<0>Sign in</0> to mark lessons done as you go."
 msgctxt "VotingWeightsPanel, p"
 msgid "The allocation table could not be read. Reload and try again."
 msgstr "The allocation table could not be read. Reload and try again."
+
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: eyebrow"
+msgid "Today's card"
+msgstr "Today's card"
 
 #: client/src/pages/Decisions.tsx
 msgctxt "Decisions, p"
@@ -17990,6 +18408,10 @@ msgstr "<0/>Confirm"
 msgctxt "TokenJobsPanel, h3"
 msgid "Which token does what"
 msgstr "Which token does what"
+
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "With this on, the same agent may read the village's pages without a listed path, as a plain member reads them, so an admin's wider view never reaches it. Writes still need your yes in the chat. Secrets and keys, money and pay, applicant data, members' contact details and legal names, sign-in and tokens, the agent list, voice recordings and erasure records stay closed."
+msgstr "With this on, the same agent may read the village's pages without a listed path, as a plain member reads them, so an admin's wider view never reaches it. Writes still need your yes in the chat. Secrets and keys, money and pay, applicant data, members' contact details and legal names, sign-in and tokens, the agent list, voice recordings and erasure records stay closed."
 
 #: client/src/components/characters/RolesOpenNow.tsx
 msgctxt "character card, open roles tagged for no character"
@@ -18537,6 +18959,11 @@ msgctxt "MaiaTypeLine, span"
 msgid "From {0}:"
 msgstr "From {0}:"
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the roles switch"
+msgid "On your profile and the village's pages."
+msgstr "On your profile and the village's pages."
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "label before a decision's note"
 msgid "The note:"
@@ -18551,6 +18978,12 @@ msgstr "Filter by domain"
 msgctxt "Admin, placeholder"
 msgid "Days"
 msgstr "Days"
+
+#: client/src/components/roleDraft/ArchetypeStep.tsx
+#: client/src/pages/Roles.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "root"
+msgstr "root"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "Waiting for a vouch"
@@ -18591,6 +19024,11 @@ msgstr "This week"
 msgctxt "VoterRoll, span"
 msgid "weighs {0}"
 msgstr "weighs {0}"
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, other ways to join: the game's door"
+msgid "Choose the root<0/> you grow from, see this season's goals, and pick the roles you play."
+msgstr "Choose the root<0/> you grow from, see this season's goals, and pick the roles you play."
 
 #. placeholder {0}: view.pendingVendorDelete === 0 ? "none waiting." : `${count(view.pendingVendorDelete, "code-name")} kept, marked pending.`
 #: client/src/components/admin/SaberraOutboxPanel.tsx
@@ -18765,6 +19203,11 @@ msgctxt "role editor: who can hold a role"
 msgid "An agent"
 msgstr "An agent"
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: promote one"
+msgid "Promote to member"
+msgstr "Promote to member"
+
 #: client/src/components/comms/GatheringEmailSettings.tsx
 msgctxt "GatheringEmailSettings, p"
 msgid "Loading..."
@@ -18802,6 +19245,11 @@ msgstr "Saved. Members see it on their next look at the map."
 msgctxt "role card: a conversation held on WhatsApp, no number shown"
 msgid "We'll message you on WhatsApp"
 msgstr "We'll message you on WhatsApp"
+
+#: client/src/components/profileDash/CompanionCorner.tsx
+msgctxt "companion corner: the panel, read aloud"
+msgid "Your companions"
+msgstr "Your companions"
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "a live role takes the name an outside service sent"
@@ -19056,6 +19504,11 @@ msgctxt "mic button refusal"
 msgid "Speaking needs a connection. Typing works offline."
 msgstr "Speaking needs a connection. Typing works offline."
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "Promote"
+msgstr "Promote"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
 msgid "Kind"
@@ -19286,6 +19739,11 @@ msgctxt "StructureReview, span"
 msgid "A name of its own. A second role with the same name stays blocked."
 msgstr "A name of its own. A second role with the same name stays blocked."
 
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: button"
+msgid "Pull today's card"
+msgstr "Pull today's card"
+
 #. placeholder {0}: problems.length
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application check"
@@ -19442,6 +19900,7 @@ msgid "{n} go into a draft. They go live when the draft is published."
 msgstr "{n} go into a draft. They go live when the draft is published."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal entrance: email field"
 msgid "Your email"
 msgstr "Your email"
@@ -19678,6 +20137,11 @@ msgctxt "voice field label: the thank-you note on the wall"
 msgid "Your thank you"
 msgstr "Your thank you"
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show where I live"
+msgstr "Show where I live"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Conflicts {nConflicts}"
@@ -19730,6 +20194,10 @@ msgstr "Recognition Flows"
 msgctxt "role editor: how to write the deliverables"
 msgid "One per line: start | end | title | workstream | what it feeds, with dates as year-month-day. A milestone has one date, or the same date twice; one that several roles share is drawn as a gate on the team's timeline. What it feeds, up to 80 characters, shows when someone taps the bar."
 msgstr "One per line: start | end | title | workstream | what it feeds, with dates as year-month-day. A milestone has one date, or the same date twice; one that several roles share is drawn as a gate on the team's timeline. What it feeds, up to 80 characters, shows when someone taps the bar."
+
+#: client/src/components/admin/GlossaryPanel.tsx
+msgid "One plain sentence for each word a visitor may not know. It opens from a small info mark beside the word. Blank shows no mark."
+msgstr "One plain sentence for each word a visitor may not know. It opens from a small info mark beside the word. Blank shows no mark."
 
 #: client/src/pages/rites/Door.tsx
 msgctxt "rites"
@@ -20101,6 +20569,11 @@ msgstr "Find your first Quest"
 msgctxt "funding rounds"
 msgid "Open the pot"
 msgstr "Open the pot"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the list of groups, read aloud"
+msgid "Settings groups"
+msgstr "Settings groups"
 
 #: client/src/components/comms/TimePollPanel.tsx
 msgctxt "TimePollPanel, p"
@@ -20527,10 +21000,20 @@ msgstr "{walkedCount} of {stepCount} steps completed"
 msgid "Shape it into a quest. Once it says what it delivers and what it asks, it goes on the ballot."
 msgstr "Shape it into a quest. Once it says what it delivers and what it asks, it goes on the ballot."
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Privacy"
+msgstr "Privacy"
+
 #: client/src/pages/Photographs.tsx
 msgctxt "Photographs, aria-label"
 msgid "Places"
 msgstr "Places"
+
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: take the code"
+msgid "Sign in"
+msgstr "Sign in"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 #~ msgctxt "founding application, the send failed"
@@ -20783,6 +21266,11 @@ msgctxt "WaitingKeys, h3"
 msgid "Keys waiting for a second person"
 msgstr "Keys waiting for a second person"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: link to the roles"
+msgid "See the open roles"
+msgstr "See the open roles"
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload field example"
 msgid "November budget sheet"
@@ -20802,6 +21290,11 @@ msgstr "Plus {cash} in cash, per the role agreement."
 msgctxt "connector setup panel, the switch is on"
 msgid "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
 msgstr "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: nothing found for a code"
+msgid "Nothing waiting is called {foundCode}, among what you may see."
+msgstr "Nothing waiting is called {foundCode}, among what you may see."
 
 #: client/src/components/power/HandsForPower.tsx
 msgctxt "HandsForPower, p"
@@ -20946,6 +21439,11 @@ msgctxt "founding application review: the price"
 msgid "Choose your commitment to see a suggested compensation"
 msgstr "Choose your commitment to see a suggested compensation"
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "Has an account: promoting admits it"
+msgstr "Has an account: promoting admits it"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
 msgid "End"
@@ -20965,6 +21463,11 @@ msgstr "Newest {0}"
 msgctxt "landing, the steward card's line while the founding team is on"
 msgid "The founding team who hold the village's core domains."
 msgstr "The founding team who hold the village's core domains."
+
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: under the card"
+msgid "A lens, never a forecast."
+msgstr "A lens, never a forecast."
 
 #: client/src/components/ProfileJourney.tsx
 msgctxt "ProfileJourney, button"
@@ -22013,6 +22516,11 @@ msgctxt "Characters, aria-label"
 msgid "Classes"
 msgstr "Classes"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Proposed changes"
+msgstr "Proposed changes"
+
 #: client/src/components/ClosingPolicyCard.tsx
 #: client/src/pages/ChangeRequests.tsx
 msgid "Everyone in the village can read what you write here."
@@ -22045,6 +22553,11 @@ msgstr "Three to five is the usual."
 #~ msgctxt "open proposal card"
 #~ msgid "The task"
 #~ msgstr "The task"
+
+#: client/src/pages/Login.tsx
+msgctxt "sign in: before the visitor's way in"
+msgid "Visiting us, without a member account?"
+msgstr "Visiting us, without a member account?"
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgid "Each link has to be a full web address starting with https://."
@@ -22184,6 +22697,11 @@ msgstr "Quests and roles are edited on their own screens. Nothing here changes a
 #~ msgctxt "four ways to build: when you hear back"
 #~ msgid "You'll hear within {days} days."
 #~ msgstr "You'll hear within {days} days."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Approvals"
+msgstr "Approvals"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
@@ -22347,6 +22865,11 @@ msgstr "Store your own LLM key and the in-app assistant answers your questions o
 msgctxt "JourneyToLaunch, button"
 msgid "Village economics"
 msgstr "Village economics"
+
+#: client/src/components/roleDraft/ArchetypeStep.tsx
+msgctxt "roles page archetypes"
+msgid "Choose the root<0/> you grow from"
+msgstr "Choose the root<0/> you grow from"
 
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgctxt "role access state"
@@ -22635,6 +23158,7 @@ msgid "Set this week's"
 msgstr "Set this week's"
 
 #: client/src/pages/EntranceCode.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal code step: change the address"
 msgid "Use a different email"
 msgstr "Use a different email"
@@ -22652,6 +23176,11 @@ msgctxt "OAuthAuthorize, p"
 msgid "A connector that says it is <0>{0}</0> asks to act for you, {1}. It named itself; check the return address before you allow it. When you decide, you go back to <1>{2}</1>."
 msgstr "A connector that says it is <0>{0}</0> asks to act for you, {1}. It named itself; check the return address before you allow it. When you decide, you go back to <1>{2}</1>."
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the agents group matches"
+msgid "guide, agent, token, key, inbox, assistant"
+msgstr "guide, agent, token, key, inbox, assistant"
+
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "The account could not be opened."
 msgstr "The account could not be opened."
@@ -22664,6 +23193,11 @@ msgstr "Adopted on {adoptedDay} by the village's vote."
 msgctxt "ResourcesAdminPanel, button"
 msgid "Pay from it"
 msgstr "Pay from it"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Done work to accept"
+msgstr "Done work to accept"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -22734,6 +23268,11 @@ msgstr "A path missing from this list stays closed to agents. The paths are grou
 msgctxt "proposed changes: a field"
 msgid "Taken out"
 msgstr "Taken out"
+
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: button while it pulls"
+msgid "Turning the card"
+msgstr "Turning the card"
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, button"
@@ -22982,10 +23521,20 @@ msgctxt "HyphaModulePanel, button"
 msgid "Say what this was"
 msgstr "Say what this was"
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes, a door to the one list"
+msgid "one list"
+msgstr "one list"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Read the list again"
 msgstr "Read the list again"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Asked to consent"
+msgstr "Asked to consent"
 
 #: client/src/pages/Messages.tsx
 msgctxt "Messages, aria-label"
@@ -23177,6 +23726,11 @@ msgctxt "Bootstrap, placeholder"
 msgid "How the village should greet you"
 msgstr "How the village should greet you"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find"
+msgid "Find by code"
+msgstr "Find by code"
+
 #: client/src/components/profile/TheVessel.tsx
 msgctxt "TheVessel, span"
 msgid "Left to give this moon"
@@ -23207,6 +23761,11 @@ msgstr "Number {0} on the role's list."
 msgctxt "HousingAdminPanel, span"
 msgid "Homes taken, the number you type"
 msgstr "Homes taken, the number you type"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find failed"
+msgid "The search did not run. Try again."
+msgstr "The search did not run. Try again."
 
 #. placeholder {0}: plural(counts.kept, "change", "changes")
 #. placeholder {1}: retire && counts.retiringCircles ? ` · retires ${plural(counts.retiringCircles, "old circle", "old circles")}` : ""
@@ -23365,6 +23924,11 @@ msgctxt "YourAgentPanel, p"
 msgid "A personal access token lets your agent read what you already see here and make two writes, each one shown to you first. Tokens expire in 90 days and you can revoke one any time. Changing or resetting your password, or an admin signing you out everywhere, ends every token you made, your agent inbox, your own model key and your private calendar address. Set up again the ones you still use."
 msgstr "A personal access token lets your agent read what you already see here and make two writes, each one shown to you first. Tokens expire in 90 days and you can revoke one any time. Changing or resetting your password, or an admin signing you out everywhere, ends every token you made, your agent inbox, your own model key and your private calendar address. Set up again the ones you still use."
 
+#: client/src/components/admin/GlossaryPanel.tsx
+msgctxt "admin identity: while the explanations save"
+msgid "Saving…"
+msgstr "Saving…"
+
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "profile ventures you run"
 msgid "Held for a redemption"
@@ -23405,6 +23969,10 @@ msgctxt "pay board"
 msgid "Reading the month's pay."
 msgstr "Reading the month's pay."
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads are open for that role's agent."
+msgstr "Reads are open for that role's agent."
+
 #: client/src/pages/Pay.tsx
 msgctxt "pay page"
 msgid "That payment did not go through."
@@ -23421,7 +23989,7 @@ msgctxt "ProposeQuest, label"
 msgid "Timeline & payment milestones, if any"
 msgstr "Timeline & payment milestones, if any"
 
-#: client/src/pages/Profile.tsx
+#: client/src/pages/ProfileSettings.tsx
 msgctxt "Profile, button"
 msgid "Sign out"
 msgstr "Sign out"
@@ -23480,6 +24048,11 @@ msgstr "A line for them"
 msgctxt "MemberAdminView, p"
 msgid "Nobody has drafted a change yet."
 msgstr "Nobody has drafted a change yet."
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show where I will be, and when"
+msgstr "Show where I will be, and when"
 
 #: client/src/components/QuestCrews.tsx
 msgctxt "QuestCrews, h2"
@@ -23553,10 +24126,21 @@ msgctxt "CrowdpoolCampaign, div"
 msgid "Every need on the shelf has been met. The pool did its work."
 msgstr "Every need on the shelf has been met. The pool did its work."
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: nothing found"
+msgid "Nothing waiting matches that."
+msgstr "Nothing waiting matches that."
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
 msgid "Lock replies"
 msgstr "Lock replies"
+
+#. placeholder {0}: pickedIds.length
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: bulk decline"
+msgid "Decline the {0} picked"
+msgstr "Decline the {0} picked"
 
 #: client/src/components/power/CircleCard.tsx
 msgctxt "CircleCard, Link"
@@ -24243,6 +24827,11 @@ msgctxt "companion welcome"
 msgid "Birth time (if you know it)"
 msgstr "Birth time (if you know it)"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Proposals from outside the village"
+msgstr "Proposals from outside the village"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application terms"
 msgid "I would like a ramp-up"
@@ -24314,6 +24903,11 @@ msgstr "Search for someone to add"
 msgctxt "Admin, h3"
 msgid "Nothing waiting"
 msgstr "Nothing waiting"
+
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "reads open, who set it when the name is unknown"
+msgid "a person"
+msgstr "a person"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -24533,6 +25127,11 @@ msgctxt "OwnCalendarPanel, placeholder"
 msgid "https://calendar.google.com/calendar/ical/.../basic.ics"
 msgstr "https://calendar.google.com/calendar/ical/.../basic.ics"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: an application's status"
+msgid "With us, waiting on a decision"
+msgstr "With us, waiting on a decision"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application review"
 msgid "Earliest start: {startDay}"
@@ -24659,6 +25258,11 @@ msgctxt "FirstWalk, p"
 msgid "No practice examples are showing."
 msgstr "No practice examples are showing."
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find button"
+msgid "Find"
+msgstr "Find"
+
 #. placeholder {0}: detail.active
 #: client/src/components/admin/comms/JourneyDetail.tsx
 msgctxt "JourneyDetail, h4"
@@ -24674,6 +25278,11 @@ msgstr "People on it ({0})"
 msgctxt "TypeCards, aria-label"
 msgid "What kind of decision"
 msgstr "What kind of decision"
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: heading"
+msgid "Who sees what"
+msgstr "Who sees what"
 
 #: client/src/components/admin/ModuleConfigPanels.tsx
 msgctxt "ModuleConfigPanels, placeholder"
@@ -24709,6 +25318,11 @@ msgstr "Approve selected"
 msgctxt "JourneyToLaunch, button"
 msgid "Launch readiness"
 msgstr "Launch readiness"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the way back"
+msgid "Back to your profile"
+msgstr "Back to your profile"
 
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, AddButton"
@@ -24794,6 +25408,11 @@ msgstr "When the village opens its first raising, its ring appears here, and you
 msgctxt "budget upload error"
 msgid "Choose a sheet or paste its cells first."
 msgstr "Choose a sheet or paste its cells first."
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the light mode choice"
+msgid "Light"
+msgstr "Light"
 
 #: client/src/components/openProposal/ConversationGuide.tsx
 msgctxt "conversation guide: saved"
@@ -25459,6 +26078,11 @@ msgctxt "InvitePanel, label"
 msgid "Your invitation link"
 msgstr "Your invitation link"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the dark mode choice"
+msgid "Dark"
+msgstr "Dark"
+
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: a role, what you get back"
 msgid "The compensation the role's terms set out, agreed together."
@@ -25598,6 +26222,12 @@ msgstr "The practice"
 #~ msgctxt "role editor, qualities hint, the focus line"
 #~ msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
 #~ msgstr "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
+
+#. placeholder {0}: when(p.invite.askAgainFrom)
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: when a declined visitor may ask again"
+msgid "You can ask again from {0}."
+msgstr "You can ask again from {0}."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -25939,9 +26569,9 @@ msgid "Who is in the room"
 msgstr "Who is in the room"
 
 #: client/src/components/roleDraft/ArchetypeStep.tsx
-msgctxt "roles page archetypes"
-msgid "Choose the root you grow from"
-msgstr "Choose the root you grow from"
+#~ msgctxt "roles page archetypes"
+#~ msgid "Choose the root you grow from"
+#~ msgstr "Choose the root you grow from"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -26408,6 +27038,11 @@ msgstr "{0}, confidence {1}"
 #~ msgid "Roughly: {hours}"
 #~ msgstr "Roughly: {hours}"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: a returning visitor signs in by email code"
+msgid "Sign back in with a code"
+msgstr "Sign back in with a code"
+
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
 msgid "Where you are based"
@@ -26423,6 +27058,11 @@ msgstr "By {0}"
 msgctxt "ReserveHome, p"
 msgid "Example numbers. The founder has not set this hamlet yet."
 msgstr "Example numbers. The founder has not set this hamlet yet."
+
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number hint"
+msgid "The number of the Brevo list visitors join. 0 means nobody is sent to Brevo."
+msgstr "The number of the Brevo list visitors join. 0 means nobody is sent to Brevo."
 
 #: client/src/components/admin/comms/JourneyWalk.tsx
 msgctxt "JourneyWalk, h4"
@@ -26743,6 +27383,12 @@ msgctxt "drafted letters"
 msgid "Discard"
 msgstr "Discard"
 
+#. placeholder {0}: results.length
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: promoted"
+msgid "Promoted {done} of {0}. Each was emailed a link to set a password and fill out their profile."
+msgstr "Promoted {done} of {0}. Each was emailed a link to set a password and fill out their profile."
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget add line"
 msgid "Add one line by hand"
@@ -27023,6 +27669,11 @@ msgctxt "ModuleDetail, span"
 msgid "Optional"
 msgstr "Optional"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: confirm editing an application, which withdraws and resubmits"
+msgid "Editing withdraws this application and opens the form with your answers, so you can change them and send it again. Any files you attached need attaching again. Go ahead?"
+msgstr "Editing withdraws this application and opens the form with your answers, so you can change them and send it again. Any files you attached need attaching again. Go ahead?"
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice clip beside an answer"
 msgid "You've recorded {max} clips, the most one application holds. Remove one to record another."
@@ -27077,6 +27728,11 @@ msgstr "Your lines were found with an older calculator. Find them again to be su
 msgctxt "NeedsPanel, placeholder"
 msgid "Quiet"
 msgstr "Quiet"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: inner life hint"
+msgid "Who sees your lines, and whether your guide may use them, is chosen on that page."
+msgstr "Who sees your lines, and whether your guide may use them, is chosen on that page."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "a canvas block is loading"
@@ -27260,6 +27916,11 @@ msgctxt "rites"
 msgid "Email"
 msgstr "Email"
 
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: heading"
+msgid "A card for your day"
+msgstr "A card for your day"
+
 #: client/src/components/admin/comms/CommsOverview.tsx
 msgctxt "CommsOverview, div"
 msgid "Loading..."
@@ -27424,6 +28085,11 @@ msgstr "Which meeting is it for?"
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "No circles yet. Add a role from a card above and it can start one."
 msgstr "No circles yet. Add a role from a card above and it can start one."
+
+#: client/src/components/governance/VoiceSpreadBand.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "quorum"
+msgstr "quorum"
 
 #. placeholder {0}: x.label
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
@@ -27613,6 +28279,7 @@ msgid "· {0} {1} a night"
 msgstr "· {0} {1} a night"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: the optional interest question"
 msgid "What draws you here?"
 msgstr "What draws you here?"
@@ -28007,6 +28674,7 @@ msgid "The proposed changes could not be read. Reload to try again."
 msgstr "The proposed changes could not be read. Reload to try again."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: marks a field as optional"
 msgid "(optional)"
 msgstr "(optional)"
@@ -28093,6 +28761,11 @@ msgctxt "agent paths, a group"
 msgid "New, not saved yet"
 msgstr "New, not saved yet"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: keep in touch answer"
+msgid "You said no."
+msgstr "You said no."
+
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "Now:"
@@ -28154,6 +28827,10 @@ msgstr "Choose a role"
 msgctxt "Forum, Link"
 msgid "← All threads"
 msgstr "← All threads"
+
+#: client/src/components/admin/GlossaryPanel.tsx
+msgid "Your explanations did not save."
+msgstr "Your explanations did not save."
 
 #. placeholder {0}: upcoming.total
 #. placeholder {1}: upcoming.total === 1 ? "" : "s"
@@ -28585,6 +29262,11 @@ msgctxt "AsksPanel, label"
 msgid "Who"
 msgstr "Who"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: already signed in"
+msgid "This browser is already signed in as a visitor."
+msgstr "This browser is already signed in as a visitor."
+
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors: the link just made"
 msgid "Invitation link, to copy"
@@ -28628,9 +29310,9 @@ msgid "Loading…"
 msgstr "Loading…"
 
 #: client/src/pages/Profile.tsx
-msgctxt "Profile, button"
-msgid "<0/>Sign out"
-msgstr "<0/>Sign out"
+#~ msgctxt "Profile, button"
+#~ msgid "<0/>Sign out"
+#~ msgstr "<0/>Sign out"
 
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "QuestsTab, span"
@@ -28922,6 +29604,11 @@ msgctxt "YourAgentPanel, placeholder"
 msgid "What is true instead"
 msgstr "What is true instead"
 
+#: client/src/components/CycleClock.tsx
+msgctxt "glossary: the moon's name a tip explains"
+msgid "{month} Moon"
+msgstr "{month} Moon"
+
 #: client/src/components/governance/WeightRecord.tsx
 msgctxt "WeightRecord, h4"
 msgid "Every change, and who made it"
@@ -29157,6 +29844,11 @@ msgctxt "companion welcome"
 msgid "How I like to be helped"
 msgstr "How I like to be helped"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Drafts from the assistant"
+msgstr "Drafts from the assistant"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, span"
 msgid "Menu"
@@ -29304,6 +29996,7 @@ msgid "Each member's cash and token pay for a month: what is owed, what was sent
 msgstr "Each member's cash and token pay for a month: what is owed, what was sent from escrow, and the token pay to approve."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, a role"
 msgid "A role on the team"
 msgstr "A role on the team"
@@ -29348,6 +30041,10 @@ msgctxt "Decision, button"
 msgid "Call this vote off"
 msgstr "Call this vote off"
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Closed. Tick to open reads."
+msgstr "Closed. Tick to open reads."
+
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "IdentityPackPanel, p"
 msgid "What your village looks and feels like, for the design agency to stay true to. Base art is generated once by the foundation; you regenerate it only with your own image API key."
@@ -29357,6 +30054,11 @@ msgstr "What your village looks and feels like, for the design agency to stay tr
 msgctxt "launch guide tab"
 msgid "Organizing"
 msgstr "Organizing"
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: what this is"
+msgid "Visitors who asked for full membership from their visitor profile. Promote makes them a member and emails them a link to set a password. Promoting asks the power to admit members."
+msgstr "Visitors who asked for full membership from their visitor profile. Promote makes them a member and emails them a link to set a password. Promoting asks the power to admit members."
 
 #: client/src/components/ConfigUnavailable.tsx
 msgid "We couldn't reach the village just now"
@@ -29839,6 +30541,11 @@ msgctxt "thanks wall: the list of threads"
 msgid "The thanks, newest first"
 msgstr "The thanks, newest first"
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "The requests did not load."
+msgstr "The requests did not load."
+
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Not approved. Both tools are closed."
 msgstr "Not approved. Both tools are closed."
@@ -29852,6 +30559,11 @@ msgstr "I accept"
 msgctxt "TokenMeaningField, button"
 msgid "Cancel"
 msgstr "Cancel"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: back to the list on a phone"
+msgid "All settings"
+msgstr "All settings"
 
 #: client/src/pages/WorkWithUs.tsx
 msgctxt "work with us, set up for a venture: the heading over its questions"
@@ -29887,6 +30599,11 @@ msgstr "Their own words, beside each piece of the role card they are about. Noth
 msgctxt "calendar moon view heading, a village with no moon count or names"
 msgid "This moon"
 msgstr "This moon"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: forbidden link"
+msgid "Review"
+msgstr "Review"
 
 #. placeholder {0}: e.agreementRef
 #: client/src/pages/Admin.tsx
@@ -30545,6 +31262,11 @@ msgstr "A question about {name}"
 msgid "Until it is on, each small change waits for you in this list."
 msgstr "Until it is on, each small change waits for you in this list."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: what delete does"
+msgid "Delete removes your details, your answers and the pages we noted, and takes you off our email list. Applications still waiting are withdrawn; your name and address come off every application 90 days after its decision. Type {DELETE_WORD} to confirm."
+msgstr "Delete removes your details, your answers and the pages we noted, and takes you off our email list. Applications still waiting are withdrawn; your name and address come off every application 90 days after its decision. Type {DELETE_WORD} to confirm."
+
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgctxt "admin venture accounts"
 msgid "Choose a role"
@@ -30627,6 +31349,13 @@ msgstr "Proposals"
 msgctxt "Introductions, h2"
 msgid "Introductions for you"
 msgstr "Introductions for you"
+
+#. placeholder {0}: p.email
+#. placeholder {1}: when(p.verifiedAt)
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the verified email, not editable"
+msgid "Your email: {0}. Verified {1}."
+msgstr "Your email: {0}. Verified {1}."
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, span"
@@ -30769,6 +31498,12 @@ msgctxt "VillageHealth, p"
 msgid "The doughnut"
 msgstr "The doughnut"
 
+#. placeholder {0}: all.length
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: heading with the count"
+msgid "Invitation requests ({0})"
+msgstr "Invitation requests ({0})"
+
 #: client/src/components/review/OwedPostings.tsx
 msgctxt "OwedPostings, toast"
 msgid "Paid."
@@ -30842,6 +31577,11 @@ msgctxt "admin open proposals"
 msgid "Recording {0}"
 msgstr "Recording {0}"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Tensions raised with your role"
+msgstr "Tensions raised with your role"
+
 #: client/src/components/governance/DecisionOutcome.tsx
 msgid "This asks again after <0>a vote too few of us answered</0>."
 msgstr "This asks again after <0>a vote too few of us answered</0>."
@@ -30850,6 +31590,11 @@ msgstr "This asks again after <0>a vote too few of us answered</0>."
 msgctxt "admin typography: the role an uploaded font fills"
 msgid "Accent"
 msgstr "Accent"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: h1"
+msgid "Review"
+msgstr "Review"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, aria-label"
@@ -31216,6 +31961,7 @@ msgid "Words you can type in curly brackets"
 msgstr "Words you can type in curly brackets"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: the keep-in-touch answer no"
 msgid "No"
 msgstr "No"
@@ -31298,6 +32044,11 @@ msgstr "If an admin reaches past it afterwards, that is a break-glass: the villa
 msgctxt "GeneKeysPrompt, h2"
 msgid "<0/>Get your Gene Keys"
 msgstr "<0/>Get your Gene Keys"
+
+#: client/src/pages/Quests.tsx
+msgctxt "quests board: the line that names the two rewards"
+msgid "Quests pay in {credits}<0/> and {voice}<1/>."
+msgstr "Quests pay in {credits}<0/> and {voice}<1/>."
 
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
@@ -32026,6 +32777,11 @@ msgctxt "founding application why starter"
 msgid "Start with: {s}"
 msgstr "Start with: {s}"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Finished work to witness"
+msgstr "Finished work to witness"
+
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
 msgid "Begin"
@@ -32065,6 +32821,11 @@ msgstr "Token"
 msgctxt "open proposal: the way in"
 msgid "Started as a conversation: a name, an email, a link and a few lines on why. It has no terms yet, so it can't be adopted as it stands. When you're ready, invite them to complete the full proposal."
 msgstr "Started as a conversation: a name, an email, a link and a few lines on why. It has no terms yet, so it can't be adopted as it stands. When you're ready, invite them to complete the full proposal."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: what this page is"
+msgid "You are visiting {village}. This is your visitor profile: what you have shared with us, and your applications. Full membership is by invitation."
+msgstr "You are visiting {village}. This is your visitor profile: what you have shared with us, and your applications. Full membership is by invitation."
 
 #. placeholder {0}: marks?.(p.key) ?? 0
 #: client/src/components/roleCard/RolePieces.tsx
@@ -32262,6 +33023,7 @@ msgid "This village has no tokens yet."
 msgstr "This village has no tokens yet."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: optional link field"
 msgid "Website or social link"
 msgstr "Website or social link"
@@ -32553,6 +33315,11 @@ msgctxt "pay page, button while sending"
 msgid "Sending"
 msgstr "Sending"
 
+#: client/src/components/profileDash/CompanionCorner.tsx
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}. One draft waits for your yes."
+msgstr "Your companions: {names}. One draft waits for your yes."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
@@ -32563,6 +33330,11 @@ msgctxt "GeneKeys, label"
 msgid "Opening Gene Keys"
 msgstr "Opening Gene Keys"
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the badges switch"
+msgid "The badges you have earned and pinned."
+msgstr "The badges you have earned and pinned."
+
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: go back to the platform's stock portrait"
 msgid "Use the platform's"
@@ -32572,6 +33344,11 @@ msgstr "Use the platform's"
 msgctxt "CurrencyPicker, p"
 msgid "No daily rate for {resolved} yet, so amounts in other currencies show unconverted."
 msgstr "No daily rate for {resolved} yet, so amounts in other currencies show unconverted."
+
+#: client/src/components/governance/VoiceSpreadBand.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "Voice"
+msgstr "Voice"
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, h3"
@@ -32799,6 +33576,11 @@ msgctxt "open proposal: the pay ask"
 msgid "Negotiate on the first call if chosen"
 msgstr "Negotiate on the first call if chosen"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: link to the member sign-in"
+msgid "Sign in as a member"
+msgstr "Sign in as a member"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
 msgstr "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
@@ -32842,6 +33624,11 @@ msgstr "It goes in the footer of every email the village sends in bulk, the way 
 #~ msgctxt "about you"
 #~ msgid "If we don't seat you, we cover it."
 #~ msgstr "If we don't seat you, we cover it."
+
+#: client/src/components/admin/GlossaryPanel.tsx
+msgctxt "admin identity: the words the village explains"
+msgid "Words you explain"
+msgstr "Words you explain"
 
 #: client/src/pages/Training.tsx
 msgctxt "Training, h2"
@@ -33776,6 +34563,11 @@ msgstr "In a chat, ask Claude about your moon. It asks you before it changes any
 msgid "What does the circle call this meeting?"
 msgstr "What does the circle call this meeting?"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the account group matches"
+msgid "email, address, time zone, booking link, agreements, sign out"
+msgstr "email, address, time zone, booking link, agreements, sign out"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application value"
 msgid "What you will bring"
@@ -34143,6 +34935,11 @@ msgctxt "Quests, p"
 msgid "{villageName} sets its own rules for {currencyName}, {valueName} and its other tokens.{0}"
 msgstr "{villageName} sets its own rules for {currencyName}, {valueName} and its other tokens.{0}"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "From Sera and outside services"
+msgstr "From Sera and outside services"
+
 #. placeholder {0}: p.consequence
 #: client/src/components/admin/HandoverTab.tsx
 msgctxt "HandoverTab, p"
@@ -34270,6 +35067,11 @@ msgstr "Decided"
 msgctxt "SpringPackets, dd"
 msgid "The latest test letter was reported delivered{0}."
 msgstr "The latest test letter was reported delivered{0}."
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "Invitation requests"
+msgstr "Invitation requests"
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
@@ -34459,6 +35261,11 @@ msgctxt "CashPayoutsTab, button"
 msgid "Yes, record it"
 msgstr "Yes, record it"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: eyebrow"
+msgid "Your visit"
+msgstr "Your visit"
+
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Hide the valuation engine"
 msgstr "Hide the valuation engine"
@@ -34502,6 +35309,11 @@ msgstr "The role is made, unlisted. Find it in its circle and choose Edit this r
 msgctxt "sera answers"
 msgid "including {n} roles inside {name}"
 msgstr "including {n} roles inside {name}"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: eyebrow"
+msgid "Your visit"
+msgstr "Your visit"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -35215,6 +36027,10 @@ msgctxt "ReviewStep, button"
 msgid "Change"
 msgstr "Change"
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads are closed again."
+msgstr "Reads are closed again."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 #~ msgctxt "founding application refusal"
 #~ msgid "Tick the box to say you agree to the background check, or give three references."
@@ -35832,6 +36648,11 @@ msgctxt "ContentEditorTab, p"
 msgid "Changes go live once you save them in the bar at the bottom."
 msgstr "Changes go live once you save them in the bar at the bottom."
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the calendar switch"
+msgid "Your stays and gatherings, by date."
+msgstr "Your stays and gatherings, by date."
+
 #. placeholder {0}: plural(a.questFeed?.waiting ?? 0, "quest")
 #: client/src/components/admin/SaberraBridgeBoard.tsx
 msgctxt "SaberraBridgeBoard, p"
@@ -36020,6 +36841,11 @@ msgstr "Back to your rite"
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Why this change, in a sentence or more"
 msgstr "Why this change, in a sentence or more"
+
+#: client/src/pages/Review.tsx
+msgctxt "Review, a door to the one list"
+msgid "Find it here"
+msgstr "Find it here"
 
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, p"
@@ -36341,6 +37167,10 @@ msgctxt "Badges, p"
 msgid "Your skills"
 msgstr "Your skills"
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Open. Set by {readsBy}."
+msgstr "Open. Set by {readsBy}."
+
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
 msgid "Nobody holds {role}, so it came to the stewards"
@@ -36367,6 +37197,11 @@ msgstr "they are planted and watered"
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "Your R-Ikigai answers are saved in this browser. Nothing has been sent."
 #~ msgstr "Your R-Ikigai answers are saved in this browser. Nothing has been sent."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: heading when not signed in"
+msgid "Your visit"
+msgstr "Your visit"
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -36430,6 +37265,11 @@ msgstr "Last synced {syncedAt}"
 msgctxt "ProposalWizard, span"
 msgid "Left blank"
 msgstr "Left blank"
+
+#: client/src/components/playerCard/PlayerRoleCard.tsx
+msgctxt "player card: opens edit mode for unwritten parts"
+msgid "Write them"
+msgstr "Write them"
 
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, AddButton"
@@ -36632,9 +37472,9 @@ msgid "This role is not open yet, and the card may change before it opens. Leave
 msgstr "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does."
 
 #: client/src/pages/Events.tsx
-msgctxt "calendar page lede"
-msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
-msgstr "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
+#~ msgctxt "calendar page lede"
+#~ msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
+#~ msgstr "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript refusal"
@@ -36743,6 +37583,11 @@ msgstr "What are you thanking them for?"
 msgctxt "TransferCeremony, p"
 msgid "This platform does not move {0}. A vote here records what the village wants, and the power stays where it is until the platform can carry it across."
 msgstr "This platform does not move {0}. A vote here records what the village wants, and the power stays where it is until the platform can carry it across."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Suggested edits to what you hold"
+msgstr "Suggested edits to what you hold"
 
 #. placeholder {0}: b.dormant.at.slice(0, 10)
 #. placeholder {1}: money(b.dormant.heldMinor, b.unit)
@@ -37143,6 +37988,11 @@ msgctxt "companion lens sheet"
 msgid "Personality type"
 msgstr "Personality type"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the inner life group matches"
+msgid "Gene Keys, Human Design, lines, character, class"
+msgstr "Gene Keys, Human Design, lines, character, class"
+
 #: client/src/components/TakeCurrentPrice.tsx
 msgid "Your claim now pays the quest's new price."
 msgstr "Your claim now pays the quest's new price."
@@ -37161,6 +38011,10 @@ msgstr "Reading Sera's version"
 msgctxt "open proposal side by side"
 msgid "Earliest start: {start}"
 msgstr "Earliest start: {start}"
+
+#: client/src/components/admin/GlossaryPanel.tsx
+msgid "Your explanations are saved. Pages show them from the next page a visitor opens."
+msgstr "Your explanations are saved. Pages show them from the next page a visitor opens."
 
 #: client/src/components/admin/SaberraBridgeBoard.tsx
 msgctxt "SaberraBridgeBoard, title"
@@ -37234,6 +38088,11 @@ msgctxt "heading over a canvas block's older readings"
 msgid "Earlier readings"
 msgstr "Earlier readings"
 
+#: client/src/pages/Profile.tsx
+msgctxt "Profile: the last band's heading"
+msgid "About you, your paths and what you hold"
+msgstr "About you, your paths and what you hold"
+
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
 msgid "Link {n}: web address"
@@ -37298,6 +38157,11 @@ msgctxt "SaberraOutboxPanel, th"
 msgid "Length"
 msgstr "Length"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the invitation section"
+msgid "Full membership"
+msgstr "Full membership"
+
 #: client/src/components/admin/ModuleConfigPanels.tsx
 msgctxt "ModuleConfigPanels, button"
 msgid "Remove"
@@ -37335,6 +38199,11 @@ msgstr "Putting a change to the whole village opens a vote every member is rung 
 msgctxt "protocols practice run"
 msgid "Practice finished. Nothing was recorded."
 msgstr "Practice finished. Nothing was recorded."
+
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: the code was asked for, naming the address"
+msgid "If {sent} has a visitor profile here, a 6-digit code is on its way to it."
+msgstr "If {sent} has a visitor profile here, a 6-digit code is on its way to it."
 
 #: client/src/components/commons/CommonsPanel.tsx
 msgctxt "the commons: the village's own count of goals reached"
@@ -37678,6 +38547,11 @@ msgctxt "LandTab, toast"
 msgid "Give the piece of land a name with a letter or a number in it."
 msgstr "Give the piece of land a name with a letter or a number in it."
 
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: the moon that turns and the day it turns"
+msgid "Allowances<0/> refill when the {month} Moon<1/> turns, on {date}."
+msgstr "Allowances<0/> refill when the {month} Moon<1/> turns, on {date}."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "Prefer your hosting? Add a variable named ANTHROPIC_API_KEY to the village's service in Railway instead. Railway restarts the service, which takes roughly two minutes."
@@ -37784,6 +38658,11 @@ msgstr "{0}, held"
 msgctxt "split control legend"
 msgid "How your total is split"
 msgstr "How your total is split"
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: the note"
+msgid "Their words"
+msgstr "Their words"
 
 #: client/src/components/yourList/LibraryImportPanel.tsx
 msgctxt "LibraryImportPanel, span"
@@ -38088,9 +38967,9 @@ msgid "e.g. carpentry"
 msgstr "e.g. carpentry"
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles page, other ways to join: the game's door"
-msgid "Choose the root you grow from, see this season's goals, and pick the roles you play."
-msgstr "Choose the root you grow from, see this season's goals, and pick the roles you play."
+#~ msgctxt "roles page, other ways to join: the game's door"
+#~ msgid "Choose the root you grow from, see this season's goals, and pick the roles you play."
+#~ msgstr "Choose the root you grow from, see this season's goals, and pick the roles you play."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading of the review feed"
@@ -38204,6 +39083,11 @@ msgstr "Loading."
 msgctxt "role draft season"
 msgid "This season's goals: {seasonName}"
 msgstr "This season's goals: {seasonName}"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: eyebrow"
+msgid "Waiting on the people who decide"
+msgstr "Waiting on the people who decide"
 
 #: client/src/components/admin/SaberraBridgeBoard.tsx
 msgctxt "SaberraBridgeBoard, h4"
@@ -38494,6 +39378,12 @@ msgstr "How contributed value is honored"
 msgid "No ideas yet. The first one can be yours."
 msgstr "No ideas yet. The first one can be yours."
 
+#. placeholder {0}: results.length
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: declined"
+msgid "Declined {done} of {0}. They read your words on their profile."
+msgstr "Declined {done} of {0}. They read your words on their profile."
+
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
 msgid "You see the quest part of Compare: quest ideas only, since you approve quests."
@@ -38594,6 +39484,11 @@ msgstr "Remove"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card."
 msgstr "This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card."
+
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team section lede"
+msgid "We're forming the founding roles who will hold critical domains<0/> from foundation building through to completion."
+msgstr "We're forming the founding roles who will hold critical domains<0/> from foundation building through to completion."
 
 #. placeholder {0}: currentStageName ? ` ${memberName} is at ${currentStageName} today.` : ""
 #: client/src/components/admin/PowerGroupDialogs.tsx
@@ -38771,6 +39666,11 @@ msgctxt "Decision, p"
 msgid "It may have been withdrawn, or the link may be wrong."
 msgstr "It may have been withdrawn, or the link may be wrong."
 
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show my badges"
+msgstr "Show my badges"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "The village adopts them by vote"
@@ -38910,6 +39810,11 @@ msgctxt "QuestsTab, button"
 msgid "Keep as a real quest"
 msgstr "Keep as a real quest"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: open the page where it is decided"
+msgid "Open"
+msgstr "Open"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, th"
 msgid "Received"
@@ -38930,6 +39835,11 @@ msgctxt "new role from a card"
 msgid "Read the card"
 msgstr "Read the card"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find, an example code"
+msgid "B-71"
+msgstr "B-71"
+
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: before the link to the village's public site"
 msgid "To know more about us, visit"
@@ -38947,6 +39857,8 @@ msgstr "Help me start"
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/EntranceCode.tsx
+#: client/src/pages/VisitorProfile.tsx
+#: client/src/pages/VisitorSignIn.tsx
 msgctxt "portal entrance: a generic failure"
 msgid "That did not go through. Try again in a moment."
 msgstr "That did not go through. Try again in a moment."
@@ -39181,6 +40093,7 @@ msgid "From their price ask, at {pct}% commitment."
 msgstr "From their price ask, at {pct}% commitment."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, curiosity"
 msgid "Just curious"
 msgstr "Just curious"
@@ -39290,6 +40203,15 @@ msgctxt "YourCompanions, button"
 msgid "Keep it as it was"
 msgstr "Keep it as it was"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: edit an application"
+msgid "Edit and send again"
+msgstr "Edit and send again"
+
+#: client/src/pages/AdminReview.tsx
+msgid "{waiting, plural, one {# waiting on you.} other {# waiting on you.}}"
+msgstr "{waiting, plural, one {# waiting on you.} other {# waiting on you.}}"
+
 #: client/src/pages/Modules.tsx
 msgctxt "Modules, placeholder"
 msgid "Search the library"
@@ -39315,6 +40237,11 @@ msgstr "{count, plural, one {# change not saved yet} other {# changes not saved 
 msgctxt "guide question field"
 msgid "Your question"
 msgstr "Your question"
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show what I have borrowed and booked"
+msgstr "Show what I have borrowed and booked"
 
 #: client/src/components/pay/ReceivePanel.tsx
 msgctxt "pay page, receive, the amount asked"
@@ -39366,6 +40293,11 @@ msgstr "The moon after"
 msgctxt "ModuleGate, p"
 msgid "{project} hasn't opened this room yet. Only the team running the village can open it, so ask them if you'd like it open."
 msgstr "{project} hasn't opened this room yet. Only the team running the village can open it, so ask them if you'd like it open."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Mint requests"
+msgstr "Mint requests"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget upload error"
@@ -39739,6 +40671,11 @@ msgctxt "profile, door to the pay page"
 msgid "Send and receive credits"
 msgstr "Send and receive credits"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: applications section"
+msgid "Your applications"
+msgstr "Your applications"
+
 #: client/src/components/QuestSafety.tsx
 msgctxt "quest safety, age band"
 msgid "That did not save. Try again."
@@ -39793,6 +40730,11 @@ msgstr "<0/>Choose what reaches you, and how"
 msgctxt "SetupWalk, aria-label"
 msgid "Close the walk"
 msgstr "Close the walk"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: sign out"
+msgid "Sign out of your visit on this device"
+msgstr "Sign out of your visit on this device"
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -40072,6 +41014,11 @@ msgctxt "my token pay"
 msgid "Your token pay"
 msgstr "Your token pay"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the invitation button"
+msgid "Request an invitation"
+msgstr "Request an invitation"
+
 #: client/src/components/hiddenMap/WorldMap.tsx
 msgid "Latitude and longitude grid"
 msgstr "Latitude and longitude grid"
@@ -40193,9 +41140,9 @@ msgid "Your code"
 msgstr "Your code"
 
 #: client/src/components/profile/VisitorNameCard.tsx
-msgctxt "profile, show my first name to visitors"
-msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
-msgstr "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+#~ msgctxt "profile, show my first name to visitors"
+#~ msgid "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
+#~ msgstr "Visitors to the public pages see your first name beside what you hold and give. Turn this off and they see \"A member\" instead."
 
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: an optional field"
@@ -40375,6 +41322,10 @@ msgctxt "HyphaModulePanel, span"
 msgid "Turn the Hypha Bridge module on to confirm this contract against a token."
 msgstr "Turn the Hypha Bridge module on to confirm this contract against a token."
 
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Name a role above first."
+msgstr "Name a role above first."
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Add a goal"
@@ -40452,6 +41403,11 @@ msgstr "Add to a new change request"
 msgctxt "CommsSettings, h3"
 msgid "Dials"
 msgstr "Dials"
+
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "agents panel, the reads open switch heading"
+msgid "Reads open"
+msgstr "Reads open"
 
 #: client/src/components/governance/LiveDecisionsBand.tsx
 msgctxt "LiveDecisionsBand, span"
@@ -40542,6 +41498,7 @@ msgid "See the builders' pool ↗"
 msgstr "See the builders' pool ↗"
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: name field"
 msgid "Your name"
 msgstr "Your name"
@@ -40550,6 +41507,11 @@ msgstr "Your name"
 msgctxt "CommsPeople, button"
 msgid "Download CSV"
 msgstr "Download CSV"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Moon recaps to review"
+msgstr "Moon recaps to review"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, div"
@@ -40856,6 +41818,11 @@ msgctxt "site header"
 msgid "Sign in or join"
 msgstr "Sign in or join"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Cycles to settle"
+msgstr "Cycles to settle"
+
 #: client/src/components/RedemptionPanel.tsx
 msgctxt "RedemptionPanel, p"
 msgid "Do not type bank account numbers, card numbers or passwords here. Say what you would like, and arrange how you are paid with a steward, the way this village's process says."
@@ -40891,6 +41858,11 @@ msgstr "Cost"
 msgctxt "StructureDraft, a"
 msgid "Go to the list"
 msgstr "Go to the list"
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "No requests waiting."
+msgstr "No requests waiting."
 
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the circle that hears an appeal against an exit"
@@ -41449,9 +42421,14 @@ msgstr "{who} pledged {much}"
 #~ msgstr "You might pick this if"
 
 #: client/src/components/CycleClock.tsx
-msgctxt "cycle clock: the moon that turns and the day it turns"
-msgid "Allowances refill when the {month} Moon turns, on {date}."
-msgstr "Allowances refill when the {month} Moon turns, on {date}."
+#~ msgctxt "cycle clock: the moon that turns and the day it turns"
+#~ msgid "Allowances refill when the {month} Moon turns, on {date}."
+#~ msgstr "Allowances refill when the {month} Moon turns, on {date}."
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Notifications and your data"
+msgstr "Notifications and your data"
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Quest that pays when a planting is vouched (its id)"
@@ -41588,6 +42565,11 @@ msgstr "No players yet."
 msgctxt "PlayerCard, summary"
 msgid "How to read this page<0>Show</0><1>Hide</1>"
 msgstr "How to read this page<0>Show</0><1>Hide</1>"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: inner life door"
+msgid "Your Gene Keys and Human Design"
+msgstr "Your Gene Keys and Human Design"
 
 #: client/src/components/admin/VoiceTranscriptionPicker.tsx
 msgctxt "voice transcription choice"
@@ -41836,6 +42818,11 @@ msgstr "<0/>{0}, day {1} of {2}"
 msgctxt "Admin, th"
 msgid "Issued to date"
 msgstr "Issued to date"
+
+#: client/src/components/CycleClock.tsx
+msgctxt "glossary: the word a tip explains"
+msgid "allowance"
+msgstr "allowance"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -42452,6 +43439,11 @@ msgctxt "ModuleGate, p"
 msgid "This part of the village opens when you sign in."
 msgstr "This part of the village opens when you sign in."
 
+#: client/src/pages/Review.tsx
+msgctxt "Review, a door to the one list"
+msgid "Looking for a code such as B-71, or for everything waiting in one list?"
+msgstr "Looking for a code such as B-71, or for everything waiting in one list?"
+
 #. placeholder {0}: s.cost
 #. placeholder {1}: s.undo
 #: client/src/components/setupGame/JourneyView.tsx
@@ -43057,6 +44049,11 @@ msgstr "A one-off piece of value, rewarded when the work is accepted."
 #~ msgid "Sign out everywhere"
 #~ msgstr "Sign out everywhere"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: withdraw an application"
+msgid "Withdraw"
+msgstr "Withdraw"
+
 #: client/src/components/power/SeatHistory.tsx
 msgctxt "SeatHistory, p"
 msgid "Nobody has been recorded in this role yet. That is what a role looks like before somebody steps into it."
@@ -43081,6 +44078,11 @@ msgstr "Set aside by {ender}, {ended}."
 msgctxt "OAuthAuthorize, span"
 msgid "(writes)"
 msgstr "(writes)"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: the invitation note"
+msgid "A few words for us"
+msgstr "A few words for us"
 
 #. placeholder {0}: progress.done
 #. placeholder {1}: progress.total
@@ -43205,6 +44207,11 @@ msgctxt "pick a change request to add to"
 msgid "Which change request"
 msgstr "Which change request"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Cash owed"
+msgstr "Cash owed"
+
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, p"
 msgid "Carry people first"
@@ -43292,6 +44299,11 @@ msgstr "No badges yet."
 msgctxt "Decision, h2"
 msgid "Closing this"
 msgstr "Closing this"
+
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: a pull that failed"
+msgid "The card did not turn. Try again."
+msgstr "The card did not turn. Try again."
 
 #. placeholder {0}: a.feedback.sent
 #. placeholder {1}: a.feedback.queued
@@ -43430,6 +44442,11 @@ msgstr "Adding"
 msgctxt "companion welcome"
 msgid "Done"
 msgstr "Done"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: under the mode choice"
+msgid "The switch at the top of every page changes the same thing."
+msgstr "The switch at the top of every page changes the same thing."
 
 #: client/src/pages/Reset.tsx
 #~ msgid "Taking you home now. You may need to sign in again."
@@ -43580,10 +44597,20 @@ msgctxt "ModuleStewardPanel, p"
 msgid "Turned on as \"{0}\" under library contract {1}{2}"
 msgstr "Turned on as \"{0}\" under library contract {1}{2}"
 
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: the face of the card"
+msgid "The Sun's gate"
+msgstr "The Sun's gate"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Back"
 msgstr "Back"
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "That did not go through."
+msgstr "That did not go through."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h2"
@@ -43758,6 +44785,11 @@ msgstr "Saved. Nothing was sent."
 msgid "See them at the bottom of this page."
 msgstr "See them at the bottom of this page."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: keep in touch answer"
+msgid "You said yes."
+msgstr "You said yes."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 #~ msgctxt "founding application refusal"
 #~ msgid "Send up to 3 recordings."
@@ -43920,6 +44952,11 @@ msgctxt "Admin, p"
 msgid "Nothing here can tell what these are, so nothing here will touch them. They are listed so somebody who does know can decide."
 msgstr "Nothing here can tell what these are, so nothing here will touch them. They are listed so somebody who does know can decide."
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: words a search for the look group matches"
+msgid "language, Spanish, English, light, dark, mode"
+msgstr "language, Spanish, English, light, dark, mode"
+
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
 msgid "Saving."
@@ -43953,6 +44990,11 @@ msgstr "Not {sentTo}? Fix the address"
 msgctxt "YourCompanions, p"
 msgid "No drafts waiting."
 msgstr "No drafts waiting."
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: when"
+msgid "Asked"
+msgstr "Asked"
 
 #. placeholder {0}: map.commitment.unknown.map(nameOf).join(", ")
 #: client/src/components/admin/CompareTab.tsx
@@ -44125,7 +45167,7 @@ msgctxt "admin helper panel"
 msgid "Connect Claude to turn on your helper"
 msgstr "Connect Claude to turn on your helper"
 
-#: client/src/components/profile/VisitorNameCard.tsx
+#: client/src/components/profile/PrivacyPanel.tsx
 msgctxt "profile, show my first name to visitors"
 msgid "Show my first name to visitors"
 msgstr "Show my first name to visitors"
@@ -44242,6 +45284,11 @@ msgstr "Any member"
 msgctxt "hidden map, one place's details"
 msgid "Opening the pin"
 msgstr "Opening the pin"
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: not signed in"
+msgid "Sign in with the email you gave us when you entered. We send a 6-digit code to it."
+msgstr "Sign in with the email you gave us when you entered. We send a 6-digit code to it."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -45283,6 +46330,11 @@ msgstr "We couldn't read one of your recordings. Record it again."
 #~ msgid "If it is adopted, a formal invitation to make your account comes to your email."
 #~ msgstr "If it is adopted, a formal invitation to make your account comes to your email."
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Connected tools and agents"
+msgstr "Connected tools and agents"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Its own personality"
@@ -45349,6 +46401,11 @@ msgctxt "PhotoReportsPanel, aria-label"
 msgid "Reports about photographs"
 msgstr "Reports about photographs"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: keep in touch"
+msgid "Updates and opportunities by email"
+msgstr "Updates and opportunities by email"
+
 #: client/src/components/priorities/PlaceInLine.tsx
 msgid "Say where it sits on your list, so whoever raised it knows."
 msgstr "Say where it sits on your list, so whoever raised it knows."
@@ -45357,6 +46414,11 @@ msgstr "Say where it sits on your list, so whoever raised it knows."
 msgctxt "role card, opens the role editor"
 msgid "Edit this role"
 msgstr "Edit this role"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the mode choice"
+msgid "Light or dark"
+msgstr "Light or dark"
 
 #: client/src/components/admin/RitesConfigPanel.tsx
 msgctxt "rites admin"
@@ -45763,6 +46825,11 @@ msgctxt "Admin, placeholder"
 msgid "/master-plan"
 msgstr "/master-plan"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Change requests in review"
+msgstr "Change requests in review"
+
 #. placeholder {0}: offer.revision + 1
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "save bar, the counter-offer being saved"
@@ -45788,6 +46855,11 @@ msgstr "Letters sent so far"
 msgctxt "shape the role count, one"
 msgid "1 suggestion travels with your application."
 msgstr "1 suggestion travels with your application."
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: the standing switch"
+msgid "What the village has thanked you with, and from whom."
+msgstr "What the village has thanked you with, and from whom."
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, p"
@@ -46006,6 +47078,11 @@ msgstr "Ask us a question"
 msgid "Details for a bug report"
 msgstr "Details for a bug report"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Places waiting for your vouch"
+msgstr "Places waiting for your vouch"
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgctxt "role draft carry"
 #~ msgid "Clear my draft"
@@ -46117,6 +47194,11 @@ msgstr "Record the Anchor's approval"
 msgctxt "FilterChips, label"
 msgid "Open roles"
 msgstr "Open roles"
+
+#: client/src/components/admin/BrevoListNumber.tsx
+msgctxt "admin integrations: Brevo list number"
+msgid "That number was not saved."
+msgstr "That number was not saved."
 
 #: client/src/components/HousingAdminPanel.tsx
 msgctxt "HousingAdminPanel, p"
@@ -46342,6 +47424,11 @@ msgctxt "open work card: the quest's size beside the reader's own percent"
 msgid "Fits what you can give"
 msgstr "Fits what you can give"
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "The requests did not load. Check your connection."
+msgstr "The requests did not load. Check your connection."
+
 #: client/src/pages/LivingMap.tsx
 msgctxt "LivingMap, button"
 msgid "Leave the map"
@@ -46381,6 +47468,11 @@ msgstr "Read the roles again"
 msgctxt "PlayersTab, h2"
 msgid "Players"
 msgstr "Players"
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: the search box, read aloud"
+msgid "Search settings"
+msgstr "Search settings"
 
 #: client/src/components/places/PhotoReportsPanel.tsx
 msgctxt "PhotoReportsPanel, button"
@@ -46886,6 +47978,11 @@ msgstr "Headline"
 msgid "A note for whoever decides (optional)"
 msgstr "A note for whoever decides (optional)"
 
+#: client/src/components/VisitorLink.tsx
+msgctxt "site header: a visitor's link to their visitor profile"
+msgid "Your visit"
+msgstr "Your visit"
+
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, button"
 msgid "<0/>Leave"
@@ -47021,6 +48118,7 @@ msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "your guide"
 
+#: client/src/components/admin/InvitationRequests.tsx
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
 msgid "Email"
@@ -47148,6 +48246,11 @@ msgstr "Roots saved"
 msgctxt "SeatHistory, p"
 msgid "This role has been held. The people who held it asked for their names to be removed, so its record keeps the dates below."
 msgstr "This role has been held. The people who held it asked for their names to be removed, so its record keeps the dates below."
+
+#: client/src/pages/Events.tsx
+msgctxt "calendar page lede"
+msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<0/> the land turns by."
+msgstr "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<0/> the land turns by."
 
 #: client/src/components/admin/VoiceTranscriptionPicker.tsx
 msgctxt "voice transcription choice"
@@ -47322,6 +48425,11 @@ msgstr "full moon"
 msgctxt "PlayerCard, aria-label"
 msgid "Paths they walk"
 msgstr "Paths they walk"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Members asking to hold a power"
+msgstr "Members asking to hold a power"
 
 #: client/src/pages/StewardJourney.tsx
 #~ msgid "New here and ready for a role"
@@ -47629,6 +48737,11 @@ msgctxt "Introductions, placeholder"
 msgid "Topics, separated by commas: food, land, music"
 msgstr "Topics, separated by commas: food, land, music"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: before the returning visitor's link"
+msgid "Been here before?"
+msgstr "Been here before?"
+
 #: client/src/components/admin/SeraLinkPanel.tsx
 msgctxt "SeraLinkPanel, button"
 msgid "Count who would be matched"
@@ -47844,6 +48957,11 @@ msgctxt "pay board"
 msgid "Open"
 msgstr "Open"
 
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: what happens"
+msgid "No password needed. We send a 6-digit code to the email you gave us when you entered."
+msgstr "No password needed. We send a 6-digit code to the email you gave us when you entered."
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, confirm"
 msgid "Delete this question?"
@@ -47868,6 +48986,11 @@ msgstr "Digital Companion"
 msgctxt "VisionLayer, span"
 msgid "· a human ticks this"
 msgstr "· a human ticks this"
+
+#: client/src/components/profile/PrivacyPanel.tsx
+msgctxt "privacy settings: a switch"
+msgid "Show the roles I hold"
+msgstr "Show the roles I hold"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card window"
@@ -48140,6 +49263,12 @@ msgctxt "WhyCostaRica, p"
 msgid "This village has not yet published the legal, tax and residency details for where it sits. Ask a steward, or check back in a few moons."
 msgstr "This village has not yet published the legal, tax and residency details for where it sits. Ask a steward, or check back in a few moons."
 
+#. placeholder {0}: when(a.sentAt)
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: when an application was sent"
+msgid "Sent {0}"
+msgstr "Sent {0}"
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgid "Levels for {blockName}, circle one"
 msgstr "Levels for {blockName}, circle one"
@@ -48403,6 +49532,11 @@ msgstr "This path"
 msgid "You agreed on {0} that the guide may send your questions to {1}."
 msgstr "You agreed on {0} that the guide may send your questions to {1}."
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: data section"
+msgid "Your data"
+msgstr "Your data"
+
 #: client/src/components/profileDash/TreasuryPanel.tsx
 msgctxt "TreasuryPanel, p"
 msgid "Nothing in hand pays out yet. <0>Find a quest</0>"
@@ -48464,6 +49598,11 @@ msgstr "No goal yet"
 #~ msgid "After you propose"
 #~ msgstr "After you propose"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: an application's status"
+msgid "Not this time"
+msgstr "Not this time"
+
 #: client/src/components/power/SetupWalk.tsx
 msgctxt "SetupWalk, button"
 msgid "Skip <0/>"
@@ -48483,6 +49622,11 @@ msgstr "Page"
 msgctxt "CommsPeople, placeholder"
 msgid "Search by address or name"
 msgstr "Search by address or name"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Tasks handed to you"
+msgstr "Tasks handed to you"
 
 #: client/src/components/governance/GoalsList.tsx
 #~ msgid "These are your goals for your first month. Once you are seated, we issue your tasks on your profile each month. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the month."
@@ -48560,6 +49704,7 @@ msgid "The five archetypes are the roots, and every role grows from one or more 
 msgstr "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five."
 
 #: client/src/pages/Entrance.tsx
+#: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, a home"
 msgid "A home here"
 msgstr "A home here"
@@ -48932,6 +50077,11 @@ msgctxt "roles page, no open venture: propose one as a new role"
 msgid "Have one in mind? Propose it."
 msgstr "Have one in mind? Propose it."
 
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests: decline words"
+msgid "Words for the people you decline (optional, they read it on their profile)"
+msgstr "Words for the people you decline (optional, they read it on their profile)"
+
 #: client/src/components/priorities/PlaceInLine.tsx
 msgctxt "an ask's place in line, when the holder expects to pick it up"
 msgid "In {n} weeks"
@@ -49159,6 +50309,11 @@ msgstr "Prosperity Journey"
 msgctxt "ModuleConfigPanels, placeholder"
 msgid "village-life"
 msgstr "village-life"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Applications for a role"
+msgstr "Applications for a role"
 
 #: client/src/components/admin/HandoverTab.tsx
 msgctxt "HandoverTab, h2"
@@ -49432,6 +50587,11 @@ msgstr "{0} of {1} homes still open here."
 msgctxt "role pay"
 msgid "A note (optional)"
 msgstr "A note (optional)"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Letters waiting to be read"
+msgstr "Letters waiting to be read"
 
 #. placeholder {0}: r.holderCount ?? 0
 #. placeholder {1}: r.seats ?? 1
@@ -49720,6 +50880,11 @@ msgstr "This saved application is no longer kept. Save again to start a new link
 msgctxt "an ask raised with a role, the day it was raised"
 msgid "Raised {0}"
 msgstr "Raised {0}"
+
+#: client/src/components/admin/GlossaryPanel.tsx
+msgctxt "admin identity: save the explanations"
+msgid "Save your explanations"
+msgstr "Save your explanations"
 
 #: client/src/components/admin/comms/CommsSettings.tsx
 msgctxt "CommsSettings, p"
@@ -50230,6 +51395,11 @@ msgstr "One application takes up to 3 roles. Remove one, and apply for it separa
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "That did not reach the server, so nothing was saved."
 msgstr "That did not reach the server, so nothing was saved."
+
+#: client/src/pages/VisitorSignIn.tsx
+msgctxt "visitor sign-in: the main button"
+msgid "Send me a code"
+msgstr "Send me a code"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 #~ msgctxt "companion welcome"
@@ -50871,6 +52041,11 @@ msgstr "It opens to you once {0} of yours are vouched."
 msgid "Ask to share it"
 msgstr "Ask to share it"
 
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: loading"
+msgid "Reading what is waiting."
+msgstr "Reading what is waiting."
+
 #: client/src/components/admin/RoleListingPanel.tsx
 msgid "The earlier listing is back"
 msgstr "The earlier listing is back"
@@ -50889,6 +52064,11 @@ msgstr "The band runs from {belowPct}% under the suggestion up to the suggestion
 msgctxt "change request note kind"
 msgid "Suggested edit"
 msgstr "Suggested edit"
+
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: button"
+msgid "Pull again"
+msgstr "Pull again"
 
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: while the nouns save"
@@ -51010,6 +52190,11 @@ msgstr "Nothing in this view."
 #~ msgctxt "roles page, admins only: the waitlist"
 #~ msgid "Only admins see this. Nothing is sent from it."
 #~ msgstr "Only admins see this. Nothing is sent from it."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: keep in touch answer"
+msgid "You have not answered."
+msgstr "You have not answered."
 
 #: client/src/pages/CanvasWorkbook.tsx
 msgctxt "a button that downloads the workbook as a file"
@@ -51218,6 +52403,11 @@ msgctxt "JourneyWalk, p"
 msgid "This journey has ended for them, so nothing more goes."
 msgstr "This journey has ended for them, so nothing more goes."
 
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: before the pull"
+msgid "Pull a card and read today's sky against your own lines."
+msgstr "Pull a card and read today's sky against your own lines."
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "AgentsPanel, aria-label"
 msgid "Agent accounts"
@@ -51384,6 +52574,11 @@ msgctxt "CashPayoutsTab, aria-label"
 msgid "Which lines"
 msgstr "Which lines"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: page title"
+msgid "Profile settings"
+msgstr "Profile settings"
+
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Kind of work"
@@ -51462,10 +52657,20 @@ msgctxt "roles page archetypes, before the village's own examples"
 msgid "You might pick this if you are drawn to:"
 msgstr "You might pick this if you are drawn to:"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: confirm withdrawing an application"
+msgid "Withdraw this application? It will no longer be considered."
+msgstr "Withdraw this application? It will no longer be considered."
+
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
 msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
 msgstr "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox"
+msgid "Sign in to see it"
+msgstr "Sign in to see it"
 
 #: client/src/components/admin/SeasonTimezoneField.tsx
 msgctxt "SeasonTimezoneField, p"
@@ -51759,6 +52964,11 @@ msgctxt "ReserveHome, Link"
 msgid "Back to housing options"
 msgstr "Back to housing options"
 
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a search with no match"
+msgid "Nothing matches. Try email, privacy or language."
+msgstr "Nothing matches. Try email, privacy or language."
+
 #: client/src/components/geneKeys/CircleLines.tsx
 msgctxt "CircleLines, p"
 msgid "Lines read from the bottom up. A gap is an invitation for the circle to talk about who might hold it."
@@ -51842,6 +53052,11 @@ msgstr "What it covers and why it matters"
 msgctxt "VerifyEmail, placeholder"
 msgid "Password"
 msgstr "Password"
+
+#: client/src/components/admin/InvitationRequests.tsx
+msgctxt "admin invitation requests"
+msgid "Applications"
+msgstr "Applications"
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook section heading"
@@ -51998,6 +53213,11 @@ msgstr "Your bio"
 msgctxt "LandTab, div"
 msgid "Pick a number of metres between {MIN_SPAN_M} and {MAX_SPAN_M}. Most projects sit near {DEFAULT_SPAN_M}."
 msgstr "Pick a number of metres between {MIN_SPAN_M} and {MAX_SPAN_M}. Most projects sit near {DEFAULT_SPAN_M}."
+
+#: client/src/pages/ProfileSettings.tsx
+msgctxt "settings: a group"
+msgid "Language and look"
+msgstr "Language and look"
 
 #. placeholder {0}: owed.local.count === 1 ? "One erasure" : `${owed.local.count} erasures`
 #: client/src/pages/Review.tsx
@@ -52195,6 +53415,11 @@ msgctxt "SecretsKeyBanner, button"
 msgid "Save needs VILLAGE_SECRETS_KEY: see the steps above"
 msgstr "Save needs VILLAGE_SECRETS_KEY: see the steps above"
 
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: save details"
+msgid "Save"
+msgstr "Save"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
 msgid "Comp / adjust credits"
@@ -52329,6 +53554,17 @@ msgstr "Pick a shape"
 msgctxt "admin venture accounts"
 msgid "None yet."
 msgstr "None yet."
+
+#. placeholder {0}: when(p.invite.requestedAt)
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: invitation requested"
+msgid "Your request for an invitation is with us, since {0}. We will let you know."
+msgstr "Your request for an invitation is with us, since {0}. We will let you know."
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "From agents"
+msgstr "From agents"
 
 #. placeholder {0}: offer.theirCommitment
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -52517,6 +53753,11 @@ msgstr "Log a place"
 msgctxt "ConsentQueue, h2"
 msgid "Finished work waiting for a witness"
 msgstr "Finished work waiting for a witness"
+
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: section"
+msgid "Quest ideas"
+msgstr "Quest ideas"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -52712,6 +53953,11 @@ msgstr "Active intents no introduction has touched in 14 days, by topic. This is
 msgctxt "budget upload field"
 msgid "The sheet"
 msgstr "The sheet"
+
+#: client/src/components/playerCard/PlayerRoleCard.tsx
+msgctxt "player card: unwritten parts, one"
+msgid "One part of your card is not written yet."
+msgstr "One part of your card is not written yet."
 
 #: client/src/components/NeedCard.tsx
 msgctxt "NeedCard, span"
@@ -53019,6 +54265,11 @@ msgstr "<0/> This is a photograph of me"
 msgctxt "Admin, p"
 msgid "The Badges module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first."
 msgstr "The Badges module is off. Turn it on in the Module Library (top of the {MODULES_GROUP_TITLE} group) first."
+
+#: client/src/pages/VisitorProfile.tsx
+msgctxt "visitor profile: export"
+msgid "Download everything we keep"
+msgstr "Download everything we keep"
 
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
