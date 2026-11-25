@@ -23,7 +23,7 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
-import { recognitionNameCheck } from "../shared/launchRequirements";
+import { recognitionNameCheck, villageNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
 import { readVillageNounsFrom } from "./lib/villageNouns";
@@ -12261,13 +12261,8 @@ async function startServer() {
         }
         return { state: "missing" as const, detail: "Nobody holds the founder role with their own login" };
       },
-      "brand-basics": () => {
-        const b = getBrand();
-        const named = !!(b.project?.name || b.setup?.identity);
-        return named
-          ? { state: "ok" as const, detail: `This village introduces itself as “${mergedConfig().project.name}”` }
-          : { state: "missing" as const, detail: "The project name, tagline and location still come from the template" };
-      },
+      // The name a page shows, never an old Identity tick (shared/launchRequirements.ts, villageNameCheck).
+      "brand-basics": () => villageNameCheck(mergedConfig().project.name),
       // THE REGISTRY, never `brand.currency.name`: mergedConfig() prefers `tokens`.`name` over the brand overlay, so the old read here was red after a correct rename and green after the wizard's dead box. Rule, reasons and test: shared/launchRequirements.ts.
       "brand-token-names": () => recognitionNameCheck(tokenDef(HEARTS)?.name, GAME_CONFIG.currency.name),
       // Green means alive (2026-10-13): the post office's own test email reported delivered (comms item 13), never the key's presence alone.

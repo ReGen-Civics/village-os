@@ -9,12 +9,14 @@
  *
  *   1. it never un-launches a village. `launchedAt` is written once by the
  *      launch ballot and never derived from the checks, and this holds it;
- *   2. it never closes a launch vote that was open to be asked. Only a
- *      BLOCKING row moves `readyToLaunch`, and this row is recommended, so a
- *      village that was ready before it existed is still ready without the
- *      key. That is the live shape too: a village running its Game without
- *      having held the vote yet is exactly a village that must still be able
- *      to ask;
+ *   2. it never closes a launch vote that was open to be asked. Since
+ *      25 Nov 2026 the row is BLOCKING (the lead: "required in both
+ *      registries") and `carriedByVote`, like `site-address`: it counts in
+ *      `blockingOpen` and names itself in `carriedOpen`, and the launch vote
+ *      may carry it open, so `readyToLaunch` never moves on it and a village
+ *      that was ready before is still ready without the key. That is the
+ *      live shape too: a village running its Game without having held the
+ *      vote yet is exactly a village that must still be able to ask;
  *   3. reading the journey writes nothing.
  *
  * Then the row itself: it reads the environment, names what is wrong with the
@@ -43,12 +45,14 @@ const quoted = { [VILLAGE_SECRETS_ENV]: `"${KEY}"` } as NodeJS.ProcessEnv;
 describe("the sealing-key requirement in the registry", () => {
   const req = LAUNCH_REQUIREMENTS.find((r) => r.id === ID);
 
-  it("is on the journey, in Connections, first, and never blocking", () => {
+  it("is on the journey, in Connections, first, required and carried by the vote", () => {
     expect(req, "the requirement is registered").toBeTruthy();
     expect(req!.group).toBe("integrations");
-    // A blocking row could close the launch vote on a live village. See the
-    // header: this is the property the rest of this file holds.
-    expect(req!.severity).toBe("recommended");
+    // Required, and carried: a blocking row WITHOUT carriedByVote could close
+    // the launch vote on a live village. See the header: this is the property
+    // the rest of this file holds.
+    expect(req!.severity).toBe("blocking");
+    expect(req!.carriedByVote).toBe(true);
     expect(req!.appliesWhenModule, "every village holds integration keys, so it always applies").toBeUndefined();
     expect(LAUNCH_REQUIREMENTS.filter((r) => r.group === "integrations")[0].id).toBe(ID);
     expect(req!.fixAt).toBe("/admin?tab=integrations");
@@ -95,8 +99,8 @@ describe.skipIf(!configured)("the sealing-key requirement against a real schema"
   /** Everything about the journey EXCEPT this one row's own state and detail. */
   const shape = async (env: NodeJS.ProcessEnv) => {
     const s = await launchStatus(pool, deps(env));
+    // blockingOpen is read on its own below: this row moves it by one, by design.
     return {
-      blockingOpen: s.blockingOpen,
       readyToLaunch: s.readyToLaunch,
       launchedAt: s.launchedAt,
       launchedBy: s.launchedBy,
@@ -193,10 +197,14 @@ describe.skipIf(!configured)("the sealing-key requirement against a real schema"
     expect(await shape(quoted)).toEqual(ready);
     // The row did go red, so the equality above is not two greens.
     expect((await item(withNone)).state).toBe("missing");
-    // And it counts where a recommended row counts, and only there.
+    // It counts as required and is carried, and nothing else moves.
     const without = await launchStatus(pool, deps(withNone));
     const withIt = await launchStatus(pool, deps(withKey));
-    expect(without.recommendedOpen).toBe(withIt.recommendedOpen + 1);
+    expect(without.blockingOpen).toBe(withIt.blockingOpen + 1);
+    expect(without.recommendedOpen).toBe(withIt.recommendedOpen);
+    expect(without.carriedOpen.map((c) => c.id)).toContain(ID);
+    expect(withIt.carriedOpen.map((c) => c.id)).not.toContain(ID);
+    expect(without.readyToLaunch).toBe(true);
   });
 
   it("1. never un-launches a village that has launched", async () => {
@@ -219,7 +227,7 @@ describe.skipIf(!configured)("the sealing-key requirement against a real schema"
     const recorded = await recordLaunchCarried(pool, { ballotId: "ballot-launch-2", closedBy: "founder-1" });
     const read = async (env: NodeJS.ProcessEnv) => {
       const s = await launchStatus(pool, deps(env, "missing"));
-      return { launchedAt: s.launchedAt, blockingOpen: s.blockingOpen, readyToLaunch: s.readyToLaunch };
+      return { launchedAt: s.launchedAt, readyToLaunch: s.readyToLaunch };
     };
     const base = await read(withKey);
     expect(base.launchedAt).toBe(recorded.launchedAt);
