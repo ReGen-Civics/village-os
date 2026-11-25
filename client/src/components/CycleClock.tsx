@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import GlossaryTip from "@/components/GlossaryTip";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { SYNODIC_MONTH_DAYS, moonPhase, moonPhaseName } from "@shared/lunar";
 import { closingNewMoonDay, halfwayDay } from "@shared/moonRhythm";
 import { quarterMarks, wheelState, type Hemisphere } from "@shared/wheel";
@@ -123,6 +124,7 @@ const pt = (angle: number, r: number) => {
 export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) {
   const [season, setSeason] = useState<string>("");
   const { t, i18n } = useLingui();
+  const allowanceWord = t({ message: "allowance", context: "glossary: the word a tip explains" });
   const [cycle, setCycle] = useState<ClockCycle | null>(null);
   const [timeZone, setTimeZone] = useState("UTC");
   const [villageHemisphere, setVillageHemisphere] = useState<Hemisphere>("north");
@@ -250,9 +252,21 @@ export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) 
             if (!refill) return t({ message: "Reading when allowances refill", context: "cycle clock: the clock has not answered yet" });
             const date = refill.date;
             const month = refill.moon;
-            return month
-              ? t({ message: `Allowances refill when the ${month} Moon turns, on ${date}.`, context: "cycle clock: the moon that turns and the day it turns" })
-              : t({ message: `Allowances refill when this calendar month turns, on ${date}.`, context: "cycle clock: a village on calendar months, the day the month turns" });
+            const moonWord = t({ message: `${month} Moon`, context: "glossary: the moon's name a tip explains" });
+            // The words the village explains, each with its mark after the sentence (shared/glossary.ts).
+            return (
+              <>
+                {month ? (
+                  <Trans context="cycle clock: the moon that turns and the day it turns">
+                    Allowances<GlossaryTip slot="allowance" word={allowanceWord} /> refill when the {month} Moon<GlossaryTip slot="moon" word={moonWord} /> turns, on {date}.
+                  </Trans>
+                ) : (
+                  <Trans context="cycle clock: a village on calendar months, the day the month turns">
+                    Allowances<GlossaryTip slot="allowance" word={allowanceWord} /> refill when this calendar month turns, on {date}.
+                  </Trans>
+                )}
+              </>
+            );
           })()}
         </p>
       </figcaption>

@@ -20,8 +20,9 @@
  * page draws the roles held now below its other groups on the team sheet, and the formation keeps them in its ring.
  * The team's timeline moved to the page too, below the upcoming roles.
  */
+import GlossaryTip from "@/components/GlossaryTip";
 import { useId, useState, type ReactNode } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { RoleFill } from "@shared/commitmentRange";
@@ -136,6 +137,7 @@ export default function FoundingTeam({
   anchorId?: string;
 }) {
   const { t } = useLingui();
+  const domainWord = t({ message: "domain", context: "glossary: the word a tip explains" });
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
   const Heading = lead ? "h1" : "h2";
   const wide = useWide();
@@ -175,7 +177,7 @@ export default function FoundingTeam({
           {t({ message: "Join the founding team", context: "founding team section heading" })}
         </Heading>
         <p className={`${lead ? "mt-3" : "mt-5"} max-w-2xl text-lg leading-relaxed text-muted-foreground sm:mt-5 sm:text-xl`}>
-          {t({ message: "We're forming the founding roles who will hold critical domains from foundation building through to completion.", context: "founding team section lede" })}
+          <Trans context="founding team section lede">We're forming the founding roles who will hold critical domains<GlossaryTip slot="domain" word={domainWord} /> from foundation building through to completion.</Trans>
         </p>
         {/* Hiring the founding team first (Rye, 14 Nov 2026): one line, so a visitor sharing the link sees there is more to come. */}
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground" data-hiring-first="">

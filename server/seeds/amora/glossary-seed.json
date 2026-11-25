@@ -1,0 +1,13 @@
+{
+  "_about": "Amora's words explained (the lead, 25 Nov 2026: 'tooltips next to them!'). Apply by hand: Admin, Make it yours, Identity, Words you explain, or PUT /api/admin/content/app-glossary with this file minus the two underscore keys. One plain sentence each, written from the code and the docs (shared/moonRhythm.ts, shared/governanceEngine.ts, the gratitude dials in shared/gameVariables.ts, the archetype step). _checkWithLead lists the ones the lead should confirm before they go live.",
+  "_checkWithLead": ["formation", "credits", "voice"],
+  "root": "Your root is the kind of contribution you grow from; the roles are its branches, so choosing a root shows you the roles that fit you.",
+  "formation": "Formation draws the founding team as rings around the village, so you can see how the roles stand together.",
+  "domain": "A domain is the part of the work a role or circle looks after and makes the decisions about.",
+  "moon": "The village keeps time by the moon: each cycle follows one moon, about 29 days, and takes its name from the month its full moon falls in.",
+  "allowance": "Each moon you have an allowance of Gratitude to give the people you want to thank; it refills when the moon turns, and what you leave unused does not carry over.",
+  "credits": "Village Credits are the village's value token: at the close of each moon a pool of them is shared out in step with the thanks each member received.",
+  "voice": "Voice is the weight your vote carries in the village's decisions; it is earned through taking part and can never be bought or traded.",
+  "quorum": "Quorum is how much of the village's voice has to take part, abstaining included, before a vote counts.",
+  "quest": "A quest is a piece of work the village needs, open for anyone to take up, alone or with others."
+}

@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import GlossaryTip from "@/components/GlossaryTip";
 import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
 import CircleName from "@/components/circles/CircleName";
 import { anchorCircleId } from "@shared/circlePicker";
@@ -459,6 +460,8 @@ export default function Circles() {
                   { term: hero.fields.secondTerm, tip: hero.fields.secondTip },
                 ]}
               />
+              {/* While the village's own intro still uses the word, its mark (shared/glossary.ts). */}
+              {/\b(?:domain|dominio)/i.test(hero.fields.intro ?? "") && <GlossaryTip slot="domain" word={t({ message: "domain", context: "glossary: the word a tip explains" })} />}
             </p>
             <Link href="/roles" className={BTN_PRIMARY}>
               {hero.fields.rolesLabel}

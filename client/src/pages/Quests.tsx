@@ -1,4 +1,6 @@
 import Layout from "@/components/Layout";
+import GlossaryTip from "@/components/GlossaryTip";
+import { useGlossary } from "@/hooks/useGlossary";
 import ContributorRoutes from "@/components/ContributorRoutes";
 import { BTN_PRIMARY, EYEBROW, H1, RING, WORLD } from "@/components/journey/look";
 import QuietEmpty from "@/components/quiet/QuietEmpty";
@@ -256,7 +258,10 @@ export default function Quests() {
                 and the Lore line comes last, after the numbers. */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
               <Trans context="Quests, p">Take a Quest, do the work, turn it in.
-            </Trans></p>
+            </Trans><GlossaryTip slot="quest" word={t({ message: "Quest", context: "glossary: the word a tip explains" })} /></p>
+            {/* The two rewards a quest names on its card, each explained once here: a mark cannot sit inside a card's
+                link, and the village's own token names come from its config (the lead, 25 Nov 2026). */}
+            <RewardWords />
             {comingSoon ? (
               <QuestsComingSoon className="mx-auto mb-4 mt-6 max-w-3xl" />
             ) : (
@@ -731,3 +736,19 @@ export default function Quests() {
     </Layout>
   );
 }
+
+/** "Quests pay in Village Credits and Village Voice.", each name with its mark, drawn only while both are explained. */
+function RewardWords() {
+  const credits = useValueTokenName("credits");
+  const voice = useGameConfig()?.currency?.names?.["village-voice"] ?? "Voice";
+  const glossary = useGlossary();
+  if (!glossary?.credits && !glossary?.voice) return null;
+  return (
+    <p className="text-sm text-muted-foreground max-w-2xl mx-auto mb-4" data-reward-words="">
+      <Trans context="quests board: the line that names the two rewards">
+        Quests pay in {credits}<GlossaryTip slot="credits" word={credits} /> and {voice}<GlossaryTip slot="voice" word={voice} />.
+      </Trans>
+    </p>
+  );
+}
+

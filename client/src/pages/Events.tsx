@@ -22,6 +22,7 @@
  * list stay one click away on the same row of tabs. The page stands in the
  * sheet's night world (docs/DESIGN_RULE.md).
  */
+import GlossaryTip from "@/components/GlossaryTip";
 import Layout from "@/components/Layout";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { storedText, writeStored } from "@/lib/safeStorage";
@@ -102,6 +103,7 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 
 export default function Events() {
   const { t, i18n } = useLingui();
+  const moonWord = t({ message: "moon", context: "glossary: the word a tip explains" });
   const modules = useModules();
   const eventsModule = useModule("events");
   const [payload, setPayload] = useState<EventsPayload | null>(null);
@@ -410,7 +412,7 @@ export default function Events() {
               behind the "?" (design pass M6). */}
           <p className="mt-2 max-w-2xl text-muted-foreground">
             <span className="hidden sm:inline">
-              {t({ message: "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by.", context: "calendar page lede" })}{" "}
+              <Trans context="calendar page lede">Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<GlossaryTip slot="moon" word={moonWord} /> the land turns by.</Trans>{" "}
             </span>
             <InfoTip tapBox tip="The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does." label={t({ message: "About the moons", context: "calendar page: tip about moons" })} />
           </p>

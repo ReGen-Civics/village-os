@@ -17,6 +17,8 @@
  * The heading and the sentence under it are the village's own words (Admin,
  * Pages, How We Govern); every figure is the village's own.
  */
+import GlossaryTip from "@/components/GlossaryTip";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { useModule } from "@/modules/ModuleProvider";
 import type { Evenness, VoiceSpreadView } from "@shared/voiceSpread";
@@ -29,10 +31,10 @@ const EVENNESS_WORDS: Record<Evenness, string> = {
   concentrated: "Most of the Voice sits with a few: the top groups have far more say than their size.",
 };
 
-function Tile({ label, value }: { label: string; value: string }) {
+function Tile({ label, value, tip }: { label: string; value: string; tip?: React.ReactNode }) {
   return (
     <div data-spread-tile className="rounded-xl border border-stone-200 bg-white px-4 py-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-stone-600">{label}</div>
+      <div className="text-xs font-medium uppercase tracking-wide text-stone-600">{label}{tip}</div>
       <div className="mt-1 font-display text-2xl font-bold text-teal-deep">{value}</div>
     </div>
   );
@@ -62,6 +64,7 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
       <div className="container mx-auto max-w-5xl px-4">
         <h2 id="voice-spread-heading" className="font-display text-2xl md:text-3xl font-bold text-teal-deep break-words">
           {heading}
+          <GlossaryTip slot="voice" word={t({ message: "Voice", context: "glossary: the word a tip explains" })} />
         </h2>
         {intro.trim() !== "" && <p className="mt-2 max-w-3xl text-stone-700 leading-relaxed break-words">{intro}</p>}
         <p className="mt-3 text-sm font-medium text-stone-800">
@@ -108,7 +111,7 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
             <Tile label={ballots.since ? t({ message: "Votes this season", context: "VoiceSpreadBand, label" }) : t({ message: "Votes so far", context: "VoiceSpreadBand, label" })} value={String(ballots.run)} />
             <Tile label={t({ message: "Carried", context: "VoiceSpreadBand, label" })} value={ballots.closed ? `${ballots.passed} of ${ballots.closed}` : "None yet"} />
             <Tile label={t({ message: "Average turnout", context: "VoiceSpreadBand, label" })} value={ballots.turnoutPct === null ? "None closed yet" : `${ballots.turnoutPct}%`} />
-            <Tile label={t({ message: "Quorum", context: "VoiceSpreadBand, label" })} value={`${view.quorumPct}%`} />
+            <Tile label={t({ message: "Quorum", context: "VoiceSpreadBand, label" })} value={`${view.quorumPct}%`} tip={<GlossaryTip slot="quorum" word={t({ message: "quorum", context: "glossary: the word a tip explains" })} />} />
           </div>
         </div>
       </div>

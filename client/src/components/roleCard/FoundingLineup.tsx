@@ -26,6 +26,7 @@
  * the open roles), and each role one framed panel, its card opening inside its own frame, so a reader always
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
+import GlossaryTip from "@/components/GlossaryTip";
 import { lazy, Suspense, type ReactNode } from "react";
 import { LayoutList} from "lucide-react";
 import { GrowthRings } from "@/components/sacred/living";
@@ -141,7 +142,11 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
       {heading}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {tally}
-        {toggle}
+        {/* The view switch, and the mark that says what Formation means (shared/glossary.ts). */}
+        <span className="inline-flex items-center">
+          {toggle}
+          <GlossaryTip slot="formation" word={t({ message: "Formation", context: "glossary: the word a tip explains" })} />
+        </span>
       </div>
       {view === "sheet" ? (
         <div className="flex flex-col gap-3" data-testid="team-sheet">
