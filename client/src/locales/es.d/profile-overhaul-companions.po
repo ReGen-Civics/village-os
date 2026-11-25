@@ -1,0 +1,24 @@
+# needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}"
+msgstr "Tus compañeros: {names}"
+
+# needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}. One draft waits for your yes."
+msgstr "Tus compañeros: {names}. Un borrador espera tu sí."
+
+# needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
+msgctxt "companion corner: the button, read aloud"
+msgid "Your companions: {names}. {waiting} drafts wait for your yes."
+msgstr "Tus compañeros: {names}. {waiting} borradores esperan tu sí."
+
+# needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
+msgctxt "companion corner: the panel, read aloud"
+msgid "Your companions"
+msgstr "Tus compañeros"
+
+# needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
+msgctxt "companion corner: the panel's close button"
+msgid "Close your companions"
+msgstr "Cerrar tus compañeros"

@@ -2990,3 +2990,24 @@ html:has(#sera-changes [data-sera-strip-on]) {
   mask: var(--logo-src) center / contain no-repeat;
   pointer-events: none;
 }
+
+/*
+ * THE COMPANIONS' CORNER (profile overhaul, Direction D): the animals standing bottom right breathe, each a
+ * beat after the one before, at the living motion lane's breath (--m-breath). Transform only, and still under
+ * reduced motion. client/src/components/profileDash/CompanionCorner.tsx.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .companion-corner .companion-arch {
+    transform-origin: 50% 100%;
+    animation: companion-breathe var(--m-breath, 7s) ease-in-out infinite;
+  }
+  .companion-corner .companion-arch:nth-child(2) { animation-delay: -1.7s; }
+  .companion-corner .companion-arch:nth-child(3) { animation-delay: -3.4s; }
+  .companion-corner .companion-arch:nth-child(4) { animation-delay: -5.1s; }
+  .companion-corner:hover .companion-arch { transform: translateY(-3px); }
+}
+@keyframes companion-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(-2px) rotate(-1.2deg); }
+  65% { transform: translateY(0) rotate(0.8deg); }
+}

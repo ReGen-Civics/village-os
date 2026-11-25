@@ -37,7 +37,7 @@
  * every check that door carries runs. This file never writes a ledger row, an
  * RSVP or a message itself.
  */
-import { natureArtUrl } from "../../shared/natureArt";
+import { isNatureSlug, natureArtUrl } from "../../shared/natureArt";
 import { parsePersona } from "../../shared/companionPersona";
 import { createHash, randomUUID } from "crypto";
 import type { Pool } from "mysql2/promise";
@@ -47,6 +47,8 @@ import {
   carriesContact,
   defaultLook,
   DRAFT_DOORS,
+  isUntouchedLook,
+  SCARLET_LOOK,
   effectiveCap,
   isDraftKind,
   MAX_ANSWER,
@@ -115,11 +117,15 @@ export interface CompanionsEnv {
    * a hand-over syncs the new holder's army too.
    */
   guideOf: (userId: string) => Promise<CompanionProvider>;
+  /** Every role's painting, by role id (server/routes/natureArt.ts, roleArt). A role companion wears its role's. */
+  roleArtOf?: () => Promise<Record<string, string>>;
 }
 
 const PERSONAL_NAME = "Personal companion";
-/** What a personal companion is called until the member names it. */
-export const DEFAULT_PERSONAL_NAME = "Pip";
+/** What a personal companion is called until the member names it: Scarlet, the scarlet macaw (Direction D). */
+export const DEFAULT_PERSONAL_NAME = "Scarlet";
+/** The name a personal companion was given before Scarlet, renamed only where nobody chose it. */
+export const EARLIER_PERSONAL_NAME = "Pip";
 
 /** Whether the village turned companions on for this role. */
 export function roleHasCompanion(roleScope: string, roleId: string): boolean {
@@ -150,6 +156,12 @@ export async function syncArmy(env: CompanionsEnv, userId: string): Promise<Comp
   let mine = await companionsOf(pool, userId);
   const personal = mine.find((c) => c.scope === "personal");
   if (personal && personal.provider !== guide) await updateCompanion(pool, personal.id, { provider: guide });
+  // PIP BECOMES SCARLET WHERE NOBODY CHOSE OTHERWISE (Direction D): only a companion still carrying both the
+  // earlier default name and the pet it was created with. A name or a look the member chose is never touched.
+  // Idempotent by its own test, so it runs on every read and changes a row once.
+  if (personal && personal.name === EARLIER_PERSONAL_NAME && isUntouchedLook(parseLook(personal.look), 0)) {
+    await updateCompanion(pool, personal.id, { name: DEFAULT_PERSONAL_NAME, look: JSON.stringify(SCARLET_LOOK) });
+  }
   if (!personal) {
     await insertCompanionIfAbsent(pool, {
       id: `comp-${randomUUID().slice(0, 12)}`,
@@ -158,7 +170,7 @@ export async function syncArmy(env: CompanionsEnv, userId: string): Promise<Comp
       scopeId: "",
       provider: guide,
       name: DEFAULT_PERSONAL_NAME,
-      look: JSON.stringify(defaultLook(0)),
+      look: JSON.stringify(SCARLET_LOOK),
       dailyQuestionCap: 3,
       sortOrder: 0,
     });
@@ -166,6 +178,10 @@ export async function syncArmy(env: CompanionsEnv, userId: string): Promise<Comp
   const held = (await rolesHeldBy(pool, userId)).filter((r) => roleHasCompanion(env.roleScope, r.roleId));
   const heldIds = held.map((r) => r.roleId);
   mine = await companionsOf(pool, userId);
+  // Each role's painting, read once and only when there is a role to dress. A failed read leaves the pets.
+  const art = held.length && env.roleArtOf ? await env.roleArtOf().catch(() => ({}) as Record<string, string>) : {};
+  const roleLook = (roleId: string, index: number): string =>
+    JSON.stringify(isNatureSlug(art[roleId]) ? { source: "nature", art: art[roleId] } : defaultLook(index));
 
   for (let i = 0; i < held.length; i++) {
     const role = held[i];
@@ -178,12 +194,16 @@ export async function syncArmy(env: CompanionsEnv, userId: string): Promise<Comp
         scopeId: role.roleId,
         provider: "village",
         name: role.name.slice(0, 60),
-        look: JSON.stringify(defaultLook(i + 1)),
+        look: roleLook(role.roleId, i + 1),
         dailyQuestionCap: 3,
         sortOrder: i + 1,
       });
-    } else if (existing.status === "retired") {
-      await updateCompanion(pool, existing.id, { status: "active" });
+    } else {
+      if (existing.status === "retired") await updateCompanion(pool, existing.id, { status: "active" });
+      // A role companion still wearing the pet it was created with takes its role's painting (Direction D).
+      if (isNatureSlug(art[role.roleId]) && isUntouchedLook(parseLook(existing.look), existing.sortOrder)) {
+        await updateCompanion(pool, existing.id, { look: roleLook(role.roleId, existing.sortOrder) });
+      }
     }
   }
   // Roles let go of: their companions retire. Their items stay for whoever holds the role next.

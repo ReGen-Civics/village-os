@@ -459,6 +459,21 @@ export function defaultLook(index: number): CompanionLook {
   return { source: "choose", pet: PET_KINDS[i % PET_KINDS.length], tint: PET_TINTS[i % PET_TINTS.length] };
 }
 
+/**
+ * THE VILLAGE'S ANIMALS (profile overhaul, Direction D; the lead, 24 Nov 2026: companions "follow the design
+ * and characters of our animals that we have in admin", "the default animal being the scarlet macaw").
+ * A personal companion starts as Scarlet, the scarlet macaw; a role's companion wears its role card's
+ * painting (shared/natureArt.ts). A member may still choose a pet or a portrait.
+ */
+export const SCARLET_LOOK: CompanionLook = { source: "nature", art: "scarlet-macaw" };
+
+/** A look nobody chose: the pet a companion was created with, unchanged since. */
+export function isUntouchedLook(look: CompanionLook | null, index: number): boolean {
+  if (!look || look.source !== "choose") return false;
+  const d = defaultLook(index);
+  return look.pet === d.pet && look.tint === d.tint;
+}
+
 /** Read a stored or sent look. Anything unreadable becomes null. */
 export function parseLook(v: unknown): CompanionLook | null {
   let o = v;
