@@ -1869,7 +1869,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --mode-brand: var(--pal-night-brand);
   --mode-brand-hover: var(--pal-night-brand-hover);
   --mode-brand-band: var(--pal-night-brand-band);
-  --mode-ground: var(--night-ground, var(--pal-night-ground));
+  /* No --mode-ground here. The root's --background must stay the light
+     ground in dark mode, because Admin copies its light tokens from the root
+     (--light-background below). A night ground on the root made Admin's
+     "light" background the night while its ink stayed dark: 1.36:1 on Setup
+     and Needs (admin live pass A2, 25 Nov 2026). The night ground already
+     reaches every page through <body> (--background: var(--sheet-ground))
+     and the root's own background-color. */
   --band: var(--night-band, var(--pal-night-band));
   --band-ink: var(--night-ink, var(--pal-night-ink));
   --band-rule: var(--night-rule, var(--pal-night-rule));
