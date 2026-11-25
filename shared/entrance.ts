@@ -19,7 +19,9 @@
  *
  * WHO PASSES: a signed-in member, an agent token, our own automation by its pass header, a visitor
  * with a live entry cookie (signed by the server, `ENTRY_DAYS` long), and an invited guest for their
- * one gathering. Everybody, while the village's dial `entrance.required` is off, which is the
+ * one gathering. A QA viewer's `live.view` token passes as its holder, for reads only, while their
+ * seat carries `qa.live_view` (server/lib/liveView.ts, mounted ahead of this gate).
+ * Everybody, while the village's dial `entrance.required` is off, which is the
  * platform default: a fork turns its entrance on.
  *
  * WHAT IS KEPT: the name, the address, the optional fields, what draws them, the answer to the

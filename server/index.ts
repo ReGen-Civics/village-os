@@ -811,7 +811,7 @@ import { guardedFetchJson } from "./lib/toolcheck";
 import { register as registerTokenEditRoutes } from "./routes/tokenEdit";
 import { register as registerVillageExportRoutes } from "./routes/villageExport";
 import { register as registerSigningKeyRoutes } from "./routes/signingKey";
-import { grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, POT_STEWARD_GRANTS, ROLE_PAY_GRANTS, seedStarterRoles, STEWARD_CIRCLE_GRANTS } from "./lib/starterRoles";
+import { ensureQaViewersGroup, grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, POT_STEWARD_GRANTS, ROLE_PAY_GRANTS, seedStarterRoles, STEWARD_CIRCLE_GRANTS } from "./lib/starterRoles";
 import { handTokenMintOverFor0112, handTokenMintToStewardsAndTreasury, type TokenMintHandoverDeps } from "./lib/tokenMintHandover"; // Rye, 2026-11-15
 import { endAgentReach, withAgentReachEnded } from "./lib/agentTokens"; // a new password and an admin's revoke end what the agent holds too
 import { proveAddress, raiseToFounder, sendPasswordEndedLetter, sendVerifyLetter } from "./lib/emailVerification"; // R104: an address is proved before its password is trusted
@@ -822,6 +822,7 @@ import {
   AGENT_SCOPES, CONFIRM_REASON_SENTENCE, READ_SCOPES, cleanScopes, isAgentBearer, listTokens, mintConfirmToken,
   createConfirmSpendBook, holderStands, mintToken, revokeToken, verifyConfirmToken, verifyToken, type AgentScope, type AgentTokenRow,
 } from "./lib/agentTokens";
+import { liveViewMiddleware } from "./lib/liveView"; // the live view for QA: a seated holder's read-only token, past the entrance (the lead, 25 Nov 2026)
 import { DELIVERY_KINDS, SIGNATURE_HEADER, drainDeliveries, enqueueAgentDelivery, getInbox, listDeliveries, queueWeekAhead, removeInbox, setInbox } from "./lib/agentInbox";
 import {
   MEMBER_KEY_PROVIDERS, NO_MEMBER_SECRETS_KEY_SENTENCE, memberKeyView, memberSecretsConfigured, removeMemberKey,
@@ -2116,6 +2117,7 @@ async function ensureDataFiles() {
   await runOnce("role-pay-to-treasury-2026-11-06", () => grantMoonReviewKeys(rolesRepo, ROLE_PAY_GRANTS, "role.pay on the Treasury role (Rye, 2026-11-06)").then(() => undefined));
   await runOnce("steward-circle-role-powers-2026-11-05", () => grantMoonReviewKeys(rolesRepo, STEWARD_CIRCLE_GRANTS, "Steward Circle's role and adoption powers (Rye, 2026-11-01)").then(() => undefined));
   await runOnce("redemption-ceilings-blank-2026-11-05", () => blankZeroRedemptionCeilings(getPool()).then((keys) => { if (keys.length) console.log(`[redemption] a stored 0 ceiling became blank, which is no ceiling: ${keys.join(", ")}`); })); // Rye, 2026-11-05: 0 now means zero
+  await runOnce("qa-viewers-group-2026-11-25", () => ensureQaViewersGroup(rolesRepo).then(() => undefined)); // the live view for QA: an empty group carrying qa.live_view only (server/lib/liveView.ts)
   await runOnce("pot-steward-to-treasury-2026-11-06", () => grantMoonReviewKeys(rolesRepo, POT_STEWARD_GRANTS, "the funding pots power, pot.steward (Rye, 2026-11-06)").then(() => undefined));
   // A village started before the launch vote existed never ran the launch closer: token.mint goes to its stewards and Treasury here, once (server/lib/tokenMintHandover.ts).
   try { await handTokenMintOverFor0112({ ...tokenMintHandoverDeps(), gameStart: () => readGameStart(getPool()), applied: () => dataMigrations.get().applied ?? [], markApplied: (id) => dataMigrations.put({ applied: [...(dataMigrations.get().applied ?? []), id] }) }); } catch (e) { console.error("[token.mint] the boot hand-over failed (continuing; the admin keeps hand minting)", e); }
@@ -3564,6 +3566,11 @@ async function mayAct(req: express.Request, cap: Capability): Promise<Capability
  * village having taken something on, and an operator who believes the panel
  * is broken starts looking for a database to edit.
  */
+/** Whether this member holds the live view for QA now, asked of THE gate (server/lib/liveView.ts). */
+async function mayLiveView(user: any): Promise<boolean> {
+  return capabilityDecision("qa.live_view", await capabilityCtx(user)).allowed;
+}
+
 async function guardCapability(
   req: express.Request,
   res: express.Response,
@@ -6696,6 +6703,7 @@ async function startServer() {
 
   app.use(express.json({ limit: "1mb" }));
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
+  app.use(liveViewMiddleware({ verify: (t) => verifyToken(getPool(), t), userById: (id) => members.byId(id), stands: holderStands, mayView: mayLiveView, sessionFor: (u) => encodeToken(AUTH_TOKEN_SECRET, u.id, u.email, u.tokenVersion ?? 0), overLimit })); // ahead of the people lock and the entrance: a live.view token reads as its holder, and only reads (server/lib/liveView.ts)
   registerPeopleLock(app, { authedUser, getPool, boolVar });
   registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name }, accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
@@ -7020,13 +7028,15 @@ async function startServer() {
     app.get("/api/agent/setup", async (req, res) => {
       const user = await me(req, res);
       if (!user) return;
+      const liveViewOffered = await mayLiveView(user);
       const origin = (process.env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
       res.json({
         origin,
         skillsUrl: `${origin}${AGENT_V1}/skills`,
         openapiUrl: `${origin}${AGENT_V1}/openapi.json`,
         tokenEnvVar: "VILLAGE_AGENT_TOKEN",
-        scopes: AGENT_SCOPES.filter((s) => s !== "intents.write" || AGENT_INTENT_WRITE),
+        // live.view is offered only to a member the gate seats with the live view for QA.
+        scopes: AGENT_SCOPES.filter((s) => s !== "intents.write" || AGENT_INTENT_WRITE).filter((s) => s !== "live.view" || liveViewOffered),
         readScopes: READ_SCOPES,
         intentsOpen: AGENT_INTENT_WRITE,
         memberSecrets: memberSecretsConfigured(),
@@ -7051,6 +7061,7 @@ async function startServer() {
         adminAllowed: holderIsAdmin,
         // Sera's agent: an agent account that is not an admin (addendum v6, B7).
         seraAllowed: !holderIsAdmin && (await isAgentAccount(getPool(), String(user.id))),
+        liveViewAllowed: await mayLiveView(user), // THE gate, never a role name (server/lib/liveView.ts)
       });
       if (!scopes.ok) return res.status(400).json({ error: scopes.error });
       const minted = await mintToken(getPool(), user.id, { name: String(req.body?.name ?? ""), scopes: scopes.scopes, ttlDays: req.body?.ttlDays }, Number(user.tokenVersion ?? 0)); // a session ended since its check answers 401

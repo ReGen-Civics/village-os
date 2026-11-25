@@ -163,3 +163,42 @@ export const MOON_REVIEW_GRANTS = [
   { capability: APPROVE_ALONE_CAPABILITY, roleIds: APPROVE_ALONE_GROUPS },
   { capability: APPROVE_OWN_CAPABILITY, roleIds: APPROVE_OWN_GROUPS },
 ] as const;
+
+/**
+ * THE QA VIEWERS POWER GROUP (the lead, 25 Nov 2026: "ALL lanes need to have
+ * access to the live site, we have a QA role in the game").
+ *
+ * A village has no screen that makes a new Power group, so a power no seeded
+ * group carries has nowhere to sit. This one group carries exactly one key,
+ * `qa.live_view`, and nobody holds it when it arrives: it grants nothing until
+ * a person links a seat to it on the org chart and seats somebody there, which
+ * is the whole of how a village says who may look at its live game for QA.
+ *
+ * Added once through `runOnce`, to a new village and a running one alike, and
+ * only where no group already has the id. Nothing else on any group changes.
+ * `order` is written because `sort_order` is NOT NULL and a `dbCollection`
+ * write names every column (the house trap in CLAUDE.md). Returns whether it
+ * wrote.
+ */
+export const QA_VIEWERS_GROUP_ID = "qa-viewers";
+
+export async function ensureQaViewersGroup<T extends { id: string; capabilities?: string[] }>(repo: RolesStore<T>): Promise<boolean> {
+  const all = repo.all();
+  if (all.some((r) => r.id === QA_VIEWERS_GROUP_ID)) return false;
+  const order = all.reduce((max, r) => Math.max(max, Number((r as any).order ?? 0) || 0), 0) + 1;
+  const group = {
+    id: QA_VIEWERS_GROUP_ID,
+    name: "QA viewers",
+    description: "Members who check the live game works by looking at it, read-only. Link this group to a QA seat on the org chart; whoever holds that seat may then make a personal live view token on their profile.",
+    capabilities: ["qa.live_view"],
+    minStage: null,
+    circleId: null,
+    seats: 1,
+    order,
+    isExample: false,
+    grantsAdmin: false,
+  } as unknown as T;
+  await repo.replaceAll([...all, group]);
+  console.log("[roles] the QA viewers power group is here, held by nobody yet (the lead, 2026-11-25)");
+  return true;
+}
