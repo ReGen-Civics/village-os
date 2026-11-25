@@ -74,4 +74,12 @@ describe("your email addresses", () => {
     expect(await screen.findByText("Send a confirmation email")).toBeTruthy();
     expect(screen.queryByLabelText("Add an email address")).toBeNull();
   });
+
+  it("draws nothing, and never throws, when the answer is not a whole account (an older server, a stub)", async () => {
+    fetchMock.mockImplementation(async () => reply(200, { ok: true }));
+    const { container } = render(<AccountEmailsPanel />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 20));
+    expect(container.innerHTML).toBe("");
+  });
 });

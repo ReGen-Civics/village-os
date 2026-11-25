@@ -16,6 +16,10 @@ import { authToken } from "@/lib/gameApi";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, FIELD, H2, HINT, LABEL, NOTE, QUIET, TICK } from "@/components/journey/look";
 import { deliveryAddresses, type AccountEmails, type EmailDelivery } from "@shared/memberEmails";
 
+/** Only a whole answer is drawn: anything else (an older server, a proxy's page, a test's stub) leaves the panel hidden. */
+const isAccountEmails = (d: unknown): d is AccountEmails =>
+  !!d && typeof (d as AccountEmails).main === "string" && Array.isArray((d as AccountEmails).extras) && Array.isArray((d as AccountEmails).deliversTo);
+
 const headers = (): Record<string, string> => {
   const t = authToken();
   return { "Content-Type": "application/json", ...(t ? { Authorization: `Bearer ${t}` } : {}) };
@@ -33,7 +37,7 @@ export default function AccountEmailsPanel() {
     let live = true;
     fetch("/api/me/email-addresses", { headers: headers() })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => live && d && setData(d))
+      .then((d) => live && isAccountEmails(d) && setData(d))
       .catch(() => {});
     return () => {
       live = false;
@@ -51,7 +55,7 @@ export default function AccountEmailsPanel() {
         setNote({ tone: "wrong", text: d?.error ?? t({ message: "That did not save. Try again.", context: "account emails: generic failure" }) });
         return null;
       }
-      if (d?.emails) setData(d.emails);
+      if (isAccountEmails(d?.emails)) setData(d.emails);
       return d;
     } catch {
       setNote({ tone: "wrong", text: t({ message: "That did not reach the village. Check your connection and try again.", context: "account emails: network failure" }) });
