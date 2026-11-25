@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.65 (2026-11-24)
+
+### What changed for your village
+
+- **Light and dark modes for everybody.** Light mode (Golden Hour) is the default and dark mode is Canopy at Night, with a quiet switch at the top of every page. The logo recolours itself in light mode. An installed app opens on light mode's ground. Season goals show as cards, and the shell uses the sacred-geometry glyphs.
+- **Spanish, first pass, across the whole site:** the shell, the public pages, member and applicant pages, and Admin. Every Spanish line is marked for a native speaker's review. Village words outside the pages (the homepage hero, the footer line, the visit words) can now take a translation in Admin, Content translations.
+- **Living motion, parts 1 to 4:** gentle, organic movement that grows in as you read (Germinate, Touch, Sprout, Breathe, Mycelium, Root), soft page-to-page changes and a living tab bar. Everything rests for anyone whose device asks for reduced motion.
+- **A faster first page:** about 73 KB less script loads before a visitor sees anything.
+- **More pages in the house look:** /photographs, /request-membership, /modules and /work-with-us, plus the guide chat.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.64 (2026-11-24)
 
 ### What changed for your village

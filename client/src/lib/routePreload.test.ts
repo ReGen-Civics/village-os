@@ -154,6 +154,20 @@ describe("routePreloadTable and the emitted script", () => {
     expect(filesFor("/events")).toEqual(["assets/Events-V.js", "assets/Events-V.css", "assets/shared-S.js"]);
   });
 
+  it("lists a CSS-only chunk's stylesheet and never its script, which Vite does not write", () => {
+    // components/motion/motion.css shipped as a chunk of CSS alone: the table named its script, Vite removed it, and
+    // every page preloaded a missing /assets/motion-*.js (main at 004e28f, 24 Nov 2026).
+    const withCssChunk: ChunkFacts[] = [
+      ...chunks.map((c) => (c.fileName === "assets/QuestCard-K.js" ? { ...c, imports: [...c.imports, "assets/motion-M.js"] } : c)),
+      chunk("assets/motion-M.js", { cssOnly: true, css: ["assets/motion-M.css"] }),
+    ];
+    const t = routePreloadTable(routes, withCssChunk);
+    const ids = t.routes.find(([re]) => new RegExp(re, "i").test("/quests"))![1].map((i) => t.files[i]);
+    expect(ids).toContain("assets/motion-M.css");
+    expect(ids).not.toContain("assets/motion-M.js");
+    expect(t.files).not.toContain("assets/motion-M.js");
+  });
+
   it("drops a route whose page has no chunk, rather than guessing", () => {
     expect(filesFor("/ghost")).toEqual([]);
     expect(table.routes).toHaveLength(2);
