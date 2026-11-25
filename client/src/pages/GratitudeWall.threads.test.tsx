@@ -19,7 +19,17 @@ vi.mock("@/components/profile/MoonDock", () => ({ default: () => null }));
 vi.mock("@/components/profile/NightMotes", () => ({ default: () => null }));
 vi.mock("@/components/gratitude/MoonsPast", () => ({ default: () => null }));
 vi.mock("@/components/gratitude/SuggestionChips", () => ({ default: () => null }));
-vi.mock("@/components/gratitude/VoicesHero", () => ({ default: () => null }));
+/** Whether the hero above an empty wall drew example lines; the stub tells the wall as the real one does. */
+const hero = vi.hoisted(() => ({ examples: false }));
+vi.mock("@/components/gratitude/VoicesHero", async () => {
+  const { useEffect } = await import("react");
+  return {
+    default: ({ onExamples }: { onExamples?: (shown: boolean) => void }) => {
+      useEffect(() => onExamples?.(hero.examples), [onExamples]);
+      return null;
+    },
+  };
+});
 vi.mock("@/components/voice/VoiceArea", () => ({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("@/components/ExamplesBanner", () => ({ forgetExamplesCache: () => {} }));
 vi.mock("@/components/natural/useReducedMotion", () => ({ useReducedMotion: () => true, prefersReducedMotion: () => true }));
@@ -146,6 +156,16 @@ describe("the wall on a phone", () => {
     const tips = Array.from(document.querySelectorAll("[role=tooltip]")).map((e) => e.textContent ?? "");
     expect(tips.some((x) => x.startsWith("Each cycle every member receives an allowance to send."))).toBe(true);
     for (const x of tips) expect(x).not.toMatch(/\{\d+\}/);
+  });
+
+  it("under example lines, an empty wall says they are examples and where the first real one lands (25 Nov 2026)", async () => {
+    wall = [];
+    hero.examples = true;
+    page();
+    await waitFor(() => expect(screen.getByText("Nobody here has carried a thanks yet")).toBeTruthy());
+    expect(screen.getByText(/The lines above marked Example show what a thanks looks like/)).toBeTruthy();
+    expect(screen.queryByText("No thanks on the wall yet")).toBeNull();
+    hero.examples = false;
   });
 
   it("on an empty wall, offers one Carry a thanks, and it opens the sheet", async () => {

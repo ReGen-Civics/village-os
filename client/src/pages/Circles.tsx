@@ -22,6 +22,8 @@ import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
+import { useLingui } from "@lingui/react/macro";
+import { useUserOrVisitor } from "@/lib/newcomer";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import CircleLines, { type CircleHolder } from "@/components/geneKeys/CircleLines";
 import { coordinatingCircle } from "@shared/coordinatingCircle";
@@ -268,8 +270,13 @@ export default function Circles() {
   // A raised hand posts under `/api/map`, which the map module gates, so the
   // card offers one only while this reader's catalog lists that module as on.
   // The contact relay is the map's alone and is never offered here.
+  const { t } = useLingui();
+  const authUser = useUserOrVisitor();
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
+  // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else
+  // gets the picture without a door (the five-reviewer QA pass, 25 Nov 2026).
+  const mapOpens = !!map && (map.lifecycle === "public" || (map.lifecycle !== "off" && !!authUser));
   // Every word around the circles is the village's own, from Admin, Pages,
   // Circles (shared/pageContent/circles.ts). Null until the saved words have
   // arrived, so the defaults never flash first. The circles are not words:
@@ -497,7 +504,20 @@ export default function Circles() {
                 the village it draws. */}
             {raw.circles.length > 0 && (
               <div className="mb-14">
-                <CirclesMiniMap circles={raw.circles} seats={raw.seats} />
+                <CirclesMiniMap
+                  circles={raw.circles}
+                  seats={raw.seats}
+                  door={
+                    mapOpens
+                      ? {}
+                      : {
+                          opens: false,
+                          title: t({ message: "How the circles sit together", context: "circles page, the map picture for a visitor" }),
+                          detail: t({ message: "The living map opens to members. This picture shows each circle and its roles: a hollow dot is a role still open.", context: "circles page, the map picture for a visitor" }),
+                          ariaLabel: t({ message: "A picture of the village's circles and their roles", context: "circles page, the map picture for a visitor" }),
+                        }
+                  }
+                />
               </div>
             )}
 

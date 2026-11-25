@@ -97,7 +97,8 @@ describe("the landing's first screen with the founding team on", () => {
     expect(card.textContent).toContain("See the open roles");
     expect(document.querySelector('#choose-path [data-way="founding"]')).toBeNull();
     const doors = Array.from(document.querySelectorAll("[data-four-ways] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")]);
-    expect(doors).toEqual([["team", "/roles#founding-team"], ["venture", "/role-proposals/new"], ["partner", "/partner"], ["quest", "/propose-quest"]]);
+    // A visitor with the venture form off: the open ventures on /roles, never the member's new-role door (25 Nov 2026).
+    expect(doors).toEqual([["team", "/roles#founding-team"], ["venture", "/roles#open-ventures"], ["partner", "/partner"], ["quest", "/propose-quest"]]);
     // The four ways are the last section of the landing.
     const sections = Array.from(document.querySelectorAll("[data-landing-hero] ~ section, section"));
     expect(sections[sections.length - 1]?.hasAttribute("data-four-ways")).toBe(true);

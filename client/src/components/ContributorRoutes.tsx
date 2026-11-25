@@ -25,6 +25,7 @@ import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { useGameConfig } from "@/lib/gameApi";
 import { useStoryPageShown } from "@/lib/brochure";
+import { useNewcomerOrVisitor } from "@/lib/newcomer";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
 import { replyMoonsOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
@@ -46,11 +47,21 @@ const ROUTE_DOORS: Record<ContributorRoute, { href: string }> = {
   quest: { href: "/propose-quest" },
 };
 
-/** Where a venture is started on this village: the proposal form set up for a venture, or the new-role door. */
-export function useVentureHref(): string {
+/**
+ * Where a venture is started on this village, for this reader: the proposal form set up for a venture while the
+ * village serves it, or else the member's door for a new role. Null for a newcomer when the form is off (the
+ * five-reviewer QA pass, 25 Nov 2026): the member's door is closed to them, so a caller sends them to the open
+ * ventures on /roles, or draws no pitch button at all.
+ */
+export function useVentureHref(): string | null {
   const shown = useStoryPageShown();
-  return shown(VENTURE_PITCH_PAGE) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
+  const newcomer = useNewcomerOrVisitor();
+  if (shown(VENTURE_PITCH_PAGE)) return VENTURE_PITCH_FORM;
+  return newcomer ? null : VENTURE_PITCH_FALLBACK;
 }
+
+/** The open ventures on /roles: where a venture goes for a reader with no pitch form to open. */
+export const OPEN_VENTURES_HREF = ROUTE_DOORS.venture.href;
 
 /** The moon cycles a proposer is told they will hear back within, once they have sent (`org.reply_window_moons`). */
 export function useReplyMoons(): number {
@@ -154,16 +165,17 @@ export default function ContributorRoutes({
   headingId?: string;
   headingAs?: "h2" | "h3" | "p";
   /** A page that holds one of the routes itself points its card there (the roles page's open roles). */
-  hrefs?: Partial<Record<ContributorRoute, string>>;
+  /** A route's own address here; null leaves the route out (a door this reader cannot open). */
+  hrefs?: Partial<Record<ContributorRoute, string | null>>;
   className?: string;
 }) {
   const { t } = useLingui();
   const words = useRouteWords(register);
-  const routes = routesExcept(except);
+  const routes = routesExcept(except).filter((r) => hrefs[r] !== null);
   // The compact tiles sit at the top of /roles and scroll to its open ventures; every other Start a venture opens the
   // proposal form set up for a venture (the lead, 24 Nov 2026).
   const ventureForm = useVentureHref();
-  const hrefOf = (r: ContributorRoute) => hrefs[r] ?? (r === "venture" && variant !== "tiles" ? ventureForm : ROUTE_DOORS[r].href);
+  const hrefOf = (r: ContributorRoute): string => hrefs[r] ?? (r === "venture" && variant !== "tiles" ? (ventureForm ?? ROUTE_DOORS.venture.href) : ROUTE_DOORS[r].href);
   const Heading = headingAs;
   const go = (r: ContributorRoute, cls: string, children: React.ReactNode) => {
     const href = hrefOf(r);
@@ -283,7 +295,7 @@ export default function ContributorRoutes({
 }
 
 /** The top of the roles page: the four ways, named as a region; its words a paragraph, so the page keeps one h1. */
-export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string>> }) {
+export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string | null>> }) {
   const heading = useFourWaysHeading();
   return (
     <section id="four-ways" aria-labelledby="four-ways-heading" className="mx-auto mb-6 max-w-4xl scroll-mt-24 sm:mb-8 lg:max-w-6xl" data-four-ways="">
@@ -293,7 +305,7 @@ export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorR
 }
 
 /** "Don't see your gift in a role? Consider these:", the other three, at the end of the roles page's lists. */
-export function GiftSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string>> }) {
+export function GiftSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string | null>> }) {
   const heading = useGiftHeading();
   return (
     <section aria-labelledby="your-gift" className="mx-auto mb-14 max-w-4xl lg:max-w-6xl" data-your-gift="">
@@ -306,6 +318,8 @@ export function GiftSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute
 export function StartVentureButton() {
   const href = useVentureHref();
   const verb = useRouteWords().venture.verb;
+  // A newcomer with no form to open: the ventures listed right here are the way in, so no button.
+  if (!href) return null;
   return (
     <Link href={href} className={`${BTN_PRIMARY} mb-6 min-h-12 px-6 text-base`} data-pitch-venture="">
       {verb}

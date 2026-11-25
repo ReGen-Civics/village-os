@@ -127,3 +127,27 @@ describe("the path slot, in the bar", () => {
     expect(document.querySelector('[data-mobile-tabbar] a[href="/circles"]')).toBeNull();
   });
 });
+
+describe("More says whether the menu it opens is open (the five-reviewer QA pass, 25 Nov 2026)", () => {
+  it("is aria-expanded false, then true once the drawer says it opened, then false again", async () => {
+    const { act } = await import("@testing-library/react");
+    user = { id: 1, paths: [], membershipGranted: true };
+    render(
+      <Router>
+        <MobileTabBar />
+      </Router>,
+    );
+    const more = document.querySelector<HTMLButtonElement>('button[aria-controls="mobile-menu"]');
+    expect(more?.getAttribute("aria-label")).toBe("More");
+    expect(more?.getAttribute("aria-expanded")).toBe("false");
+    act(() => {
+      window.dispatchEvent(new CustomEvent("mobile-menu-state", { detail: { open: true } }));
+    });
+    expect(more?.getAttribute("aria-expanded")).toBe("true");
+    act(() => {
+      window.dispatchEvent(new CustomEvent("mobile-menu-state", { detail: { open: false } }));
+    });
+    expect(more?.getAttribute("aria-expanded")).toBe("false");
+  });
+});
+

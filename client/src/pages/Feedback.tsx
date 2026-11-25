@@ -100,22 +100,26 @@ export default function Feedback() {
             <div className={`${CARD} space-y-4`}>
               {error && <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive rounded-lg px-4 py-2.5">{error}</p>}
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label={t({ message: "What kind of feedback", context: "feedback page: the kind" })}>
                 <button
+                  type="button"
+                  aria-pressed={kind === "bug"}
                   onClick={() => setKind("bug")}
                   className={`jw-btn flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
                     kind === "bug" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Bug className="w-4 h-4" /> {t({ message: "Something broke", context: "feedback page: the kind" })}
+                  <Bug className="w-4 h-4" aria-hidden="true" /> {t({ message: "Something broke", context: "feedback page: the kind" })}
                 </button>
                 <button
+                  type="button"
+                  aria-pressed={kind === "idea"}
                   onClick={() => setKind("idea")}
                   className={`jw-btn flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${
                     kind === "idea" ? "border-notice bg-notice/10 text-notice" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Seed className="w-4 h-4" /> {t({ message: "An idea", context: "feedback page: the kind" })}
+                  <Seed className="w-4 h-4" aria-hidden="true" /> {t({ message: "An idea", context: "feedback page: the kind" })}
                 </button>
               </div>
 
