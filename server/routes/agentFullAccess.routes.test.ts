@@ -111,6 +111,11 @@ describe.skipIf(!configured)("the full-access switch, on a real schema", () => {
     await q("DELETE FROM org_role_assignments WHERE org_role_id = 'r-ops'");
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
+    await q("DELETE FROM suggestion_staging");
+    await q("DELETE FROM suggestion_outcomes");
+    // What is live starts the same for every case: filing reads it, and a value an earlier case left live is held.
+    for (const k of Object.keys(content)) delete content[k];
+    Object.assign(content, { "page-home": { hero: { headline: "Welcome home" } } });
   });
 
   const call = async (method: string, path: string, body?: unknown, as: string | null = LEAD.id, extra: Record<string, string> = {}) => {
@@ -200,8 +205,9 @@ describe.skipIf(!configured)("the full-access switch, on a real schema", () => {
   describe("the agent's accept door", () => {
     const PAGE = { kind: "page_content", target: { section: "page-home" }, body: { hero: { headline: "A home on the land" } }, summary: "Reword the homepage headline." };
     const CONNECTOR = { "x-village-connector": "1" };
-    const fileOne = async () => {
-      const r = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, LEAD.id, CONNECTOR);
+    const fileOne = async (headline?: string) => {
+      const item = headline ? { ...PAGE, body: { hero: { headline } } } : PAGE;
+      const r = await call("POST", "/api/admin/proposals", { batch: "Words", items: [item] }, LEAD.id, CONNECTOR);
       expect(r.status).toBe(200);
       return { id: r.body.ids[0] as string, code: r.body.codes[0].code as string, batchCode: r.body.batchCode as string };
     };
@@ -248,18 +254,34 @@ describe.skipIf(!configured)("the full-access switch, on a real schema", () => {
       expect(floor.body.results[0]).toMatchObject({ ok: false });
       expect(floor.body.results[0].error).toContain("A person accepts this one");
       expect(hits).toEqual([]);
-      const d = await fileOne();
+      const d = await fileOne("Another headline");
       const gone = await call("POST", "/api/admin/proposals/accept-as-holder", { action: "discard", ids: [d.id], approvedBy: "The lead", approvalNote: `Put aside ${d.batchCode}` }, LEAD.id, CONNECTOR);
       expect(gone.body.results).toEqual([expect.objectContaining({ id: d.id, ok: true })]);
       const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [d.id]);
       expect(row.status).toBe("discarded");
     });
 
+    it("STAGING ADDS NO SECOND APPROVAL (the coordinator, 25 Nov 2026): a filed change is accepted on the lead's quoted yes in that one call, as before", async () => {
+      await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-ops" });
+      await seatLead();
+      const c = await fileOne();
+      // The filing went through staging and was published at once: nothing held it, and nothing waits on a person first.
+      expect(c.id).toEqual(expect.any(String));
+      const [staged] = await q("SELECT state, published_change_id FROM suggestion_staging");
+      expect(staged).toEqual({ state: "carded", published_change_id: c.id });
+      const r = await call("POST", "/api/admin/proposals/accept-as-holder", { action: "accept", ids: [c.id], approvedBy: "The lead", approvalNote: `Yes, accept ${c.code}.` }, LEAD.id, CONNECTOR);
+      expect(r.body.results).toEqual([expect.objectContaining({ id: c.id, ok: true })]);
+      expect(hits.filter((h) => h.method === "PUT")).toEqual([{ method: "PUT", path: "/api/admin/content/page-home", auth: `Bearer ${LEAD.id}` }]);
+      // Staging only closes its row behind the decision; it asked nothing of anybody.
+      const [after] = await q("SELECT state FROM suggestion_staging");
+      expect(after.state).toBe("closed");
+    });
+
     it("never chooses between two options for one thing: a person does (conflicts block, the lead, 25 Nov 2026)", async () => {
       await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-ops" });
       await seatLead();
       const a = await fileOne();
-      const b = await fileOne();
+      const b = await fileOne("A home among the trees");
       const note = `Accept ${a.code} and ${b.code}.`;
       const r = await call("POST", "/api/admin/proposals/accept-as-holder", { action: "accept", ids: [a.id, b.id], approvedBy: "The lead", approvalNote: note }, LEAD.id, CONNECTOR);
       expect(r.status).toBe(200);

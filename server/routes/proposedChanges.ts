@@ -72,7 +72,8 @@ import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
 import { seatTermsRead } from "../../shared/seatTermsProposal";
 import { listOrgRoles } from "../lib/orgChart";
 import { recordChangeOutcome, recordStagedOutcome } from "../lib/suggestionOutcome";
-import { closeStaged, heldOf, releaseReconsider, stagedById, type StagedRow } from "../repos/suggestionStaging";
+import { closeStaged, closeStagedForChange, heldOf, markPublished, releaseReconsider, stagedById, type StagedRow } from "../repos/suggestionStaging";
+import { afterRelease, HELD_FOR_FILER, readReconsider, sameAsLive, stageAndSort, type Filing } from "../lib/connectorStaging";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -238,29 +239,66 @@ export function register(app: Express, deps: Deps): void {
       return res.status(400).json({ error: "refused", message: `Nothing was filed. ${refused.length} of ${list.length} cannot be proposed as sent.`, refused });
     }
     const kind = (await isAgentAccount(pool, uid)) || req.get("x-village-connector") ? "agent" : "person";
-    const bid = batchId ?? (await store.addBatch(pool, { title, proposedBy: uid, proposedByKind: kind }));
-    let position = await store.nextPosition(pool, bid);
+    // Staged and read by the engine first (server/lib/connectorStaging.ts): what is held waits in Held with its reason,
+    // what already waits is answered with that change, and only the rest becomes a proposed change.
+    const now = new Date();
+    const run = runAs(req);
+    const filings: Filing[] = ready.map((r, i) => ({ kind: r.p.kind, target: r.p.target, body: r.p.body, summary: r.p.summary, reconsider: readReconsider(obj(list[i])?.reconsider) }));
+    const isLive = async (f: Filing) => {
+      try {
+        return sameAsLive(await liveOf(kd, run, f.kind, f.target, f.body), f.body);
+      } catch {
+        return false;
+      }
+    };
+    const sorted = await stageAndSort({ pool, now, isLive }, filings, uid, kind === "agent" ? "agent" : "member");
+    const going = sorted.filter((x) => x.to === "publish");
+    const bid = going.length ? batchId ?? (await store.addBatch(pool, { title, proposedBy: uid, proposedByKind: kind })) : batchId;
+    let position = bid ? await store.nextPosition(pool, bid) : 0;
     const ids: string[] = [];
-    for (const r of ready) {
-      ids.push(
-        await store.addChange(pool, {
-          batchId: bid, position: position++, kind: r.p.kind, target: r.p.target, targetLabel: r.label, routeMethod: r.method, routePath: r.path,
-          summary: r.p.summary, body: r.p.body, proposedBy: uid, proposedByKind: kind,
-        }),
-      );
+    for (const x of going) {
+      const r = ready[x.index]!;
+      const id = await store.addChange(pool, {
+        batchId: bid!, position: position++, kind: r.p.kind, target: r.p.target, targetLabel: r.label, routeMethod: r.method, routePath: r.path,
+        summary: r.p.summary, body: r.p.body, proposedBy: uid, proposedByKind: kind,
+      });
+      await markPublished(pool, x.stagedId, id, now);
+      ids.push(id);
     }
-    await recordEvent(pool, {
-      kind: "proposed_change",
-      text: `${ids.length} change${ids.length === 1 ? "" : "s"} proposed for review${title ? `: ${title.slice(0, 120)}` : ""}`,
-      actorUserId: uid,
-      actorKind: kind === "agent" ? "agent" : "human",
-      entityType: "proposed_change_batch",
-      entityRef: bid,
-      audience: "admin",
-    });
-    const filedBatch = await store.batchById(pool, bid);
+    const held = sorted.flatMap((x) => (x.to === "held" ? [{ index: x.index, code: x.code, fields: x.fields, words: HELD_FOR_FILER[x.code] }] : []));
+    const waiting = await Promise.all(
+      sorted.flatMap((x) => (x.to === "waiting" ? [x] : [])).map(async (x) => ({ index: x.index, id: x.changeId, code: x.changeId ? (await store.changeById(pool, x.changeId))?.code ?? null : null })),
+    );
+    if (ids.length && bid) {
+      await recordEvent(pool, {
+        kind: "proposed_change",
+        text: `${ids.length} change${ids.length === 1 ? "" : "s"} proposed for review${title ? `: ${title.slice(0, 120)}` : ""}`,
+        actorUserId: uid,
+        actorKind: kind === "agent" ? "agent" : "human",
+        entityType: "proposed_change_batch",
+        entityRef: bid,
+        audience: "admin",
+      });
+    }
+    if (held.length) {
+      await recordEvent(pool, { kind: "proposed_change", text: `${held.length} proposed change${held.length === 1 ? " was" : "s were"} held before review`, actorUserId: uid, actorKind: kind === "agent" ? "agent" : "human", entityType: "suggestion_staging", entityRef: sorted.find((x) => x.to === "held")!.stagedId, audience: "admin" });
+    }
+    const filedBatch = bid ? await store.batchById(pool, bid) : null;
     const filed = await Promise.all(ids.map((id) => store.changeById(pool, id)));
-    res.json({ success: true, batchId: bid, batchCode: filedBatch?.code ?? null, ids, codes: ids.map((id, i) => ({ id, code: filed[i]?.code ?? null })), applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
+    res.json({
+      success: true,
+      batchId: ids.length ? bid : null,
+      batchCode: ids.length ? filedBatch?.code ?? null : null,
+      ids,
+      codes: ids.map((id, i) => ({ id, code: filed[i]?.code ?? null })),
+      // Held before review, by the fixed reason and its fields, never anybody's words. Each waits in Held for a person.
+      held,
+      // The same filing already waits: this is that change, not a second one.
+      waiting,
+      applied: false,
+      reviewAt: "/admin/proposals",
+      message: held.length || waiting.length ? `${REVIEW_WORDS.nothingLive} ${ids.length} filed for review, ${held.length} held, ${waiting.length} already waiting.` : REVIEW_WORDS.nothingLive,
+    });
   });
 
   app.get("/api/admin/proposals/lessons", async (req, res) => {
@@ -354,6 +392,7 @@ export function register(app: Express, deps: Deps): void {
     const results = [];
     for (const id of ids) {
       const ok = await store.markDiscardedByFiler(pool, id, uid);
+      if (ok) await closeStagedForChange(pool, id, new Date());
       if (ok) {
         await recordEvent(pool, { kind: "proposed_change", text: "A proposed change was put aside by the one who filed it", actorUserId: uid, actorKind: agent ? "agent" : "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
       }
@@ -591,6 +630,8 @@ export function register(app: Express, deps: Deps): void {
     }
     const lessons = fieldDiffs(c.body, body);
     await store.markAccepted(pool, id, { by: uid, accepted: body, lessons, approvedBy: as.approvedBy, approvalNote: as.approvalNote });
+    // Its staged row closes, so the same value sent again later is judged afresh, never answered as still waiting.
+    await closeStagedForChange(pool, id, new Date());
     // After the change has landed, never before, and never able to fail it (server/lib/suggestionOutcome.ts).
     await recordChangeOutcome(pool, c, lessons.length ? "edited" : "accepted", lessons.length, as.decidedBy);
     await recordEvent(pool, {
@@ -606,6 +647,7 @@ export function register(app: Express, deps: Deps): void {
     const otherChosen: string[] = [];
     for (const r of rivals) {
       if (!(await store.markDiscarded(pool, r.id, uid))) continue;
+      await closeStagedForChange(pool, r.id, new Date());
       otherChosen.push(r.id);
       await recordChangeOutcome(pool, r, "other_chosen", 0, as.decidedBy);
       await recordEvent(pool, { kind: "proposed_change", text: `A proposed change was set aside because another option for the same thing was chosen: ${r.summary.slice(0, 140)}`, actorUserId: uid, actorKind: as.actorKind, entityType: "proposed_change", entityRef: r.id, audience: "admin" });
@@ -680,6 +722,7 @@ export function register(app: Express, deps: Deps): void {
       }
       if (action === "discard") {
         const ok = await store.markDiscarded(pool, id, uid);
+        if (ok) await closeStagedForChange(pool, id, new Date());
         if (ok) {
           await recordChangeOutcome(pool, c, "discarded", 0, as.decidedBy);
           await recordEvent(pool, { kind: "proposed_change", text: `A proposed change was put aside by ${firstName(name)}'s agent with full access, approved by ${approval.approvedBy.slice(0, 80)}: "${approval.approvalNote.slice(0, 300)}"`, actorUserId: uid, actorKind: "agent", entityType: "proposed_change", entityRef: id, audience: "admin" });
@@ -770,7 +813,33 @@ export function register(app: Express, deps: Deps): void {
     if (!(await releaseReconsider(getPool(), row.staged.id, key, new Date()))) return res.status(409).json({ error: "not_held", message: REVIEW_WORDS.notProposed });
     await recordStagedOutcome(getPool(), row, "released", key);
     await recordEvent(getPool(), { kind: "proposed_change", text: "A suggestion sent again after a discard was let through to be read", actorUserId: uid, actorKind: "human", entityType: "suggestion_staging", entityRef: row.staged.id, audience: "admin" });
-    res.json({ success: true });
+    // Read again with the release counted. Let through, it goes onto the review page as the filer's own proposal; held
+    // for another reason since (already live, decided meanwhile), it stays in Held with that reason.
+    const pool = getPool();
+    const kd = kindDeps();
+    const run = runAs(req);
+    const now = new Date();
+    const isLive = async (f: Filing) => {
+      try {
+        return sameAsLive(await liveOf(kd, run, f.kind, f.target, f.body), f.body);
+      } catch {
+        return false;
+      }
+    };
+    const next = await afterRelease({ pool, now, isLive }, row.staged.id);
+    if (!next || !next.publish) return res.json({ success: true, published: null, heldFor: next && !next.publish ? next.code : null });
+    const s = row.staged;
+    const summary = (row.why ?? "").trim() || "A change sent again after a discard";
+    const checked = await checkProposal(kd, { kind: s.kind, target: s.target, body: s.body, summary });
+    if (!checked.ok) return res.json({ success: true, published: null, refused: checked.error });
+    const filerKind = row.filerKind === "member" ? "person" : "agent";
+    const bid = await store.addBatch(pool, { title: `Sent again: ${summary}`.slice(0, PROPOSAL_LIMITS.title), proposedBy: s.filer, proposedByKind: filerKind });
+    const changeId = await store.addChange(pool, {
+      batchId: bid, position: 0, kind: s.kind, target: s.target, targetLabel: checked.label, routeMethod: checked.method, routePath: checked.path,
+      summary, body: s.body, proposedBy: s.filer, proposedByKind: filerKind,
+    });
+    await markPublished(pool, s.id, changeId, now);
+    res.json({ success: true, published: { id: changeId, code: (await store.changeById(pool, changeId))?.code ?? null } });
   });
 
   app.post("/api/admin/proposals/held/:id/clear", async (req, res) => {
@@ -800,6 +869,7 @@ export function register(app: Express, deps: Deps): void {
       const c = await store.changeById(pool, id);
       const ok = await store.markDiscarded(pool, id, uid);
       if (ok) {
+        await closeStagedForChange(pool, id, new Date());
         if (c) await recordChangeOutcome(pool, c, "discarded", 0, decidedBy);
         await recordEvent(pool, { kind: "proposed_change", text: "A proposed change was discarded on the review page", actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
       }
