@@ -192,7 +192,7 @@ export default function AdminReview() {
               <Trans context="review inbox: h1">Review</Trans>
             </h1>
             <p className={LEDE}>
-              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today.</Trans>
+              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live.</Trans>
             </p>
             {answer && !forbidden ? (
               <p className={HINT} role="status" aria-live="polite">

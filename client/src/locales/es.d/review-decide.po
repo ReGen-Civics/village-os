@@ -357,3 +357,9 @@ msgstr "Ya hay {limit} opciones para esto."
 msgctxt "review inbox: held"
 msgid "It needs something that does not exist yet."
 msgstr "Necesita algo que todavía no existe."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
+msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Los cambios propuestos se deciden aquí. Abre lo demás para decidirlo donde vive."

@@ -68,7 +68,7 @@ export default function ConflictCard({ options, links, desk }: { options: Propos
                 <span className="min-w-0 space-y-1">
                   <span className="block text-sm text-muted-foreground">
                     <Trans context="review inbox: a conflict card">Option {n} of {total}</Trans>
-                    {o.code ? <CodeChip code={o.code} /> : null}
+                    {o.code ? <CodeChip code={o.code} className="ml-2 align-middle" /> : null}
                   </span>
                   <span className="block font-semibold text-card-foreground">{o.summary}</span>
                   <span className="block text-sm text-muted-foreground">
