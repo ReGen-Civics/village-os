@@ -40,7 +40,7 @@ import { sameAddress, endUnprovenPassword, proveAddress } from "../lib/emailVeri
 import { holdsUnprovenPassword, isUnclaimable } from "../lib/oauthAccounts";
 import { codeMatches, domainTakesMail, hashCode, makeCode, sendCodeLetter, type CodeLetterDeps, type MailLookup } from "../lib/entranceCode";
 import { codesSentTo, countWrongTry, deletePortalCodesFor, insertPortalCode, latestPortalCode, takePortalCode } from "../repos/portalCodes";
-import { CODE_TRIES, CODE_TTL_MS, KEEP_IN_TOUCH_PARAM, LOOK_GRACE_MS, RESEND_AFTER_MS, cleanCode, type LookStatus } from "../../shared/entrance";
+import { CODE_TRIES, CODE_TTL_MS, KEEP_IN_TOUCH_PARAM, LOOK_GRACE_MS, RESEND_AFTER_MS, backdropOf, cleanCode, type LookStatus } from "../../shared/entrance";
 import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, isInterest, isUpdatesAnswer, LINK_MAX, MIN_FILL_MS, parseEntrance, roleSlugOf, safeNext, type EntranceStatus, type PortalEntry } from "../../shared/entrance";
 import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
@@ -180,13 +180,14 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       if (e && e.codeRequired && !e.verified) look = { needsCode: true, startedAt: e.createdAt, pages: e.views, lookMs: lookMs(), lookPages: lookPages(), sentTo: e.email };
     }
     const privacyContact = deps.stringVar("entrance.privacy_contact").trim();
+    const backdrop = backdropOf(deps.stringVar("entrance.background_video"), deps.stringVar("entrance.background_video_mobile"), deps.stringVar("entrance.background_poster"));
     let verified = false;
     if (visitor) {
       const own = ownEntry(req);
       const e = own ? await entryLook(deps.getPool(), own) : null;
       verified = !!e && e.verified && !e.isTest;
     }
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look, privacyContact, codes: deps.mail.ready(), verifiedVisitor: verified };
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look, privacyContact, backdrop, codes: deps.mail.ready(), verifiedVisitor: verified };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });

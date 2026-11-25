@@ -2903,6 +2903,36 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    key: "entrance.background_video",
+    category: "The village's people",
+    label: "Portal entrance: background video",
+    description:
+      "A video that plays, muted and looping, behind the entrance card. An address that starts with https://, or a file of this site such as /uploads/gate.mp4; mp4 plays in every browser. Leave it blank for the plain background. Visitors who ask their device for less motion see the still image below instead.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
+    key: "entrance.background_video_mobile",
+    category: "The village's people",
+    label: "Portal entrance: background video on phones",
+    description:
+      "A smaller copy of the background video for screens 768 pixels wide or less, so a phone downloads less. Leave it blank to use the main video on phones too.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
+    key: "entrance.background_poster",
+    category: "The village's people",
+    label: "Portal entrance: background still image",
+    description:
+      "The still image shown while the background video loads, and in its place for visitors who ask for less motion. An address that starts with https://, or a file of this site. Leave it blank for none.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
     key: "entrance.look_minutes",
     category: "The village's people",
     label: "Portal entrance: minutes to look around before the code",
@@ -5224,7 +5254,7 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
      * succeed and then render no link anywhere, with nothing saying why. The
      * same rule is held here, at the door, so the person sees the reason.
      */
-    if (def.key.startsWith("org.") && def.key.endsWith("_link") && raw.trim() !== "") {
+    if (((def.key.startsWith("org.") && def.key.endsWith("_link")) || def.key.startsWith("entrance.background_")) && raw.trim() !== "") {
       const v = raw.trim();
       const sitePage = v.startsWith("/") && !v.startsWith("//");
       if (!sitePage && !/^https:\/\/[^\s]+$/i.test(v)) return "Must be a page of this site, such as /steward, or an address that starts with https://. Leave it blank for none.";
