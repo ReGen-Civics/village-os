@@ -3,9 +3,6 @@ import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import GameDashboard from "@/components/GameDashboard";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
-import NotifyPrefsPanel from "@/components/NotifyPrefsPanel";
-import AccountEmailsPanel from "@/components/AccountEmailsPanel";
-import YourAgentPanel from "@/components/YourAgentPanel";
 import ProfileSheet from "@/components/ProfileSheet";
 import ProfileHero from "@/components/ProfileHero";
 import OnchainCard from "@/components/OnchainCard";
@@ -14,8 +11,6 @@ import PayDoor from "@/components/pay/PayDoor";
 import VentureAccountsCard from "@/components/VentureAccountsCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
-import TimeZoneField from "@/components/TimeZoneField";
-import BookingLinkField from "@/components/BookingLinkField";
 import SeasonSummarySection from "@/components/seasonSummary/SeasonSummarySection";
 import MaturityLadder from "@/components/profile/MaturityLadder";
 import PowersMap from "@/components/profile/PowersMap";
@@ -26,11 +21,9 @@ import RoleStartSteps from "@/components/profile/RoleStartSteps";
 import type { MembershipSigning } from "@shared/membershipSigning";
 import PathFacts from "@/components/profile/PathFacts";
 import InventoryCard from "@/components/profile/InventoryCard";
-import VisitorNameCard from "@/components/profile/VisitorNameCard";
 import QuietSection from "@/components/profile/QuietSection";
 import { SHEET_SECTIONS } from "@/components/profile/sheetSections";
 import SeasonPlanSection from "@/components/profile/SeasonPlanSection";
-import AlignedSection from "@/components/profile/AlignedSection";
 import YourRolesSection from "@/components/profile/YourRolesSection";
 import PlayerRoleCard from "@/components/playerCard/PlayerRoleCard";
 import { FirstDaysContext } from "@/components/playerCard/CardLower";
@@ -56,7 +49,7 @@ import VoiceArea from "@/components/voice/VoiceArea";
 import { useModule, useModuleOn } from "@/modules/ModuleProvider";
 import { authToken, fetchGameMe, gameFetch, useGameConfig, type GameMe, type ProgressionCapability } from "@/lib/gameApi";
 import { m, AnimatePresence } from "framer-motion";
-import { Heart, Edit2, LogOut, ArrowRight, CheckCircle2, UserPlus } from "lucide-react";
+import { Heart, Edit2, ArrowRight, CheckCircle2, Settings, UserPlus } from "lucide-react";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { usePathLadders } from "@/hooks/usePathLadders";
 import { FIRST_DAYS } from "@shared/roleStartWords";
@@ -80,13 +73,13 @@ import AsksPanel from "@/components/asks/AsksPanel";
 import MyWeekCard from "@/components/priorities/MyWeekCard";
 import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
 import YourCompanions from "@/components/profileDash/YourCompanions";
-import GuideChoiceCard from "@/components/guide/GuideChoiceCard";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
 import LevelUpMoment from "@/components/profileDash/LevelUpMoment";
 import ProfileTabs, { phoneTab, type ProfileTab } from "@/components/profileDash/ProfileTabs";
 import { useDashData } from "@/components/profileDash/useDashData";
 import PartiesCard from "@/components/profileDash/PartiesCard";
 import { BTN_GOLD, BTN_LINE, H2, KICKER, LINK } from "@/components/profileDash/dashUi";
+import { DOOR } from "@/components/journey/look";
 
 /**
  * THE CHARACTER SHEET.
@@ -138,12 +131,19 @@ import { BTN_GOLD, BTN_LINE, H2, KICKER, LINK } from "@/components/profileDash/d
  * for light surfaces and are not used on any themed surface on this page.
  */
 
+/** The anchors whose panels moved to Profile settings, and the group each now lives in. */
+const MOVED_TO_SETTINGS: Record<string, string> = {
+  "your-agent": "agents",
+  "email-addresses": "account",
+  "visitor-name": "privacy",
+};
+
 export default function Profile() {
   const { t } = useLingui();
   const storyShown = useStoryPageShown();
   const [, navigate] = useLocation();
   const tokenName = useTokenName("Recognition");
-  const { user, logout, loading, updateProfile } = useAuth();
+  const { user, loading, updateProfile } = useAuth();
   const redemptionModule = useModule("redemption");
   const sessionsOn = useModuleOn("sessions");
   const governanceOn = useModuleOn("governance");
@@ -254,6 +254,16 @@ export default function Profile() {
    * fetch.
    */
   useEffect(() => onProfileRefresh(reloadMe), []);
+
+  /*
+   * A LINK TO A PANEL THAT MOVED to Profile settings (Direction D) still lands: /profile#your-agent from an
+   * older email or page goes to /profile/settings#agents, and so on. Read once, on arrival.
+   */
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    const to = MOVED_TO_SETTINGS[hash];
+    if (to) navigate(`/profile/settings#${to}`, { replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     let live = true;
@@ -492,9 +502,10 @@ export default function Profile() {
                       <Trans context="Profile, a"><UserPlus className="h-[18px] w-[18px]" aria-hidden="true" />
                       Invite a friend
                     </Trans></a>
-                    <button type="button" onClick={() => logout()} className={BTN_LINE}>
-                      <Trans context="Profile, button">Sign out
-                    </Trans></button>
+                    <Link href="/profile/settings" className={BTN_LINE}>
+                      <Settings className="h-[18px] w-[18px]" aria-hidden="true" />
+                      {t({ message: "Settings", context: "Profile: the hero's door to the settings page" })}
+                    </Link>
                   </div>
                 }
                 about={
@@ -557,10 +568,7 @@ export default function Profile() {
               </Suspense>
             </div>
 
-            {/* WHO HELPS YOU: the member's guide, chosen once (2026-11-09). On Today, so a phone finds it first. */}
-            <div className={tabOf("today")}>
-              <GuideChoiceCard />
-            </div>
+            {/* WHO HELPS YOU (the guide) moved to Profile settings, Connected tools and agents (Direction D, 25 Nov 2026). */}
 
             {/* HOW MUCH YOU GIVE (0383) moved onto the Your roles card (RolesCommitment), off the front of the page (Rye, 14 Nov 2026). */}
 
@@ -642,9 +650,6 @@ export default function Profile() {
                 <div id="ledger" className={`scroll-mt-28 ${tabOf("treasury")}`}>
                   <ProfileJourney />
                 </div>
-                <div className={tabOf("sheet")}>
-                  <AlignedSection />
-                </div>
               </div>
 
               <aside aria-label={t({ message: "Your character", context: "Profile, aria-label" })} className="flex min-w-0 flex-[1_1_360px] flex-col gap-6 sm:gap-8">
@@ -696,8 +701,8 @@ export default function Profile() {
                 last band. Each one is the section it always was. */}
             <div className={`flex flex-col gap-6 sm:gap-8 ${tabOf("sheet")}`}>
               <div>
-                <p className={KICKER}><Trans context="Profile, p">Settings</Trans></p>
-                <h2 className={H2}><Trans context="Profile, h2">How your sheet works for you</Trans></h2>
+                <p className={KICKER}>{t({ message: "Your sheet", context: "Profile: the last band's eyebrow" })}</p>
+                <h2 className={H2}>{t({ message: "About you, your paths and what you hold", context: "Profile: the last band's heading" })}</h2>
               </div>
               {/* ABOUT YOU IS A DAY-ONE ACT. The bio Save is the whole point:
                   the editor used to discard every word on close, silently. */}
@@ -789,8 +794,6 @@ export default function Profile() {
                   Homes are listed once: on the Resident path card when walked. */}
               <InventoryCard lotsOnPath={user.paths.includes("resident")} />
 
-              {/* WHAT A VISITOR CALLS YOU: your first name on the public pages, or "A member". */}
-              <VisitorNameCard />
 
               {/* THE PATH BAND: a walked path's particulars, an unwalked one's quiet line. */}
               {SHEET_SECTIONS.filter((sec) => sec.band === "path" && sec.path && user.paths.includes(sec.path)).map((sec) => (
@@ -880,23 +883,16 @@ export default function Profile() {
                 <InvitePanel />
               </div>
 
-              {/* One account, more than one address, and where the mail goes (0430). */}
-              <div id="email-addresses" className="scroll-mt-28">
-                <AccountEmailsPanel />
-              </div>
-
-              {/* S16/S18: notification cadence + data rights */}
-              <NotifyPrefsPanel onDeleted={logout} />
-
-              {/* Round 4: your agent, the harness in every profile */}
-              <div id="your-agent">
-                <YourAgentPanel person={user?.id} />
-              </div>
-
-              <button type="button" onClick={() => logout()} className={`${BTN_LINE} self-start sm:hidden`}>
-                <Trans context="Profile, button"><LogOut className="h-4 w-4" aria-hidden="true" />
-                Sign out
-              </Trans></button>
+              {/* PROFILE SETTINGS, its own page (Direction D, 25 Nov 2026): email addresses, who sees what,
+                  notifications and your data, language and look, inner life, your guide and your agent, time
+                  zone, booking link, agreements and sign out. One door here; the header's account menu has another. */}
+              <Link href="/profile/settings" className={DOOR} data-settings-door="">
+                <span className="inline-flex items-center gap-3">
+                  <Settings className="h-5 w-5 text-notice" aria-hidden="true" />
+                  {t({ message: "Profile settings", context: "Profile: the door to the settings page" })}
+                </span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
             </div>
 
             {/*
@@ -927,8 +923,6 @@ export default function Profile() {
                   <RedemptionPanel />
                 </div>
               )}
-              {user && <TimeZoneField /> /* role journey L6 */}
-              {user && <BookingLinkField /> /* applicants book a conversation with you through it */}
               {user && <CashOwedPanel /> /* 0285: cash owed, and the books for whoever holds cash.pay */}
               {user && <SeasonSummarySection /> /* idea 4: your season summed up, shareable as a picture */}
               {/* S47: on-chain holdings, renders nothing until the village turns the economics section on */}
