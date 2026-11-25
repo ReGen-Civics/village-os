@@ -36,6 +36,7 @@ export default function AdminHeader({
   extra,
   defaultLocale = null,
   onHelper,
+  search,
 }: {
   villageName: string;
   siteUrl: string;
@@ -50,6 +51,8 @@ export default function AdminHeader({
   defaultLocale?: string | null;
   /** Opens the Admin helper (the village guide's panel). Absent, the menu has no helper row. */
   onHelper?: () => void;
+  /** The Admin search (search/AdminSearch.tsx), shown at every width. */
+  search?: ReactNode;
 }) {
   const { t } = useLingui();
   const host = siteUrl.replace(/^https?:\/\//, "");
@@ -89,6 +92,7 @@ export default function AdminHeader({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {search}
           <div className="hidden sm:contents">{extra}</div>
           <LanguagePicker tone="onSheet" villageDefault={defaultLocale} />
           <YouMenu userName={userName} night={night} onNight={onNight} onSignOut={onSignOut} onHelper={onHelper} />

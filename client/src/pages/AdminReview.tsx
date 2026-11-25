@@ -4,6 +4,10 @@
  * The lead could not find B-71 because they looked on /review and it was on /admin/proposals. This page answers it:
  * one find box that takes a code, and one list of what waits, from every queue.
  *
+ * EVERY ROW SAYS WHAT IT IS AND WHAT DECIDING IT DOES (lane 4c, client/src/components/reviewInbox/sourceWords.ts), the
+ * rows are grouped by kind with their counts, and a row that can be decided here carries its decision: the connector's
+ * cards, and an org chart draft's Publish (OrgDraftRow). Every other row's door is named by its verb.
+ *
  * THREE VIEWS (lane 4b), as links (`?view=`): Waiting, Held and Decided. Under Waiting the connector's changes are
  * decided here, on the same cards /admin/proposals draws, and changes that write the same thing are one card with
  * options (conflicts block, the lead, 25 Nov 2026). Every other queue keeps its door to the page it is decided on.
@@ -16,20 +20,23 @@
  *
  * A failed read is never an empty one: a queue that did not load says so, by name, with a way to try again.
  */
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Link, useSearch } from "wouter";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
-import { authToken } from "@/lib/gameApi";
-import { BTN_SECONDARY, CHIP_SOFT, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
-import type { InboxItem, SectionState } from "@shared/reviewInbox";
-import { INBOX_ORDER as ORDER, type InboxSource } from "@shared/reviewInboxSources";
+import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
+import type { InboxItem } from "@shared/reviewInbox";
+import { INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
+import { sourceText } from "@/components/reviewInbox/sourceWords";
 import { matchesFind } from "@shared/proposedChanges";
 import { DecidedCard } from "@/components/proposals/ChangeCard";
 import ConnectorWaiting from "@/components/reviewInbox/ConnectorWaiting";
 import HeldList from "@/components/reviewInbox/HeldList";
 import { useConnectorDesk } from "@/components/reviewInbox/useConnectorDesk";
+import InboxRow from "@/components/reviewInbox/InboxRow";
+import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
+import { inboxHeaders as headers, kindOf, useReviewInbox } from "@/components/reviewInbox/useReviewInbox";
 
 type View = "waiting" | "held" | "decided";
 const viewOf = (search: string): View => {
@@ -40,81 +47,25 @@ const TAB = "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-s
 const TAB_ON = `${TAB} bg-notice text-background`;
 const TAB_OFF = `${TAB} border border-border bg-card text-foreground hover:bg-muted`;
 
-interface InboxAnswer {
-  sections: { source: InboxSource; state: SectionState; count: number }[];
-  items: InboxItem[];
-}
-
-type Load = { phase: "loading" } | { phase: "failed" } | { phase: "ready"; answer: InboxAnswer };
-
-function headers(): Record<string, string> {
-  const t = authToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
-
-/** Where a door goes: a connector change opens its own page already searched for its code. */
-function doorOf(item: InboxItem): string {
-  if (item.source === "connector" && item.code) return `${item.decideAt}?find=${encodeURIComponent(item.code)}`;
-  return item.decideAt;
-}
 
 export default function AdminReview() {
   const { t, i18n } = useLingui();
   const auth = useOptionalAuth();
   const signedOut = !!auth && !auth.loading && !auth.user;
-  const [load, setLoad] = useState<Load>({ phase: "loading" });
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null; decided?: { code: string; at: string | null } } | null>(null);
-  const view = viewOf(useSearch());
+  const search = useSearch();
+  const view = viewOf(search);
+  // `?kind=structure` shows one kind: the door a count elsewhere (Admin's Today) lands through.
+  const onlyKind = kindOf(search);
 
-  const titles: Record<InboxSource, string> = {
-    connector: t({ context: "review inbox: section", message: "Proposed changes" }),
-    intake: t({ context: "review inbox: section", message: "From Sera and outside services" }),
-    sera: t({ context: "review inbox: section", message: "Where Sera's memory differs" }),
-    quest: t({ context: "review inbox: section", message: "Quest ideas" }),
-    claim: t({ context: "review inbox: section", message: "Finished work to witness" }),
-    approval: t({ context: "review inbox: section", message: "Approvals" }),
-    agent: t({ context: "review inbox: section", message: "From agents" }),
-    vote: t({ context: "review inbox: section", message: "Votes waiting on you" }),
-    consent: t({ context: "review inbox: section", message: "Asked to consent" }),
-    application: t({ context: "review inbox: section", message: "Applications for a role" }),
-    open: t({ context: "review inbox: section", message: "Proposals from outside the village" }),
-    structure: t({ context: "review inbox: section", message: "Drafts to publish" }),
-    change: t({ context: "review inbox: section", message: "Change requests in review" }),
-    suggestion: t({ context: "review inbox: section", message: "Suggested edits to what you hold" }),
-    hand: t({ context: "review inbox: section", message: "Members asking to hold a power" }),
-    tension: t({ context: "review inbox: section", message: "Tensions raised with your role" }),
-    task: t({ context: "review inbox: section", message: "Done work to accept" }),
-    handoff: t({ context: "review inbox: section", message: "Tasks handed to you" }),
-    recap: t({ context: "review inbox: section", message: "Moon recaps to review" }),
-    cash: t({ context: "review inbox: section", message: "Cash owed" }),
-    owed: t({ context: "review inbox: section", message: "Postings owed" }),
-    mint: t({ context: "review inbox: section", message: "Mint requests" }),
-    cycle: t({ context: "review inbox: section", message: "Cycles to settle" }),
-    cosign: t({ context: "review inbox: section", message: "Keys waiting for a co-sign" }),
-    letter: t({ context: "review inbox: section", message: "Letters waiting to be read" }),
-    assistant: t({ context: "review inbox: section", message: "Drafts from the assistant" }),
-    feedback: t({ context: "review inbox: section", message: "Feedback to read" }),
-    vouch: t({ context: "review inbox: section", message: "Places waiting for your vouch" }),
-    erasure: t({ context: "review inbox: section", message: "Erasures to retry" }),
-  };
-
-  const read = useCallback(async () => {
-    setLoad({ phase: "loading" });
-    try {
-      const r = await fetch("/api/admin/review/inbox", { headers: headers() });
-      if (!r.ok) return setLoad({ phase: "failed" });
-      setLoad({ phase: "ready", answer: (await r.json()) as InboxAnswer });
-    } catch {
-      setLoad({ phase: "failed" });
-    }
-  }, []);
+  const titles = Object.fromEntries(INBOX_SOURCES.map((s) => [s, sourceText(s, i18n).title])) as Record<InboxSource, string>;
 
   // Keyed on being signed in, never on the user object, which a context may hand out anew on every render.
   const signedIn = !!auth && !auth.loading && !!auth.user;
-  useEffect(() => {
-    if (signedIn) void read();
-  }, [signedIn, read]);
+  const { load, answer, groups, read } = useReviewInbox(signedIn);
+  // What the last decision made on a row said, read out once: the row itself leaves the list when it is decided.
+  const [notice, setNotice] = useState<string | null>(null);
 
   // The connector's own read, made only when the inbox says this person may read it: the page never asks for more.
   const desk = useConnectorDesk(() => void read());
@@ -142,12 +93,6 @@ export default function AdminReview() {
 
   const day = (iso: string | null) => (iso ? i18n.date(new Date(iso), { day: "numeric", month: "short" }) : null);
 
-  const answer = load.phase === "ready" ? load.answer : null;
-  const bySource = useMemo(() => {
-    const m = new Map<InboxSource, InboxItem[]>();
-    for (const item of answer?.items ?? []) m.set(item.source, [...(m.get(item.source) ?? []), item]);
-    return m;
-  }, [answer]);
   const failed = (answer?.sections ?? []).filter((s) => s.state === "failed").map((s) => s.source);
   const readable = (answer?.sections ?? []).filter((s) => s.state === "ok" || s.state === "failed");
   const forbidden = !!answer && readable.length === 0;
@@ -158,27 +103,19 @@ export default function AdminReview() {
 
   const failedNames = failed.map((s) => titles[s]).join(", ");
 
-  const row = (item: InboxItem) => {
-    const sent = day(item.filedAt);
-    return (
-    <li key={item.key} className={`${QUIET} flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`}>
-      <div className="min-w-0 space-y-1">
-        <p className="text-base text-foreground">
-          {item.code ? <span className={`${CHIP_SOFT} mr-2 align-middle`}>{item.code}</span> : null}
-          {item.summary}
-        </p>
-        {sent ? (
-          <p className={HINT}>
-            <Trans context="review inbox: item">Sent {sent}</Trans>
-          </p>
-        ) : null}
-      </div>
-      <Link href={doorOf(item)} className={`${DOOR} shrink-0 self-start sm:self-center`}>
-        <Trans context="review inbox: open the page where it is decided">Open</Trans>
-      </Link>
-    </li>
+  const row = (item: InboxItem) =>
+    item.source === "structure" ? (
+      <OrgDraftRow
+        key={item.key}
+        item={item}
+        onDone={(said) => {
+          setNotice(said);
+          void read();
+        }}
+      />
+    ) : (
+      <InboxRow key={item.key} item={item} />
     );
-  };
 
   return (
     <Layout>
@@ -192,7 +129,7 @@ export default function AdminReview() {
               <Trans context="review inbox: h1">Review</Trans>
             </h1>
             <p className={LEDE}>
-              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live.</Trans>
+              <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Decide what you can on its row. The rest opens where it is decided.</Trans>
             </p>
             {answer && !forbidden ? (
               <p className={HINT} role="status" aria-live="polite">
@@ -349,15 +286,39 @@ export default function AdminReview() {
                   <Trans context="review inbox: empty">Nothing is waiting on you.</Trans>
                 </p>
               ) : null}
-              {ORDER.filter((s) => bySource.get(s)?.length).map((s) =>
+              {onlyKind ? (
+                <p className={HINT} data-testid="only-kind">
+                  <OnlyKind title={titles[onlyKind]} />{" "}
+                  <Link href="/admin/review" className={LINK}>
+                    <Trans context="review inbox: one kind">Show everything</Trans>
+                  </Link>
+                </p>
+              ) : null}
+              {!onlyKind && groups.length > 1 ? (
+                <nav aria-label={t({ context: "review inbox: kinds", message: "What is waiting, by kind" })} className="flex flex-wrap gap-2" data-testid="kinds">
+                  {groups.map((g) => (
+                    <a key={g.source} href={`#review-${g.source}`} className={`${CHIP_SOFT} min-h-9 px-3 text-sm`}>
+                      {titles[g.source]} <span aria-hidden="true">·</span> {g.count}
+                    </a>
+                  ))}
+                </nav>
+              ) : null}
+              {notice ? (
+                <p className="text-sm text-foreground" role="status" data-testid="row-notice">
+                  {notice}
+                </p>
+              ) : null}
+              {groups.filter((g) => !onlyKind || g.source === onlyKind).map(({ source: s, items, count }) =>
                 s === "connector" && desk.state === "ok" ? (
-                  <ConnectorWaiting key={s} desk={desk} title={titles[s]} found={foundIds} />
+                  <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={count} found={foundIds} />
                 ) : (
                 <section key={s} className="space-y-3" aria-labelledby={`review-${s}`}>
                   <h2 id={`review-${s}`} className={H2}>
                     {titles[s]}
+                    {" "}
+                    <span className={`${CHIP_SOFT} ml-1 align-middle`}>{count}</span>
                   </h2>
-                  <ul className="space-y-2">{bySource.get(s)!.map(row)}</ul>
+                  <ul className="space-y-2">{items.map(row)}</ul>
                 </section>
                 ),
               )}
@@ -376,4 +337,9 @@ function FoundDecided({ code, day }: { code: string; day: string | null }) {
   ) : (
     <Trans context="review inbox: find a decided code">{code} was decided. It is under Decided.</Trans>
   );
+}
+
+/** "Showing only Org chart drafts." */
+function OnlyKind({ title }: { title: string }) {
+  return <Trans context="review inbox: one kind">Showing only {title}.</Trans>;
 }

@@ -68,7 +68,7 @@ const item = (c: { id: string; code: string; summary: string; at: string; batchI
 
 type Call = { url: string; method: string; body: any };
 
-function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: { status: number; body: unknown } } = {}) {
+function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: { status: number; body: unknown }; extra?: unknown[]; decide?: Record<string, unknown>; preview?: number } = {}) {
   const changes = (opts.changes ?? [OPT_1, OPT_2, PAGE]) as any[];
   const calls: Call[] = [];
   const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -79,7 +79,7 @@ function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: 
       calls.push({ url, method, body: init?.body ? JSON.parse(String(init.body)) : null });
       if (url === "/api/admin/review/inbox") {
         const ok = opts.connector !== "refused";
-        return json(200, { sections: [{ source: "connector", state: ok ? "ok" : "refused", count: ok ? changes.length : 0 }, { source: "claim", state: "ok", count: 0 }], items: ok ? changes.map(item) : [] });
+        return json(200, { sections: [{ source: "connector", state: ok ? "ok" : "refused", count: ok ? changes.length : 0 }, { source: "claim", state: "ok", count: 0 }], items: [...(ok ? changes.map(item) : []), ...(opts.extra ?? [])] });
       }
       if (url.startsWith("/api/admin/review/find")) return opts.find ? json(opts.find.status, opts.find.body) : json(404, { error: "not_found", code: null });
       if (url === "/api/admin/proposals" && method === "GET") return json(200, { timezone: "UTC", batches: [], changes, decided: [DECIDED] });
@@ -87,6 +87,10 @@ function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: 
       if (url === "/api/admin/proposals/check") return json(200, { results: [{ id: JSON.parse(String(init!.body)).items[0].id, ok: true }] });
       if (url === "/api/admin/proposals/accept") return json(200, { results: [{ id: JSON.parse(String(init!.body)).items[0].id, ok: true, otherChosen: ["pc_1"] }] });
       if (url.startsWith("/api/admin/proposals/held/")) return json(200, { success: true });
+      if (/^\/api\/org\/drafts\/[^/]+\/decide$/.test(url)) return json(200, { status: "open", changes: 2, blocked: 0, blockedLines: [], youMayPublish: false, adminMayPublish: false, youMayPutToVillage: false, ballot: null, ...(opts.decide ?? {}) });
+      if (/^\/api\/admin\/org\/drafts\/[^/]+\/preview$/.test(url))
+        return opts.preview === 401 ? json(401, { error: "auth_required" }) : json(200, { lines: [{ changeId: "c1", reads: "Make the role Seed Keeper in the Garden circle", blocked: null }, { changeId: "c2", reads: "Give Seed Keeper one seat", blocked: null }], blocked: 0 });
+      if (url.includes("/publish") || url.endsWith("/put-to-village")) return json(200, { success: true });
       return json(404, {});
     }),
   );
@@ -191,5 +195,80 @@ describe("deciding on /admin/review", () => {
     expect(screen.queryByTestId("tab-held")).toBeNull();
     expect(screen.queryByTestId("tab-decided")).toBeNull();
     expect(calls.some((c) => c.url.startsWith("/api/admin/proposals"))).toBe(false);
+  });
+});
+
+describe("every row says what it is and what deciding it does (lane 4c)", () => {
+  const draft = { key: "structure:dr_1", source: "structure", kind: "org_draft", code: null, summary: "Add a Seed Keeper role", filedAt: null, batch: null, decideAt: "/admin?tab=org-chart", touchesPerson: false };
+  const claim = { key: "claim:c1", source: "claim", kind: "quest.finished", code: null, summary: "Mend the east fence", filedAt: "2026-11-22T16:00:00.000Z", batch: null, decideAt: "/review", touchesPerson: false };
+
+  it("a row names its kind, says what deciding it does, and its door says its verb, never a bare Open", async () => {
+    stub({ changes: [PAGE], extra: [claim] });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-claim:c1");
+    expect(row.textContent).toContain("Finished work");
+    expect(row.textContent).toContain("Mend the east fence");
+    expect(row.textContent).toContain("Witnessing it records the work as done.");
+    expect(within(row).getByRole("link").textContent).toBe("Witness it");
+    expect(screen.queryByRole("link", { name: "Open" })).toBeNull();
+  });
+
+  it("groups the rows by kind with their counts, and lists the kinds at the top", async () => {
+    stub({ changes: [PAGE], extra: [claim, draft] });
+    render(<AdminReview />);
+    const kinds = await screen.findByTestId("kinds");
+    expect(within(kinds).getAllByRole("link").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
+    expect(screen.getByRole("heading", { name: "Org chart drafts 1" })).toBeTruthy();
+  });
+
+  it("an org chart draft shows what it does, line by line, and Publish publishes exactly the lines read, by the holder's door", async () => {
+    const calls = stub({ changes: [], extra: [draft], decide: { youMayPublish: true } });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_1");
+    expect(row.textContent).toContain("An org chart draft");
+    expect(row.textContent).toContain("Publishing it changes the org chart now.");
+    expect((await within(row).findByTestId("draft-lines-dr_1")).textContent).toContain("Make the role Seed Keeper in the Garden circle");
+    fireEvent.click(within(row).getByTestId("draft-publish-dr_1"));
+    expect(row.textContent).toContain("Publish this draft? Its 2 changes go onto the org chart now.");
+    expect(calls.some((c) => c.method === "POST")).toBe(false);
+    fireEvent.click(within(row).getByTestId("draft-yes-dr_1"));
+    await waitFor(() => expect(calls.find((c) => c.method === "POST")).toMatchObject({ url: "/api/org/drafts/dr_1/publish-by-power", body: { expectedChanges: ["c1", "c2"] } }));
+    expect((await screen.findByTestId("row-notice")).textContent).toBe("Published. The org chart has changed.");
+  });
+
+  it("an admin before launch publishes by the admin panel's door; somebody who may only put it to the village gets that", async () => {
+    const calls = stub({ changes: [], extra: [draft], decide: { adminMayPublish: true } });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_1");
+    fireEvent.click(await within(row).findByTestId("draft-publish-dr_1"));
+    fireEvent.click(within(row).getByTestId("draft-yes-dr_1"));
+    await waitFor(() => expect(calls.find((c) => c.method === "POST")?.url).toBe("/api/admin/org/drafts/dr_1/publish"));
+    cleanup();
+    const calls2 = stub({ changes: [], extra: [draft], decide: { youMayPutToVillage: true }, preview: 401 });
+    render(<AdminReview />);
+    const row2 = await screen.findByTestId("row-structure:dr_1");
+    expect(within(row2).queryByTestId("draft-publish-dr_1")).toBeNull();
+    fireEvent.click(await within(row2).findByTestId("draft-put-dr_1"));
+    fireEvent.click(within(row2).getByTestId("draft-yes-dr_1"));
+    await waitFor(() => expect(calls2.find((c) => c.method === "POST")?.url).toBe("/api/org/drafts/dr_1/put-to-village"));
+  });
+
+  it("a draft this person may not decide, or one under a vote, keeps only its door to be read", async () => {
+    stub({ changes: [], extra: [draft], decide: { youMayPublish: true, ballot: { id: "b1", closesAt: "2026-11-30T12:00:00.000Z" } } });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_1");
+    expect((await within(row).findByText(/The village is voting on this draft/)).textContent).toBe("The village is voting on this draft. The vote closes Nov 30.");
+    expect(within(row).queryByTestId("draft-publish-dr_1")).toBeNull();
+    expect(within(row).getByRole("link").textContent).toBe("Read the draft");
+  });
+
+  it("?kind= shows one kind, says so, and offers everything back", async () => {
+    stub({ changes: [PAGE], extra: [claim, draft] });
+    window.history.replaceState(null, "", "/admin/review?kind=structure");
+    render(<AdminReview />);
+    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. Show everything");
+    expect(screen.getByTestId("row-structure:dr_1")).toBeTruthy();
+    expect(screen.queryByTestId("row-claim:c1")).toBeNull();
+    expect(screen.queryByTestId("kinds")).toBeNull();
   });
 });

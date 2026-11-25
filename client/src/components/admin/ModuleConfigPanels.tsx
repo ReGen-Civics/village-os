@@ -25,14 +25,13 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Coins, MessageSquare, Wrench } from "lucide-react";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 const inputCls =
   "border border-gray-200 rounded-lg px-2 py-1.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-teal-deep";
 const btnCls =
   "min-h-[44px] px-3 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-deep disabled:opacity-40";
-const saveCls =
-  "min-h-[44px] px-4 text-sm rounded-lg bg-teal-deep text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep disabled:opacity-40";
 
 /**
  * Read the live config for one module, hand it to a caller, and write back the
@@ -67,7 +66,11 @@ export function useModuleConfig(moduleId: string, password: string) {
 
   useEffect(() => { void load(); }, [load]);
 
-  const save = async (patch: Record<string, unknown>): Promise<boolean> => {
+  /**
+   * The write, answering the save bar's shape: ok, or the server's refusal in
+   * its own words. Nothing is said here; the bar says "Saved" or the reason.
+   */
+  const write = async (patch: Record<string, unknown>): Promise<SaveResult> => {
     let live: any = config ?? {};
     try {
       const res = await fetch(`${API_BASE}/admin/modules`, { headers: authHeaders(password) });
@@ -80,12 +83,59 @@ export function useModuleConfig(moduleId: string, password: string) {
       body: JSON.stringify({ config: { ...live, ...patch } }),
     });
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) { toast.error(refusal(d, "That did not save")); return false; }
+    if (!res.ok) return { ok: false, reason: refusal(d, "That did not save") };
     setConfig(d.config ?? { ...live, ...patch });
-    return true;
+    return { ok: true };
   };
 
-  return { config, lifecycle, loading, save, reload: load };
+  /** The same write for a panel with its own button: a refusal is a toast, the answer a boolean. */
+  const save = async (patch: Record<string, unknown>): Promise<boolean> => {
+    const r = await write(patch);
+    if (!r.ok) toast.error(r.reason ?? "That did not save");
+    return r.ok;
+  };
+
+  return { config, lifecycle, loading, save, write, reload: load };
+}
+
+/**
+ * ONE WAY TO SAVE (Admin evolution, the lead's ask of 25 Nov 2026: "whenever
+ * I'm changing a setting, have it pop up ... so I can immediately save it").
+ *
+ * A panel here keeps its draft as it always did and hands this the payload it
+ * would write and the payload the stored config already holds. When they
+ * differ, the one save bar at the foot of the screen counts the change
+ * (components/SaveBar.tsx; several panels on one page share one bar), and its
+ * Save writes through `write` above, its Discard puts the draft back.
+ */
+export function ConfigSaveBar({
+  draft,
+  stored,
+  write,
+  onDiscard,
+  onSaved,
+  what,
+}: {
+  draft: unknown;
+  stored: unknown;
+  write: () => Promise<SaveResult>;
+  onDiscard: () => void;
+  onSaved?: () => void;
+  what: string;
+}) {
+  const dirty = JSON.stringify(draft) !== JSON.stringify(stored);
+  return (
+    <SaveBar
+      count={dirty ? 1 : 0}
+      what={what}
+      onDiscard={onDiscard}
+      onSave={async () => {
+        const r = await write();
+        if (r.ok) onSaved?.();
+        return r;
+      }}
+    />
+  );
 }
 
 /**
@@ -148,9 +198,8 @@ const toRefs = (rows: CampaignRow[]) =>
  */
 export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: string; onSaved?: () => void }) {
   const { t } = useLingui();
-  const { config, lifecycle, loading, save } = useModuleConfig("crowdpool", password);
+  const { config, lifecycle, loading, write } = useModuleConfig("crowdpool", password);
   const [rows, setRows] = useState<CampaignRow[]>([]);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => { setRows(toRows(config?.villageCampaigns)); }, [config]);
 
@@ -206,14 +255,15 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
         <div className="flex flex-wrap gap-2 mt-4">
           <button type="button" className={btnCls}
             onClick={() => setRows([...rows, { slug: "", id: "", hubBaseUrl: "" }])}><Trans context="ModuleConfigPanels, button">Link a campaign</Trans></button>
-          <button type="button" className={saveCls} disabled={saving}
-            onClick={async () => {
-              setSaving(true);
-              const ok = await save({ villageCampaigns: toRefs(rows) });
-              setSaving(false);
-              if (ok) { toast.success(t({ message: "Linked campaigns saved", context: "ModuleConfigPanels, toast" })); onSaved?.(); }
-            }}>{saving ? "Saving…" : "Save links"}</button>
         </div>
+        <ConfigSaveBar
+          draft={toRefs(rows)}
+          stored={toRefs(toRows(config?.villageCampaigns))}
+          write={() => write({ villageCampaigns: toRefs(rows) })}
+          onDiscard={() => setRows(toRows(config?.villageCampaigns))}
+          onSaved={onSaved}
+          what={t({ message: "the linked campaigns", context: "ModuleConfigPanels, save bar" })}
+        />
       </div>
     </div>
   );
@@ -296,6 +346,12 @@ const toCategories = (list: any): CategoryRow[] =>
     locked: true,
   }));
 
+/** What the category editor writes: blank rows dropped, words trimmed. */
+const categoryPayload = (rows: CategoryRow[]) =>
+  rows
+    .filter((r) => r.id.trim() && r.label.trim())
+    .map((r) => ({ id: r.id.trim(), label: r.label.trim(), sortOrder: Number(r.sortOrder) || 0 }));
+
 /**
  * The category editor both the forum and the tools hub were missing.
  *
@@ -315,9 +371,8 @@ export function CategoryListEditor({
   icon: React.ReactNode;
 }) {
   const { t } = useLingui();
-  const { config, lifecycle, loading, save } = useModuleConfig(moduleId, password);
+  const { config, lifecycle, loading, write } = useModuleConfig(moduleId, password);
   const [rows, setRows] = useState<CategoryRow[]>([]);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => { setRows(toCategories(config?.categories)); }, [config]);
 
@@ -373,18 +428,14 @@ export function CategoryListEditor({
       <div className="flex flex-wrap gap-2 mt-4">
         <button type="button" className={btnCls}
           onClick={() => setRows([...rows, { id: "", label: "", sortOrder: rows.length + 1, locked: false }])}><Trans context="ModuleConfigPanels, button">Add a category</Trans></button>
-        <button type="button" className={saveCls} disabled={saving}
-          onClick={async () => {
-            setSaving(true);
-            const ok = await save({
-              categories: rows
-                .filter((r) => r.id.trim() && r.label.trim())
-                .map((r) => ({ id: r.id.trim(), label: r.label.trim(), sortOrder: Number(r.sortOrder) || 0 })),
-            });
-            setSaving(false);
-            if (ok) toast.success(t({ message: "Categories saved", context: "ModuleConfigPanels, toast" }));
-          }}>{saving ? "Saving…" : "Save categories"}</button>
       </div>
+      <ConfigSaveBar
+        draft={categoryPayload(rows)}
+        stored={categoryPayload(toCategories(config?.categories))}
+        write={() => write({ categories: categoryPayload(rows) })}
+        onDiscard={() => setRows(toCategories(config?.categories))}
+        what={t({ message: `the ${moduleName} categories`, context: "ModuleConfigPanels, save bar" })}
+      />
       <p className="text-[11px] text-gray-400 mt-2">
         <Trans context="ModuleConfigPanels, p">Removing a category leaves anything already filed under it pointing at a
         name nobody can pick again. Rename the label instead when what you want
@@ -413,16 +464,21 @@ export function CategoryListEditor({
  */
 export function ResourcesRoutingEditor({ password }: { password: string }) {
   const { t } = useLingui();
-  const { config, loading, save } = useModuleConfig("resources", password);
+  const { config, loading, write } = useModuleConfig("resources", password);
   const forum = useModuleConfig("forum", password);
   const [category, setCategory] = useState("");
   const [visibleTo, setVisibleTo] = useState("members");
-  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setCategory(String(config?.requestCategory ?? "governance"));
-    setVisibleTo(config?.measuredVisibleTo === "admins" ? "admins" : "members");
-  }, [config]);
+  const storedRouting = () => ({
+    requestCategory: String(config?.requestCategory ?? "governance"),
+    measuredVisibleTo: config?.measuredVisibleTo === "admins" ? "admins" : "members",
+  });
+  const reset = () => {
+    const r = storedRouting();
+    setCategory(r.requestCategory);
+    setVisibleTo(r.measuredVisibleTo);
+  };
+  useEffect(reset, [config]);
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
@@ -473,13 +529,13 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
         </fieldset>
       </div>
 
-      <button type="button" className={`${saveCls} mt-3`} disabled={saving}
-        onClick={async () => {
-          setSaving(true);
-          const ok = await save({ requestCategory: category, measuredVisibleTo: visibleTo });
-          setSaving(false);
-          if (ok) toast.success(t({ message: "Saved. /resources reads it on the next request", context: "ModuleConfigPanels, toast" }));
-        }}>{saving ? "Saving…" : "Save routing"}</button>
+      <ConfigSaveBar
+        draft={{ requestCategory: category, measuredVisibleTo: visibleTo }}
+        stored={storedRouting()}
+        write={() => write({ requestCategory: category, measuredVisibleTo: visibleTo })}
+        onDiscard={reset}
+        what={t({ message: "the resources routing", context: "ModuleConfigPanels, save bar" })}
+      />
     </div>
   );
 }
@@ -500,17 +556,18 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
  */
 export function AutomationConfigEditor({ password }: { password: string }) {
   const { t } = useLingui();
-  const { config, lifecycle, loading, save } = useModuleConfig("automation", password);
+  const { config, lifecycle, loading, write } = useModuleConfig("automation", password);
   const [channel, setChannel] = useState("");
   const [queue, setQueue] = useState("15");
   const [category, setCategory] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  const reset = () => {
     setChannel(String(config?.youtubeChannelId ?? ""));
     setQueue(String(config?.maxReadyQueue ?? 15));
     setCategory(String(config?.forumCategory ?? ""));
-  }, [config]);
+  };
+  useEffect(reset, [config]);
+  const automationPayload = (c: string, q: string, f: string) => ({ youtubeChannelId: c.trim(), maxReadyQueue: Number(q), forumCategory: f.trim() });
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
@@ -542,17 +599,13 @@ export function AutomationConfigEditor({ password }: { password: string }) {
         </label>
       </div>
 
-      <button type="button" className={`${saveCls} mt-3`} disabled={saving}
-        onClick={async () => {
-          setSaving(true);
-          const ok = await save({
-            youtubeChannelId: channel.trim(),
-            maxReadyQueue: Number(queue),
-            forumCategory: category.trim(),
-          });
-          setSaving(false);
-          if (ok) toast.success(t({ message: "Saved. The next sync reads it", context: "ModuleConfigPanels, toast" }));
-        }}>{saving ? "Saving…" : "Save"}</button>
+      <ConfigSaveBar
+        draft={automationPayload(channel, queue, category)}
+        stored={automationPayload(String(config?.youtubeChannelId ?? ""), String(config?.maxReadyQueue ?? 15), String(config?.forumCategory ?? ""))}
+        write={() => write(automationPayload(channel, queue, category))}
+        onDiscard={reset}
+        what={t({ message: "the call automation settings", context: "ModuleConfigPanels, save bar" })}
+      />
     </div>
   );
 }

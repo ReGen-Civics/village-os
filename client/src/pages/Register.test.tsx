@@ -24,6 +24,12 @@ import type { ReactNode } from "react";
 const registerMock = vi.fn();
 const village = vi.hoisted(() => ({ methods: { password: true, google: false, inviteOnly: false } }));
 
+/** The modules this village has on; the calls door follows events (whole-app QA, 25 Nov 2026). */
+const modulesOn = new Set<string>(["events"]);
+vi.mock("@/modules/ModuleProvider", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/ModuleProvider")>()),
+  useModuleOn: (id: string) => modulesOn.has(id),
+}));
 vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
@@ -233,6 +239,19 @@ describe("Register, in a village that joins by invitation", () => {
     expect(screen.getByRole("link", { name: /see calls and events/i })).toHaveAttribute("href", "/events");
     // Somebody who already belongs is not stranded here.
     expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login");
+  });
+
+  it("offers no calls door, and no call in the sentence, in a village whose calendar is off", async () => {
+    modulesOn.delete("events");
+    try {
+      renderRegister();
+      expect(await screen.findByRole("heading", { name: /need an invitation/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /ask to join/i })).toHaveAttribute("href", "/request-membership");
+      expect(screen.queryByRole("link", { name: /see calls and events/i })).toBeNull();
+      expect(document.body.textContent).not.toContain("community call");
+    } finally {
+      modulesOn.add("events");
+    }
   });
 
   it("opens the form for somebody holding a good link, says who sent it, and sends the link with the account", async () => {

@@ -9,13 +9,14 @@
  * paths carry their glyphs on their menu entries (config/nav.ts) and need no
  * row here. Loaded after the first paint (routeIcons.ts).
  */
-import { Cell, CellRing, CouncilCircle, EarthshipDome, Gathering, HeartLeaf, Seed, SeedPin, Songbird, Splash, Sprout, SteppingStones, Sunrise } from "@/components/sacred/living";
+import { Cell, CellRing, CouncilCircle, EarthshipDome, Gathering, HeartLeaf, LeafCompass, SeedPin, Songbird, Splash, Sprout, SteppingStones, Sunrise } from "@/components/sacred/living";
 import type { RouteIcon } from "./routeIcons";
 
 export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
   // Home is the earthship dome, in the bar and every menu (the lead, 25 Nov 2026).
   "/": EarthshipDome,
-  "/quests": SteppingStones,
+  // The lead, 25 Nov 2026: the stones are the path now, and quests the leaf compass.
+  "/quests": LeafCompass,
   "/roles": Cell,
   "/circles": CellRing,
   "/map/circles": CellRing,
@@ -24,7 +25,7 @@ export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
   "/events": Gathering,
   "/seasonal-festivals": Sunrise,
   "/profile": Sprout,
-  "/path": Seed,
+  "/path": SteppingStones,
   // How the village decides: the council circle, as the welcome page's "How we decide" door draws it.
   "/governance": CouncilCircle,
   "/decisions": CouncilCircle,

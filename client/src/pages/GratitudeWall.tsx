@@ -102,6 +102,8 @@ export default function GratitudeWall() {
   const [heroExamples, setHeroExamples] = useState(false);
   // Null until the first read lands: an empty array is a claim that the wall is empty.
   const [wall, setWall] = useState<WallEntry[] | null>(null);
+  /* A wall that could not be read is not an empty wall (whole-app QA, 25 Nov 2026): it used to say "No thanks on the wall yet". */
+  const [wallFailed, setWallFailed] = useState(false);
   // undefined = not loaded (or the load failed); null = loaded, no game state.
   // fetchGameMe returns null for BOTH a 500 and a real absence, so without
   // this distinction a failed fetch rendered as a factual claim about the
@@ -198,15 +200,16 @@ export default function GratitudeWall() {
 
   const load = (afterSend = false) => {
     fetch("/api/game/gratitude/wall")
-      .then((r) => (r.ok ? r.json() : []))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d) => {
         const rows = newestFirst(Array.isArray(d) ? (d as WallEntry[]) : []);
         setWall(rows);
+        setWallFailed(false);
         // The thread the lantern became: the newest thanks, when it is ours.
         const top = rows[0];
         if (afterSend && top && myKey && personKey(top.from) === myKey) setFresh(pairKey(top.from, top.to));
       })
-      .catch(() => setWall((w) => w ?? []));
+      .catch(() => setWallFailed(true));
     // The count is re-read from whatever budget comes BACK, so a send that
     // moves the cycle boundary still counts against the right lunation.
     fetchGameMe().then((fresh) => {
@@ -362,7 +365,14 @@ export default function GratitudeWall() {
                 </section>
               )}
 
-              {wall === null ? null : wall.length === 0 ? (
+              {wall === null ? (
+                wallFailed ? (
+                  <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
+                    <p className="text-sm text-destructive">{t({ message: "The wall didn't load. The thanks are still there; try again in a moment.", context: "thanks wall: the wall read failed" })}</p>
+                    <button type="button" onClick={() => load()} className={BTN_SECONDARY}>{t({ message: "Try again", context: "thanks wall: retry the wall read" })}</button>
+                  </div>
+                ) : null
+              ) : wall.length === 0 ? (
                 <>
                   {/* An empty wall still opens with words: the hero's labelled examples. */}
                   <VoicesHero onExamples={setHeroExamples} />

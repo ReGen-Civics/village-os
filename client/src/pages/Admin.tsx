@@ -47,6 +47,7 @@ import ConnectorSetupPanel from "@/components/agent/ConnectorSetupPanel";
 import { adminRootClass, readAdminNight, writeAdminNight } from "@/components/admin/adminNight";
 import { AdminSeraChip, SeraAdminHome } from "@/components/admin/AdminSeraLink";
 import { tabFromSearch } from "@/components/admin/adminAreas";
+import AdminSearch from "@/components/admin/search/AdminSearch";
 import HealthStrip from "@/components/admin/HealthStrip";
 import AdminHelp from "@/components/admin/AdminHelp";
 import UndoBar from "@/components/admin/UndoBar";
@@ -7926,6 +7927,7 @@ export default function Admin() {
         extra={<AdminSeraChip password={password} />}
         defaultLocale={cfg?.defaultLocale ?? null}
         onHelper={() => setHelperOpen(true)}
+        search={<AdminSearch password={password} groups={shownGroups} onHelper={() => setHelperOpen(true)} />}
       />
       <AdminHelperHost
         open={helperOpen}

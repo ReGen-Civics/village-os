@@ -2293,6 +2293,41 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) .text-teal-deep:not(.admin-root *) {
   color: var(--tone-brand-text, var(--foreground));
 }
+/*
+ * THE STONE FAMILY, AND THE AMBER WASHES (whole-app QA, 25 Nov 2026). The
+ * rules above followed the gray family, but most of the older pages paint with
+ * stone (743 `text-stone-*` classes outside Admin and the profile on that day),
+ * so on those pages in dark mode the `bg-white` panel went dark while its
+ * `text-stone-700` stayed dark on it, and a `bg-stone-50` band stayed light under
+ * text that had moved light. Measured on a local build: the /changes heading at
+ * 1.12:1 and the /game-mechanics error line at 1.45:1. The same tokens as the gray
+ * rules, so nothing new needs measuring; each page still moves to the sheet's
+ * tokens in its own time (docs/DESIGN_RULE.md).
+ */
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-stone-50, .bg-neutral-50):not(.admin-root *) {
+  background-color: var(--card);
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-stone-100, .bg-stone-200, .bg-neutral-100):not(.admin-root *) {
+  background-color: var(--muted);
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.bg-amber-50, .bg-amber-100):not(.admin-root *) {
+  background-color: color-mix(in srgb, var(--color-amber-ink) 14%, var(--card));
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.hover\:bg-stone-50, .hover\:bg-stone-100):hover:not(.admin-root *) {
+  background-color: var(--muted);
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.text-stone-950, .text-stone-900, .text-stone-800, .text-stone-700, .text-neutral-900, .text-neutral-800, .text-neutral-700):not(.admin-root *) {
+  color: var(--foreground);
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.text-stone-600, .text-stone-500, .text-stone-400, .text-neutral-600, .text-neutral-500, .text-neutral-400):not(.admin-root *) {
+  color: var(--muted-foreground);
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.text-amber-700, .text-amber-800, .text-amber-900):not(.admin-root *) {
+  color: var(--sheet-earned, var(--foreground));
+}
+:root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) :is(.border-stone-100, .border-stone-200, .border-stone-300, .border-amber-200, .border-amber-300):not(.admin-root *) {
+  border-color: var(--border);
+}
 /* Depth on a dark ground, as `.sheet-night .shadow-sm` above has it. */
 :root:is([data-scheme="dark"]:not([data-mode="light"]), [data-mode="dark"]) .shadow-sm:not(.admin-root *) {
   box-shadow: var(--sheet-shadow, 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 40px -22px rgb(0 0 0 / 0.9));
@@ -3010,4 +3045,17 @@ html:has(#sera-changes [data-sera-strip-on]) {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   35% { transform: translateY(-2px) rotate(-1.2deg); }
   65% { transform: translateY(0) rotate(0.8deg); }
+}
+
+/* Follow-ups (profile overhaul, Direction D): a ticked row's sprout grows from the soil. Reduced motion shows it
+   grown, with no movement. */
+@media (prefers-reduced-motion: no-preference) {
+  .follow-sprout {
+    transform-origin: 50% 90%;
+    animation: follow-sprout var(--m-grow) var(--m-ease-sprout);
+  }
+  @keyframes follow-sprout {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+  }
 }

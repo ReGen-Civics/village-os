@@ -32,7 +32,7 @@
  * missing or unreadable, the file list unavailable, shard counts that disagree).
  *
  * Usage (CI, after downloading every shard's report into one directory):
- *   node scripts/check-test-shards.mjs --shards 4 --dir test-results
+ *   node scripts/check-test-shards.mjs --shards 6 --dir test-results
  * Report names are shard-<i>-of-<N>-attempt-<run_attempt>.json; see latestAttempts.
  * Self-test: node scripts/check-test-shards.test.mjs
  */

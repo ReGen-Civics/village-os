@@ -193,6 +193,8 @@ export default function RoleDraft() {
   const villageName = useVillageName();
   const cast = useCast();
   const places = usePlaceInvites();
+  // The Living Map door opens only while the map does (whole-app QA, 25 Nov 2026): map ships off.
+  const mapOn = useModuleOn("map");
   const form = useProposalForm();
   /** What the role asks, read from its own terms first (a role that asks 100% says 100%), then from its card's line. */
   const commitmentLine = (roleId: string, fromCard: string | null): string => {
@@ -742,7 +744,7 @@ export default function RoleDraft() {
                       ))}
                     </ul>
                   </li>
-                ) : (
+                ) : mapOn ? (
                   <li>
                     <Link href="/map" className={`jw-btn min-h-14 ${DOOR}`}>
                       <SeedPin className="size-5 shrink-0 text-notice" aria-hidden="true" />
@@ -750,7 +752,7 @@ export default function RoleDraft() {
                       <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                     </Link>
                   </li>
-                )}
+                ) : null}
               </ul>
             </div>
           </section>

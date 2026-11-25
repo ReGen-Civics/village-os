@@ -118,3 +118,18 @@ describe("a role's own page", () => {
     expect(document.querySelector("[data-lead-builds]")).toBeNull();
   });
 });
+
+/*
+ * THE PROPOSE DOORS ARE A MEMBER'S (whole-app QA, 25 Nov 2026). They lead to the role-proposal form, which
+ * needs the governance module and a member; a visitor on a shared link was being sent to a sign-in or
+ * module-off card. The reader here is signed out.
+ */
+describe("a visitor on a role's shared link", () => {
+  it("is offered no door to propose the role", async () => {
+    at("/roles/garden-steward");
+    await waitFor(() => {
+      if (!document.querySelector('[data-role-page-record]')) throw new Error("no record yet");
+    });
+    expect(screen.queryByRole("link", { name: /propose this role/i })).toBeNull();
+  });
+});

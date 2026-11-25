@@ -94,6 +94,8 @@ export default function Messages() {
 function Inbox() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<InboxConversation[]>([]);
+  /* A failed inbox read is not an empty inbox (whole-app QA, 25 Nov 2026): it used to say "No conversations yet". */
+  const [inboxFailed, setInboxFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [composing, setComposing] = useState(false);
   // `?new=1` opens the composer: the shortcuts button's "New conversation".
@@ -115,9 +117,9 @@ function Inbox() {
       return;
     }
     fetch("/api/messages", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setConversations(Array.isArray(d?.conversations) ? d.conversations : []))
-      .catch(() => {})
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setConversations(Array.isArray(d?.conversations) ? d.conversations : []); setInboxFailed(false); })
+      .catch(() => setInboxFailed(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -156,7 +158,14 @@ function Inbox() {
 
         {loading && <p className="text-sm text-muted-foreground py-8 text-center"><Trans context="Messages, p">Loading your conversations…</Trans></p>}
 
-        {!loading && !ordered.length && (
+        {!loading && inboxFailed && (
+          <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
+            <p className="text-sm text-foreground"><Trans context="messages: the inbox read failed">Your conversations didn't load. They are safe; try again in a moment.</Trans></p>
+            <button type="button" onClick={load} className="jw-btn inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"><Trans context="messages: retry the inbox read">Try again</Trans></button>
+          </div>
+        )}
+
+        {!loading && !inboxFailed && !ordered.length && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <MushroomNetwork className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
             <p className="font-semibold text-foreground mb-1"><Trans context="Messages, p">No conversations yet</Trans></p>

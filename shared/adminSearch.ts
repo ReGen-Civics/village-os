@@ -100,6 +100,18 @@ export const TAB_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
   brain: ["village brain", "what the guide knows", "memory"],
 };
 
+/**
+ * A page's first act, which takes the focus when a search lands on the page
+ * itself. A dialog focuses its first control for the same reason: the lead
+ * typed "mail settings", pressed Enter, and wanted Send me a test in front of
+ * them, not the top of a page to read down. Only pages whose first act is
+ * safe to have focused (focusing never presses it) are listed.
+ */
+export const TAB_FIRST_CONTROL: Readonly<Record<string, string>> = {
+  "comms-settings": "comms.test-email",
+  "email-settings": "comms.test-email",
+};
+
 // ── Controls: the buttons and fields a page lands on ───────────────────────
 
 /** The prefix every mail checklist control's id carries (`comms.<SetupKey>`). */
@@ -238,6 +250,8 @@ export function adminSearchHref(e: Pick<AdminSearchEntry, "id" | "kind" | "tab" 
   const tab = e.tab ?? "home";
   if (e.kind === "dial") return `/admin?tab=variables&variable=${encodeURIComponent(e.id.replace(/^dial\./, ""))}`;
   if (e.kind === "control") return `/admin?tab=${encodeURIComponent(tab)}&setting=${encodeURIComponent(e.id)}`;
+  const first = TAB_FIRST_CONTROL[tab];
+  if (first) return `/admin?tab=${encodeURIComponent(tab)}&setting=${encodeURIComponent(first)}`;
   return `/admin?tab=${encodeURIComponent(tab)}`;
 }
 
