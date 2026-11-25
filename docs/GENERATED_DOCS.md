@@ -1,6 +1,6 @@
 # Generated docs: main owns them
 
-Eight files are written by generators out of the code. A pull request never commits them.
+Nine files are written by generators out of the code. A pull request never commits them.
 Main regenerates them after every merge.
 
 | File | Generator | Kind |
@@ -13,13 +13,20 @@ Main regenerates them after every merge.
 | `docs/CAPABILITIES.md` | `scripts/generate-capabilities-doc.mjs` | whole file |
 | `docs/ECONOMICS.md` | `scripts/generate-economics-doc.mjs` | only the `<!-- generated:NAME start/end -->` regions; the prose around them is a person's |
 | `client/src/locales/en.po` | `pnpm i18n:extract` (lingui) | whole file |
+| `client/src/locales/es.po` | `scripts/fold-po-fragments.mjs`, then `pnpm i18n:extract` | whole file |
 
 The registry is `GENERATED_FILES` in `scripts/lib/generatedDocs.mjs`. Add a new generated file there
 first; the guard and the tests read that list.
 
-`client/src/locales/es.po` is not on the list: it holds people's translations, so a pull request that
-translates a string edits it. The workflow's extraction keeps its structure (new messages, obsolete
-ones) current without touching a translation.
+`client/src/locales/es.po` holds people's translations, and it is on the list anyway (the lead,
+24 Nov 2026): every landing rewrote it, so every open translation pull request conflicted on it. A
+pull request puts its Spanish in a fragment, `client/src/locales/es.d/<name>.po`, holding only the
+entries it adds or changes. The workflow folds every fragment into `es.po` and deletes it before it
+extracts, so the bot's one commit carries both. A fragment wins over `es.po` on the same `msgctxt` and
+`msgid`; between two fragments that disagree the later filename wins on main, and the catalog check
+fails any pull request holding both. Until the fold, every reader (the catalog build, the catalog check,
+the coverage measure) reads `es.po` with the fragments folded in. The rules are in
+`scripts/lib/poFragments.mjs`; `docs/I18N.md` says how to write one.
 
 ## Why
 
@@ -97,7 +104,7 @@ hold on the new repository:
 ## For lane briefs and the integrator
 
 One line for every lane brief: "Do not run or commit the generators' output (GOVERNANCE.md, ECONOMICS.md
-regions, TOKENS.md, VARIABLES.md, MODULES.md, CAPABILITIES.md, en.po); main regenerates them after the merge."
+regions, TOKENS.md, VARIABLES.md, MODULES.md, CAPABILITIES.md, en.po, es.po); main regenerates them after the merge."
 
 Integrator compose checklist: do not regenerate or re-extract on the composed tree, and do not commit
 generated files in a batch commit. Read the job summary for the GOVERNANCE.md and ECONOMICS.md diffs

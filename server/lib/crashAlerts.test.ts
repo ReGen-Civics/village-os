@@ -121,6 +121,15 @@ describe("crashAlertNotifier", () => {
   });
 });
 
+describe("an alert with its own words", () => {
+  it("hands the body and the link to every notice and every plain address", async () => {
+    const s = sink("founder@example.org, inbox@ops.example");
+    await s.send("Crash on /apply: n is null", "client-crash:abc:1", { body: "Seen 3 times.", link: "/village-health#crash-abc" });
+    expect(s.notify).toHaveBeenCalledWith({ userId: "f1", type: "crash_alert", title: "Crash on /apply: n is null", body: "Seen 3 times.", link: "/village-health#crash-abc", dedupeKey: "client-crash:abc:1:f1", actorUserId: null });
+    expect(s.email).toHaveBeenCalledWith(expect.objectContaining({ to: "inbox@ops.example", body: "Seen 3 times.", link: "/village-health#crash-abc" }));
+  });
+});
+
 describe("crash_alert email cadence", () => {
   it("is immediate, honours the global switch, and leaves payments_alert as it was", () => {
     const on = resolveNotifyPrefs({});
@@ -170,6 +179,15 @@ describe("crashAlertMailer", () => {
     expect(e.html).toContain("Test &lt;Village&gt;");
     expect(e.text).toContain("https://village.example/admin");
     expect(e.text).toContain("crash alert list");
+  });
+
+  it("a browser crash's email carries its triage words and links its signature (25 Nov 2026)", async () => {
+    const o = office();
+    await o.mailer({ to: "inbox@ops.example", title: "Crash on /apply: n is null", body: "Page: /apply. Browser: <in-app> browser (iOS).", link: "/village-health#crash-abc", idempotencyKey: "client-crash:abc:1:to:x" });
+    const e = o.posted[0];
+    expect(e.html).toContain("Page: /apply. Browser: &lt;in-app&gt; browser (iOS).");
+    expect(e.html).toContain("https://village.example/village-health#crash-abc");
+    expect(e.text).toContain("Page: /apply. Browser: <in-app> browser (iOS).");
   });
 
   it("dedupe: the same crash reported again to the same address is one email", async () => {

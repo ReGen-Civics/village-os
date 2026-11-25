@@ -28,7 +28,7 @@ import { useNewcomerShows } from "@/lib/newcomer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGameConfig } from "@/lib/gameApi";
 import { GAME_CONFIG } from "@shared/gameConfig";
-import { routeIcon } from "@/config/routeIcons";
+import { routeIcon, useRouteIcons } from "@/config/routeIcons";
 import { useEffect, useState } from "react";
 
 /** The current route with query and trailing slash removed. */
@@ -217,6 +217,8 @@ export default function MobileTabBar() {
   // whose page is not open (its module off, or hidden) keeps the platform's
   // tab in that place, so the bar never offers a door that does not open.
   const menu = useVillageMenu();
+  // A responsive place wears its page's icon once the set has landed (config/routeIcons.ts).
+  useRouteIcons();
   const modules = useModules();
   const { newcomer, shows } = useNewcomerShows();
   const responsive = useResponsiveTabs(currentPath);

@@ -1,8 +1,9 @@
-import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { LOCALES, OFFER_FLOOR, offerLocaleKey, villageLocaleTags } from "./i18nLocales";
 import { VARIABLES_BY_KEY } from "./gameVariables";
+// @ts-expect-error - scripts/ is untyped JavaScript, deliberately outside tsconfig
+import { catalogLocales, mergedPoText } from "../scripts/lib/poFragments.mjs";
 
 /**
  * A LANGUAGE IS OFFERED ONLY WITH REAL COVERAGE (the lead, 24 Nov 2026). The
@@ -31,9 +32,9 @@ function translatedShare(po: string): { share: number; total: number } {
 describe("every offered language has a catalog and real coverage", () => {
   for (const l of LOCALES.filter((x) => x.tier !== "source")) {
     it(`${l.tag}: a PO file translating at least ${OFFER_FLOOR * 100}% of the messages`, () => {
-      const file = path.join(LOCALES_DIR, `${l.tag}.po`);
-      expect(fs.existsSync(file), `client/src/locales/${l.tag}.po`).toBe(true);
-      const { share, total } = translatedShare(fs.readFileSync(file, "utf8"));
+      // The catalog with its pull requests' fragments folded in (scripts/lib/poFragments.mjs).
+      expect(catalogLocales(LOCALES_DIR), `client/src/locales/${l.tag}.po or ${l.tag}.d/`).toContain(l.tag);
+      const { share, total } = translatedShare(mergedPoText(LOCALES_DIR, l.tag));
       expect(total).toBeGreaterThan(0);
       expect(share).toBeGreaterThanOrEqual(OFFER_FLOOR);
     });

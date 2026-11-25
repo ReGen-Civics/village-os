@@ -21,6 +21,7 @@
  */
 
 import { isStaleBuildMessage } from "@shared/staleBuild";
+import { isCrashNoise } from "@shared/crashNoise";
 
 export type CrashSource = "boundary" | "error" | "rejection";
 
@@ -194,25 +195,9 @@ export function reportCrash(err: unknown, source: CrashSource, sender: CrashSend
  * harmless loop notice. Reporting those would bury the real ones.
  */
 export function isNoise(message: string, stack: string): boolean {
-  if (!message || message === "Script error." || /ResizeObserver loop/.test(message)) return true;
-  // A fetch the network dropped (offline, a tunnel, a tab put away mid-request): each engine's
-  // whole message for it, and nothing about the page. Matched whole, so a real error that merely
-  // mentions a fetch is still told.
-  if (NETWORK_DROP.test(message)) return true;
-  // A global an in-app browser injects (a wallet's window.ethereum, Firefox for iOS's __firefox__, Chrome for iOS's
-  // __gCrWeb) failing in its own script: no extension:// frame to show for it, and nothing of ours in its stack.
-  // A message that names one of these AND carries a frame from our own bundle is still told.
-  if (INJECTED_GLOBAL.test(message) && !OUR_BUNDLE.test(stack)) return true;
-  return /(?:chrome|moz|safari(?:-web)?)-extension:\/\//.test(stack);
+  // The one list of rules, which the crash route applies too, for pages still running an older bundle.
+  return isCrashNoise(message, stack);
 }
-
-/** The globals in-app browsers and wallets put on a page, named in their own errors. */
-const INJECTED_GLOBAL = /\b(?:window\.)?(?:ethereum|__firefox__|__gCrWeb|__crWeb|webkit\.messageHandlers)\b/;
-/** A frame from the page's own built scripts. */
-const OUR_BUNDLE = /\/assets\/[\w.-]+\.js/;
-
-/** "TypeError: Failed to fetch" (Chromium), "Load failed" (Safari), "NetworkError when attempting to fetch resource." (Firefox). */
-const NETWORK_DROP = /^(?:TypeError: )?(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?)$/;
 
 /**
  * Listen for the window's own crashes. Called once from main.tsx.

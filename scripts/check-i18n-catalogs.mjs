@@ -12,6 +12,8 @@
  *   3. Each other PO file (a reviewed language) translates every message whose
  *      origin is in the REVIEWED SCOPE. Outside the scope a missing string
  *      falls back to English, which is honest, so it is not a failure.
+ *      Each catalog is read with its fragments (`<tag>.d/*.po`) folded in, and two
+ *      fragments that give one message different text fail here.
  *   4. Every translation, in or out of scope:
  *      - parses as ICU MessageFormat;
  *      - names exactly the source's arguments (a dropped `{count}` or a
@@ -39,6 +41,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { formatter } from "@lingui/format-po";
 import { compileMessageOrThrow } from "@lingui/message-utils/compileMessage";
+import { catalogLocales, conflicts, fragmentFiles, mergedPoText } from "./lib/poFragments.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (name) => {
@@ -190,9 +193,14 @@ export async function checkCatalogs({ dir, scope, skipExtract }) {
     for (const p of sourceProblems({ message: e.message ?? "", context: e.context })) problems.push(`en: ${p}`);
   }
   const inScope = (e) => (e.origin ?? []).some(([file]) => scope.includes(String(file).split(path.sep).join("/")));
-  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".po") && f !== "en.po").sort()) {
-    const locale = file.slice(0, -3);
-    const cat = await read(path.join(dir, file), locale);
+  for (const locale of catalogLocales(dir)) {
+    // The catalog as its fragments will make it (scripts/lib/poFragments.mjs). Two fragments
+    // that disagree on one message are a problem here, before main's fold would refuse them.
+    const frags = fragmentFiles(dir, locale).map((f) => ({ name: path.relative(dir, f).split(path.sep).join("/"), text: fs.readFileSync(f, "utf8") }));
+    const clash = conflicts(frags);
+    for (const c of clash) problems.push(`${locale}: "${c.key}" is given different text by ${c.files.join(" and ")}`);
+    if (clash.length) continue;
+    const cat = await po.parse(mergedPoText(dir, locale), { locale, sourceLocale: "en", filename: path.join(dir, `${locale}.po`) });
     for (const [id, source] of Object.entries(en)) {
       if (source.obsolete) continue;
       const t = cat[id];

@@ -112,6 +112,20 @@ describe("error delivery is reported, not assumed", () => {
     expect(reachedSomebody(second)).toBe(false);
     expect(guardedFetchJson).toHaveBeenCalledTimes(1);
   });
+
+  it("an alert with its own words sends them under its own key, and a new key is not a repeat (25 Nov 2026)", async () => {
+    delete process.env.ERROR_WEBHOOK_URL;
+    const notifyAdmins = vi.fn(async () => {});
+    wireErrorReporting({ notifyAdmins, instanceLabel: "a village" });
+    const err = new Error("n is null");
+    const alert = { title: "Crash on /apply: n is null", body: "Seen once.", link: "/village-health#crash-abc", dedupeKey: "client-crash:abc:1" };
+    await reportError(err, { where: "browser on /apply", alert });
+    expect(notifyAdmins).toHaveBeenCalledWith("Crash on /apply: n is null", "client-crash:abc:1", { body: "Seen once.", link: "/village-health#crash-abc" });
+    // The next day's email for the same crash is a new key, so the hour's in-memory repeat check does not swallow it.
+    const next = await reportError(err, { where: "browser on /apply", alert: { ...alert, dedupeKey: "client-crash:abc:2" } });
+    expect(next.suppressed).toBe(false);
+    expect(notifyAdmins).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("what the terminal handler answers", () => {
