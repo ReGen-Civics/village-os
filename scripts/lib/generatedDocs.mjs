@@ -4,7 +4,7 @@
  * (Rye, 2026-11-09: "figure out a way to improve the work flow of that
  * governance document ... put in a permanent solution".)
  *
- * THE PROBLEM THIS ENDS. Eight files are written by generators out of the code.
+ * THE PROBLEM THIS ENDS. Eight files were written by generators out of the code.
  * Every pull request that added a route or a capability had to commit them
  * regenerated, so every landing on main made every open pull request conflict
  * on them, GitHub ran no CI on a conflicted pull request, and about twelve
@@ -54,6 +54,15 @@ export const GENERATED_FILES = [
   { path: "docs/MODULES.md", kind: "whole", generator: "scripts/generate-modules-doc.mjs", seen: false },
   { path: "docs/CAPABILITIES.md", kind: "whole", generator: "scripts/generate-capabilities-doc.mjs", seen: false },
   { path: "client/src/locales/en.po", kind: "whole", generator: "pnpm i18n:extract", seen: false },
+  // A pull request adds its Spanish as a fragment, client/src/locales/es.d/<name>.po, and main folds
+  // it in after the merge (scripts/lib/poFragments.mjs; the lead, 24 Nov 2026).
+  {
+    path: "client/src/locales/es.po",
+    kind: "whole",
+    generator: "scripts/fold-po-fragments.mjs",
+    seen: false,
+    why: "main folds the fragments into this file; add yours as client/src/locales/es.d/<name>.po",
+  },
 ];
 
 /** Region markers of a half-generated file, as generate-economics-doc.mjs writes them. */

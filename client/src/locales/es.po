@@ -1389,6 +1389,13 @@ msgctxt "Admin, h3"
 msgid "Badge definitions"
 msgstr "Definiciones de insignias"
 
+#. placeholder {0}: s.browsers.join(", ")
+#. placeholder {1}: s.routes.join(", ")
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "Browsers: {0}. Pages: {1}."
+msgstr ""
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: r.name
 #: client/src/components/admin/OrgAccountsPanel.tsx
@@ -9339,6 +9346,12 @@ msgstr "No se pudo cargar la configuración de correo"
 msgctxt "AttendanceList, button"
 msgid "Everyone who said yes came"
 msgstr "Vinieron todos los que dijeron que sí"
+
+#. placeholder {0}: s.topFrame
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "A frame is from our own code: {0}."
+msgstr ""
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleCard/OrgChartTile.tsx
@@ -23922,6 +23935,12 @@ msgctxt "open work filter: quests that ask between a quarter and most of a perso
 msgid "Medium, 26 to 60%"
 msgstr "Media, de 26 a 60%"
 
+#. placeholder {0}: new Date(s.emailedAt).toLocaleString()
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "Last emailed {0}."
+msgstr ""
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -38195,6 +38214,11 @@ msgctxt "voice invite"
 msgid "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again."
 msgstr "No llegó ningún sonido a la grabación, así que no hay nada que guardar. Revisa que tu micrófono esté encendido y graba de nuevo."
 
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "No frame from our own code."
+msgstr ""
+
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
 msgid "Tap the mic in any answer below to say it instead of typing it."
@@ -40953,6 +40977,11 @@ msgstr "Este navegador no escribe tus palabras mientras hablas. Tu grabación se
 #~ msgctxt "role card rewards explainer: heading"
 #~ msgid "How the price is set"
 #~ msgstr ""
+
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "Each crash once"
+msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/RedemptionPanel.tsx
@@ -55194,6 +55223,11 @@ msgstr "Elegir"
 #~ msgid "Not ready for a role yet"
 #~ msgstr "Todavía no es momento para un rol"
 
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "Not emailed; counted in the daily digest."
+msgstr ""
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PowerGroupDialogs.tsx
 msgctxt "PowerGroupDialogs, DialogTitle"
@@ -58783,6 +58817,14 @@ msgstr "<0/> Seguir"
 msgctxt "Admin, div"
 msgid "Loading what she has proposed."
 msgstr "Cargando lo que ella ha propuesto."
+
+#. placeholder {0}: s.seenCount
+#. placeholder {1}: new Date(s.firstSeenAt).toLocaleString()
+#. placeholder {2}: new Date(s.lastSeenAt).toLocaleString()
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgctxt "Village Health, crash card"
+msgid "Seen {0} times, first {1}, last {2}."
+msgstr ""
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/admin/OpsEmailSwitch.tsx

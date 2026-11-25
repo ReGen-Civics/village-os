@@ -34,6 +34,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyHits } from "./check-i18n-ratchet.mjs";
+import { mergedPoText } from "./lib/poFragments.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "client", "src");
@@ -166,7 +167,8 @@ export function readRoutes(appText = fs.readFileSync(path.join(SRC, "App.tsx"), 
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join("/");
 
 export function measureCoverage(locale = "es") {
-  const po = parsePo(fs.readFileSync(path.join(SRC, "locales", `${locale}.po`), "utf8"));
+  // The catalog with its pull requests' fragments folded in (scripts/lib/poFragments.mjs).
+  const po = parsePo(mergedPoText(path.join(SRC, "locales"), locale));
   const byFile = new Map();
   for (const e of po) {
     for (const o of e.origins) {

@@ -9,7 +9,9 @@
  *   3. package.json, PLATFORM_VERSION, the changelog section and the compose
  *      image all name the version at that commit;
  *   4. the tag does not exist yet;
- *   5. ci concluded success on a push run at exactly that commit.
+ *   5. ci concluded success on a push run at exactly that commit, or the
+ *      commit is a merge whose tree equals its second parent's and that
+ *      parent passed a whole ci push run (the tested twin).
  *
  * The last block drives the command line against a throwaway git repository,
  * so the gathering (git show at the commit, the ancestry check) is exercised
@@ -138,6 +140,67 @@ describe("guard 5: ci green on a push run at exactly this commit", () => {
   });
 });
 
+const WHOLE_JOBS = ["verify", "test (1/4)", "test (2/4)", "test (3/4)", "test (4/4)", "tests-ran-once", "browser-smoke"];
+const jobsOf = (names: string[]) => names.map((name) => ({ name, status: "completed", conclusion: "success" }));
+const twinRun = { id: 7, head_sha: OTHER, event: "push", status: "completed", conclusion: "success" };
+function twin(over: Record<string, unknown> = {}) {
+  return { parent: OTHER, sameTree: true, runs: [twinRun], jobsByRun: { "7": jobsOf(WHOLE_JOBS) }, ...over };
+}
+
+describe("guard 5, the tested twin: a merge whose tree its second parent already passed", () => {
+  const cancelled = [{ ...greenRun, conclusion: "cancelled" }];
+
+  it("allows the merge commit when the second parent's push run was whole and green", () => {
+    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin() }));
+    expect(v.problems).toEqual([]);
+    expect(v.ok).toBe(true);
+  });
+
+  it("allows six shards as well as four, since the shard count is read off the job names", () => {
+    const six = ["verify", ...[1, 2, 3, 4, 5, 6].map((i) => `test (${i}/6)`), "tests-ran-once", "browser-smoke"];
+    expect(guard.checkWholeRun(jobsOf(six))).toEqual([]);
+  });
+
+  it.each([
+    ["a tree that differs from the parent's", { sameTree: false }, "its tree differs"],
+    ["no second parent", { parent: "" }, "not a merge commit"],
+    ["a parent with only a red push run", { runs: [{ ...twinRun, conclusion: "failure" }] }, "no green ci push run"],
+    ["a parent green only on pull_request", { runs: [{ ...twinRun, event: "pull_request" }] }, "no green ci push run"],
+    ["a green run on some other commit", { runs: [{ ...twinRun, head_sha: SHA }] }, "no green ci push run"],
+    ["a green run with no jobs read", { jobsByRun: {} }, "under the floor of 7"],
+    ["a run missing browser-smoke", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "browser-smoke")) } }, "no browser-smoke job"],
+    ["a run missing tests-ran-once", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "tests-ran-once")) } }, "no tests-ran-once job"],
+    ["a run missing a shard", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "test (3/4)")) } }, "no test (3/4) job"],
+    [
+      "a run whose shards disagree on N",
+      { jobsByRun: { "7": jobsOf([...WHOLE_JOBS, "test (5/6)"]) } },
+      "shard jobs disagree on N",
+    ],
+    [
+      "a run with a skipped job",
+      { jobsByRun: { "7": [...jobsOf(WHOLE_JOBS.slice(1)), { name: "verify", status: "completed", conclusion: "skipped" }] } },
+      "verify is completed/skipped",
+    ],
+  ])("refuses %s", (_label, over, msg) => {
+    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin(over) }));
+    expect(v.ok).toBe(false);
+    expect(v.problems.join("\n")).toContain(`ci has not concluded success on a push run at ${SHA}`);
+    expect(v.problems.join("\n")).toContain(msg);
+  });
+
+  it("takes any one whole green run among several", () => {
+    const runs = [{ ...twinRun, id: 6 }, twinRun];
+    const jobsByRun = { "6": jobsOf(["verify"]), "7": jobsOf(WHOLE_JOBS) };
+    expect(guard.checkTestedTwin(twin({ runs, jobsByRun })).ok).toBe(true);
+  });
+
+  it("does not let the twin excuse any other guard", () => {
+    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin(), onMain: false }));
+    expect(v.ok).toBe(false);
+    expect(v.problems).toEqual([`${SHA} is not on main. Only a commit main already carries can be released.`]);
+  });
+});
+
 describe("evaluate reports every refusal at once", () => {
   it("lists all four failing guards together", () => {
     const v = guard.evaluate(
@@ -211,6 +274,70 @@ describe("the command line, against a real git repository", () => {
     const r = run(dir, ["--version", "1.3.22", "--sha", side], green(side));
     expect(r.status).toBe(1);
     expect(r.text).toContain(`${side} is not on main.`);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  function merge(dir: string, side: string, sameTree: boolean) {
+    const g = (...a: string[]) => execFileSync("git", a, { cwd: dir, encoding: "utf8" }).trim();
+    const id = ["-c", "user.name=t", "-c", "user.email=t@example.invalid"];
+    // A batch built on current main and merged with --merge: main has not
+    // moved, so the merge commit's tree is the batch head's. Otherwise main
+    // moved first and the merged tree is one nobody tested.
+    if (!sameTree) {
+      fs.writeFileSync(path.join(dir, "extra.txt"), "only on main\n");
+      g("add", "extra.txt");
+      g(...id, "commit", "-qm", "main moved");
+    }
+    g(...id, "merge", "-q", "--no-ff", "-m", "Merge the batch", side);
+    return g("rev-parse", "HEAD");
+  }
+
+  function twinFiles(dir: string, parent: string, names = WHOLE_JOBS) {
+    fs.writeFileSync(path.join(dir, "twin-runs.json"), JSON.stringify({ workflow_runs: [{ ...twinRun, head_sha: parent }] }));
+    fs.writeFileSync(path.join(dir, "twin-jobs.json"), JSON.stringify({ "7": jobsOf(names) }));
+    return ["--twin-runs", "twin-runs.json", "--twin-jobs", "twin-jobs.json"];
+  }
+
+  it("tags a merge commit whose own run was cancelled, when its tree is the tested batch head's", () => {
+    const { dir, side } = repo();
+    const m = merge(dir, side, true);
+    const cancelledRun = [{ head_sha: m, event: "push", status: "completed", conclusion: "cancelled" }];
+    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side)], cancelledRun);
+    expect(r.text).toContain(`v1.3.22 may be tagged at ${m}`);
+    expect(r.text).toContain("tested twin");
+    expect(r.status).toBe(0);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("refuses the same merge when the batch head's run was not whole", () => {
+    const { dir, side } = repo();
+    const m = merge(dir, side, true);
+    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side, WHOLE_JOBS.slice(0, 5))], []);
+    expect(r.status).toBe(1);
+    expect(r.text).toContain("not a whole one");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("refuses a merge whose tree is NOT its second parent's, however green that parent", () => {
+    const { dir, side } = repo();
+    const m = merge(dir, side, false);
+    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side)], []);
+    expect(r.status).toBe(1);
+    expect(r.text).toContain("its tree differs");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("answers release.yml's --twin-only question the same way", () => {
+    const { dir, side, tip } = repo();
+    const m = merge(dir, side, true);
+    const ask = (sha: string) =>
+      spawnSync(process.execPath, [SCRIPT, "--twin-only", "--sha", sha, ...twinFiles(dir, side)], { cwd: dir, encoding: "utf8" });
+    const yes = ask(m);
+    expect(yes.stdout).toContain(`${m} is a tested twin`);
+    expect(yes.status).toBe(0);
+    const no = ask(tip);
+    expect(no.stderr).toContain("not a merge commit");
+    expect(no.status).toBe(1);
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
