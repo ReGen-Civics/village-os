@@ -72,18 +72,19 @@ describe("the phone tabs", () => {
 describe("the responsive phone tabs", () => {
   const open = (m?: string) => !m || m === "forum";
   const paths = (slots: ReturnType<typeof responsiveSlots>) => slots.map((s) => s.path ?? s.event);
-  const fixed = (slots: ReturnType<typeof responsiveSlots>) => [slots[0], slots[3], slots[4]];
+  const fixed = (slots: ReturnType<typeof responsiveSlots>) => [slots[0], slots[1], slots[4]];
 
   it("fill only the two moving places, and Home, the path place and More never move", () => {
     const slots = responsiveSlots(["/forum", "/gratitude"], {}, [], open);
-    expect(paths(slots)).toEqual(["/", "/forum", "/gratitude", TAB_SLOTS[3].path, "open-mobile-menu"]);
+    // The path is second since 25 Nov 2026 (the lead), so the two moving places are the third and fourth.
+    expect(paths(slots)).toEqual(["/", TAB_SLOTS[1].path, "/forum", "/gratitude", "open-mobile-menu"]);
     expect(fixed(slots)).toEqual(fixed(TAB_SLOTS));
   });
 
   it("never show a page twice, and keep the platform's tab in a place left empty", () => {
     // A fixed page, a closed one and a repeat are skipped; the empty place keeps the platform's tab.
-    const slots = paths(responsiveSlots(["/", String(TAB_SLOTS[3].path), "/feed", "/forum", "/forum"], {}, [], open));
-    expect(slots).toEqual(["/", "/forum", TAB_SLOTS[1].path, TAB_SLOTS[3].path, "open-mobile-menu"]);
+    const slots = paths(responsiveSlots(["/", String(TAB_SLOTS[1].path), "/feed", "/forum", "/forum"], {}, [], open));
+    expect(slots).toEqual(["/", TAB_SLOTS[1].path, "/forum", TAB_SLOTS[2].path, "open-mobile-menu"]);
     expect(paths(responsiveSlots([], {}, [], open))).toEqual(paths(TAB_SLOTS));
   });
 });

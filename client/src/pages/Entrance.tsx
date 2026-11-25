@@ -334,6 +334,12 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
                 {t({ message: "I have an account: sign in", context: "portal entrance: the second act, for members" })}
               </a>
             </div>
+            <p className={HINT}>
+              {t({ message: "Been here before?", context: "portal entrance: before the returning visitor's link" })}{" "}
+              <a href={`/visitor/sign-in?next=${encodeURIComponent(next)}`} className={LINK} data-visitor-return="">
+                {t({ message: "Sign back in with a code", context: "portal entrance: a returning visitor signs in by email code" })}
+              </a>
+            </p>
             <GoogleSignInButton next={next} portal />
           </form>
 

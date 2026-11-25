@@ -1,6 +1,6 @@
 {
   "note": "Village facts welded into client copy, recorded per file and per rule. This list only ever shrinks. Read scripts/check-village-facts.mjs before editing it, and lower PENDING_CEILING in that file to match the total here.",
-  "total": 10,
+  "total": 9,
   "rules": {
     "money": {
       "what": "a currency amount in display text",
@@ -29,7 +29,6 @@
   },
   "counts": {
     "client/src/components/SwapCard.tsx::money": 1,
-    "client/src/config/mobileNav.ts::token-name": 1,
     "client/src/config/nav.ts::token-name": 1,
     "client/src/pages/Admin.tsx::money": 3,
     "client/src/pages/Admin.tsx::unit": 2,
@@ -40,9 +39,6 @@
     "client/src/components/SwapCard.tsx::money": {
       "since": "2026-09-03",
       "note": "A hard dollar prefix in the money formatter. Five more of the same shape are listed under Admin, Contribute, Stay and Wallet."
-    },
-    "client/src/config/mobileNav.ts::token-name": {
-      "since": "2026-09-03"
     },
     "client/src/config/nav.ts::token-name": {
       "since": "2026-09-03"

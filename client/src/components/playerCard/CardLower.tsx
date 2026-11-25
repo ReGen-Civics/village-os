@@ -13,7 +13,7 @@ import { CARD_WORDS as W, type AgreementRow, type ApplicationOut, type PlayerCar
 import type { TrackMarkKind } from "@shared/playerCardHero";
 import { EDIT_WORDS } from "@shared/playerCardEdit";
 import { countWord } from "@shared/playerCardHero";
-import { CardEditContext, EditInPlace, Eyebrow, SlotView } from "./cardParts";
+import { CardEditContext, EditInPlace, Eyebrow, SlotView, useShows } from "./cardParts";
 import ProposalLinks from "@/components/roleProposal/ProposalLinks";
 
 const MARK_CLASS: Record<TrackMarkKind, string> = { new: "pc-new", full: "pc-full", invoice: "pc-inv" };
@@ -91,7 +91,8 @@ export function MoonTimeline({ timeline }: { timeline: PlayerCard["timeline"] })
 }
 
 export function HowIHold({ howIHold }: { howIHold: PlayerCard["howIHold"] }) {
-  if (howIHold.items.kind === "unread") return null;
+  const shows = useShows();
+  if (!shows(howIHold.items)) return null;
   return (
     <section aria-labelledby="pc-hold-h" className="pc-panel">
       <h3 id="pc-hold-h" className="pc-h2">
@@ -119,6 +120,8 @@ export function HowIHold({ howIHold }: { howIHold: PlayerCard["howIHold"] }) {
 }
 
 function AppGroup({ heading, slot, now = false }: { heading: string; slot: Slot<ApplicationOut[]>; now?: boolean }) {
+  const shows = useShows();
+  if (!shows(slot)) return null;
   return (
     <div className={`pc-histcol${now ? " pc-now" : ""}`}>
       <Eyebrow gold={now}>{heading}</Eyebrow>
@@ -164,7 +167,10 @@ export const FirstDaysContext = createContext(false);
 export function MyApplications({ applications }: { applications: PlayerCard["applications"] }) {
   const { owner } = useContext(CardEditContext);
   const firstDays = useContext(FirstDaysContext);
+  const shows = useShows();
   if (applications.thisSeason.kind === "unread") return null;
+  // Absent, not empty: with no application in any season and nothing of the owner's to propose, no history box.
+  if (![applications.past, applications.thisSeason, applications.nextSeason].some(shows) && !owner) return null;
   return (
     <section aria-labelledby="pc-apps-h" className="pc-panel">
       <div className="pc-headgroup">
@@ -205,7 +211,8 @@ function Rows({ rows }: { rows: AgreementRow[] }) {
 
 export function Agreements({ agreements, newApplicationHref }: { agreements: PlayerCard["agreements"]; newApplicationHref?: string }) {
   const { editing } = useContext(CardEditContext);
-  const shown = agreements.roles.filter((r) => r.rows.kind !== "unread");
+  const shows = useShows();
+  const shown = agreements.roles.filter((r) => shows(r.rows));
   if (!shown.length) return null;
   // Every role on the same terms: recorded once, as the design writes it.
   const keyOf = (r: (typeof shown)[number]) => JSON.stringify(r.rows);

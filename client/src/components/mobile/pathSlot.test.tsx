@@ -34,8 +34,13 @@ const slotLink = () => document.querySelector<HTMLAnchorElement>("a[data-path-sl
 describe("the path slot, worked out", () => {
   const nameOf = (id: string) => `name of ${id}`;
 
-  it("takes the place Circles had, and Circles is no longer a tab", () => {
-    expect(TAB_SLOTS[3]).toBe(PATH_SLOT);
+  it("THE DEFAULT ORDER, before any visit data, for everyone: Home, Your path, Roles, Quests, More (the lead, 25 Nov 2026)", () => {
+    expect(TAB_SLOTS.map((s) => s.path ?? s.event)).toEqual(["/", "/path", "/roles", "/quests", "open-mobile-menu"]);
+    expect(TAB_SLOTS.map((s) => s.label)).toEqual(["Home", "Your path", "Roles", "Quests", "More"]);
+  });
+
+  it("sits second, next to Home (the lead, 25 Nov 2026), and Circles is no longer a tab", () => {
+    expect(TAB_SLOTS[1]).toBe(PATH_SLOT);
     expect(TAB_SLOTS.some((s) => s.path === "/circles")).toBe(false);
   });
 
@@ -119,6 +124,13 @@ describe("the path slot, in the bar", () => {
     bar();
     expect(slotLink()?.getAttribute("aria-current")).toBeNull();
     window.history.replaceState(null, "", "/");
+  });
+
+  it("a signed-in member with no visit data sees exactly Home, Your path, Roles, Quests, More: no Gratitude by default", () => {
+    user = { id: 1, paths: [], membershipGranted: true };
+    bar();
+    const labels = Array.from(document.querySelectorAll("[data-mobile-tabbar] a, [data-mobile-tabbar] button")).map((e) => e.textContent?.trim());
+    expect(labels).toEqual(["Home", "Your path", "Roles", "Quests", "More"]);
   });
 
   it("never draws Circles in the bar", () => {

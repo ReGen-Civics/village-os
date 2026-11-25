@@ -51,7 +51,7 @@
  * holder, a `cash.pay` holder included.
  */
 import { isShippedAgentRead, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, stripContactData, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts, type SeatPowerFacts } from "../../shared/agentAdmin";
-import { FULL_ACCESS_KEPT, fullAccessBodyProblem, fullAccessDecision, fullAccessEmailSend, recipientsProblem, type FullAccessRecipients, type FullAccessSendKind } from "../../shared/agentFullAccess";
+import { FULL_ACCESS_KEPT, READS_OPEN_KEPT, fullAccessBodyProblem, fullAccessDecision, fullAccessEmailSend, recipientsProblem, type FullAccessRecipients, type FullAccessSendKind } from "../../shared/agentFullAccess";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
 import { LIBRARY_API, LIBRARY_LIMITS, libraryItemUrl } from "../../shared/sessionLibrary";
 import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
@@ -109,7 +109,11 @@ export interface RouteAnswer {
 
 export interface ToolContext {
   /** Runs `method path` as the holder and answers with the route's status and JSON. */
-  dispatch: (method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE", path: string, body?: unknown) => Promise<RouteAnswer>;
+  /**
+   * Calls a route as the holder. `asMember` marks the call to be answered as a plain member would be
+   * (server/lib/readAsMember.ts): the connector's open reads use it outside /api/admin/ (the lead, 25 Nov 2026).
+   */
+  dispatch: (method: "GET" | "HEAD" | "POST" | "PATCH" | "PUT" | "DELETE", path: string, body?: unknown, opts?: { asMember?: boolean }) => Promise<RouteAnswer>;
   /** A confirm token bound to this tool, this holder and this echo. */
   mintConfirm: (tool: string, echo: unknown) => { token: string; expiresAt: string };
   /** Whether `token` binds this tool, this holder and this echo, and why not. */
@@ -148,6 +152,8 @@ export interface ToolContext {
    */
   fullAccess?: {
     on: () => Promise<boolean>;
+    /** Reads open (the lead, 25 Nov 2026): a person opened this role's agent's reads, under the read floor. Absent reads as closed. */
+    readsOpen?: () => Promise<boolean>;
     recorded: (a: { method: string; path: string; summary: string; approvedBy: string; approvalNote: string; recipients?: FullAccessRecipients | null }) => Promise<void>;
     /**
      * Who an email send reaches (the lead, 24 Nov 2026), read fresh by the server at both calls, or null when it
@@ -175,7 +181,8 @@ export interface LeadApprovalRecordInput {
 
 /** What a tool answers: a result to show, or a refusal in words. */
 export type ToolOutcome =
-  | { ok: true; result: unknown }
+  /** `mark` words the audit line for this call (such as "read (open)"); it never reaches the caller. */
+  | { ok: true; result: unknown; mark?: string }
   | { ok: false; error: string; detail?: unknown };
 
 export interface ToolDef {
@@ -785,7 +792,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
           description:
             "Required for any write, optional for a read. One plain sentence a non-technical person understands, naming people and roles by name, with no ids and no jargon. Example: Remove the duplicate record of Ana on the Gardener role. She keeps the role.",
         },
-        method: { type: "string", enum: ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+        method: { type: "string", enum: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"] },
         path: { type: "string", description: "The admin path, such as /api/admin/member-tasks/access. No query string." },
         body: { type: "object", description: "The JSON body for a write." },
         confirmToken: { type: "string", description: "From the first call of a write. Leave it out to see what would be written." },
@@ -796,7 +803,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     // The routes this tool may reach are the village's list, not this table. "Always a person" is in shared/agentAdmin.ts.
     routes: [],
     destructive: true,
-    writes: (args) => String(args.method ?? "").toUpperCase() !== "GET",
+    writes: (args) => !["GET", "HEAD"].includes(String(args.method ?? "").toUpperCase()),
     async run(args, ctx) {
       if (!ctx.adminPaths || !ctx.recordAction) return { ok: false, error: "The admin tool is not open on this server." };
       const method = String(args.method ?? "").toUpperCase();
@@ -819,15 +826,18 @@ export const MCP_TOOLS: readonly ToolDef[] = [
       const leadOn = ctx.leadApproved ? await ctx.leadApproved.on() : false;
       // The full-access switch (the lead, 20 Nov 2026): read at every call, so it ends when the holder's seat does.
       const fullOn = ctx.fullAccess ? await ctx.fullAccess.on() : false;
+      // Reads open (the lead, 25 Nov 2026): only with full access, read at every call, and closed when it cannot be read.
+      const readsOpen = fullOn && ctx.fullAccess?.readsOpen ? await ctx.fullAccess.readsOpen().catch(() => false) : false;
       const decision = fullAccessDecision(method, path, await ctx.adminPaths(), ctx.holderId ?? null, {
         applicantDataOpen: ctx.applicantDataOpen ? await ctx.applicantDataOpen() : false,
         leadApprovedWrites: leadOn,
         fullAccess: fullOn,
+        readsOpen,
       });
       if (!decision.ok) {
         await record("refused");
         // The full-access role's agent is told, in plain words, what the floor still keeps (the lead, 24 Nov 2026).
-        return { ok: false, error: decision.words, detail: { code: decision.code, ...(fullOn ? { stillAPersons: FULL_ACCESS_KEPT } : {}) } };
+        return { ok: false, error: decision.words, detail: { code: decision.code, ...(fullOn ? { stillAPersons: readsOpen ? [...FULL_ACCESS_KEPT, ...READS_OPEN_KEPT] : FULL_ACCESS_KEPT } : {}) } };
       }
       const full = decision.fullAccess === true;
       // A lead-approved write (the lead's ruling, 10 and 11 Nov 2026): the body is checked at both calls, and a
@@ -880,11 +890,13 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         hash = echoHash(echo);
       }
       if (!decision.write) {
-        const a = await ctx.dispatch("GET", path);
+        const open = decision.readOpen === true;
+        const a = await ctx.dispatch(method === "HEAD" ? "HEAD" : "GET", path, undefined, decision.asMember ? { asMember: true } : undefined);
         await record(a.status < 300 ? "done" : "refused");
         // The shipped reads of powers, and every full-access read, come back without contact data.
         const answer = full || isShippedAgentRead("GET", path) ? stripContactData(a.body) : a.body;
-        return a.status < 300 ? { ok: true, result: answer } : refusal("The admin path refused", a);
+        if (a.status >= 300) return refusal("The admin path refused", a);
+        return open ? { ok: true, result: answer, mark: "read (open)" } : { ok: true, result: answer };
       }
       if (decision.confirm === "person") {
         await record("refused");

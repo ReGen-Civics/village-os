@@ -90,7 +90,7 @@ export const TOKEN_PREFIX = "vat_";
  * agenda library, added as the holder, after their yes. It brings nothing into
  * a session and changes no agenda already set; a person does that in the room.
  */
-export const AGENT_SCOPES = ["calendar.read", "directory.read", "me.read", "rsvp.write", "intents.write", "map.draft", "moon.read", "tasks.write", "admin", "sera.undoable", "moon.write", "moon.review", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose", "sessions.write"] as const;
+export const AGENT_SCOPES = ["calendar.read", "directory.read", "me.read", "rsvp.write", "intents.write", "map.draft", "moon.read", "tasks.write", "admin", "sera.undoable", "moon.write", "moon.review", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose", "sessions.write", "live.view"] as const;
 export type AgentScope = (typeof AGENT_SCOPES)[number];
 
 /** Read scopes are on by default in the panel; writes are opt-in. */
@@ -101,6 +101,25 @@ export const LIVE_PER_USER = 10;
 export const DEFAULT_TTL_DAYS = 90;
 export const MAX_TTL_DAYS = 365;
 export const CONFIRM_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * THE LIVE VIEW FOR QA (the lead, 25 Nov 2026; server/lib/liveView.ts).
+ * A token with this scope opens the live game in a browser, signed in as its
+ * holder, for reading only. It is made only by a holder of `qa.live_view`, it
+ * carries no other scope, and it lives a week unless its holder asks for up
+ * to a month: a QA token is a short errand, and a lost one should die soon.
+ */
+export const LIVE_VIEW_SCOPE = "live.view";
+export const LIVE_VIEW_DEFAULT_TTL_DAYS = 7;
+export const LIVE_VIEW_MAX_TTL_DAYS = 30;
+
+/** How many days a token with these scopes lives, from what its holder asked. */
+export function tokenTtlDays(scopes: readonly string[], asked: unknown): number {
+  const live = scopes.includes(LIVE_VIEW_SCOPE);
+  const def = live ? LIVE_VIEW_DEFAULT_TTL_DAYS : DEFAULT_TTL_DAYS;
+  const max = live ? LIVE_VIEW_MAX_TTL_DAYS : MAX_TTL_DAYS;
+  return Math.min(max, Math.max(1, Math.floor(Number(asked ?? def)) || def));
+}
 
 export interface AgentTokenRow {
   id: string;
@@ -126,7 +145,7 @@ export function isAgentBearer(header: string | undefined): boolean {
 }
 
 /** The scope list a member asked for, or a sentence saying why not. */
-export function cleanScopes(raw: unknown, opts: { intentsAllowed: boolean; adminAllowed?: boolean; seraAllowed?: boolean }): { ok: true; scopes: AgentScope[] } | { ok: false; error: string } {
+export function cleanScopes(raw: unknown, opts: { intentsAllowed: boolean; adminAllowed?: boolean; seraAllowed?: boolean; liveViewAllowed?: boolean }): { ok: true; scopes: AgentScope[] } | { ok: false; error: string } {
   if (!Array.isArray(raw) || raw.length === 0) return { ok: false, error: "Pick at least one scope" };
   const seen = new Set<string>();
   const scopes: AgentScope[] = [];
@@ -136,8 +155,11 @@ export function cleanScopes(raw: unknown, opts: { intentsAllowed: boolean; admin
     if (v === "intents.write" && !opts.intentsAllowed) return { ok: false, error: "Posting intents is not open on this deployment yet" };
     if (v === "admin" && !opts.adminAllowed) return { ok: false, error: "Only an admin can give a token the admin scope" };
     if (v === "sera.undoable" && !opts.seraAllowed) return { ok: false, error: "Only Sera's agent account can hold the sera.undoable scope" };
+    if (v === LIVE_VIEW_SCOPE && !opts.liveViewAllowed) return { ok: false, error: "Only a member whose role carries the live view for QA can make a live.view token" };
     if (!seen.has(v)) { seen.add(v); scopes.push(v as AgentScope); }
   }
+  // Alone, so a live view token can only ever read: it opens no agent path and adds to no other scope.
+  if (scopes.includes(LIVE_VIEW_SCOPE) && scopes.length > 1) return { ok: false, error: "A live.view token carries that scope alone. Make a second token for anything else" };
   return { ok: true, scopes };
 }
 
@@ -193,7 +215,7 @@ export async function mintToken(pool: Pool, userId: string, input: MintInput, se
   const name = String(input.name ?? "").trim().slice(0, 80);
   if (!name) return { ok: false, status: 400, error: "Give this token a name so you can tell it apart later" };
   if (!input.scopes.length) return { ok: false, status: 400, error: "Pick at least one scope" };
-  const ttl = Math.min(MAX_TTL_DAYS, Math.max(1, Math.floor(Number(input.ttlDays ?? DEFAULT_TTL_DAYS)) || DEFAULT_TTL_DAYS));
+  const ttl = tokenTtlDays(input.scopes, input.ttlDays);
 
   const cap = await mintCapProblem(pool, userId);
   if (cap) return { ok: false, status: 429, error: cap };

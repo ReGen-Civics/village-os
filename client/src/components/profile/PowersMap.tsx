@@ -88,11 +88,11 @@
  * without ever granting it.
  */
 import { useState } from "react";
-import { UserCheck } from "lucide-react";
+import { ChevronDown, UserCheck } from "lucide-react";
 import type { GameStagePublic, ProgressionCapability } from "@/lib/gameApi";
 import type { StageRule } from "@shared/gameConfig";
 import PowerHand from "./PowerHand";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * How each rung is reached, in the words a member would use.
@@ -245,6 +245,12 @@ function PowerRow({ row, reached }: { row: ProgressionCapability; reached: boole
   );
 }
 
+/* The two folds share one look: a 44px summary row, a count, a chevron that turns. */
+const FOLD = "group mt-6 rounded-xl border border-border bg-muted/40 p-4";
+const SUMMARY = "flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 [&::-webkit-details-marker]:hidden";
+const COUNT = "rounded-full bg-notice px-2 text-xs font-semibold leading-5 text-background";
+const CHEVRON = "ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180";
+
 export default function PowersMap({
   catalogue,
   stages,
@@ -261,6 +267,7 @@ export default function PowersMap({
   training?: { done: number; required: number } | null;
 }) {
   const [showClosed, setShowClosed] = useState(true);
+  const { t } = useLingui();
 
   if (catalogue.length === 0) return null;
 
@@ -294,6 +301,7 @@ export default function PowersMap({
     .slice()
     .sort((a, b) => Number(!!b.recommended) - Number(!!a.recommended));
   const suitsYou = appointedShown.filter((c) => c.recommended).length;
+  const hereName = climb.find((r) => r.state === "here")?.name ?? "";
 
   return (
     <section aria-labelledby="powers-h" className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -330,13 +338,18 @@ export default function PowersMap({
           : "Showing the powers open to you."}
       </p>
 
-      <h3 className="mt-8 font-semibold text-card-foreground"><Trans context="PowersMap, h3">The climb</Trans></h3>
-      <p className="mt-0.5 text-sm text-muted-foreground">
+      {/* THE CLIMB AND THE ENTRUSTED LIST, EACH FOLDED (profile overhaul, Direction D): the powers were one
+          long wall of sentences; now two folds with a summary line each, and nothing lost. */}
+      <details className={FOLD} data-powers-fold="climb">
+        <summary className={SUMMARY}>
+          <h3 className="font-semibold text-card-foreground"><Trans context="PowersMap, h3">The climb</Trans></h3>
+          {hereName ? <span className="text-sm text-muted-foreground">{t({ message: `You are at ${hereName}`, context: "PowersMap: the climb fold's summary" })}</span> : null}
+          <ChevronDown className={CHEVRON} aria-hidden="true" />
+        </summary>
+      <p className="mt-2 text-sm text-muted-foreground">
         <Trans context="PowersMap, p">One thread through the village, and the doors each node opens.
       </Trans></p>
 
-      {/* An ordered list because the order IS the information: these rungs are
-          climbed in sequence and a screen reader should hear that. */}
       <ol className="mt-4">
         {rungs.map((rung, i) => {
           const last = i === rungs.length - 1;
@@ -405,13 +418,16 @@ export default function PowersMap({
           );
         })}
       </ol>
+      </details>
 
       {appointedShown.length > 0 ? (
-        <>
-          <div className="mt-8 flex items-center gap-2">
+        <details className={FOLD} data-powers-fold="entrusted">
+          <summary className={SUMMARY}>
             <UserCheck className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <h3 className="font-semibold text-card-foreground"><Trans context="PowersMap, h3">Entrusted by the village</Trans></h3>
-          </div>
+            <span className={COUNT}>{appointedShown.length}</span>
+            <ChevronDown className={CHEVRON} aria-hidden="true" />
+          </summary>
           <p className="mt-0.5 text-sm text-muted-foreground">
             <Trans context="PowersMap, p">A role or a badge opens these. No amount of climbing reaches them.
           </Trans></p>
@@ -427,7 +443,7 @@ export default function PowersMap({
               <PowerRow key={row.key} row={row} reached={false} />
             ))}
           </ul>
-        </>
+        </details>
       ) : null}
     </section>
   );

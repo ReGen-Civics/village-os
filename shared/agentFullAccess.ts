@@ -30,7 +30,12 @@
  *   settings, and sending email, opened to this role's agent. Each send is one of `FULL_ACCESS_EMAIL_SENDS`, and its
  *   preview states its recipients, and the count for a letter, read by the server at both calls, so the confirmToken
  *   covers exactly who it goes to. A write shaped like a send that is not on that list stays a person's
- *   (`isUnnamedSend`). `FULL_ACCESS_KEPT` says in plain words what the floor still keeps. The rules are reused, never copied, so a new route that
+ *   (`isUnnamedSend`). `FULL_ACCESS_KEPT` says in plain words what the floor still keeps.
+ *
+ *   25 NOVEMBER 2026 (the lead; the record is in shared/agentAdmin.ts above READ_FLOOR): READS OPEN, a second switch
+ *   on this same document (`readsOpen`), set by a person beside the first. With both on, `fullAccessDecision` opens
+ *   any GET or HEAD under /api/ to the seat's agent under the read floor, marked `readOpen`, and `asMember` outside
+ *   /api/admin/ when no list named the path. `READS_OPEN_KEPT` is the floor in plain words. The rules are reused, never copied, so a new route that
  *   matches one is covered on the day it lands. Beside the paths, the body of a write never names a capability an
  *   agent may not hand out (`isFloorCapability`), a game variable that moves money, sends email, guards sign-in
  *   or runs the connector stays a person's, and so does a write under an admin area that moves value under a name
@@ -45,6 +50,8 @@ import {
   MONEY_MODULE_IDS,
   SHIPPED_AGENT_READS,
   pathMatches,
+  readFloor,
+  READ_FLOOR,
   type AdminRequestDecision,
   type AgentAdminPathsDoc,
   type AgentDecisionOpts,
@@ -63,16 +70,28 @@ export interface FullAccessDoc {
   roleId: string | null;
   setBy: string | null;
   setAt: string | null;
+  /**
+   * READS OPEN (the lead, 25 Nov 2026): the role's agent reads any `/api/` path without the list, under the read
+   * floor. Off unless it is exactly `true`. A person sets it, beside the switch, and it means nothing while no role is named.
+   */
+  readsOpen: boolean;
+  readsSetBy: string | null;
+  readsSetAt: string | null;
 }
 
-export const FULL_ACCESS_OFF: FullAccessDoc = { roleId: null, setBy: null, setAt: null };
+export const FULL_ACCESS_OFF: FullAccessDoc = { roleId: null, setBy: null, setAt: null, readsOpen: false, readsSetBy: null, readsSetAt: null };
 
-/** A stored document read safely: anything malformed reads as off. */
+/** A stored document read safely: anything malformed reads as off. Reads open survives a role change, so turning it on is one act. */
 export function parseFullAccessDoc(raw: unknown): FullAccessDoc {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const roleId = typeof r.roleId === "string" && /^[A-Za-z0-9._~-]{1,120}$/.test(r.roleId) ? r.roleId : null;
-  if (!roleId) return FULL_ACCESS_OFF;
-  return { roleId, setBy: typeof r.setBy === "string" ? r.setBy.slice(0, 64) : null, setAt: typeof r.setAt === "string" ? r.setAt.slice(0, 40) : null };
+  const reads = {
+    readsOpen: r.readsOpen === true,
+    readsSetBy: typeof r.readsSetBy === "string" ? r.readsSetBy.slice(0, 64) : null,
+    readsSetAt: typeof r.readsSetAt === "string" ? r.readsSetAt.slice(0, 40) : null,
+  };
+  if (!roleId) return { ...FULL_ACCESS_OFF, ...reads };
+  return { roleId, setBy: typeof r.setBy === "string" ? r.setBy.slice(0, 64) : null, setAt: typeof r.setAt === "string" ? r.setAt.slice(0, 40) : null, ...reads };
 }
 
 /**
@@ -286,6 +305,17 @@ const FULL_ACCESS_ENTRY = (method: string, path: string): AllowedAdminPath => ({
   label: "Full access: the operations role's agent, with the approval in the chat",
 });
 
+/** The entry an open read stands on when no list names its path. */
+const READS_OPEN_ENTRY = (path: string): AllowedAdminPath => ({
+  method: "GET",
+  path,
+  confirm: "agent",
+  label: "Reads open: the operations role's agent reads as a plain member",
+});
+
+/** The read floor's categories, in plain words, for the agent and the admin panel. */
+export const READS_OPEN_KEPT: readonly string[] = READ_FLOOR.map((r) => r.words);
+
 /**
  * Whether an agent may call `method path` through `admin_request`, with full access as the caller read it.
  *
@@ -300,14 +330,28 @@ export function fullAccessDecision(
   path: string,
   doc: AgentAdminPathsDoc,
   selfUserId: string | null | undefined,
-  opts: AgentDecisionOpts & { fullAccess?: boolean } = {},
+  opts: AgentDecisionOpts & { fullAccess?: boolean; readsOpen?: boolean } = {},
 ): AdminRequestDecision {
-  const normal = adminRequestDecision(method, path, doc, selfUserId, opts);
+  // HEAD is a read: it is decided exactly as the GET it mirrors.
+  const asked = String(method ?? "").toUpperCase();
+  const m = asked === "HEAD" ? "GET" : asked;
+  // With full access off, HEAD is passed on as it was asked, so nothing changes for any other agent.
+  const normal = adminRequestDecision(opts.fullAccess === true ? m : asked, path, doc, selfUserId, opts);
   if (opts.fullAccess !== true) return normal;
   if (!normal.ok && normal.code === "bad_path") return normal;
-  const m = String(method ?? "").toUpperCase();
   const floor = fullAccessFloor(m, path, selfUserId, opts);
   if (floor) return { ok: false, code: "always_a_person", words: floor.words };
+  // READS OPEN (the lead, 25 Nov 2026): any read under /api/, without the list, under the read floor. A read the
+  // list or the shipped reads did not already open is made as a plain member (`asMember`) outside /api/admin/, so a
+  // route that widens for an admin answers the agent as it answers a member.
+  if (opts.readsOpen === true && m === "GET") {
+    const readFloored = readFloor(path, opts);
+    if (readFloored) return { ok: false, code: "always_a_person", words: readFloored.words };
+    if (!path.startsWith("/api/") || path.startsWith("/api/agent/") || !path.split("/").every((s, i) => i === 0 || SEGMENT.test(s))) return normal;
+    if (normal.ok) return { ...normal, fullAccess: true, readOpen: true };
+    const admin = path.startsWith("/api/admin/");
+    return { ok: true, entry: READS_OPEN_ENTRY(path), write: false, confirm: "agent", fullAccess: true, readOpen: true, ...(admin ? {} : { asMember: true }) };
+  }
   const write = m !== "GET";
   if (!path.startsWith("/api/admin/") || !path.split("/").every((s, i) => i === 0 || SEGMENT.test(s))) {
     return normal.ok ? { ...normal, fullAccess: true } : normal;

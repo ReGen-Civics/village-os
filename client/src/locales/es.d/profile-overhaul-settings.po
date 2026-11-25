@@ -1,0 +1,244 @@
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "Profile: the last band's heading"
+msgid "About you, your paths and what you hold"
+msgstr "Sobre ti, tus caminos y lo que tienes"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Account"
+msgstr "Cuenta"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: back to the list on a phone"
+msgid "All settings"
+msgstr "Todos los ajustes"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the way back"
+msgid "Back to your profile"
+msgstr "Volver a tu perfil"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Connected tools and agents"
+msgstr "Herramientas y agentes conectados"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the dark mode choice"
+msgid "Dark"
+msgstr "Oscuro"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the inner life group matches"
+msgid "Gene Keys, Human Design, lines, character, class"
+msgstr "Gene Keys, Diseño Humano, líneas, personaje, clase"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Inner life"
+msgstr "Vida interior"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Language and look"
+msgstr "Idioma y aspecto"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the language choice"
+msgid "Language"
+msgstr "Idioma"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the mode choice"
+msgid "Light or dark"
+msgstr "Claro u oscuro"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the mode choice, read aloud"
+msgid "Light or dark"
+msgstr "Claro u oscuro"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the light mode choice"
+msgid "Light"
+msgstr "Claro"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the borrowed and booked switch"
+msgid "Loans and stays."
+msgstr "Préstamos y estadías."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: under the heading"
+msgid "Members signed in always see your first name."
+msgstr "Los miembros con sesión iniciada siempre ven tu nombre."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a search with no match"
+msgid "Nothing matches. Try email, privacy or language."
+msgstr "No hay coincidencias. Prueba correo, privacidad o idioma."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Notifications and your data"
+msgstr "Notificaciones y tus datos"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the roles switch"
+msgid "On your profile and the village's pages."
+msgstr "En tu perfil y en las páginas de la aldea."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: eyebrow"
+msgid "Only you see this"
+msgstr "Solo tú ves esto"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: a group"
+msgid "Privacy"
+msgstr "Privacidad"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "Profile: the door to the settings page"
+msgid "Profile settings"
+msgstr "Ajustes del perfil"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: page title"
+msgid "Profile settings"
+msgstr "Ajustes del perfil"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the search box, read aloud"
+msgid "Search settings"
+msgstr "Buscar en los ajustes"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the search box"
+msgid "Search, like: email"
+msgstr "Busca, por ejemplo: correo"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: the list of groups, read aloud"
+msgid "Settings groups"
+msgstr "Grupos de ajustes"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "Profile: the hero's door to the settings page"
+msgid "Settings"
+msgstr "Ajustes"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show my badges"
+msgstr "Mostrar mis insignias"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show my standing"
+msgstr "Mostrar mi reconocimiento"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show the roles I hold"
+msgstr "Mostrar los roles que tengo"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show what I have borrowed and booked"
+msgstr "Mostrar lo que he pedido prestado y reservado"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show where I live"
+msgstr "Mostrar dónde vivo"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: a switch"
+msgid "Show where I will be, and when"
+msgstr "Mostrar dónde estaré, y cuándo"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the badges switch"
+msgid "The badges you have earned and pinned."
+msgstr "Las insignias que has ganado y fijado."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the standing switch"
+msgid "What the village has thanked you with, and from whom."
+msgstr "Con qué te ha agradecido la aldea, y quién."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: under the mode choice"
+msgid "The switch at the top of every page changes the same thing."
+msgstr "El interruptor de arriba en cada página cambia lo mismo."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: heading"
+msgid "Who sees what"
+msgstr "Quién ve qué"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: inner life hint"
+msgid "Who sees your lines, and whether your guide may use them, is chosen on that page."
+msgstr "Quién ve tus líneas, y si tu guía puede usarlas, se elige en esa página."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: inner life door"
+msgid "Your Gene Keys and Human Design"
+msgstr "Tus Gene Keys y tu Diseño Humano"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "Profile, aria-label"
+msgid "Your character"
+msgstr "Tu personaje"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: inner life door"
+msgid "Your character"
+msgstr "Tu personaje"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the home switch"
+msgid "Your home on the land."
+msgstr "Tu hogar en la tierra."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "Profile: the last band's eyebrow"
+msgid "Your sheet"
+msgstr "Tu hoja"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the calendar switch"
+msgid "Your stays and gatherings, by date."
+msgstr "Tus estadías y encuentros, por fecha."
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the account group matches"
+msgid "email, address, time zone, booking link, agreements, sign out"
+msgstr "correo, dirección, zona horaria, enlace de reservas, acuerdos, cerrar sesión, email, address, sign out"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the notifications group matches"
+msgid "email, digest, reminders, delete, leave, data"
+msgstr "correo, resumen, recordatorios, borrar, irme, datos, email"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the agents group matches"
+msgid "guide, agent, token, key, inbox, assistant"
+msgstr "guía, agente, token, clave, buzón, asistente"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the look group matches"
+msgid "language, Spanish, English, light, dark, mode"
+msgstr "idioma, español, inglés, claro, oscuro, modo, language"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "settings: words a search for the privacy group matches"
+msgid "who sees what, visitors, first name, roles, badges, standing, borrowed, booked, calendar, home"
+msgstr "quién ve qué, visitantes, nombre, roles, insignias, reconocimiento, prestado, reservado, calendario, hogar, privacy"
+
+# needs-native-review: profile overhaul, the settings page, 25 Nov 2026
+msgctxt "privacy settings: the first name switch"
+msgid "Turned off, the public pages say \"A member\" instead."
+msgstr "Si lo apagas, las páginas públicas dicen \"Un miembro\" en su lugar."

@@ -889,3 +889,6 @@ export async function putSecret(
     trimmed ? "Replaced by an endpoint saved under Admin, Integrations." : "Cleared from Admin, Integrations.",
   );
 }
+
+// Who set a key, as a name, for the Integrations card (server/lib/secretSetters.ts).
+export { namedSetters } from "./secretSetters";

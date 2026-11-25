@@ -28,6 +28,7 @@ import { MachineTranslationNote } from "@/i18n/machineTranslation";
 import { useNewcomerShows } from "@/lib/newcomer";
 import FooterBlurb from "@/components/FooterBlurb";
 import MenuIcon from "@/components/nav/MenuIcon";
+import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -42,6 +43,7 @@ export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const bare = isBareRoute(location);
   const { user, token, logout } = useAuth();
+  const visitor = useVerifiedVisitor(!!user); // a visitor with a profile, and no member account
   const { t } = useLingui();
   // Named, so the catalog reads "Your account, {firstName}" and not "{0}".
   const firstName = user?.name.split(" ")[0] ?? "";
@@ -374,7 +376,7 @@ export default function Layout({ children }: LayoutProps) {
                   </AnimatePresence>
                 </div>
               </div>
-            ) : (
+            ) : visitor ? <VisitorLink place="header" /> : (
               <Link href="/login" className="flex items-center gap-2 px-3 py-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-sm transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep">
                 <User className="w-4 h-4" />
                 <Trans context="site header">Sign in</Trans>
@@ -490,6 +492,7 @@ export default function Layout({ children }: LayoutProps) {
                     tapping "My Profile" navigated with the menu still open
                     over the page. */}
                 <div className="pt-2 mt-2 border-t border-white/10 space-y-1">
+                  {!user && visitor && <VisitorLink place="menu" onClick={() => setMobileMenuOpen(false)} />}
                   {user ? (
                     <>
                       {accountItems.map((item) => (

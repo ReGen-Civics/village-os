@@ -41,6 +41,8 @@ export interface Thread {
 
 /** The widest gap a thread will cross, in px. Wider than this, the cards are not neighbours. */
 export const MAX_GAP = 64;
+/** The narrowest column gap a thread crosses; below it the cards sit side by side unthreaded. */
+export const MIN_SIDE_GAP = 24;
 /** How far a knot sits inside its card's edge. */
 const INSET = 3;
 
@@ -66,7 +68,8 @@ export function threadsFor(boxes: Box[]): Thread[] {
       if (b === a) continue;
       const sameRow = Math.abs(b.y - a.y) < Math.min(a.h, b.h) / 2;
       const gapX = b.x - (a.x + a.w);
-      if (sameRow && gapX > 0 && gapX <= MAX_GAP && (!right || b.x < right.x)) right = b;
+      // Not across a gap narrower than MIN_SIDE_GAP: there the S folds into a zig-zag that reads as a stray mark (QA, 25 Nov 2026).
+      if (sameRow && gapX >= MIN_SIDE_GAP && gapX <= MAX_GAP && (!right || b.x < right.x)) right = b;
       const overlap = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
       const gapY = b.y - (a.y + a.h);
       if (overlap > Math.min(a.w, b.w) / 2 && gapY > 0 && gapY <= MAX_GAP && (!below || b.y < below.y)) below = b;

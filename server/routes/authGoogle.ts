@@ -115,6 +115,12 @@ export interface GoogleAuthDeps {
    * it a portal start is an ordinary sign-in.
    */
   portalVisitor?(visitor: { name: string; email: string; next: string | null; secure: boolean }): Promise<{ cookie: string; next: string }>;
+  /**
+   * Whether an address with no account is a portal visitor with a profile (0434). Such a person signs
+   * back in with Google from any door and lands on their visitor profile; they are never given an
+   * account by it. Optional: without it only a round trip started at the entrance is a visitor's.
+   */
+  portalVisitorKnown?(email: string): Promise<boolean>;
 }
 
 /**
@@ -539,7 +545,7 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
         const inviter = await deps.invites.claim(state.invite, member.id);
         if (inviter) await deps.invites.welcome(inviter, member.id);
       }
-    } else if (state.portal && deps.portalVisitor) {
+    } else if (deps.portalVisitor && (state.portal || (deps.portalVisitorKnown ? await deps.portalVisitorKnown(identity.email).catch(() => false) : false))) {
       // From the portal entrance, at an address with no account: the address is proved on a portal
       // entry, the entry cookie is set, and nobody is signed in or given an account (0428).
       const visitor = await deps.portalVisitor({ name: identity.name || identity.email.split("@")[0], email: identity.email, next: state.next, secure });

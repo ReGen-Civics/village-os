@@ -23,6 +23,9 @@ export type Mode = "light" | "dark";
 /** The localStorage key. The first-paint script in client/index.html names the same string. */
 export const MODE_KEY = "village-mode";
 
+/** The window event applyMode sends, so every control showing the mode stays in step. */
+export const MODE_CHANGED = "village-mode-changed";
+
 /** The platform default when nobody has chosen and the device says nothing (the lead, 24 Nov 2026: light). */
 export const DEFAULT_MODE: Mode = "light";
 
@@ -89,6 +92,12 @@ export function applyMode(mode: Mode, remember: boolean): void {
   const root = document.documentElement;
   root.dataset.mode = mode;
   root.style.colorScheme = mode;
+  // Every control showing the mode (the header's switch, the settings page's choice) hears it change.
+  try {
+    window.dispatchEvent(new Event(MODE_CHANGED));
+  } catch {
+    /* an old browser without Event construction: the controls catch up on their next draw */
+  }
   if (!remember) return;
   try {
     window.localStorage.setItem(MODE_KEY, mode);

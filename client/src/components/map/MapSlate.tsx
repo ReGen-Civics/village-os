@@ -278,7 +278,7 @@ export default function BlankSlate({ slate, onOpenBoard, onLeave }: {
               to your agent with the village map skill. It reads your masterplan and the method this map was first
               made by, and sends a draft. It cannot publish anything.
             </Trans></p>
-            <Link href="/profile#your-agent" className={BUTTON}><Trans context="MapSlate, Link">Set up your agent</Trans></Link>
+            <Link href="/profile/settings#agents" className={BUTTON}><Trans context="MapSlate, Link">Set up your agent</Trans></Link>
           </Step>
           <Step n={3} title={t({ message: "Review it on the map, then publish", context: "MapSlate, title" })} icon={<MapIcon className="w-5 h-5 shrink-0" aria-hidden="true" />}>
             {d ? (

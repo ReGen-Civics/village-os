@@ -5,7 +5,7 @@
  *
  * Split out for the bundle, not for meaning. A module lands in one chunk whole,
  * so while the tab bar imported living.tsx, every glyph any page used rode on
- * the first page with it. The first page now carries these eight and nothing
+ * the first page with it. The first page now carries these nine and nothing
  * else; the others stay in the lazy chunks of the pages that draw them.
  * living.tsx says how they are drawn and holds the test of the house style.
  */
@@ -45,16 +45,16 @@ export const Dot = ({ cx, cy, r }: { cx: number; cy: number; r: number }) => <ci
 export const WASH = { fill: "currentColor", fillOpacity: 0.18 } as const;
 
 
-/** The cell: a membrane, a nucleus, a few organelles. A role: a living unit of the village with its own purpose. */
+/** A living cell, its membrane uneven and reaching: a role, a living unit of the village with its own purpose (the lead, 24 Nov 2026: not a shield). */
 function CellDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path data-part="membrane" d="M12 3.3c4.7 0 8.5 3.5 8.5 8.6 0 5.1-3.9 8.8-8.6 8.8-4.8 0-8.5-3.7-8.5-8.6 0-5.1 3.9-8.8 8.6-8.8z" />
-      <circle data-part="nucleus" cx="13.2" cy="10.6" r="3.1" />
-      <Dot cx={13.9} cy={10} r={1} />
-      <ellipse cx="7.9" cy="14.7" rx="1.7" ry="1.1" transform="rotate(-25 7.9 14.7)" />
-      <Dot cx={16.3} cy={16.2} r={0.9} />
-      <Dot cx={9.6} cy={7.6} r={0.7} />
+      <path data-part="membrane" d="M11.6 3.4c3.2-.3 5.6 1.3 6.6 3.4.5 1.1 1.8 1.4 2.4 2.6.8 1.6-.4 2.8-.4 4.4 0 3.8-3.4 6.9-7.8 6.9-4.6 0-8.4-3-8.4-7.6 0-1.8.9-3 1-4.4.3-2.8 3-5 6.6-5.3z" />
+      <ellipse data-part="nucleus" cx="12.8" cy="11.2" rx="3.2" ry="2.7" transform="rotate(-18 12.8 11.2)" />
+      <Dot cx={13.5} cy={10.7} r={1} />
+      <ellipse cx="7.6" cy="15.4" rx="1.6" ry="0.9" transform="rotate(-30 7.6 15.4)" />
+      <Dot cx={16.6} cy={16.2} r={0.8} />
+      <Dot cx={8.6} cy={8.2} r={0.65} />
     </Svg>
   );
 }
@@ -79,16 +79,15 @@ function SeedPodHomeDrawing(props: GlyphProps) {
     </Svg>
   );
 }
-/** Stepping stones climbing toward a light: the walk ahead (quests). */
+/** Stepping stones along a curving path toward a light, each smaller as it goes: the walk ahead (quests). */
 function SteppingStonesDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <ellipse cx="8" cy="19.6" rx="2.6" ry="1.2" />
-      <ellipse cx="13.4" cy="16.4" rx="2.3" ry="1.1" />
-      <ellipse cx="9.6" cy="13" rx="2" ry=".95" />
-      <ellipse cx="13.8" cy="10" rx="1.7" ry=".85" />
-      <ellipse cx="11.2" cy="7.2" rx="1.4" ry=".7" />
-      <Dot cx={13.2} cy={4.6} r={1} />
+      <ellipse cx="5.6" cy="19.4" rx="2.8" ry="1.15" />
+      <ellipse cx="11.6" cy="17.2" rx="2.4" ry="1" transform="rotate(-8 11.6 17.2)" />
+      <ellipse cx="15.6" cy="13.2" rx="2" ry="0.85" transform="rotate(-18 15.6 13.2)" />
+      <ellipse cx="17.2" cy="8.8" rx="1.6" ry="0.7" transform="rotate(-30 17.2 8.8)" />
+      <Dot cx={16.6} cy={4.6} r={1.1} />
     </Svg>
   );
 }
@@ -115,12 +114,12 @@ function CellRingDrawing(props: GlyphProps) {
   );
 }
 
-/** The crown of a tree on its trunk: leadership that shelters. */
+/** A tree's crown on a branching, tapering trunk: leadership that shelters (the steward). */
 function TreeCrownDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path d="M12 20.8v-6.2M12 16.8l-2.4-1.6M12 18.2l2.2-1.4" />
-      <path {...WASH} d="M6.8 14.6c-2.4 0-3.8-1.8-3.4-3.8.3-1.5 1.6-2.4 2.9-2.4.4-2.6 2.6-4.4 5.4-4.2 2.4.2 4.2 1.8 4.6 4 2 0 3.7 1.4 3.8 3.3.1 1.8-1.4 3.1-3.3 3.1z" />
+      <path {...WASH} d="M3.4 12.2c-.6-2.2.8-4 2.8-4.2.6-2.4 2.8-4 5.4-3.8 1.8-1.2 4.4-.8 5.6.8 2.2.2 3.6 1.8 3.4 3.8.8.6 1.2 1.6 1 2.6-.1.4-.3.6-.6.8z" />
+      <path d="M11.2 20.6c.3-2.4.4-5 .2-8.4M12.8 20.6c-.3-2.4-.4-5-.2-8.4M11.6 15.4c-1.2-.6-2.6-1.6-3.4-3.2M12.4 14.6c1.2-.4 2.4-1.2 3.4-2.4M9.4 20.6h5.2" />
     </Svg>
   );
 }
@@ -152,6 +151,19 @@ function SeedHandDrawing(props: GlyphProps) {
   );
 }
 
+/** An earthship dome: a rounded home bermed into the earth, its glass front to the sun, a living roof (home). */
+function EarthshipDomeDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 19.6h18" />
+      {/* The earth it is bermed into, held against both sides. */}
+      <path {...WASH} d="M3 19.6c.6-3 1.8-5.2 3.6-6.2-.9 1.9-1.4 3.9-1.4 6.2zM21 19.6c-.6-3-2-5.2-3.8-6.2.9 1.9 1.4 3.9 1.4 6.2z" />
+      <path d="M5.2 19.6C5.2 12.8 8.2 8 12 8s6.8 4.8 6.8 11.6" />
+      <path d="M8.8 19.6v-3.4a3.2 3.2 0 0 1 6.4 0v3.4M12 13v6.6M8.8 16.6h6.4" />
+      <path d="M12 8V6.2M12 6.8c.7-1 1.8-1.3 2.6-1-.4.9-1.5 1.3-2.6 1z" />
+    </Svg>
+  );
+}
 /* The four paths' glyphs and the seed: the menu draws each path by one, and the bar draws the reader's (config/nav.ts, config/mobileNav.ts PATH_GLYPHS). */
 export const Cell = /* @__PURE__ */ asIcon("Cell", CellDrawing);
 export const CellRing = /* @__PURE__ */ asIcon("CellRing", CellRingDrawing);
@@ -161,3 +173,4 @@ export const SunLeaf = /* @__PURE__ */ asIcon("SunLeaf", SunLeafDrawing);
 export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
 export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);
 export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
+export const EarthshipDome = /* @__PURE__ */ asIcon("EarthshipDome", EarthshipDomeDrawing);

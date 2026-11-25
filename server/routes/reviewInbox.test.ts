@@ -98,8 +98,10 @@ describe("the deciders' read shows each person exactly what their own queues sho
     const r = await get("/api/admin/review/inbox", "steward");
     expect(r.status).toBe(200);
     expect(r.body.items.map((i: any) => i.key)).toEqual(["intake:ep_1", "claim:c1"]);
-    expect(Object.fromEntries(r.body.sections.map((s: any) => [s.source, s.state]))).toEqual({
+    expect(Object.fromEntries(r.body.sections.map((s: any) => [s.source, s.state]))).toMatchObject({
       connector: "refused", intake: "ok", quest: "ok", claim: "ok", approval: "refused", agent: "refused", sera: "off",
+      // A queue the fake does not answer for this person refuses, as the real gate would.
+      vote: "refused", recap: "refused", application: "refused",
     });
     // Every queue was read as the steward, and as nobody else.
     expect(new Set(seenAuth)).toEqual(new Set(["steward"]));

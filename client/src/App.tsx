@@ -200,6 +200,7 @@ const MasterPlan = brochurePage(() => import("./pages/MasterPlan"));
 const Team = brochurePage(() => import("./pages/Team"));
 const Admin = lazyPage(() => import("./pages/Admin"));
 const Profile = lazyPage(() => import("./pages/Profile"));
+const ProfileSettings = lazyPage(() => import("./pages/ProfileSettings"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
 // Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
@@ -214,6 +215,8 @@ const RitesDoor = lazyPage(() => import("./pages/rites/Door").then((m) => ({ def
 const RitesPacket = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Packet })));
 const Mint = lazyPage(() => import("./pages/Mint"));
 const ProposedChanges = lazyPage(() => import("./pages/ProposedChanges"));
+// The deciders' one list, each queue read as the person (docs/REVIEW_INBOX_PLAN.md, lane 4a).
+const AdminReview = lazyPage(() => import("./pages/AdminReview"));
 const PublicProfile = lazyPage(() => import("./pages/PublicProfile"));
 const Register = lazyPage(() => import("./pages/Register"));
 const SetPassword = lazyPage(() => import("./pages/SetPassword"));
@@ -304,6 +307,8 @@ const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
 const SessionSeason = lazyPage(() => import("./pages/SessionSeason"));
 // A fresh start for one device, by a link we hand to a stuck member (lib/deviceReset.ts).
 const Reset = lazyPage(() => import("./pages/Reset"));
+const VisitorProfile = lazyPage(() => import("./pages/VisitorProfile"));
+const VisitorSignIn = lazyPage(() => import("./pages/VisitorSignIn"));
 
 /**
  * Shown while a page chunk arrives: the breathing leaf and a few words
@@ -462,11 +467,14 @@ function Router() {
       <Route path="/admin/mint" component={Mint} />
       {/* Every change an agent proposed, reviewed, edited and accepted on one page. */}
       <Route path="/admin/proposals" component={ProposedChanges} />
+      <Route path="/admin/review" component={AdminReview} />
       <Route path="/profile" component={Profile} />
       {/* The class select. Under /profile because a party is part of who you
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      {/* Profile settings (Direction D). Before /profile/:handle, which would otherwise take "settings" as a handle. */}
+      <Route path="/profile/settings" component={ProfileSettings} />
       <Route path="/welcome" component={RitesWelcome} />
       <Route path="/aboard" component={RitesComeAboard} />
       <Route path="/aboard/welcome" component={RitesArrived} />
@@ -481,6 +489,9 @@ function Router() {
           class select into a lookup for a member called "characters". */}
       <Route path="/profile/:handle" component={PublicProfile} />
       <Route path="/login" component={Login} />
+      {/* A visitor's own profile and their way back in (shared/visitorProfile.ts). The sign-in is open; the profile stands behind the entrance. */}
+      <Route path="/visitor/sign-in" component={VisitorSignIn} />
+      <Route path="/visitor" component={VisitorProfile} />
       {/* A connector's sign-in (addendum v6, B4): the member allows or refuses. */}
       <Route path="/oauth/authorize" component={OAuthAuthorize} />
       <Route path="/register" component={Register} />

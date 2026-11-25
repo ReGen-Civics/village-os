@@ -66,10 +66,11 @@ export function villageSlots(tabs: readonly string[], labels: Readonly<Record<st
 
 /**
  * The bar's places the responsive choice may fill (shared/navPopularity.ts,
- * MOVING_PLACES): the two after Home. Every other place is the platform's and
- * never moves: Home, the member's path (the lead, 24 Nov 2026) and More.
+ * MOVING_PLACES): the two after the member's path. Every other place is the
+ * platform's and never moves: Home, the member's path (the lead, 24 Nov 2026;
+ * second since 25 Nov) and More.
  */
-const MOVING_INDEXES = [1, 2] as const;
+const MOVING_INDEXES = [2, 3] as const;
 
 /**
  * THE RESPONSIVE BAR (nav.responsive_bar): the platform's bar with its moving
@@ -268,14 +269,15 @@ export default function MobileTabBar() {
                 }`}
                 data-on={active}
               />
+              {/* A bud on the shoot itself, centred and opening upward (index.css, LIVING MOTION: Root):
+                  at the pill's corner it read as an unread dot (QA, 25 Nov 2026). */}
+              <span aria-hidden="true" className="m-bud bg-amber" data-on={active} />
               <div
                 className={`relative flex items-center justify-center rounded-2xl transition-all duration-300 ${
                   active ? "px-2.5 py-1 -translate-y-0.5 bg-white/15" : "px-1.5 py-1"
                 }`}
               >
                 <slot.Icon className="w-[22px] h-[22px]" />
-                {/* A bud on the chosen tab (index.css, LIVING MOTION: Root). */}
-                <span aria-hidden="true" className="m-bud bg-amber" data-on={active} />
               </div>
               {/* min-w-0 + truncate, because at a 320px viewport the five labels needed
                   325px of min-content and the bar itself became wider than the

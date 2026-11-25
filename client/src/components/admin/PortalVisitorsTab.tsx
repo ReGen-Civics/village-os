@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DoorOpen } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import InvitationRequests from "./InvitationRequests";
 import { INTERESTS, type Interest, type PortalEntry } from "@shared/entrance";
 
 const BTN = "min-h-11 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50";
@@ -214,6 +215,8 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
           {t({ message: "Download CSV", context: "admin portal visitors" })}
         </button>
       </div>
+
+      <InvitationRequests password={password} onChange={() => void load()} />
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground">

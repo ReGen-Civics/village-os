@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.71 (2026-11-25)
+
+### What changed for your village
+
+- **A new phone bar and Home icon.** The bottom bar reads Home, Your path, Roles, Quests, More by default, and Home is an earthship dome everywhere it appears. Gratitude, events and seasonal festivals get new drawings, four page icons are redrawn, and the sacred geometry behind the founding team section on the roles page is gone.
+- **The profile, first steps of the new design.** Powers and entrusted roles fold away under a summary line, and a card no longer prints the parts its holder has not written (the holder sees one line inviting them to write them). A new Profile settings page gathers email addresses, time zone, agreements, notifications, language, light or dark, the guide and the agent panel, with a sidebar on a computer, a list on a phone, a search, and a "Who sees what" panel holding every privacy switch. Companions stand together in the corner as the village's animals, with Scarlet the scarlet macaw for new personal companions. A member with chart lines can pull today's card for themselves.
+- **Words explained.** A small info mark beside the words the village explains (Formation, domain, Village Credits, Voice and others) opens a one-line meaning. The meanings are the village's own words, set under Admin, Identity, "Words you explain"; an empty one shows no mark.
+- **One review page for deciders.** /admin/review lists everything waiting on a decision across every queue, with a door to where each is decided and a find by code.
+- **A visitor keeps a profile.** A verified portal visitor can sign back in with a code or Google, see and download what they gave, withdraw or edit an application, ask for an invitation, and delete their record. Invitation requests land in Admin, Portal visitors, where a steward can promote or decline.
+- **Brevo on one card.** The list number sits beside the key on the Brevo card, the card describes the Yes step correctly, and "set by" shows a name.
+- **Agents read safely.** The village can let its full-access agent read without a list of paths ("Reads open", off until a person turns it on), while secrets, applicant data, money, contact details and sign-ins stay closed, and pages that show more to admins answer an agent as they would a plain member. A new QA role power lets a seated person look at the live game read-only, past the entrance, as a plain member.
+- **Who Holds the Voice** reads clearly in dark mode.
+
+### What you must do
+
+Nothing to upgrade. Optional, after it is live:
+
+- To let a role promote visitors to members, give it `member.superVouch` under Admin, Powers.
+- To use "Reads open", turn it on beside the agent's full access in Admin, Players, Agents.
+- To use the live QA view, make a QA role on the org chart, tick QA viewers on its card, and seat people in it.
+- To show the word tips, write your meanings under Admin, Identity, "Words you explain".
+
+### Does it touch your data
+
+Yes, adding only. Migration 0434 adds the `portal_visitors` table. A boot step adds an empty "QA viewers" power group held by nobody, and untouched default companions take their new look. Going back to 1.3.70 still works.
+
+---
+
 ## 1.3.70 (2026-11-25)
 
 ### What changed for your village

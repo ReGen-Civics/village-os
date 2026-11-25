@@ -246,7 +246,18 @@ export type Capability =
   | "operator.accounts" // members' accounts, stages and exits
   | "operator.config" // settings with no power of their own
   | "operator.secrets" // provider keys and the email sender, write-only
-  | "operator.recover"; // the repair tools
+  | "operator.recover" // the repair tools
+  //
+  // ── The live view for QA (the lead, 25 Nov 2026) ─────────────────────────
+  //
+  // "ALL lanes need to have access to the live site, we have a QA role in the
+  // game." A holder may make a personal token with the `live.view` scope on
+  // their own profile, and a browser carrying it sees the live game signed in
+  // as them, past the entrance, READ-ONLY: every request other than a read is
+  // refused whatever else the holder may do (server/lib/liveView.ts). The gate
+  // is asked on every request the token makes, so losing the seat ends it.
+  // Seat-only: no stage unlocks it and no badge may grant it.
+  | "qa.live_view"; // see the live game read-only through a personal QA token
 
 /**
  * The canonical list, as a VALUE: badge validation and unlock diffs iterate
@@ -312,6 +323,7 @@ export const ALL_CAPABILITIES: Capability[] = [
   "operator.config",
   "operator.secrets",
   "operator.recover",
+  "qa.live_view",
 ];
 
 /**
@@ -393,6 +405,7 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "operator.config": "Keep the village's settings that have no power of their own",
   "operator.secrets": "Write the village's provider keys and email sender",
   "operator.recover": "Run the village's repair tools",
+  "qa.live_view": "See the live game read-only, signed in as yourself, through a personal QA token",
 };
 
 /**
@@ -770,6 +783,9 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
   // Admitting somebody outright, which bypasses the bar the village set for
   // itself. Everything true of the vouch above is more true of this.
   "member.superVouch": false,
+  // FALSE: not a village power to hand over. It is a way of looking, it gates no act,
+  // and its holders are whoever the village seats in its QA role.
+  "qa.live_view": false,
 };
 
 /**
@@ -786,7 +802,7 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * ── THIS IS A READING OF THOSE WORDS, AND IT HAS A PRODUCT CONSEQUENCE ─────
  *
  * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 34 keys
- * today. The other 24 are not withheld from anybody: they are personal acts
+ * today. The other 25 are not withheld from anybody: they are personal acts
  * and deployment plumbing that were never anyone's to hold, and `TRANSFERABLE`
  * carries the reasoning key by key.
  *
@@ -844,7 +860,9 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * `hiddenmap.keep` and `hiddenmap.export` (the hidden map, 0392) were born
  * transferable with Rye's word of 2026-11-15 on the hidden-map spec's I.10
  * ("go with your recommendations on all of them"), which moved only the
- * first: 34 and 24.
+ * first: 34 and 24. `qa.live_view` (the lead, 25 Nov 2026) was born held
+ * back, a way of looking given by the QA seat, which moved only the second:
+ * 34 and 25.
  *
  * This sentence was itself wrong for one batch, and it is the reason the check
  * below reads the WHOLE paragraph rather than three sentences. It claimed
@@ -1088,6 +1106,8 @@ export const DENIABLE: Record<Capability, boolean> = {
   "operator.config": true,
   "operator.secrets": true,
   "operator.recover": true,
+  // A job: looking at the live game for QA. Taking it away silences no voice.
+  "qa.live_view": true,
 };
 
 /**
@@ -1185,6 +1205,9 @@ export const BADGE_GRANTABLE: Record<Capability, boolean> = {
   "operator.config": false,
   "operator.secrets": false,
   "operator.recover": false,
+  // Seat-only (the lead, 25 Nov 2026): the live view is given by seating a person in the role that
+  // carries it, so who can see the live game is on the chart and nowhere else.
+  "qa.live_view": false,
   // FALSE: the private sections name people, title holders and land, and they
   // move onto a role by a `power_grant` vote (G.4). A badge is minted by an
   // admin, so a badge carrying this would let an unseated admin hand

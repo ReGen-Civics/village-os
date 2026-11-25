@@ -49,6 +49,8 @@ import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import { registerJob } from "../lib/scheduler";
 import { entryLook, markEntryInvited, markEntryVerified, type EntryLook } from "../repos/portalEntries";
 import { makeInvite } from "./invites";
+import { registerVisitor } from "./visitorProfile";
+import { deleteVisitorAt, latestVerifiedEntry } from "../repos/portalVisitors";
 import { INVITE_DAYS, invitePath } from "../lib/invites";
 import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, sweepPortalViews, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
@@ -84,7 +86,9 @@ export interface EntranceRouteDeps {
    * The code's letter, through the one mail door (`sendResendEmail`, an essential email). `ready`
    * is whether the village can send email at all; without it the entrance asks for no code.
    */
-  mail: CodeLetterDeps & { ready(): boolean };
+  mail: CodeLetterDeps & { ready(): boolean; origin?(): string };
+  /** The roles by id, for naming a visitor's applications (server/routes/visitorProfile.ts). */
+  roleNames?(): Promise<Map<string, string>>;
   /** The accounts, for an address that already has one: a correct code signs it in, never a second account. */
   accounts: {
     byEmail(email: string): Promise<any | null>;
@@ -94,6 +98,11 @@ export interface EntranceRouteDeps {
     /** Ends agent reach on both sides of a change that ends an unproved password (R104). */
     endReachAround<T>(userId: string, change: () => Promise<T>): Promise<T>;
     recordAudit(text: string, userId: string): void;
+    /** A visitor promoted to member (server/routes/visitorProfile.ts): their new account. */
+    add?(member: any): Promise<any>;
+    makeHandle?(name: string): Promise<string>;
+    /** A new member arrived: records the join and greets, as every door in does. Never rejects. */
+    joined?(member: any): void;
   };
   /** DNS, swapped in tests. */
   mailLookup?: MailLookup;
@@ -171,7 +180,13 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       if (e && e.codeRequired && !e.verified) look = { needsCode: true, startedAt: e.createdAt, pages: e.views, lookMs: lookMs(), lookPages: lookPages(), sentTo: e.email };
     }
     const privacyContact = deps.stringVar("entrance.privacy_contact").trim();
-    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look, privacyContact, codes: deps.mail.ready() };
+    let verified = false;
+    if (visitor) {
+      const own = ownEntry(req);
+      const e = own ? await entryLook(deps.getPool(), own) : null;
+      verified = !!e && e.verified && !e.isTest;
+    }
+    const body: EntranceStatus = { required, entered: passed, siteKey: siteKey(), eventPass: passed ? null : eventPassFor(req), visitor, look, privacyContact, codes: deps.mail.ready(), verifiedVisitor: verified };
     res.setHeader("Cache-Control", "no-store");
     res.json(body);
   });
@@ -258,19 +273,18 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     if (brevoOn(deps.brevo) && !entry.syncedAt) void syncOne(entry);
   }
 
-  app.post("/api/entrance/code", async (req, res) => {
-    if (await deps.overLimit(`entrance-code:${ipBucket(deps.clientIp(req))}`, 30, 60 * 60 * 1000)) {
-      return res.status(429).json({ error: "slow_down", message: "Too many tries from this connection. Try again in an hour." });
-    }
-    const id = ownEntry(req);
-    if (!id) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
-    const typed = cleanCode(req.body?.code);
-    if (!typed) return res.status(400).json({ error: "invalid", message: "The code is 6 digits." });
+  /**
+   * Take a typed code for an entry: the code rules (15 minutes, 5 tries, single use), then the
+   * address is proved on the entry, an account already at that address is signed in (never a second
+   * one made), and a yes reaches the lists. The entrance's own step and a visitor signing back in
+   * (server/routes/visitorProfile.ts) both come through here.
+   */
+  async function redeemCode(id: string, typed: string): Promise<{ ok: true; signedIn: { token: string; user: unknown } | null } | { ok: false; status: number; body: Record<string, unknown> }> {
     const pool = deps.getPool();
     const e = await entryLook(pool, id);
-    if (!e) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    if (!e) return { ok: false, status: 401, body: { error: "entrance_required", message: "Enter the portal first." } };
     const c = await latestPortalCode(pool, id);
-    const spent = (why: string) => res.status(410).json({ error: "code_spent", message: why });
+    const spent = (why: string) => ({ ok: false as const, status: 410, body: { error: "code_spent", message: why } });
     if (!c || c.usedAt) return spent("That code has been used. Ask for a new one.");
     if (c.expiresAt <= now()) return spent("That code has run out. Ask for a new one.");
     if (c.attempts >= CODE_TRIES) return spent("Too many wrong tries for this code. Ask for a new one.");
@@ -278,7 +292,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       const tries = await countWrongTry(pool, c.id);
       if (tries >= CODE_TRIES) return spent("Too many wrong tries for this code. Ask for a new one.");
       const left = CODE_TRIES - tries;
-      return res.status(400).json({ error: "wrong_code", message: left === 1 ? "That code is not right. One more try, then you will need a new one." : `That code is not right. ${left} more tries.` });
+      return { ok: false, status: 400, body: { error: "wrong_code", message: left === 1 ? "That code is not right. One more try, then you will need a new one." : `That code is not right. ${left} more tries.` } };
     }
     if (!(await takePortalCode(pool, c.id, new Date(now())))) return spent("That code has been used. Ask for a new one.");
 
@@ -308,7 +322,20 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     }
     await markEntryVerified(pool, id, new Date(now()), userId);
     await listIfYes(id);
-    res.json({ ok: true, ...(signedIn ?? {}) });
+    return { ok: true, signedIn };
+  }
+
+  app.post("/api/entrance/code", async (req, res) => {
+    if (await deps.overLimit(`entrance-code:${ipBucket(deps.clientIp(req))}`, 30, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "slow_down", message: "Too many tries from this connection. Try again in an hour." });
+    }
+    const id = ownEntry(req);
+    if (!id) return res.status(401).json({ error: "entrance_required", message: "Enter the portal first." });
+    const typed = cleanCode(req.body?.code);
+    if (!typed) return res.status(400).json({ error: "invalid", message: "The code is 6 digits." });
+    const r = await redeemCode(id, typed);
+    if (!r.ok) return res.status(r.status).json(r.body);
+    res.json({ ok: true, ...(r.signedIn ?? {}) });
   });
 
   app.post("/api/entrance/code/resend", async (req, res) => {
@@ -453,6 +480,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     const listed = await portalEmailsFor(deps.getPool(), key);
     const listProblem = await removeFromBrevo(deps.brevo, listed);
     await deletePortalCodesFor(deps.getPool(), key);
+    await deleteVisitorAt(deps.getPool(), key);
     const removed = await deletePortalEntriesFor(deps.getPool(), key);
     res.json({ ok: true, removed, ...(listProblem ? { listProblem } : {}) });
   });
@@ -477,6 +505,30 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     res.json({ ok: true, path: invitePath(made.token), expiresInDays: INVITE_DAYS });
   });
 
+  // A visitor's own profile, sign-in by code, and the invitation requests (server/routes/visitorProfile.ts).
+  registerVisitor(app, {
+    getPool: deps.getPool,
+    secret: deps.secret,
+    now,
+    clientIp: deps.clientIp,
+    overLimit: deps.overLimit,
+    guardCapability,
+    authedUser: deps.authedUser,
+    secureOf,
+    ownEntry,
+    mailReady: () => deps.mail.ready(),
+    sendNewCode,
+    redeemCode,
+    listIfYes,
+    brevo: deps.brevo,
+    roleNames: () => (deps.roleNames ? deps.roleNames() : Promise.resolve(new Map())),
+    accounts: { byEmail: deps.accounts.byEmail, update: deps.accounts.update, add: deps.accounts.add, makeHandle: deps.accounts.makeHandle, joined: deps.accounts.joined },
+    sendEmail: deps.mail.sendEmail,
+    escapeHtml: deps.mail.escapeHtml,
+    projectName: deps.mail.projectName,
+    origin: () => (deps.mail.origin ? deps.mail.origin() : ""),
+  });
+
   // Send everyone who asked for updates and has not reached the email list yet (a first setup, or a failed call).
   app.post("/api/admin/entrance/sync", async (req, res) => {
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
@@ -497,8 +549,15 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
 export function portalGoogleVisitor(deps: { getPool(): Pool; secret: string; now?: () => number }) {
   const now = deps.now ?? (() => Date.now());
   return async (v: { name: string; email: string; next: string | null; secure: boolean }): Promise<{ cookie: string; next: string }> => {
-    const id = `pe-${crypto.randomBytes(10).toString("hex")}`;
     const next = safeNext(v.next) ?? "/";
+    // A visitor who has been here before (0434): Google signs them back in to the profile they have,
+    // on the page they asked for (or their profile, from the sign-in page), with no new entry.
+    const known = await latestVerifiedEntry(deps.getPool(), emailKeyOf(v.email));
+    if (known) {
+      const landing = next === "/" || next === "/profile" || next.startsWith("/login") ? "/visitor" : next;
+      return { cookie: entryCookieHeader(signEntry(deps.secret, known.id, now()), v.secure), next: landing };
+    }
+    const id = `pe-${crypto.randomBytes(10).toString("hex")}`;
     await insertPortalEntry(deps.getPool(), {
       id,
       name: v.name.slice(0, 120),
@@ -520,4 +579,9 @@ export function portalGoogleVisitor(deps: { getPool(): Pool; secret: string; now
     const landing = `${path}${path.includes("?") ? "&" : "?"}${KEEP_IN_TOUCH_PARAM}=1${hash ? `#${hash}` : ""}`;
     return { cookie: entryCookieHeader(signEntry(deps.secret, id, now()), v.secure), next: landing };
   };
+}
+
+/** Whether an address belongs to a visitor with a profile here (a verified portal entry), for Google's sign-in door. */
+export function portalVisitorKnown(deps: { getPool(): Pool }) {
+  return async (email: string): Promise<boolean> => !!(await latestVerifiedEntry(deps.getPool(), emailKeyOf(email)));
 }

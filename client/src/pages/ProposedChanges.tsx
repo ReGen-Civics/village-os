@@ -76,7 +76,8 @@ export default function ProposedChanges() {
   const [page, setPage] = useState("");
   const [who, setWho] = useState("");
   // A code (B-27 or B-27.2) or an old long id: only what it names is shown, ringed, and scrolled to.
-  const [find, setFind] = useState("");
+  // Opened from /admin/review with ?find=B-71, it starts searched for that code.
+  const [find, setFind] = useState(() => (typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("find") ?? "").slice(0, 80));
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const load = useCallback(async () => {
@@ -291,6 +292,10 @@ export default function ProposedChanges() {
             </h1>
             <p className={LEDE}>
               <Trans context="proposed changes">Nothing here is live until you accept it. Each batch shows what changes and where it lands. Edit any words first; your edits save as you type.</Trans>
+            </p>
+            <p className={HINT}>
+              <Trans context="proposed changes, a door to the one list">These are the connector's changes. Everything waiting, from every queue, is on</Trans>{" "}
+              <Link href="/admin/review" className={LINK}><Trans context="proposed changes, a door to the one list">one list</Trans></Link>.
             </p>
           </header>
 

@@ -5,6 +5,7 @@
  * (FoundingLineup.tsx), and "Related roles this role will onboard:" in a lead role's row. Old links to one role (`?seat=`, `?role=`,
  * `#<id>`, `#role-<id>`, `#<slug>`) land on its own page, `/roles/<slug>` (RoleShare.tsx), its share link.
  */
+import GlossaryTip from "@/components/GlossaryTip";
 import ArchetypeStep from "@/components/roleDraft/ArchetypeStep";
 import SeatHistory from "@/components/power/SeatHistory"; // kept static: lazy, it folds the shared shell chunk into the main bundle (main JS budget)
 import CircleName from "@/components/circles/CircleName";
@@ -359,6 +360,7 @@ export default function Roles() {
   const memberPct = useMyCommitment(!!user).pct;
   const [showBeyond, setShowBeyond] = useState(false);
   const { t } = useLingui();
+  const rootWord = t({ message: "root", context: "glossary: the word a tip explains" });
   const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
   const isAdmin = useIsAdmin();
   // "Show only what matches my roots": the same filter and rule the quests board runs.
@@ -629,7 +631,7 @@ export default function Roles() {
                 {/* One quiet door (design pass D-04, M3): the roots, the season and the board live on
                     /roles/select, so the paid roles never share a scroll with the game. */}
                 <h3 className="font-display text-2xl leading-tight text-foreground">{t({ message: "Find your place in the game", context: "roles page, other ways to join" })}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{t({ message: "Choose the root you grow from, see this season's goals, and pick the roles you play.", context: "roles page, other ways to join: the game's door" })}</p>
+                <p className="mt-2 text-sm text-muted-foreground"><Trans context="roles page, other ways to join: the game's door">Choose the root<GlossaryTip slot="root" word={rootWord} /> you grow from, see this season's goals, and pick the roles you play.</Trans></p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <Link href="/roles/select" className={BTN_SECONDARY} data-game-door="">
                     {t({ message: "Explore the game", context: "roles page, other ways to join: the game's door" })}

@@ -134,6 +134,8 @@ interface InfoTipProps {
    * so the sentence around it keeps its line and nothing moves.
    */
   tapBox?: boolean;
+  /** The bare mark's glyph: "?" (the default) or "i" for a word the village explains (GlossaryTip.tsx). */
+  mark?: "?" | "i";
 }
 
 /** The bare mark grown to a 44px box with its 16px footprint kept (`tapBox`). */
@@ -143,7 +145,7 @@ export const BARE_TAP_BOX =
 const BARE_TAP_MARK =
   "inline-flex items-center justify-center w-4 h-4 rounded-full border border-current/40 text-[10px] leading-none opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-ring";
 
-export default function InfoTip({ tip, children, label, className = "", triggerClassName = "", tapBox = false }: InfoTipProps) {
+export default function InfoTip({ tip, children, label, className = "", triggerClassName = "", tapBox = false, mark = "?" }: InfoTipProps) {
   const { t } = useLingui();
   const tap = triggerClassName || WORDED_TAP;
   const padded = children != null && tap.includes(WORDED_TAP);
@@ -270,7 +272,7 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
             : `underline decoration-dotted decoration-1 underline-offset-4 cursor-help rounded-sm max-w-full text-left [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tap}`
         }
       >
-        {bare ? <span aria-hidden="true" className={tapBox ? BARE_TAP_MARK : undefined}>?</span> : children}
+        {bare ? <span aria-hidden="true" className={tapBox ? BARE_TAP_MARK : undefined}>{mark}</span> : children}
       </button>
       <span
         id={id}

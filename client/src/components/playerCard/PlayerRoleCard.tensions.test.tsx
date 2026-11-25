@@ -38,7 +38,8 @@ function noFetch() {
 const withTensions = (tensions: TensionIn[] | undefined, over: Partial<PlayerRoleIn> = {}): PlayerRoleIn => ({ ...fixtureRole(1), tensions, ...over });
 
 function draw(level: "member" | "self", extra: Partial<PlayerCardInput>) {
-  render(<PlayerRoleCardView data={fixturePayload(1, level, extra)} />);
+  // A proposal card is drawn in proposal mode, as SharedProposal and ProposalEditor draw it.
+  render(<PlayerRoleCardView data={fixturePayload(1, level, extra)} mode={extra.mode === "proposal" ? "proposal" : "live"} />);
   return document.querySelector("[data-role-tensions='r1']") as HTMLElement | null;
 }
 
@@ -60,7 +61,8 @@ describe("tensions on the card", () => {
   it("the raise box says who can read it before a word is written", () => {
     noFetch();
     const box = draw("member", { viewerMember: true, roles: [withTensions([])] })!;
-    expect(within(box).getByText("No tensions raised")).toBeTruthy();
+    // Absent, not empty: with none raised, the box holds its heading and the raise control, no "No tensions raised".
+    expect(within(box).queryByText("No tensions raised")).toBeNull();
     fireEvent.click(within(box).getByRole("button", { name: RAISE }));
     expect(within(box).getByText("Only the role's holders and you can read this until it's answered.")).toBeTruthy();
   });

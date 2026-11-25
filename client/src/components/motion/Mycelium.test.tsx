@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/react";
-import Mycelium, { MAX_GAP, threadsFor, type Box } from "./Mycelium";
+import Mycelium, { MAX_GAP, MIN_SIDE_GAP, threadsFor, type Box } from "./Mycelium";
 
 afterEach(cleanup);
 
@@ -19,7 +19,7 @@ function knotsOnEdges(boxes: Box[]) {
 
 describe("threadsFor", () => {
   it("stitches a 2x2 grid with four threads: two across, two down", () => {
-    const boxes = [card(0, 0), card(176, 0), card(0, 136), card(176, 136)];
+    const boxes = [card(0, 0), card(184, 0), card(0, 136), card(184, 136)];
     const threads = threadsFor(boxes);
     expect(threads).toHaveLength(4);
     knotsOnEdges(boxes);
@@ -34,9 +34,14 @@ describe("threadsFor", () => {
   });
 
   it("stitches a desktop row of four across only", () => {
-    const boxes = [0, 1, 2, 3].map((i) => card(i * 276, 0, 260, 300));
+    const boxes = [0, 1, 2, 3].map((i) => card(i * 284, 0, 260, 300));
     expect(threadsFor(boxes)).toHaveLength(3);
     knotsOnEdges(boxes);
+  });
+
+  it("leaves a column gap narrower than MIN_SIDE_GAP unthreaded, where the S would fold into a zig-zag", () => {
+    expect(threadsFor([card(0, 0), card(160 + MIN_SIDE_GAP - 1, 0)])).toHaveLength(0);
+    expect(threadsFor([card(0, 0), card(160 + MIN_SIDE_GAP, 0)])).toHaveLength(1);
   });
 
   it("never crosses a gap wider than a thread can, or joins cards that touch", () => {
@@ -47,7 +52,7 @@ describe("threadsFor", () => {
   });
 
   it("draws the same threads every time for the same layout", () => {
-    const boxes = [card(0, 0), card(176, 0), card(0, 136), card(176, 136)];
+    const boxes = [card(0, 0), card(184, 0), card(0, 136), card(184, 136)];
     expect(threadsFor(boxes)).toEqual(threadsFor(boxes));
   });
 });

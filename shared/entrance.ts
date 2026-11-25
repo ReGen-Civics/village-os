@@ -19,7 +19,9 @@
  *
  * WHO PASSES: a signed-in member, an agent token, our own automation by its pass header, a visitor
  * with a live entry cookie (signed by the server, `ENTRY_DAYS` long), and an invited guest for their
- * one gathering. Everybody, while the village's dial `entrance.required` is off, which is the
+ * one gathering. A QA viewer's `live.view` token passes as its holder, for reads only, while their
+ * seat carries `qa.live_view` (server/lib/liveView.ts, mounted ahead of this gate).
+ * Everybody, while the village's dial `entrance.required` is off, which is the
  * platform default: a fork turns its entrance on.
  *
  * WHAT IS KEPT: the name, the address, the optional fields, what draws them, the answer to the
@@ -116,6 +118,8 @@ export const OPEN_PAGES: readonly string[] = [
   "/oauth",
   "/claim",
   "/reset",
+  // A visitor signing back in with a code (shared/visitorProfile.ts). The profile itself, /visitor, stays behind.
+  "/visitor/sign-in",
   // Links in the village's emails: preferences, unsubscribing, one-click answers.
   "/email",
   // An applicant's own links: confirming an application, and its status.
@@ -283,6 +287,8 @@ export interface EntranceStatus {
   privacyContact?: string;
   /** Whether entering sends a code (the village can send email), so the privacy line says so. */
   codes?: boolean;
+  /** This device is a visitor whose address is verified: they have a visitor profile at `/visitor` (shared/visitorProfile.ts). */
+  verifiedVisitor?: boolean;
   /** The short look and its code, while this device's entry has one; null otherwise. */
   look?: LookStatus | null;
 }

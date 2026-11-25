@@ -32,6 +32,7 @@
  * (server/routes/roleCardImport.ts `wordsOf`).
  */
 import { roleCardSharedFrom } from "../../shared/roleCardShared";
+import { readsAsPlainMember } from "../lib/readAsMember";
 import { registerRoleWaitlistRoutes } from "./roleWaitlist";
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
@@ -93,7 +94,14 @@ const IMPORTS = 20;
 
 const fold = (s: string) => s.normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase();
 
-export function registerRoleEditRoutes(app: Express, g: Gate): void {
+export function registerRoleEditRoutes(app: Express, gate0: Gate): void {
+  // A plain member's read (server/lib/readAsMember.ts, the lead, 25 Nov 2026) is never an admin's and never reads
+  // terms here, whatever the gate it was handed says, so the pay ceiling and the editor stay out of it.
+  const g: Gate = {
+    ...gate0,
+    isAdmin: async (req: any) => !readsAsPlainMember(req) && (await gate0.isAdmin(req)),
+    canReadTerms: async (req: any) => !readsAsPlainMember(req) && (await gate0.canReadTerms(req)),
+  };
   const BASE = "/api/org/role-edit";
   // The coming-soon waitlist (0414, shared/roleWaitlist.ts), beside the role card's own reads.
   registerRoleWaitlistRoutes(app, g);
@@ -102,6 +110,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     const user = await g.authedUser(req);
     if (!user) return null;
     const userId = String(user.id);
+    // A plain member's read has no editor's door (server/lib/readAsMember.ts).
+    if (readsAsPlainMember(req)) return { userId, door: null };
     return { userId, door: await publishDoorFor(g.getPool(), { userId, isAdmin: await g.isAdmin(req) }, await g.liveHoldersOf(ORG_DECIDE)) };
   };
 

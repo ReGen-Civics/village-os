@@ -13,7 +13,6 @@
  */
 import {
   Scroll,
-  Heart,
   User,
   MessageCircle,
   UserPlus,
@@ -26,8 +25,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
-import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { GoldenSpiral, Tripoint } from "@/components/sacred/glyphs";
+import { Cell, EarthshipDome, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -89,11 +88,14 @@ export const CHOOSE_PATH_HREF = { signedIn: "/profile#sheet-paths", visitor: "/p
  * Exactly five slots. Four routes plus More, which opens the existing header
  * drawer rather than duplicating it as a second full menu.
  */
+// The lead, 25 Nov 2026: exactly Home, Your path, Roles, Quests, More, for everyone, before any visit
+// data. The reader's own path sits next to Home; Home is the earthship dome. The gratitude wall is in the
+// menu, and a village that wants it on the bar chooses it (villageSlots), where it still wears its token's word.
 export const TAB_SLOTS: TabSlot[] = [
-  { path: "/", label: "Home", Icon: Lotus },
-  { path: "/quests", label: "Quests", Icon: SteppingStones },
-  { path: "/gratitude", label: "Gratitude", Icon: Heart, token: "recognition" },
+  { path: "/", label: "Home", Icon: EarthshipDome },
   PATH_SLOT,
+  { path: "/roles", label: "Roles", Icon: Cell },
+  { path: "/quests", label: "Quests", Icon: SteppingStones },
   { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 

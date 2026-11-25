@@ -44,7 +44,6 @@ export const TAB_OF_ANCHOR: Record<string, ProfileTab> = {
   ventures: "treasury",
   "venture-redemptions": "treasury",
   "send-tokens": "treasury",
-  "your-agent": "sheet",
   "my-needs": "sheet",
   "sheet-paths": "sheet",
   about: "sheet",

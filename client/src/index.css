@@ -2624,12 +2624,16 @@ html:has(#sera-changes [data-sera-strip-on]) {
   from { opacity: 0.55; }
   to { opacity: 1; }
 }
+/* The bud sits on the shoot, centred and pointing up: a leaf on the stem. At the pill's top-right corner,
+   where a phone shows unread counts, two reviewers read it as a notification (QA, 25 Nov 2026). */
 .m-bud {
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 7px;
-  height: 7px;
+  /* Centred on the line, a leaf with its points up and down: a bud on the stem. */
+  top: -2px;
+  left: 50%;
+  translate: -50% 0;
+  width: 6px;
+  height: 6px;
   border-radius: 50% 0;
   rotate: -45deg;
   pointer-events: none;
@@ -2985,4 +2989,25 @@ html:has(#sera-changes [data-sera-strip-on]) {
   -webkit-mask: var(--logo-src) center / contain no-repeat;
   mask: var(--logo-src) center / contain no-repeat;
   pointer-events: none;
+}
+
+/*
+ * THE COMPANIONS' CORNER (profile overhaul, Direction D): the animals standing bottom right breathe, each a
+ * beat after the one before, at the living motion lane's breath (--m-breath). Transform only, and still under
+ * reduced motion. client/src/components/profileDash/CompanionCorner.tsx.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .companion-corner .companion-arch {
+    transform-origin: 50% 100%;
+    animation: companion-breathe var(--m-breath, 7s) ease-in-out infinite;
+  }
+  .companion-corner .companion-arch:nth-child(2) { animation-delay: -1.7s; }
+  .companion-corner .companion-arch:nth-child(3) { animation-delay: -3.4s; }
+  .companion-corner .companion-arch:nth-child(4) { animation-delay: -5.1s; }
+  .companion-corner:hover .companion-arch { transform: translateY(-3px); }
+}
+@keyframes companion-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(-2px) rotate(-1.2deg); }
+  65% { transform: translateY(0) rotate(0.8deg); }
 }

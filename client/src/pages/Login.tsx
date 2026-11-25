@@ -166,6 +166,13 @@ export default function Login() {
                 </a>
               </p>
 
+              <p className="text-center text-sm text-muted-foreground">
+                {t({ message: "Visiting us, without a member account?", context: "sign in: before the visitor's way in" })}{" "}
+                <a href="/visitor/sign-in" className={`${LINK} inline-flex min-h-11 items-center`} data-visitor-sign-in="">
+                  {t({ message: "Sign in with a code", context: "sign in: link to a visitor's code sign-in" })}
+                </a>
+              </p>
+
               {/*
                 An ADDITIONAL way in, never a replacement. The form above stays
                 exactly where it was, because a village will have members with
