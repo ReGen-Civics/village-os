@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import type { SetupItem, SetupKey } from "@shared/comms/settings";
 import ModuleSettingsSection from "@/components/admin/ModuleSettingsSection";
 import { refusal } from "@/components/admin/adminApi";
+import { settingFromUrl, useLandingFocus } from "@/components/admin/settingFocus";
+import { commsLanding, PAUSE_ALL_BUTTON_ID } from "./commsLanding";
 import { commsCall, type SettingsPayload } from "./commsSettingsApi";
 import {
   ApiKeyEditor,
@@ -145,7 +147,7 @@ function ChecklistRow({
         </button>
       </div>
       {open && (
-        <div id={panelId} className="border-t border-gray-100 p-4">
+        <div id={panelId} tabIndex={-1} className="border-t border-gray-100 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep">
           {children}
         </div>
       )}
@@ -180,7 +182,7 @@ function PauseAll({ data, password, apply }: { data: SettingsPayload; password: 
           ? "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
           : "Holds every gathering email, path email and letter at once, for when something has gone wrong. Password links, confirmations people asked for and member notices keep going."}
       </p>
-      <button type="button" onClick={flip} disabled={busy} className={`${paused ? primaryCls : secondaryCls} mt-3`}>
+      <button id={PAUSE_ALL_BUTTON_ID} type="button" onClick={flip} disabled={busy} className={`${paused ? primaryCls : secondaryCls} mt-3`}>
         {busy ? "Saving..." : paused ? "Let email flow again" : "Pause all automated email"}
       </button>
     </section>
@@ -191,7 +193,10 @@ export default function CommsSettings({ password, openIntegrations }: { password
   const [data, setData] = useState<SettingsPayload | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   /** The rows somebody opened or closed by hand. The rest follow "required and not done". */
-  const [toggled, setToggled] = useState<Partial<Record<SetupKey, boolean>>>({});
+  /** Where a search result or a link asked to land (`?setting=comms.<item>`), read once. */
+  const [landing] = useState(() => commsLanding(settingFromUrl(typeof window === "undefined" ? "" : window.location.search)));
+  const [toggled, setToggled] = useState<Partial<Record<SetupKey, boolean>>>(() => (landing?.open ? { [landing.open]: true } : {}));
+  useLandingFocus(landing?.focus ?? null, data !== null);
 
   const load = useCallback(async () => {
     const r = await commsCall<SettingsPayload>("/admin/comms/settings", password);

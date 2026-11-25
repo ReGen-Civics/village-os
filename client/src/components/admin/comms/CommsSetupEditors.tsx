@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Check, Copy } from "lucide-react";
 import { refusal } from "@/components/admin/adminApi";
 import { commsCall, whenOf, whenOfIso, type DomainPanel, type SettingsPayload } from "./commsSettingsApi";
+import { TEST_EMAIL_BUTTON_ID } from "./commsLanding";
 
 export interface EditorProps {
   data: SettingsPayload;
@@ -519,7 +520,7 @@ export function TestEmailEditor(props: EditorProps) {
         {t ? `The last one went to ${t.toEmail} on ${whenOf(t.createdAt)} and is ${t.delivered ? "delivered" : t.status}.` : ""}
       </p>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={send} disabled={busy || !data.me.email} className={primaryCls}>
+        <button id={TEST_EMAIL_BUTTON_ID} type="button" onClick={send} disabled={busy || !data.me.email} className={primaryCls}>
           {busy ? "Sending..." : "Send me a test"}
         </button>
         {t && !t.delivered && (
