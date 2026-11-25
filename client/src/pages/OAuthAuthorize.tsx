@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import { Trans } from "@lingui/react/macro";
+import { BreathingLoader } from "@/components/natural";
+import { WORLD, CARD, H1, LEDE, HINT, BTN_PRIMARY, BTN_SECONDARY, TICK } from "@/components/journey/look";
 
 type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable" | "sessions.write";
 interface Offer { scope: OfferedScope; write: boolean; ticked: boolean }
@@ -85,29 +87,36 @@ export default function OAuthAuthorize() {
   const here = `${window.location.pathname}${window.location.search}`;
 
   return (
-    <main className="mx-auto max-w-lg px-4 pb-10 pt-3">
+    // Drawn in the sheet's look (whole-app QA, 25 Nov 2026): the page renders without the shell, and its
+    // fixed teal and white fills vanished on the dark ground (the language chip measured 1.01:1 on production).
+    <main className={WORLD}>
+      <div className="mx-auto max-w-lg px-4 pb-10 pt-3">
       {/* The language selector (spec i18n US2): this page renders without the shell. */}
-      <PageLanguageBar className="mb-4" />
-      <h1 className="text-2xl font-semibold text-foreground"><Trans context="OAuthAuthorize, h1">Connect an agent</Trans></h1>
-      {loading ? null : !user ? (
-        <div className="mt-4 space-y-3">
-          <p className="text-sm text-foreground"><Trans context="OAuthAuthorize, p">Sign in first, and you come straight back here to decide.</Trans></p>
-          <Link href={`/login?next=${encodeURIComponent(here)}`} className="inline-block min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white"><Trans context="OAuthAuthorize, Link">Sign in</Trans></Link>
+      <PageLanguageBar tone="onSheet" className="mb-4" />
+      <h1 className={H1}><Trans context="OAuthAuthorize, h1">Connect an agent</Trans></h1>
+      {loading ? (
+        <BreathingLoader className="mt-6" />
+      ) : !user ? (
+        <div className="mt-4 space-y-4">
+          <p className={LEDE}><Trans context="OAuthAuthorize, p">Sign in first, and you come straight back here to decide.</Trans></p>
+          <Link href={`/login?next=${encodeURIComponent(here)}`} className={BTN_PRIMARY}><Trans context="OAuthAuthorize, Link">Sign in</Trans></Link>
         </div>
       ) : problem ? (
-        <p role="alert" className="mt-4 text-sm text-foreground">{problem}</p>
-      ) : !req ? null : (
+        <p role="alert" className="mt-4 rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">{problem}</p>
+      ) : !req ? (
+        <BreathingLoader className="mt-6" />
+      ) : (
         <div className="mt-4 space-y-5">
-          <p className="text-sm text-foreground">
+          <p className={LEDE}>
             <Trans context="OAuthAuthorize, p">A connector that says it is <strong>{req.clientName}</strong> asks to act for you, {user.name}. It named itself; check the return address before you allow it. When you decide, you go back to <strong>{req.redirectHost}</strong>.
           </Trans></p>
-          <fieldset className="space-y-3 rounded-xl border border-border bg-white p-4">
+          <fieldset className={`space-y-4 ${CARD}`}>
             <legend className="px-1 text-sm font-semibold text-foreground"><Trans context="OAuthAuthorize, legend">What it may do</Trans></legend>
             {req.scopes.map((s) => (
-              <label key={s.scope} className="flex items-start gap-3 text-sm text-foreground">
+              <label key={s.scope} className="flex items-start gap-3 text-sm text-card-foreground">
                 <input
                   type="checkbox"
-                  className="mt-0.5 h-5 w-5"
+                  className={TICK}
                   checked={picked.includes(s.scope)}
                   onChange={(e) => setPicked((p) => (e.target.checked ? [...p, s.scope] : p.filter((x) => x !== s.scope)))}
                 />
@@ -115,15 +124,16 @@ export default function OAuthAuthorize() {
               </label>
             ))}
           </fieldset>
-          <p className="text-sm text-muted-foreground">
+          <p className={HINT}>
             <Trans context="OAuthAuthorize, p">It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
           </Trans></p>
           <div className="flex flex-wrap gap-3">
-            <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className="min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"><Trans context="OAuthAuthorize, button">Allow</Trans></button>
-            <button type="button" disabled={busy} onClick={() => void decide("deny")} className="min-h-11 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-foreground"><Trans context="OAuthAuthorize, button">Refuse</Trans></button>
+            <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className={BTN_PRIMARY}><Trans context="OAuthAuthorize, button">Allow</Trans></button>
+            <button type="button" disabled={busy} onClick={() => void decide("deny")} className={BTN_SECONDARY}><Trans context="OAuthAuthorize, button">Refuse</Trans></button>
           </div>
         </div>
       )}
+      </div>
     </main>
   );
 }
