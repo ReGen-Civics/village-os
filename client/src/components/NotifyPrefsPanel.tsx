@@ -458,12 +458,11 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
         {farewell ? (
           <div role="status" className="rounded-xl border border-notice/60 bg-muted p-4">
             <p className="text-xs text-notice">{farewell}</p>
-            <button
-              onClick={() => { window.location.href = "/"; }}
-              className="text-sm text-notice underline mt-2"
-            >
+            {/* A real link: it goes somewhere (whole-app QA, 25 Nov 2026). A plain href, so the page reloads
+                signed out rather than keeping the deleted account's state in memory. */}
+            <a href="/" className="mt-2 inline-flex min-h-11 items-center text-sm text-notice underline">
               <Trans context="NotifyPrefsPanel, button">I have read this
-            </Trans></button>
+            </Trans></a>
           </div>
         ) : !confirming ? (
           <button

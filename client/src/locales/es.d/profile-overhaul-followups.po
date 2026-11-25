@@ -1,0 +1,129 @@
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+msgctxt "week strip, the calendar read failed"
+msgid "The calendar did not load, so this week may be missing gatherings."
+msgstr "El calendario no cargó, así que a esta semana le pueden faltar encuentros."
+
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+msgctxt "week strip, retry the calendar read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a source"
+msgid "Your tasks"
+msgstr "Tus tareas"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a source"
+msgid "Your roles' tasks"
+msgstr "Las tareas de tus roles"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a source"
+msgid "Asked of you"
+msgstr "Te pidieron"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a source"
+msgid "Your asks"
+msgstr "Tus pedidos"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a source"
+msgid "Asked of a role"
+msgstr "Pedido a un rol"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a group"
+msgid "Today"
+msgstr "Hoy"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a group"
+msgid "Coming up"
+msgstr "Lo que viene"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a group"
+msgid "Waiting on others"
+msgstr "Esperando a otros"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a tick that failed"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: who asked"
+msgid "From {0}"
+msgstr "De {0}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: who you asked"
+msgid "Waiting on {0}"
+msgstr "Esperando a {0}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: the role you asked"
+msgid "With {0}"
+msgstr "Con {0}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a blocking ask"
+msgid "Someone is stuck until it is done"
+msgstr "Alguien está detenido hasta que se haga"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: when a role expects to pick it up"
+msgid "Around the week of {when}"
+msgstr "Hacia la semana del {when}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a date"
+msgid "By {when}"
+msgstr "Para el {when}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: the tick, read aloud"
+msgid "Mark done: {0}"
+msgstr "Marcar como hecho: {0}"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: eyebrow"
+msgid "Follow-ups"
+msgstr "Seguimientos"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: heading with nothing of yours"
+msgid "Nothing is yours to do right now"
+msgstr "Ahora no tienes nada por hacer"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: heading"
+msgid "One thing is yours to do"
+msgstr "Tienes una cosa por hacer"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: heading"
+msgid "{mine} things are yours to do"
+msgstr "Tienes {mine} cosas por hacer"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: the filter, read aloud"
+msgid "Show follow-ups from"
+msgstr "Mostrar seguimientos de"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: the filter"
+msgid "All"
+msgstr "Todo"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: a read failed"
+msgid "Some of your follow-ups did not load, so this list may be short."
+msgstr "Algunos de tus seguimientos no cargaron, así que a esta lista le pueden faltar cosas."
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+msgctxt "follow-ups: retry the reads"
+msgid "Try again"
+msgstr "Intentar de nuevo"
