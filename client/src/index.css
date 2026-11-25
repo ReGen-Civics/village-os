@@ -1915,7 +1915,8 @@ html:has(#sera-changes [data-sera-strip-on]) {
   color: var(--band-ink);
 }
 :root[data-mode] [data-mobile-tabbar] {
-  background: color-mix(in srgb, var(--band-bar) 97%, transparent);
+  /* Opaque: at 97% the page's text ghosted through the bar in the light mode (the five-reviewer QA pass, 25 Nov 2026). */
+  background: var(--band-bar);
   border-top-color: var(--band-rule);
 }
 :root[data-mode] [data-mobile-tabbar] :is(a, button) {

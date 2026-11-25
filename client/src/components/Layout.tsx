@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { announceMobileMenu } from "@/lib/mobileMenuState";
 import { m, AnimatePresence } from "framer-motion";
 import { TreePine, Menu, X, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
@@ -171,6 +172,8 @@ export default function Layout({ children }: LayoutProps) {
     window.addEventListener("open-mobile-menu", openMenu);
     return () => window.removeEventListener("open-mobile-menu", openMenu);
   }, []);
+  // The bar's More button reads this for its aria-expanded (lib/mobileMenuState.ts).
+  useEffect(() => announceMobileMenu(mobileMenuOpen), [mobileMenuOpen]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     focusDrawerIfAsked();
@@ -252,9 +255,9 @@ export default function Layout({ children }: LayoutProps) {
             ) : villageName ? (
               /* A flex item of the link above, which is already `items-center`
                  inside a 64px box, so the wordmark sits on the same baseline
-                 the logo would have. `truncate` caps a long name rather than
-                 letting it push the menu button off a narrow screen. */
-              <span className="font-display text-xl sm:text-2xl font-semibold tracking-wide text-white truncate max-w-[60vw] lg:max-w-[16rem]">
+                 the logo would have. A long name wraps to two lines, a step
+                 smaller on a narrow screen, never pushing the menu off (25 Nov 2026). */
+              <span className="font-display text-lg leading-tight min-[360px]:text-xl sm:text-2xl font-semibold tracking-wide text-white line-clamp-2 break-words max-w-[60vw] lg:max-w-[16rem]">
                 {villageName}
               </span>
             ) : (

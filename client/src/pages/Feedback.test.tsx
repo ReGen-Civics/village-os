@@ -35,3 +35,19 @@ describe("Feedback, once it is sent", () => {
     expect(document.activeElement).toBe(panel);
   });
 });
+
+describe("the kind of feedback (the five-reviewer QA pass, 25 Nov 2026)", () => {
+  it("says which kind is chosen with aria-pressed, and moves it on a press", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ relayOn: false, villageName: "Hollow Oak" }) })));
+    const user = userEvent.setup();
+    render(<Feedback />);
+    const broke = screen.getByRole("button", { name: /Something broke/ });
+    const idea = screen.getByRole("button", { name: /An idea/ });
+    expect(broke.getAttribute("aria-pressed")).toBe("true");
+    expect(idea.getAttribute("aria-pressed")).toBe("false");
+    await user.click(idea);
+    expect(idea.getAttribute("aria-pressed")).toBe("true");
+    expect(broke.getAttribute("aria-pressed")).toBe("false");
+  });
+});
+

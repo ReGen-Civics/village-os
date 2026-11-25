@@ -23,6 +23,7 @@
  * that half-responds to taps teaches people the map is broken.
  */
 import { Link } from "wouter";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { layoutNestedMap, type NestedInput } from "@shared/mapLayout";
@@ -57,6 +58,11 @@ const { ground: GROUND, ring: RING, ink: INK, inkDim: INK_DIM, scrim: SCRIM } = 
  * says what it always said on /circles.
  */
 export interface MiniMapDoor {
+  /**
+   * False draws the picture with no door: for a reader the map's room is closed to (the map kept for members, the
+   * five-reviewer QA pass, 25 Nov 2026). The words then say so; nothing invites a click that leads nowhere.
+   */
+  opens?: boolean;
   href?: string;
   title?: string;
   detail?: string;
@@ -115,12 +121,24 @@ export default function CirclesMiniMap({
   const size = Math.max(1, v.r * 2 + pad * 2);
   const viewBox = `${v.x - v.r - pad} ${v.y - v.r - pad} ${size} ${size}`;
 
+  const opens = door.opens !== false;
+  const Frame = ({ children }: { children: ReactNode }) =>
+    opens ? (
+      <Link
+        href={door.href ?? "/map/circles"}
+        className="group block rounded-2xl overflow-hidden border border-border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2"
+        aria-label={door.ariaLabel ?? `Open the living map of the circles. ${circles.length} circles, ${openSeats} opening${openSeats === 1 ? "" : "s"}.`}
+      >
+        {children}
+      </Link>
+    ) : (
+      <figure className="block rounded-2xl overflow-hidden border border-border" data-mini-map-still="" aria-label={door.ariaLabel}>
+        {children}
+      </figure>
+    );
+
   return (
-    <Link
-      href={door.href ?? "/map/circles"}
-      className="group block rounded-2xl overflow-hidden border border-border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2"
-      aria-label={door.ariaLabel ?? `Open the living map of the circles. ${circles.length} circles, ${openSeats} opening${openSeats === 1 ? "" : "s"}.`}
-    >
+    <Frame>
       <div className="relative" style={{ background: GROUND }}>
         <svg
           viewBox={viewBox}
@@ -187,13 +205,15 @@ export default function CirclesMiniMap({
               )}
             </div>
           </div>
-          <ArrowRight
-            className="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
-            style={{ color: RING }}
-            aria-hidden="true"
-          />
+          {opens && (
+            <ArrowRight
+              className="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
+              style={{ color: RING }}
+              aria-hidden="true"
+            />
+          )}
         </div>
       </div>
-    </Link>
+    </Frame>
   );
 }

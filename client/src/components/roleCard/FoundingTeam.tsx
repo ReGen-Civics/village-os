@@ -193,6 +193,7 @@ export default function FoundingTeam({
             Choosing a role opens its card below, piece by piece. */}
         <FoundingLineup
           roles={roles}
+          laterCount={laterCount}
           filled={filled}
           orgPreview={orgPreview}
           comingSoon={comingSoon}

@@ -55,6 +55,8 @@ const characterArtOf = (seat: Record<string, any>) => roleArtFor({ archetypes: a
 
 export interface FoundingLineupProps {
   roles: FoundingRole[];
+  /** How many roles open after these (the "opening next" group), which the heading counts with them. */
+  laterCount?: number;
   filled: FilledRole[];
   /** How full each role is, by id (Rye, 14 Nov 2026, ruling 4). */
   fill?: Record<string, RoleFill>;
@@ -82,7 +84,7 @@ export interface FoundingLineupProps {
   villagePay?: VillagePay | null;
 }
 
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true, villagePay = null }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true, villagePay = null, laterCount = 0 }: FoundingLineupProps) {
   const roleArt = useRoleArt();
   const artOf = (seat: Record<string, any>) => roleArt(seat?.id) ?? characterArtOf(seat);
   const { t, i18n } = useLingui();
@@ -115,8 +117,16 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
     <ul className="flex flex-wrap gap-2 text-xs font-semibold text-card-foreground" data-testid="lineup-tally">
       <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
         <span className="size-2 rounded-full bg-notice" aria-hidden="true" />
-        {t({ message: `${roles.length} open`, context: "founding team tally: open roles" })}
+        {t({ message: `${roles.length} open now`, context: "founding team tally: open roles" })}
       </li>
+      {/* The heading above counts these and the roles opening next together, so the tally names both parts and the
+          numbers add up (the five-reviewer QA pass, 25 Nov 2026: "Open roles (7)" beside "2 open"). */}
+      {laterCount > 0 && (
+        <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1" data-tally-later="">
+          <span className="size-2 rounded-full border border-notice" aria-hidden="true" />
+          {t({ message: `${laterCount} opening next`, context: "founding team tally: roles opening after the founding team" })}
+        </li>
+      )}
       {filled.length > 0 && (
         <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
           <span className="size-2 rounded-full bg-muted-foreground" aria-hidden="true" />

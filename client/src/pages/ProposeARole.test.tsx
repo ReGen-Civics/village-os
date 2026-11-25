@@ -422,7 +422,8 @@ describe("the six steps", () => {
     expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
       // Start a venture goes to the venture form (the lead, 24 Nov 2026), or the new-role door on a village whose story
       // pages are off, as this one's are.
-      ["venture", "/role-proposals/new"],
+      // A visitor with the venture form off: the open ventures on /roles, never the member's new-role door (25 Nov 2026).
+      ["venture", "/roles#open-ventures"],
       ["partner", "/partner"],
       ["quest", "/propose-quest"],
     ]);
