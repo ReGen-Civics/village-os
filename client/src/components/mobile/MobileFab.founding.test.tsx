@@ -39,6 +39,6 @@ describe("the shortcuts button on the founding team's pages", () => {
   it.each(["/", "/quests", "/profile", "/rolesx", "/resident"])("CONTROL: is still offered on %s", (path) => {
     expect(isFoundingRoute(path)).toBe(false);
     at(path);
-    expect(screen.getByRole("button", { name: "Open shortcuts" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Open help" })).toBeTruthy();
   });
 });

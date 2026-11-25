@@ -1,266 +1,190 @@
 // @vitest-environment jsdom
 /**
- * The shortcuts button offers the Journal only to a signed-in member, and only
- * while the journal module is on for them.
+ * THE CORNER (phone doors v4): your companions, and help. One element at the
+ * bottom right, where the lotus of shortcuts and the profile's companions
+ * corner (#1646) used to be two.
  *
- * Each case reads the RENDERED rows, opened the way a member opens them,
- * because FAB_ACTIONS alone decides nothing: `resolve()` in MobileFab.tsx is
- * what turns `requiresAuth` and `module` into a row a person can tap. Every
- * case also checks a neighbour (Profile, which needs only a session), so a
- * change that hid the whole menu would fail here as a missing control rather
- * than pass as a missing Journal.
+ * The row list is pure (`cornerRows`), so who sees what is pinned without a
+ * page; the rendered cases open the menu the way a member does and read the
+ * rows a person can tap. The last cases carry over what the lotus had already
+ * paid for: Escape spent on the menu, and a shut menu that takes no room.
  */
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
+import type { CompanionView } from "@shared/companionItems";
 
 const session = vi.hoisted(() => ({
-  user: null as null | { id: string; name: string },
-  modules: [] as { id: string; lifecycle: string }[],
+  user: null as null | { id: string; name: string; role?: string },
+  admin: false,
+  companions: null as null | unknown[],
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: session.user, loading: false }),
 }));
-vi.mock("@/modules/ModuleProvider", () => ({
-  useModules: () => ({ modules: session.modules, loaded: true, failed: false }),
-}));
+vi.mock("@/hooks/useGuideName", () => ({ useGuideName: () => ({ name: "Ceiba", named: true, loaded: true, audience: "member" }) }));
 vi.mock("@/lib/haptics", () => ({ haptic: () => false }));
+vi.mock("@/lib/gameApi", () => ({
+  gameFetch: vi.fn(async () =>
+    session.companions ? new Response(JSON.stringify({ companions: session.companions }), { status: 200 }) : new Response("{}", { status: 403 }),
+  ),
+}));
+vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
 
-import MobileFab from "./MobileFab";
+import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows } from "./MobileFab";
 
-const JOURNAL_ON = [{ id: "journal", lifecycle: "members" }];
+const t = ({ message }: { message: string }) => message;
+const companion = (id: string, name: string, open = 0) =>
+  ({
+    id,
+    name,
+    status: "active",
+    sortOrder: Number(id),
+    look: { source: "nature", art: "scarlet-macaw" },
+    lookUrl: null,
+    drafts: Array.from({ length: open }, (_, i) => ({ id: `${id}-${i}`, status: "open" })),
+  }) as unknown as CompanionView;
 
-function renderAt(path = "/") {
+async function renderAt(path = "/") {
   const { hook } = memoryLocation({ path });
-  return render(
+  const r = render(
     <Router hook={hook}>
       <MobileFab />
     </Router>,
   );
+  // The companions are read after the first paint.
+  await act(async () => {
+    await new Promise((done) => setTimeout(done, 0));
+  });
+  return r;
 }
 
-function openMenu() {
-  fireEvent.click(screen.getByRole("button", { name: "Open shortcuts" }));
-}
+const row = (name: RegExp | string) => screen.queryByRole("menuitem", { name });
+const menu = () => screen.getByRole("menu", { hidden: true });
 
-const row = (name: string) => screen.queryByRole("menuitem", { name });
+beforeEach(() => {
+  session.user = null;
+  session.admin = false;
+  session.companions = null;
+});
+afterEach(cleanup);
 
-describe("the Journal shortcut", () => {
-  beforeEach(() => {
-    session.user = null;
-    session.modules = [];
+describe("cornerRows", () => {
+  it("is the companions first, then the guide, for a member", () => {
+    const rows = cornerRows({ signedIn: true, admin: false, army: [companion("1", "Scarlet", 2), companion("2", "Morpho")], guide: "Ceiba", t });
+    expect(rows.map((r) => r.key)).toEqual(["companion-1", "companion-2", "ask-guide"]);
+    expect(rows[0].sub).toBe("2 drafts wait for your yes");
+    expect(rows[1].sub).toBeUndefined();
+    expect(rows[2]).toMatchObject({ label: "Ask Ceiba", href: ASK_GUIDE_HREF });
   });
 
-  it("is offered to a signed-in member when the journal module is on", () => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = JOURNAL_ON;
-    renderAt();
-    openMenu();
-
-    const journal = row("Journal");
-    expect(journal).not.toBeNull();
-    expect(journal).toHaveAttribute("href", "/journal");
-    expect(row("Profile")).not.toBeNull();
+  it("adds the Admin helper for an admin, tagged, by the address that opens it inside Admin", () => {
+    const rows = cornerRows({ signedIn: true, admin: true, army: null, guide: "Ceiba", t });
+    expect(rows.at(-1)).toMatchObject({ key: "ask-admin", label: "Ask Ceiba about Admin", href: ADMIN_HELPER_HREF, admin: true });
+    expect(ADMIN_HELPER_HREF).toBe("/admin?helper=open");
   });
 
-  it("sits second from the thumb, just above Quests", () => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = JOURNAL_ON;
-    renderAt();
-    openMenu();
-
-    const names = screen.getAllByRole("menuitem").map((el) => el.getAttribute("aria-label"));
-    expect(names.slice(-2)).toEqual(["Journal", "Quests"]);
-  });
-
-  it("is not offered while the module is off for this viewer", () => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = [];
-    renderAt();
-    openMenu();
-
-    expect(row("Journal")).toBeNull();
-    expect(row("Profile")).not.toBeNull();
-  });
-
-  it("is not offered when the manifest carries the module with lifecycle off", () => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = [{ id: "journal", lifecycle: "off" }];
-    renderAt();
-    openMenu();
-
-    expect(row("Journal")).toBeNull();
-  });
-
-  it("is not offered to a signed-out visitor, even with the module on", () => {
-    session.user = null;
-    session.modules = JOURNAL_ON;
-    renderAt();
-    openMenu();
-
-    expect(row("Journal")).toBeNull();
-    expect(row("Sign in")).not.toBeNull();
-  });
-
-  it("drops out on the journal itself, where it would link to the page being read", () => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = JOURNAL_ON;
-    renderAt("/journal");
-    openMenu();
-
-    expect(row("Journal")).toBeNull();
-    expect(row("Profile")).not.toBeNull();
+  it("sends a visitor's question to the guide on Work with us, and offers sign in", () => {
+    const rows = cornerRows({ signedIn: false, admin: false, army: null, guide: "the village guide", t });
+    expect(rows.map((r) => [r.key, r.href])).toEqual([
+      ["ask-guide", "/work-with-us"],
+      ["signin", "/login"],
+    ]);
   });
 });
 
-describe("the menu at every width", () => {
-  beforeEach(() => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = JOURNAL_ON;
+describe("the corner, drawn", () => {
+  it("is the guide's spiral for a visitor, opening help", async () => {
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    expect(row(/Ask Ceiba/)).not.toBeNull();
+    expect(row(/Sign in/)).not.toBeNull();
+    expect(row(/about Admin/)).toBeNull();
   });
 
-  it("is no longer hidden from desktop widths", () => {
-    // jsdom applies no media queries, so this pins the class that used to
-    // remove the button at `md` and up.
-    const { container } = renderAt();
-    const box = container.querySelector("[data-mobile-fab]");
-    expect(box).not.toBeNull();
-    expect(box!.className).not.toMatch(/\bmd:hidden\b/);
+  it("is the companions standing for a member who has them, with what waits, and carries the tour's id", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    session.companions = [companion("1", "Scarlet", 2), companion("2", "Morpho")];
+    await renderAt();
+    const trigger = screen.getByRole("button", { name: /Your companions: Scarlet, Morpho\. 2 waiting/ });
+    expect(trigger.id).toBe("companions");
+    fireEvent.click(trigger);
+    expect(row(/Scarlet/)).not.toBeNull();
+    expect(row(/Ask Ceiba/)).toHaveAttribute("href", ASK_GUIDE_HREF);
   });
 
-  it("closes on Escape and hands focus back to the trigger", () => {
-    renderAt();
-    const trigger = screen.getByRole("button", { name: "Open shortcuts" });
-    // detail 0 is how a keyboard's Enter arrives as a click.
-    fireEvent.click(trigger, { detail: 0 });
+  it("opens the companions panel from a companion's row", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    session.companions = [companion("1", "Scarlet")];
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Your companions: Scarlet/ }));
+    fireEvent.click(row(/Scarlet/)!);
+    expect(await screen.findByRole("dialog", { name: "Your companions" })).toBeInTheDocument();
+    expect(await screen.findByText("the companions panel")).toBeInTheDocument();
+  });
 
-    // Opened from the keyboard, focus lands on the row nearest the trigger.
-    expect(document.activeElement).toBe(row("Quests"));
+  it("shows an admin the Admin helper's row, by the address that opens it", async () => {
+    session.user = { id: "u1", name: "Ana", role: "admin" };
+    session.admin = true;
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    expect(row(/Ask Ceiba about Admin/)).toHaveAttribute("href", "/admin?helper=open");
+  });
 
+  it("draws nothing inside Admin, where Admin's own Ask holds the corner", async () => {
+    session.user = { id: "u1", name: "Ana", role: "admin" };
+    session.admin = true;
+    const { container } = await renderAt("/admin");
+    expect(container.querySelector("[data-mobile-fab]")).toBeNull();
+    cleanup();
+    const again = await renderAt("/admin/settings");
+    expect(again.container.querySelector("[data-mobile-fab]")).toBeNull();
+  });
+
+  it("stays at every width", async () => {
+    const { container } = await renderAt();
+    expect(container.querySelector("[data-mobile-fab]")!.className).not.toMatch(/\bmd:hidden\b/);
+  });
+
+  it("closes on Escape and hands focus back to the trigger, and the arrows walk the rows", async () => {
+    await renderAt();
+    const trigger = screen.getByRole("button", { name: "Open help" });
+    fireEvent.click(trigger, { detail: 0 }); // detail 0 is a keyboard's Enter
+    expect(document.activeElement).toBe(row(/Sign in/));
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(row(/Ask Ceiba/));
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.getByRole("button", { name: "Open shortcuts" })).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(document.activeElement).toBe(trigger);
   });
 
-  it("walks the rows with the arrow keys", () => {
-    renderAt();
-    fireEvent.click(screen.getByRole("button", { name: "Open shortcuts" }), { detail: 0 });
-    fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
-    expect(document.activeElement).toBe(row("Journal"));
-    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
-    expect(document.activeElement).toBe(row("Quests"));
-  });
-
-  /*
-   * The Escape that closes the menu is spent there. BreakGlass listens on
-   * `window`, and the same press used to reach it and decline the override
-   * the member was being asked about. The second press, with the menu shut,
-   * proves the listener is live, so the first zero is a zero.
-   */
-  it("keeps the Escape that closes it from reaching a listener on window", () => {
+  /* The Escape that closes the menu is spent there: BreakGlass listens on `window`, and the same
+     press used to decline the override the member was being asked about. */
+  it("keeps the Escape that closes it from reaching a listener on window", async () => {
     const onWindowKey = vi.fn();
     window.addEventListener("keydown", onWindowKey);
     try {
-      renderAt();
-      openMenu();
+      await renderAt();
+      fireEvent.click(screen.getByRole("button", { name: "Open help" }));
       fireEvent.keyDown(document, { key: "Escape" });
-      expect(screen.getByRole("button", { name: "Open shortcuts" })).toHaveAttribute("aria-expanded", "false");
       expect(onWindowKey).not.toHaveBeenCalled();
-
       fireEvent.keyDown(document, { key: "Escape" });
       expect(onWindowKey).toHaveBeenCalledTimes(1);
     } finally {
       window.removeEventListener("keydown", onWindowKey);
     }
   });
-});
 
-/*
- * A row for the page already showing (Profile on /profile; Roles and Work with
- * us likewise) keeps the button mounted, because the route does not change.
- * Focus used to stay on that row after the menu shut: invisible, aria-hidden,
- * and still inside the menu's key handler, so ArrowDown and End walked hidden
- * links instead of scrolling the page.
- */
-describe("after a shortcut to the page already showing", () => {
-  beforeEach(() => {
-    session.user = { id: "u-wren", name: "Wren" };
-    session.modules = JOURNAL_ON;
-  });
-
-  it("hands focus back to the trigger, and the arrow keys belong to the page again", () => {
-    renderAt("/profile");
-    const trigger = screen.getByRole("button", { name: "Open shortcuts" });
-    fireEvent.click(trigger, { detail: 0 });
-    const profile = row("Profile")!;
-    profile.focus();
-    // Enter on a link arrives as a click.
-    fireEvent.click(profile, { detail: 0 });
-
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(document.activeElement).toBe(trigger);
-    // fireEvent answers false when a handler called preventDefault.
-    expect(fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" })).toBe(true);
-  });
-
-  it("leaves the arrow keys alone on a shut menu, even with focus still on a row", () => {
-    renderAt("/profile");
-    const trigger = screen.getByRole("button", { name: "Open shortcuts" });
-    fireEvent.click(trigger, { detail: 0 });
-    const quests = row("Quests")!;
-    expect(document.activeElement).toBe(quests);
-    // A tap elsewhere shuts the menu without moving focus.
-    fireEvent.click(document.body);
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-
-    expect(fireEvent.keyDown(quests, { key: "ArrowDown" })).toBe(true);
-    expect(fireEvent.keyDown(quests, { key: "End" })).toBe(true);
-    expect(document.activeElement).toBe(quests);
-  });
-});
-
-/*
- * The shut menu used to sit in flow above the trigger at opacity 0, so the
- * fixed box was as tall as every row, and a row arriving after first paint
- * (sign-in, the brochure switch) grew it: a layout shift on every page that
- * nobody could see. jsdom paints nothing, so these pin the two classes that
- * keep a shut menu out of the count, measured in a browser in the lane report.
- */
-describe("the shut menu", () => {
-  beforeEach(() => {
-    session.user = null;
-    session.modules = [];
-  });
-
-  const menu = () => document.querySelector('[role="menu"]') as HTMLElement;
-  const has = (el: HTMLElement, cls: string) => el.className.split(/\s+/).includes(cls);
-
-  it("is out of flow and not drawn, so a late row cannot move the button's box", () => {
-    renderAt();
-    expect(has(menu(), "absolute")).toBe(true);
-    expect(has(menu(), "invisible")).toBe(true);
-    expect(has(menu(), "visible")).toBe(false);
-  });
-
-  it("is drawn the moment it opens", () => {
-    renderAt();
-    openMenu();
-    expect(has(menu(), "visible")).toBe(true);
-    expect(has(menu(), "invisible")).toBe(false);
-  });
-
-  it("stops being drawn only after the rows have faded", () => {
-    renderAt();
-    openMenu();
-    // Read the parsed longhands, not the serialized attribute: jsdom 31 writes
-    // the shortest form ("visibility linear"), which drops the 0s we care about.
-    expect(menu().style.transitionProperty).toBe("visibility");
-    expect(menu().style.transitionDuration).toBe("0s");
+  it("takes no room and is not drawn while shut, and is drawn the moment it opens", async () => {
+    await renderAt();
+    expect(menu().className).toMatch(/\babsolute\b/);
+    expect(menu().className).toMatch(/\binvisible\b/);
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    expect(menu().className).toMatch(/\bvisible\b/);
     expect(menu().style.transitionDelay).toBe("0s");
-    fireEvent.click(screen.getByRole("button", { name: "Close shortcuts" }));
-    expect(menu().style.transitionProperty).toBe("visibility");
+    fireEvent.click(screen.getByRole("button", { name: "Close your companions and help" }));
     expect(menu().style.transitionDelay).toBe("400ms");
   });
 });

@@ -18,7 +18,8 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
+const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More (phone doors v4, 25 Nov 2026)
 const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
@@ -400,17 +401,16 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
             {user && <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>}
-            {/* Icon-only, so it needs a spoken name and a state a screen
-                reader can hear — otherwise it announces as bare "button". */}
+            {/* Icon-only, so it needs a spoken name and a state. Phones use the bar's More instead (MoreSheet). */}
             <button
               ref={menuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? t({ message: "Close menu", context: "site header" }) : t({ message: "Open menu", context: "site header" })}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="text-white inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
+              className="text-white hidden md:inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -436,7 +436,7 @@ export default function Layout({ children }: LayoutProps) {
               // the darker surface (band's own contrast floor for white is
               // 5.36:1 worst case vs brand's 4.50:1), so nothing else in
               // this drawer is put at risk by the change.
-              className="lg:hidden bg-teal-band/95 border-t border-white/10 overflow-hidden"
+              className="max-md:hidden lg:hidden bg-teal-band/95 border-t border-white/10 overflow-hidden"
             >
               <div className="container py-4 space-y-1">
                 {navEntries.map((entry) =>
@@ -902,6 +902,7 @@ export default function Layout({ children }: LayoutProps) {
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
       <MobileTabBar />
+      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} /></Suspense>}
       <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
