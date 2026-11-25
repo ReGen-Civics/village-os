@@ -18,6 +18,7 @@ const session = vi.hoisted(() => ({
   recent: null as null | object,
   most: null as null | string,
   phone: true,
+  modules: [] as { id: string; lifecycle: string }[],
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: session.user, logout: vi.fn() }) }));
@@ -28,6 +29,8 @@ vi.mock("@/lib/gameApi", () => ({
   }),
 }));
 vi.mock("@/lib/navVisits", () => ({ personalFor: () => session.most }));
+vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: session.modules, loaded: true, failed: false }) }));
+vi.mock("@/lib/newcomer", () => ({ useNewcomer: () => false }));
 vi.mock("@/i18n/LanguagePicker", () => ({ LanguagePicker: () => <span>language</span> }));
 vi.mock("@/components/ThemeSwitch", () => ({ default: () => <span>mode</span> }));
 vi.mock("@/components/tasks/TaskCountBadge", () => ({ default: () => <span>3</span> }));
@@ -67,6 +70,7 @@ beforeEach(() => {
   session.recent = { people: [] };
   session.most = null;
   session.phone = true;
+  session.modules = [];
 });
 afterEach(cleanup);
 
@@ -94,6 +98,15 @@ describe("the More sheet", () => {
     await draw();
     expect(within(screen.getByRole("list", { name: "Also yours" })).getByText("Badges")).toBeInTheDocument();
     expect(screen.queryByText("Roles")).toBeNull();
+  });
+
+  it("keeps the hidden map a tap away while its module is on (the lotus's row, logging a place in the field)", async () => {
+    await draw();
+    expect(screen.queryByText("Hidden map")).toBeNull();
+    cleanup();
+    session.modules = [{ id: "hidden-map", lifecycle: "members" }];
+    await draw();
+    expect(within(screen.getByRole("list", { name: "Also yours" })).getByText("Hidden map").closest("a")).toHaveAttribute("href", "/hidden-map");
   });
 
   it("is a modal named More that keeps the night in dark mode, with the foot's language and mode", async () => {

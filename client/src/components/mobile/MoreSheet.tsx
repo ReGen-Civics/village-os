@@ -29,6 +29,8 @@ import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ChevronDown, Coins, ListChecks, NotebookPen, UserRound, MessagesSquare, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useModules } from "@/modules/ModuleProvider";
+import { useNewcomer } from "@/lib/newcomer";
 import { gameFetch } from "@/lib/gameApi";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch from "@/components/ThemeSwitch";
@@ -46,6 +48,11 @@ type AccountLink = NavLink & { count?: "tasks" | "messages" };
 /** The account entries that become tiles, in the order the sheet draws them. Pay sits second, added in between. */
 const TILE_HREFS = ["/profile", "/messages", TASK_BOARD_PATH, "/journal"] as const;
 const PAY_HREF = "/pay";
+/**
+ * The hidden map, a tap away on the phone (it was the lotus's row): logging a place happens out where
+ * the place is. Shown to an admitted member while its module is on; its other door is the Village menu.
+ */
+const HIDDEN_MAP = { href: "/hidden-map", module: "hidden-map" } as const;
 /** A tile's glyph where the page icons (config/routeIcons.ts) have none for its address. */
 const TILE_FALLBACK: Record<string, ComponentType<{ className?: string }>> = {
   "/profile": UserRound,
@@ -167,7 +174,11 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheet
   const tabs = TAB_SLOTS.map((s) => s.path).filter((p): p is string => !!p);
   const taken = [...tabs, ...TILE_HREFS, PAY_HREF];
   const most = useMostVisited(taken, known, !!user);
-  const rest = account.filter((a) => !(TILE_HREFS as readonly string[]).includes(a.href));
+  const { modules } = useModules();
+  const newcomer = useNewcomer();
+  const hiddenMapOn = !!user && !newcomer && Array.isArray(modules) && modules.some((m) => m.id === HIDDEN_MAP.module && m.lifecycle !== "off");
+  const rest: AccountLink[] = account.filter((a) => !(TILE_HREFS as readonly string[]).includes(a.href));
+  if (hiddenMapOn && !rest.some((a) => a.href === HIDDEN_MAP.href)) rest.push({ href: HIDDEN_MAP.href, label: t({ message: "Hidden map", context: "the phone's More sheet: the hidden map, for logging places out on the land" }) });
 
   const eyebrow = "text-xs font-semibold uppercase tracking-widest text-notice";
   return (
