@@ -476,7 +476,7 @@ export default function Layout({ children }: LayoutProps) {
                       className="flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <MenuIcon href={entry.href} fallback={entry.icon} />{entry.label}
+                      <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
                     </Link>
                   )
                 )}
