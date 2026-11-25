@@ -5,7 +5,8 @@
  * gives the village's bar rather than an error.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { forgetBar, HISTORY_KEY, loadBar, personalFor, SENT_KEY, visited } from "./navVisits";
+import { TOKEN_PREFIX } from "../../../server/lib/agentTokens";
+import { AGENT_TOKEN_PREFIX, forgetBar, HISTORY_KEY, loadBar, personalFor, SENT_KEY, visited } from "./navVisits";
 
 const ok = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
 
@@ -36,6 +37,18 @@ describe("visited", () => {
     window.sessionStorage.clear();
     await visited("/journal", "tok", f as unknown as typeof fetch);
     expect(JSON.parse(window.localStorage.getItem(HISTORY_KEY)!).counts).toEqual({ "/journal": 2 });
+  });
+
+  it("sends nothing and keeps nothing for the live view, which only reads", async () => {
+    const f = vi.fn(() => ok({}));
+    await visited("/quests", `${AGENT_TOKEN_PREFIX}live`, f as unknown as typeof fetch);
+    expect(f).not.toHaveBeenCalled();
+    expect(window.sessionStorage.getItem(SENT_KEY)).toBeNull();
+    expect(window.localStorage.getItem(HISTORY_KEY)).toBeNull();
+  });
+
+  it("knows an agent token by the server's own prefix", () => {
+    expect(AGENT_TOKEN_PREFIX).toBe(TOKEN_PREFIX);
   });
 
   it("carries on when storage and the network both refuse", async () => {
