@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiBehindEntrance, brochureKeysFor, cleanLink, cleanWhatsapp, isUpdatesAnswer, OPEN_APIS, OPEN_PAGES, pageBehindEntrance, parseEntrance, roleSlugOf, safeNext } from "./entrance";
+import { apiBehindEntrance, brochureKeysFor, cleanCode, cleanLink, lookOver, cleanWhatsapp, isUpdatesAnswer, OPEN_APIS, OPEN_PAGES, pageBehindEntrance, parseEntrance, roleSlugOf, safeNext } from "./entrance";
 
 describe("what stands behind the entrance (an allow-list)", () => {
   it("draws the entrance in front of every page but the doors, the legal pages and the applicant's own links", () => {
@@ -108,5 +108,23 @@ describe("the form", () => {
     expect(safeNext("https://evil.example")).toBeNull();
     expect(safeNext("/a\nb")).toBeNull();
     expect(safeNext(7)).toBeNull();
+  });
+});
+
+describe("a short look, then the code", () => {
+  it("reads six digits the way people type them", () => {
+    expect(cleanCode("123456")).toBe("123456");
+    expect(cleanCode("123 456")).toBe("123456");
+    expect(cleanCode("123-456")).toBe("123456");
+    for (const v of ["12345", "1234567", "12a456", 123456, null]) expect(cleanCode(v), String(v)).toBeNull();
+  });
+
+  it("ends the look at whichever comes first, the minutes or the pages, and never without a code to ask", () => {
+    const look = { needsCode: true, startedAt: 1_000_000, lookMs: 3 * 60 * 1000, lookPages: 3 };
+    expect(lookOver(look, 0, 1_000_000)).toBe(false);
+    expect(lookOver(look, 2, 1_000_000 + 60_000)).toBe(false);
+    expect(lookOver(look, 3, 1_000_000 + 60_000)).toBe(true);
+    expect(lookOver(look, 0, 1_000_000 + 3 * 60 * 1000)).toBe(true);
+    expect(lookOver({ ...look, needsCode: false }, 99, 9e12)).toBe(false);
   });
 });

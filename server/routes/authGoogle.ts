@@ -103,6 +103,13 @@ export interface GoogleAuthDeps {
    * `GET /api/auth/confirm-methods` is not mounted.
    */
   authedUser?(req: Request): Promise<any | null>;
+  /**
+   * The portal entrance (server/routes/entrance.ts). A Google round trip started there that finds
+   * no account at the verified address makes NO account: it records a proved portal entry and
+   * answers the cookie to set and where to land. Optional so a unit test can leave it out; without
+   * it a portal start is an ordinary sign-in.
+   */
+  portalVisitor?(visitor: { name: string; email: string; next: string | null; secure: boolean }): Promise<{ cookie: string; next: string }>;
 }
 
 /**
@@ -278,6 +285,7 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
     const state = makeOAuthState(deps.authSecret, next, Date.now(), {
       invite: found && found.ok ? found.id : null,
       confirm,
+      portal: !confirm && req.query.portal === "1" && !!deps.portalVisitor,
       bind: oauthBindHash(binder),
     });
     const parsed = readOAuthState(deps.authSecret, state);
@@ -511,6 +519,12 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
         const inviter = await deps.invites.claim(state.invite, member.id);
         if (inviter) await deps.invites.welcome(inviter, member.id);
       }
+    } else if (state.portal && deps.portalVisitor) {
+      // From the portal entrance, at an address with no account: the address is proved on a portal
+      // entry, the entry cookie is set, and nobody is signed in or given an account (0428).
+      const visitor = await deps.portalVisitor({ name: identity.name || identity.email.split("@")[0], email: identity.email, next: state.next, secure });
+      res.setHeader("Set-Cookie", visitor.cookie);
+      return res.redirect(302, visitor.next);
     } else {
       // From crypto, like the email door's (server/routes/register.ts): the id is signed into a session.
       const userId = `user-${Date.now()}-${randomBytes(4).toString("hex")}`;

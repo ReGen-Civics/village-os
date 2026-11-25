@@ -60779,3 +60779,202 @@ msgstr "Participación"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
+
+# ── The portal entrance, the code step and Invite to join (portal entrance lane, 24 Nov 2026). Its own block.
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: before the link to the village's public site"
+msgid "To know more about us, visit"
+msgstr "Para conocernos más, visita"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: what this site is, after the link to the public site"
+msgid "This is our game, where we co-create the village."
+msgstr "Este es nuestro juego, donde co-creamos la aldea."
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: eyebrow"
+msgid "The living map"
+msgstr "El mapa vivo"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: heading"
+msgid "The living map is for members"
+msgstr "El mapa vivo es para miembros"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: what the map holds, and what is open instead"
+msgid "Members see the land, its places and who holds each role. The circles, and what each one is for, are open to you now."
+msgstr "Los miembros ven la tierra, sus lugares y quién ocupa cada rol. Los círculos, y para qué es cada uno, ya están abiertos para ti."
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: the main button"
+msgid "See the circles"
+msgstr "Ver los círculos"
+
+#: client/src/components/map/MapMembersDoor.tsx
+#, needs-native-review
+msgctxt "map members only: sign in"
+msgid "I am a member: sign in"
+msgstr "Soy miembro: iniciar sesión"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: before a suggested email address"
+msgid "Did you mean"
+msgstr "¿Quisiste decir"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: told up front that a code was emailed, before the keep-in-touch question"
+msgid "We have sent a 6-digit code to {sentTo}. Have a look around. You will need the code to keep exploring."
+msgstr "Enviamos un código de 6 dígitos a {sentTo}. Echa un vistazo. Necesitarás el código para seguir explorando."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the code is the wrong shape"
+msgid "The code is 6 digits."
+msgstr "El código tiene 6 dígitos."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: a new code was sent"
+msgid "A new code is on its way to {sentTo}."
+msgstr "Un código nuevo va camino a {sentTo}."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: eyebrow"
+msgid "One more step"
+msgstr "Un paso más"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: heading"
+msgid "Type the code we emailed you"
+msgstr "Escribe el código que te enviamos por correo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: what to do, naming the address"
+msgid "We sent a 6-digit code to {sentTo}. Type it here to keep exploring."
+msgstr "Enviamos un código de 6 dígitos a {sentTo}. Escríbelo aquí para seguir explorando."
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the code field"
+msgid "Your code"
+msgstr "Tu código"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: the main button"
+msgid "Keep exploring"
+msgstr "Seguir explorando"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: resend, counting down"
+msgid "Send a new code in {secondsLeft} s"
+msgstr "Enviar un código nuevo en {secondsLeft} s"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: resend"
+msgid "Send a new code"
+msgstr "Enviar un código nuevo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: change the address"
+msgid "Use a different email"
+msgstr "Usar otro correo"
+
+#: client/src/pages/EntranceCode.tsx
+#, needs-native-review
+msgctxt "portal code step: Google instead"
+msgid "Use Google instead"
+msgstr "Usar Google en su lugar"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: verified or not"
+msgid "Address"
+msgstr "Dirección"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the address is proved"
+msgid "Verified"
+msgstr "Verificada"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the code has not come"
+msgid "Unverified"
+msgstr "Sin verificar"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: entered while no code could be sent"
+msgid "Not checked"
+msgstr "Sin comprobar"
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, first paragraph, in the lead's own words"
+msgid "Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting {village} and can follow up with you."
+msgstr "Hola; guardamos lo que escribes aquí - para que quede guardado para ti - y las páginas que abres mientras exploras, para saber quién visita {village} y poder darte seguimiento."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, the code by email, shown only while the village sends codes"
+msgid "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch."
+msgstr "Te enviamos un código por correo para confirmar tu dirección - lo necesitas si quieres avanzar en el proceso y seguir en contacto."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, the email list"
+msgid "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it."
+msgstr "Si en el siguiente paso dices que sí a recibir noticias, también te añadimos a nuestra lista de correo, que guarda un servicio de correo electrónico. Nunca vendemos nada de esto."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact"
+msgid "To see it or have it deleted, write to {contact}."
+msgstr "Para verlo o pedir que lo borremos, escribe a {contact}."
+
+#: client/src/pages/Entrance.tsx
+#, needs-native-review
+msgctxt "portal entrance: the privacy line, how to see or delete it, when the village has no contact address"
+msgid "To see it or have it deleted, ask anyone at the village."
+msgstr "Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: invite to join done"
+msgid "An invitation for {0} is ready. Copy the link and send it to them yourself: nothing has been emailed."
+msgstr "La invitación para {0} está lista. Copia el enlace y envíaselo tú: no se ha enviado ningún correo."
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: a second invitation link"
+msgid "Invite again"
+msgstr "Invitar de nuevo"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: make an invitation link for a verified visitor"
+msgid "Invite to join"
+msgstr "Invitar a unirse"
+
+#: client/src/components/admin/PortalVisitorsTab.tsx
+#, needs-native-review
+msgctxt "admin portal visitors: the link just made"
+msgid "Invitation link, to copy"
+msgstr "Enlace de invitación, para copiar"

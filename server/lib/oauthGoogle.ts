@@ -199,6 +199,12 @@ export interface OAuthState {
   confirm: string | null;
   /** sha256 of the binder cookie `start` set (R215), or null on a state minted without one. */
   bind: string | null;
+  /**
+   * Started from the portal entrance's "Continue with Google" (0428). A sign-in to an existing
+   * account is an ordinary one; an address with no account proves itself on a portal entry and
+   * makes no account (server/routes/entrance.ts, `googleVisitor`). Absent means false.
+   */
+  portal?: boolean;
 }
 
 /** An invitation id in the shape `server/routes/invites.ts` mints, or null. */
@@ -234,7 +240,7 @@ export function makeOAuthState(
    * same day, the invitation and the confirmation, and a third field would have
    * taken a fifth. Both are optional and absent means an ordinary sign-in.
    */
-  opts: { invite?: string | null; confirm?: string | null; bind?: string | null } = {},
+  opts: { invite?: string | null; confirm?: string | null; bind?: string | null; portal?: boolean } = {},
 ): string {
   const payload = Buffer.from(
     JSON.stringify({
@@ -245,6 +251,7 @@ export function makeOAuthState(
       invite: readInviteId(opts.invite) ?? "",
       ...(opts.confirm ? { confirm: opts.confirm } : {}),
       ...(opts.bind ? { b: opts.bind } : {}),
+      ...(opts.portal ? { portal: 1 } : {}),
     }),
   ).toString("base64url");
   return `${payload}.${signTokenPayload(secret, payload)}`;
@@ -272,6 +279,7 @@ export function readOAuthState(secret: string, state: string, nowMs: number = Da
       invite: readInviteId(decoded.invite),
       confirm: typeof decoded.confirm === "string" && decoded.confirm ? decoded.confirm : null,
       bind: typeof decoded.b === "string" && /^[0-9a-f]{64}$/.test(decoded.b) ? decoded.b : null,
+      portal: decoded.portal === 1,
     };
   } catch {
     return null;

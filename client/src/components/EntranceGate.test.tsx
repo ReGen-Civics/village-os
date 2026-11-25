@@ -11,7 +11,12 @@ import { memoryLocation } from "wouter/memory-location";
 
 const auth = vi.hoisted(() => ({ user: null as unknown, loading: false }));
 vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => auth }));
-vi.mock("@/pages/Entrance", () => ({ default: ({ next, siteKey }: { next: string; siteKey: string | null }) => <p data-testid="entrance">{`entrance:${next}:${siteKey ?? "none"}`}</p> }));
+vi.mock("@/pages/Entrance", () => ({
+  default: ({ next, siteKey }: { next: string; siteKey: string | null }) => <p data-testid="entrance">{`entrance:${next}:${siteKey ?? "none"}`}</p>,
+  KeepInTouch: ({ goTo }: { goTo: string }) => <p data-testid="keep-in-touch">{`keep:${goTo}`}</p>,
+}));
+vi.mock("@/pages/EntranceCode", () => ({ default: ({ sentTo, next }: { sentTo: string; next: string }) => <p data-testid="code">{`code:${sentTo}:${next}`}</p> }));
+vi.mock("@/hooks/useVillageName", () => ({ useVillageName: () => "Village" }));
 
 import EntranceGate, { forgetEntranceStatus } from "./EntranceGate";
 
@@ -131,6 +136,39 @@ describe("the entrance gate", () => {
     status = { required: true, entered: false, siteKey: "0x4AAA" };
     at("/circles");
     expect(await screen.findByTestId("entrance")).toHaveTextContent("entrance:/circles:0x4AAA");
+  });
+
+  it("lets a visitor with a code waiting look at pages until the look is spent, then asks on the next page", async () => {
+    const look = { needsCode: true, startedAt: Date.now(), pages: 2, lookMs: 3 * 60 * 1000, lookPages: 3, sentTo: "ana@example.org" };
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ required: true, entered: true, siteKey: null, visitor: true, look }) }) as Response));
+    const { hook, navigate } = memoryLocation({ path: "/roles", record: true });
+    render(
+      <Router hook={hook}>
+        <EntranceGate waiting={<p data-testid="waiting">waiting</p>}>
+          <p data-testid="page">page</p>
+        </EntranceGate>
+      </Router>,
+    );
+    // The third page of three: still open.
+    expect(await screen.findByTestId("page")).toBeInTheDocument();
+    // The fourth: the code, in place of the page, with the page kept to go back to.
+    navigate("/circles");
+    expect(await screen.findByTestId("code")).toHaveTextContent("code:ana@example.org:/circles");
+  });
+
+  it("asks for the code at once when the minutes ran out before this page", async () => {
+    const look = { needsCode: true, startedAt: Date.now() - 4 * 60 * 1000, pages: 0, lookMs: 3 * 60 * 1000, lookPages: 3, sentTo: "ana@example.org" };
+    status = { required: true, entered: true, siteKey: null, visitor: true, look };
+    at("/roles");
+    expect(await screen.findByTestId("code")).toBeInTheDocument();
+  });
+
+  it("asks the keep-in-touch question on the page a Google visitor lands on", async () => {
+    status = { required: true, entered: true, siteKey: null, visitor: true, look: null };
+    window.history.replaceState(null, "", "/roles?x=1&keep-in-touch=1");
+    at("/roles");
+    expect(await screen.findByTestId("keep-in-touch")).toHaveTextContent("keep:/roles?x=1");
+    window.history.replaceState(null, "", "/");
   });
 
   it("asks nothing and draws the page at once when the server gave no hint of an entrance", async () => {

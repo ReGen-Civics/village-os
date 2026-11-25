@@ -19,12 +19,16 @@ export interface NewPortalEntry {
   isTest: boolean;
   at: Date;
   interest: Interest | null;
+  /** 1 when the visitor has a short look and then needs the code (0428). */
+  codeRequired?: boolean;
+  /** An entry made already verified (Google). */
+  verifiedAt?: Date | null;
 }
 
 export async function insertPortalEntry(db: Pool, e: NewPortalEntry): Promise<void> {
   await db.query(
-    "INSERT INTO portal_entries (id, name, email, email_key, whatsapp, link, consent_words, next_path, locale, human, is_test, created_at, interest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    [e.id, e.name, e.email, e.emailKey, e.whatsapp, e.link, e.consentWords, e.nextPath, e.locale, e.human, e.isTest ? 1 : 0, e.at, e.interest],
+    "INSERT INTO portal_entries (id, name, email, email_key, whatsapp, link, consent_words, next_path, locale, human, is_test, created_at, interest, code_required, verified_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [e.id, e.name, e.email, e.emailKey, e.whatsapp, e.link, e.consentWords, e.nextPath, e.locale, e.human, e.isTest ? 1 : 0, e.at, e.interest, e.codeRequired ? 1 : 0, e.verifiedAt ?? null],
   );
 }
 
@@ -48,9 +52,12 @@ const rowOf = (r: RowDataPacket): PortalEntry => ({
   interest: isInterest(r.interest) ? r.interest : null,
   syncedAt: r.synced_at == null ? null : new Date(r.synced_at).toISOString(),
   syncError: r.sync_error == null ? null : String(r.sync_error),
+  verifiedAt: r.verified_at == null ? null : new Date(r.verified_at).toISOString(),
+  invited: r.invite_id != null,
+  codeRequired: Number(r.code_required) === 1,
 });
 
-const LIST_COLUMNS = "id, name, email, whatsapp, link, updates, next_path, locale, human, created_at, interest, synced_at, sync_error";
+const LIST_COLUMNS = "id, name, email, whatsapp, link, updates, next_path, locale, human, created_at, interest, synced_at, sync_error, verified_at, code_required, invite_id";
 
 /** The newest entries first, tests left out. `updatesOnly` is the list of people who asked for updates; `interest` narrows to one answer. */
 export async function listPortalEntries(db: Pool, opts: { limit: number; updatesOnly?: boolean; interest?: Interest | null }): Promise<PortalEntry[]> {
@@ -71,9 +78,12 @@ export async function portalEntryById(db: Pool, id: string): Promise<(PortalEntr
   return rows[0] ? { ...rowOf(rows[0]), isTest: Number(rows[0].is_test) === 1 } : null;
 }
 
-/** Opted-in, real entries that have not reached the email list yet, oldest first. */
+/**
+ * Opted-in, real entries that have not reached the email list yet, oldest first. Only a confirmed
+ * address goes (the code or Google), or an entry made while the village could send no code at all.
+ */
 export async function unsyncedOptedIn(db: Pool, limit: number): Promise<PortalEntry[]> {
-  const [rows] = await db.query<RowDataPacket[]>(`SELECT ${LIST_COLUMNS} FROM portal_entries WHERE is_test = 0 AND updates = 'yes' AND synced_at IS NULL ORDER BY created_at ASC LIMIT ?`, [limit]);
+  const [rows] = await db.query<RowDataPacket[]>(`SELECT ${LIST_COLUMNS} FROM portal_entries WHERE is_test = 0 AND updates = 'yes' AND synced_at IS NULL AND (verified_at IS NOT NULL OR code_required = 0) ORDER BY created_at ASC LIMIT ?`, [limit]);
   return rows.map(rowOf);
 }
 
@@ -112,10 +122,10 @@ export async function journeysFor(db: Pool, emailKeys: string[]): Promise<Map<st
     [keys],
   );
   for (const r of apps) out.get(String(r.email_key))?.applications.push({ status: String(r.status), at: new Date(Number(r.at_s) * 1000).toISOString() });
-  const [users] = await db.query<RowDataPacket[]>("SELECT LOWER(TRIM(email)) AS k, id, joined_at, membership_granted FROM users WHERE LOWER(TRIM(email)) IN (?) AND is_example = 0", [keys]);
+  const [users] = await db.query<RowDataPacket[]>("SELECT LOWER(TRIM(email)) AS k, id, joined_at, membership_granted, email_verified_at FROM users WHERE LOWER(TRIM(email)) IN (?) AND is_example = 0", [keys]);
   for (const r of users) {
     const j = out.get(String(r.k));
-    if (j) j.account = { id: String(r.id), joined: new Date(r.joined_at).toISOString(), member: Number(r.membership_granted) === 1 };
+    if (j) j.account = { id: String(r.id), joined: new Date(r.joined_at).toISOString(), member: Number(r.membership_granted) === 1, verified: r.email_verified_at != null };
   }
   const [forms] = await db.query<RowDataPacket[]>(
     "SELECT LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(data, '$.email')))) AS k, type, submitted_at FROM submissions WHERE LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(data, '$.email')))) IN (?) ORDER BY submitted_at",
@@ -153,4 +163,62 @@ export async function viewsFor(db: Pool, entryIds: string[], perEntry = 50): Pro
     out.set(k, list);
   }
   return out;
+}
+
+/** Page views older than the cutoff go, oldest first in batches. Answers how many went. */
+export async function sweepPortalViews(db: Pool, olderThan: Date, batch = 5000): Promise<number> {
+  let total = 0;
+  for (;;) {
+    const [r] = await db.query("DELETE FROM portal_views WHERE at < ? ORDER BY at LIMIT ?", [olderThan, batch]);
+    const n = Number((r as { affectedRows?: number }).affectedRows ?? 0);
+    total += n;
+    if (n < batch) return total;
+  }
+}
+
+// ── The short look and the code (0428) ──────────────────────────────────────
+
+export interface EntryLook {
+  email: string;
+  emailKey: string;
+  name: string;
+  locale: string | null;
+  isTest: boolean;
+  codeRequired: boolean;
+  verified: boolean;
+  createdAt: number;
+  views: number;
+  userId: string | null;
+}
+
+/** What the gate and the code routes need to know about one entry, or null when it is gone. */
+export async function entryLook(db: Pool, id: string): Promise<EntryLook | null> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT email, email_key, name, locale, is_test, code_required, verified_at, created_at, user_id, (SELECT COUNT(*) FROM portal_views v WHERE v.entry_id = e.id) AS views FROM portal_entries e WHERE id = ? LIMIT 1",
+    [id],
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    email: String(r.email),
+    emailKey: String(r.email_key),
+    name: String(r.name),
+    locale: r.locale == null ? null : String(r.locale),
+    isTest: Number(r.is_test) === 1,
+    codeRequired: Number(r.code_required) === 1,
+    verified: r.verified_at != null,
+    createdAt: new Date(r.created_at).getTime(),
+    views: Number(r.views),
+    userId: r.user_id == null ? null : String(r.user_id),
+  };
+}
+
+/** The address is proved: the time, and the account it already had, if any. */
+export async function markEntryVerified(db: Pool, id: string, at: Date, userId: string | null): Promise<void> {
+  await db.query("UPDATE portal_entries SET verified_at = COALESCE(verified_at, ?), user_id = COALESCE(?, user_id) WHERE id = ?", [at, userId, id]);
+}
+
+/** "Invite to join": the invitation made for this entry, recorded against it. */
+export async function markEntryInvited(db: Pool, id: string, inviteId: string): Promise<void> {
+  await db.query("UPDATE portal_entries SET invite_id = ? WHERE id = ?", [inviteId, id]);
 }

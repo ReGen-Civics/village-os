@@ -32,6 +32,8 @@ interface Props {
    * route checks it, and only the invitation's id travels to Google and back.
    */
   invite?: string;
+  /** From the portal entrance: an address with no account proves itself and makes no account (0428). */
+  portal?: boolean;
 }
 
 /**
@@ -58,7 +60,7 @@ export function GoogleMark() {
   );
 }
 
-export default function GoogleSignInButton({ next, label, invite }: Props) {
+export default function GoogleSignInButton({ next, label, invite, portal }: Props) {
   const { t } = useLingui();
   const [available, setAvailable] = useState<boolean | null>(null);
 
@@ -77,6 +79,7 @@ export default function GoogleSignInButton({ next, label, invite }: Props) {
   const query = new URLSearchParams();
   if (next) query.set("next", next);
   if (invite) query.set("invite", invite);
+  if (portal) query.set("portal", "1");
   const search = query.toString();
   const href = `/api/auth/google/start${search ? `?${search}` : ""}`;
 

@@ -2,7 +2,11 @@
  * PORTAL VISITORS: everyone who entered the portal (shared/entrance.ts), newest first, with the
  * people who said yes to keeping in touch as a list of their own, the page each one first asked
  * for, the pages they opened since, a Make member button for a visitor who has made an account
- * (the existing super-vouch, which asks its own capability), a CSV of either, and a way to forget one
+ * (the existing super-vouch, which asks its own capability; offered only once the address is proved),
+ * an Invite to join button for a verified visitor with no account (the platform's own invitation
+ * link, made on the admin's vouch and shown once to copy; visitors hold no accounts, the lead,
+ * 24 Nov 2026),
+ * whether each address is verified (the code, or Google), a CSV of either, and a way to forget one
  * person when they ask. Each row shows what the visitor chose under "What draws you here?" and what
  * they have done since (applied, made an account, sent a form), matched by address. While the
  * village has a Brevo list set up, it also says who has reached it and sends those waiting. Read through the one capability gate on `intake.moderate`
@@ -36,6 +40,8 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
   const [forgetNote, setForgetNote] = useState("");
   const [memberNote, setMemberNote] = useState("");
   const [admitting, setAdmitting] = useState("");
+  /** The invitation link just made, by entry id, shown once for the admin to copy. */
+  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
 
   const params = new URLSearchParams();
   if (updatesOnly) params.set("updates", "1");
@@ -115,6 +121,27 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
         return;
       }
       setMemberNote(t({ message: `${e.name} is a member now.`, context: "admin portal visitors: make member done" }));
+      void load();
+    } catch {
+      setMemberNote(t({ message: "That did not go through. Check your connection.", context: "admin portal visitors" }));
+    } finally {
+      setAdmitting("");
+    }
+  };
+
+  const inviteToJoin = async (e: PortalEntry) => {
+    if (admitting) return;
+    setAdmitting(e.id);
+    setMemberNote("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/entrance/entries/${encodeURIComponent(e.id)}/invite`, { method: "POST", headers: authHeaders(password) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || typeof body.path !== "string") {
+        setMemberNote(refusal(body, t({ message: "That did not go through.", context: "admin portal visitors" })));
+        return;
+      }
+      setInviteLinks((m) => ({ ...m, [e.id]: `${window.location.origin}${body.path}` }));
+      setMemberNote(t({ message: `An invitation for ${e.name} is ready. Copy the link and send it to them yourself: nothing has been emailed.`, context: "admin portal visitors: invite to join done" }));
       void load();
     } catch {
       setMemberNote(t({ message: "That did not go through. Check your connection.", context: "admin portal visitors" }));
@@ -240,6 +267,7 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                 <th scope="col" className="px-3 py-2">{t({ message: "Entered", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Name", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Email", context: "admin portal visitors" })}</th>
+                <th scope="col" className="px-3 py-2">{t({ message: "Address", context: "admin portal visitors: verified or not" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "WhatsApp", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Link", context: "admin portal visitors" })}</th>
                 <th scope="col" className="px-3 py-2">{t({ message: "Drawn by", context: "admin portal visitors" })}</th>
@@ -255,6 +283,13 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{when(e.at)}</td>
                   <td className="px-3 py-2 font-medium text-foreground break-words">{e.name}</td>
                   <td className="px-3 py-2 break-all">{e.email}</td>
+                  <td className="px-3 py-2">
+                    {e.verifiedAt
+                      ? t({ message: "Verified", context: "admin portal visitors: the address is proved" })
+                      : e.codeRequired
+                        ? t({ message: "Unverified", context: "admin portal visitors: the code has not come" })
+                        : t({ message: "Not checked", context: "admin portal visitors: entered while no code could be sent" })}
+                  </td>
                   <td className="px-3 py-2 break-all">{e.whatsapp ?? ""}</td>
                   <td className="px-3 py-2 break-all">{e.link ?? ""}</td>
                   <td className="px-3 py-2">{e.interest ? interestWords[e.interest] : ""}</td>
@@ -276,7 +311,18 @@ export default function PortalVisitorsTab({ password }: { password: string }) {
                     ) : (
                       t({ message: "Nothing yet", context: "admin portal visitors: no later step" })
                     )}
-                    {e.journey?.account && !e.journey.account.member && (
+                    {!e.journey?.account && e.verifiedAt && !inviteLinks[e.id] && (
+                      <button type="button" className={`${BTN} mt-2`} disabled={!!admitting} onClick={() => void inviteToJoin(e)}>
+                        {e.invited ? t({ message: "Invite again", context: "admin portal visitors: a second invitation link" }) : t({ message: "Invite to join", context: "admin portal visitors: make an invitation link for a verified visitor" })}
+                      </button>
+                    )}
+                    {inviteLinks[e.id] && (
+                      <label className="mt-2 block text-xs text-foreground">
+                        {t({ message: "Invitation link, to copy", context: "admin portal visitors: the link just made" })}
+                        <input readOnly value={inviteLinks[e.id]} onFocus={(ev) => ev.currentTarget.select()} className="mt-1 block min-h-11 w-full min-w-48 rounded-lg border border-border bg-background px-2 text-xs" />
+                      </label>
+                    )}
+                    {e.journey?.account && !e.journey.account.member && (e.verifiedAt || e.journey.account.verified) && (
                       <button type="button" className={`${BTN} mt-2`} disabled={!!admitting} onClick={() => void makeMember(e)}>
                         {t({ message: "Make member", context: "admin portal visitors: admit a visitor with an account" })}
                       </button>

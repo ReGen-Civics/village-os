@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import express from "express";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, ENTRY_MS, eventPassOpens, fallbackHuman, pickKeys, readEntry, readEventPass, signEntry, signEventPass, verifyTurnstile } from "./entrance";
+import { cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, ENTRY_MS, eventPassOpens, fallbackHuman, pickKeys, readEntry, readEventPass, signEntry, signEventPass, verifyTurnstile, type EntryState } from "./entrance";
 
 const SECRET = "test-secret-that-is-long-enough-for-hmac"; // module-review-ok: a test fixture key for the HMAC, never a real credential
 const ID = "pe-0123456789abcdef0123";
@@ -105,7 +105,9 @@ describe("the gate, on a real server", () => {
   let base = "";
   let required = true;
   const PASS = "pass-for-our-own-automation-0123456789";
-  const records = new Set<string>([ID]);
+  const LOOKING = "pe-11111111111111111111";
+  const OVER = "pe-22222222222222222222";
+  const records = new Map<string, EntryState>([[ID, "in"], [LOOKING, "look"], [OVER, "code"]]);
   const now = Date.now();
   // A local request to the test's own server, never an outbound call.
   const get = (p: string, init?: RequestInit) => fetch(`${base}${p}`, init); // module-review-ok: the test's own loopback server, not an outbound call
@@ -113,7 +115,7 @@ describe("the gate, on a real server", () => {
 
   beforeAll(async () => {
     const app = express();
-    const entered = entryChecker({ secret: SECRET, entryExists: async (id) => records.has(id) });
+    const entered = entryChecker({ secret: SECRET, entryState: async (id) => records.get(id) ?? null });
     app.use(
       entranceMiddleware(
         {
@@ -162,6 +164,16 @@ describe("the gate, on a real server", () => {
     const otherId = "pe-aaaaaaaaaaaaaaaaaaaa";
     const c = `vos_portal=${encodeURIComponent(signEntry(SECRET, otherId, now))}`;
     expect((await get("/api/org", { headers: { cookie: c } })).status).toBe(401);
+  });
+
+  it("lets a visitor inside their short look through, and asks for the code once it is over", async () => {
+    required = true;
+    const looking = `vos_portal=${encodeURIComponent(signEntry(SECRET, LOOKING, now))}`;
+    const over = `vos_portal=${encodeURIComponent(signEntry(SECRET, OVER, now))}`;
+    expect((await get("/api/org", { headers: { cookie: looking } })).status).toBe(200);
+    const res = await get("/api/org", { headers: { cookie: over } });
+    expect(res.status).toBe(401);
+    expect(((await res.json()) as { error: string }).error).toBe("code_required");
   });
 
   it("answers a visitor the founding team's open roles only", async () => {

@@ -2885,11 +2885,57 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Portal entrance: Brevo list",
     description:
-      "The number of the Brevo list that portal visitors join when they tick \"send me updates\". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
+      "The number of the Brevo list that portal visitors join when they answer Yes to keeping in touch. It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
     type: "integer",
     default: "0",
     min: 0,
     max: 100000000,
+    ring: "founder",
+  },
+  {
+    key: "entrance.privacy_contact",
+    category: "The village's people",
+    label: "Portal entrance: who to write to about what is kept",
+    description:
+      "The email address the entrance's privacy line names, for a visitor who wants to see what is kept about them or have it deleted. Leave it blank to name the village's contact address.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
+    key: "entrance.look_minutes",
+    category: "The village's people",
+    label: "Portal entrance: minutes to look around before the code",
+    description:
+      "While the village can send email, entering the portal sends a 6-digit code to the visitor's address, and they go straight in. They can look around for this many minutes, or until they open the number of pages below, whichever comes first. The next page they open asks for the code. The step never covers a page they are reading.",
+    type: "integer",
+    default: "3",
+    min: 1,
+    max: 60,
+    ring: "founder",
+  },
+  {
+    key: "entrance.look_pages",
+    category: "The village's people",
+    label: "Portal entrance: pages to look at before the code",
+    description:
+      "How many pages a visitor can open after entering, before the next one asks for the 6-digit code we sent them. Works together with the minutes above: whichever runs out first.",
+    type: "integer",
+    default: "3",
+    min: 1,
+    max: 50,
+    ring: "founder",
+  },
+  {
+    key: "entrance.views_keep_days",
+    category: "The village's people",
+    label: "Portal entrance: keep the pages visitors opened for",
+    description:
+      "How many days the list of pages each portal visitor opened is kept, shown under Admin, Portal visitors. Older page views are deleted once a day. The visitor's name and email are kept until somebody asks for them to be forgotten; this setting covers only the pages.",
+    type: "integer",
+    default: "365",
+    min: 1,
+    max: 3650,
     ring: "founder",
   },
   {

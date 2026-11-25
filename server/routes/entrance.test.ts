@@ -19,7 +19,8 @@ import express from "express";
 import type { Pool } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
-import { register } from "./entrance";
+import { insertPortalView, sweepPortalViews } from "../repos/portalEntries";
+import { portalGoogleVisitor, register } from "./entrance";
 
 const configured = testDbConfigured();
 const SECRET = "test-secret-for-the-entrance-routes-only"; // module-review-ok: a test fixture key for the HMAC, never a real credential
@@ -32,6 +33,11 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
   let member = false;
   let canModerate = true;
   const brevoCalls: unknown[] = [];
+  let mailOn = false;
+  let clock = 0;
+  const letters: { to: string; subject: string; html: string }[] = [];
+  const accounts = new Map<string, any>([["member@example.org", { id: "u-ana", email: "member@example.org", tokenVersion: 2, passwordHash: "hash", emailVerifiedAt: "2026-01-01T00:00:00.000Z" }]]);
+  const codeIn = (html: string) => (/(\d{3}) (\d{3})/.exec(html) ?? []).slice(1).join("");
 
   beforeAll(async () => {
     db = await provisionTestDb();
@@ -40,9 +46,10 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
     app.use(express.json());
     register(app, {
       getPool: () => pool,
-      authedUser: async () => (member ? { id: "u-member" } : null),
+      authedUser: async () => (member ? { id: "u-member", tokenVersion: 0 } : null),
       boolVar: (k) => k === "entrance.required",
       stringVar: () => "",
+      numberVar: (k) => (k === "entrance.views_keep_days" ? 30 : 0),
       turnstileSecret: () => "",
       secret: SECRET,
       clientIp: () => "203.0.113.7",
@@ -62,7 +69,38 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
       },
       isAgent: async () => false,
       passToken: () => "",
-      now: () => Date.now(),
+      mail: {
+        ready: () => mailOn,
+        sendEmail: async (o) => {
+          letters.push({ to: o.to[0], subject: o.subject, html: o.html });
+          return { sent: true };
+        },
+        escapeHtml: (x) => x,
+        projectName: () => "Test Village",
+      },
+      accounts: {
+        byEmail: async (e) => accounts.get(String(e).toLowerCase()) ?? null,
+        update: async (id, mutate) => {
+          const a = Array.from(accounts.values()).find((x) => x.id === id);
+          if (!a) return null;
+          mutate(a);
+          return a;
+        },
+        encodeToken: (id, email, v) => `token:${id}:${email}:${v}`,
+        publicUser: (u) => ({ id: u.id }),
+        endReachAround: async (_id, change) => change(),
+        recordAudit: () => undefined,
+      },
+      mailLookup: {
+        resolveMx: async (d) => {
+          if (d === "nomail.example") throw Object.assign(new Error("no"), { code: "ENOTFOUND" });
+          return [{ exchange: "mx" }];
+        },
+        resolve4: async () => {
+          throw Object.assign(new Error("no"), { code: "ENOTFOUND" });
+        },
+      },
+      now: () => Date.now() + clock,
     });
     app.get("/api/roles-like", (_req, res) => res.json({ ok: true }));
     server = http.createServer(app);
@@ -138,6 +176,17 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
     expect(rows.map((r) => [r.path, r.role_slug])).toEqual([["/roles/garden-steward", "garden-steward"]]);
   });
 
+  it("sweeps page views past the keeping period and keeps the recent ones", async () => {
+    const { cookie } = await enter("Fern Test", "fern@example.org", "/");
+    const id = decodeURIComponent(cookie.split("=")[1]).split(".")[0];
+    const day = 24 * 60 * 60 * 1000;
+    await insertPortalView(pool, { id: "pv-old-one", entryId: id, path: "/roles/old", roleSlug: "old", at: new Date(Date.now() - 40 * day) });
+    await insertPortalView(pool, { id: "pv-new-one", entryId: id, path: "/roles/new", roleSlug: "new", at: new Date(Date.now() - 2 * day) });
+    expect(await sweepPortalViews(pool, new Date(Date.now() - 30 * day), 1)).toBe(1);
+    const left = await read("SELECT id FROM portal_views WHERE entry_id = ?", [id]);
+    expect(left.map((r) => r.id)).toEqual(["pv-new-one"]);
+  });
+
   it("shows Admin the answer, the first page asked for and the pages opened, and forgets them together", async () => {
     // Not signed in: the entrance itself turns the read away before the capability gate is asked.
     expect((await call(`/api/admin/entrance/entries`)).status).toBe(401);
@@ -163,8 +212,150 @@ describe.skipIf(!configured)("the portal entrance, over HTTP", () => {
 
     const gone = await call(`/api/admin/entrance/entries?email=MOSS@example.org`, { method: "DELETE" });
     expect(((await gone.json()) as { removed: number }).removed).toBe(1);
-    const views = await read("SELECT COUNT(*) AS n FROM portal_views");
+    const views = await read("SELECT COUNT(*) AS n FROM portal_views WHERE path = '/roles/garden-steward'");
     expect(Number(views[0].n)).toBe(0);
+    member = false;
+  });
+
+  // ── A short look, then the code (0428) ──────────────────────────────────
+
+  const status = async (cookie: string) => (await (await call("/api/entrance", { headers: { Cookie: cookie } })).json()) as { look: any; entered: boolean };
+
+  it("refuses a throwaway inbox and a domain that takes no mail, with a sentence", async () => {
+    const bin = await post("/api/entrance", { name: "Bin", email: "x@mailinator.com", website: "", shownAt: Date.now() - 10_000 });
+    expect(bin.status).toBe(400);
+    expect(((await bin.json()) as { message: string }).message).toMatch(/throwaway/);
+    const none = await post("/api/entrance", { name: "None", email: "x@nomail.example", website: "", shownAt: Date.now() - 10_000 });
+    expect(none.status).toBe(400);
+  });
+
+  it("sends a code and lets the visitor in at once, then a wrong code is told how many tries are left", async () => {
+    mailOn = true;
+    letters.length = 0;
+    const res = await post("/api/entrance", { name: "Code Test", email: "code@example.org", next: "/roles", website: "", shownAt: Date.now() - 10_000 });
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { code: { sentTo: string } }).code).toEqual({ sentTo: "code@example.org" });
+    const cookie = String(res.headers.get("set-cookie")).split(";")[0];
+    expect(letters).toHaveLength(1);
+    expect(letters[0].html).toMatch(/keep exploring/);
+    expect((await status(cookie)).look).toMatchObject({ needsCode: true, pages: 0, lookPages: 3, lookMs: 3 * 60 * 1000, sentTo: "code@example.org" });
+    // Inside the look, the reads are open.
+    expect((await call("/api/roles-like", { headers: { Cookie: cookie } })).status).toBe(200);
+
+    const real = codeIn(letters[0].html);
+    const wrong = real === "000000" ? "111111" : "000000";
+    const bad = await post("/api/entrance/code", { code: wrong }, cookie);
+    expect(bad.status).toBe(400);
+    expect(((await bad.json()) as { message: string }).message).toMatch(/4 more tries/);
+
+    // Said yes before the code: no list yet.
+    brevoCalls.length = 0;
+    await post("/api/entrance/updates", { answer: "yes", words: "q" }, cookie);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(brevoCalls).toEqual([]);
+
+    const good = await post("/api/entrance/code", { code: `${real.slice(0, 3)} ${real.slice(3)}` }, cookie);
+    expect(good.status).toBe(200);
+    expect(((await good.json()) as { token?: string }).token).toBeUndefined();
+    expect((await rowFor("code@example.org")).verified_at).not.toBeNull();
+    expect((await status(cookie)).look).toBeNull();
+    // The code, once taken, never works again.
+    expect((await post("/api/entrance/code", { code: real }, cookie)).status).toBe(410);
+    // And the yes now reaches the list.
+    await new Promise((r) => setTimeout(r, 100));
+    expect(brevoCalls.length).toBeGreaterThan(0);
+  });
+
+  it("closes the look after its time on the server too, and asks for the code by name", async () => {
+    mailOn = true;
+    const res = await post("/api/entrance", { name: "Slow Test", email: "slow@example.org", website: "", shownAt: Date.now() - 10_000 });
+    const cookie = String(res.headers.get("set-cookie")).split(";")[0];
+    clock = 5 * 60 * 1000;
+    // Past the entry checker's short memory of the answer.
+    await new Promise((r) => setTimeout(r, 5200));
+    const shut = await call("/api/roles-like", { headers: { Cookie: cookie } });
+    expect(shut.status).toBe(401);
+    expect(((await shut.json()) as { error: string }).error).toBe("code_required");
+    // The way back is still open: the status, and a new code.
+    expect((await status(cookie)).look).toMatchObject({ needsCode: true });
+    expect((await post("/api/entrance/code/resend", {}, cookie)).status).toBe(200);
+    clock = 0;
+  }, 15_000);
+
+  it("spends a code after five wrong tries, and asks a moment before sending another", async () => {
+    mailOn = true;
+    letters.length = 0;
+    const res = await post("/api/entrance", { name: "Try Test", email: "try@example.org", website: "", shownAt: Date.now() - 10_000 });
+    const cookie = String(res.headers.get("set-cookie")).split(";")[0];
+    const real = codeIn(letters[0].html);
+    const wrong = real === "000000" ? "111111" : "000000";
+    for (let i = 0; i < 4; i++) expect((await post("/api/entrance/code", { code: wrong }, cookie)).status).toBe(400);
+    expect((await post("/api/entrance/code", { code: wrong }, cookie)).status).toBe(410);
+    expect((await post("/api/entrance/code", { code: real }, cookie)).status).toBe(410);
+    expect((await post("/api/entrance/code/resend", {}, cookie)).status).toBe(429);
+  });
+
+  it("signs in an address that already has an account, and makes no second one", async () => {
+    mailOn = true;
+    letters.length = 0;
+    const res = await post("/api/entrance", { name: "Ana", email: "member@example.org", website: "", shownAt: Date.now() - 10_000 });
+    const cookie = String(res.headers.get("set-cookie")).split(";")[0];
+    expect(letters[0].html).toMatch(/sign in/);
+    const ok = await post("/api/entrance/code", { code: codeIn(letters[0].html) }, cookie);
+    expect(((await ok.json()) as { token: string }).token).toBe("token:u-ana:member@example.org:2");
+    expect((await rowFor("member@example.org")).user_id).toBe("u-ana");
+    expect(accounts.size).toBe(1);
+  });
+
+  it("asks no code while the village cannot send email, as before", async () => {
+    mailOn = false;
+    letters.length = 0;
+    const res = await post("/api/entrance", { name: "Quiet Test", email: "quiet@example.org", website: "", shownAt: Date.now() - 10_000 });
+    expect(((await res.json()) as { code: unknown }).code).toBeNull();
+    expect(letters).toEqual([]);
+    const cookie = String(res.headers.get("set-cookie")).split(";")[0];
+    expect((await status(cookie)).look).toBeNull();
+  });
+
+  it("records a Google visitor as verified, with no account, and lands them on the keep-in-touch question", async () => {
+    const visit = portalGoogleVisitor({ getPool: () => pool, secret: SECRET });
+    const out = await visit({ name: "Gee Test", email: "gee@example.org", next: "/roles?x=1#top", secure: false });
+    expect(out.next).toBe("/roles?x=1&keep-in-touch=1#top");
+    expect(out.cookie).toMatch(/^vos_portal=/);
+    const row = await rowFor("gee@example.org");
+    expect(row.human).toBe("google");
+    expect(row.verified_at).not.toBeNull();
+    expect(Number(row.code_required)).toBe(0);
+  });
+
+  it("tells the entrance who the privacy line names and whether a code is sent", async () => {
+    mailOn = true;
+    const st = (await (await call("/api/entrance")).json()) as { privacyContact: string; codes: boolean };
+    expect(st).toMatchObject({ privacyContact: "", codes: true });
+    mailOn = false;
+  });
+
+  it("invites a verified visitor with no account by the platform's own link, shown once and kept nowhere", async () => {
+    await read("INSERT INTO users (id, name, email, password_hash) VALUES ('u-member', 'Steward Test', 'steward@example.test', 'x')");
+    member = true;
+    canModerate = true;
+    const list = (await (await call("/api/admin/entrance/entries")).json()) as { entries: any[] };
+    const verified = list.entries.find((e) => e.email === "gee@example.org");
+    const unverified = list.entries.find((e) => e.email === "slow@example.org");
+    const withAccount = list.entries.find((e) => e.email === "member@example.org");
+    expect((await call(`/api/admin/entrance/entries/${unverified.id}/invite`, { method: "POST" })).status).toBe(409);
+    expect((await call(`/api/admin/entrance/entries/${withAccount.id}/invite`, { method: "POST" })).status).toBe(409);
+    const made = await call(`/api/admin/entrance/entries/${verified.id}/invite`, { method: "POST" });
+    expect(made.status).toBe(200);
+    const body = (await made.json()) as { path: string; expiresInDays: number };
+    expect(body.path).toMatch(/invite/);
+    expect(body.expiresInDays).toBe(14);
+    const after = (await (await call("/api/admin/entrance/entries")).json()) as { entries: any[] };
+    expect(after.entries.find((e) => e.email === "gee@example.org").invited).toBe(true);
+    // The link is the platform's own: kept only as a hash, made on the steward's vouch.
+    const rows = await read("SELECT inviter_user_id FROM member_invites");
+    expect(rows.map((r) => r.inviter_user_id)).toEqual(["u-member"]);
+    expect(JSON.stringify(after)).not.toContain(body.path.split("=").pop());
     member = false;
   });
 });

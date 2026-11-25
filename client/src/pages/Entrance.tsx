@@ -8,7 +8,14 @@
  * Name and email are asked for; a WhatsApp number and a website or social link are offered. Then, on
  * a step of its own, one question with two buttons: "Do you want us to keep you updated, and to hear
  * about opportunities?" Yes, No, or leaving without answering are all kept as they are, and only a
- * yes ever reaches a list (the lead, 24 Nov 2026: two buttons, no box to tick). The human check is Cloudflare Turnstile while the village has it set
+ * yes ever reaches a list (the lead, 24 Nov 2026: two buttons, no box to tick).
+ *
+ * TWO DOORS (the lead, 24 Nov 2026, "a short look, then the code"): the form, or "Continue with
+ * Google", which proves the address on the spot. While the village can send email, the form's
+ * address gets a 6-digit code; the visitor goes in at once and is told so plainly, and the code is
+ * asked for after a short look (components/EntranceGate.tsx, pages/EntranceCode.tsx). The email
+ * field suggests a likely typo (`gmial.com`); a throwaway inbox and a domain that takes no mail are
+ * refused by the server with a sentence. The human check is Cloudflare Turnstile while the village has it set
  * up, and otherwise a field no person sees plus the time the form was on screen. After the answer the
  * page reloads onto the page the visitor first asked for (`next`; `/roles` lands on `/roles`), so every read on it starts again with the entry.
  *
@@ -25,7 +32,9 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+import { suggestEmail } from "@shared/emailCheck";
 import { INTERESTS, safeNext, type EntranceProblem, type Interest, type UpdatesAnswer } from "@shared/entrance";
 
 declare global {
@@ -93,10 +102,12 @@ function HumanCheck({ siteKey, onToken, locale }: { siteKey: string; onToken: (t
   );
 }
 
-export default function Entrance({ next, siteKey }: { next: string; siteKey: string | null }) {
+export default function Entrance({ next, siteKey, privacyContact = "", codes = false }: { next: string; siteKey: string | null; privacyContact?: string; codes?: boolean }) {
   const { t, i18n } = useLingui();
   const village = useVillageName();
   const { contactEmail, siteUrl } = useVillageLinks();
+  /** Who to write to about what is kept: the village's own privacy contact, else its contact address. */
+  const contact = privacyContact.trim() || contactEmail;
   const ids = useId();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,13 +115,16 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
   const [link, setLink] = useState("");
   /** Where to go once in: set when the entry is kept, which opens the keep-in-touch step. */
   const [goTo, setGoTo] = useState<string | null>(null);
+  /** The address a code went to, when one did. */
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<string | null>(null);
   const [interest, setInterest] = useState<Interest | null>(null);
   const [website, setWebsite] = useState("");
   const [token, setToken] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<{ field: EntranceProblem | null; message: string } | null>(null);
   const shownAt = useRef(Date.now());
-  const privacy = useRef<HTMLParagraphElement>(null);
+  const privacy = useRef<HTMLDivElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -143,10 +157,10 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
           turnstileToken: token,
           website,
           shownAt: shownAt.current,
-          consentWords: privacy.current?.textContent ?? "",
+          consentWords: Array.from(privacy.current?.querySelectorAll("p") ?? []).map((p) => p.textContent ?? "").join("\n\n"),
         }),
       });
-      const body = (await res.json().catch(() => null)) as { next?: string | null; field?: EntranceProblem; message?: string } | null;
+      const body = (await res.json().catch(() => null)) as { next?: string | null; field?: EntranceProblem; message?: string; code?: { sentTo: string } | null } | null;
       if (!res.ok) {
         setError({ field: body?.field ?? null, message: body?.message ?? t({ message: "That did not go through. Try again in a moment.", context: "portal entrance: a generic failure" }) });
         if (siteKey && window.turnstile) window.turnstile.reset();
@@ -154,6 +168,7 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
         return;
       }
       // The entry is kept and the cookie set; the keep-in-touch question is the next step.
+      setSentTo(body?.code?.sentTo ?? null);
       setGoTo(safeNext(body?.next) ?? safeNext(next) ?? "/");
     } catch {
       setError({ field: null, message: t({ message: "That did not go through. Check your connection and try again.", context: "portal entrance: the network failed" }) });
@@ -172,7 +187,7 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
 
   const siteHost = hostOf(siteUrl);
 
-  if (goTo) return <KeepInTouch village={village} goTo={goTo} />;
+  if (goTo) return <KeepInTouch village={village} goTo={goTo} sentTo={sentTo} />;
 
   const invalid = (f: EntranceProblem) => (error?.field === f ? { "aria-invalid": true, "aria-describedby": `${ids}-error` } : {});
   const signIn = `/login?next=${encodeURIComponent(next)}`;
@@ -195,12 +210,12 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
             </p>
             {siteHost && (
               <p className={HINT}>
-                {t({ message: "To learn more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
+                {t({ message: "To know more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
                 <a href={siteUrl} className={LINK}>
                   {siteHost}
                 </a>
                 .{" "}
-                {t({ message: "This site is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
+                {t({ message: "This is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
               </p>
             )}
           </header>
@@ -226,7 +241,16 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
               <label htmlFor={fieldId("email")} className={LABEL}>
                 {t({ message: "Your email", context: "portal entrance: email field" })}
               </label>
-              <input id={fieldId("email")} name="email" type="email" autoComplete="email" inputMode="email" required maxLength={320} value={email} onChange={(e) => setEmail(e.target.value)} className={`${FIELD} min-h-11`} {...invalid("email")} />
+              <input id={fieldId("email")} name="email" type="email" autoComplete="email" inputMode="email" required maxLength={320} value={email} onChange={(e) => { setEmail(e.target.value); setSuggestion(null); }} onBlur={() => setSuggestion(suggestEmail(email.trim()))} className={`${FIELD} min-h-11`} {...invalid("email")} />
+              {suggestion && (
+                <p className={HINT}>
+                  {t({ message: "Did you mean", context: "portal entrance: before a suggested email address" })}{" "}
+                  <button type="button" className={LINK} onClick={() => { setEmail(suggestion); setSuggestion(null); }}>
+                    {suggestion}
+                  </button>
+                  ?
+                </p>
+              )}
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
@@ -272,17 +296,34 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
 
             {siteKey && <HumanCheck siteKey={siteKey} onToken={setToken} locale={i18n.locale} />}
 
-            <p ref={privacy} className={HINT}>
-              {contactEmail
-                ? t({
-                    message: `We keep what you type here, and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, write to ${contactEmail}.`,
-                    context: "portal entrance: the privacy line, with the village's contact address, naming the follow-up, the pages opened and the email list",
-                  })
-                : t({
-                    message: `We keep what you type here, and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you. If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it. To see it or have it deleted, ask anyone at the village.`,
-                    context: "portal entrance: the privacy line, when the village has no contact address, naming the follow-up, the pages opened and the email list",
+            {/* The lead's own words (24 Nov 2026), paragraph by paragraph. For legal review (Law 8968). */}
+            <div ref={privacy} className={`${HINT} flex flex-col gap-2`} data-privacy="">
+              <p>
+                {t({
+                  message: `Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you.`,
+                  context: "portal entrance: the privacy line, first paragraph, in the lead's own words",
+                })}
+              </p>
+              {codes && (
+                <p>
+                  {t({
+                    message: "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch.",
+                    context: "portal entrance: the privacy line, the code by email, shown only while the village sends codes",
                   })}
-            </p>
+                </p>
+              )}
+              <p>
+                {t({
+                  message: "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it.",
+                  context: "portal entrance: the privacy line, the email list",
+                })}
+              </p>
+              <p>
+                {contact
+                  ? t({ message: `To see it or have it deleted, write to ${contact}.`, context: "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact" })
+                  : t({ message: "To see it or have it deleted, ask anyone at the village.", context: "portal entrance: the privacy line, how to see or delete it, when the village has no contact address" })}
+              </p>
+            </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button type="submit" className={`${BTN_PRIMARY} text-base`} disabled={sending} aria-busy={sending}>
@@ -293,6 +334,7 @@ export default function Entrance({ next, siteKey }: { next: string; siteKey: str
                 {t({ message: "I have an account: sign in", context: "portal entrance: the second act, for members" })}
               </a>
             </div>
+            <GoogleSignInButton next={next} portal />
           </form>
 
         </main>
@@ -314,7 +356,7 @@ function hostOf(url: string): string {
  * The keep-in-touch step: one question, two buttons, after the entry is kept. Either answer is
  * stored with the words shown, and either one opens the way on to the page first asked for.
  */
-function KeepInTouch({ village, goTo }: { village: string; goTo: string }) {
+export function KeepInTouch({ village, goTo, sentTo = null }: { village: string; goTo: string; sentTo?: string | null }) {
   const { t } = useLingui();
   const ids = useId();
   const question = useRef<HTMLHeadingElement>(null);
@@ -322,7 +364,9 @@ function KeepInTouch({ village, goTo }: { village: string; goTo: string }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    question.current?.focus();
+    // The step replaces the form in place; start it at the top, where its question is.
+    window.scrollTo({ top: 0 });
+    question.current?.focus({ preventScroll: true });
   }, []);
 
   const answer = async (a: UpdatesAnswer) => {
@@ -356,7 +400,15 @@ function KeepInTouch({ village, goTo }: { village: string; goTo: string }) {
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <Mail className="size-6" />
             </span>
-            <h1 id={`${ids}-q`} ref={question} tabIndex={-1} className={`${H1} outline-none`}>
+            {sentTo && (
+              <p className={LEDE} data-code-sent="">
+                {t({
+                  message: `We have sent a 6-digit code to ${sentTo}. Have a look around. You will need the code to keep exploring.`,
+                  context: "portal entrance: told up front that a code was emailed, before the keep-in-touch question",
+                })}
+              </p>
+            )}
+            <h1 id={`${ids}-q`} ref={question} tabIndex={-1} className={`${STATEMENT} outline-none`}>
               {t({ message: `Do you want us to keep you updated, and to hear about opportunities from ${village}?`, context: "portal entrance: the keep-in-touch question, its own step after entering" })}
             </h1>
             {failed && (
