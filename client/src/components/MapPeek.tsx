@@ -81,7 +81,8 @@ export default function MapPeek() {
           </p>
         </div>
 
-        <Link href="/map">
+        {/* asChild: the anchor below IS the link (and keeps the ref that watches for the card in view), never a link inside a link. */}
+        <Link href="/map" asChild>
           <a
             ref={hostRef as any}
             className="group block relative rounded-2xl overflow-hidden border border-border shadow-lg
