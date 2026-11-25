@@ -3509,7 +3509,7 @@ const EMPTY_TOOL = {
   category: "", icon: "", visibility: "members", roleIds: [] as string[], gettingStarted: "",
 };
 
-function ToolsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
+export function ToolsAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -3611,10 +3611,10 @@ function ToolsAdminTab({ password }: { password: string }) { const { t } = useLi
     setChecking(false);
   };
 
-  const statusDot = (t: any) => {
-    if (!t.lastCheckedAt) return <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" title={t({ message: "never checked", context: "Admin, title" })} />;
-    if (t.lastCheckStatus && t.lastCheckStatus < 400) return <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" title={`HTTP ${t.lastCheckStatus}`} />;
-    return <span className="w-2 h-2 rounded-full bg-red-500 inline-block" title={`HTTP ${t.lastCheckStatus || "unreachable"}`} />;
+  const statusDot = (tool: any) => {
+    if (!tool.lastCheckedAt) return <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" title={t({ message: "never checked", context: "Admin, title" })} />;
+    if (tool.lastCheckStatus && tool.lastCheckStatus < 400) return <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" title={`HTTP ${tool.lastCheckStatus}`} />;
+    return <span className="w-2 h-2 rounded-full bg-red-500 inline-block" title={`HTTP ${tool.lastCheckStatus || "unreachable"}`} />;
   };
 
   if (off) {
