@@ -40,6 +40,7 @@ import { contactById } from "../../repos/commsContacts";
 import { eventCreatorOf, readEventComms } from "../../repos/eventComms";
 import { calendarLinks, type IcsGathering } from "./ics";
 import { signLink } from "./links";
+import { eventPassQuery } from "../entrance";
 
 const DAY_MS = 86_400_000;
 
@@ -132,9 +133,14 @@ export const meetsOnline = (g: Pick<GatheringSnapshot, "attendanceMode" | "onlin
 
 const bare = (origin: string): string => String(origin ?? "").trim().replace(/\/+$/, "");
 
-/** The page a gathering is shown on. There is one calendar page, and every gathering is on it. */
-export function gatheringUrl(origin: string, _eventId: string): string {
-  return `${bare(origin)}/events`;
+/**
+ * The page a gathering is shown on. There is one calendar page, and every gathering is on it. The
+ * link carries a signed pass to this gathering (server/lib/entrance.ts), so an invited guest reaches
+ * it and its RSVP while the village keeps its calendar behind the portal entrance. Before the
+ * entrance has booted (a test, a script) the link is the bare page, as it always was.
+ */
+export function gatheringUrl(origin: string, eventId: string): string {
+  return `${bare(origin)}/events${eventPassQuery(eventId)}`;
 }
 
 /** The link into the online room, which redirects to whatever room the gathering has now. */

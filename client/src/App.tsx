@@ -9,6 +9,7 @@ import { LazyMotion, MotionConfig } from "framer-motion";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
+import EntranceGate from "./components/EntranceGate";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ModuleProvider } from "./modules/ModuleProvider";
@@ -330,6 +331,7 @@ function Router() {
       <PageTitle />
     <ErrorBoundary key={location}>
     <Suspense fallback={<PageLoading />}>
+    <EntranceGate waiting={<PageLoading />}>
     <Switch>
       <Route path="/" component={LandingRoute} />
       <Route path="/journey-to-launch" component={JourneyToLaunch} />
@@ -526,6 +528,7 @@ function Router() {
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+    </EntranceGate>
     </Suspense>
     </ErrorBoundary>
     </>

@@ -2861,6 +2861,38 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    key: "entrance.required",
+    category: "The village's people",
+    label: "Ask visitors for their name and email before the portal",
+    description:
+      "On, a visitor who is not signed in meets one calm screen before the roles, the game, the quests, the circles and the map: their name and email, a WhatsApp number and a website or social link if they want, a box to tick for updates, and a check that they are a person. Their device is remembered for 90 days. The public pages stay open to everyone, and signed-in members never see the screen. Admin, Portal visitors lists everyone who entered, with a CSV. Off, everything that was public stays public.",
+    type: "boolean",
+    default: "false",
+    ring: "founder",
+  },
+  {
+    key: "entrance.turnstile_site_key",
+    category: "The village's people",
+    label: "Portal entrance: Turnstile site key",
+    description:
+      "The public half of a Cloudflare Turnstile widget, which checks that a visitor at the portal entrance is a person. It works only together with its secret, typed under Admin, Integrations. Blank, or without the secret, the entrance uses its simpler check: a hidden field, a minimum time on the form and a limit per connection.",
+    type: "text",
+    default: "",
+    ring: "founder",
+  },
+  {
+    key: "entrance.brevo_list_id",
+    category: "The village's people",
+    label: "Portal entrance: Brevo list",
+    description:
+      "The number of the Brevo list that portal visitors join when they tick \"send me updates\". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.",
+    type: "integer",
+    default: "0",
+    min: 0,
+    max: 100000000,
+    ring: "founder",
+  },
+  {
     key: "org.consent_after_interviews",
     category: "The village's people",
     label: "Ask the circle to consent after the conversations",

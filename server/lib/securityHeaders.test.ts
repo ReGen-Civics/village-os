@@ -13,6 +13,7 @@ import {
   UPLOADED_PDF_PATH,
   analyticsOriginOf,
   buildAppPolicy,
+  TURNSTILE_ORIGIN,
   buildArtifactPolicy,
   cspModeOf,
   inlineScriptHashes,
@@ -104,7 +105,7 @@ describe("the app policy", () => {
     expect(script).not.toContain("'unsafe-inline'");
     expect(script).not.toContain("'unsafe-eval'");
     expect(script).not.toContain("'strict-dynamic'");
-    expect(script.filter((s) => !s.startsWith("'sha256-"))).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT, "https://stats.example.org"]);
+    expect(script.filter((s) => !s.startsWith("'sha256-"))).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT, TURNSTILE_ORIGIN, "https://stats.example.org"]);
     expect(directive(policy, "script-src-attr")).toBeNull();
     expect(directive(policy, "script-src-elem")).toBeNull();
   });
@@ -121,6 +122,8 @@ describe("the app policy", () => {
     expect(directive(policy, "object-src")).toEqual(["'none'"]);
     expect(directive(policy, "base-uri")).toEqual(["'self'"]);
     expect(directive(policy, "frame-ancestors")).toEqual(["'self'"]);
+    // The one framed outsider is the portal entrance's human check (server/lib/entrance.ts).
+    expect(directive(policy, "frame-src")).toEqual(["'self'", TURNSTILE_ORIGIN]);
     expect(directive(policy, "connect-src")).toEqual(["'self'", CLOUDFLARE_BEACON_CONNECT, "https://stats.example.org"]);
   });
 
@@ -130,7 +133,7 @@ describe("the app policy", () => {
     const own = buildAppPolicy({ scriptHashes: [], fontOrigins: ["https://village.example", "https://x.example; script-src *"] });
     expect(directive(own, "style-src")).toEqual(["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://village.example"]);
     expect(directive(own, "font-src")).toEqual(["'self'", "data:", "https://fonts.gstatic.com", "https://village.example"]);
-    expect(directive(own, "script-src")).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT]);
+    expect(directive(own, "script-src")).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT, TURNSTILE_ORIGIN]);
   });
 
   it("asks for no reports unless an operator named where they go", () => {
@@ -242,7 +245,7 @@ describe("the middleware, on a real server", () => {
       const r = await fetch(base + p);
       expect(r.status, p).toBe(status);
       const csp = r.headers.get("content-security-policy") ?? "";
-      expect(directive(csp, "script-src"), p).toEqual(["'self'", ...shellHashes, CLOUDFLARE_BEACON_SCRIPT]);
+      expect(directive(csp, "script-src"), p).toEqual(["'self'", ...shellHashes, CLOUDFLARE_BEACON_SCRIPT, TURNSTILE_ORIGIN]);
       expect(r.headers.get("content-security-policy-report-only"), p).toBeNull();
       expect(r.headers.get("x-frame-options"), p).toBe("SAMEORIGIN");
       expect(r.headers.get("x-content-type-options"), p).toBe("nosniff");
@@ -337,7 +340,7 @@ describe("the middleware, on a real server", () => {
     const base = await boot({}, path.join(dir, "absent.html"));
     const r = await fetch(base + "/api/thing");
     expect(r.status).toBe(200);
-    expect(directive(r.headers.get("content-security-policy")!, "script-src")).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT]);
+    expect(directive(r.headers.get("content-security-policy")!, "script-src")).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT, TURNSTILE_ORIGIN]);
   });
 
   it("says once, in production, that the shell is missing, since every page then refuses its inline script", async () => {

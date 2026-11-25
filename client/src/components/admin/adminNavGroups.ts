@@ -17,7 +17,7 @@
  * around them did.
  */
 import type { LucideIcon } from "lucide-react";
-import { Activity, AlertTriangle, BarChart3, Calendar, Circle, Coins, Compass, FileText, GraduationCap, Handshake, HardDrive, Heart, HelpCircle, Home, Inbox, KeyRound, LogOut, Mail, MapPin, MessageSquare, Moon, Palette, Scale, Sparkles, ToggleLeft, TrendingUp, Users, Users2 } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Calendar, Circle, Coins, Compass, DoorOpen, FileText, GraduationCap, Handshake, HardDrive, Heart, HelpCircle, Home, Inbox, KeyRound, LogOut, Mail, MapPin, MessageSquare, Moon, Palette, Scale, Sparkles, ToggleLeft, TrendingUp, Users, Users2 } from "lucide-react";
 import type { TabBadge } from "@/lib/adminNav";
 import { CONTENT_SECTIONS } from "./contentSections";
 
@@ -180,6 +180,7 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
       title: "Day to day",
       items: [
         { key: "submissions", label: "All Forms", icon: Inbox },
+        { key: "portal-visitors", label: "Portal Visitors", icon: DoorOpen },
         { key: "feedback", label: "Feedback", icon: HelpCircle },
         { key: "quest-claims", label: "Quest Claims", icon: Sparkles },
         { key: "forum-moderation", label: "Moderation", icon: Users2 },

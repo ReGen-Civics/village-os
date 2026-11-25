@@ -164,6 +164,13 @@ export const API_DEFAULT_CACHE = "private, no-cache";
 /** Cloudflare Web Analytics, injected at the edge (see the header above). */
 export const CLOUDFLARE_BEACON_SCRIPT = "https://static.cloudflareinsights.com";
 export const CLOUDFLARE_BEACON_CONNECT = "https://cloudflareinsights.com";
+/**
+ * Cloudflare Turnstile, the portal entrance's human check (server/lib/entrance.ts). Its script and
+ * its widget's frame both come from this one origin, which serves only Cloudflare's challenge, so
+ * it opens no host a stranger can publish to. The entrance loads it only while the village has a
+ * site key and secret set.
+ */
+export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
 
 export type CspMode = "enforce" | "report-only";
 
@@ -238,13 +245,13 @@ export function buildAppPolicy(opts: {
   const [fontCss, fontFiles] = FONT_HOSTS;
   return [
     "default-src 'self'",
-    ["script-src 'self'", ...opts.scriptHashes, CLOUDFLARE_BEACON_SCRIPT, ...extra].join(" "),
+    ["script-src 'self'", ...opts.scriptHashes, CLOUDFLARE_BEACON_SCRIPT, TURNSTILE_ORIGIN, ...extra].join(" "),
     ["style-src 'self' 'unsafe-inline'", fontCss, ...own].join(" "),
     "img-src 'self' data: blob: https:",
     ["font-src 'self' data:", fontFiles, ...own].join(" "),
     ["connect-src 'self'", CLOUDFLARE_BEACON_CONNECT, ...extra].join(" "),
     "media-src 'self' data: blob: https:",
-    "frame-src 'self'",
+    `frame-src 'self' ${TURNSTILE_ORIGIN}`,
     "worker-src 'self'",
     "manifest-src 'self'",
     "object-src 'none'",
