@@ -12,7 +12,7 @@ import { areaInUse } from "./areasInUse";
 import { eventsInUse } from "./areasInUseReads";
 import { newcomerSlots } from "@/components/mobile/MobileTabBar";
 import { resolve } from "@/components/mobile/MobileFab";
-import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS } from "@/config/mobileNav";
+import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_SLOT, TAB_SLOTS } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup } from "@/config/nav";
 
 const STAGES = [{ id: "guest" }, { id: "explorer" }, { id: "member" }, { id: "steward" }];
@@ -76,7 +76,7 @@ describe("when an area is in use", () => {
 describe("a newcomer's phone tab bar", () => {
   it("takes the roles in place of Gratitude, keeps five distinct slots and More last", () => {
     const slots = newcomerSlots(TAB_SLOTS, () => false);
-    expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", "/quests", NEWCOMER_SLOT.path, "/circles", "open-mobile-menu"]);
+    expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", "/quests", NEWCOMER_SLOT.path, PATH_SLOT.path, "open-mobile-menu"]);
   });
 
   it("CONTROL: an in-use slot stays for a newcomer; only the swapped tabs give way to the roles", () => {

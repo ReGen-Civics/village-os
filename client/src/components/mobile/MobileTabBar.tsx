@@ -17,7 +17,7 @@
  */
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
-import { BARE_ROUTES, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
+import { BARE_ROUTES, CHOOSE_PATH_HREF, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_GLYPHS, PATH_SLOT, TAB_SLOTS, pathProgressHref, type TabSlot } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
 import { Compass } from "lucide-react";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
@@ -25,6 +25,9 @@ import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
 import { useNewcomerShows } from "@/lib/newcomer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGameConfig } from "@/lib/gameApi";
+import { GAME_CONFIG } from "@shared/gameConfig";
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -83,6 +86,27 @@ export function newcomerSlots(slots: readonly TabSlot[], shown: (entry: NavLink)
   return out;
 }
 
+/** The path slot as one reader sees it: where it leads, what it says, what it draws. */
+export interface PathTab {
+  href: string;
+  label: string;
+  Icon: TabSlot["Icon"];
+  /** The path it stands for, or null while the reader has none. */
+  pathId: string | null;
+}
+
+/**
+ * The path slot for a reader who walks `claimed` (their paths, primary first).
+ * The FIRST path is the one drawn, by its own glyph and name, and never a stack
+ * of several: the profile marks the first as the primary the same way. No path
+ * yet means the choice, with the seed. Pure, so the test reads it directly.
+ */
+export function pathTab(claimed: readonly string[] | undefined, signedIn: boolean, nameOf: (id: string) => string, choose: string): PathTab {
+  const id = claimed?.find((p) => p.trim());
+  if (id) return { href: pathProgressHref(id), label: nameOf(id), Icon: PATH_GLYPHS[id] ?? PATH_SLOT.Icon, pathId: id };
+  return { href: signedIn ? CHOOSE_PATH_HREF.signedIn : CHOOSE_PATH_HREF.visitor, label: choose, Icon: PATH_SLOT.Icon, pathId: null };
+}
+
 export default function MobileTabBar() {
   const [location] = useLocation();
   const currentPath = normalisePath(location);
@@ -99,6 +123,25 @@ export default function MobileTabBar() {
     "/roles": t({ message: "Roles", context: "bottom tab bar" }),
     "open-mobile-menu": t({ message: "More", context: "bottom tab bar" }),
   };
+
+  // THE PATH SLOT: the reader's own path, in the village's name for it. A name the
+  // village never changed is said in the reader's language, short enough for the
+  // bar; a name the village wrote is its own word and shown as it wrote it.
+  const { user } = useAuth();
+  const config = useGameConfig();
+  const shortName: Record<string, string> = {
+    investor: t({ message: "Investor", context: "bottom tab bar, a path" }),
+    steward: t({ message: "Steward", context: "bottom tab bar, a path" }),
+    resident: t({ message: "Resident", context: "bottom tab bar, a path" }),
+    "prosperity-creator": t({ message: "Prosperity", context: "bottom tab bar, a path" }),
+  };
+  const nameOf = (id: string) => {
+    const own = config?.paths?.find((p) => p.id === id)?.label?.trim();
+    const platform = GAME_CONFIG.paths.find((p) => p.id === id)?.label;
+    return own && own !== platform ? own : shortName[id] ?? own ?? platform ?? id;
+  };
+  const mine = pathTab(user?.paths, !!user, nameOf, t({ message: "Your path", context: "bottom tab bar, no path chosen yet" }));
+  const chooseSaid = t({ message: "Choose your path", context: "bottom tab bar, no path chosen yet" });
 
   // The village's own four tabs (gap G5), each in the place it chose. A tab
   // whose page is not open (its module off, or hidden) keeps the platform's
@@ -128,7 +171,10 @@ export default function MobileTabBar() {
       <div className="grid grid-cols-[repeat(5,minmax(0,1fr))] h-16 items-stretch max-w-2xl mx-auto min-w-0">
         {slots.map((s) => {
           const own = s.path ? menu.labels[s.path] : undefined;
-          const slot = own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
+          const personal = s.personal === "path";
+          const slot = personal
+            ? { ...s, label: mine.label, Icon: mine.Icon }
+            : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
           const active =
             !!slot.path &&
             (slot.path === "/"
@@ -184,9 +230,10 @@ export default function MobileTabBar() {
           if (slot.path) {
             return (
               <Link
-                key={slot.label}
-                href={slot.path}
-                aria-label={slot.label}
+                key={slot.path}
+                href={personal ? mine.href : slot.path}
+                aria-label={personal && !mine.pathId ? chooseSaid : slot.label}
+                {...(personal ? { "data-path-slot": mine.pathId ?? "" } : {})}
                 aria-current={active ? "page" : undefined}
                 className={cls}
               >
