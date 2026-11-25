@@ -33,9 +33,9 @@ const EVENNESS_WORDS: Record<Evenness, string> = {
 
 function Tile({ label, value, tip }: { label: string; value: string; tip?: React.ReactNode }) {
   return (
-    <div data-spread-tile className="rounded-xl border border-stone-200 bg-white px-4 py-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-stone-600">{label}{tip}</div>
-      <div className="mt-1 font-display text-2xl font-bold text-teal-deep">{value}</div>
+    <div data-spread-tile className="rounded-xl border border-border bg-card px-4 py-3">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}{tip}</div>
+      <div className="mt-1 font-display text-2xl font-bold text-card-foreground">{value}</div>
     </div>
   );
 }
@@ -60,14 +60,14 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
   const { spread, ballots } = view;
 
   return (
-    <section className="border-b border-stone-200 bg-stone-50 py-12" aria-labelledby="voice-spread-heading">
+    <section className="border-b border-border bg-muted py-12" aria-labelledby="voice-spread-heading">
       <div className="container mx-auto max-w-5xl px-4">
-        <h2 id="voice-spread-heading" className="font-display text-2xl md:text-3xl font-bold text-teal-deep break-words">
+        <h2 id="voice-spread-heading" className="font-display text-2xl md:text-3xl font-bold text-foreground break-words">
           {heading}
           <GlossaryTip slot="voice" word={t({ message: "Voice", context: "glossary: the word a tip explains" })} />
         </h2>
-        {intro.trim() !== "" && <p className="mt-2 max-w-3xl text-stone-700 leading-relaxed break-words">{intro}</p>}
-        <p className="mt-3 text-sm font-medium text-stone-800">
+        {intro.trim() !== "" && <p className="mt-2 max-w-3xl text-muted-foreground leading-relaxed break-words">{intro}</p>}
+        <p className="mt-3 text-sm font-medium text-foreground">
           {view.weightedByVoice
             ? "Votes here are weighted by Voice."
             : "Right now every member's vote counts the same, so Voice moves no result yet."}
@@ -76,9 +76,9 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
         <div className="mt-6 grid gap-8 md:grid-cols-[3fr_2fr]">
           <div>
             {!spread.anyVoice ? (
-              <p className="text-stone-700"><Trans context="VoiceSpreadBand, p">Nobody holds any Voice yet.</Trans></p>
+              <p className="text-muted-foreground"><Trans context="VoiceSpreadBand, p">Nobody holds any Voice yet.</Trans></p>
             ) : spread.bands.length === 0 ? (
-              <p className="text-stone-700">
+              <p className="text-muted-foreground">
                 {`With ${spread.voters} ${spread.voters === 1 ? "voter" : "voters"}, the village is too small to show how Voice is spread without pointing at someone. It shows once there are more of you.`}
               </p>
             ) : (
@@ -86,23 +86,23 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
                 <ul className="space-y-4">
                   {spread.bands.map((b) => (
                     <li key={b.topPct}>
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm text-stone-800">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm text-foreground">
                         <span>
                           <Trans context="VoiceSpreadBand, span">The top <strong>{b.topPct}%</strong> of voters hold <strong>{b.sharePct}%</strong> of the Voice
                         </Trans></span>
                       </div>
-                      <div className="relative mt-2.5 mb-1 h-4 rounded-full bg-stone-200" aria-hidden="true">
-                        <div data-spread-fill className="h-full rounded-full bg-teal-deep" style={{ width: `${b.sharePct}%` }} />
-                        <div data-spread-even className="absolute -top-1.5 h-7 w-1 -translate-x-1/2 rounded-full bg-amber-800 ring-2 ring-stone-50" style={{ left: `${b.topPct}%` }} />
+                      <div className="relative mt-2.5 mb-1 h-4 rounded-full bg-card" aria-hidden="true">
+                        <div data-spread-fill className="h-full rounded-full bg-notice" style={{ width: `${b.sharePct}%` }} />
+                        <div data-spread-even className="absolute -top-1.5 h-7 w-1 -translate-x-1/2 rounded-full bg-foreground ring-2 ring-muted" style={{ left: `${b.topPct}%` }} />
                       </div>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 flex items-center gap-2 text-xs text-stone-600">
-                  <span className="inline-block h-4 w-1 rounded-full bg-amber-800" aria-hidden="true" />
+                <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-block h-4 w-1 rounded-full bg-foreground" aria-hidden="true" />
                   The upright mark is where an even share would be.
                 </p>
-                {spread.evenness && <p className="mt-3 text-sm text-stone-800">{EVENNESS_WORDS[spread.evenness]}</p>}
+                {spread.evenness && <p className="mt-3 text-sm text-foreground">{EVENNESS_WORDS[spread.evenness]}</p>}
               </>
             )}
           </div>
