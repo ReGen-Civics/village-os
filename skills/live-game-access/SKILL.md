@@ -65,6 +65,14 @@ LIVE_QA_URL=https://amora.regencivics.earth \
 
 `--proxy-auth` (or `LIVE_QA_PROXY_AUTH=1`) reads no token. It opens a page of the village in the same browser it crawls with and asks who it is there, going on only for a signed-in answer marked `X-Live-View: read-only`. If the proxy replaces an Authorization the page sends, a placeholder goes into the app's sign-in slot so pages draw as you; if not, the run says that parts the client draws only for a member will look signed out. Exit 2 with "the network secret did not reach this browser" means no secret for this host, or a session older than the secret.
 
+### A second pass over Admin
+
+The member live view never shows Admin. For a pass over the admin sections, an admin who holds the QA seat mints a separate token with the `live.view.admin` scope, on its own. It lasts one day, reads Admin as its holder's own admin access, and still changes nothing: the server refuses every write, even one a page tries on a read, and never answers exports, downloads, secrets or tokens. Minting it is the holder's own decision each time.
+
+Run the probe with `--admin` (or `LIVE_QA_ADMIN=1`). The mode is chosen on purpose both ways: without `--admin` an admin token is refused, and with it a member token is. In admin mode every screenshot is taken with the text in tables, fields, lists and paragraphs blurred, and the holder's name on the account button too, so headings, tabs and buttons can be judged and no person's details land in a file. Reads the admin view refuses on purpose are listed as "refused by design", never as a page problem.
+
+Admin pages carry applicants' and members' names, addresses, answers and money. Read applicant pages for layout only. In a report, describe what is wrong with the page, never what it says about a person.
+
 ## What you may and may not do on production
 
 May:

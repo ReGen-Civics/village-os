@@ -54,8 +54,17 @@
  *   --out <dir>           LIVE_QA_OUT        where screenshots go (default ./live-qa-out)
  *   --phone                                  draw at iPhone 13 size as well as desktop
  *   --proxy-auth          LIVE_QA_PROXY_AUTH=1  the token is a network secret the proxy adds; read none
+ *   --admin               LIVE_QA_ADMIN=1    read Admin through a live.view.admin token (see ADMIN MODE below)
  *   --json                                   print the report as JSON
  *   PLAYWRIGHT_MODULE                        a path to the playwright package, when not resolvable
+ *
+ * ADMIN MODE (--admin; the lead's second pass over Admin, 25 Nov 2026). A `live.view.admin` token reads Admin as its
+ * holder's own admin access, still read-only, and the server marks every answer `X-Live-View: read-only; admin`
+ * (server/lib/liveView.ts). The mode is chosen on purpose, both ways: without --admin the run needs the member mark and
+ * refuses an admin token, and with it the run needs the admin mark and refuses a member token, so an admin crawl never
+ * starts by accident. Admin pages carry people's names, addresses, answers and money, so in admin mode every
+ * screenshot is taken with the page's text in tables, fields, lists and paragraphs blurred (ADMIN_MASK_CSS): headings,
+ * tabs and buttons stay legible for a layout review, and no person's details land in a file.
  *
  * Exit codes: 0 every page drew clean, 1 a page had problems, 2 it could not start.
  */
@@ -68,6 +77,23 @@ import { pathToFileURL } from "node:url";
 export const TOKEN_KEY = "village-auth-token";
 /** The header the server sets on every read it served as a live view. */
 export const LIVE_VIEW_HEADER = "x-live-view";
+/** The mark the server sets on a member live view's reads, and on the admin live view's. */
+export const MEMBER_VIEW_MARK = "read-only";
+export const ADMIN_VIEW_MARK = "read-only; admin";
+
+/**
+ * What an admin-mode screenshot blurs: the page's own text where people's details live. Headings, tabs, buttons and
+ * labels stay sharp, so the layout can still be judged.
+ */
+export const ADMIN_MASK_CSS = [
+  "main td, main dd, main li, main p, main input, main textarea, main select, main [contenteditable],",
+  "main a:not([role=tab]):not(nav a), main [data-person], main img:not([aria-hidden=true]),",
+  // The holder's own name on the account button, in Admin's header and the site's.
+  "button[aria-label^='Your settings'], button[aria-label^='Your account']",
+  "{ filter: blur(6px) !important; }",
+].join(" ");
+/** What the admin live view answers a read it never makes: exports, downloads, secrets, tokens (server/lib/liveViewAdmin.ts). */
+export const ADMIN_REFUSED_ERROR = "live_view_admin_refused";
 /** The refusal a write meets. */
 export const READ_ONLY_ERROR = "live_view_read_only";
 /** Put in the sign-in slot under --proxy-auth when the proxy replaces it with the real token. Not a credential. */
@@ -75,7 +101,7 @@ export const PROXY_PLACEHOLDER = "vat_live_view_by_proxy";
 
 export function parseArgs(argv, env = process.env) {
   const paths = [];
-  const opts = { url: env.LIVE_QA_URL ?? "", out: env.LIVE_QA_OUT ?? "live-qa-out", phone: false, json: false, proxyAuth: env.LIVE_QA_PROXY_AUTH === "1" };
+  const opts = { url: env.LIVE_QA_URL ?? "", out: env.LIVE_QA_OUT ?? "live-qa-out", phone: false, json: false, proxyAuth: env.LIVE_QA_PROXY_AUTH === "1", admin: env.LIVE_QA_ADMIN === "1" };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--url") opts.url = argv[++i] ?? "";
@@ -83,6 +109,7 @@ export function parseArgs(argv, env = process.env) {
     else if (a === "--phone") opts.phone = true;
     else if (a === "--json") opts.json = true;
     else if (a === "--proxy-auth") opts.proxyAuth = true;
+    else if (a === "--admin") opts.admin = true;
     else if (a.startsWith("/")) paths.push(a);
     else throw new Error(`Unknown argument: ${a}. Paths start with a slash.`);
   }
@@ -105,7 +132,7 @@ export function startProblem(opts, env = process.env) {
 }
 
 /** Ask the server who this token is. Resolves to the member, or throws a sentence. */
-export async function whoAmI(origin, token, fetchImpl = fetch) {
+export async function whoAmI(origin, token, fetchImpl = fetch, { admin = false } = {}) {
   // A null token sends no Authorization at all: under --proxy-auth the proxy supplies it.
   const headers = token ? { authorization: `Bearer ${token}`, accept: "application/json" } : { accept: "application/json" };
   const res = await fetchImpl(`${origin}/api/me/profile`, { headers });
@@ -119,7 +146,14 @@ export async function whoAmI(origin, token, fetchImpl = fetch) {
     const why = body?.error ? `${body.error}${body.message ? `: ${body.message}` : ""}` : `status ${res.status}`;
     throw new Error(`The server refused the token (${why}). A token ends when it expires, when you revoke it, when your password changes, and when your seat no longer carries the live view.`);
   }
-  if (String(res.headers.get(LIVE_VIEW_HEADER) ?? "") !== "read-only") {
+  const mark = String(res.headers.get(LIVE_VIEW_HEADER) ?? "");
+  if (mark === ADMIN_VIEW_MARK && !admin) {
+    throw new Error("This token reads Admin (live.view.admin). Run with --admin if that is what you mean to do; without it the run only takes a member live view.");
+  }
+  if (mark === MEMBER_VIEW_MARK && admin) {
+    throw new Error("This is the member live view. --admin needs a live.view.admin token, minted on its own by an admin who holds the QA seat.");
+  }
+  if (mark !== (admin ? ADMIN_VIEW_MARK : MEMBER_VIEW_MARK)) {
     throw new Error("The server did not mark this as a read-only live view. Either it runs a release from before the live view, or this token is not a live.view token. Stopping, so nothing can write.");
   }
   if (!body || typeof body !== "object") throw new Error("The server answered without a profile. Stopping.");
@@ -189,16 +223,21 @@ export function stoppedHere(stopped, url) {
   return stopped.some((w) => w.slice(w.indexOf(" ") + 1) === pathname);
 }
 
-async function drawOne(context, origin, p, file, token) {
+async function drawOne(context, origin, p, file, token, { admin = false } = {}) {
   const page = await context.newPage();
   const problems = [];
   const refusedWrites = [];
+  // In admin mode the server refuses a few reads on purpose (exports, secrets, tokens). They are reported on their
+  // own line, never as the page's problem, and neither is the failed load the browser logs for each.
+  const byDesign = new Set();
+  const loadErrors = [];
   await page.route(`${origin}/**`, readOnlyRoute(origin, token, refusedWrites));
   page.on("pageerror", (err) => problems.push(`uncaught error: ${String(err?.message ?? err).split("\n")[0].slice(0, 300)}`));
   page.on("console", (m) => {
     if (m.type() !== "error") return;
     // A write this script stopped shows up as a failed load too; it is reported once, as a write.
     if (m.text().includes("net::ERR_FAILED") && stoppedHere(refusedWrites, m.location()?.url)) return;
+    if (admin && m.text().includes("status of 403")) return void loadErrors.push({ text: m.text(), url: m.location()?.url });
     problems.push(`console error: ${m.text().slice(0, 300)}`);
   });
   page.on("response", async (r) => {
@@ -206,18 +245,25 @@ async function drawOne(context, origin, p, file, token) {
     if (u.origin !== origin || !u.pathname.startsWith("/api/")) return;
     const method = r.request().method();
     if (r.status() >= 500) problems.push(`${method} ${u.pathname} answered ${r.status()}`);
-    else if ((r.status() === 401 || r.status() === 403) && method === "GET") problems.push(`${method} ${u.pathname} refused (${r.status()})`);
+    else if ((r.status() === 401 || r.status() === 403) && method === "GET") {
+      const body = admin && r.status() === 403 ? await r.json().catch(() => null) : null;
+      if (body?.error === ADMIN_REFUSED_ERROR) byDesign.add(u.pathname);
+      else problems.push(`${method} ${u.pathname} refused (${r.status()})`);
+    }
   });
   let status = 0;
   try {
     const res = await page.goto(origin + p, { waitUntil: "networkidle", timeout: 45_000 });
     status = res?.status() ?? 0;
+    // Admin pages carry people's details: blur them before anything is saved (ADMIN MODE above).
+    if (admin) await page.addStyleTag({ content: ADMIN_MASK_CSS });
     await page.screenshot({ path: file, fullPage: true });
   } catch (e) {
     problems.push(`did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}`);
   }
   await page.close();
-  return { path: p, status, screenshot: file, problems, refusedWrites };
+  for (const e of loadErrors) if (!stoppedHere([...byDesign].map((x) => `GET ${x}`), e.url)) problems.push(`console error: ${e.text.slice(0, 300)}`);
+  return { path: p, status, screenshot: file, problems, refusedWrites, refusedByDesign: [...byDesign] };
 }
 
 export async function main(argv = process.argv.slice(2), env = process.env) {
@@ -247,14 +293,14 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     const page = await probe.newPage();
     try {
       await page.goto(`${opts.url}/`, { waitUntil: "domcontentloaded", timeout: 60000 });
-      me = await whoAmI(opts.url, null, pageFetch(page));
+      me = await whoAmI(opts.url, null, pageFetch(page), { admin: opts.admin });
     } catch (e) {
       await browser.close();
       console.error(`live-qa: --proxy-auth: ${e.message} With --proxy-auth that usually means the network secret did not reach this browser (no secret for this host, or the session started before it was saved).`);
       return 2;
     }
     try {
-      await whoAmI(opts.url, PROXY_PLACEHOLDER, pageFetch(page));
+      await whoAmI(opts.url, PROXY_PLACEHOLDER, pageFetch(page), { admin: opts.admin });
       token = PROXY_PLACEHOLDER;
     } catch {
       console.error("live-qa: --proxy-auth: the proxy adds the token but does not replace an Authorization the page sends, so the app's sign-in slot stays empty. Pages are read as you by the server, and anything the client draws only for a signed-in reader will look signed out.");
@@ -262,7 +308,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     await probe.close();
   } else {
     try {
-      me = await whoAmI(opts.url, token);
+      me = await whoAmI(opts.url, token, fetch, { admin: opts.admin });
     } catch (e) {
       await browser.close();
       console.error(`live-qa: ${e.message}`);
@@ -270,7 +316,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     }
   }
   fs.mkdirSync(opts.out, { recursive: true });
-  const report = { origin: opts.url, as: String(me.displayName ?? me.firstName ?? me.name ?? "the token's holder"), pages: [] };
+  const report = { origin: opts.url, as: String(me.displayName ?? me.firstName ?? me.name ?? "the token's holder"), admin: opts.admin, pages: [] };
   try {
     const shapes = [["desktop", { viewport: { width: 1280, height: 900 } }]];
     if (opts.phone) shapes.push(["phone", { ...pw.devices["iPhone 13"] }]);
@@ -280,7 +326,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       if (token) await context.addInitScript(([k, v]) => { try { window.localStorage.setItem(k, v); } catch { /* storage closed */ } }, [TOKEN_KEY, token]);
       for (const p of opts.paths) {
         const name = `${label}${p === "/" ? "-home" : p.replace(/[^A-Za-z0-9]+/g, "-")}.png`;
-        report.pages.push({ shape: label, ...(await drawOne(context, opts.url, p, path.join(opts.out, name), token)) });
+        report.pages.push({ shape: label, ...(await drawOne(context, opts.url, p, path.join(opts.out, name), token, { admin: opts.admin })) });
       }
       await context.close();
     }
@@ -291,12 +337,13 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   if (opts.json) {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    console.log(`live-qa: ${report.pages.length} page(s) on ${report.origin}, read-only, as ${report.as}`);
+    console.log(`live-qa: ${report.pages.length} page(s) on ${report.origin}, read-only${opts.admin ? ", admin view, screenshots masked" : ""}, as ${report.as}`);
     for (const r of report.pages) {
       const mark = r.problems.length || !r.status || r.status >= 400 ? "PROBLEM" : "ok";
       console.log(`  ${mark.padEnd(7)} ${r.shape.padEnd(7)} ${r.path}  (${r.status || "no answer"})  ${r.screenshot}`);
       for (const p of r.problems) console.log(`          ${p}`);
       for (const w of r.refusedWrites) console.log(`          the page tried a write, stopped before it left: ${w}`);
+      for (const d of r.refusedByDesign ?? []) console.log(`          refused by design in the admin view: GET ${d}`);
     }
   }
   return bad.length ? 1 : 0;
