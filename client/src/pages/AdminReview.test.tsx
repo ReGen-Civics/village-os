@@ -261,4 +261,14 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     expect(within(row).queryByTestId("draft-publish-dr_1")).toBeNull();
     expect(within(row).getByRole("link").textContent).toBe("Read the draft");
   });
+
+  it("?kind= shows one kind, says so, and offers everything back", async () => {
+    stub({ changes: [PAGE], extra: [claim, draft] });
+    window.history.replaceState(null, "", "/admin/review?kind=structure");
+    render(<AdminReview />);
+    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. Show everything");
+    expect(screen.getByTestId("row-structure:dr_1")).toBeTruthy();
+    expect(screen.queryByTestId("row-claim:c1")).toBeNull();
+    expect(screen.queryByTestId("kinds")).toBeNull();
+  });
 });

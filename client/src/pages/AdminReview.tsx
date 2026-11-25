@@ -27,7 +27,8 @@ import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import type { InboxItem } from "@shared/reviewInbox";
-import type { InboxSource } from "@shared/reviewInboxSources";
+import { INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
+import { sourceText } from "@/components/reviewInbox/sourceWords";
 import { matchesFind } from "@shared/proposedChanges";
 import { DecidedCard } from "@/components/proposals/ChangeCard";
 import ConnectorWaiting from "@/components/reviewInbox/ConnectorWaiting";
@@ -35,7 +36,7 @@ import HeldList from "@/components/reviewInbox/HeldList";
 import { useConnectorDesk } from "@/components/reviewInbox/useConnectorDesk";
 import InboxRow from "@/components/reviewInbox/InboxRow";
 import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
-import { inboxHeaders as headers, useReviewInbox } from "@/components/reviewInbox/useReviewInbox";
+import { inboxHeaders as headers, kindOf, useReviewInbox } from "@/components/reviewInbox/useReviewInbox";
 
 type View = "waiting" | "held" | "decided";
 const viewOf = (search: string): View => {
@@ -53,39 +54,12 @@ export default function AdminReview() {
   const signedOut = !!auth && !auth.loading && !auth.user;
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null; decided?: { code: string; at: string | null } } | null>(null);
-  const view = viewOf(useSearch());
+  const search = useSearch();
+  const view = viewOf(search);
+  // `?kind=structure` shows one kind: the door a count elsewhere (Admin's Today) lands through.
+  const onlyKind = kindOf(search);
 
-  const titles: Record<InboxSource, string> = {
-    connector: t({ context: "review inbox: section", message: "Proposed changes" }),
-    intake: t({ context: "review inbox: section", message: "From Sera and outside services" }),
-    sera: t({ context: "review inbox: section", message: "Where Sera's memory differs" }),
-    quest: t({ context: "review inbox: section", message: "Quest ideas" }),
-    claim: t({ context: "review inbox: section", message: "Finished work to witness" }),
-    approval: t({ context: "review inbox: section", message: "Approvals" }),
-    agent: t({ context: "review inbox: section", message: "From agents" }),
-    vote: t({ context: "review inbox: section", message: "Votes waiting on you" }),
-    consent: t({ context: "review inbox: section", message: "Asked to consent" }),
-    application: t({ context: "review inbox: section", message: "Applications for a role" }),
-    open: t({ context: "review inbox: section", message: "Proposals from outside the village" }),
-    structure: t({ context: "review inbox: section", message: "Org chart drafts" }),
-    change: t({ context: "review inbox: section", message: "Change requests in review" }),
-    suggestion: t({ context: "review inbox: section", message: "Suggested edits to what you hold" }),
-    hand: t({ context: "review inbox: section", message: "Members asking to hold a power" }),
-    tension: t({ context: "review inbox: section", message: "Tensions raised with your role" }),
-    task: t({ context: "review inbox: section", message: "Done work to accept" }),
-    handoff: t({ context: "review inbox: section", message: "Tasks handed to you" }),
-    recap: t({ context: "review inbox: section", message: "Moon recaps to review" }),
-    cash: t({ context: "review inbox: section", message: "Cash owed" }),
-    owed: t({ context: "review inbox: section", message: "Postings owed" }),
-    mint: t({ context: "review inbox: section", message: "Mint requests" }),
-    cycle: t({ context: "review inbox: section", message: "Cycles to settle" }),
-    cosign: t({ context: "review inbox: section", message: "Keys waiting for a co-sign" }),
-    letter: t({ context: "review inbox: section", message: "Letters waiting to be read" }),
-    assistant: t({ context: "review inbox: section", message: "Drafts from the assistant" }),
-    feedback: t({ context: "review inbox: section", message: "Feedback to read" }),
-    vouch: t({ context: "review inbox: section", message: "Places waiting for your vouch" }),
-    erasure: t({ context: "review inbox: section", message: "Erasures to retry" }),
-  };
+  const titles = Object.fromEntries(INBOX_SOURCES.map((s) => [s, sourceText(s, i18n).title])) as Record<InboxSource, string>;
 
   // Keyed on being signed in, never on the user object, which a context may hand out anew on every render.
   const signedIn = !!auth && !auth.loading && !!auth.user;
@@ -312,7 +286,15 @@ export default function AdminReview() {
                   <Trans context="review inbox: empty">Nothing is waiting on you.</Trans>
                 </p>
               ) : null}
-              {groups.length > 1 ? (
+              {onlyKind ? (
+                <p className={HINT} data-testid="only-kind">
+                  <OnlyKind title={titles[onlyKind]} />{" "}
+                  <Link href="/admin/review" className={LINK}>
+                    <Trans context="review inbox: one kind">Show everything</Trans>
+                  </Link>
+                </p>
+              ) : null}
+              {!onlyKind && groups.length > 1 ? (
                 <nav aria-label={t({ context: "review inbox: kinds", message: "What is waiting, by kind" })} className="flex flex-wrap gap-2" data-testid="kinds">
                   {groups.map((g) => (
                     <a key={g.source} href={`#review-${g.source}`} className={`${CHIP_SOFT} min-h-9 px-3 text-sm`}>
@@ -326,7 +308,7 @@ export default function AdminReview() {
                   {notice}
                 </p>
               ) : null}
-              {groups.map(({ source: s, items, count }) =>
+              {groups.filter((g) => !onlyKind || g.source === onlyKind).map(({ source: s, items, count }) =>
                 s === "connector" && desk.state === "ok" ? (
                   <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={count} found={foundIds} />
                 ) : (
@@ -355,4 +337,9 @@ function FoundDecided({ code, day }: { code: string; day: string | null }) {
   ) : (
     <Trans context="review inbox: find a decided code">{code} was decided. It is under Decided.</Trans>
   );
+}
+
+/** "Showing only Org chart drafts." */
+function OnlyKind({ title }: { title: string }) {
+  return <Trans context="review inbox: one kind">Showing only {title}.</Trans>;
 }

@@ -615,3 +615,15 @@ msgstr "Tu consentimiento, o tu objeción, decide si sigue adelante."
 msgctxt "review inbox: a row, what it is"
 msgid "Finished work"
 msgstr "Trabajo terminado"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Show everything"
+msgstr "Mostrar todo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Showing only {title}."
+msgstr "Solo se muestra: {title}."

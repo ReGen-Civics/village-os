@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import type { InboxItem, SectionState } from "@shared/reviewInbox";
-import { INBOX_ORDER, type InboxSource } from "@shared/reviewInboxSources";
+import { INBOX_ORDER, INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
 
 export interface InboxAnswer {
   sections: { source: InboxSource; state: SectionState; count: number }[];
@@ -17,6 +17,18 @@ export interface InboxAnswer {
 }
 
 export type InboxLoad = { phase: "loading" } | { phase: "failed" } | { phase: "ready"; answer: InboxAnswer };
+
+/**
+ * The kinds a row decides on the list itself, where this person may (the connector's cards, an org chart draft's
+ * Publish). Every other kind's row is a door to the page it is decided on.
+ */
+export const DECIDED_ON_ROW: ReadonlySet<InboxSource> = new Set<InboxSource>(["connector", "structure"]);
+
+/** A kind id from a link (`?kind=structure`), or null when it names no kind. */
+export function kindOf(search: string): InboxSource | null {
+  const k = new URLSearchParams(search).get("kind");
+  return k && (INBOX_SOURCES as readonly string[]).includes(k) ? (k as InboxSource) : null;
+}
 
 export function inboxHeaders(): Record<string, string> {
   const t = authToken();
@@ -41,12 +53,25 @@ export function useReviewInbox(enabled: boolean) {
   }, [enabled, read]);
 
   const answer = load.phase === "ready" ? load.answer : null;
-  /** The items by kind, in the order the page draws them, each kind with its count. Kinds with nothing are left out. */
+  /**
+   * The items by kind, in the order the page draws them, oldest first inside each kind (the server's order), each kind
+   * with its count and whether its rows decide on the list. Kinds with nothing are left out.
+   */
   const groups = useMemo(() => {
     const by = new Map<InboxSource, InboxItem[]>();
     for (const item of answer?.items ?? []) by.set(item.source, [...(by.get(item.source) ?? []), item]);
-    return INBOX_ORDER.filter((s) => by.get(s)?.length).map((source) => ({ source, items: by.get(source)!, count: by.get(source)!.length }));
+    return INBOX_ORDER.filter((s) => by.get(s)?.length).map((source) => ({ source, items: by.get(source)!, count: by.get(source)!.length, decidedOnRow: DECIDED_ON_ROW.has(source) }));
   }, [answer]);
 
-  return { load, answer, groups, read };
+  return {
+    load,
+    answer,
+    /** Each queue's state: a queue that failed or refused says so, and is never read as an empty, quiet one. */
+    sections: answer?.sections ?? [],
+    /** Everything waiting on this person, across every kind. */
+    total: answer?.items.length ?? 0,
+    groups,
+    /** Read again, after a decision, so every count drops without reloading the page. */
+    read,
+  };
 }
