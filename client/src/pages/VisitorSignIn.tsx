@@ -16,6 +16,21 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, HINT, LABEL,
 import { CODE_LENGTH, cleanCode, safeNext } from "@shared/entrance";
 import { useVerifiedVisitor } from "@/lib/entranceStatus";
 
+/**
+ * Where to go after signing in, as a path on this site and nothing else. `next` has already passed `safeNext`;
+ * this rebuilds it from a URL resolved against our own origin, so no value from the address bar can name
+ * another site, whatever slashes it carries.
+ */
+export function sameSitePath(next: string): string {
+  try {
+    const u = new URL(next, window.location.origin);
+    if (u.origin !== window.location.origin) return "/visitor";
+    return "/" + `${u.pathname}${u.search}${u.hash}`.replace(/^[/\\]+/, "");
+  } catch {
+    return "/visitor";
+  }
+}
+
 export default function VisitorSignIn() {
   const { t } = useLingui();
   const ids = useId();
@@ -77,7 +92,7 @@ export default function VisitorSignIn() {
         window.location.assign("/profile");
         return;
       }
-      window.location.assign(next);
+      window.location.assign(sameSitePath(next));
     } catch {
       setMessage({ tone: "alert", text: failed() });
     } finally {
