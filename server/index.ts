@@ -835,7 +835,7 @@ import {
 } from "./lib/agentProfile";
 // ── END LANE L6 IMPORTS ─────────────────────────────────────────────────────
 import {
-  allSecretStatuses, BASE_RPC_CARD, ERROR_WEBHOOK_CARD, GOOGLE_CARDS, HYPHA_VOICE_CARD, ROOT_SLOT_CARDS,
+  allSecretStatuses, namedSetters, BASE_RPC_CARD, ERROR_WEBHOOK_CARD, GOOGLE_CARDS, HYPHA_VOICE_CARD, ROOT_SLOT_CARDS,
   loadSecrets,
   NO_VILLAGE_SECRETS_KEY_SENTENCE,
   putSecret,
@@ -16911,7 +16911,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const origin = notifyDeps.origin();
     res.json({
-      secrets: allSecretStatuses(),
+      secrets: await namedSetters(allSecretStatuses(), async (id) => (await members.byId(id))?.name), // the setter by name, never a raw account id (server/lib/secretSetters.ts)
       // Whether a key can be saved here at all, and if not, why, so the
       // banner says it before a founder types one (server/lib/secrets.ts).
       villageSecretsKey: villageSecretsKeyStatus(),
@@ -16960,7 +16960,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       kind: "audit", text: `integrations:${key}:${value.trim() ? "set" : "cleared"}`,
       actorUserId: actor, entityType: "integration", entityRef: key, audience: "admin",
     });
-    res.json({ success: true, secrets: allSecretStatuses() });
+    res.json({ success: true, secrets: await namedSetters(allSecretStatuses(), async (id) => (await members.byId(id))?.name) });
   });
   // ── End Lane C integrations zone ──────────────────────────────────────────
 

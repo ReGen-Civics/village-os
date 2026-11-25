@@ -1,0 +1,31 @@
+# The Brevo list's number on the Brevo card in Admin, Integrations (portal entrance lane, 25 Nov 2026).
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number field"
+msgid "List number"
+msgstr "Número de lista"
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number"
+msgid "Save number"
+msgstr "Guardar número"
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number hint"
+msgid "The number of the Brevo list visitors join. 0 means nobody is sent to Brevo."
+msgstr "El número de la lista de Brevo a la que se unen los visitantes. 0 significa que no se envía a nadie a Brevo."
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number"
+msgid "That number was not saved."
+msgstr "Ese número no se guardó."
+
+# needs-native-review: Brevo list number, 2026-11-25
+msgctxt "admin integrations: Brevo list number"
+msgid "That number was not saved. Check your connection."
+msgstr "Ese número no se guardó. Revisa tu conexión."
