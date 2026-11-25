@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import * as Living from "./living";
+import { LIVING_STROKE } from "./livingCore";
 
 afterEach(cleanup);
 
@@ -14,7 +15,8 @@ describe("the living glyphs", () => {
       const svg = container.querySelector("svg")!;
       expect(svg.getAttribute("viewBox")).toBe("0 0 24 24");
       expect(svg.getAttribute("stroke")).toBe("currentColor");
-      expect(svg.getAttribute("stroke-width")).toBe("1.5");
+      // The family's line, thicker than glyphs.tsx's 1.5 so the bar and the menus never read as scratches.
+      expect(svg.getAttribute("stroke-width")).toBe(String(LIVING_STROKE));
       expect(svg.getAttribute("fill")).toBe("none");
       expect(svg.getAttribute("aria-hidden")).toBe("true");
       expect(svg.getAttribute("focusable")).toBe("false");
@@ -25,4 +27,10 @@ describe("the living glyphs", () => {
       for (const el of Array.from(svg.querySelectorAll("[stroke]"))) expect(["currentColor", "none"]).toContain(el.getAttribute("stroke"));
     });
   }
+
+  it("draws at a heavier line than the sacred set, and a page may still ask for its own", () => {
+    expect(LIVING_STROKE).toBe(1.75);
+    const { container } = render(<Living.Lantern strokeWidth={2} />);
+    expect(container.querySelector("svg")?.getAttribute("stroke-width")).toBe("2");
+  });
 });

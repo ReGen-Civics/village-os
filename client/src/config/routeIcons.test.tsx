@@ -13,7 +13,7 @@ import { PATH_SLOT, TAB_SLOTS } from "@/config/mobileNav";
 import { ROUTE_ICONS, loadRouteIcons, resetRouteIconsForTests, routeIcon, type RouteIcon } from "./routeIcons";
 import { ROUTE_ICON_SET } from "./routeIconSet";
 import MenuIcon from "@/components/nav/MenuIcon";
-import { EarthshipDome, Gathering, HeartLeaf, LeafCompass, SteppingStones, Sunrise } from "@/components/sacred/living";
+import { EarthshipDome, Gathering, HeartLeaf, Lantern, SteppingStones, Sunrise } from "@/components/sacred/living";
 
 afterEach(() => {
   cleanup();
@@ -36,11 +36,11 @@ describe("the set", () => {
   it("draws each page one way everywhere: the bar's own five slots and the menus agree (the lead, 25 Nov 2026)", () => {
     for (const slot of TAB_SLOTS) if (slot.path && !slot.personal && ROUTE_ICON_SET[slot.path]) expect(ROUTE_ICON_SET[slot.path], slot.path).toBe(slot.Icon);
     expect(ROUTE_ICON_SET["/"]).toBe(EarthshipDome);
-    // The stones are the path, and quests the leaf compass (the lead, 25 Nov 2026), in the bar and every menu.
+    // The stones are the path, and quests the lantern (the lead, 25 Nov 2026), in the bar and every menu.
     expect(ROUTE_ICON_SET["/path"]).toBe(SteppingStones);
     expect(PATH_SLOT.Icon).toBe(SteppingStones);
-    expect(ROUTE_ICON_SET["/quests"]).toBe(LeafCompass);
-    expect(TAB_SLOTS.find((s) => s.path === "/quests")?.Icon).toBe(LeafCompass);
+    expect(ROUTE_ICON_SET["/quests"]).toBe(Lantern);
+    expect(TAB_SLOTS.find((s) => s.path === "/quests")?.Icon).toBe(Lantern);
     expect(ROUTE_ICON_SET["/gratitude"]).toBe(HeartLeaf);
     expect(ROUTE_ICON_SET["/events"]).toBe(Gathering);
     expect(ROUTE_ICON_SET["/seasonal-festivals"]).toBe(Sunrise);
@@ -91,7 +91,7 @@ describe("a menu entry's icon", () => {
       await loadRouteIcons();
     });
     rerender(<MenuIcon href="/quests" />);
-    expect(container.querySelector("svg")?.getAttribute("class")).toContain("living-leaf-compass");
+    expect(container.querySelector("svg")?.getAttribute("class")).toContain("living-lantern");
   });
 
   it("uses the entry's own icon where the page has none, and `bare` draws nothing at all", () => {

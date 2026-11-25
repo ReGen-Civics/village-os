@@ -13,15 +13,15 @@ import { routeIcon, useRouteIcons, type RouteIcon } from "@/config/routeIcons";
 
 const NONE: RouteIcon = () => null;
 
-export default function MenuIcon({ href, fallback, chip, bare, className = "size-4 shrink-0" }: { href: string; fallback?: RouteIcon; chip?: boolean; bare?: boolean; className?: string }) {
+export default function MenuIcon({ href, fallback, chip, bare, className = "size-5 shrink-0" }: { href: string; fallback?: RouteIcon; chip?: boolean; bare?: boolean; className?: string }) {
   useRouteIcons();
   const Icon = routeIcon(href, fallback ?? NONE);
   const drawn = Icon !== NONE;
   if (chip) {
     // The header's white sheet: the glyph in its soft tinted square, as the join paths had it.
     return drawn ? (
-      <span data-menu-icon="" className="mt-0.5 w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-        <Icon className="w-4 h-4 text-primary" />
+      <span data-menu-icon="" className="mt-0.5 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+        <Icon className="w-5 h-5 text-primary" />
       </span>
     ) : null;
   }

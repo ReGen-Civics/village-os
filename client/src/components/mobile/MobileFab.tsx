@@ -396,7 +396,7 @@ export default function MobileFab() {
             {open ? (
               <X className="w-7 h-7 text-cream" />
             ) : (
-              <FabTriggerIcon className="w-7 h-7 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />
+              <FabTriggerIcon className="w-8 h-8 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />
             )}
           </span>
         </button>

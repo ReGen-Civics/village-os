@@ -25,7 +25,7 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
+export { Cell, CellRing, EarthshipDome, Lantern, ScarletMacaw, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 

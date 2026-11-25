@@ -16,8 +16,16 @@ import { Svg, type GlyphProps } from "./glyphs";
 /**
  * A drawing made a drop-in for a lucide icon: the same props (size, color,
  * strokeWidth) and lucide's default 24px box, so a page swaps the import and
- * nothing else. Our 1.5 stroke stays unless the page asks for another.
+ * nothing else. The family's line is LIVING_STROKE unless the page asks for another.
  */
+/**
+ * The family's line: 1.75 on the 24 box. At 1.5 the glyphs read as scratches at
+ * the sizes the bar and the menus draw them (the lead, 25 Nov 2026: "the icons need
+ * to be a bit bigger otherwise they just look like scratches"). App.tsx gives the
+ * remaining stock icons the same line, so a row of the two is one weight.
+ */
+export const LIVING_STROKE = 1.75;
+
 export function asIcon(name: string, Drawing: (props: GlyphProps) => ReactElement): LucideIcon {
   // Like lucide's `lucide lucide-<name>`, so a test or a stylesheet can find a glyph by what it draws.
   const named = `living living-${name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()}`;
@@ -30,7 +38,7 @@ export function asIcon(name: string, Drawing: (props: GlyphProps) => ReactElemen
         height={size}
         className={className ? `${named} ${className}` : named}
         {...(color ? { stroke: color } : {})}
-        {...(strokeWidth !== undefined ? { strokeWidth } : {})}
+        strokeWidth={strokeWidth ?? LIVING_STROKE}
         {...rest}
       />
     );
@@ -157,15 +165,32 @@ function EarthshipDomeDrawing(props: GlyphProps) {
     </Svg>
   );
 }
-/** A compass whose needle is a leaf: finding the way to the work (quests; the lead, 25 Nov 2026: the stones went to the path). */
-function LeafCompassDrawing(props: GlyphProps) {
+/** A lantern with its flame: light carried along the way (quests; the lead's pick, 25 Nov 2026). */
+function LanternDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <circle cx="12" cy="12" r="8.4" />
-      <path d="M12 3.6v1.8M12 18.6v1.8M3.6 12h1.8M18.6 12h1.8" />
-      <path {...WASH} d="M8 16c.2-4.4 3.2-7.6 8-8-.2 4.6-3.4 7.8-8 8z" />
-      <path d="M8 16l8-8" />
-      <Dot cx={12} cy={12} r={1} />
+      <path d="M9.4 6.4a2.6 2.6 0 0 1 5.2 0M12 2.8v1" />
+      <path d="M8.4 7.6h7.2l1 2.4v7.6l-1 1.8H8.4l-1-1.8V10z" />
+      <path d="M8.2 20.6h7.6" />
+      <path {...WASH} d="M12 10.4c1.6 1.5 2.3 2.9 2.3 4.1a2.3 2.3 0 0 1-4.6 0c0-1.2.7-2.6 2.3-4.1z" />
+    </Svg>
+  );
+}
+/** A scarlet macaw perched on a branch, its great hooked beak and long tail: the guide in the corner (the lead, 25 Nov 2026). */
+function ScarletMacawDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      {/* The head, with the bare pale face around the eye. */}
+      <path d="M7.2 11.4C5.4 10.4 4.8 8 5.8 6.2 6.9 4.2 9.4 3.6 11.3 4.8c1.7 1.1 2.3 3.2 1.6 5" />
+      <Dot cx={9} cy={7} r={0.95} />
+      {/* The great hooked beak. */}
+      <path {...WASH} d="M5.9 6.4C4.2 6.2 2.9 7.5 3 9.2c.1 1 .6 1.8 1.3 2.3-.1-1 .3-1.9 1.1-2.3.3.8.9 1.3 1.6 1.4" />
+      {/* The body, the folded wing, and the long tail. */}
+      <path d="M7.2 11.4c-.4 2.6.6 4.8 2.8 6.2M12.9 9.8c1.6 1.8 2.2 4 1.8 6.2" />
+      <path d="M10.8 11.2c1.4 1.4 2 3.2 1.8 5.2" />
+      <path d="M11.4 17.2l6.6 4.6M13.8 16.4l6.8 3.6" />
+      {/* The branch it holds. */}
+      <path d="M4.4 17.8h9" />
     </Svg>
   );
 }
@@ -178,4 +203,5 @@ export const SunLeaf = /* @__PURE__ */ asIcon("SunLeaf", SunLeafDrawing);
 export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
 export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
 export const EarthshipDome = /* @__PURE__ */ asIcon("EarthshipDome", EarthshipDomeDrawing);
-export const LeafCompass = /* @__PURE__ */ asIcon("LeafCompass", LeafCompassDrawing);
+export const Lantern = /* @__PURE__ */ asIcon("Lantern", LanternDrawing);
+export const ScarletMacaw = /* @__PURE__ */ asIcon("ScarletMacaw", ScarletMacawDrawing);
