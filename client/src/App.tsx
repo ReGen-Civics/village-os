@@ -421,7 +421,8 @@ function Router() {
       <Route path="/first-walk" component={FirstWalk} />
       <Route path="/feed" component={Feed} />
       <Route path="/stay" component={Stay} />
-      <Route path="/tokens" component={Wallet} />
+      {/* The Exchange's old address: one page called Wallet now (the lead, 25 Nov 2026). The query and hash ride along. */}
+      <Route path="/tokens">{() => <Redirect to={`/wallet${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/wallet" component={Wallet} />
       <Route path="/pay" component={Pay} />
       <Route path="/badges" component={Badges} />

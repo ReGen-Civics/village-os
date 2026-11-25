@@ -204,8 +204,8 @@ export default function WalletCard() {
           Wallet
         </Trans></h3>
         {exchangeModule && (
-          <Link href="/tokens" className="flex shrink-0 items-center gap-1 text-sm font-medium text-foreground hover:underline">
-            <Trans context="WalletCard, Link">The Exchange
+          <Link href="/wallet" className="flex shrink-0 items-center gap-1 text-sm font-medium text-foreground hover:underline">
+            <Trans context="WalletCard, Link">Buy and exchange
             <ArrowRight className="h-4 w-4" aria-hidden="true" /></Trans>
           </Link>
         )}
