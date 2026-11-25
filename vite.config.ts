@@ -193,6 +193,8 @@ function routeChunkPreload(): Plugin {
           facadeModuleId: out.facadeModuleId,
           css: [...(out.viteMetadata?.importedCss ?? [])],
           copyParts: copyPartsIn(out.code),
+          // A chunk of CSS modules alone: Vite drops its empty script after this hook, so it is never listed (routePreload.ts).
+          cssOnly: Object.keys(out.modules).length > 0 && Object.keys(out.modules).every((id) => /\.css(?:$|\?)/.test(id)),
         });
       }
       const table = routePreloadTable([...landingRoutes(app), ...lazyRoutesFromApp(app)], chunks);
