@@ -27,10 +27,17 @@
  * bundle is a build that broke its own rule, and is reported like any crash, as
  * is any report when the current bundle cannot be read.
  *
+ * NOISE, AND WHAT EMAILS (the lead, 25 Nov 2026). A report nobody can act on (shared/crashNoise.ts: an extension, an
+ * injected global, a dropped connection, an opaque cross-origin error) is dropped here as well as in the page,
+ * because a tab still running a bundle from before a deploy never learned the page's newer rules. Every other report
+ * is recorded by signature and emails only when it is ours or has spread, once a day at most with a running count;
+ * the rest go in a daily digest (server/lib/crashTriage.ts).
+ *
  * Unauthenticated on purpose: a crash before sign-in (the apply flow) is the
  * one we most need to hear about. So it is limited per address and across
  * the instance, answers 204 whatever happens, and never echoes what it got.
  */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Express, Request, Response } from "express";
@@ -38,6 +45,9 @@ import type { Pool } from "mysql2/promise";
 import { recentEvents, recordEvent } from "../lib/events";
 import { reportError } from "../lib/errors";
 import { isStaleBuildMessage } from "../../shared/staleBuild";
+import { isCrashNoise } from "../../shared/crashNoise";
+import { alertWords, decideEmail, digestWords, readTriageDials, visitorDigest } from "../lib/crashTriage";
+import { claimEmail, digestGroups, markDigested, recordSighting, signatureViews } from "../repos/clientCrashes";
 
 export const CLIENT_CRASH_PATH = "/api/client-crash";
 /** Reports one address may send in ten minutes. A shared village address is several people. */
@@ -139,6 +149,16 @@ type Deps = {
   buildMarker: string;
   /** Test seam; defaults to reportError, which owns the webhook and the admin alert. */
   report?: typeof reportError;
+  /** A dial's number (`numberVar`): the triage's three dials. Absent, the platform's defaults. */
+  numberVar?: (key: string) => number;
+  /** The salt a visitor's daily digest is made under. Absent, one per process, which still counts within a day. */
+  visitorSalt?: () => string;
+  /** The crash alert sinks, for the daily digest (`crashAlertNotifier`). Absent, no digest is sent. */
+  alertAdmins?: (title: string, dedupeKey: string, extras?: { body?: string; link?: string }) => Promise<void>;
+  /** The scheduler's `registerJob`, for the daily digest. Absent, no digest job is registered. */
+  registerJob?: (name: string, everyMs: number, fn: () => Promise<string | void>) => void;
+  /** Test seam: the clock. */
+  now?: () => Date;
   /** Where the built index.html lives, to learn the bundle this server serves. */
   publicDir?: string;
   /** Test seam: the bundle this server serves, or null. Defaults to reading `publicDir`. */
@@ -159,9 +179,39 @@ function bundleFromDisk(publicDir: string | undefined): () => string | null {
   };
 }
 
+/** The job's name in `scheduled_jobs`. */
+export const CRASH_DIGEST_JOB = "client-crash-digest";
+
+/**
+ * The daily digest: every report recorded and not emailed since the last one, by signature, browser and page. Sent
+ * only when there is something in it, under one key a day, so a retried run sends nothing twice.
+ */
+export async function sendCrashDigest(pool: Pool, alertAdmins: NonNullable<Deps["alertAdmins"]>, now: Date): Promise<string> {
+  const { groups, ids } = await digestGroups(pool, now);
+  if (!groups.length) return "nothing to tell";
+  const words = digestWords(groups);
+  await alertAdmins(words.title, `client-crash-digest:${now.toISOString().slice(0, 10)}`, { body: words.body, link: "/village-health" });
+  await markDigested(pool, ids, now);
+  return `${ids.length} report(s) in ${groups.length} line(s)`;
+}
+
 export function register(app: Express, deps: Deps): void {
   const report = deps.report ?? reportError;
   const currentBundle = deps.currentBundle ?? bundleFromDisk(deps.publicDir);
+  const now = deps.now ?? (() => new Date());
+  const processSalt = crypto.randomBytes(16).toString("hex");
+  const salt = () => {
+    try {
+      return deps.visitorSalt?.() || processSalt;
+    } catch {
+      return processSalt;
+    }
+  };
+  const dials = () => readTriageDials(deps.numberVar ?? (() => Number.NaN));
+  if (deps.registerJob && deps.alertAdmins) {
+    const alertAdmins = deps.alertAdmins;
+    deps.registerJob(CRASH_DIGEST_JOB, 24 * HOUR, () => sendCrashDigest(deps.getPool(), alertAdmins, now()));
+  }
   app.post(CLIENT_CRASH_PATH, async (req: Request, res: Response) => {
     // Always the same answer, so the route tells a prober nothing.
     res.status(204).end();
@@ -170,8 +220,13 @@ export function register(app: Express, deps: Deps): void {
       if (!crash) return;
       if (await deps.overLimit(`client-crash:${deps.clientIp(req)}`, PER_ADDRESS, TEN_MINUTES)) return;
       if (await deps.overLimit("client-crash:instance", PER_INSTANCE, HOUR)) return;
-      if (isStaleBuildMiss(crash, currentBundle())) {
+      const served = currentBundle();
+      if (isStaleBuildMiss(crash, served)) {
         console.log("[client-crash] a page from before an update missed a file this release replaced (not a crash): %s", crashLine(crash));
+        return;
+      }
+      if (isCrashNoise(crash.message, crash.frames)) {
+        console.log("[client-crash] noise nobody can act on (not recorded): %s", crashLine(crash));
         return;
       }
       await recordEvent(deps.getPool(), {
@@ -182,10 +237,22 @@ export function register(app: Express, deps: Deps): void {
         entityRef: crash.route,
         audience: "admin",
       });
+      const at = now();
+      const d = dials();
+      const sighting = { message: crash.message, frames: crash.frames, browser: crash.browser, route: crash.route, visitor: visitorDigest(salt(), deps.clientIp(req), at), now: at,
+        // The same miss from the bundle this server serves is this build breaking its own rule: ours.
+        oursHint: isStaleBuildMessage(crash.message) && !!crash.bundle && crash.bundle === served };
+      const state = await recordSighting(deps.getPool(), sighting, d);
+      const verdict = decideEmail({ ours: state.ours, visitorsInWindow: state.visitorsInWindow, emailedAt: state.emailedAt, now: at }, d);
+      if (!verdict.email) return;
+      const number = await claimEmail(deps.getPool(), state, d, at);
+      if (number === null) return; // another report took this window's email
+      const words = alertWords({ ...state, emailsSent: number, emailedAt: at }, sighting, verdict.why);
       const err = Object.assign(new Error(crash.message), { name: crash.name || "Error", stack: [`${crash.name || "Error"}: ${crash.message}`, ...crash.frames.map((f) => `    ${f}`)].join("\n") });
       await report(err, {
         where: `browser on ${crash.route}`,
-        detail: { source: crash.source, browser: crash.browser, build: crash.build, bundle: crash.bundle, at: crash.at },
+        detail: { source: crash.source, browser: crash.browser, build: crash.build, bundle: crash.bundle, at: crash.at, signature: state.id, seen: state.seenCount, ours: state.ours },
+        alert: { ...words, dedupeKey: `client-crash:${state.id}:${number}` },
       });
     } catch (e) {
       console.error("[client-crash] could not store a crash report (ignored)", e instanceof Error ? e.message : e);
@@ -197,6 +264,9 @@ export function register(app: Express, deps: Deps): void {
     if (!(await deps.isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const rows = await recentEvents(deps.getPool(), "admin", 500);
     res.setHeader("Cache-Control", "no-store");
-    res.json({ crashes: rows.filter((r) => r.kind === "client_crash").slice(0, 20).map((r) => ({ id: r.id, at: r.at, route: r.entityRef, text: r.text })) });
+    // The signatures, each with its count and whether it emailed; read apart so a table a release has not made yet
+    // leaves the plain list as it was.
+    const signatures = await signatureViews(deps.getPool()).catch(() => []);
+    res.json({ crashes: rows.filter((r) => r.kind === "client_crash").slice(0, 20).map((r) => ({ id: r.id, at: r.at, route: r.entityRef, text: r.text })), signatures });
   });
 }

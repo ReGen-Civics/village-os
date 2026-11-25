@@ -4143,6 +4143,49 @@ export const VARIABLES: VariableDef[] = [
   },
 
   /*
+   * WHICH BROWSER CRASH EMAILS (the lead, 25 Nov 2026), server/lib/crashTriage.ts. A crash a visitor's browser
+   * reports emails the list above only when a frame is from our own code, or when this many different visitors hit
+   * the same one within this many minutes; and one email per crash per this many hours at most, with a running
+   * count. Everything else is recorded on Village Health and counted in a daily digest. Literal keys, so the
+   * generated docs read them; server/lib/crashTriage.test.ts holds them equal to CRASH_TRIAGE_DIALS.
+   */
+  {
+    key: "ops.crash_spread_visitors",
+    category: "Platform",
+    label: "Visitors who must hit a crash before it emails",
+    description:
+      "A browser crash with no frame from this village's own code emails the crash alert list once this many different visitors hit it within the window below. A crash in our own code emails the first time. Every crash is still recorded on Village Health and counted in the daily crash digest.",
+    type: "integer",
+    default: "3",
+    min: 1,
+    max: 50,
+    unit: "visitors",
+  },
+  {
+    key: "ops.crash_spread_minutes",
+    category: "Platform",
+    label: "Window for counting visitors who hit a crash",
+    description: "How far back the visitors above are counted, in minutes.",
+    type: "integer",
+    default: "60",
+    min: 5,
+    max: 1440,
+    unit: "minutes",
+  },
+  {
+    key: "ops.crash_email_every_hours",
+    category: "Platform",
+    label: "Hours between emails about the same crash",
+    description:
+      "One email per crash in this many hours at most, saying how many times it has happened so far. The crashes in between are counted on Village Health.",
+    type: "integer",
+    default: "24",
+    min: 1,
+    max: 168,
+    unit: "hours",
+  },
+
+  /*
    * THE VILLAGE'S OWN SOURCE-CODE LINK (AGPL-3.0-or-later, section 13,
    * shared/sourceUrl.ts). The footer always links the upstream Village OS
    * repository, a platform constant. A village that runs changed code must also
