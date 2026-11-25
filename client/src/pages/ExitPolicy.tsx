@@ -4,6 +4,7 @@
  * restorative path whose content only ever reaches its recipients.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
@@ -28,6 +29,10 @@ export default function ExitPolicy() {
   const { user } = useAuth();
   const { t } = useLingui();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
   const [password, setPassword] = useState("");
   const [note, setNote] = useState("");
   const [intake, setIntake] = useState("");
@@ -47,8 +52,11 @@ export default function ExitPolicy() {
     // With the token when there is one: the server gives a member the outside
     // contact and every step whole, and anybody else the public reading.
     const token = authToken();
-    (token ? fetch("/api/exit-policy", { headers: headers() }) : fetch("/api/exit-policy")).then((r) => r.json()).then(setData).catch(() => {});
-  }, []);
+    (token ? fetch("/api/exit-policy", { headers: headers() }) : fetch("/api/exit-policy"))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then(setData)
+      .catch(() => setLoadFailed(true));
+  }, [attempt]);
 
   const policy = data?.policy;
   const noticeDays = policy?.voluntary?.noticePeriodDays ?? "…";
@@ -148,6 +156,7 @@ export default function ExitPolicy() {
           {msg && <p role="status" className="text-sm text-open bg-open/10 border border-open/40 rounded-lg px-4 py-2.5">{msg}</p>}
           {shownError && <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive rounded-lg px-4 py-2.5">{shownError}</p>}
 
+          {loadFailed && !data && <LoadFailed onRetry={retry} />}
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
               <DoorOpen className="w-5 h-5 text-notice" aria-hidden="true" />

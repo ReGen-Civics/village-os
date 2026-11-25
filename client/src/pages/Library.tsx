@@ -4,6 +4,7 @@
  * in escrow while something is out and comes back at return, minus wear.
  */
 import Layout from "@/components/Layout";
+import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
@@ -44,6 +45,8 @@ export default function Library() {
   const stageNameOf = (id: string) => stages.find((s) => s.id === id)?.name ?? id;
   const ladder = useLadderTitle();
   const [data, setData] = useState<any>(null);
+  // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   // The refusal, keyed to the row: the page-top error slot is a screen away
@@ -54,9 +57,9 @@ export default function Library() {
 
   const load = () => {
     fetch("/api/library", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setData)
-      .catch(() => {});
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => { setData(d); setLoadFailed(false); })
+      .catch(() => setLoadFailed(true));
   };
   useEffect(() => { if (libraryModule) load(); }, [libraryModule?.id]);
 
@@ -219,6 +222,7 @@ export default function Library() {
           </div>
           {/* Gated on what's actually SHOWN: a shelf holding only retired
               items used to render a blank grid with no explanation. */}
+          {loadFailed && !data && <LoadFailed onRetry={load} />}
           {data && visibleItems.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-12">
               <Trans context="Library, p"><Package className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
