@@ -195,7 +195,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
   return (
     <Layout>
       <div className={WORLD}>
-        <main className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance="">
+        <section className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance="">
           <header className="flex flex-col gap-4">
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <DoorOpen className="size-6" />
@@ -337,7 +337,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
             <GoogleSignInButton next={next} portal />
           </form>
 
-        </main>
+        </section>
       </div>
     </Layout>
   );
@@ -395,7 +395,7 @@ export function KeepInTouch({ village, goTo, sentTo = null }: { village: string;
   return (
     <Layout>
       <div className={WORLD}>
-        <main className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-updates="">
+        <section className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-updates="">
           <section className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-q`}>
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <Mail className="size-6" />
@@ -425,7 +425,7 @@ export function KeepInTouch({ village, goTo, sentTo = null }: { village: string;
               </button>
             </div>
           </section>
-        </main>
+        </section>
       </div>
     </Layout>
   );
