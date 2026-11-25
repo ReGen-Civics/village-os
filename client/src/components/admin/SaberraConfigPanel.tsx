@@ -37,7 +37,6 @@
  * (scripts/check-tailwind-gray.mjs LIGHT_SURFACES).
  */
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 import { MODULES_BY_ID } from "@shared/modules";
 import type { SyncFailureWhy } from "@shared/saberraSyncLog";
@@ -47,6 +46,7 @@ import SaberraOutboxPanel from "./SaberraOutboxPanel";
 import { QuestLevel } from "./SaberraBridgeQuests";
 import { ReviewQueueButton, ScheduleControl, SyncRunLog, WHY_WORDS } from "./SaberraSyncSchedule";
 import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 const MODULE_ID = "saberra";
 
@@ -56,8 +56,6 @@ const SeraLinkPanel = lazy(() => import("./SeraLinkPanel"));
 
 const inputCls =
   "border border-gray-200 rounded-lg px-2 py-1.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-teal-deep";
-const saveCls =
-  "min-h-[44px] px-4 text-sm rounded-lg bg-teal-deep text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep disabled:opacity-40";
 const btnCls =
   "min-h-[44px] px-3 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-deep disabled:opacity-40 inline-flex items-center gap-2";
 
@@ -108,7 +106,7 @@ const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? on
 
 export default function SaberraConfigPanel({ password }: { password: string }) {
   const { t } = useLingui();
-  const { config, lifecycle, loading, save } = useModuleConfig(MODULE_ID, password);
+  const { config, lifecycle, loading, save, write } = useModuleConfig(MODULE_ID, password);
   /*
    * WHAT A FOUNDER TYPED, or null for "show what is stored".
    *
@@ -123,8 +121,6 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
   const [dashDraft, setDashDraft] = useState<string | null>(null);
   const apiUrl = apiDraft ?? String(config?.apiUrl ?? "");
   const dashboardUrl = dashDraft ?? String(config?.dashboardUrl ?? "");
-  const [problem, setProblem] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const [status, setStatus] = useState<Status | null>(null);
   const [statusProblem, setStatusProblem] = useState<string | null>(null);
@@ -170,9 +166,14 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
     if (on) void loadStatus();
   }, [on, loadStatus]);
 
-  const onSave = async () => {
+  /*
+   * THE ONE SAVE BAR (Admin evolution, 25 Nov 2026): an edited address raises
+   * the bar at the foot of the screen, and its Save runs this. The answer is
+   * the bar's: ok, or the refusal in words, which the bar keeps on screen.
+   */
+  const writeAddresses = async (): Promise<SaveResult> => {
     /*
-     * ONLY THE FIELDS SOMEBODY EDITED. `save` re-reads the live config and
+     * ONLY THE FIELDS SOMEBODY EDITED. `write` re-reads the live config and
      * spreads this over it, and that re-read protects nothing if the patch
      * names both keys: an untouched field would carry this tab's stale copy
      * over whatever another admin saved since. On the service address, that
@@ -182,36 +183,29 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
       ...(apiDraft !== null && { apiUrl: apiDraft.trim() }),
       ...(dashDraft !== null && { dashboardUrl: dashDraft.trim() }),
     };
-    if (Object.keys(patch).length === 0) {
-      setProblem("Nothing has changed, so there is nothing to save.");
-      return;
-    }
     // The merged result is what the server validates, so the browser does too.
     const refused = MODULES_BY_ID[MODULE_ID]?.validateConfig?.({ ...(config ?? {}), ...patch }) ?? null;
-    if (refused) {
-      setProblem(refused);
-      return;
-    }
-    setProblem(null);
-    setSaving(true);
+    if (refused) return { ok: false, reason: refused };
     try {
-      const ok = await save(patch);
-      if (ok) {
-        // Back to showing what is stored, which `save` has just replaced.
+      const r = await write(patch);
+      if (r.ok) {
+        // Back to showing what is stored, which `write` has just replaced.
         setApiDraft(null);
         setDashDraft(null);
-        toast.success(t({ message: "Saved. The next sync calls this address", context: "SaberraConfigPanel, toast" }));
         // The Go-live card and the module cards read readiness, and an address
         // is exactly what flips this module's. They listen for this event.
         window.dispatchEvent(new Event("module:saved"));
         if (on) void loadStatus();
       }
+      return r;
     } catch {
-      setProblem("That did not reach the server, so nothing was saved.");
-    } finally {
-      setSaving(false);
+      return { ok: false, reason: "That did not reach the server, so nothing was saved." };
     }
   };
+  /** Edited and different from what is stored: the bar counts it. */
+  const addressesEdited =
+    (apiDraft !== null && apiDraft.trim() !== String(config?.apiUrl ?? "")) ||
+    (dashDraft !== null && dashDraft.trim() !== String(config?.dashboardUrl ?? ""));
 
   const onSync = async () => {
     setSyncing(true);
@@ -271,7 +265,6 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
               placeholder={t({ message: "https://", context: "SaberraConfigPanel, placeholder" })}
               inputMode="url"
               autoComplete="off"
-              aria-describedby={problem ? "saberra-address-problem" : undefined}
               className={`${inputCls} w-full mt-1`}
             />
           </label>
@@ -283,23 +276,19 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
               placeholder={t({ message: "https://", context: "SaberraConfigPanel, placeholder" })}
               inputMode="url"
               autoComplete="off"
-              aria-describedby={problem ? "saberra-address-problem" : undefined}
               className={`${inputCls} w-full mt-1`}
             />
           </label>
         </div>
-        {problem && (
-          <p
-            id="saberra-address-problem"
-            className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3"
-            role="alert"
-          >
-            {problem}
-          </p>
-        )}
-        <button type="button" className={`${saveCls} mt-3`} disabled={saving} onClick={onSave}>
-          {saving ? "Saving…" : "Save addresses"}
-        </button>
+        <SaveBar
+          count={addressesEdited ? 1 : 0}
+          what={t({ message: "the service addresses", context: "SaberraConfigPanel, save bar" })}
+          onSave={writeAddresses}
+          onDiscard={() => {
+            setApiDraft(null);
+            setDashDraft(null);
+          }}
+        />
       </QuestLevel>
 
       <QuestLevel level={2} title={t({ message: "The connection", context: "SaberraConfigPanel, title" })} state={keyState === "ready" && status?.addressSet ? "done" : undefined}>

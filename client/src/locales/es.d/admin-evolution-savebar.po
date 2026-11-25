@@ -1,0 +1,32 @@
+# One save bar for module settings (Admin evolution lane, 25 Nov 2026). A second fragment
+# beside admin-evolution.po so two open branches never create the same file.
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the {moduleName} categories"
+msgstr "las categorías de {moduleName}"
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the linked campaigns"
+msgstr "las campañas vinculadas"
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the resources routing"
+msgstr "el enrutamiento de recursos"
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the call automation settings"
+msgstr "los ajustes de automatización de llamadas"
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "SaberraConfigPanel, save bar"
+msgid "the service addresses"
+msgstr "las direcciones del servicio"
+
+# needs-native-review: Admin save bar, 2026-11-25
+msgctxt "hidden map settings, save bar"
+msgid "the map's words and quests"
+msgstr "las palabras y misiones del mapa"
