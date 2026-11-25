@@ -25,8 +25,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
-import { GoldenSpiral, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { Tripoint } from "@/components/sacred/glyphs";
+import { Cell, EarthshipDome, LeafCompass, ScarletMacaw, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -35,7 +35,8 @@ import type { LucideIcon } from "lucide-react";
  * default is a plain icon. Swap in a square brand glyph here when one exists,
  * without touching the component.
  */
-export const FabTriggerIcon = GoldenSpiral;
+// The scarlet macaw in flight, the guide in the corner (the lead, 25 Nov 2026: "change this to a scarlet macaw outline"; option C picked).
+export const FabTriggerIcon = ScarletMacaw;
 
 export type TabSlot = {
   /** Route to navigate to, or omit and set `event` to dispatch instead. */
