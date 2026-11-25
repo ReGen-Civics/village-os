@@ -300,7 +300,7 @@ describe("each step's title is its disclosure", () => {
     const steps = RESIDENT_JOURNEY.sections.find((sec) => sec.id === "steps")!.lists!.find((l) => l.key === "items")!.default as Array<{ title: string }>;
     const title = steps[1].title;
     const button = await waitFor(() => {
-      const b = [...document.querySelectorAll<HTMLButtonElement>("h3 > button[aria-expanded]")].find((x) => x.textContent?.trim() === title);
+      const b = Array.from(document.querySelectorAll<HTMLButtonElement>("h3 > button[aria-expanded]")).find((x) => x.textContent?.trim() === title);
       expect(b).toBeTruthy();
       return b!;
     });
