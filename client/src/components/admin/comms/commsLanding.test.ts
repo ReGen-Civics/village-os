@@ -3,8 +3,8 @@ import { SETUP_KEYS } from "@shared/comms/settings";
 import { commsLanding, PAUSE_ALL_BUTTON_ID, TEST_EMAIL_BUTTON_ID, setupPanelId } from "./commsLanding";
 
 describe("commsLanding", () => {
-  it("lands the test email on its button, with item 13 open", () => {
-    expect(commsLanding("comms.test-email")).toEqual({ open: "test-email", focus: TEST_EMAIL_BUTTON_ID });
+  it("lands the test email on its button at the top, with no row opened", () => {
+    expect(commsLanding("comms.test-email")).toEqual({ open: null, focus: TEST_EMAIL_BUTTON_ID });
   });
 
   it("lands Pause all on its button, with nothing opened", () => {
