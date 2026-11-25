@@ -13,6 +13,7 @@ import { TAB_SLOTS } from "@/config/mobileNav";
 import { ROUTE_ICONS, loadRouteIcons, resetRouteIconsForTests, routeIcon, type RouteIcon } from "./routeIcons";
 import { ROUTE_ICON_SET } from "./routeIconSet";
 import MenuIcon from "@/components/nav/MenuIcon";
+import { EarthshipDome, Gathering, HeartLeaf, Sunrise } from "@/components/sacred/living";
 
 afterEach(() => {
   cleanup();
@@ -30,6 +31,14 @@ describe("the set", () => {
 
   it("covers the top pages", () => {
     for (const href of ["/", "/quests", "/roles", "/circles", "/gratitude", "/profile", "/governance", "/decisions"]) expect(ROUTE_ICON_SET[href], href).toBeTruthy();
+  });
+
+  it("draws each page one way everywhere: the bar's own five slots and the menus agree (the lead, 25 Nov 2026)", () => {
+    for (const slot of TAB_SLOTS) if (slot.path && !slot.personal && ROUTE_ICON_SET[slot.path]) expect(ROUTE_ICON_SET[slot.path], slot.path).toBe(slot.Icon);
+    expect(ROUTE_ICON_SET["/"]).toBe(EarthshipDome);
+    expect(ROUTE_ICON_SET["/gratitude"]).toBe(HeartLeaf);
+    expect(ROUTE_ICON_SET["/events"]).toBe(Gathering);
+    expect(ROUTE_ICON_SET["/seasonal-festivals"]).toBe(Sunrise);
   });
 
   it("draws the living family: each icon renders one aria-hidden svg in currentColor", () => {

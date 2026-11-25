@@ -9,19 +9,20 @@
  * paths carry their glyphs on their menu entries (config/nav.ts) and need no
  * row here. Loaded after the first paint (routeIcons.ts).
  */
-import { Heart } from "lucide-react";
-import { Lotus } from "@/components/sacred/glyphs";
-import { Cell, CellRing, CouncilCircle, Seed, SeedPin, Songbird, Splash, Sprout, SteppingStones } from "@/components/sacred/living";
+import { Cell, CellRing, CouncilCircle, EarthshipDome, Gathering, HeartLeaf, Seed, SeedPin, Songbird, Splash, Sprout, SteppingStones, Sunrise } from "@/components/sacred/living";
 import type { RouteIcon } from "./routeIcons";
 
 export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
-  "/": Lotus,
+  // Home is the earthship dome, in the bar and every menu (the lead, 25 Nov 2026).
+  "/": EarthshipDome,
   "/quests": SteppingStones,
   "/roles": Cell,
   "/circles": CellRing,
   "/map/circles": CellRing,
-  // The bar's own glyph for the gratitude wall until the lead picks a living one.
-  "/gratitude": Heart,
+  // The lead's picks, 25 Nov 2026: two leaves as a heart, a fire in a ring of stones, the sun rising.
+  "/gratitude": HeartLeaf,
+  "/events": Gathering,
+  "/seasonal-festivals": Sunrise,
   "/profile": Sprout,
   "/path": Seed,
   // How the village decides: the council circle, as the welcome page's "How we decide" door draws it.

@@ -34,8 +34,8 @@ const slotLink = () => document.querySelector<HTMLAnchorElement>("a[data-path-sl
 describe("the path slot, worked out", () => {
   const nameOf = (id: string) => `name of ${id}`;
 
-  it("takes the place Circles had, and Circles is no longer a tab", () => {
-    expect(TAB_SLOTS[3]).toBe(PATH_SLOT);
+  it("sits second, next to Home (the lead, 25 Nov 2026), and Circles is no longer a tab", () => {
+    expect(TAB_SLOTS[1]).toBe(PATH_SLOT);
     expect(TAB_SLOTS.some((s) => s.path === "/circles")).toBe(false);
   });
 

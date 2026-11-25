@@ -13,7 +13,6 @@
  */
 import {
   Scroll,
-  Heart,
   User,
   MessageCircle,
   UserPlus,
@@ -26,8 +25,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
-import { GoldenSpiral, Lotus, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { GoldenSpiral, Tripoint } from "@/components/sacred/glyphs";
+import { Cell, EarthshipDome, HeartLeaf, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -89,11 +88,13 @@ export const CHOOSE_PATH_HREF = { signedIn: "/profile#sheet-paths", visitor: "/p
  * Exactly five slots. Four routes plus More, which opens the existing header
  * drawer rather than duplicating it as a second full menu.
  */
+// The lead, 25 Nov 2026: the reader's own path sits next to Home and Quests moves to fourth; Home is
+// the earthship dome and the gratitude wall the two leaves that meet as a heart, as everywhere else.
 export const TAB_SLOTS: TabSlot[] = [
-  { path: "/", label: "Home", Icon: Lotus },
-  { path: "/quests", label: "Quests", Icon: SteppingStones },
-  { path: "/gratitude", label: "Gratitude", Icon: Heart, token: "recognition" },
+  { path: "/", label: "Home", Icon: EarthshipDome },
   PATH_SLOT,
+  { path: "/gratitude", label: "Gratitude", Icon: HeartLeaf, token: "recognition" },
+  { path: "/quests", label: "Quests", Icon: SteppingStones },
   { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 
