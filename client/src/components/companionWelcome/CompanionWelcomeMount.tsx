@@ -50,14 +50,25 @@ async function read<T>(path: string): Promise<T | null> {
  */
 function whenNoModal(go: () => void): () => void {
   let clear = 0;
+  // A tap, a key or a scroll starts the wait again, so the welcome never opens
+  // over a hand that is mid-gesture and swallows its tap (QA, 25 Nov 2026).
+  const busy = () => {
+    clear = 0;
+  };
+  const events = ["pointerdown", "keydown", "wheel", "touchmove"] as const;
+  for (const e of events) window.addEventListener(e, busy, { passive: true, capture: true });
+  const stop = () => {
+    window.clearInterval(id);
+    for (const e of events) window.removeEventListener(e, busy, { capture: true });
+  };
   const id = window.setInterval(() => {
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) clear = 0;
     else if (++clear >= 3) {
-      window.clearInterval(id);
+      stop();
       go();
     }
   }, 500);
-  return () => window.clearInterval(id);
+  return stop;
 }
 
 export default function CompanionWelcomeMount({ firstName, onTab }: { firstName: string; onTab: (t: ProfileTab) => void }) {

@@ -38,10 +38,12 @@ export default function ThemeSwitch({ live = MODES_LIVE }: { live?: boolean }) {
     mode === "light"
       ? t({ message: "Light", context: "site header: under the mode switch, the mode the page is in" })
       : t({ message: "Dark", context: "site header: under the mode switch, the mode the page is in" });
+  // The name read aloud starts with the word on screen, so a voice user who
+  // says "Light" reaches it (WCAG 2.5.3, QA 25 Nov 2026), then says what a tap does.
   const action =
     next === "dark"
-      ? t({ message: "Switch to dark mode", context: "site header: the mode switch, read aloud" })
-      : t({ message: "Switch to light mode", context: "site header: the mode switch, read aloud" });
+      ? t({ message: "Light mode: switch to dark", context: "site header: the mode switch, read aloud; it starts with the word shown under the switch" })
+      : t({ message: "Dark mode: switch to light", context: "site header: the mode switch, read aloud; it starts with the word shown under the switch" });
 
   return (
     <button
