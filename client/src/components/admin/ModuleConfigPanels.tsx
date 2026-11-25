@@ -45,6 +45,26 @@ const btnCls =
  * Exported so a panel kept in its own file (`SaberraConfigPanel.tsx`) saves
  * through this same re-read-then-write path instead of a second one.
  */
+/**
+ * Fill a panel's boxes from the stored config in the SAME render that first
+ * shows them, and again whenever the stored config changes (a load, a save).
+ *
+ * This was an effect, `useEffect(reset, [config])`, and an effect runs after
+ * the paint: for one frame the boxes showed their defaults, and an edit made
+ * in that frame was overwritten when the effect landed, so the save bar never
+ * rose for it. A loaded runner made that frame long enough for a test to type
+ * into (ModuleConfigPanels.saveBar.test.tsx, 1.3.74 batch). Setting state
+ * while rendering, keyed on what was last seen, is React's documented way to
+ * adjust state when an input changes, and it leaves no frame in between.
+ */
+export function useSeedFrom(config: unknown, seed: () => void) {
+  const [seen, setSeen] = useState<unknown>(undefined);
+  if (seen !== config) {
+    setSeen(config);
+    seed();
+  }
+}
+
 export function useModuleConfig(moduleId: string, password: string) {
   const [config, setConfig] = useState<any>(null);
   const [lifecycle, setLifecycle] = useState<string>("off");
@@ -201,7 +221,7 @@ export function CrowdpoolCampaignsEditor({ password, onSaved }: { password: stri
   const { config, lifecycle, loading, write } = useModuleConfig("crowdpool", password);
   const [rows, setRows] = useState<CampaignRow[]>([]);
 
-  useEffect(() => { setRows(toRows(config?.villageCampaigns)); }, [config]);
+  useSeedFrom(config, () => setRows(toRows(config?.villageCampaigns)));
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
@@ -374,7 +394,7 @@ export function CategoryListEditor({
   const { config, lifecycle, loading, write } = useModuleConfig(moduleId, password);
   const [rows, setRows] = useState<CategoryRow[]>([]);
 
-  useEffect(() => { setRows(toCategories(config?.categories)); }, [config]);
+  useSeedFrom(config, () => setRows(toCategories(config?.categories)));
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
@@ -478,7 +498,7 @@ export function ResourcesRoutingEditor({ password }: { password: string }) {
     setCategory(r.requestCategory);
     setVisibleTo(r.measuredVisibleTo);
   };
-  useEffect(reset, [config]);
+  useSeedFrom(config, reset);
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
 
@@ -566,7 +586,7 @@ export function AutomationConfigEditor({ password }: { password: string }) {
     setQueue(String(config?.maxReadyQueue ?? 15));
     setCategory(String(config?.forumCategory ?? ""));
   };
-  useEffect(reset, [config]);
+  useSeedFrom(config, reset);
   const automationPayload = (c: string, q: string, f: string) => ({ youtubeChannelId: c.trim(), maxReadyQueue: Number(q), forumCategory: f.trim() });
 
   if (loading) return <p className="text-sm text-gray-500"><Trans context="ModuleConfigPanels, p">Loading…</Trans></p>;
