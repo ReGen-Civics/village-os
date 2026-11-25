@@ -1,0 +1,57 @@
+{
+  "synthetic": true,
+  "name": "needs-a-held-card-is-held-with-it",
+  "why": "The role's creation is held (already live), so the card that needs it is held too, never shown as ready.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "setting",
+      "target": {
+        "method": "POST",
+        "path": "/api/admin/org/roles"
+      },
+      "body": {
+        "name": "Water Steward"
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z",
+      "provides": [
+        "role:water-steward"
+      ]
+    },
+    {
+      "id": "s2",
+      "stream": "agent",
+      "filer": "p-other",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water-steward"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "context": {
+    "alreadyLive": [
+      "s1"
+    ]
+  },
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "already_live"
+      },
+      {
+        "stagedId": "s2",
+        "code": "waits_on_held"
+      }
+    ]
+  }
+}

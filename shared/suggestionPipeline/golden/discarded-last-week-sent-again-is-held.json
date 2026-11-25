@@ -1,0 +1,139 @@
+{
+  "synthetic": true,
+  "name": "discarded-last-week-sent-again-is-held",
+  "why": "The same change discarded inside the window is held; a reconsider waits for a person to release it; once released it is shown.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "fire"
+      },
+      "body": {
+        "words": {
+          "purpose": "Keeps the hearth."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z",
+      "reconsider": {
+        "code": "B-60.1",
+        "reason": "The circle asked for it."
+      }
+    },
+    {
+      "id": "s3",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "air"
+      },
+      "body": {
+        "words": {
+          "purpose": "Opens the windows."
+        }
+      },
+      "receivedAt": "2026-11-20T10:03:00.000Z",
+      "reconsider": {
+        "code": "B-61.1",
+        "reason": "New evidence from the meeting."
+      }
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water",
+      "role:fire",
+      "role:air"
+    ],
+    "released": [
+      "s3"
+    ],
+    "discarded": [
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "water"
+          },
+          "body": {
+            "words": {
+              "purpose": "Tends the springs."
+            }
+          }
+        },
+        "at": "2026-11-14T09:00:00.000Z",
+        "code": "B-59.1"
+      },
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "fire"
+          },
+          "body": {
+            "words": {
+              "purpose": "Keeps the hearth."
+            }
+          }
+        },
+        "at": "2026-11-15T09:00:00.000Z",
+        "code": "B-60.1"
+      },
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "air"
+          },
+          "body": {
+            "words": {
+              "purpose": "Opens the windows."
+            }
+          }
+        },
+        "at": "2026-11-16T09:00:00.000Z",
+        "code": "B-61.1"
+      }
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s3"
+          ]
+        ]
+      }
+    ],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "recently_discarded"
+      },
+      {
+        "stagedId": "s2",
+        "code": "reconsider_waits"
+      }
+    ]
+  }
+}

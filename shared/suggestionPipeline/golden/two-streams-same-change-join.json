@@ -1,0 +1,56 @@
+{
+  "synthetic": true,
+  "name": "two-streams-same-change-join",
+  "why": "Sera and the connector send the same words for the same role: one card, the first filer leads, both credited.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends  the springs. "
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ]
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "joined",
+        "options": [
+          [
+            "s1",
+            "s2"
+          ]
+        ]
+      }
+    ],
+    "held": []
+  }
+}

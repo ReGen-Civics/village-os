@@ -1,0 +1,62 @@
+{
+  "synthetic": true,
+  "name": "already-live-and-gone-are-held",
+  "why": "A value that is already live, and a target that no longer exists, are held with their reasons.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "old"
+      },
+      "body": {
+        "words": {
+          "purpose": "Gone."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water",
+      "role:old"
+    ],
+    "alreadyLive": [
+      "s1"
+    ],
+    "targetGone": [
+      "s2"
+    ]
+  },
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "already_live"
+      },
+      {
+        "stagedId": "s2",
+        "code": "target_gone"
+      }
+    ]
+  }
+}

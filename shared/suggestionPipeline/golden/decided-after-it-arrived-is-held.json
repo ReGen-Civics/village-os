@@ -1,0 +1,53 @@
+{
+  "synthetic": true,
+  "name": "decided-after-it-arrived-is-held",
+  "why": "A decision on the same field landed after the suggestion arrived: it was written against an older value.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "sera",
+      "filer": "p-sera",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ],
+    "decisions": [
+      {
+        "of": {
+          "kind": "role_card",
+          "target": {
+            "roleId": "water"
+          },
+          "body": {
+            "words": {
+              "purpose": "y"
+            }
+          }
+        },
+        "at": "2026-11-21T08:00:00.000Z",
+        "code": "B-70.1"
+      }
+    ]
+  },
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "decided_since"
+      }
+    ]
+  }
+}

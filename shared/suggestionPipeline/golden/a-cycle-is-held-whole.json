@@ -1,0 +1,60 @@
+{
+  "synthetic": true,
+  "name": "a-cycle-is-held-whole",
+  "why": "Two cards that each need the other can never be ordered: both are held.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "One?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z",
+      "needs": [
+        "x:b"
+      ],
+      "provides": [
+        "x:a"
+      ]
+    },
+    {
+      "id": "s2",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "faq_add",
+      "target": {
+        "pathway": "steward"
+      },
+      "body": {
+        "question": "Two?",
+        "answer": "A."
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z",
+      "needs": [
+        "x:a"
+      ],
+      "provides": [
+        "x:b"
+      ]
+    }
+  ],
+  "expect": {
+    "cards": [],
+    "held": [
+      {
+        "stagedId": "s1",
+        "code": "order_cycle"
+      },
+      {
+        "stagedId": "s2",
+        "code": "order_cycle"
+      }
+    ]
+  }
+}

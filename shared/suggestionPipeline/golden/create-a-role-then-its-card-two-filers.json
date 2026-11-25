@@ -1,0 +1,65 @@
+{
+  "synthetic": true,
+  "name": "create-a-role-then-its-card-two-filers",
+  "why": "When another filer writes the card, it never rides in the creator's batch: it waits on the creation and is accepted on its own.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-agent",
+      "kind": "setting",
+      "target": {
+        "method": "POST",
+        "path": "/api/admin/org/roles"
+      },
+      "body": {
+        "name": "Water Steward"
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z",
+      "provides": [
+        "role:water-steward"
+      ]
+    },
+    {
+      "id": "s2",
+      "stream": "agent",
+      "filer": "p-other",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water-steward"
+      },
+      "body": {
+        "words": {
+          "purpose": "Tends the springs."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    }
+  ],
+  "expect": {
+    "cards": [
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s1"
+          ]
+        ],
+        "batch": 0,
+        "position": 0
+      },
+      {
+        "shape": "one",
+        "options": [
+          [
+            "s2"
+          ]
+        ],
+        "batch": 1,
+        "position": 0,
+        "waitsOn": "s1"
+      }
+    ],
+    "held": []
+  }
+}
