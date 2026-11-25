@@ -99,7 +99,7 @@ describe("the path slot, in the bar", () => {
     expect(slotLink()?.textContent).toBe("Steward");
   });
 
-  it("a visitor sees the seed and is asked to choose, by a name that starts with the label they see", () => {
+  it("a visitor sees the stepping stones and is asked to choose, by a name that starts with the label they see", () => {
     bar();
     const a = slotLink();
     expect(a?.dataset.pathSlot).toBe("");
@@ -107,7 +107,7 @@ describe("the path slot, in the bar", () => {
     expect(a?.getAttribute("href")).toBe("/path");
     expect(a?.getAttribute("aria-label")).toBe("Your path: choose one");
     expect(a?.getAttribute("aria-label")?.startsWith(a?.textContent ?? "")).toBe(true);
-    expect(a?.querySelector("svg")?.getAttribute("class")).toContain("living-seed");
+    expect(a?.querySelector("svg")?.getAttribute("class")).toContain("living-stepping-stones");
   });
 
   it("is lit on the profile, where its door leads", () => {

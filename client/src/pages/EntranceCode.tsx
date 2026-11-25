@@ -15,10 +15,12 @@ import Layout from "@/components/Layout";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { TOKEN_KEY } from "@/lib/gameApi";
 import { writeStored } from "@/lib/safeStorage";
+import EntranceBackdrop, { FLOATING } from "@/components/EntranceBackdrop";
+import type { EntranceBackdrop as EntranceBackdropValue } from "@shared/entrance";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
 import { CODE_LENGTH, RESEND_AFTER_MS, cleanCode } from "@shared/entrance";
 
-export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: string; next: string; onChangeEmail: () => void }) {
+export default function EntranceCode({ sentTo, next, onChangeEmail, backdrop = null }: { sentTo: string; next: string; onChangeEmail: () => void; backdrop?: EntranceBackdropValue | null }) {
   const { t } = useLingui();
   const ids = useId();
   const [code, setCode] = useState("");
@@ -88,7 +90,8 @@ export default function EntranceCode({ sentTo, next, onChangeEmail }: { sentTo: 
   return (
     <Layout>
       <div className={WORLD}>
-        <section className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance-code="">
+        {backdrop && <EntranceBackdrop backdrop={backdrop} />}
+        <section className={`container flex max-w-2xl flex-col gap-8 py-12 sm:py-20 ${backdrop ? FLOATING : ""}`} data-entrance-code="">
           <form onSubmit={submit} noValidate className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-h`}>
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <KeyRound className="size-6" />

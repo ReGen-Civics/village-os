@@ -25,7 +25,8 @@ import SeatHistory from "@/components/power/SeatHistory";
 import LeadBuilds, { buildsFor } from "@/components/roleCard/LeadBuilds";
 import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/QuickPath";
 import { useAuth } from "@/contexts/AuthContext";
-import { useModule } from "@/modules/ModuleProvider";
+import { useModule, useModuleOn } from "@/modules/ModuleProvider";
+import { useNewcomerOrVisitor } from "@/lib/newcomer";
 import { seatHistoryShown } from "@shared/roleSheetInputs";
 import { heldButRecruiting } from "@shared/roleListing";
 import { gameFetch } from "@/lib/gameApi";
@@ -55,6 +56,11 @@ export default function RoleShare() {
   const { t } = useLingui();
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  // The propose doors lead to the role-proposal form, which needs the governance module and a member
+  // (whole-app QA, 25 Nov 2026): a visitor on a shared link was sent to a sign-in or module-off card.
+  const governanceOn = useModuleOn("governance");
+  const newcomer = useNewcomerOrVisitor();
+  const mayPropose = governanceOn && !newcomer;
   // Who may say what a seat is held for; the server refuses everybody else by itself.
   const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
   // Whose words the vendor panel shows: the listing's, so no connector is named here.
@@ -152,6 +158,7 @@ export default function RoleShare() {
                 <Suspense fallback={null}>
                   <div className="flex flex-col gap-4" data-role-page-record="">
                     <RoleHolderCards role={role} />
+                    {mayPropose && (
                     <div className="flex flex-wrap gap-3">
                       <Link href={proposeRoleHref(String(role.id))} className={BTN_NOTICE}>
                         {t`Propose this role for next season`}
@@ -162,6 +169,7 @@ export default function RoleShare() {
                         </Link>
                       )}
                     </div>
+                    )}
                     <RaiseTension roleId={String(role.id)} roleName={String(role.name ?? "")} />
                     {/* The seat's whole record, ended holdings included. */}
                     <div className="border-t border-border pt-4">

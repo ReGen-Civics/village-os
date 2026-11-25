@@ -19,8 +19,8 @@ export type InboxSource = (typeof INBOX_SOURCES)[number];
  * then work and duties, then the desks. Every source has a place; a source with nothing waiting draws nothing.
  */
 export const INBOX_ORDER: readonly InboxSource[] = [
-  "vote", "consent", "application", "open",
-  "connector", "intake", "sera", "approval", "agent", "structure", "change", "suggestion", "quest",
+  "vote", "structure", "consent", "application", "open",
+  "connector", "intake", "sera", "approval", "agent", "change", "suggestion", "quest",
   "claim", "task", "handoff", "tension", "hand",
   "recap", "owed", "cash", "mint", "cycle", "cosign", "letter", "assistant", "feedback", "vouch", "erasure",
 ];

@@ -57,6 +57,7 @@ import CommitmentChip from "@/components/roleCard/CommitmentChip";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS } from "@shared/otherWays";
 import { useNewcomerOrVisitor } from "@/lib/newcomer";
+import { useModuleOn } from "@/modules/ModuleProvider";
 import { useStoryPageShown } from "@/lib/brochure";
 import OtherWaysTiles from "@/components/roles/OtherWaysTiles";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
@@ -482,6 +483,10 @@ export default function Roles() {
   // QA pass, 25 Nov 2026): the member's door it used to fall back to is closed to them.
   const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
   const newcomer = useNewcomerOrVisitor();
+  // Doors that open only while their module does (whole-app QA, 25 Nov 2026): /events and the
+  // role-proposal form each ship off, and a fresh village was sending newcomers to a module-off card.
+  const eventsOn = useModuleOn("events");
+  const governanceOn = useModuleOn("governance");
   const storyShown = useStoryPageShown();
   // Arriving on /roles#founding-team, #open-ventures or #four-ways lands on the section once it is drawn, and holds it
   // there while the founding team above it finishes drawing (sectionAnchor.ts).
@@ -701,18 +706,22 @@ export default function Roles() {
                     {t({ message: "We're filling the founding team first, so it may be a while before we reply. You're welcome to apply now, and we'll write to you as soon as we're ready to talk.", context: "roles page, roles after the founding team" })}
                   </p>
                   {/* Hear first about new roles (Rye, 15 Nov 2026): the community calls, and the newsletter when the village has one. */}
+                  {(eventsOn || otherWays.newsletter) && (
                   <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground" data-hear-first="">
                     {t({ message: "Hear first about new opportunities:", context: "roles page, roles after the founding team" })}{" "}
-                    <Link href="/events" className={LINK}>{t({ message: "join a community call", context: "roles page, roles after the founding team" })}</Link>
-                    {otherWays.newsletter ? (
+                    {eventsOn && <Link href="/events" className={LINK}>{t({ message: "join a community call", context: "roles page, roles after the founding team" })}</Link>}
+                    {eventsOn && otherWays.newsletter ? (
                       <>
                         {" "}
                         {t({ message: "and", context: "roles page, hear first: join a call and sign up" })}{" "}
-                        <a href={otherWays.newsletter} target="_blank" rel="noopener noreferrer" className={LINK}>{t({ message: "sign up for our newsletter", context: "roles page, roles after the founding team" })}</a>
                       </>
+                    ) : null}
+                    {otherWays.newsletter ? (
+                      <a href={otherWays.newsletter} target="_blank" rel="noopener noreferrer" className={LINK}>{t({ message: "sign up for our newsletter", context: "roles page, roles after the founding team" })}</a>
                     ) : null}
                     .
                   </p>
+                  )}
                   <div className={ROWS}>
                     {openingNext.map((role, i) => (
                       <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} />
@@ -741,7 +750,9 @@ export default function Roles() {
                 ) : (
                   <p className={`${TILE} text-sm text-muted-foreground`} data-ventures-none="">
                     {t({ message: "No venture is open yet. When the village opens one, it shows here.", context: "roles page, no open venture" })}{" "}
-                    <Link href="/role-proposals/new" className={LINK} data-ventures-propose="">{t({ message: "Have one in mind? Propose it.", context: "roles page, no open venture: propose one as a new role" })}</Link>
+                    {!newcomer && governanceOn && (
+                      <Link href="/role-proposals/new" className={LINK} data-ventures-propose="">{t({ message: "Have one in mind? Propose it.", context: "roles page, no open venture: propose one as a new role" })}</Link>
+                    )}
                   </p>
                 )}
               </section>

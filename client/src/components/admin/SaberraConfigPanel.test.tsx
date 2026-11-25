@@ -150,7 +150,7 @@ describe("the address", () => {
     window.addEventListener("module:saved", saved);
     renderPanel();
     fireEvent.change(await serviceField(), { target: { value: " https://village.example.org/mcp " } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     await waitFor(() => expect(callsTo("/api/admin/modules/saberra/config", "PUT")).toHaveLength(1));
     const [, init] = callsTo("/api/admin/modules/saberra/config", "PUT")[0]!;
     expect(JSON.parse(init.body).config.apiUrl).toBe("https://village.example.org/mcp");
@@ -163,7 +163,7 @@ describe("the address", () => {
   it("REFUSES AN HTTP ADDRESS IN THE BROWSER, and sends nothing until it is https", async () => {
     renderPanel();
     fireEvent.change(await serviceField(), { target: { value: "http://village.example.org/mcp" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     const shown = await screen.findByRole("alert");
     // The server's own sentence, from the validator the save route runs.
     expect(shown.textContent).toBe("The service address has to be an https link.");
@@ -171,7 +171,7 @@ describe("the address", () => {
 
     // The control: the same field and button, with https, does send.
     fireEvent.change(await serviceField(), { target: { value: "https://village.example.org/mcp" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     await waitFor(() => expect(callsTo("/api/admin/modules/saberra/config", "PUT")).toHaveLength(1));
   });
 
@@ -186,7 +186,7 @@ describe("the address", () => {
     renderPanel();
     await waitFor(() => expect((screen.getByLabelText(/Dashboard address/) as HTMLInputElement).value).toBe("https://d1.example.org"));
     fireEvent.change(await serviceField(), { target: { value: "https://a2.example.org" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     await waitFor(() => expect(callsTo("/api/admin/modules/saberra/config", "PUT")).toHaveLength(1));
     const sent = JSON.parse(callsTo("/api/admin/modules/saberra/config", "PUT")[0]![1].body).config;
     expect(sent).toEqual({ apiUrl: "https://a2.example.org", dashboardUrl: "https://d2.example.org" });
@@ -200,7 +200,7 @@ describe("the address", () => {
     renderPanel();
     await waitFor(() => expect((screen.getByLabelText(/Service address/) as HTMLInputElement).value).toBe("https://old.example.org"));
     fireEvent.change(screen.getByLabelText(/Dashboard address/), { target: { value: "https://d3.example.org" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     await waitFor(() => expect(callsTo("/api/admin/modules/saberra/config", "PUT")).toHaveLength(1));
     const sent = JSON.parse(callsTo("/api/admin/modules/saberra/config", "PUT")[0]![1].body).config;
     expect(sent).toEqual({ apiUrl: "https://new.example.org", dashboardUrl: "https://d3.example.org" });
@@ -209,7 +209,7 @@ describe("the address", () => {
   it("refuses an http dashboard address the same way", async () => {
     renderPanel();
     fireEvent.change(await screen.findByLabelText(/Dashboard address/), { target: { value: "http://dash.example.org" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save addresses" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Save" }));
     expect((await screen.findByRole("alert")).textContent).toContain("dashboard address has to be an https link");
     expect(callsTo("/api/admin/modules/saberra/config", "PUT")).toHaveLength(0);
   });

@@ -15,6 +15,7 @@ import { ACCOUNT_WORDS, NAME_MAX, PASSWORD_MAX, PASSWORD_MIN } from "@shared/acc
 import { andList } from "@shared/openProposals";
 import { useLingui } from "@lingui/react/macro";
 import { useAppWords } from "@/hooks/useAppWords";
+import { useModuleOn } from "@/modules/ModuleProvider";
 
 /** What the server said about the invitation link this page was opened with. */
 interface InviteCheck {
@@ -47,6 +48,8 @@ function inviteFromAddress(): string {
 function InvitationNeeded({ villageName, reason }: { villageName: string; reason?: string }) {
   const word = useAppWords();
   const { t } = useLingui();
+  // The calls door opens only while the calendar does (whole-app QA, 25 Nov 2026): events ships off.
+  const eventsOn = useModuleOn("events");
   return (
     <section aria-labelledby="invitation-needed" className={`${CARD} space-y-5`}>
       {reason && (
@@ -62,7 +65,9 @@ function InvitationNeeded({ villageName, reason }: { villageName: string; reason
       </p>
       <p className={LEDE}>
         {word("joining", "withoutLink") ??
-          t({ message: "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step.", context: "register, invitation needed" })}
+          (eventsOn
+            ? t({ message: "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step.", context: "register, invitation needed" })
+            : t({ message: "No link yet? Ask to join, and someone from the village will reach out.", context: "register, invitation needed, no calendar" }))}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <a
@@ -72,13 +77,15 @@ function InvitationNeeded({ villageName, reason }: { villageName: string; reason
           {word("joining", "askButton") ?? t({ message: "Ask to join", context: "register, invitation needed: the button" })}
           <ArrowRight className="w-5 h-5" aria-hidden="true" />
         </a>
-        <a
-          href="/events"
-          className={BTN_NOTICE}
-        >
-          <CalendarDays className="w-5 h-5" aria-hidden="true" />
-          {t({ message: "See calls and events", context: "register, invitation needed: the second button" })}
-        </a>
+        {eventsOn && (
+          <a
+            href="/events"
+            className={BTN_NOTICE}
+          >
+            <CalendarDays className="w-5 h-5" aria-hidden="true" />
+            {t({ message: "See calls and events", context: "register, invitation needed: the second button" })}
+          </a>
+        )}
       </div>
     </section>
   );

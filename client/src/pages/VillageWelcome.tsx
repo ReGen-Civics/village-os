@@ -19,7 +19,7 @@ import SeasonBanner from "@/components/SeasonBanner";
 import { Image } from "@/components/Image";
 import { Link } from "wouter";
 import { Heart } from "lucide-react";
-import { CouncilCircle, SteppingStones } from "@/components/sacred/living";
+import { CouncilCircle, LeafCompass } from "@/components/sacred/living";
 import { altOr, useBrandImages, useGameConfig } from "@/lib/gameApi";
 import { useVillageLocation, useVillageName } from "@/hooks/useVillageName";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,8 +32,8 @@ const doors = (tokenName: string) => [
     href: "/quests",
     title: "Quests",
     body: "The work this village needs, open for anyone.",
-    // The quests' one mark, as the tab bar draws it (QA, 25 Nov 2026).
-    Icon: SteppingStones,
+    // The quests' one mark, as the tab bar draws it (the leaf compass; the lead, 25 Nov 2026).
+    Icon: LeafCompass,
   },
   {
     href: "/gratitude",

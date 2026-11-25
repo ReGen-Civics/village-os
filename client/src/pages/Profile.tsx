@@ -71,8 +71,8 @@ import StagePanel from "@/components/profileDash/StagePanel";
 import TodayStrip from "@/components/profileDash/TodayStrip";
 const TodayCard = lazy(() => import("@/components/todayCard/TodayCard"));
 import AsksPanel from "@/components/asks/AsksPanel";
+import FollowUps from "@/components/followUps/FollowUps";
 import MyWeekCard from "@/components/priorities/MyWeekCard";
-import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
 import CompanionCorner from "@/components/profileDash/CompanionCorner";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
 import LevelUpMoment from "@/components/profileDash/LevelUpMoment";
@@ -437,6 +437,13 @@ export default function Profile() {
     : null;
   const claimedQuests = (me?.quests ?? []).filter((q) => q.status === "claimed" || q.status === "submitted");
   const tabOf = (mine: ProfileTab | readonly ProfileTab[]) => phoneTab(tab, mine);
+  /** A follow-up row that lives further down: show its tab (a phone hides the others), then bring it into view.
+      A task's own hash is the board's to answer (it opens the card itself). */
+  const openFromFollowUps = (href: string) => {
+    setTab(href === "#roles" ? "roles" : "quests");
+    if (href.startsWith("#task-")) return;
+    window.requestAnimationFrame(() => document.getElementById(href.slice(1))?.scrollIntoView({ block: "start" }));
+  };
 
   return (
     <Layout>
@@ -583,9 +590,11 @@ export default function Profile() {
 
             {/* HOW MUCH YOU GIVE (0383) moved onto the Your roles card (RolesCommitment), off the front of the page (Rye, 14 Nov 2026). */}
 
-            {/* ASKED OF YOU: what other members asked this member, and what they asked (shared/memberAsks.ts). */}
-            <div id="waiting" className={`scroll-mt-28 ${tabOf("today")}`}>
-              <AsksPanel />
+            {/* FOLLOW-UPS, ONE LIST (Direction D): your tasks, your roles' tasks, what members asked of you, and
+                what you wait on from others, grouped Today, Coming up and Waiting on others. Each row opens where
+                it lives in full: the task board and the asks panel below, the role on the roles band. */}
+            <div className={`scroll-mt-28 empty:hidden ${tabOf("today")}`}>
+              <FollowUps sessionsOn={sessionsOn} onGo={openFromFollowUps} />
             </div>
 
             {/* THIS WEEK AND YOUR ASKS (shared/priorities.ts): your top priority, and where what you asked of a role sits. */}
@@ -594,9 +603,7 @@ export default function Profile() {
                 <MyWeekCard />
               </div>
             )}
-            <div className={`empty:hidden ${tabOf("today")}`}>
-              <RaisedAsksCard />
-            </div>
+            {/* WHAT YOU ASKED OF A ROLE is a row of Follow-ups now, under Waiting on others. */}
 
             {/* YOUR COMPANIONS stand in the corner now (CompanionCorner, Direction D), drawn with MoonDock below. */}
 
@@ -642,8 +649,14 @@ export default function Profile() {
                 {/* The quest log: every task taken on in a live session, what
                     this member's roles hold, and what waits on a power they
                     hold. Emails and notices land on #my-tasks. */}
-                <div className={tabOf(["today", "quests"])}>
+                {/* On Today, Follow-ups carries what waits on you; the quest log keeps its short count. */}
+                <div className={tabOf("quests")}>
                   <TasksWaitingCard enabled={sessionsOn} />
+                </div>
+                {/* ASKED OF YOU in full: Done, Not mine, your own asks and "Ask someone" (shared/memberAsks.ts).
+                    Follow-ups links its ask rows here. */}
+                <div id="waiting" className={`scroll-mt-28 ${tabOf("quests")}`}>
+                  <AsksPanel />
                 </div>
                 {(sessionsOn || governanceOn) && (
                   <div id={TASK_BOARD_ANCHOR} className={`scroll-mt-28 ${tabOf("quests")}`}>

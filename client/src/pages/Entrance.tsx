@@ -32,6 +32,8 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
+import EntranceBackdrop, { FLOATING } from "@/components/EntranceBackdrop";
+import type { EntranceBackdrop as EntranceBackdropValue } from "@shared/entrance";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { suggestEmail } from "@shared/emailCheck";
@@ -102,7 +104,7 @@ function HumanCheck({ siteKey, onToken, locale }: { siteKey: string; onToken: (t
   );
 }
 
-export default function Entrance({ next, siteKey, privacyContact = "", codes = false }: { next: string; siteKey: string | null; privacyContact?: string; codes?: boolean }) {
+export default function Entrance({ next, siteKey, privacyContact = "", codes = false, backdrop = null }: { next: string; siteKey: string | null; privacyContact?: string; codes?: boolean; backdrop?: EntranceBackdropValue | null }) {
   const { t, i18n } = useLingui();
   const village = useVillageName();
   const { contactEmail, siteUrl } = useVillageLinks();
@@ -157,7 +159,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
           turnstileToken: token,
           website,
           shownAt: shownAt.current,
-          consentWords: Array.from(privacy.current?.querySelectorAll("p") ?? []).map((p) => p.textContent ?? "").join("\n\n"),
+          consentWords: Array.from(privacy.current?.querySelectorAll("p, li") ?? []).map((p) => p.textContent ?? "").join("\n\n"),
         }),
       });
       const body = (await res.json().catch(() => null)) as { next?: string | null; field?: EntranceProblem; message?: string; code?: { sentTo: string } | null } | null;
@@ -178,10 +180,10 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
   };
 
   const interestWords: Record<Interest, string> = {
-    seeder: t({ message: "Becoming a founding seeder", context: "portal entrance: what draws you, a founding seeder" }),
+    seeder: t({ message: 'Becoming a "Founding Seeder"', context: "portal entrance: what draws you, a founding seeder" }),
     home: t({ message: "A home here", context: "portal entrance: what draws you, a home" }),
     visit: t({ message: "Visiting", context: "portal entrance: what draws you, a visit" }),
-    role: t({ message: "A role on the team", context: "portal entrance: what draws you, a role" }),
+    role: t({ message: "A role on our team", context: "portal entrance: what draws you, a role" }),
     curious: t({ message: "Just curious", context: "portal entrance: what draws you, curiosity" }),
   };
 
@@ -195,7 +197,8 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
   return (
     <Layout>
       <div className={WORLD}>
-        <section className="container flex max-w-2xl flex-col gap-8 py-12 sm:py-20" data-entrance="">
+        {backdrop && <EntranceBackdrop backdrop={backdrop} />}
+        <section className={`container flex max-w-2xl flex-col gap-8 py-12 sm:py-20 ${backdrop ? FLOATING : ""}`} data-entrance="">
           <header className="flex flex-col gap-4">
             <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
               <DoorOpen className="size-6" />
@@ -204,7 +207,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
             <h1 className={H1}>{t({ message: `Welcome to ${village}`, context: "portal entrance: heading, with the village's name" })}</h1>
             <p className={LEDE}>
               {t({
-                message: "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens.",
+                message: 'Just inside are the village\'s roles, its "game" and the work of building it together. We share a lot about who we are and how we co-create, so we\'d like to know a bit about you too!',
                 context: "portal entrance: what is inside, and what is asked",
               })}
             </p>
@@ -232,7 +235,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
 
             <div className="flex flex-col gap-2">
               <label htmlFor={fieldId("name")} className={LABEL}>
-                {t({ message: "Your name", context: "portal entrance: name field" })}
+                {t({ message: "Name or Nickname", context: "portal entrance: name field" })}
               </label>
               <input id={fieldId("name")} name="name" autoComplete="name" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} className={`${FIELD} min-h-11`} {...invalid("name")} />
             </div>
@@ -296,33 +299,33 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
 
             {siteKey && <HumanCheck siteKey={siteKey} onToken={setToken} locale={i18n.locale} />}
 
-            {/* The lead's own words (24 Nov 2026), paragraph by paragraph. For legal review (Law 8968). */}
+            {/* The lead's own words (24 Nov 2026), as a list since 25 Nov at the lead's ask. For legal review (Law 8968). */}
             <div ref={privacy} className={`${HINT} flex flex-col gap-2`} data-privacy="">
-              <p>
-                {t({
-                  message: `Hi friend; we keep what you type here - so it's saved for you - and which pages you open while you explore, so we know who is visiting ${village} and can follow up with you.`,
-                  context: "portal entrance: the privacy line, first paragraph, in the lead's own words",
-                })}
-              </p>
-              {codes && (
-                <p>
+              <p>{t({ message: "Hi friend:", context: "portal entrance: the privacy list, its greeting" })}</p>
+              <ul className="flex list-disc flex-col gap-1 pl-5">
+                <li>{t({ message: "We keep what you type here, so it's saved for you.", context: "portal entrance: the privacy list, what you type" })}</li>
+                <li>
                   {t({
-                    message: "We email you a code to confirm your address - which you need to do if you want to go further in the process and stay in touch.",
-                    context: "portal entrance: the privacy line, the code by email, shown only while the village sends codes",
+                    message: `We note which pages you open while you explore, so we know who is visiting ${village} and can follow up with you.`,
+                    context: "portal entrance: the privacy list, the pages opened, with the village's name",
                   })}
-                </p>
-              )}
-              <p>
-                {t({
-                  message: "If you say yes to updates on the next step, we also add you to our email list, kept with an email service. We never sell any of it.",
-                  context: "portal entrance: the privacy line, the email list",
-                })}
-              </p>
-              <p>
-                {contact
-                  ? t({ message: `To see it or have it deleted, write to ${contact}.`, context: "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact" })
-                  : t({ message: "To see it or have it deleted, ask anyone at the village.", context: "portal entrance: the privacy line, how to see or delete it, when the village has no contact address" })}
-              </p>
+                </li>
+                {codes && (
+                  <li>
+                    {t({
+                      message: "We email you a code to confirm your address, which you need to do if you want to go further in the process and stay in touch.",
+                      context: "portal entrance: the privacy list, the code by email, shown only while the village sends codes",
+                    })}
+                  </li>
+                )}
+                <li>{t({ message: "If you say yes to updates on the next step, we also add you to our email list, kept with an email service.", context: "portal entrance: the privacy list, the email list" })}</li>
+                <li>{t({ message: "We never sell any of it.", context: "portal entrance: the privacy list, never sold" })}</li>
+                <li>
+                  {contact
+                    ? t({ message: `To see it or have it deleted, write to ${contact}.`, context: "portal entrance: the privacy line, how to see or delete it, with the village's privacy contact" })
+                    : t({ message: "To see it or have it deleted, ask anyone at the village.", context: "portal entrance: the privacy line, how to see or delete it, when the village has no contact address" })}
+                </li>
+              </ul>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

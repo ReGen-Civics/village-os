@@ -67,11 +67,12 @@ import { APPROVAL_FIELDS, readLeadApproval } from "../../shared/agentAdmin";
 import { ACCEPT_PROPOSAL_WORDS, approvalCovers, FULL_ACCESS_WORDS, fullAccessFloor } from "../../shared/agentFullAccess";
 import { fullAccessFor } from "../lib/agentFullAccess";
 import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
-import { staleAgainst, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
+import { footprintOf, overlaps, staleAgainst, staleVersionOf, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
 import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
 import { seatTermsRead } from "../../shared/seatTermsProposal";
 import { listOrgRoles } from "../lib/orgChart";
-import { recordChangeOutcome } from "../lib/suggestionOutcome";
+import { recordChangeOutcome, recordStagedOutcome } from "../lib/suggestionOutcome";
+import { closeStaged, heldOf, releaseReconsider, stagedById, type StagedRow } from "../repos/suggestionStaging";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -93,6 +94,17 @@ const acceptedRecord = (c: store.StoredChange): AcceptedRecord => ({
 /** The accepts since this change was proposed that wrote what it writes (shared/proposalConflicts.ts). */
 const staleOf = (c: store.StoredChange, body: Record<string, unknown>, accepted: readonly AcceptedRecord[]): StaleBy[] =>
   staleAgainst({ id: c.id, at: c.createdAt, kind: c.kind, target: c.target, route: { method: c.routeMethod, path: c.routePath }, body }, accepted);
+
+/**
+ * The other waiting changes that write what this one would write, with the body each would be accepted with (the
+ * person's saved edits when there are any). These are the options a person chooses between.
+ */
+async function waitingRivals(pool: Parameters<typeof store.listOpen>[0], c: store.StoredChange, body: Record<string, unknown>): Promise<store.StoredChange[]> {
+  const mine = footprintOf(c.kind, c.target, { method: c.routeMethod, path: c.routePath }, body);
+  if (!mine) return [];
+  const { changes } = await store.listOpen(pool);
+  return changes.filter((o) => o.id !== c.id && overlaps(mine, footprintOf(o.kind, o.target, { method: o.routeMethod, path: o.routePath }, o.draft ?? o.body)));
+}
 
 /** The powers whose holders open the page besides an admin. */
 const READERS = ["story.tell", "org.decide", "org.seat", "dial.set"] as const;
@@ -498,7 +510,7 @@ export function register(app: Express, deps: Deps): void {
     res.json({ results });
   });
 
-  type AcceptResult = { id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: StaleBy[]; code?: string };
+  type AcceptResult = { id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: StaleBy[]; code?: string; rivals?: { id: string; summary: string }[]; otherChosen?: string[] };
   /** Who an accept is recorded as: the person on the review page, or the full-access agent acting on their approval. */
   interface AcceptAs {
     actorKind: "human" | "agent";
@@ -531,6 +543,20 @@ export function register(app: Express, deps: Deps): void {
     const staleOut = stale.length ? { stale } : {};
     // The latest edits are kept even when the change fails, so fixing it starts from them.
     if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
+    // CONFLICTS BLOCK (the lead, 25 Nov 2026). Another waiting change that writes the same thing makes this one
+    // option among several: it is accepted only when the accept names every other option it is chosen over, and
+    // those are then set aside as another option chosen. The full-access agent's accept never names them, so a
+    // person always makes the choice.
+    const over = new Set(Array.isArray(obj(it)?.over) ? (obj(it)!.over as unknown[]).slice(0, 100).map((x) => String(x).slice(0, 60)) : []);
+    const rivals = await waitingRivals(pool, c, body);
+    if (rivals.some((r) => !over.has(r.id))) {
+      return { id, ok: false, error: REVIEW_WORDS.chooseFirst, field: null, code: "choose_first", rivals: rivals.map((r) => ({ id: r.id, summary: r.summary })), ...staleOut };
+    }
+    // A STALE CHANGE IS SEEN FIRST (the lead, 25 Nov 2026): the accept carries the version of what is live now that
+    // the person was shown, and an accept that landed since makes it a different version, refused.
+    if (stale.length && String(obj(it)?.seen ?? "") !== staleVersionOf(stale)) {
+      return { id, ok: false, error: REVIEW_WORDS.seeLiveFirst, field: null, code: "see_live", stale };
+    }
     // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
     if (!(await store.claimForApplying(pool, id, uid, checked))) return { id, ok: false, error: REVIEW_WORDS.notProposed };
     const kd = kindDeps();
@@ -576,7 +602,15 @@ export function register(app: Express, deps: Deps): void {
       entityRef: id,
       audience: "admin",
     });
-    return { id, ok: true, ...(out.note ? { note: out.note } : {}), ...staleOut };
+    // The other options, set aside only now the chosen one has landed. One that was decided meanwhile is left alone.
+    const otherChosen: string[] = [];
+    for (const r of rivals) {
+      if (!(await store.markDiscarded(pool, r.id, uid))) continue;
+      otherChosen.push(r.id);
+      await recordChangeOutcome(pool, r, "other_chosen", 0, as.decidedBy);
+      await recordEvent(pool, { kind: "proposed_change", text: `A proposed change was set aside because another option for the same thing was chosen: ${r.summary.slice(0, 140)}`, actorUserId: uid, actorKind: as.actorKind, entityType: "proposed_change", entityRef: r.id, audience: "admin" });
+    }
+    return { id, ok: true, ...(out.note ? { note: out.note } : {}), ...staleOut, ...(otherChosen.length ? { otherChosen } : {}) };
   }
 
   app.post("/api/admin/proposals/accept", async (req, res) => {
@@ -693,6 +727,63 @@ export function register(app: Express, deps: Deps): void {
     });
     const filedBack = await store.changeById(pool, newId);
     res.json({ success: true, batchId, batchCode: (await store.batchById(pool, batchId))?.code ?? null, id: newId, code: filedBack?.code ?? null, reverts: c.id, applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
+  });
+
+  // ── Held (docs/REVIEW_INBOX_PLAN.md, lane 4b) ─────────────────────────────
+  //
+  // What the engine held back from the connector's stream: a fixed code with fields, never prose, and how long it has
+  // waited. Held items never lapse (the lead, 25 Nov 2026): a person clears each one, or lets a reconsider through.
+
+  /** The held row a person may act on: the connector's own, still held. */
+  const heldRow = async (id: string): Promise<StagedRow | null> => {
+    const row = await stagedById(getPool(), id.slice(0, 48));
+    return row && row.state === "held" && row.staged.stream === "connector" ? row : null;
+  };
+
+  app.get("/api/admin/proposals/held", async (req, res) => {
+    const user = await reader(req, res);
+    if (!user) return;
+    const rows = await heldOf(getPool(), "connector", 200);
+    res.set("Cache-Control", "no-store").json({
+      held: rows.map((r) => ({
+        id: r.staged.id,
+        kind: r.staged.kind,
+        where: whereOf(r.staged.kind, r.staged.target),
+        code: r.heldCode,
+        fields: r.heldFields,
+        receivedAt: r.staged.receivedAt,
+        filerKind: r.filerKind,
+        reconsider: r.staged.reconsider ? { code: r.staged.reconsider.code } : null,
+        released: r.released,
+      })),
+    });
+  });
+
+  app.post("/api/admin/proposals/held/:id/release", async (req, res) => {
+    const user = await person(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    if (await overLimit(`proposals-held:${uid}`, 120, WINDOW)) return res.status(429).json({ error: "too_many" });
+    const row = await heldRow(String(req.params.id ?? ""));
+    if (!row || row.heldCode !== "reconsider_waits") return res.status(409).json({ error: "not_held", message: REVIEW_WORDS.notProposed });
+    const key = await decidingKey(req, uid);
+    if (!(await releaseReconsider(getPool(), row.staged.id, key, new Date()))) return res.status(409).json({ error: "not_held", message: REVIEW_WORDS.notProposed });
+    await recordStagedOutcome(getPool(), row, "released", key);
+    await recordEvent(getPool(), { kind: "proposed_change", text: "A suggestion sent again after a discard was let through to be read", actorUserId: uid, actorKind: "human", entityType: "suggestion_staging", entityRef: row.staged.id, audience: "admin" });
+    res.json({ success: true });
+  });
+
+  app.post("/api/admin/proposals/held/:id/clear", async (req, res) => {
+    const user = await person(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    if (await overLimit(`proposals-held:${uid}`, 120, WINDOW)) return res.status(429).json({ error: "too_many" });
+    const row = await heldRow(String(req.params.id ?? ""));
+    if (!row) return res.status(409).json({ error: "not_held", message: REVIEW_WORDS.notProposed });
+    if (!(await closeStaged(getPool(), row.staged.id, new Date()))) return res.status(409).json({ error: "not_held", message: REVIEW_WORDS.notProposed });
+    await recordStagedOutcome(getPool(), row, "discarded", await decidingKey(req, uid));
+    await recordEvent(getPool(), { kind: "proposed_change", text: "A held suggestion was cleared on the review page", actorUserId: uid, actorKind: "human", entityType: "suggestion_staging", entityRef: row.staged.id, audience: "admin" });
+    res.json({ success: true });
   });
 
   app.post("/api/admin/proposals/discard", async (req, res) => {

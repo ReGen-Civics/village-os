@@ -13,6 +13,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 
+/** The modules this village has on; the calls doors follow events (whole-app QA, 25 Nov 2026). */
+const modulesOn = new Set<string>(["events"]);
+vi.mock("@/modules/ModuleProvider", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/ModuleProvider")>()),
+  useModuleOn: (id: string) => modulesOn.has(id),
+}));
 vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));

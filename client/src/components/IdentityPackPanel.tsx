@@ -5,6 +5,8 @@ import { ART_FIELD_MAX } from "@shared/artDirection";
 import { announceThemeChange } from "@/lib/liveTheme";
 import { Image } from "@/components/Image";
 import { prepareImageForUpload } from "@/lib/imagePrep";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
+import { changedKeys } from "@/lib/unsavedChanges";
 
 /**
  * Admin → Make This Yours → Identity pack: the village's visual identity as
@@ -113,7 +115,8 @@ function ReferenceTile({ reference, onRemove }: { reference: Reference; onRemove
 export default function IdentityPackPanel({ password }: { password: string }) {
   const { t } = useLingui();
   const [pack, setPack] = useState<any>(null);
-  const [saving, setSaving] = useState(false);
+  /** As the server holds it: the page's one save bar counts against this. */
+  const [savedPack, setSavedPack] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [rights, setRights] = useState(false);
   /** The file the picker holds. Held in state, because the button that acts on it only exists once it does. */
@@ -124,7 +127,9 @@ export default function IdentityPackPanel({ password }: { password: string }) {
     try {
       const res = await fetch("/api/admin/brand", { headers: { Authorization: `Bearer ${password}` } });
       const data = await res.json();
-      setPack(data.brand?.identityPack ?? { description: "", never: "", references: [] });
+      const loaded = data.brand?.identityPack ?? { description: "", never: "", references: [] };
+      setPack(loaded);
+      setSavedPack(loaded);
     } catch { toast.error(t({ message: "Could not load the identity pack", context: "IdentityPackPanel, toast" })); }
   }, [password]);
   useEffect(() => { load(); }, [load]);
@@ -134,11 +139,10 @@ export default function IdentityPackPanel({ password }: { password: string }) {
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const save = async () => {
+  const save = async (): Promise<SaveResult> => {
     if ((pack.references?.length ?? 0) > 0 && !pack.rightsAck && !rights) {
-      return toast.error(t({ message: "Please confirm your project holds rights to the reference files first", context: "IdentityPackPanel, toast" }));
+      return { ok: false, reason: t({ message: "Please confirm your project holds rights to the reference files first", context: "IdentityPackPanel, toast" }) };
     }
-    setSaving(true);
     try {
       const next = {
         ...pack,
@@ -150,13 +154,14 @@ export default function IdentityPackPanel({ password }: { password: string }) {
         headers: { Authorization: `Bearer ${password}`, "Content-Type": "application/json" },
         body: JSON.stringify({ identityPack: next }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) return { ok: false, reason: t({ message: "Save failed", context: "IdentityPackPanel, toast" }) };
       const data = await res.json();
-      setPack(data.brand?.identityPack ?? next);
+      const stored = data.brand?.identityPack ?? next;
+      setPack(stored);
+      setSavedPack(stored);
       announceThemeChange();
-      toast.success(t({ message: "Identity pack saved", context: "IdentityPackPanel, toast" }));
-    } catch { toast.error(t({ message: "Save failed", context: "IdentityPackPanel, toast" })); }
-    setSaving(false);
+      return { ok: true };
+    } catch { return { ok: false, reason: t({ message: "Save failed", context: "IdentityPackPanel, toast" }) }; }
   };
 
   const upload = async () => {
@@ -193,7 +198,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       };
       setPack({ ...pack, references: [...(pack.references ?? []), reference] });
       clearChoice();
-      toast.success(t({ message: "Reference added. Remember to save", context: "IdentityPackPanel, toast" }));
+      toast.success(t({ message: "Reference added. Save it from the bar at the bottom.", context: "IdentityPackPanel, toast" }));
     } catch (e: any) { toast.error(e.message || "Upload failed"); }
     setUploading(false);
   };
@@ -296,10 +301,12 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       {pack.rightsAck?.at && (
         <p className="text-xs text-gray-400 mb-3"><Trans context="IdentityPackPanel, p">Rights confirmed {String(pack.rightsAck.at).slice(0, 10)}.</Trans></p>
       )}
-      <button onClick={save} disabled={saving}
-        className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium disabled:opacity-50">
-        {saving ? "Saving…" : "Save identity pack"}
-      </button>
+      <SaveBar
+        count={changedKeys(savedPack, pack).length}
+        onSave={save}
+        onDiscard={() => setPack(savedPack)}
+        what={t({ message: "the identity pack", context: "IdentityPackPanel, what the save bar saves" })}
+      />
     </div>
   );
 }

@@ -14,17 +14,14 @@
  * village's own palette draws it.
  */
 import { useState } from "react";
-import { toast } from "sonner";
 import { MapPin } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { LAYERS, VOUCH_WAYS, readConfig, type Layer, type VouchWay } from "@shared/hiddenMap";
 import { WAY_WORDS } from "@/components/hiddenMap/PinPanel";
-import { useModuleConfig } from "./ModuleConfigPanels";
+import { ConfigSaveBar, useModuleConfig } from "./ModuleConfigPanels";
 
 const inputCls =
   "border border-border rounded-lg px-2 py-1.5 text-sm min-h-[44px] w-full focus:outline-none focus:ring-2 focus:ring-teal-deep";
-const saveCls =
-  "min-h-[44px] px-4 text-sm rounded-lg bg-teal-deep text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-teal-deep disabled:opacity-40";
 
 interface Draft {
   title: string;
@@ -72,9 +69,8 @@ export function configFromDraft(d: Draft): Record<string, unknown> {
 
 export default function HiddenMapConfigPanel({ password }: { password: string }) {
   const { t, i18n } = useLingui();
-  const { config, loading, save } = useModuleConfig("hidden-map", password);
+  const { config, loading, write } = useModuleConfig("hidden-map", password);
   const [draft, setDraft] = useState<Draft>(() => draftOf(config));
-  const [saving, setSaving] = useState(false);
   // The draft follows the loaded config IN THE SAME RENDER, never in an effect after it: an
   // effect left a window where the form was on screen with the defaults, and a word typed in
   // that window was overwritten when the effect ran (a red CI shard, 16 Nov 2026).
@@ -170,19 +166,13 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
         <Trans>Each claim it opens is completed by the usual consent on the quest board, and the quest's own reward pays it.</Trans>
       </p>
 
-      <button
-        type="button"
-        className={`${saveCls} mt-4`}
-        disabled={saving}
-        onClick={async () => {
-          setSaving(true);
-          const ok = await save(configFromDraft(draft));
-          setSaving(false);
-          if (ok) toast.success(t`Saved. Members see it on their next look at the map.`);
-        }}
-      >
-        {saving ? <Trans context="hidden map settings">Saving</Trans> : <Trans context="hidden map settings">Save</Trans>}
-      </button>
+      <ConfigSaveBar
+        draft={configFromDraft(draft)}
+        stored={configFromDraft(draftOf(config))}
+        write={() => write(configFromDraft(draft))}
+        onDiscard={() => setDraft(draftOf(config))}
+        what={t({ message: "the map's words and quests", context: "hidden map settings, save bar" })}
+      />
     </div>
   );
 }

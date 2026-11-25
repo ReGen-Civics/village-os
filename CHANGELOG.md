@@ -40,6 +40,66 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.74 (2026-11-25)
+
+### What changed for your village
+
+- **One save bar on Make this yours.** Your words for things, notices, the menu and the other panels on Make this yours now feed the single bottom save bar: edits across panels gather into one count and one Save writes each of them.
+- **Links that behave like links.** Ten places that rendered a link inside a link (on the quests, circles, governance, good neighbour and guide pages) are now single links that take focus cleanly, and the joining journey's steps open from the keyboard.
+- **Honest pages, second round.** Eleven more pages, among them contribute, village health, network, exit policy and campaigns, say when a read failed in place of "nothing here yet" or a loader that never stops.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.73 still works.
+
+---
+
+## 1.3.73 (2026-11-25)
+
+### What changed for your village
+
+- **The review page decides more on its rows.** Org chart drafts are listed (including ones made in Admin or by an agent), each with its preview and a Publish button on the row; every row says what it is and what deciding it does, with its button named by its verb; groups show counts.
+- **Admin search bar.** A search field at the top of Admin (also / and Ctrl K) finds any setting by everyday words and opens it with its main button ready, with recent places and a phone sheet. Searching never changes anything.
+- **One save bar in Admin begins.** Module settings panels now raise the single bottom bar ("changes not saved yet", Discard, Save) in place of their own Save buttons, one Save for the whole page, with a guard before leaving unsaved changes.
+- **Launch list fixes.** "Name your village" checks the actual name, the mailing postal address is on the list, and the secrets key is required on the setup path.
+- **Profile follow-ups as one list.** Tasks waiting, asks of you and what you asked of a role sit in one list on Today (Today, Coming up, Waiting on others), closed with one tick. The week calendar says so when it fails to load.
+- **New icons.** Home is a taller earthship, Your path takes the stepping stones, and Quests has a new leaf compass.
+- **Honest pages and dark mode.** Events, gratitude, team, forum and messages say when they failed to load in place of "nothing here yet"; fixed light greys re-theme in dark mode across the site; doors to calls, the map and proposing a role show only while their module is on.
+- **Faster checks for everyone who builds the platform:** the test suite runs in six parallel shards.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.72 still works.
+
+---
+
+## 1.3.72 (2026-11-25)
+
+### What changed for your village
+
+- **Decide on the review page.** /admin/review now has Held and Decided tabs, decides proposed changes right on the page, and finds decided items by code. Two waiting changes that would write the same thing ask a person to choose one first (an agent never may), and a change drafted against an older version shows what is live now before it can be accepted.
+- **Search in Admin, and mail settings that show their state.** Every Admin control and steward page has a stable address and the words people search for it by, filtered by what each person may use. Mail settings now open with "Mail now": whether mail is live, who it sends as, the last test's outcome in the server's words, and Send me a test, Pause all and Sent mail always in view. The test's outcome updates in place until the delivery report arrives, and disconnecting delivery reports sits in a danger zone with a confirm.
+- **A warmer entrance.** New words on the entrance, the privacy notice as a short list, and a background video behind the entrance card when the village sets one (three new settings: a desktop video, a phone video, and a still image for reduced motion).
+- **The app sign-in page** (/oauth/authorize) in the village's look, readable in dark mode.
+
+### What you must do
+
+Nothing to upgrade. Optional: to show a video behind the entrance, set the three entrance background settings in Game Mechanics.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.71 still works.
+
+---
+
 ## 1.3.71 (2026-11-25)
 
 ### What changed for your village

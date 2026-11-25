@@ -34,9 +34,15 @@ export interface WeekStripProps {
   now?: Date;
 }
 
-/** The gatherings the calendar shows this member for the next seven days. Null until read, [] when closed or failed. */
-function useWeekGatherings(on: boolean, now: Date): WeekItem[] | null {
+/**
+ * The gatherings the calendar shows this member for the next seven days. `rows` is null until read and []
+ * when the calendar is closed. A read that FAILED says so (`failed`), with `retry`, so an unreachable calendar
+ * is never drawn as an empty week (whole-app QA, 25 Nov 2026).
+ */
+function useWeekGatherings(on: boolean, now: Date): { rows: WeekItem[] | null; failed: boolean; retry: () => void } {
   const [rows, setRows] = useState<WeekItem[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const from = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7).toISOString();
   useEffect(() => {
@@ -45,10 +51,19 @@ function useWeekGatherings(on: boolean, now: Date): WeekItem[] | null {
       return;
     }
     let live = true;
+    const fail = () => {
+      if (!live) return;
+      setFailed(true);
+      setRows([]);
+    };
     gameFetch(`/api/events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json();
+      })
       .then((d: { events?: Array<{ title?: string; startsAt?: string; allDay?: boolean; link?: string | null; status?: string }> } | null) => {
         if (!live) return;
+        setFailed(false);
         const list = Array.isArray(d?.events) ? d!.events : [];
         setRows(
           list
@@ -56,18 +71,18 @@ function useWeekGatherings(on: boolean, now: Date): WeekItem[] | null {
             .map((e) => ({ kind: "gathering" as const, title: String(e.title), at: e.allDay ? String(e.startsAt).slice(0, 10) : String(e.startsAt), href: e.link && e.link.startsWith("/") ? e.link : "/events" })),
         );
       })
-      .catch(() => live && setRows([]));
+      .catch(fail);
     return () => {
       live = false;
     };
-  }, [on, from, to]);
-  return rows;
+  }, [on, from, to, attempt]);
+  return { rows, failed, retry: () => setAttempt((n) => n + 1) };
 }
 
 export default function WeekStrip({ meetings, taskDue, eventsOn, now: nowProp }: WeekStripProps) {
   const { t, i18n } = useLingui();
   const [now] = useState(() => nowProp ?? new Date());
-  const gatherings = useWeekGatherings(eventsOn, now);
+  const { rows: gatherings, failed, retry } = useWeekGatherings(eventsOn, now);
   const [chosen, setChosen] = useState(0);
   const locale = i18n.locale || "en";
 
@@ -113,7 +128,14 @@ export default function WeekStrip({ meetings, taskDue, eventsOn, now: nowProp }:
         <MoonPhase date={now} size="sm" showName className="shrink-0" />
       </div>
 
-      {quietWeek(days) ? (
+      {failed ? (
+        <p role="alert" className={`${HINT} mt-3`} data-week-failed="">
+          {t({ message: `The calendar did not load, so this week may be missing gatherings.`, context: "week strip, the calendar read failed" })}{" "}
+          <button type="button" onClick={retry} className={`${LINK} inline-flex min-h-11 items-center`}>
+            {t({ message: `Try again`, context: "week strip, retry the calendar read" })}
+          </button>
+        </p>
+      ) : quietWeek(days) ? (
         <p className={`${HINT} mt-3`}>
           {t({ message: `Nothing is on the calendar for you this week.`, context: "week strip, an empty week" })}{" "}
           {eventsOn ? (

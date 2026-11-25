@@ -19,6 +19,7 @@ import { ISSUANCE_CAP_REQUIREMENT } from "../../shared/issuanceCap";
 import { PURPOSE_EXAMPLE } from "../../shared/governingPurpose";
 import { PROPORTIONAL_CLOSING_STATEMENT } from "../../shared/closingPolicies";
 import { writeConfigDocument } from "../repos/appConfigDocs";
+import { VILLAGE_SECRETS_ENV } from "./secrets";
 import { dialsForSubject, overrideDials as highestTierDials, thresholdSettingsFrom, VILLAGE_LAUNCH } from "../../shared/ballotSubjects";
 
 describe("the site-address check reads FRONTEND_URL's shape", () => {
@@ -154,7 +155,10 @@ describe.skipIf(!testDbConfigured())("a ready village with no address of its own
     checks["session-secret"] = () => ({ state: sessionSecret, detail: "held for this test" });
     // Governance open to members, since `governance-on-for-members` is a
     // blocking row read from this lifecycle; every other module is off.
-    return { checks, moduleLifecycle: (id) => (id === "governance" ? "members" : "off"), env };
+    // A usable sealing key, so this block reads site-address alone: since
+    // 25 Nov 2026 village-secrets-key is also blocking and carried, and
+    // launchSecretsKey.test.ts holds that row.
+    return { checks, moduleLifecycle: (id) => (id === "governance" ? "members" : "off"), env: { [VILLAGE_SECRETS_ENV]: "c3".repeat(32), ...env } as NodeJS.ProcessEnv };
   };
 
   beforeAll(async () => {
