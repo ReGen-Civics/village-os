@@ -252,7 +252,7 @@ export default function Quests() {
             </div>
             <p className={EYEBROW}>{t({ message: "Quests", context: "open work board eyebrow" })}</p>
             <h1 className={`${H1} mb-4 mt-2`}>
-              {t({ message: "Open work", context: "open work board heading" })}
+              {t({ message: "Quests", context: "open work board heading" })}
             </h1>
             {/* R47: the Trail line leads, the reward word keeps its tooltip,
                 and the Lore line comes last, after the numbers. */}
@@ -596,7 +596,7 @@ export default function Quests() {
           {filtered.length === 0 &&
             (boardFailed ? (
               <div className="text-center py-16 text-muted-foreground" role="alert">
-                <p>{t`The Quest Board didn't load. Reload to try again.`}</p>
+                <p>{t`Quests didn't load. Reload to try again.`}</p>
               </div>
             ) : quests.length === 0 ? (
               <>

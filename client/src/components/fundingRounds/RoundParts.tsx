@@ -687,7 +687,7 @@ export function IdeaCard({ idea, pot, stage, onChanged }: { idea: Idea; pot: Pot
       )}
       {idea.questId && (
         <Link href="/quests" className="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">
-          <Trans context="funding rounds">Find it on the quest board</Trans>
+          <Trans context="funding rounds">Find it in Quests</Trans>
         </Link>
       )}
       {idea.status !== "withdrawn" && <BackingPanel idea={idea} pot={pot} stage={stage} onChanged={onChanged} />}

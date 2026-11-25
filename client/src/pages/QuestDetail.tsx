@@ -183,7 +183,7 @@ export default function QuestDetail() {
             <Compass className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-40" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-3">
               {failed
-                ? "The quest board couldn't be loaded just now."
+                ? "Quests couldn't be loaded just now."
                 : "That quest isn't on the board."}
             </h1>
             <p className="text-muted-foreground mb-8">

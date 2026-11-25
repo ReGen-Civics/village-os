@@ -747,7 +747,7 @@ export default function Layout({ children }: LayoutProps) {
                 </li>
                 <li>
                   <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Quest Board</Trans>
+                    <Trans context="Layout, Link">Quests</Trans>
                   </Link>
                 </li>
                 {commerceModule && (
@@ -764,7 +764,7 @@ export default function Layout({ children }: LayoutProps) {
                 {crowdpoolModule && showsHref("/campaigns") && (
                   <li>
                     <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Pooling Resources</Trans>
+                      <Trans context="Layout, Link">Crowd pooling</Trans>
                     </Link>
                   </li>
                 )}
