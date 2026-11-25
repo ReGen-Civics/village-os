@@ -9,6 +9,13 @@
  * name; "Wallet" now means one member's own holdings and lives on the profile.
  * The component and the /wallet route keep their old names on purpose, because
  * Stripe return URLs and order notifications in server/index.ts point at them.
+ *
+ * ONE PAGE CALLED WALLET (the lead, 25 Nov 2026: "make it the same page and call
+ * it wallet, exchanging should be done in the wallet"). The page is "Wallet"
+ * again, /wallet is its address, and /tokens, the Exchange's old address,
+ * redirects here with its query and hash kept. Nothing about the exchange moved:
+ * it is still buy-only, recognition tokens still never buy or swap, swapping
+ * still waits on the legal card, and every movement still goes through the ledger.
  */
 import { ContributionWord, useShareNames } from "@/components/ContributionWord";
 import { CONTRIBUTION_MIRROR_SLUG, CONTRIBUTION_TOKEN_SLUG } from "@shared/contributionToken";
@@ -127,7 +134,7 @@ export default function Wallet() {
     if (q === "cancelled") setNotice("Checkout cancelled. Nothing was charged.");
   }, [exchangeModule?.id]);
 
-  if (modules.loaded && !exchangeModule) return <ModuleGate moduleId="exchange" name="The Exchange" />;
+  if (modules.loaded && !exchangeModule) return <ModuleGate moduleId="exchange" name="Wallet" />;
 
   const buy = (slug: string) => {
     setError(""); setRefusedSlug(null);
@@ -225,7 +232,7 @@ export default function Wallet() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Wallet, h1">The Exchange</Trans></h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Wallet, h1">Wallet</Trans></h1>
           {/* R47: the Trail line leads. It used to define three token words
               in tooltips, by what each one does; it names the umbrella word
               now (R084, the 2026-10-22 token ruling). The roots line is the

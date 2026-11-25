@@ -60,10 +60,10 @@ export const WALK_STEPS: WalkStep[] = [
     id: "try-to-buy",
     needs: ["exchange"],
     title: "Try to buy Example Credits",
-    todo: "Tap Buy on the Exchange and read the answer.",
+    todo: "Tap Buy in the Wallet and read the answer.",
     teaches: "Examples can't take real money, and they say so right where you tap.",
-    href: "/tokens",
-    cta: "Open the Exchange",
+    href: "/wallet",
+    cta: "Open the Wallet",
   },
   {
     id: "open-steward",
