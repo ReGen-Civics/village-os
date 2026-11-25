@@ -34,6 +34,7 @@ import { authToken } from "@/lib/gameApi";
 import type { WorkPay } from "@shared/workValue";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import { Trans } from "@lingui/react/macro";
+import { mayAsk } from "@/lib/myCapabilities";
 
 /** One row of `GET /api/admin/quest-claims`: `ClaimRecord` in server/repos/quests.ts, plus `pay`. */
 export interface ConsentClaim {
@@ -254,6 +255,13 @@ export function useConsentClaims(headers: () => Record<string, string>) {
     // 401. Asking anyway was a failed request the browser logged on every
     // signed-out visit to /review, so the answer is recorded without the call.
     if (!authToken()) {
+      setRefused(true);
+      setError(null);
+      setClaims(null);
+      return;
+    }
+    // The viewer's own keys say the queue is not theirs: the same answer, without the refused request.
+    if (!(await mayAsk("quest.consent"))) {
       setRefused(true);
       setError(null);
       setClaims(null);

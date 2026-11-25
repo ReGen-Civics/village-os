@@ -231,6 +231,7 @@ import { keepVillagePathWords } from "./lib/pathWordsKept";
 import { keepGovernanceWords } from "./lib/governanceWordsKept";
 import { keepCirclesWords } from "./lib/circlesWordsKept";
 import { register as registerProfileRoutes } from "./routes/profile";
+import { register as registerMyCapabilitiesRoutes } from "./routes/myCapabilities"; // the viewer's own keys, read once so member pages stop probing routes they cannot pass (live QA pass, 25 Nov 2026)
 import { register as registerPathLadderRoutes } from "./routes/pathLadders";
 import { register as registerVouchRoutes } from "./routes/vouches";
 import { register as registerPlacesRoutes } from "./routes/places";
@@ -16732,6 +16733,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // A member's own account record: read, update, and the contribution journal.
   // Registered at exactly the point those three routes used to sit.
   registerProfileRoutes(app, { authedUser, members, publicUser, getPool });
+  registerMyCapabilitiesRoutes(app, { authedUser, capabilityCtx });
 
   // Where the member stands on each path they walk. Beside the profile routes
   // because it answers only to the account behind the token, and derived from
