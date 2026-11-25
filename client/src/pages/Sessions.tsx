@@ -304,13 +304,18 @@ export default function Sessions() {
     if (!durationTouched) setDuration(String(villageMinutes));
   }
 
-  // A tick that no longer fits the circle chosen, or an item that went elsewhere, is dropped.
+  // A tick that no longer fits the circle chosen, or an item that went elsewhere, is dropped. In the
+  // render that first sees a new list or circle, as the village's length above is, and for the same
+  // reason: as an effect it ran in a later passive flush, so a "Get the room ready" pressed before
+  // that flush had its ticks filtered by the effect's stale circle (still none) and lost for good.
+  // That was the comingUp.test.tsx flake that timed out on CI shards (#1590, #1593, 24 Nov 2026).
   const brought = load.kind === "ready" ? load.data.library.items : null;
-  useEffect(() => {
-    if (!brought) return;
+  const [fitSeen, setFitSeen] = useState<{ brought: typeof brought; circleId: string }>({ brought: null, circleId: "" });
+  if (brought && (brought !== fitSeen.brought || circleId !== fitSeen.circleId)) {
+    setFitSeen({ brought, circleId });
     const fits = new Set(offeredFor(brought, circleId || null).map((c) => c.id));
-    setPicked((prev) => (prev.every((id) => fits.has(id)) ? prev : prev.filter((id) => fits.has(id))));
-  }, [brought, circleId]);
+    if (!picked.every((id) => fits.has(id))) setPicked(picked.filter((id) => fits.has(id)));
+  }
 
   const onJoin = useCallback(
     async (id: number) => {

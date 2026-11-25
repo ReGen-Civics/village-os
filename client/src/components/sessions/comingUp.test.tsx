@@ -302,4 +302,45 @@ describe("getting the room ready from the start card", () => {
     await new Promise((r) => setTimeout(r, 50));
     expect((screen.getByLabelText(SESSION_COPY.durationLabel) as HTMLInputElement).value).toBe("45");
   });
+  it("keeps the circle's ticked items when Get the room ready is pressed before the list's first passive flush", async () => {
+    /*
+     * The same race, on the ticks. Dropping a tick that no longer fits the circle was an
+     * effect, queued by the commit that first drew this button with no circle chosen. A
+     * press before that effect ran ticked the circle's items, then the stale effect
+     * (still filtering for no circle) dropped them, and nothing ever ticked them again:
+     * the test above it waited ten seconds for a box that would stay empty, and timed out
+     * on CI shards (#1590 and #1593, 24 Nov 2026). Pressed from a MutationObserver, the
+     * first moment the button exists, this failed every time on the effect.
+     */
+    answers["GET /api/sessions"] = () =>
+      json({
+        open: [],
+        recent: [],
+        circles,
+        defaultMinutes: 60,
+        library: { items: [brought(1, "Shed roof", "garden"), brought(2, "Picnic", null)], myCircleIds: ["garden"] },
+        comingUp: payload([row({ durationMin: 45 })]),
+      });
+    const pressed = new Promise<void>((resolve) => {
+      const press = () => {
+        const button = screen.queryByRole("button", { name: RHYTHM_COPY.getReady });
+        if (!button) return;
+        observer.disconnect();
+        fireEvent.click(button);
+        resolve();
+      };
+      const observer = new MutationObserver(press);
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+    const memory = memoryLocation({ path: "/sessions", record: true });
+    render(
+      <Router hook={memory.hook}>
+        <Sessions />
+      </Router>,
+    );
+    await pressed;
+    await new Promise((r) => setTimeout(r, 50));
+    expect((screen.getByRole("checkbox", { name: /Shed roof/ }) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByRole("checkbox", { name: /Picnic/ }) as HTMLInputElement).checked).toBe(false);
+  });
 });
