@@ -7,10 +7,11 @@
  * (`/roles/select?archetype=<key>`, read by pages/RoleDraft.tsx). "See all
  * roles" is the other way through, and is handled by the page.
  */
+import GlossaryTip from "@/components/GlossaryTip";
 import { Fragment, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui, Trans } from "@lingui/react/macro";
 import { ARCHETYPE_PARAM, characterArt } from "@shared/roleDraft";
 import { centring } from "./centring";
 import { BTN_SECONDARY, EYEBROW, LEDE } from "@/components/journey/look";
@@ -36,6 +37,7 @@ function lower(s: string): string {
  */
 export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { onSeeAll: () => void; allShown: boolean; nested?: boolean }) {
   const { t } = useLingui();
+  const rootWord = t({ message: "root", context: "glossary: the word a tip explains" });
   const [cast, setCast] = useState<Archetype[]>([]);
   const Heading = nested ? "h4" : "h2";
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { 
     <section aria-labelledby="roles-step-one-h" className={nested ? "mt-3 text-left" : "mx-auto mb-12 max-w-5xl text-left"} data-archetype-step={nested ? "nested" : "step"}>
       {!nested && <p className={EYEBROW}>{t({ message: "Step one", context: "roles page archetypes" })}</p>}
       <Heading id="roles-step-one-h" className={nested ? "font-display text-xl leading-tight text-foreground text-balance" : "mt-2 font-display text-3xl leading-tight text-foreground text-balance"}>
-        {t({ message: "Choose the root you grow from", context: "roles page archetypes" })}
+        <Trans context="roles page archetypes">Choose the root<GlossaryTip slot="root" word={rootWord} /> you grow from</Trans>
       </Heading>
       <p className={`mt-2 ${LEDE}`}>
         {t({ message: "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five.", context: "roles page archetypes" })}

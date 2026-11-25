@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { NOUN_MAX, NOUN_SLOTS, NOUN_SLOT_IDS, VOCAB_SECTION, type NounSlot } from "@shared/vocabulary";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
+import GlossaryPanel from "./GlossaryPanel";
 
 type Draft = Partial<Record<NounSlot, { one?: string; many?: string }>>;
 
@@ -45,7 +46,9 @@ export default function VocabularyPanel({ password }: { password: string }) {
     toast.success(t`Your words are saved. Pages show them from the next page a member opens.`);
   };
 
+  // The words the village explains sit right under its words for things (GlossaryPanel.tsx).
   return (
+    <>
     <div className="md:col-span-2 rounded-lg border border-border px-3 py-3">
       <p className="text-sm font-medium text-foreground mb-0.5">
         <Trans context="admin identity: the village's own nouns">Your words for things</Trans>
@@ -86,5 +89,7 @@ export default function VocabularyPanel({ password }: { password: string }) {
         {saving ? <Trans context="admin identity: while the nouns save">Saving…</Trans> : <Trans context="admin identity: save the nouns">Save your words</Trans>}
       </button>
     </div>
+    <GlossaryPanel password={password} />
+    </>
   );
 }
