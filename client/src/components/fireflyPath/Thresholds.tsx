@@ -198,6 +198,11 @@ export function ConfirmProposal() {
   const [met, setMet] = useState(false);
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? "";
+    // No token, nothing to confirm: say so here and send nothing, so opening the bare address never writes.
+    if (!token) {
+      setSaid({ ok: false, message: gone });
+      return;
+    }
     fetch("/api/open-proposals/confirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) })
       .then(async (r) => {
         const data = await r.json().catch(() => ({}));
