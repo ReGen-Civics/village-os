@@ -48,7 +48,7 @@ import { PLATFORM_VERSION } from "../lib/identity";
 import { AI_APPROVAL_DOC, parseAiApproval } from "../../shared/agentProposals";
 import { runSeraTool, undoSeraAction } from "../lib/seraAgent";
 import { wwwAuthenticate } from "../lib/agentOAuth";
-import { fullAccessFor, recordFullAccessWrite } from "../lib/agentFullAccess";
+import { fullAccessFor, fullAccessRecipients, recordFullAccessWrite } from "../lib/agentFullAccess";
 
 export const MCP_PATH = "/api/agent/v1/mcp";
 
@@ -211,6 +211,8 @@ export function register(app: Express, deps: Deps): void {
         fullAccess: {
           on: () => fullAccessFor(getPool(), userId),
           recorded: (a) => recordFullAccessWrite(getPool(), { ...a, agentUserId: userId, tokenPrefix: row.prefix }),
+          // Who an email send reaches, read fresh at both calls (the lead, 24 Nov 2026).
+          recipients: (send, body) => fullAccessRecipients(getPool(), { name: (user as any)?.name ?? null, email: (user as any)?.email ?? null }, send, body),
         },
         recordAction: async (a) => {
           await recordAgentAction(getPool(), { ...a, tokenId: row.id, actorUserId: userId });

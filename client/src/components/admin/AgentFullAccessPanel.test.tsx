@@ -37,7 +37,7 @@ describe("the full-access switch", () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<AgentFullAccessPanel password="tok" />);
     const select = (await screen.findByLabelText("Role whose agent has full access")) as HTMLSelectElement;
-    expect(screen.getByRole("note").textContent).toContain("Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act.");
+    expect(screen.getByRole("note").textContent).toContain("every email names who it goes to before the yes. Money, secrets, erasure, the veto and the agent accounts stay a person's act.");
     expect(select.value).toBe("");
     fireEvent.change(select, { target: { value: "r-ops" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
