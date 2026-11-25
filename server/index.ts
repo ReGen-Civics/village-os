@@ -122,6 +122,8 @@ import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } f
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
+import { register as registerMemberEmailRoutes } from "./routes/memberEmails";
+import { ownerOfAddress } from "./repos/memberEmails";
 import { matchOnEvent } from "./lib/seraPersonMatch";
 import { register as registerPulseRoutes } from "./routes/pulse";
 import { register as registerPlayersRoutes } from "./routes/players";
@@ -8241,6 +8243,7 @@ async function startServer() {
     clientIp,
     resetPerIpHourly: () => numberVar("abuse.password_reset_per_ip_hourly"),
     recordAudit: recordAuthAudit,
+    attachedAddress: (email) => ownerOfAddress(getPool(), email), // a reset asked at an extra address goes to that address
   });
   const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify, stageName });
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
@@ -8268,8 +8271,10 @@ async function startServer() {
     endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), // R104: ending an unproved password ends what its sessions planted
     onPasswordEnded: (m) => void sendPasswordEndedLetter(letters, m),
     portalVisitor: portalGoogleVisitor({ getPool, secret: AUTH_TOKEN_SECRET }), // "Continue with Google" at the entrance: a proved portal entry, no account
+    attachedAddress: (email) => ownerOfAddress(getPool(), email), // Google at an extra address the member proved
   });
   registerVerifyEmailRoutes(app, { ...letters, members, authedUser, verifyPassword, overLimit, clientIp, recordAudit: recordAuthAudit });
+  registerMemberEmailRoutes(app, { ...letters, getPool, members, authedUser, isAdmin, overLimit, clientIp, recordAudit: recordAuthAudit }); // one account, more than one proved address (0430)
 
   /**
    * Sign out. tokenVersion is the only revocation lever there is (no session

@@ -12,6 +12,7 @@ import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { BulkStageGrant } from "./StageFloorPicker";
 import PersonalListsPanel from "@/components/yourList/PersonalListsPanel";
 import AgeBandCorrection from "./AgeBandCorrection";
+import MemberEmails from "./MemberEmails";
 import OpsEmailSwitch from "./OpsEmailSwitch";
 
 const AgentsPanel = lazy(() => import("./AgentsPanel"));
@@ -198,6 +199,7 @@ export default function PlayersTab({ password }: { password: string }) {
                     {/* The daily failed-actions report goes to admins and founders only, so the switch shows on their cards. */}
                     {(p.role === "admin" || p.role === "founder") && <OpsEmailSwitch key={`${p.id}:${p.opsEmail ?? "daily"}`} userId={p.id} initial={p.opsEmail} password={password} />}
                     <AgeBandCorrection userId={p.id} name={p.name} password={password} />
+                    <MemberEmails userId={p.id} password={password} />
                   </>
                 }
               />

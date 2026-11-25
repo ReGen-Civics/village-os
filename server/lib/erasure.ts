@@ -159,6 +159,7 @@
  * an account that does not exist with some traces outstanding. Neither is
  * silent any more.
  */
+import { forgetMemberEmails } from "../repos/memberEmails";
 import { forgetWaitlistOf } from "../repos/roleWaitlist";
 import { forgetAgeBand } from "../repos/questSafety";
 import { blankConfigListField } from "../repos/appConfigDocs";
@@ -748,6 +749,15 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       name: "age-band",
       run: async () => {
         await forgetAgeBand(pool, target.id);
+      },
+    },
+    {
+      // The extra addresses a member proved (0430) are personal data, and each
+      // one is still a way in: a reset typed at it, a Google sign-in at it.
+      // They go with the person, and so does where their mail went.
+      name: "member-emails",
+      run: async () => {
+        await forgetMemberEmails(pool, target.id);
       },
     },
     {
