@@ -23,26 +23,12 @@
 import { useId, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
-import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { RoleFill } from "@shared/commitmentRange";
 import FoundingLineup from "./FoundingLineup";
 import type { FilledRole, LineupView } from "./RosterCards";
 import FullRoleCard from "./FullRoleCard";
 import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
 import { useWide } from "./useWide";
-
-/** The Seed of Life as quiet line work: structure, never ornament that moves. */
-function SeedLines({ className = "" }: { className?: string }) {
-  const centres = seedOfLifeCentres(60, 60, 20);
-  return (
-    <svg viewBox="0 0 120 120" aria-hidden="true" className={`pointer-events-none text-notice ${className}`}>
-      {centres.map((c, i) => (
-        <circle key={i} cx={fx(c.x)} cy={fx(c.y)} r={20} fill="none" stroke="currentColor" strokeWidth={0.4} />
-      ))}
-      <circle cx={60} cy={60} r={40} fill="none" stroke="currentColor" strokeWidth={0.4} />
-    </svg>
-  );
-}
 
 export interface FoundingRole {
   seat: Record<string, any>;
@@ -169,7 +155,8 @@ export default function FoundingTeam({
   return (
     <section id={anchorId} aria-labelledby={headingId} className={`relative mx-auto max-w-6xl scroll-mt-24 ${lead ? "mb-10 sm:mb-16" : "mb-16"}`} data-founding-team="">
       <div className={`relative overflow-hidden ${lead ? "border-b py-4 sm:border-t sm:py-14" : "border-y py-10 sm:py-14"} border-notice/40`}>
-        <SeedLines className="absolute -right-10 -top-10 size-64 opacity-20 sm:size-80" />
+        {/* No sacred-geometry watermark here: it sat under the mycelium-stitched cards, two motifs on one
+            screen; sacred geometry is for emblems and empty states (the lead, 25 Nov 2026, from the QA pass). */}
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-notice">{t({ message: "Founding team", context: "founding team section eyebrow" })}</p>
         <Heading id={headingId} tabIndex={anchorId ? -1 : undefined} data-section-focus={anchorId ? "" : undefined} className="mt-3 font-display text-4xl leading-tight text-foreground outline-none sm:text-6xl">
           {t({ message: "Join the founding team", context: "founding team section heading" })}

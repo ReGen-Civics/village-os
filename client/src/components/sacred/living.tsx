@@ -25,7 +25,7 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, EarthshipDome, HeartLeaf, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
+export { Cell, CellRing, EarthshipDome, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 
@@ -266,6 +266,16 @@ function SunriseDrawing(props: GlyphProps) {
   );
 }
 
+/** Two leaves that meet as a heart on one stem: thanks that grows between two people (gratitude). */
+function HeartLeafDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 19.4C7.6 16.4 4.2 13.2 4.4 9.4c.2-2.8 3-4.2 5.2-3.2 1.2.5 2 1.4 2.4 2.4" />
+      <path {...WASH} d="M12 19.4c4.4-3 7.8-6.2 7.6-10-.2-2.8-3-4.2-5.2-3.2-1.2.5-2 1.4-2.4 2.4z" />
+      <path d="M12 17.2c-1.8-1.6-3.6-3.6-5-6.2M12 19.4v1.8" />
+    </Svg>
+  );
+}
 /* The glyphs, each a drop-in for a lucide icon. */
 export const SeedPod = /* @__PURE__ */ asIcon("SeedPod", SeedPodDrawing);
 export const SeedPin = /* @__PURE__ */ asIcon("SeedPin", SeedPinDrawing);
@@ -290,3 +300,4 @@ export const Pines = /* @__PURE__ */ asIcon("Pines", PinesDrawing);
 export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", MushroomNetworkDrawing);
 export const Gathering = /* @__PURE__ */ asIcon("Gathering", GatheringDrawing);
 export const Sunrise = /* @__PURE__ */ asIcon("Sunrise", SunriseDrawing);
+export const HeartLeaf = /* @__PURE__ */ asIcon("HeartLeaf", HeartLeafDrawing);

@@ -5,7 +5,7 @@
  *
  * Split out for the bundle, not for meaning. A module lands in one chunk whole,
  * so while the tab bar imported living.tsx, every glyph any page used rode on
- * the first page with it. The first page now carries these ten and nothing
+ * the first page with it. The first page now carries these nine and nothing
  * else; the others stay in the lazy chunks of the pages that draw them.
  * living.tsx says how they are drawn and holds the test of the house style.
  */
@@ -164,16 +164,6 @@ function EarthshipDomeDrawing(props: GlyphProps) {
     </Svg>
   );
 }
-/** Two leaves that meet as a heart on one stem: thanks that grows between two people (gratitude). */
-function HeartLeafDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path d="M12 19.4C7.6 16.4 4.2 13.2 4.4 9.4c.2-2.8 3-4.2 5.2-3.2 1.2.5 2 1.4 2.4 2.4" />
-      <path {...WASH} d="M12 19.4c4.4-3 7.8-6.2 7.6-10-.2-2.8-3-4.2-5.2-3.2-1.2.5-2 1.4-2.4 2.4z" />
-      <path d="M12 17.2c-1.8-1.6-3.6-3.6-5-6.2M12 19.4v1.8" />
-    </Svg>
-  );
-}
 /* The four paths' glyphs and the seed: the menu draws each path by one, and the bar draws the reader's (config/nav.ts, config/mobileNav.ts PATH_GLYPHS). */
 export const Cell = /* @__PURE__ */ asIcon("Cell", CellDrawing);
 export const CellRing = /* @__PURE__ */ asIcon("CellRing", CellRingDrawing);
@@ -184,4 +174,3 @@ export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
 export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);
 export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
 export const EarthshipDome = /* @__PURE__ */ asIcon("EarthshipDome", EarthshipDomeDrawing);
-export const HeartLeaf = /* @__PURE__ */ asIcon("HeartLeaf", HeartLeafDrawing);

@@ -85,7 +85,7 @@ describe("when an area is in use", () => {
 describe("a newcomer's phone tab bar", () => {
   it("takes the roles in place of Gratitude, keeps five distinct slots and More last", () => {
     const slots = newcomerSlots(TAB_SLOTS, () => false);
-    // Home, the path, the roles in Gratitude's place, Quests, More (the lead, 25 Nov 2026).
+    // Home, Your path, Roles, Quests, More: the platform's bar for everyone (the lead, 25 Nov 2026).
     expect(slots.map((s) => s.path ?? s.event)).toEqual(["/", PATH_SLOT.path, NEWCOMER_SLOT.path, "/quests", "open-mobile-menu"]);
   });
 
