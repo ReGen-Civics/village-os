@@ -188,10 +188,11 @@ The composed tree is not an obstacle, because a composed tree can be pushed to a
 will read it there. The one case with no ref to push is a pair-merge scratch, and even there run
 only the suites the two branches share.
 
-**`ci.yml` is six job definitions that run as SEVEN jobs, and a green is all seven** (Rye, 2026-10-21: "split the tests"; `browser-smoke` added 2026-11-19):
+**`ci.yml` is four job definitions that run as NINE jobs, and a green is all nine** (Rye, 2026-10-21: "split the tests"; `browser-smoke` added 2026-11-19; six shards since 2026-11-25):
 
 - `verify`: install, both typechecks, every guard, the build and the two budgets. No tests.
-- `test (1/4)` to `test (4/4)`: one matrix job, `vitest run --shard=i/4`, each shard on its own
+- `test (1/6)` to `test (6/6)`: one matrix job, each shard handed its files by recorded time
+  (`scripts/plan-shards.mjs`, `scripts/test-timings.json`), each on its own
   runner with its own MySQL service, its own `pnpm build`, its own provisioning receipt. A shard is
   a WHOLE run to the hollow-run rule, so each one fails alone with no `TEST_DATABASE_URL` or with
   zero schemas provisioned (`runIsFiltered` in `server/db/provisioningReport.ts`, pinned by its
@@ -202,11 +203,12 @@ only the suites the two branches share.
 - `browser-smoke`: boots the built server on a scratch schema, draws every key signed-out page in
   Chromium and in an iPhone-profile WebKit, and sends one TEST application through the apply flow
   (`scripts/browser-smoke-local.mjs`). It exists because 1.3.27 shipped a page that crashed iOS
-  Safari while every job above was green. It is part of a green: a run with the other six passing
+  Safari while every job above was green. It is part of a green: a run with the other eight passing
   and this one red or missing is not a green.
 
-The seven are `verify`, `test (1/4)`, `test (2/4)`, `test (3/4)`, `test (4/4)`, `tests-ran-once`
-and `browser-smoke`. The FLOOR when you assert a job count is 7.
+The nine are `verify`, `test (1/6)` through `test (6/6)`, `tests-ran-once` and `browser-smoke`.
+The FLOOR when you assert a job count is 9. To change the shard count, edit the matrix list AND
+`--shards` in tests-ran-once; a mismatch fails tests-ran-once by name.
 
 Two things that stop this producing a false green, both paid for on 2026-09-04. Read WHICH JOBS
 RAN and WHICH step in each, never one number: the billing outage produced runs that died in 2 to 3
@@ -222,7 +224,7 @@ pull_request run is the better of the two for a component anyway: it tests the b
 MERGED with main. Two consequences. A CONFLICTING pull request gets no pull_request run, so a
 conflicted lane branch has NO run at all and its lane must merge main before anybody can verify
 it. (Generated docs no longer conflict: main owns them, see "Generated docs" below.) And counting "every job that is listed succeeded" is NOT a green: jobs appear
-progressively, so an incomplete run reads as 5 of 5 while the sixth and seventh have not been created. Assert a
+progressively, so an incomplete run reads as 7 of 7 while the last two have not been created. Assert a
 FLOOR on the job count. And a cancelled
 run is not a red, since `ci.yml` cancels superseded
 runs per ref on pull requests and integration branches. **A push run on `main` is never
