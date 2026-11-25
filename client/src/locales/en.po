@@ -10364,9 +10364,9 @@ msgid "Your commitment: {0}"
 msgstr "Your commitment: {0}"
 
 #: client/src/components/mobile/MobileTabBar.tsx
-msgctxt "bottom tab bar, no path chosen yet"
-msgid "Choose your path"
-msgstr "Choose your path"
+#~ msgctxt "bottom tab bar, no path chosen yet"
+#~ msgid "Choose your path"
+#~ msgstr "Choose your path"
 
 #: client/src/components/governance/WizardField.tsx
 msgctxt "WizardField, label"
@@ -16591,6 +16591,11 @@ msgctxt "JourneyWalk, placeholder"
 msgid "Their email address"
 msgstr "Their email address"
 
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Light mode: switch to dark"
+msgstr "Light mode: switch to dark"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopted on {adoptedOn} by the founders, before the Game started."
 msgstr "Adopted on {adoptedOn} by the founders, before the Game started."
@@ -17989,6 +17994,11 @@ msgstr "Declare it"
 msgctxt "GameMechanics, label"
 msgid "Search the dials"
 msgstr "Search the dials"
+
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path: choose one"
+msgstr "Your path: choose one"
 
 #. placeholder {0}: e.name
 #: client/src/components/admin/PortalVisitorsTab.tsx
@@ -32436,9 +32446,9 @@ msgid "A person or an agent"
 msgstr "A person or an agent"
 
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to dark mode"
-msgstr "Switch to dark mode"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to dark mode"
+#~ msgstr "Switch to dark mode"
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -40567,9 +40577,9 @@ msgid "How often it is rated"
 msgstr "How often it is rated"
 
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to light mode"
-msgstr "Switch to light mode"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to light mode"
+#~ msgstr "Switch to light mode"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, th"
@@ -46425,6 +46435,11 @@ msgstr "Earlier {agent} arrivals, now listed above"
 msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Open to every circle"
+
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Dark mode: switch to light"
+msgstr "Dark mode: switch to light"
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, toast"

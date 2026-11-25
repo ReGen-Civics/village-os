@@ -12023,9 +12023,9 @@ msgstr "Su compromiso: {0}"
 
 # needs-native-review: new words, 25 Nov 2026
 #: client/src/components/mobile/MobileTabBar.tsx
-msgctxt "bottom tab bar, no path chosen yet"
-msgid "Choose your path"
-msgstr "Elija su camino"
+#~ msgctxt "bottom tab bar, no path chosen yet"
+#~ msgid "Choose your path"
+#~ msgstr "Elija su camino"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/WizardField.tsx
@@ -19234,6 +19234,12 @@ msgctxt "JourneyWalk, placeholder"
 msgid "Their email address"
 msgstr "Su correo electrónico"
 
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Light mode: switch to dark"
+msgstr "Claro: cambiar al modo oscuro"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopted on {adoptedOn} by the founders, before the Game started."
@@ -20863,6 +20869,12 @@ msgstr "Declararlo"
 msgctxt "GameMechanics, label"
 msgid "Search the dials"
 msgstr "Buscar en los diales"
+
+# needs-native-review: the bottom bar's path slot, its accessible name, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path: choose one"
+msgstr "Su camino: elija uno"
 
 #. placeholder {0}: e.name
 #: client/src/components/admin/PortalVisitorsTab.tsx
@@ -37668,9 +37680,9 @@ msgstr "Una persona o un agente"
 
 # needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to dark mode"
-msgstr "Cambiar al modo oscuro"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to dark mode"
+#~ msgstr "Cambiar al modo oscuro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
@@ -47135,9 +47147,9 @@ msgstr "Cada cuánto se califica"
 
 # needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to light mode"
-msgstr "Cambiar al modo claro"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to light mode"
+#~ msgstr "Cambiar al modo claro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -53925,6 +53937,12 @@ msgstr "Llegadas anteriores de {agent}, ahora en la lista de arriba"
 msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Abierta a todos los círculos"
+
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Dark mode: switch to light"
+msgstr "Oscuro: cambiar al modo claro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
