@@ -165,7 +165,7 @@ export default function ProfileSettings() {
     agents: {
       label: t({ message: "Connected tools and agents", context: "settings: a group" }),
       Icon: Cell,
-      words: t({ message: "guide, Sera, Maia, agent, token, key, inbox, assistant", context: "settings: words a search for the agents group matches" }),
+      words: t({ message: "guide, agent, token, key, inbox, assistant", context: "settings: words a search for the agents group matches" }),
       body: (
         <>
           <GuideChoiceCard />

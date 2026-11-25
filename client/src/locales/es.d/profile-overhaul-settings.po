@@ -225,8 +225,8 @@ msgstr "correo, resumen, recordatorios, borrar, irme, datos, email"
 
 # needs-native-review: profile overhaul, the settings page, 25 Nov 2026
 msgctxt "settings: words a search for the agents group matches"
-msgid "guide, Sera, Maia, agent, token, key, inbox, assistant"
-msgstr "guía, Sera, Maia, agente, token, clave, buzón, asistente"
+msgid "guide, agent, token, key, inbox, assistant"
+msgstr "guía, agente, token, clave, buzón, asistente"
 
 # needs-native-review: profile overhaul, the settings page, 25 Nov 2026
 msgctxt "settings: words a search for the look group matches"
