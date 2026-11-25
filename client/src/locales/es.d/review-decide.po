@@ -1,0 +1,359 @@
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "{decision} decided this after it arrived."
+msgstr "{decision} lo decidió después de que llegara."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Each one is drawn against what is live now on {where}. Accepting one sets the others aside."
+msgstr "Cada una se muestra frente a lo que está publicado ahora en {where}. Aceptar una deja las demás a un lado."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Let it through"
+msgstr "Dejarla pasar"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "More than {limit} came from one sender today. It is read again tomorrow."
+msgstr "Hoy llegaron más de {limit} de un mismo remitente. Se vuelve a leer mañana."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Waiting"
+msgstr "En espera"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: header"
+msgid "{heldCount, plural, one {# held.} other {# held.}}"
+msgstr "{heldCount, plural, one {# retenida.} other {# retenidas.}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "{days, plural, =0 {Arrived today} one {Waiting # day} other {Waiting # days}}"
+msgstr "{days, plural, =0 {Llegó hoy} one {Esperando # día} other {Esperando # días}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Nothing has been decided here yet."
+msgstr "Todavía no se ha decidido nada aquí."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It needs something that is itself held."
+msgstr "Necesita algo que también está retenido."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Nothing is held. When a suggestion is held back, it waits here until a person clears it."
+msgstr "No hay nada retenido. Cuando se retiene una sugerencia, espera aquí hasta que una persona la despeje."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Yes, discard"
+msgstr "Sí, descartar"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Accept this option"
+msgstr "Aceptar esta opción"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Decided"
+msgstr "Decididas"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Accepted: {summary}"
+msgstr "Aceptado: {summary}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Discarded. Nothing went live."
+msgstr "Descartado. No se publicó nada."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Held {heldCount}"
+msgstr "Retenidas {heldCount}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "What it asks for is already live."
+msgstr "Lo que pide ya está publicado."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "Accepted: {summary} The other options are recorded as another option chosen."
+msgstr "Aceptado: {summary} Las demás opciones quedan registradas como otra opción elegida."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed later. Accepting one sets the other aside."
+msgstr "También lo cambia «{other}», propuesto después. Aceptar uno deja el otro a un lado."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "A name mixes letters from more than one alphabet, which can hide a lookalike. A person checks it."
+msgstr "Un nombre mezcla letras de más de un alfabeto, lo que puede ocultar una imitación. Una persona lo revisa."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Pick an option to accept it."
+msgstr "Elige una opción para aceptarla."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/useConnectorDesk.ts
+msgctxt "review inbox: decide"
+msgid "That did not go through. Reload and try again."
+msgstr "Eso no se completó. Recarga e inténtalo de nuevo."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Drawn against what is live now. Accept puts these words over it."
+msgstr "Se muestra frente a lo que está publicado ahora. Aceptar pone estas palabras encima."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Choose one"
+msgstr "Elige una"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "From a member"
+msgstr "De un miembro"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held for a reason this page does not know yet."
+msgstr "Retenida por un motivo que esta página aún no conoce."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "From an agent"
+msgstr "De un agente"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held did not load. Suggestions may be waiting there."
+msgstr "Las retenidas no cargaron. Puede haber sugerencias esperando ahí."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{total, plural, one {# suggestion for one thing} other {# suggestions for one thing}}"
+msgstr "{total, plural, one {# sugerencia para una misma cosa} other {# sugerencias para una misma cosa}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "A vote covers this. It is read again when the vote closes."
+msgstr "Una votación cubre esto. Se vuelve a leer cuando la votación cierre."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Option {n} of {total}"
+msgstr "Opción {n} de {total}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Held"
+msgstr "Retenidas"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Decided, newest first"
+msgstr "Decididas, las más recientes primero"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find a decided code"
+msgid "{code} was decided. It is under Decided."
+msgstr "{code} ya se decidió. Está en Decididas."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{total, plural, one {Discard this option? Nothing goes live.} other {Discard all # options? Nothing goes live.}}"
+msgstr "{total, plural, one {¿Descartar esta opción? No se publica nada.} other {¿Descartar las # opciones? No se publica nada.}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find"
+msgid "Open Decided"
+msgstr "Abrir Decididas"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: find a decided code"
+msgid "{code} was decided on {day}. It is under Decided."
+msgstr "{code} se decidió el {day}. Está en Decididas."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/BatchCard.tsx
+msgctxt "proposed changes: confirm a batch"
+msgid "{laterConflicts, plural, one {One of these waits on your choice on its own card, so it stays out of Accept all.} other {# of these wait on your choice on their own cards, so they stay out of Accept all.}}"
+msgstr "{laterConflicts, plural, one {Uno de estos espera tu elección en su propia tarjeta, así que queda fuera de Aceptar todo.} other {# de estos esperan tu elección en sus propias tarjetas, así que quedan fuera de Aceptar todo.}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Held back, waiting on a person"
+msgstr "Retenidas, esperando a una persona"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Sent again after {discarded} was discarded, with a reason. Let it through to be read, or clear it."
+msgstr "Enviada de nuevo después de que {discarded} se descartara, con un motivo. Déjala pasar para que se lea, o despéjala."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Let through to be read"
+msgstr "Se dejó pasar para leerla"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "{others, plural, one {Accept this one? The other change for the same thing is set aside, recorded as another option chosen.} other {Accept this one? The # other changes for the same thing are set aside, recorded as another option chosen.}}"
+msgstr "{others, plural, one {¿Aceptar este? El otro cambio para lo mismo queda a un lado, registrado como otra opción elegida.} other {¿Aceptar este? Los otros # cambios para lo mismo quedan a un lado, registrados como otra opción elegida.}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Accept option {pickNumber}."
+msgstr "Aceptar la opción {pickNumber}."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "Clear it"
+msgstr "Despejarla"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It and another suggestion each need the other first."
+msgstr "Esta y otra sugerencia necesitan cada una que la otra vaya primero."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Yes, accept it"
+msgstr "Sí, aceptarla"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "See what is live now"
+msgstr "Ver lo que está publicado ahora"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "The options"
+msgstr "Las opciones"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Confirm your choice"
+msgstr "Confirma tu elección"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "What it changes is no longer there."
+msgstr "Lo que cambia ya no está."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Discard all options"
+msgstr "Descartar todas las opciones"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Views"
+msgstr "Vistas"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "{others, plural, one {The other option is recorded as another option chosen.} other {The # other options are recorded as another option chosen.}}"
+msgstr "{others, plural, one {La otra opción queda registrada como otra opción elegida.} other {Las otras # opciones quedan registradas como otra opción elegida.}}"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "The same was discarded recently as {discarded}."
+msgstr "Lo mismo se descartó hace poco como {discarded}."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/ConflictCard.tsx
+msgctxt "review inbox: a conflict card"
+msgid "Edit its words on its own page"
+msgstr "Editar sus palabras en su propia página"
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: decided"
+msgid "Decided did not load. Try again."
+msgstr "Las decididas no cargaron. Inténtalo de nuevo."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed earlier. Accepting one sets the other aside."
+msgstr "También lo cambia «{other}», propuesto antes. Aceptar uno deja el otro a un lado."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "There are already {limit} options for this thing."
+msgstr "Ya hay {limit} opciones para esto."
+
+# needs-native-review: deciding on /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/HeldList.tsx
+msgctxt "review inbox: held"
+msgid "It needs something that does not exist yet."
+msgstr "Necesita algo que todavía no existe."

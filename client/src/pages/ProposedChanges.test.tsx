@@ -433,10 +433,10 @@ describe("conflicts", () => {
     stub({ changes: [NEW_AIM, OLD_AIM, STALE_PAGE] });
     render(<ProposedChanges />);
     const older = await screen.findByTestId("proposal-pc_aim_old");
-    expect(within(older).getByTestId("conflict-flags").textContent).toBe("Also changed by “Newer aim”, proposed later. Accept one, then look again.");
+    expect(within(older).getByTestId("conflict-flags").textContent).toBe("Also changed by “Newer aim”, proposed later. Accepting one sets the other aside.");
     openBatch("pcb_2");
     const newer = screen.getByTestId("proposal-pc_aim_new");
-    expect(within(newer).getByTestId("conflict-flags").textContent).toBe("Also changed by “Older aim”, proposed earlier. Accept one, then look again.");
+    expect(within(newer).getByTestId("conflict-flags").textContent).toBe("Also changed by “Older aim”, proposed earlier. Accepting one sets the other aside.");
     const page = screen.getByTestId("proposal-pc_page");
     expect(within(page).getByTestId("conflict-flags").textContent).toBe("Drafted before “Warmer headline” was accepted. Accepting it would put back older words.");
     const summary = screen.getByTestId("conflict-summary").textContent;
@@ -452,39 +452,56 @@ describe("conflicts", () => {
     expect(screen.queryByTestId("conflict-summary")).toBeNull();
   });
 
-  it("accepting the older asks once, Not yet takes it back, and Yes accepts it anyway", async () => {
+  it("accepting either option asks once, Not yet takes it back, and Yes sends the choice over the other", async () => {
     const calls = stub({ changes: [OLD_AIM, NEW_AIM], check: [{ id: "pc_aim_old", ok: true }], accept: [{ id: "pc_aim_old", ok: true }] });
     render(<ProposedChanges />);
     const older = await screen.findByTestId("proposal-pc_aim_old");
     fireEvent.click(within(older).getByTestId("accept-pc_aim_old"));
-    expect(within(older).getByTestId("conflict-confirm-pc_aim_old").textContent).toContain("A later change also edits this. Accept this one anyway?");
+    expect(within(older).getByTestId("conflict-confirm-pc_aim_old").textContent).toContain("Accept this one? The other change for the same thing is set aside, recorded as another option chosen.");
     expect(calls.some((c) => c.url.endsWith("/check") || c.url.endsWith("/accept"))).toBe(false);
     fireEvent.click(within(older).getByTestId("conflict-confirm-no-pc_aim_old"));
     expect(within(older).queryByTestId("conflict-confirm-pc_aim_old")).toBeNull();
     fireEvent.click(within(older).getByTestId("accept-pc_aim_old"));
     fireEvent.click(within(older).getByTestId("conflict-confirm-yes-pc_aim_old"));
     await screen.findByTestId("accept-outcome");
-    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items.map((i: any) => i.id)).toEqual(["pc_aim_old"]);
+    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items).toEqual([{ id: "pc_aim_old", body: OLD_AIM.body, over: ["pc_aim_new"] }]);
   });
 
-  it("the newer accepts without a question, and an accept that went live over a newer one says so", async () => {
+  it("the newer asks too: conflicts block both ways, and an accept that went live over a newer one says so", async () => {
     const calls = stub({ changes: [OLD_AIM, NEW_AIM], check: [{ id: "pc_aim_new", ok: true }], accept: [{ id: "pc_aim_new", ok: true, stale: [{ id: "pc_x", summary: "Someone else's aim" }] }] });
     render(<ProposedChanges />);
     await screen.findByTestId("proposal-pc_aim_old");
     openBatch("pcb_2");
     fireEvent.click(screen.getByTestId("accept-pc_aim_new"));
-    expect(screen.queryByTestId("conflict-confirm-pc_aim_new")).toBeNull();
+    fireEvent.click(screen.getByTestId("conflict-confirm-yes-pc_aim_new"));
     await screen.findByTestId("accept-outcome");
-    expect(calls.some((c) => c.url.endsWith("/accept"))).toBe(true);
+    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items[0].over).toEqual(["pc_aim_old"]);
     expect(screen.getByTestId("accept-older").textContent).toBe("“Newer aim” was drafted before “Someone else's aim” was accepted. Look at its page to check the words.");
   });
 
-  it("Accept all on a batch with a later conflict says so in its one question", async () => {
-    stub({ changes: [OLD_AIM, NEW_AIM] });
+  it("a stale change offers See what is live now in place of Accept, and its accept then carries what was seen", async () => {
+    const calls = stub({ changes: [STALE_PAGE], check: [{ id: "pc_page", ok: true }], accept: [{ id: "pc_page", ok: true }] });
+    render(<ProposedChanges />);
+    const card = await screen.findByTestId("proposal-pc_page");
+    expect(within(card).queryByTestId("accept-pc_page")).toBeNull();
+    fireEvent.click(within(card).getByTestId("see-live-pc_page"));
+    const accept = await within(card).findByTestId("accept-pc_page");
+    expect(within(card).getByTestId("seen-live-pc_page").textContent).toBe("Drawn against what is live now. Accept puts these words over it.");
+    expect(calls.filter((c) => c.url.endsWith("/api/admin/proposals")).length, "seeing it read the page again").toBeGreaterThan(1);
+    fireEvent.click(accept);
+    await screen.findByTestId("accept-outcome");
+    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items[0].seen).toBe("pc_done");
+  });
+
+  it("Accept all leaves out what waits on a choice, and says so in its one question", async () => {
+    const calls = stub({ changes: [OLD_AIM, NEW_AIM, { ...PAGE, batchId: "pcb_1", position: 1 }], check: [{ id: "pc_page", ok: true }], accept: [{ id: "pc_page", ok: true }] });
     render(<ProposedChanges />);
     const batch = await screen.findByTestId("batch-pcb_1");
     fireEvent.click(within(batch).getByTestId("batch-accept-all"));
-    expect(within(batch).getByTestId("batch-confirm-conflict").textContent).toBe("A later change also edits one of these.");
+    expect(within(batch).getByTestId("batch-confirm-conflict").textContent).toBe("One of these waits on your choice on its own card, so it stays out of Accept all.");
+    fireEvent.click(within(batch).getByTestId("batch-confirm-yes"));
+    await screen.findByTestId("accept-outcome");
+    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items.map((i: any) => i.id)).toEqual(["pc_page"]);
   });
 });
 

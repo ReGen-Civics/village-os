@@ -50,6 +50,7 @@ export interface StageInput {
 
 export interface StagedRow {
   staged: Staged;
+  filerKind: FilerKind;
   state: StagingState;
   heldCode: HeldCode | null;
   heldFields: Record<string, string>;
@@ -127,6 +128,7 @@ function rowOf(r: RowDataPacket): StagedRow {
       needs: parse(r.needs_json, undefined),
       provides: parse(r.provides_json, undefined),
     },
+    filerKind: (FILER_KINDS as readonly string[]).includes(String(r.filer_kind)) ? (String(r.filer_kind) as FilerKind) : "agent",
     state: String(r.state) as StagingState,
     heldCode: (r.held_code ? String(r.held_code) : null) as HeldCode | null,
     heldFields: parse(r.held_fields_json, {}),
@@ -140,6 +142,15 @@ export async function openStaged(db: Db, limit = 2000): Promise<StagedRow[]> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT * FROM suggestion_staging WHERE state IN ('staged','held','carded') ORDER BY received_at, id LIMIT ?",
     [limit],
+  );
+  return rows.map(rowOf);
+}
+
+/** What one stream has waiting in Held, oldest first: a person clears each one, and none lapses. */
+export async function heldOf(db: Db, stream: StreamId, limit = 200): Promise<StagedRow[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT * FROM suggestion_staging WHERE state = 'held' AND stream = ? ORDER BY received_at, id LIMIT ?",
+    [stream, limit],
   );
   return rows.map(rowOf);
 }

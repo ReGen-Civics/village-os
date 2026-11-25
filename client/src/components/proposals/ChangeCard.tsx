@@ -15,11 +15,11 @@
  * put aside, who decided and when.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, ExternalLink, History as HistoryIcon, TriangleAlert, PenLine, Undo2, UserRound, X } from "lucide-react";
+import { Check, Eye, ExternalLink, History as HistoryIcon, TriangleAlert, PenLine, Undo2, UserRound, X } from "lucide-react";
 import { Firefly } from "@/components/sacred/living";
 import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/journey/look";
 import { agendaLines, faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
 import { fieldDiffs, valueAt } from "@shared/proposedChanges";
@@ -182,7 +182,7 @@ function AgendaItems({ body }: { body: Record<string, unknown> }) {
 }
 
 /** The change itself, as before and after, chosen by what it is. `before` is what is live; `after` what would be. */
-function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: { face: ChangeFace; kind: string; before: unknown; after: Record<string, unknown>; labels: Record<string, string>; zone: string; whole: boolean; plain?: boolean }) {
+export function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: { face: ChangeFace; kind: string; before: unknown; after: Record<string, unknown>; labels: Record<string, string>; zone: string; whole: boolean; plain?: boolean }) {
   if (kind === "faq_remove") {
     return (
       <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-3 sm:p-4" data-testid="faq-taken-down">
@@ -226,9 +226,9 @@ export function ConflictFlags({ conflicts, stale }: { conflicts: readonly Confli
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
             <span>
               {o.later ? (
-                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed later. Accept one, then look again.</Trans>
+                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed later. Accepting one sets the other aside.</Trans>
               ) : (
-                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed earlier. Accept one, then look again.</Trans>
+                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed earlier. Accepting one sets the other aside.</Trans>
               )}
             </span>
           </li>
@@ -263,20 +263,31 @@ export interface ChangeCardProps {
   checkedPage: boolean;
   onCheckedPage: (v: boolean) => void;
   onEdit: (path: string, next: unknown) => void;
-  onAccept: () => void;
+  /**
+   * Accept this change. A change that collides with other waiting changes is accepted as the person's choice over
+   * them (`over`), and a stale one carries the version of what is live now that they were shown (the lead, 25 Nov 2026).
+   */
+  onAccept: (choice?: { over?: string[] }) => void;
   onDiscard: () => void;
+  /** A stale change: the person has seen what is live now since the page last loaded it. */
+  seenLive?: boolean;
+  /** Redraw the change against what is live now. Until it has run, a stale change offers this in place of Accept. */
+  onSeeLive?: () => void;
 }
 
-export default function ChangeCard({ change: c, found = false, conflicts = [], body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
+export default function ChangeCard({ change: c, found = false, conflicts = [], body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard, seenLive = false, onSeeLive }: ChangeCardProps) {
   const { t } = useLingui();
   const [editing, setEditing] = useState(false);
-  // Accepting a change that a later waiting one also writes asks once, on the card. It never blocks.
+  // Accepting one of several waiting changes for the same thing is a choice, asked once on the card: the others are
+  // set aside, recorded as another option chosen (conflicts block, the lead, 25 Nov 2026).
   const [confirming, setConfirming] = useState(false);
   const yes = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (confirming) yes.current?.focus();
   }, [confirming]);
-  const laterConflict = conflicts.some((o) => o.later);
+  const others = conflicts.length;
+  // Drafted before a later accept: Accept waits until the person has seen what is live now.
+  const mustLook = (c.stale ?? []).length > 0 && !seenLive;
   const [json, setJson] = useState(false);
   const face = faceOf(c.kind, c.route);
   const flags = flagsOf(c.kind, c.route, c.target, body);
@@ -321,6 +332,11 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
       />
 
       <ConflictFlags conflicts={conflicts} stale={c.stale ?? []} />
+      {(c.stale ?? []).length > 0 && seenLive && (
+        <p className={HINT} data-testid={`seen-live-${c.id}`}>
+          <Trans context="proposed changes: conflict">Drawn against what is live now. Accept puts these words over it.</Trans>
+        </p>
+      )}
 
       {c.status === "failed" && c.error && !problems.length && (
         <p role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="last-try">
@@ -353,7 +369,12 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
       {confirming && (
         <div className="space-y-3 rounded-xl border border-notice/60 bg-card p-4" role="group" aria-label={t({ message: "Confirm accepting this change", context: "proposed changes: conflict" })} data-testid={`conflict-confirm-${c.id}`}>
           <p className="font-semibold text-card-foreground">
-            <Trans context="proposed changes: conflict">A later change also edits this. Accept this one anyway?</Trans>
+            <Plural
+              context="proposed changes: conflict"
+              value={others}
+              one="Accept this one? The other change for the same thing is set aside, recorded as another option chosen."
+              other="Accept this one? The # other changes for the same thing are set aside, recorded as another option chosen."
+            />
           </p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -363,7 +384,7 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
               disabled={busy}
               onClick={() => {
                 setConfirming(false);
-                onAccept();
+                onAccept({ over: conflicts.map((o) => o.id) });
               }}
               data-testid={`conflict-confirm-yes-${c.id}`}
             >
@@ -377,10 +398,17 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
       )}
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <button type="button" className={BTN_PRIMARY} disabled={busy || (c.status === "unknown" && !checkedPage)} onClick={() => (laterConflict ? setConfirming(true) : onAccept())} data-testid={`accept-${c.id}`}>
-          <Check className="size-4" aria-hidden="true" />
-          {busy ? <Trans context="proposed changes">Working</Trans> : <Trans context="proposed changes">Accept</Trans>}
-        </button>
+        {mustLook && onSeeLive ? (
+          <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={onSeeLive} data-testid={`see-live-${c.id}`}>
+            <Eye className="size-4" aria-hidden="true" />
+            <Trans context="proposed changes: conflict">See what is live now</Trans>
+          </button>
+        ) : (
+          <button type="button" className={BTN_PRIMARY} disabled={busy || mustLook || (c.status === "unknown" && !checkedPage)} onClick={() => (others ? setConfirming(true) : onAccept())} data-testid={`accept-${c.id}`}>
+            <Check className="size-4" aria-hidden="true" />
+            {busy ? <Trans context="proposed changes">Working</Trans> : <Trans context="proposed changes">Accept</Trans>}
+          </button>
+        )}
         {editable && (
           <button type="button" className={BTN_SECONDARY} onClick={() => setEditing((e) => !e)} aria-expanded={editing} aria-controls={editorId} data-testid={`edit-${c.id}`}>
             <PenLine className="size-4" aria-hidden="true" />

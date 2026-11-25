@@ -19,6 +19,7 @@ import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/
 import { usersRepo } from "../repos/users";
 import { register } from "./proposedChanges";
 import { backfillConnectorOutcomes } from "../lib/suggestionOutcome";
+import { stageSuggestion } from "../repos/suggestionStaging";
 import { CCOS_WORDS_REFUSAL, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 
 const configured = testDbConfigured();
@@ -490,33 +491,114 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
   // ── Conflicts: a waiting change drafted before a later accept (the lead, 17 Nov 2026) ─────────────────────
 
-  it("two proposals on one role card: accepting the newer marks the older stale, on the page and again at its accept", async () => {
+  /** What reached a role's own edit route, as text, so a test can say which words went live. */
+  const sentTo = (roleId: string) => hits.filter((h) => h.method === "POST" && h.path === `/api/org/role-edit/${roleId}`).map((h) => JSON.stringify(h.body));
+
+  it("CONFLICTS BLOCK: two waiting changes to one aim are one choice, made by a person, and the other is recorded as another option chosen", async () => {
     await q("DELETE FROM org_roles WHERE id = 'rc-conflict'");
     await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-conflict', 'Keeper of the Books', 'Keep the books.', 1, 1)");
     const aim = (words: string, summary: string) => ({ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { aim: words } }, summary });
     const older = (await call("POST", "/api/admin/proposals", { batch: "First pass", items: [aim("Hold the money.", "Older aim")] }, AGENT.id)).body.ids[0];
     await new Promise((r) => setTimeout(r, 20));
     const newer = (await call("POST", "/api/admin/proposals", { batch: "Second pass", items: [aim("Tend the money.", "Newer aim")] }, AGENT.id)).body.ids[0];
-    // Another field on the same card, proposed first: it never collides.
+    // Another field on the same card: it never collides, and it is accepted on its own.
     const apart = (await call("POST", "/api/admin/proposals", { batch: "Words", items: [{ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { domain: "The ledger." } }, summary: "Domain" }] }, AGENT.id)).body.ids[0];
 
-    const before = await call("GET", "/api/admin/proposals");
-    expect(before.body.changes.map((c: any) => [c.id, c.stale])).toEqual([[older, []], [newer, []], [apart, []]]);
+    // Accepting either alone is refused, naming the other option, and nothing moves.
+    hits.length = 0;
+    const alone = await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer }] });
+    expect(alone.body.results).toEqual([{ id: newer, ok: false, error: expect.stringContaining("Another waiting change"), field: null, code: "choose_first", rivals: [{ id: older, summary: "Older aim" }] }]);
+    expect(sentTo("rc-conflict"), "a refused choice calls no route").toEqual([]);
+    // Naming some other change is not naming the rival.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer, over: [apart] }] })).body.results[0].code).toBe("choose_first");
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: apart }] })).body.results).toEqual([{ id: apart, ok: true }]);
 
-    // The newer is accepted first. Nothing moved under it, so it carries no flag.
+    // The person chooses the newer over the older: it lands, and the older is set aside as another option chosen.
+    const chose = await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer, over: [older] }] });
+    expect(chose.body.results).toEqual([{ id: newer, ok: true, otherChosen: [older] }]);
+    expect(sentTo("rc-conflict").filter((b) => b.includes("money")), "only the chosen option reached the role's route").toEqual([expect.stringContaining("Tend the money.")]);
+    const [olderRow] = await q("SELECT status FROM proposed_changes WHERE id = ?", [older]);
+    expect(olderRow.status).toBe("discarded");
+    const outcomes = await q("SELECT source_id, outcome FROM suggestion_outcomes WHERE source_id IN (?, ?) ORDER BY outcome", [older, newer]);
+    expect(outcomes.map((o: any) => [o.source_id, o.outcome])).toEqual([[newer, "accepted"], [older, "other_chosen"]]);
+  });
+
+  it("a person resolves every conflict: the full-access agent's accept of one option is refused", async () => {
+    const aim = (words: string, summary: string) => ({ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { aim: words } }, summary });
+    await q("DELETE FROM org_roles WHERE id = 'rc-conflict'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-conflict', 'Keeper of the Books', 'Keep the books.', 1, 1)");
+    const a = (await call("POST", "/api/admin/proposals", { batch: "One", items: [aim("One way.", "One way")] }, AGENT.id)).body.ids[0];
+    const b = (await call("POST", "/api/admin/proposals", { batch: "Two", items: [aim("Another way.", "Another way")] }, AGENT.id)).body.ids[0];
+    // Through the page: refused until the choice is named. The agent's door runs the same accept with no `over`.
+    const r = await call("POST", "/api/admin/proposals/accept", { items: [{ id: a }] });
+    expect(r.body.results[0]).toMatchObject({ ok: false, code: "choose_first", rivals: [{ id: b }] });
+    const rows = await q("SELECT status FROM proposed_changes WHERE id IN (?, ?)", [a, b]);
+    expect(rows.map((x: any) => x.status)).toEqual(["proposed", "proposed"]);
+  });
+
+  it("A STALE CHANGE IS SEEN FIRST: drafted before a later accept, it lands only with the version of what is live now", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-conflict'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-conflict', 'Keeper of the Books', 'Keep the books.', 1, 1)");
+    const words = (w: Record<string, string>, summary: string) => ({ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: w }, summary });
+    // Proposed first, on another field, so the two never waited against each other.
+    const older = (await call("POST", "/api/admin/proposals", { batch: "First pass", items: [words({ domain: "The ledger." }, "Older words")] }, AGENT.id)).body.ids[0];
+    await new Promise((r) => setTimeout(r, 20));
+    const newer = (await call("POST", "/api/admin/proposals", { batch: "Second pass", items: [words({ aim: "Tend the money." }, "Newer aim")] }, AGENT.id)).body.ids[0];
     expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer }] })).body.results).toEqual([{ id: newer, ok: true }]);
+    // The person edits the older one to write the aim too: it was drafted before the newer aim went live.
+    await call("PUT", `/api/admin/proposals/${older}/draft`, { body: { words: { domain: "The ledger.", aim: "Hold the money." } } });
+    const read = await call("GET", "/api/admin/proposals");
+    const card = read.body.changes.find((c: any) => c.id === older);
+    expect(card.stale).toEqual([{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }]);
 
-    // The older was drafted against the aim the newer has just replaced: the page says so, naming it.
-    const after = await call("GET", "/api/admin/proposals");
-    const byId = Object.fromEntries(after.body.changes.map((c: any) => [c.id, c]));
-    expect(byId[older].stale).toEqual([{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }]);
-    expect(byId[apart].stale, "another field on the same card is not stale").toEqual([]);
+    // Without having seen what is live now: refused, naming what landed since, and nothing moves.
+    hits.length = 0;
+    const blind = await call("POST", "/api/admin/proposals/accept", { items: [{ id: older }] });
+    expect(blind.body.results[0]).toMatchObject({ ok: false, code: "see_live", stale: [{ id: newer }] });
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: older, seen: "something-else" }] })).body.results[0].code).toBe("see_live");
+    expect(sentTo("rc-conflict").filter((b) => b.includes("Hold the money.")), "a refused accept calls no route").toEqual([]);
 
-    // Accepting it anyway is the person's call: it lands, and the answer carries the flag read at accept time.
-    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: older }] });
-    expect(acc.body.results).toEqual([{ id: older, ok: true, stale: [{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }] }]);
-    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [older]);
-    expect(row.status, "a stale change is never rejected").toBe("accepted");
+    // Having seen it: the version is what landed since, and the accept goes through, the flag read again with it.
+    const seen = await call("POST", "/api/admin/proposals/accept", { items: [{ id: older, seen: newer }] });
+    expect(seen.body.results).toEqual([{ id: older, ok: true, stale: [{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }] }]);
+    expect(sentTo("rc-conflict").filter((b) => b.includes("Hold the money."))).toHaveLength(1);
+  });
+
+  // ── Held (lane 4b): a person clears each one, or lets a reconsider through ──────────────────────────────────
+
+  it("HELD: lists the connector's held suggestions by code, never another stream's, and a person clears or releases each", async () => {
+    await q("DELETE FROM suggestion_staging");
+    const stage = async (stream: "connector" | "sera", body: Record<string, unknown>, reconsider: { code: string; reason: string } | null = null) =>
+      (await stageSuggestion(pool, { stream, streamRef: `ref-${JSON.stringify(body)}`, filer: AGENT.id, filerKind: "agent", kind: "page_content", target: { section: "page-home" }, body, reconsider, now: new Date() })).id;
+    const discarded = await stage("connector", { hero: { headline: "Sent again" } }, { code: "B-9.1", reason: "Shorter now." });
+    const live = await stage("connector", { hero: { headline: "Already there" } });
+    const sera = await stage("sera", { hero: { headline: "Another stream" } });
+    await q("UPDATE suggestion_staging SET state = 'held', held_code = 'reconsider_waits', held_fields_json = ? WHERE id = ?", [JSON.stringify({ discarded: "B-9.1" }), discarded]);
+    await q("UPDATE suggestion_staging SET state = 'held', held_code = 'already_live', held_fields_json = '{}' WHERE id IN (?, ?)", [live, sera]);
+
+    const read = await call("GET", "/api/admin/proposals/held");
+    expect(read.status).toBe(200);
+    expect(read.body.held.map((h: any) => [h.id, h.code, h.fields])).toEqual([[discarded, "reconsider_waits", { discarded: "B-9.1" }], [live, "already_live", {}]]);
+    expect(read.body.held[0]).toMatchObject({ kind: "page_content", filerKind: "agent", reconsider: { code: "B-9.1" }, released: false, receivedAt: expect.any(String) });
+    expect(JSON.stringify(read.body), "the filer's own words never reach the list").not.toContain("Shorter now.");
+    expect((await call("GET", "/api/admin/proposals/held", undefined, STRANGER.id)).status).toBe(403);
+
+    // A person's act: never the connector's, never an agent account's.
+    expect((await call("POST", `/api/admin/proposals/held/${live}/clear`, undefined, ADMIN.id, { "x-village-connector": "1" })).status).toBe(403);
+    expect((await call("POST", `/api/admin/proposals/held/${live}/clear`, undefined, AGENT.id)).status).toBe(403);
+    // Only a reconsider is let through the window; another stream's row is not this page's.
+    expect((await call("POST", `/api/admin/proposals/held/${live}/release`)).status).toBe(409);
+    expect((await call("POST", `/api/admin/proposals/held/${sera}/clear`)).status).toBe(409);
+
+    expect((await call("POST", `/api/admin/proposals/held/${discarded}/release`)).body).toEqual({ success: true });
+    expect((await call("POST", `/api/admin/proposals/held/${live}/clear`)).body).toEqual({ success: true });
+    expect((await call("POST", `/api/admin/proposals/held/${live}/clear`)).status, "cleared once").toBe(409);
+    const after = await call("GET", "/api/admin/proposals/held");
+    expect(after.body.held.map((h: any) => [h.id, h.released])).toEqual([[discarded, true]]);
+    const outcomes = await q("SELECT source_id, outcome, decided_by_capability FROM suggestion_outcomes WHERE source_id IN (?, ?) ORDER BY outcome", [discarded, live]);
+    expect(outcomes.map((o: any) => [o.source_id, o.outcome, o.decided_by_capability])).toEqual([[live, "discarded", "admin"], [discarded, "released", "admin"]]);
+    const [closed] = await q("SELECT state FROM suggestion_staging WHERE id = ?", [live]);
+    expect(closed.state).toBe("closed");
   });
 
   // ── Putting it back ────────────────────────────────────────────────────────

@@ -254,5 +254,20 @@ describe.skipIf(!configured)("the full-access switch, on a real schema", () => {
       const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [d.id]);
       expect(row.status).toBe("discarded");
     });
+
+    it("never chooses between two options for one thing: a person does (conflicts block, the lead, 25 Nov 2026)", async () => {
+      await call("PUT", "/api/admin/agent-accounts/full-access", { roleId: "r-ops" });
+      await seatLead();
+      const a = await fileOne();
+      const b = await fileOne();
+      const note = `Accept ${a.code} and ${b.code}.`;
+      const r = await call("POST", "/api/admin/proposals/accept-as-holder", { action: "accept", ids: [a.id, b.id], approvedBy: "The lead", approvalNote: note }, LEAD.id, CONNECTOR);
+      expect(r.status).toBe(200);
+      expect(r.body.results.map((x: any) => [x.id, x.ok, x.code])).toEqual([[a.id, false, a.code], [b.id, false, b.code]]);
+      expect(r.body.results[0].error).toContain("A person chooses one on the review page");
+      expect(hits.filter((h) => h.method === "PUT"), "no option reached the page").toEqual([]);
+      const rows = await q("SELECT status FROM proposed_changes WHERE id IN (?, ?)", [a.id, b.id]);
+      expect(rows.map((x: any) => x.status)).toEqual(["proposed", "proposed"]);
+    });
   });
 });

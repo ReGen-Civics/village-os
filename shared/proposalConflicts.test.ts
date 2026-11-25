@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conflictCounts, footprintOf, oldestFirst, overlaps, staleAgainst, waitingConflicts, type AcceptedRecord, type ConflictInput } from "./proposalConflicts";
+import { conflictCounts, conflictGroups, footprintOf, oldestFirst, overlaps, staleAgainst, staleVersionOf, waitingConflicts, type AcceptedRecord, type ConflictInput } from "./proposalConflicts";
 import { routeOf, type ProposalKind } from "./proposedChanges";
 
 const route = (kind: ProposalKind, target: Record<string, unknown>) => {
@@ -157,5 +157,27 @@ describe("content translations: one field each (Spanish drafts, 24 Nov 2026)", (
   });
   it("any other PUT setting still writes its whole document", () => {
     expect(fp("setting", { method: "PUT", path: "/api/admin/brand" }, { name: "x" })?.whole).toBe(true);
+  });
+});
+
+describe("deciding them (the lead, 25 Nov 2026: conflicts block, a stale change is seen first)", () => {
+  const home = { section: "page-home" };
+  it("gathers every change linked by a shared write into one card, oldest first, and leaves the rest alone", () => {
+    const a = change("page_content", home, { hero: { headline: "A" } }, "2026-11-01T00:00:00.000Z", { id: "a" });
+    const b = change("page_content", home, { hero: { headline: "B", badge: "x" } }, "2026-11-02T00:00:00.000Z", { id: "b" });
+    // c collides with b only, through the badge: still the same card, so one person makes one choice.
+    const c = change("page_content", home, { hero: { badge: "y" } }, "2026-11-03T00:00:00.000Z", { id: "c" });
+    const apart = change("page_content", home, { intro: { lede: "z" } }, "2026-10-01T00:00:00.000Z", { id: "apart" });
+    const other = change("page_content", { section: "page-steward" }, { hero: { headline: "A" } }, "2026-11-01T00:00:00.000Z", { id: "other" });
+    expect(conflictGroups([c, apart, b, other, a])).toEqual([["a", "b", "c"]]);
+    // Accepting one names only what it collides with directly: a over b, never c.
+    expect(waitingConflicts([a, b, c]).a!.map((o) => o.id)).toEqual(["b"]);
+    expect(conflictGroups([apart, other])).toEqual([]);
+  });
+
+  it("a stale change's version is what landed since, in any order, and empty when nothing did", () => {
+    expect(staleVersionOf([])).toBe("");
+    expect(staleVersionOf([{ id: "pc_b" }, { id: "pc_a" }])).toBe("pc_a,pc_b");
+    expect(staleVersionOf([{ id: "pc_a" }, { id: "pc_b" }])).toBe(staleVersionOf([{ id: "pc_b" }, { id: "pc_a" }]));
   });
 });
