@@ -22,28 +22,28 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 71 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 294 open and 71 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 331 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 338 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-358 dials in 41 categories. 179 carry a minimum and a maximum. By type: 140 integer, 21 decimal, 19 percentage, 53 boolean, 37 choice, 75 text, 13 longtext.
+365 dials in 41 categories. 182 carry a minimum and a maximum. By type: 143 integer, 21 decimal, 19 percentage, 55 boolean, 37 choice, 77 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
 | Membership | 3 | 3 | 0 |
 | Season places | 5 | 5 | 0 |
 | Governance | 56 | 46 | 10 |
-| Village | 5 | 4 | 1 |
+| Village | 12 | 11 | 1 |
 | Gratitude | 11 | 11 | 0 |
 | Ledger | 25 | 13 | 12 |
 | The Mint | 7 | 6 | 1 |
@@ -153,6 +153,13 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Roles speaking for other beings count toward quorum | `governance.nonhuman_in_quorum` | Governance | boolean | `false` | the whole village |
 | Cycles of silence before a role leaves the count | `governance.absent_cycles` | Governance | integer | `3` | the whole village |
 | The village's own circle, for budget lines about the whole village | `budgets.village_circle_id` | Village | text | blank | the whole village |
+| Fill the phone's bottom bar from where members go | `nav.responsive_bar` | Village | boolean | `false` | the whole village |
+| Places on the bottom bar for the village's most visited pages | `nav.popular_slots` | Village | integer | `2` | the whole village |
+| Keep one bottom bar place for each member's own most visited page | `nav.personal_slot` | Village | boolean | `true` | the whole village |
+| How often the bottom bar's village pages are looked at again | `nav.refresh_days` | Village | integer | `7` | the whole village |
+| How clearly a page must lead before it takes a place on the bottom bar | `nav.swap_margin_pct` | Village | integer | `20` | the whole village |
+| Pages the bottom bar always keeps | `nav.pinned` | Village | text | blank | the whole village |
+| Pages the bottom bar never shows | `nav.excluded` | Village | text | blank | the whole village |
 | Village Pulse length | `village.pulse_max_entries` | Village | integer | `30` | the whole village |
 | Where the land's satellite picture comes from | `village.satellite_provider` | Village | choice | blank | the whole village |
 | The date this village counts Moon 1 from | `village.first_moon_at` | Village | text | blank | the founder or an admin |
@@ -1430,7 +1437,7 @@ When roles speaking for other beings do count toward quorum, this is how many cy
 
 ## Village
 
-5 dials. 4 for the whole village, 1 for the founder or an admin.
+12 dials. 11 for the whole village, 1 for the founder or an admin.
 
 ### The village's own circle, for budget lines about the whole village
 
@@ -1439,6 +1446,106 @@ Every cash budget line belongs to a circle. A line for the whole village, like a
 | Fact | Value |
 | --- | --- |
 | Key | `budgets.village_circle_id` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Fill the phone's bottom bar from where members go
+
+On, a signed-in member's bottom bar on a phone keeps its fixed places (Home first, the member's path, More last) and fills the two places between with the pages members visit most across the village, plus one place for the page that member visits most on their own phone. Visits are counted per page per day with no person in the count, and the personal place is worked out on the member's own phone and never sent. Off, every member sees the village's fixed bar, as before.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.responsive_bar` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Places on the bottom bar for the village's most visited pages
+
+How many of the bar's two changing places go to the pages members visit most across the village, pinned pages included. Home, the member's path and More never move. With the personal place on, it takes the second of the two.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.popular_slots` |
+| Type | integer, a whole number |
+| Default | `2` |
+| Range | 1 to 2 |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Keep one bottom bar place for each member's own most visited page
+
+On, one place on the bar shows the page that member visits most, when it is not already on the bar. It is worked out on their own phone from their own visits and changes at most once a day. Off, both changing places go to the village's most visited pages.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.personal_slot` |
+| Type | boolean, on or off |
+| Default | `true` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How often the bottom bar's village pages are looked at again
+
+The village's most visited pages are worked out again at most this often, from the visits of the four periods before. Between times the bar stays exactly as it is, so a member's thumb learns where things are.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.refresh_days` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 1 to 90 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How clearly a page must lead before it takes a place on the bottom bar
+
+A page not on the bar replaces one that is only when it was visited this many percent more. Higher keeps the bar steadier; 0 lets the bar follow every small change.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.swap_margin_pct` |
+| Type | integer, a whole number |
+| Default | `20` |
+| Range | 0 to 200 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Pages the bottom bar always keeps
+
+Addresses that always take the bar's first places after Home, in this order, whatever the visits say: for example /quests. Separate them with commas or new lines. They count toward the places above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.pinned` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Pages the bottom bar never shows
+
+Addresses that never take a place on the bar, for the village or for a member's own place, however often they are visited. Separate them with commas or new lines.
+
+| Fact | Value |
+| --- | --- |
+| Key | `nav.excluded` |
 | Type | text, free text, one line |
 | Default | blank |
 | Range | no bounds are set |
