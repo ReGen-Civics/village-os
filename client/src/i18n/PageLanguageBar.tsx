@@ -12,7 +12,7 @@ import { LanguagePicker, type PickerTone } from "./LanguagePicker";
  * top cannot cover anything. `pickerCoverage.test.ts` checks every routed
  * page reaches a selector.
  */
-export function PageLanguageBar({ tone = "onLight", className = "" }: { tone?: PickerTone; className?: string }) {
+export function PageLanguageBar({ tone = "onSheet", className = "" }: { tone?: PickerTone; className?: string }) {
   const cfg = useGameConfig();
   return (
     <div className={`flex justify-end ${className}`}>

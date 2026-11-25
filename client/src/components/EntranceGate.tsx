@@ -124,12 +124,12 @@ export default function EntranceGate({ children, waiting }: { children: ReactNod
       return <KeepInTouch village={village} goTo={location + (rest ? `?${rest}` : "") + window.location.hash} />;
     }
     if (look && codeDue) {
-      if (changingEmail) return <Entrance next={next} siteKey={status.siteKey} privacyContact={status.privacyContact ?? ""} codes={!!status.codes} />;
-      return <EntranceCode sentTo={look.sentTo} next={next} onChangeEmail={() => setChangingEmail(true)} />;
+      if (changingEmail) return <Entrance next={next} siteKey={status.siteKey} privacyContact={status.privacyContact ?? ""} codes={!!status.codes} backdrop={status.backdrop ?? null} />;
+      return <EntranceCode sentTo={look.sentTo} next={next} onChangeEmail={() => setChangingEmail(true)} backdrop={status.backdrop ?? null} />;
     }
     return <>{children}</>;
   }
   // An invited guest: the calendar, which the server trims to their gathering.
   if (status.eventPass && (location === "/events" || location.startsWith("/events/"))) return <>{children}</>;
-  return <Entrance next={next} siteKey={status.siteKey} privacyContact={status.privacyContact ?? ""} codes={!!status.codes} />;
+  return <Entrance next={next} siteKey={status.siteKey} privacyContact={status.privacyContact ?? ""} codes={!!status.codes} backdrop={status.backdrop ?? null} />;
 }

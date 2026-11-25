@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.72 (2026-11-25)
+
+### What changed for your village
+
+- **Decide on the review page.** /admin/review now has Held and Decided tabs, decides proposed changes right on the page, and finds decided items by code. Two waiting changes that would write the same thing ask a person to choose one first (an agent never may), and a change drafted against an older version shows what is live now before it can be accepted.
+- **Search in Admin, and mail settings that show their state.** Every Admin control and steward page has a stable address and the words people search for it by, filtered by what each person may use. Mail settings now open with "Mail now": whether mail is live, who it sends as, the last test's outcome in the server's words, and Send me a test, Pause all and Sent mail always in view. The test's outcome updates in place until the delivery report arrives, and disconnecting delivery reports sits in a danger zone with a confirm.
+- **A warmer entrance.** New words on the entrance, the privacy notice as a short list, and a background video behind the entrance card when the village sets one (three new settings: a desktop video, a phone video, and a still image for reduced motion).
+- **The app sign-in page** (/oauth/authorize) in the village's look, readable in dark mode.
+
+### What you must do
+
+Nothing to upgrade. Optional: to show a video behind the entrance, set the three entrance background settings in Game Mechanics.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.71 still works.
+
+---
+
 ## 1.3.71 (2026-11-25)
 
 ### What changed for your village

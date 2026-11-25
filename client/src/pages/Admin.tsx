@@ -30,8 +30,6 @@ import { AppointToRole } from "@/components/admin/AppointToRole";
 import PlayersTab from "@/components/admin/PlayersTab";
 import { RAISED_HAND_TERM_KEYS, RaisedHandTerm } from "@/components/admin/RaisedHandTerm";
 import { POWER_HAND_KEYS, PowerHandNote } from "@/components/admin/PowerHandNote";
-import { SeatClaimAsks, type SeatClaimAsk } from "@/components/admin/SeatClaimAsks";
-import { UndrawnSeatAsks } from "@/components/admin/UndrawnSeatAsks";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { playMoment } from "@/lib/sound";
@@ -128,7 +126,6 @@ import NeedsPanel, { NeedsSetupStep, useNeedsSetupObservation } from "@/componen
 import PurposeStatementPanel from "@/components/admin/PurposeStatementPanel";
 import ProfileImportDoor from "@/components/admin/ProfileImportDoor";
 import { takePrefill, usePrefill } from "@/lib/profilePrefill";
-import RelationsEditor from "@/components/admin/RelationsEditor";
 import HousingAdminPanel from "@/components/HousingAdminPanel";
 import { CommsJourneys, CommsLetters, CommsOverview, CommsPeople, CommsSentMail, CommsSettings, CommsWords, EmailField } from "@/components/admin/comms";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";

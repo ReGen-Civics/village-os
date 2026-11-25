@@ -84,10 +84,10 @@ export default function VisitorProfile() {
   };
 
   const interestWords: Record<Interest, string> = {
-    seeder: t({ message: "Becoming a founding seeder", context: "portal entrance: what draws you, a founding seeder" }),
+    seeder: t({ message: 'Becoming a "Founding Seeder"', context: "portal entrance: what draws you, a founding seeder" }),
     home: t({ message: "A home here", context: "portal entrance: what draws you, a home" }),
     visit: t({ message: "Visiting", context: "portal entrance: what draws you, a visit" }),
-    role: t({ message: "A role on the team", context: "portal entrance: what draws you, a role" }),
+    role: t({ message: "A role on our team", context: "portal entrance: what draws you, a role" }),
     curious: t({ message: "Just curious", context: "portal entrance: what draws you, curiosity" }),
   };
 
@@ -256,7 +256,7 @@ export default function VisitorProfile() {
               }}
             >
               <div className="flex flex-col gap-2">
-                <label htmlFor={`${ids}-name`} className={LABEL}>{t({ message: "Your name", context: "portal entrance: name field" })}</label>
+                <label htmlFor={`${ids}-name`} className={LABEL}>{t({ message: "Name or Nickname", context: "portal entrance: name field" })}</label>
                 <input id={`${ids}-name`} value={details.name} maxLength={120} onChange={(e) => setDetails({ ...details, name: e.target.value })} className={`${FIELD} min-h-11`} />
               </div>
               <p className={HINT}>

@@ -285,6 +285,8 @@ export interface EntranceStatus {
   visitor?: boolean;
   /** Who the privacy line names for seeing or deleting what is kept (dial `entrance.privacy_contact`); "" means the village's contact address. */
   privacyContact?: string;
+  /** The video behind the entrance card (dials `entrance.background_*`); null when the village set none. */
+  backdrop?: EntranceBackdrop | null;
   /** Whether entering sends a code (the village can send email), so the privacy line says so. */
   codes?: boolean;
   /** This device is a visitor whose address is verified: they have a visitor profile at `/visitor` (shared/visitorProfile.ts). */
@@ -387,4 +389,29 @@ export function parseEntrance(body: unknown): { ok: true; value: { name: string;
   if (link === false) return { ok: false, problem: "link" };
   // An answer the form does not offer is no answer, never a refusal: the question is optional.
   return { ok: true, value: { name, email, whatsapp, link, interest: isInterest(b.interest) ? b.interest : null } };
+}
+
+// ── The entrance's background ────────────────────────────────────────────────
+
+/** A video behind the entrance card, with a phone-sized copy and a still image. Each is a safe address or "". */
+export interface EntranceBackdrop {
+  video: string;
+  mobile: string;
+  poster: string;
+}
+
+/** An https address or a page of this site, else "". The same rule the dials hold at the door. */
+export function safeMediaUrl(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const s = v.trim();
+  if (!s || s.length > 255 || /\s/.test(s)) return "";
+  if (s.startsWith("/") && !s.startsWith("//") && !s.startsWith("/\\")) return s;
+  return /^https:\/\/[^\s]+$/i.test(s) ? s : "";
+}
+
+/** The backdrop from the three dials, or null when there is no video to play. */
+export function backdropOf(video: unknown, mobile: unknown, poster: unknown): EntranceBackdrop | null {
+  const v = safeMediaUrl(video);
+  if (!v) return null;
+  return { video: v, mobile: safeMediaUrl(mobile), poster: safeMediaUrl(poster) };
 }

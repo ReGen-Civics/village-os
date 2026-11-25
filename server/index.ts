@@ -190,6 +190,7 @@ import { CANVAS_PUBLIC_SECTION, CANVAS_SECTION_DOOR, register as registerCanvasP
 import { register as registerAgentCompanionRoutes } from "./routes/companion";
 import { register as registerOrganizeRoutes } from "./routes/organize";
 import { register as registerAdminHelperRoutes } from "./routes/adminHelper";
+import { register as registerAdminSearchRoutes } from "./routes/adminSearch";
 import { register as registerFieldGuideRoutes } from "./routes/fieldGuide";
 import { register as registerContentTranslationRoutes } from "./routes/contentTranslations";
 import { readTranslationReply, translationMessage, translationSystemPrompt } from "./lib/contentTranslationDraft";
@@ -13085,6 +13086,9 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
       return orgStructureForHelper({ roles, assignments, circles: circleViews(circlesRepo.all()) });
     },
   });
+
+  // Admin search: the index the search bar and the guide read, filtered by the one gate (server/routes/adminSearch.ts).
+  registerAdminSearchRoutes(app, { isAdmin, mayStillSee, dials: () => allVariables(), lifecycle: (id) => effectiveLifecycle(id) });
 
   registerCapabilityExplainerRoutes(app, { isAdmin, members, capabilityCtx, stageOf });
 
