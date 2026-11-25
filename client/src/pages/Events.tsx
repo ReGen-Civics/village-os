@@ -32,7 +32,7 @@ import { authToken } from "@/lib/gameApi";
 import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Repeat, Video } from "lucide-react";
 import { MushroomNetwork, SeedPin } from "@/components/sacred/living";
 import { useLingui, Trans } from "@lingui/react/macro";
-import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
+import { BTN_SECONDARY, CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
 import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
 import { civilDate, lunarYearOf, type YearAnchor } from "@shared/lunar";
 import { moonCountLabel } from "@shared/villageMoon";
@@ -107,6 +107,9 @@ export default function Events() {
   const modules = useModules();
   const eventsModule = useModule("events");
   const [payload, setPayload] = useState<EventsPayload | null>(null);
+  /* A read that failed is not an empty calendar (whole-app QA, 25 Nov 2026): the page used to
+     draw the fallback payload and then say "Nothing is on this moon yet", a false sentence. */
+  const [loadFailed, setLoadFailed] = useState(false);
   const [span, setSpan] = useState<CalendarItem[]>([]);
   const [spanYear, setSpanYear] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>(() => remembered(TAB_KEY, TAB_IDS, "moon"));
@@ -134,8 +137,8 @@ export default function Events() {
   const load = useCallback(() => {
     fetch("/api/events", { headers: headers() })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((d: EventsPayload) => setPayload({ ...d, events: d.events ?? [] }))
-      .catch(() => setPayload((p) => p ?? { events: [], rsvpEnabled: true, timezone: "UTC", window: { from: "", to: "" }, lunar: null, anchor: DEFAULT_ANCHOR, hemisphere: "north", monthNames: [], moonOneCycle: null }));
+      .then((d: EventsPayload) => { setPayload({ ...d, events: d.events ?? [] }); setLoadFailed(false); })
+      .catch(() => { setLoadFailed(true); setPayload((p) => p ?? { events: [], rsvpEnabled: true, timezone: "UTC", window: { from: "", to: "" }, lunar: null, anchor: DEFAULT_ANCHOR, hemisphere: "north", monthNames: [], moonOneCycle: null }); });
   }, []);
 
   /** The wheel, month and week read a whole year around the cursor. */
@@ -448,6 +451,12 @@ export default function Events() {
           {problem && (
             <p role="alert" className="mb-4 text-sm text-destructive bg-destructive/10 border border-destructive/40 rounded-lg px-3 py-2">{problem}</p>
           )}
+          {loadFailed && (
+            <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
+              <p className="text-sm text-destructive">{t({ message: "The calendar didn't load, so the days below may look empty while it is missing.", context: "calendar: the events read failed" })}</p>
+              <button type="button" onClick={reload} className={BTN_SECONDARY}>{t({ message: "Try again", context: "calendar: retry the events read" })}</button>
+            </div>
+          )}
           {/* The host nudge's link opens the composer here (recapComposerPath). */}
           {authToken() && recapLink && <HostRecapPanel eventId={recapLink.eventId} occurrenceKey={recapLink.occurrenceKey} startOpen withTitle />}
 
@@ -486,7 +495,7 @@ export default function Events() {
 
           {/* A moon nobody has put anything in (UNFINISHED-AREAS 5a): one coming-soon line above it, in place of
               "Nothing is on this day yet." under every day. */}
-          {payload && cursor && tab === "moon" && moon && moonIsEmpty(moon.days.map((d) => d.day.key), byDay) && (
+          {payload && !loadFailed && cursor && tab === "moon" && moon && moonIsEmpty(moon.days.map((d) => d.day.key), byDay) && (
             <ComingSoonPanel
               className="mb-6"
               title={t({ message: "The village's gatherings", context: "coming soon: an empty moon on the calendar" })}
@@ -625,7 +634,7 @@ export default function Events() {
 
           {payload && tab === "list" && (
             <div>
-              {listItems.length === 0 && (
+              {listItems.length === 0 && !loadFailed && (
                 <p className="text-center text-muted-foreground py-16"><Trans context="Events, p">Nothing is on the calendar yet.</Trans></p>
               )}
               <ul className="space-y-4">{listItems.map((g) => itemCard(g, true))}</ul>
