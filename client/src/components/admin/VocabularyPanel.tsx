@@ -8,23 +8,28 @@
  * never writes over the other.
  */
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { NOUN_MAX, NOUN_SLOTS, NOUN_SLOT_IDS, VOCAB_SECTION, type NounSlot } from "@shared/vocabulary";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import GlossaryPanel from "./GlossaryPanel";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
+import { useDraftDoc } from "@/lib/unsavedChanges";
 
 type Draft = Partial<Record<NounSlot, { one?: string; many?: string }>>;
 
 export default function VocabularyPanel({ password }: { password: string }) {
   const { t } = useLingui();
-  const [draft, setDraft] = useState<Draft | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState<Draft | null>(null);
+  // One save bar for the whole of Make this yours (components/SaveBar.tsx):
+  // an edit here waits beside every other unsaved edit on the page.
+  const doc = useDraftDoc<Draft>(loaded);
+  const draft = doc.draft;
+  const setDraft = doc.setDraft;
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/content/${VOCAB_SECTION}`, { cache: "no-cache" }).catch(() => null);
     const d = res?.ok ? await res.json().catch(() => null) : null;
-    setDraft(d && typeof d === "object" ? (d as Draft) : {});
+    setLoaded(d && typeof d === "object" ? (d as Draft) : {});
   }, []);
   useEffect(() => {
     void load();
@@ -34,16 +39,15 @@ export default function VocabularyPanel({ password }: { password: string }) {
   const set = (slot: NounSlot, part: "one" | "many", v: string) =>
     setDraft({ ...draft, [slot]: { ...(draft[slot] ?? {}), [part]: v.slice(0, NOUN_MAX) } });
 
-  const save = async () => {
-    setSaving(true);
+  const save = async (): Promise<SaveResult> => {
     const res = await fetch(`${API_BASE}/admin/content/${VOCAB_SECTION}`, {
       method: "PUT",
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify(draft),
     }).catch(() => null);
-    setSaving(false);
-    if (!res?.ok) return toast.error(refusal(await res?.json().catch(() => null), t`Your words did not save.`));
-    toast.success(t`Your words are saved. Pages show them from the next page a member opens.`);
+    if (!res?.ok) return { ok: false, reason: refusal(await res?.json().catch(() => null), t`Your words did not save.`) };
+    doc.accept(draft);
+    return { ok: true };
   };
 
   // The words the village explains sit right under its words for things (GlossaryPanel.tsx).
@@ -80,14 +84,7 @@ export default function VocabularyPanel({ password }: { password: string }) {
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        onClick={() => void save()}
-        disabled={saving}
-        className="mt-3 min-h-[44px] px-4 text-sm rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-40"
-      >
-        {saving ? <Trans context="admin identity: while the nouns save">Saving…</Trans> : <Trans context="admin identity: save the nouns">Save your words</Trans>}
-      </button>
+      <SaveBar count={doc.count} onSave={save} onDiscard={doc.discard} what={t({ message: "your words for things", context: "admin identity: what the save bar saves" })} />
     </div>
     <GlossaryPanel password={password} />
     </>

@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { ARCHETYPES, type ArchetypeSeed } from "@shared/archetypes";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import PowerAffinityPanel from "./PowerAffinityPanel";
+import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 /** One class as `GET /api/admin/archetypes` sends it. */
@@ -271,7 +272,6 @@ export default function ArchetypesPanel({ password }: { password: string }) {
   const [rows, setRows] = useState<ArchetypeRow[] | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Words>>({});
   const [loadError, setLoadError] = useState("");
-  const [savingKey, setSavingKey] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
   const [moveNote, setMoveNote] = useState("");
   const [adding, setAdding] = useState(false);
@@ -306,16 +306,17 @@ export default function ArchetypesPanel({ password }: { password: string }) {
   }, [load]);
 
   /**
-   * Save one class.
+   * Save one class. Null when it landed, the server's reason when it did not:
+   * the page's one save bar (components/SaveBar.tsx) runs this for every class
+   * holding changes and keeps the ones that failed.
    *
    * The key rides in the path and selects the row. The body is five named
    * fields, written out here rather than handed a variable, so a reader can
    * see the whole of what an edit can say without leaving this function.
    */
-  const save = async (key: string) => {
+  const save = async (key: string): Promise<string | null> => {
     const words = drafts[key];
-    if (!words) return;
-    setSavingKey(key);
+    if (!words) return null;
     try {
       const res = await fetch(`${API_BASE}/admin/archetypes/${encodeURIComponent(key)}`, {
         method: "PUT",
@@ -328,10 +329,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
           sigil: words.sigil.trim(),
         }),
       });
-      if (!res.ok) {
-        toast.error(await sentenceFor(res, "That did not save"));
-        return;
-      }
+      if (!res.ok) return await sentenceFor(res, "That did not save");
       const d = await res.json().catch(() => null);
       const saved: ArchetypeRow | null = d?.archetype ?? null;
       // `key: r.key` LAST, after the echo is spread. A response body cannot
@@ -342,11 +340,9 @@ export default function ArchetypesPanel({ password }: { password: string }) {
         ),
       );
       if (saved) setDrafts((prev) => ({ ...prev, [key]: wordsOf(saved) }));
-      toast.success(t({ message: "Saved. This class now carries the village's own words", context: "ArchetypesPanel, toast" }));
+      return null;
     } catch {
-      toast.error(t({ message: "That did not save. The server did not answer.", context: "ArchetypesPanel, toast" }));
-    } finally {
-      setSavingKey(null);
+      return t({ message: "That did not save. The server did not answer.", context: "ArchetypesPanel, toast" });
     }
   };
 
@@ -445,6 +441,10 @@ export default function ArchetypesPanel({ password }: { password: string }) {
 
   if (rows === null && !loadError) return null;
   const list = rows ?? [];
+  const dirtyRows = list.filter((r) => drafts[r.key] && isDirty(r, drafts[r.key]));
+  const saveAll = async (): Promise<SaveResult> => (await saveEach(dirtyRows.map((r) => ({
+    key: r.key, label: drafts[r.key]?.name.trim() || r.name || r.key, run: () => save(r.key),
+  })))).result;
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5 mt-4">
@@ -589,25 +589,22 @@ export default function ArchetypesPanel({ password }: { password: string }) {
                 />
               </div>
 
-              <div className="mt-3 flex items-center gap-3">
-                <button
-                  type="button"
-                  className={primaryCls}
-                  disabled={savingKey === row.key}
-                  onClick={() => void save(row.key)}
-                >
-                  {savingKey === row.key ? "Saving…" : "Save these words"}
-                </button>
-                {dirty ? (
-                  <span className="text-[11px] text-gray-500">
-                    <Trans context="ArchetypesPanel, span">Unsaved changes on this class.
-                  </Trans></span>
-                ) : null}
-              </div>
+              {dirty ? (
+                <p className="mt-3 text-[11px] text-gray-500">
+                  <Trans context="ArchetypesPanel, span">Unsaved changes on this class.
+                </Trans></p>
+              ) : null}
             </li>
           );
         })}
       </ol>
+
+      <SaveBar
+        count={dirtyRows.length}
+        onSave={saveAll}
+        onDiscard={() => setDrafts(Object.fromEntries(list.map((r) => [r.key, wordsOf(r)])))}
+        what={t({ message: "the character classes", context: "ArchetypesPanel, what the save bar saves" })}
+      />
 
       <div className="mt-5 border-t border-gray-100 pt-4">
         <button
