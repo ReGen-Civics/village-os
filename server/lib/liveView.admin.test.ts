@@ -16,6 +16,7 @@ import { liveViewMiddleware, type LiveViewDeps } from "./liveView";
 import { cleanScopes, LIVE_VIEW_ADMIN_SCOPE, tokenTtlDays, type AgentTokenRow } from "./agentTokens";
 import { readsAsPlainMember } from "./readAsMember";
 import { readOnlyReason } from "../db/readOnlyRequest";
+import { offeredScopes } from "./agentOAuth";
 
 const TOKEN = "vat_" + "x".repeat(43);
 
@@ -128,5 +129,10 @@ describe("minting the admin live view", () => {
     expect(mixed.ok).toBe(false);
     expect(tokenTtlDays([LIVE_VIEW_ADMIN_SCOPE], 30)).toBe(1);
     expect(tokenTtlDays([LIVE_VIEW_ADMIN_SCOPE], undefined)).toBe(1);
+  });
+
+  it("is never offered through the connector's sign-in (OAuth), whatever extras a member's rules allow", () => {
+    expect(offeredScopes([LIVE_VIEW_ADMIN_SCOPE, "live.view"] as any)).not.toContain(LIVE_VIEW_ADMIN_SCOPE);
+    expect(offeredScopes([LIVE_VIEW_ADMIN_SCOPE, "live.view"] as any)).not.toContain("live.view");
   });
 });
