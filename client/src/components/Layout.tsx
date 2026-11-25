@@ -346,7 +346,7 @@ export default function Layout({ children }: LayoutProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-xl overflow-hidden z-50"
+                        className="absolute top-full right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
                         {accountItems.map((item) => (
                           <Link
@@ -968,7 +968,7 @@ function NavDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-white rounded-xl shadow-xl overflow-hidden z-50`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
           >
             {items.map((item) => (
               <Link
@@ -984,7 +984,7 @@ function NavDropdown({
                     {/* Same badge the bar used to carry, in the ink the white
                         sheet needs: amber-200 on white measured below 2:1. */}
                     {lifecycleOf(item.module) === "preview" && (
-                      <span className="ml-1.5 text-[9px] bg-amber/30 text-gold px-1 py-0.5 rounded uppercase align-middle"><Trans context="Layout, span">preview</Trans></span>
+                      <span className="ml-1.5 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground align-middle"><Trans context="Layout, span">preview</Trans></span>
                     )}
                   </span>
                   {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
