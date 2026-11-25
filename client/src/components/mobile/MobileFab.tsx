@@ -338,7 +338,7 @@ export default function MobileFab() {
                   {a.sub ? <span className="text-xs text-muted-foreground">{a.sub}</span> : null}
                 </span>
                 <span className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card text-card-foreground shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-active/row:scale-95">
-                  {a.companion ? <Standing c={a.companion} lead={false} small /> : a.key === "signin" ? <LogIn aria-hidden="true" className="w-[18px] h-[18px]" /> : <FabTriggerIcon className="w-[18px] h-[18px]" />}
+                  {a.companion ? <Standing c={a.companion} lead={false} small /> : a.key === "signin" ? <LogIn aria-hidden="true" className="size-5" /> : <FabTriggerIcon className="size-5" />}
                 </span>
               </>
             );
@@ -418,7 +418,7 @@ export default function MobileFab() {
             </>
           ) : (
             <span className="flex items-center justify-center">
-              {open ? <X className="w-7 h-7 text-cream" /> : <FabTriggerIcon className="w-7 h-7 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />}
+              {open ? <X className="size-8 text-cream" /> : <FabTriggerIcon className="size-8 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />}
             </span>
           )}
         </button>

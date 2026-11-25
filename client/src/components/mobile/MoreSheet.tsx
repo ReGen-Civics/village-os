@@ -117,7 +117,7 @@ function Tile({ href, label, onGo, children, Icon }: { href: string; label: stri
       data-more-tile={href}
       className="relative flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl bg-muted px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted/80 focus-visible:outline-2 focus-visible:outline-ring"
     >
-      {Icon ? <Icon aria-hidden="true" className="size-5 shrink-0" /> : <MenuIcon href={href} fallback={TILE_FALLBACK[href]} className="size-5 shrink-0" />}
+      {Icon ? <Icon aria-hidden="true" className="size-6 shrink-0" /> : <MenuIcon href={href} fallback={TILE_FALLBACK[href]} className="size-6 shrink-0" />}
       <span className="leading-tight">{label}</span>
       {children}
     </Link>
