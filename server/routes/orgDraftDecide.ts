@@ -42,6 +42,7 @@
  * member, because each vote rings the whole roll.
  */
 import type { Express } from "express";
+import { readsAsPlainMember } from "../lib/readAsMember";
 import type { AppDeps } from "../lib/appDeps";
 import type { SubjectCloser } from "../lib/applyDue";
 import type { RollNotice } from "../lib/ballotNotices";
@@ -163,6 +164,8 @@ export function register(app: Express, deps: Deps): void {
     liveHoldersOf,
     publishDeps,
     canReadTerms: async (req) => {
+      // A plain member's read never carries pay terms (server/lib/readAsMember.ts).
+      if (readsAsPlainMember(req)) return false;
       const user = await authedUser(req);
       return !!user && capabilityDecision("terms.read", await capabilityCtx(user)).allowed;
     },

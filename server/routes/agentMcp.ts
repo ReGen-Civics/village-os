@@ -48,7 +48,8 @@ import { PLATFORM_VERSION } from "../lib/identity";
 import { AI_APPROVAL_DOC, parseAiApproval } from "../../shared/agentProposals";
 import { runSeraTool, undoSeraAction } from "../lib/seraAgent";
 import { wwwAuthenticate } from "../lib/agentOAuth";
-import { fullAccessFor, fullAccessRecipients, recordFullAccessWrite } from "../lib/agentFullAccess";
+import { fullAccessFor, fullAccessRecipients, readsOpenFor, recordFullAccessWrite } from "../lib/agentFullAccess";
+import { asPlainMemberHeaders } from "../lib/readAsMember";
 
 export const MCP_PATH = "/api/agent/v1/mcp";
 
@@ -104,9 +105,10 @@ async function asHolder(
   port: number,
   session: string,
   forwardedFor: string,
-  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+  method: "GET" | "HEAD" | "POST" | "PATCH" | "PUT" | "DELETE",
   path: string,
   body?: unknown,
+  opts: { asMember?: boolean } = {},
 ): Promise<RouteAnswer> {
   if (!path.startsWith("/api/") || path.startsWith("/api/agent/")) return { status: 400, body: { error: "not a route a tool may call" } };
   const r = await fetch(`${loopback(port)}${path}`, {
@@ -116,6 +118,8 @@ async function asHolder(
       accept: "application/json",
       // Says this call came through the connector, so a door that is a person's alone (accepting a proposed change) refuses it.
       "x-village-connector": "1",
+      // An open read outside /api/admin/ is answered as a plain member would be (server/lib/readAsMember.ts).
+      ...(opts.asMember ? asPlainMemberHeaders() : {}),
       ...(body === undefined ? {} : { "content-type": "application/json" }),
       ...(forwardedFor ? { "x-forwarded-for": forwardedFor } : {}),
     },
@@ -123,7 +127,7 @@ async function asHolder(
     redirect: "manual",
     signal: AbortSignal.timeout(20_000),
   });
-  const text = await r.text();
+  const text = method === "HEAD" ? "" : await r.text();
   let parsed: unknown = null;
   try {
     parsed = text ? JSON.parse(text) : null;
@@ -175,7 +179,7 @@ export function register(app: Express, deps: Deps): void {
       const userId = String(user.id);
       const seraStillAllowed = async () => (await isAgentAccount(getPool(), userId)) && !(await isAdmin(req));
       const ctx: ToolContext = {
-        dispatch: (method, path, body) => asHolder(port(), session, forwardedFor, method, path, body),
+        dispatch: (method, path, body, opts) => asHolder(port(), session, forwardedFor, method, path, body, opts),
         mintConfirm: (tool, echo) => mintConfirmToken(confirmSecret, { action: `mcp:${tool}`, userId, echo }),
         holderId: userId,
         // The scope was checked when the token was minted; the account is checked again on every call,
@@ -210,6 +214,8 @@ export function register(app: Express, deps: Deps): void {
         // at every call, and the audit each full-access write leaves before it is made.
         fullAccess: {
           on: () => fullAccessFor(getPool(), userId),
+          // Reads open (the lead, 25 Nov 2026): a person opened them, and this holder has full access now.
+          readsOpen: () => readsOpenFor(getPool(), userId),
           recorded: (a) => recordFullAccessWrite(getPool(), { ...a, agentUserId: userId, tokenPrefix: row.prefix }),
           // Who an email send reaches, read fresh at both calls (the lead, 24 Nov 2026).
           recipients: (send, body) => fullAccessRecipients(getPool(), { name: (user as any)?.name ?? null, email: (user as any)?.email ?? null }, send, body),
@@ -240,7 +246,8 @@ export function register(app: Express, deps: Deps): void {
           const wrote = outcome.ok && (outcome.result as any)?.written === true;
           await recordEvent(getPool(), {
             kind: "agent_mcp",
-            text: `${tool.name} through the connector (${row.prefix}...): ${wrote ? "written" : confirming ? "refused" : "asked"}, echo ${echoHash((outcome.ok ? (outcome.result as any)?.echo : null) ?? null).slice(0, 12)}`,
+            // An open read keeps this line, marked "read (open)" (the lead, 25 Nov 2026).
+            text: `${tool.name} through the connector (${row.prefix}...): ${outcome.ok && outcome.mark ? outcome.mark : wrote ? "written" : confirming ? "refused" : "asked"}, echo ${echoHash((outcome.ok ? (outcome.result as any)?.echo : null) ?? null).slice(0, 12)}`,
             actorUserId: userId,
             actorKind: "agent",
             entityType: "agent_token",

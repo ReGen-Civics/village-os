@@ -41,6 +41,13 @@
  * settings and sending email, each send naming its recipients before the yes.
  * The record is the comment above LEAD_APPROVED_WRITES_VARIABLE, after the 20
  * November one.
+ *
+ * 25 NOVEMBER 2026 (the lead: "Can we also update the agent permissions so
+ * that you never need my permission to read, only to write?"): READS OPEN, a
+ * second switch beside full access, for the full-access seat only. Any GET or
+ * HEAD under /api/ without the list, under the read floor (`READ_FLOOR`,
+ * `readFloor`, below), answered as a plain member outside /api/admin/
+ * (server/lib/readAsMember.ts). Writes are unchanged.
  */
 
 import { BREAK_GLASS_SEAT, isBadgeGrantable } from "./capabilities";
@@ -100,8 +107,8 @@ export function isShippedAgentRead(method: string, path: string): boolean {
   return String(method ?? "").toUpperCase() === "GET" && SHIPPED_AGENT_READS.some((e) => pathMatches(e.path, path));
 }
 
-/** Keys that carry a way to reach a person, or name the account a warning is about. Never in a connector read of powers. */
-const CONTACT_KEY = /e-?mail|phone|mobile|whats-?app|telegram|signal|contact_?(?:detail|info)|leftEmptyByRemoval/i;
+/** Keys that carry a way to reach a person, a legal name, or name the account a warning is about. Never in a connector read (legal names and postal lines added by the lead, 25 Nov 2026). */
+const CONTACT_KEY = /e-?mail|phone|mobile|whats-?app|telegram|signal|contact_?(?:detail|info)|leftEmptyByRemoval|legal_?name|legalName|full_?legal|postal|street|address_?line/i;
 
 /** The value with every contact key removed, at any depth (the lead, 20 Nov 2026). Arrays keep their order. */
 export function stripContactData(value: unknown, depth = 0): unknown {
@@ -116,6 +123,100 @@ export function stripContactData(value: unknown, depth = 0): unknown {
     return out;
   }
   return value;
+}
+
+// ── Reads open: the read floor (the lead, 25 Nov 2026) ───────────────────────
+//
+// THE LEAD'S RULING OF 25 NOVEMBER 2026, binding, in the lead's words:
+//
+//   "Can we also update the agent permissions so that you never need my permission to read, only to write?"
+//
+// FOR THE FULL-ACCESS SEAT ONLY, and only once a person ticks "Reads open" beside the switch in Admin, Players,
+// Agents (off by default; `PUT /api/admin/agent-accounts/full-access/reads-open`, which the `agents` rule keeps out
+// of every agent's reach). Then the agent of whoever holds that seat reads any GET or HEAD under /api/ without the
+// person-saved list. Every other agent keeps the list for reads too. Writes are exactly as before: the list or full
+// access, the two-call confirm, and the person's quoted yes.
+//
+//   THE FLOOR HOLDS FOR READS: the deny-list below, one category each, and it fails closed on a floor word, so an
+//   unknown path naming pay, a secret, a token, an applicant, an invoice, the ledger, the treasury, a payout, a voice,
+//   erasure, a contact or an email address stays refused. Applicant data opens only with the Anchor's approval of AI
+//   agents, as before. Contact keys and legal names are stripped from every full-access answer (`stripContactData`).
+//
+//   A PLAIN MEMBER'S READ: outside /api/admin/, an open read the list did not already name is answered as a plain
+//   member (server/lib/readAsMember.ts): isAdmin false, the editor's door closed, canReadTerms false, so an agent
+//   read never carries pay terms because its holder is an admin. /api/admin/ reads need the holder's admin gate,
+//   and the floor is what keeps money and secrets out of them.
+//
+//   AUDIT: each open read keeps the connector's audit line, marked "read (open)".
+
+/**
+ * THE READ FLOOR, for the full-access role's agent with "Reads open" on (shared/agentFullAccess.ts): a deny-list of
+ * path patterns, one per category, checked before any open read. A category refuses the read whatever the route
+ * would answer. Applicant data alone opens with the Anchor's approval of AI agents, as it always has.
+ */
+export const READ_FLOOR: ReadonlyArray<{ key: string; words: string; test: (path: string) => boolean; anchorOpens?: true }> = [
+  {
+    key: "secrets",
+    words: "Secrets and integration keys, masked or not, are never read by an agent.",
+    test: (p) => /secret|integration|api-?key|credential|\/keys?(\/|$)|signing|webhook|email-?config|key-rights|vault/i.test(p),
+  },
+  {
+    key: "applicants",
+    words: "Applicant data is closed to agents until the Anchor records its approval of AI agents.",
+    test: (p) => /applicant|applications?|join-?requests?|open-?proposals?|score-?cards?|\/scores?(\/|$)|interviews?|recusals?|first-?repl|decision-?letter|letter-?drafts?/i.test(p),
+    anchorOpens: true,
+  },
+  {
+    key: "money",
+    words: "Money is never read by an agent: pay amounts, payers, invoices, payments, ledger rows and the treasury.",
+    test: (p) =>
+      /pay|invoice|ledger|treasury|wallet|cash|settle|exchange|mint|refund|purchase|budget|owed|economy|\/terms?(\/|$)|terms-?offer|\/comps?(\/|$)|\/api\/(admin\/)?tokens?(\/|$)|token-jobs|\/moon-review\/(?!rhythm$)|\/cycles?(\/|$)|redemption|balances?/i.test(p),
+  },
+  {
+    key: "contact",
+    words: "Members' contact details and legal names are never read by an agent.",
+    test: (p) => /contact|e-?mail-?address|\/e-?mails?(\/|$)|phone|legal-?name|address-?book|\/comms\/people(\/|$)|whats-?app|postal/i.test(p),
+  },
+  {
+    key: "signin",
+    words: "Sign-in, sessions and tokens, an agent's own among them, are never read by an agent.",
+    test: (p) => /\/auth(\/|$)|login|sign-?in|password|oauth|\/tokens?(\/|$)|revoke-sessions|\/me\/sessions|\/(users|players|members)\/[^/]+\/sessions|magic-?link|passkey|\/session(\/|$)/i.test(p),
+  },
+  {
+    key: "agent_paths",
+    words: "The agent path list, the agent accounts and their tokens are never read by an agent.",
+    test: (p) => /\/agent(s)?(\/|$)|agent-admin-paths|agent-accounts|agent-actions|agent-proposals|ai-?agents?-?approval/i.test(p),
+  },
+  {
+    key: "voice",
+    words: "Voice recordings are only ever heard by a person.",
+    test: (p) => /voice|recording/i.test(p),
+  },
+  {
+    key: "erasure",
+    words: "Erasure records are never read by an agent.",
+    test: (p) => /eras(e|ure)|anonymi[sz]|forget|hard-?delete/i.test(p),
+  },
+];
+
+/**
+ * FAIL CLOSED: a path that names any of these words is refused even if no category above was written for it, so a
+ * route added tomorrow under one of these names is closed on the day it lands. Applicant words alone pass with the
+ * Anchor's approval.
+ */
+export const READ_FLOOR_WORDS = /pay|secret|token|invoice|ledger|treasury|payout|voice|erasure|contact|e-?mail-?address/i;
+const READ_FLOOR_APPLICANT_WORDS = /applicant|application/i;
+
+/** The read-floor category this read falls under, with its words, or null. Pure. */
+export function readFloor(path: string, opts: { applicantDataOpen?: boolean } = {}): { key: string; words: string } | null {
+  const p = String(path ?? "");
+  for (const r of READ_FLOOR) {
+    if (r.anchorOpens && opts.applicantDataOpen === true) continue;
+    if (r.test(p)) return { key: r.key, words: r.words };
+  }
+  if (READ_FLOOR_WORDS.test(p)) return { key: "floor_word", words: "This read names something that stays a person's to read: money, secrets, sign-in, voice, erasure or contact details." };
+  if (opts.applicantDataOpen !== true && READ_FLOOR_APPLICANT_WORDS.test(p)) return { key: "applicants", words: READ_FLOOR[1]!.words };
+  return null;
 }
 
 /** The things an agent never does through the connector, whatever the allow-list says. */
@@ -285,7 +386,7 @@ export function alwaysAPerson(
 }
 
 export type AdminRequestDecision =
-  | { ok: true; entry: AllowedAdminPath; write: boolean; confirm: AdminConfirm; leadApproved?: LeadApprovedKind; fullAccess?: true }
+  | { ok: true; entry: AllowedAdminPath; write: boolean; confirm: AdminConfirm; leadApproved?: LeadApprovedKind; fullAccess?: true; readOpen?: true; asMember?: true }
   | { ok: false; code: "bad_path" | "always_a_person" | "not_allowed"; words: string };
 
 /** Whether an agent may call `method path` through `admin_request`, and who confirms it. */
