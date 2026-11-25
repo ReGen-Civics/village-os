@@ -47,6 +47,11 @@ describe("the case that started it", () => {
     expect(controlsOn("comms-settings", ALL).map((e) => e.id)).toContain("comms.test-email");
   });
 
+  it("a page with a first act lands on it: Enter on Mail settings focuses Send me a test", () => {
+    expect(adminSearchHref(PAGES[0])).toBe("/admin?tab=comms-settings&setting=comms.test-email");
+    expect(adminSearchHref(PAGES[1])).toBe("/admin?tab=comms-sent");
+  });
+
   it("lands on the exact control", () => {
     const e = CONTROL_ENTRIES.find((x) => x.id === "comms.test-email")!;
     expect(adminSearchHref(e)).toBe("/admin?tab=comms-settings&setting=comms.test-email");

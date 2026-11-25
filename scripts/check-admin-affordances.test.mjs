@@ -33,6 +33,8 @@ assert.deepStrictEqual(rules(`export const A = () => <button onClick={go}>{busy 
 assert.deepStrictEqual(rules(`export const A = () => <a href="/admin?tab=players" onClick={track}>Players</a>;`), []);
 assert.deepStrictEqual(rules(`export const A = () => <button role="menuitem" className="w-full text-left text-sm text-foreground">Sign out</button>;`), []);
 assert.deepStrictEqual(rules(`export const A = () => <label onClick={pick}>Pick</label>;`), []);
+assert.deepStrictEqual(rules(`export const A = () => <li role="option" aria-selected={on} onClick={pick}>Mail settings</li>;`), []);
+assert.deepStrictEqual(rules(`export const A = () => <li onClick={pick}>Mail settings</li>;`), ["clickable-non-control"]);
 
 // A waiver on the line above holds.
 assert.deepStrictEqual(rules(`export const A = () => (\n  // affordance-ok: a row of a list the whole row of which is the target\n  <div onClick={go}>Open</div>\n);`), []);

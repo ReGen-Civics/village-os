@@ -223,6 +223,25 @@ describe("Comms Settings", () => {
     window.history.replaceState({}, "", "/");
   });
 
+  // Admin search (PR 3) pushes the address and raises popstate. When Mail
+  // settings is already the open page it does not remount, so it must re-read.
+  it("lands again when search pushes its address while the page is already open", async () => {
+    window.history.replaceState({}, "", "/admin?tab=comms-settings");
+    render(<CommsSettings password="secret" openIntegrations={() => undefined} />);
+    const button = await screen.findByRole("button", { name: "Send me a test" });
+    expect(document.activeElement).not.toBe(button);
+    window.history.pushState({}, "", "/admin?tab=comms-settings&setting=comms.test-email");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(window.location.search).toBe("?tab=comms-settings");
+    // The same address again lands again.
+    (document.activeElement as HTMLElement).blur();
+    window.history.pushState({}, "", "/admin?tab=comms-settings&setting=comms.test-email");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    window.history.replaceState({}, "", "/");
+  });
+
   it("lands on Pause all from its address", async () => {
     window.history.replaceState({}, "", "/admin?tab=comms-settings&setting=comms.pause-all");
     render(<CommsSettings password="secret" openIntegrations={() => undefined} />);

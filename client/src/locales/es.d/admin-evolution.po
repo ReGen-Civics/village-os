@@ -168,3 +168,90 @@ msgstr "Informes de entrega desconectados"
 msgctxt "Mail settings, link to the module library"
 msgid "Module Library"
 msgstr "Biblioteca de módulos"
+
+# Admin search (Admin evolution lane, PR 3, 25 Nov 2026).
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, opens the search"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, field placeholder"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, dialog name"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, input name"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, input placeholder"
+msgid "Search settings, pages and buttons"
+msgstr "Buscar ajustes, páginas y botones"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, close"
+msgid "Close search"
+msgstr "Cerrar la búsqueda"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, heading"
+msgid "Recent places"
+msgstr "Lugares recientes"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, heading"
+msgid "Type what you are looking for"
+msgstr "Escriba lo que busca"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, empty hint"
+msgid "A page, a setting or a button: “mail settings”, “send test”, “who runs comms”."
+msgstr "Una página, un ajuste o un botón: “configuración del correo”, “enviar prueba”, “quién lleva el correo”."
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, results list"
+msgid "Results"
+msgstr "Resultados"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, kind of result"
+msgid "Page"
+msgstr "Página"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, kind of result"
+msgid "Button or field"
+msgstr "Botón o campo"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, kind of result"
+msgid "Dial"
+msgstr "Ajuste"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, ask the guide row"
+msgid "Ask your guide about “{query}”"
+msgstr "Preguntar a su guía sobre “{query}”"
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, no results"
+msgid "Nothing in Admin matches “{query}”. Try another word, or open the menu for every area."
+msgstr "Nada en Admin coincide con “{query}”. Pruebe otra palabra, o abra el menú para ver todas las áreas."
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, footer"
+msgid "↑ ↓ to move, Enter to open, Esc to close."
+msgstr "↑ ↓ para moverse, Enter para abrir, Esc para cerrar."
+
+# needs-native-review: Admin search, 2026-11-25
+msgctxt "admin search, footer"
+msgid "Search only takes you there. Nothing runs from here."
+msgstr "La búsqueda solo le lleva allí. Nada se ejecuta desde aquí."
