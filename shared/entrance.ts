@@ -118,6 +118,8 @@ export const OPEN_PAGES: readonly string[] = [
   "/oauth",
   "/claim",
   "/reset",
+  // A visitor signing back in with a code (shared/visitorProfile.ts). The profile itself, /visitor, stays behind.
+  "/visitor/sign-in",
   // Links in the village's emails: preferences, unsubscribing, one-click answers.
   "/email",
   // An applicant's own links: confirming an application, and its status.
@@ -285,6 +287,8 @@ export interface EntranceStatus {
   privacyContact?: string;
   /** Whether entering sends a code (the village can send email), so the privacy line says so. */
   codes?: boolean;
+  /** This device is a visitor whose address is verified: they have a visitor profile at `/visitor` (shared/visitorProfile.ts). */
+  verifiedVisitor?: boolean;
   /** The short look and its code, while this device's entry has one; null otherwise. */
   look?: LookStatus | null;
 }
