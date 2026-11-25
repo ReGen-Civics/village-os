@@ -36,6 +36,6 @@ describe("RolesOpenNow", () => {
     loadOrg.mockResolvedValue({ roles: [] });
     render(<RolesOpenNow archetypeKey="storytelling" alsoOpen={[]} />);
     expect(await screen.findByText(/No role is open right now./)).toBeTruthy();
-    expect(screen.getByText("Try a quest on the board").closest("a")?.getAttribute("href")).toBe("/quests");
+    expect(screen.getByText("Try a quest").closest("a")?.getAttribute("href")).toBe("/quests");
   });
 });

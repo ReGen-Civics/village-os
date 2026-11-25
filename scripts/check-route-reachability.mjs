@@ -89,6 +89,8 @@ const ALLOWLIST = {
   "/roles/draft": "a redirect to /roles/select kept for old links",
   "/join": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
+  // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
+  "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

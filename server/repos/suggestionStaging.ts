@@ -50,6 +50,10 @@ export interface StageInput {
 
 export interface StagedRow {
   staged: Staged;
+  /** The filer's one sentence about it (a connector filing's summary), kept so a held row can be published later. */
+  why: string | null;
+  /** The proposed change this row became, once published. */
+  publishedChangeId: string | null;
   filerKind: FilerKind;
   state: StagingState;
   heldCode: HeldCode | null;
@@ -128,6 +132,8 @@ function rowOf(r: RowDataPacket): StagedRow {
       needs: parse(r.needs_json, undefined),
       provides: parse(r.provides_json, undefined),
     },
+    why: r.why ? String(r.why) : null,
+    publishedChangeId: r.published_change_id ? String(r.published_change_id) : null,
     filerKind: (FILER_KINDS as readonly string[]).includes(String(r.filer_kind)) ? (String(r.filer_kind) as FilerKind) : "agent",
     state: String(r.state) as StagingState,
     heldCode: (r.held_code ? String(r.held_code) : null) as HeldCode | null,
@@ -201,6 +207,35 @@ export async function releaseReconsider(db: Db, id: string, capability: string, 
     [capability.slice(0, 64), now, now, id],
   );
   return res.affectedRows === 1;
+}
+
+/** A row went onto the review page as a proposed change: it is carded, and names the change. */
+export async function markPublished(db: Db, id: string, changeId: string, now: Date): Promise<boolean> {
+  const [res] = await db.query<ResultSetHeader>(
+    "UPDATE suggestion_staging SET state = 'carded', held_code = NULL, held_fields_json = NULL, card_id = ?, published_change_id = ?, updated_at = ? WHERE id = ? AND state IN ('staged','held','carded')",
+    [changeId.slice(0, 48), changeId.slice(0, 40), now, id],
+  );
+  return res.affectedRows === 1;
+}
+
+/**
+ * A held row sent again with what is new: it takes the filer's reconsider, so the engine reads it as a reconsider. Only
+ * a row held because the same was recently discarded, which is the one the filer was told to send again this way.
+ */
+export async function setReconsider(db: Db, id: string, reconsider: { code: string; reason: string }, now: Date): Promise<boolean> {
+  const [res] = await db.query<ResultSetHeader>(
+    "UPDATE suggestion_staging SET reconsider_json = ?, updated_at = ? WHERE id = ? AND state = 'held' AND held_code = 'recently_discarded'",
+    [JSON.stringify(reconsider), now, id],
+  );
+  return res.affectedRows === 1;
+}
+
+/** The change a row became was decided: close the row, so the same value sent again later is a new filing. */
+export async function closeStagedForChange(db: Db, changeId: string, now: Date): Promise<number> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id FROM suggestion_staging WHERE published_change_id = ? AND state <> 'closed'", [changeId]);
+  let closed = 0;
+  for (const r of rows) if (await closeStaged(db, String(r.id), now)) closed++;
+  return closed;
 }
 
 /** A row's card was decided: close it and free its key, so a later re-send is a new filing. */

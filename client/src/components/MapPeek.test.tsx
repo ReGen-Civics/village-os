@@ -70,6 +70,14 @@ describe("MapPeek on a metered connection", () => {
 });
 
 describe("MapPeek", () => {
+  it("is one link to the map, never a link inside a link", () => {
+    const { container } = render(<Router><MapPeek /></Router>);
+    expect(container.querySelectorAll("a a")).toHaveLength(0);
+    const links = container.querySelectorAll('a[href="/map"]');
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute("aria-label")).toBe("Open the Living Map");
+  });
+
   it("invites a visitor in and says how the map works, with no promise about what is on it", () => {
     render(<Router><MapPeek /></Router>);
     expect(screen.getByRole("heading", { name: "See the village" })).toBeTruthy();

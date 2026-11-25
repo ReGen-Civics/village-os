@@ -40,6 +40,27 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.75 (2026-11-25)
+
+### What changed for your village
+
+- **Members stay signed in on every page.** A member who signed in on a device that never went through the visitor entrance saw some pages fail to load; every page now carries the member's sign-in with its reads.
+- **One name each.** "Quests" everywhere (the footer, the quests page, every back link) and "Crowd pooling" in place of "Our raisings". The Exchange is now part of the Wallet page; old /tokens links still open it.
+- **Phone doors.** More is the phone's one menu, and the corner holds your companions and help. Icons are larger, and the corner's guide is a scarlet macaw in flight.
+- **Admin.** Today's "Needs you now" reads the review list; the project history page reads in light and dark; settings panels show their stored values from the first moment, so an early edit is never lost. Changes an agent files through the connector meet the review engine first: a value already live, a repeat of one discarded recently, or a lookalike name waits in Held for a person.
+- **Quieter, tidier pages.** Header menus and the notification panel in the village's look; the home map card is one link; a confirm link with no token sends nothing; on a village with its story pages off, the Love Letter and Reserve pages no longer link to pages that are not there.
+- **For QA:** the read-only live view no longer records page visits and reads the profile as a plain member, and the live QA script has one token mode.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.74 still works.
+
+---
+
 ## 1.3.74 (2026-11-25)
 
 ### What changed for your village

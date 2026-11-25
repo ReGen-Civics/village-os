@@ -1,5 +1,6 @@
 /**
- * Mobile navigation config: the bottom tab bar slots and the FAB shortcut rows.
+ * Mobile navigation config: the bottom tab bar slots. (The FAB shortcut rows are gone since phone
+ * doors v4: the corner is companions and help, components/mobile/MobileFab.tsx.)
  *
  * Platform code reads this file and nothing else, so a custom game built on this
  * foundation changes its mobile nav by editing THIS file only. Keep route
@@ -11,31 +12,12 @@
  * right trade until there are enough routes and enough members for ranking to
  * beat a considered order.
  */
-import {
-  Scroll,
-  User,
-  MessageCircle,
-  UserPlus,
-  PenLine,
-  NotebookPen,
-  Orbit,
-  ListChecks,
-  MessagesSquare,
-  SquarePen,
-  MapPin,
-} from "lucide-react";
-import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
-import { GoldenSpiral, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { Tripoint } from "@/components/sacred/glyphs";
+import { Cell, EarthshipDome, LeafCompass, ScarletMacaw, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
 
-/**
- * The FAB's closed-state glyph. Deliberately configurable: the brand PNGs in
- * /assets/images include the AMORA wordmark and are illegible at 32px, so the
- * default is a plain icon. Swap in a square brand glyph here when one exists,
- * without touching the component.
- */
-export const FabTriggerIcon = GoldenSpiral;
+// The corner's closed-state glyph: the scarlet macaw in flight, the guide in the corner (the lead, 25 Nov 2026: "change this to a scarlet macaw outline"; option C picked).
+export const FabTriggerIcon = ScarletMacaw;
 
 export type TabSlot = {
   /** Route to navigate to, or omit and set `event` to dispatch instead. */
@@ -135,110 +117,3 @@ export const NEWCOMER_SWAPPED_TABS: readonly string[] = ["/gratitude"];
  */
 export const BARE_ROUTES: string[] = ["/login", "/register", "/set-password", "/forgot-password", "/verify-email"];
 
-export type FabAction = {
-  key: string;
-  label: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  href?: string;
-  event?: string;
-  /** Only show when signed in (true) or only when signed out (false). */
-  requiresAuth?: boolean;
-  /**
-   * Module id from shared/modules.ts. The row shows only while that module is
-   * on for this viewer, by the same test the header menu uses (NavLink.module
-   * in config/nav.ts). Absent means always shown.
-   */
-  module?: string;
-  /**
-   * When the user is already on this route prefix, the row is useless as
-   * navigation, so it swaps to `insteadOf` instead of linking to the page the
-   * person is already reading.
-   */
-  anchorPath?: string;
-  insteadOf?: { label: string; href: string; Icon: React.ComponentType<{ className?: string }> };
-  /** A member's working area: hidden from someone signed in whom the village has not admitted yet (config/nav.ts, `newcomers`). */
-  membersOnly?: true;
-};
-
-/**
- * Rendered as a column that grows UPWARD from the trigger, so the LAST entry
- * lands closest to the thumb. Quests sits last on purpose: it is the core loop.
- * The Journal sits right above it, because it is the other thing a member
- * reaches for daily, and only while the journal module is on for them.
- */
-export const FAB_ACTIONS: FabAction[] = [
-  { key: "roles", label: "Roles", href: "/roles", Icon: Cell },
-  { key: "profile", label: "Profile", href: "/profile", Icon: User, requiresAuth: true },
-  {
-    // The task board on the profile, beside the profile itself because it is
-    // the member's own page. No anchorPath: on the profile it still has a job,
-    // bringing the board into view. The count lives in the drawer's account
-    // block (ACCOUNT_MENU in config/nav.ts), so this row stays a plain door.
-    key: "tasks",
-    label: TASK_MENU.label,
-    href: TASK_BOARD_PATH,
-    Icon: ListChecks,
-    requiresAuth: true,
-    module: "sessions",
-    membersOnly: true,
-  },
-  {
-    // A member's conversations, and from inside them a new one: on /messages
-    // the row would link to the page being read, so it starts a conversation
-    // instead (Messages reads `?new=1` and opens the composer).
-    key: "messages",
-    label: "Messages",
-    href: "/messages",
-    Icon: MessagesSquare,
-    requiresAuth: true,
-    module: "messaging",
-    membersOnly: true,
-    anchorPath: "/messages",
-    insteadOf: { label: "New conversation", href: "/messages?new=1", Icon: SquarePen },
-  },
-  { key: "signin", label: "Sign in", href: "/login", Icon: UserPlus, requiresAuth: false },
-  { key: "work-with-us", label: "Work with us", href: "/work-with-us", Icon: MessageCircle },
-  {
-    // Logging a place happens out where the place is, so the map is a tap away
-    // on the phone, above the daily pair, and only while the module is on.
-    key: "hidden-map",
-    label: "Hidden map",
-    href: "/hidden-map",
-    Icon: MapPin,
-    requiresAuth: true,
-    module: "hidden-map",
-    membersOnly: true,
-    anchorPath: "/hidden-map",
-  },
-  {
-    // A call is something a member reaches for mid-week, a step further from
-    // the thumb than the daily pair below it, and only while the module is on.
-    key: "sessions",
-    label: "Live sessions",
-    href: "/sessions",
-    Icon: Orbit,
-    requiresAuth: true,
-    module: "sessions",
-    membersOnly: true,
-    // On the list or inside a room, the row would link to where they already are.
-    anchorPath: "/sessions",
-  },
-  {
-    key: "journal",
-    label: "Journal",
-    href: "/journal",
-    Icon: NotebookPen,
-    requiresAuth: true,
-    module: "journal",
-    // On the journal itself the row would link to the page being read.
-    anchorPath: "/journal",
-  },
-  {
-    key: "quests",
-    label: "Quests",
-    href: "/quests",
-    Icon: Scroll,
-    anchorPath: "/quests",
-    insteadOf: { label: "Propose a quest", href: "/propose-quest", Icon: PenLine },
-  },
-];

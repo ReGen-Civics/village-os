@@ -104,7 +104,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
       setPeriod(null);
       setNote("");
       setDraft(null);
-      setSaid(t({ message: "Saved. The open work and roles now fit this.", context: "commitment field: after saving" }));
+      setSaid(t({ message: "Saved. The quests and roles now fit this.", context: "commitment field: after saving" }));
     } else setSaid(r.error);
   };
 
@@ -124,7 +124,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
       <p className={`mt-1 ${HINT}`}>
         {mine.now
           ? t({ message: `One percent for all your roles together. You said ${nowPct}% from ${nowFrom}. Only you see this.`, context: "commitment on the roles card: what holds now" })
-          : t({ message: "One percent of yourself, for all your roles together. The open work and the roles you see will fit it. Only you see this.", context: "commitment on the roles card: before a first word" })}
+          : t({ message: "One percent of yourself, for all your roles together. The quests and the roles you see will fit it. Only you see this.", context: "commitment on the roles card: before a first word" })}
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">

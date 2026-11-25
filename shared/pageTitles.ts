@@ -71,8 +71,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // and what a member sees; /wallet stays mounted because Stripe return URLs
   // and order notifications already carry it (server/index.ts), and a member's
   // own balances now also live in a Wallet section on their profile.
-  "/tokens": "The Exchange",
-  "/wallet": "The Exchange",
+  "/tokens": "Wallet",
+  "/wallet": "Wallet",
   "/pay": "Pay and receive",
   "/profile": "My profile",
   "/path": "Your path",
@@ -90,7 +90,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/modules": "Module Library",
   // Longest-prefix matching makes /campaigns win over /campaign for the list
   // page, so the pair costs two lines and no route can fall through them.
-  "/campaigns": "Our raisings",
+  "/campaigns": "Crowd pooling",
   "/campaign": "Crowdpool",
   // One line covers the shelf and every place, by the same longest-prefix
   // rule the module library uses above.

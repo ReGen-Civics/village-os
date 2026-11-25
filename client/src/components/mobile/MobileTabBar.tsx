@@ -277,7 +277,8 @@ export default function MobileTabBar() {
                   active ? "px-2.5 py-1 -translate-y-0.5 bg-white/15" : "px-1.5 py-1"
                 }`}
               >
-                <slot.Icon className="w-[22px] h-[22px]" />
+                {/* 26px: at 22 the living glyphs read as scratches (the lead, 25 Nov 2026). */}
+                <slot.Icon className="w-[26px] h-[26px]" />
               </div>
               {/* min-w-0 + truncate, because at a 320px viewport the five labels needed
                   325px of min-content and the bar itself became wider than the

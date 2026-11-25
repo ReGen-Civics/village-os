@@ -21,7 +21,7 @@ export default function QuestsComingSoon({ className = "" }: { className?: strin
       data-quests-coming-soon
     >
       <div className="min-w-0">
-        <p className={EYEBROW}>{t({ message: "Open work", context: "quests coming soon banner eyebrow" })}</p>
+        <p className={EYEBROW}>{t({ message: "Quests", context: "quests coming soon banner eyebrow" })}</p>
         <h2 id="quests-coming-soon" className={`${H2} mt-1`}>
           {t({ message: "Quests coming soon", context: "quests board banner while every quest is an example" })}
         </h2>

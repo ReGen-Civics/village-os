@@ -280,7 +280,7 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
           tabIndex={-1}
           role="group"
           aria-label={t({ message: "Notifications", context: "NotificationBell, aria-label" })}
-          className="absolute right-0 mt-2 w-[21rem] max-w-[calc(100vw-1.5rem)] max-h-[26rem] overflow-y-auto bg-white text-foreground rounded-xl shadow-xl border border-gray-200 z-50 focus:outline-none"
+          className="absolute right-0 mt-2 w-[21rem] max-w-[calc(100vw-1.5rem)] max-h-[26rem] overflow-y-auto bg-card text-foreground rounded-xl shadow-sm border border-border z-50 focus:outline-none"
         >
           <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-2.5 flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><Trans context="NotificationBell, span">Notifications</Trans></span>

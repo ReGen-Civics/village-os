@@ -208,7 +208,7 @@ export function WeTend({ tend }: { tend: { rows: TendRow[]; more: number } | nul
       </ul>
       {tend.more > 0 ? (
         <Link href="/quests" className={`${LINK} mt-3 inline-flex min-h-11 items-center text-sm`}>
-          {t({ message: `See all our work on the quest board`, context: "circle hearth, what we tend" })}
+          {t({ message: `See all our work in Quests`, context: "circle hearth, what we tend" })}
         </Link>
       ) : null}
     </section>
