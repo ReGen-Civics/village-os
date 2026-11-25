@@ -22,24 +22,26 @@ beforeEach(() => {
 describe("ThemeSwitch", () => {
   it("is hidden before modes are live, for a visitor who has never chosen", () => {
     draw(false);
-    expect(screen.queryByRole("button", { name: /Switch to/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /mode: switch to/ })).toBeNull();
   });
 
   it("shows for a tester who already holds a choice: the mode it is in, small, and what a tap does", () => {
     localStorage.setItem(MODE_KEY, "dark");
     document.documentElement.dataset.mode = "dark";
     draw(false);
-    const b = screen.getByRole("button", { name: "Switch to light mode" });
+    const b = screen.getByRole("button", { name: "Dark mode: switch to light" });
     expect(b.textContent).toBe("Dark");
+    // WCAG 2.5.3: the name read aloud holds the word on screen, at its start.
+    expect(b.getAttribute("aria-label")?.startsWith(b.textContent ?? "")).toBe(true);
   });
 
   it("flips the page at once, both ways, and remembers it", () => {
     document.documentElement.dataset.mode = "light";
     draw(true);
-    fireEvent.click(screen.getByRole("button", { name: "Switch to dark mode" }));
+    fireEvent.click(screen.getByRole("button", { name: "Light mode: switch to dark" }));
     expect(document.documentElement.dataset.mode).toBe("dark");
     expect(localStorage.getItem(MODE_KEY)).toBe("dark");
-    fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dark mode: switch to light" }));
     expect(document.documentElement.dataset.mode).toBe("light");
     expect(localStorage.getItem(MODE_KEY)).toBe("light");
   });

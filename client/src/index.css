@@ -107,7 +107,7 @@
      WCAG-measured before it ships). The var() indirection survives @theme
      inline because the reference itself is what gets inlined into the
      generated utilities — same mechanism as the shadcn block above. */
-  --color-teal-deep: var(--tone-brand, #404040);
+  --color-teal-deep: var(--tone-brand, var(--mode-brand, #404040));
   /* The primary button's HOVER partner. White text sits on teal-deep, so the
      hover has to carry white as well, and it has to look different from rest.
      shared/brandTokens.ts derives --tone-brand-hover a fixed step
@@ -119,7 +119,7 @@
      1.01:1 from it, a hover nobody could see. Never hover white text to teal
      (the soft tone, 1.67 to 3.00:1) or to a translucent teal-deep:
      scripts/check-theme-literals.mjs refuses both. */
-  --color-teal-deep-dark: var(--tone-brand-hover, #262626);
+  --color-teal-deep-dark: var(--tone-brand-hover, var(--mode-brand-hover, #262626));
   /* The PRIMARY button's hover (`bg-primary text-primary-foreground`). It is
      the brand hover above unless the village set its own primary or chose the
      dark scheme, where the primary can carry DARK ink and needs a hover that
@@ -140,7 +140,7 @@
      to near-white) or darkening the band alone (which can crush a dark seed
      to near-black). These are the platform's own neutral fallbacks, not a
      measured brand pairing: near-black band, near-white text, 13.6:1. */
-  --color-teal-band: var(--tone-brand-band, #262626);
+  --color-teal-band: var(--tone-brand-band, var(--mode-brand-band, #262626));
   --color-amber-on-band: var(--tone-sun-on-band, #f2f2f2);
   --color-gray-light: #f2f2f2;     /* Platform neutral gray */
   /* UI accent colors - warm tones, dark enough for white text (WCAG AA) */
@@ -291,7 +291,7 @@
   --chart-4: #d4d4d4; /* Neutral gray, light */
   --chart-5: #e4e4e4; /* Neutral gray, lightest */
   --radius: 0.5rem;
-  --background: #f2f2f2; /* Platform neutral gray */
+  --background: var(--mode-ground, #f2f2f2); /* the mode's ground with no brand set, else platform neutral gray */
   --foreground: #171717; /* Near-black neutral */
   --card: #ffffff;
   --card-foreground: #171717;
@@ -1809,6 +1809,9 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --pal-day-shadow: 0 1px 2px rgb(43 39 32 / 0.06), 0 14px 32px -18px rgb(122 90 34 / 0.28);
   --pal-day-thanks: #8e3552;           /* gratitude, as text (the dashboard) */
   --pal-day-session: #55489a;          /* a live session, as text (the dashboard) */
+  --pal-day-brand: #0e5b60;            /* no brand set: the footer, white-text buttons */
+  --pal-day-brand-hover: #083a3d;      /* no brand set: their hover */
+  --pal-day-brand-band: #083a3d;       /* no brand set: the welcome's hero band */
 
   /* DARK: Canopy at Night */
   --pal-night-ground: #14362b;
@@ -1823,6 +1826,9 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --pal-night-living: #9fc0b2;
   --pal-night-warn: #eea58a;
   --pal-night-band: #0c241c;
+  --pal-night-brand: #0c241c;          /* no brand set: the footer, white-text buttons */
+  --pal-night-brand-hover: #1b4335;    /* no brand set: their hover */
+  --pal-night-brand-band: #1b4335;     /* no brand set: the welcome's hero band, a step above the night panel its buttons wear */
   --pal-night-rule: rgb(224 199 154 / 0.5);
   --pal-night-wash: rgb(176 129 60 / 0.2);
   --pal-night-shadow: 0 2px 4px rgb(0 0 0 / 0.3), 0 18px 40px -22px rgb(0 0 0 / 0.8);
@@ -1845,6 +1851,14 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --village-display: var(--font-display, "Marcellus", Georgia, "Times New Roman", serif);
 }
 :root[data-mode] {
+  /* A village with no brand colour set draws its brand tones and its ground in
+     the mode's palette (QA, 25 Nov 2026: the welcome and the footer stayed
+     charcoal). theme.css declares the --tone-* values for a branded village,
+     and a declared value never reaches these fallbacks. */
+  --mode-brand: var(--pal-day-brand);
+  --mode-brand-hover: var(--pal-day-brand-hover);
+  --mode-brand-band: var(--pal-day-brand-band);
+  --mode-ground: var(--day-ground, var(--pal-day-ground));
   --band: var(--day-band, var(--pal-day-band));
   --band-ink: var(--day-band-ink, var(--pal-day-band-ink));
   --band-rule: var(--day-rule, var(--pal-day-rule));
@@ -1852,6 +1866,10 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --band-bar: var(--day-panel, var(--pal-day-panel));
 }
 :root[data-mode="dark"] {
+  --mode-brand: var(--pal-night-brand);
+  --mode-brand-hover: var(--pal-night-brand-hover);
+  --mode-brand-band: var(--pal-night-brand-band);
+  --mode-ground: var(--night-ground, var(--pal-night-ground));
   --band: var(--night-band, var(--pal-night-band));
   --band-ink: var(--night-ink, var(--pal-night-ink));
   --band-rule: var(--night-rule, var(--pal-night-rule));
@@ -1877,6 +1895,20 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 :root[data-mode] header > nav.bg-teal-deep [class*="bg-white/"] {
   background-color: color-mix(in srgb, var(--band-ink) 8%, transparent);
+}
+/* Focus on the band and the tab bar. The shell's dark-surface rule (base layer,
+   "take a white outline") and the white ring utilities in Layout.tsx assume a
+   dark band; in a mode the band is the palette's, and white on the day band or
+   the day panel measured 1.4:1 and 1.04:1 (QA, 25 Nov 2026). The band's accent
+   is the mode's focus colour there: teal on the day band, gold on the night. */
+/* On every descendant, not only the focused one: a control with
+   `transition-colors` animates outline-color too, and from the base rule's
+   white it would flash white on the way in. */
+:root[data-mode] :is(header > nav.bg-teal-deep, header .bg-teal-band\/95, #mobile-menu, nav[data-mobile-tabbar]) * {
+  outline-color: var(--band-active);
+}
+:root[data-mode] :is(header > nav.bg-teal-deep, header .bg-teal-band\/95, #mobile-menu, nav[data-mobile-tabbar]) :focus-visible {
+  --tw-ring-color: var(--band-active);
 }
 :root[data-mode] header .bg-teal-band\/95 {
   background-color: var(--band-bar);
@@ -2117,7 +2149,7 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * palette here, and a filled gold button takes the ground as its ink.
  */
 :root[data-mode="light"] .sheet-night,
-:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]):not([data-scene], [data-scene] *) {
   /* (The second selector: a dialog is sand in dark mode, so it draws the day's dashboard too.) */
   --sheet-dash-gold: var(--day-accent, var(--pal-day-accent));
   --sheet-dash-gold-lit: var(--day-accent, var(--pal-day-accent));
@@ -2183,8 +2215,12 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * the guide) is a lit page held up in the night: in dark mode it takes the day
  * palette's sand and ink, so it reads the same in either mode. Every value is
  * a `--dialogue-*` knob, falling back to the village's day palette.
+ *
+ * A whole scene that happens to be a dialog (the companion welcome) is marked
+ * `data-scene` and keeps the night: it is a place, not a box of words (QA, 25
+ * Nov 2026: the hatchery stayed cream in dark mode).
  */
-:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]) {
+:root[data-mode="dark"] :is([role="dialog"], [role="alertdialog"], [data-dialogue]):not([data-scene], [data-scene] *) {
   --background: var(--dialogue-ground, var(--day-ground, var(--pal-day-ground)));
   --foreground: var(--dialogue-ink, var(--day-ink, var(--pal-day-ink)));
   --card: var(--dialogue-panel, var(--day-ground, var(--pal-day-ground)));

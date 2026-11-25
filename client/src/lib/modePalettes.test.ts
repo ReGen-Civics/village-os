@@ -53,11 +53,18 @@ function pairs(mode: "day" | "night"): Pair[] {
     out.push([`an edge or field on the ${s}`, c("edge"), c(s), EDGE]);
     out.push([`the focus ring on the ${s}`, c("accent"), c(s), EDGE]);
   }
+  // A village with no brand colour: white on the brand tones (the footer, white-text buttons, the welcome's hero band).
+  out.push(["the footer's white text, no brand set", "#ffffff", c("brand"), TEXT]);
+  out.push(["a white-text button's hover, no brand set", "#ffffff", c("brand-hover"), TEXT]);
+  out.push(["the welcome hero's white text, no brand set", "#ffffff", c("brand-band"), TEXT]);
   // BTN_PRIMARY: bg-notice (the accent) with text-background (the ground).
   out.push(["the main button's label", c("ground"), c("accent"), TEXT]);
   // The header band and the phone's tab bar.
   out.push(["the header's text on the band", mode === "day" ? c("band-ink") : c("ink"), c("band"), TEXT]);
   out.push(["the active tab on the tab bar", c("accent"), mode === "day" ? c("panel") : c("band"), TEXT]);
+  // Focus on the band and the tab bar takes the band's accent (index.css, "Focus on the band").
+  out.push(["the focus ring on the header band", c("accent"), c("band"), EDGE]);
+  out.push(["the focus ring on the tab bar", c("accent"), mode === "day" ? c("panel") : c("band"), EDGE]);
   out.push(["a tab's label on the tab bar", mode === "day" ? c("band-ink") : c("ink"), mode === "day" ? c("panel") : c("band"), TEXT]);
   if (mode === "day") {
     out.push(["page titles on the ground", c("heading"), c("ground"), TEXT]);
