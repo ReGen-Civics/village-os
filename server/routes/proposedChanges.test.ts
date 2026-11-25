@@ -18,6 +18,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { usersRepo } from "../repos/users";
 import { register } from "./proposedChanges";
+import { backfillConnectorOutcomes } from "../lib/suggestionOutcome";
 import { CCOS_WORDS_REFUSAL, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 
 const configured = testDbConfigured();
@@ -123,6 +124,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
+    await q("DELETE FROM suggestion_outcomes");
   });
 
   const call = async (method: string, path: string, body?: unknown, as: string | null = ADMIN.id, extra: Record<string, string> = {}) => {
@@ -640,6 +642,40 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(items.find((i: any) => i.id === theirs.body.ids[0]).yours).toBe(false);
     expect(JSON.stringify(q.body)).not.toMatch(/"body"|"live"|"route"|Write to the circle/);
     expect((await call("GET", "/api/admin/proposals/queue", undefined, STRANGER.id)).status).toBe(403);
+  });
+
+  it("REVIEW ENGINE (lane 2b): every decision leaves one outcome naming the capability and never the person; an agent's own withdrawal leaves none; the backfill writes past decisions once", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Outcomes", items: [PAGE, FAQ, DIAL] }, AGENT.id);
+    const [pageId, faqId, dialId] = filed.body.ids;
+    await call("PUT", `/api/admin/proposals/${pageId}/draft`, { body: { hero: { headline: "Held together on the land" } } });
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId }, { id: faqId }] })).body.accepted).toBe(2);
+    expect((await call("POST", "/api/admin/proposals/discard", { ids: [dialId] })).body.results[0].ok).toBe(true);
+    // A change the connector filed and then took back itself: no person decided it, so no outcome.
+    const mine = await call("POST", "/api/admin/proposals", { batch: "Withdrawn", items: [{ ...FAQ, body: { question: "Taken back?", answer: "Yes." } }] }, ADMIN.id, CONNECTOR);
+    expect((await call("POST", "/api/admin/proposals/discard-mine", { ids: mine.body.ids }, ADMIN.id, CONNECTOR)).body.discarded).toBe(1);
+
+    const rows = await q("SELECT * FROM suggestion_outcomes ORDER BY source_id");
+    const by = Object.fromEntries(rows.map((r: any) => [r.source_id, r]));
+    expect(Object.keys(by).sort()).toEqual([pageId, faqId, dialId].sort());
+    expect([by[pageId].outcome, by[pageId].fields_edited]).toEqual(["edited", 1]);
+    expect([by[faqId].outcome, by[faqId].fields_edited]).toEqual(["accepted", 0]);
+    expect(by[dialId].outcome).toBe("discarded");
+    for (const r of rows) {
+      expect(r.stream).toBe("connector");
+      expect(r.proposer_kind).toBe("agent");
+      expect(r.decided_by_capability).toBe("admin");
+      expect(r.id).toBe(`pcd_${r.source_id}`);
+      // Nothing in the row names who decided or who filed.
+      expect(Object.values(r).map(String).some((v) => v.includes(ADMIN.id) || v.includes(AGENT.id))).toBe(false);
+    }
+
+    // The backfill writes what people decided before this release, leaves the withdrawal out, and a second run adds nothing.
+    await q("DELETE FROM suggestion_outcomes");
+    expect(await backfillConnectorOutcomes(pool)).toEqual({ written: 3, skipped: 1 });
+    expect(await backfillConnectorOutcomes(pool)).toEqual({ written: 3, skipped: 1 });
+    const again = await q("SELECT source_id, outcome, decided_by_capability FROM suggestion_outcomes ORDER BY source_id");
+    expect(again).toHaveLength(3);
+    expect(again.every((r: any) => r.decided_by_capability === "before-0432")).toBe(true);
   });
 
   it("an agent puts aside what it filed while it waits, and nothing that a person filed or that was decided", async () => {
