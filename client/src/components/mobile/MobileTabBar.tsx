@@ -210,7 +210,8 @@ export default function MobileTabBar() {
     return own && own !== platform ? own : shortName[id] ?? own ?? platform ?? id;
   };
   const mine = pathTab(user?.paths, !!user, nameOf, t({ message: "Your path", context: "bottom tab bar, no path chosen yet" }));
-  const chooseSaid = t({ message: "Choose your path", context: "bottom tab bar, no path chosen yet" });
+  // The name starts with the label the reader sees, so a voice that says "Your path" finds it (WCAG 2.5.3).
+  const chooseSaid = t({ message: "Your path: choose one", context: "bottom tab bar, no path chosen yet" });
 
   // The village's own four tabs (gap G5), each in the place it chose. A tab
   // whose page is not open (its module off, or hidden) keeps the platform's
@@ -246,11 +247,13 @@ export default function MobileTabBar() {
           const slot = personal
             ? { ...s, label: mine.label, Icon: mine.Icon }
             : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
+          // The path slot is also lit on the profile, where its door leads (a path's card, or the paths).
           const active =
-            !!slot.path &&
-            (slot.path === "/"
-              ? currentPath === "/"
-              : currentPath === slot.path || currentPath.startsWith(slot.path + "/"));
+            (personal && currentPath === "/profile") ||
+            (!!slot.path &&
+              (slot.path === "/"
+                ? currentPath === "/"
+                : currentPath === slot.path || currentPath.startsWith(slot.path + "/")));
 
           const inner = (
             <>

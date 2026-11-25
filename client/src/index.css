@@ -2442,6 +2442,18 @@ html:has(#sera-changes [data-sera-strip-on]) {
     scale: none;
   }
 }
+/* Ambient air that keeps to the margins: faded out of the reading column so it never lands on a
+   letter (QA, 25 Nov 2026; profile/NightMotes.tsx). Wider margins on a desktop, where the column is narrow. */
+.m-margins {
+  -webkit-mask-image: linear-gradient(to right, #000, transparent 16%, transparent 84%, #000);
+  mask-image: linear-gradient(to right, #000, transparent 16%, transparent 84%, #000);
+}
+@media (min-width: 1024px) {
+  .m-margins {
+    -webkit-mask-image: linear-gradient(to right, #000, #000 12%, transparent 30%, transparent 70%, #000 88%, #000);
+    mask-image: linear-gradient(to right, #000, #000 12%, transparent 30%, transparent 70%, #000 88%, #000);
+  }
+}
 @keyframes m-touch-light {
   from { opacity: 1; scale: 0.96; }
   to { opacity: 0; scale: 1; }

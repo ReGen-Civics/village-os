@@ -769,7 +769,7 @@ export default function Profile() {
               </m.section>
 
               {/* The anchor the surfaced banner and "Walk another path" point at. */}
-              <div id="sheet-paths" className="scroll-mt-28">
+              <div id="sheet-paths" className="scroll-mt-40">
                 <PathsPanel
                   tiles={pathTiles}
                   claimedIds={user.paths}

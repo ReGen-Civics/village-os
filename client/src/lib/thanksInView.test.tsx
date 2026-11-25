@@ -27,7 +27,21 @@ describe("useThanksInView", () => {
     render(<Form />);
     expect(scrollTo).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
-    expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    // Instantly: the page's smooth scroll glided through the footer on the way up.
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "instant" });
     expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Thank you" }));
+  });
+
+  it("goes to the thank-you itself when it would still be below the fold from the top", () => {
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
+    const into = vi.fn();
+    Element.prototype.scrollIntoView = into;
+    const rect = vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ top: 700, bottom: 800, left: 0, right: 0, width: 0, height: 100, x: 0, y: 700, toJSON: () => ({}) });
+    render(<Form />);
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(into).toHaveBeenCalledWith({ block: "center", behavior: "instant" });
+    expect(scrollTo).not.toHaveBeenCalled();
+    rect.mockRestore();
   });
 });

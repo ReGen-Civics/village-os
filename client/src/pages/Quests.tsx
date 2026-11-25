@@ -7,13 +7,12 @@ import { m } from "framer-motion";
 import {
   ArrowRight,
   Calendar,
-  Compass,
   Filter,
   Heart,
   Star,
   Sprout,
 } from "lucide-react";
-import { Gourd, GrowthRings, Seed, SeedGlint } from "@/components/sacred/living";
+import { Gourd, GrowthRings, Seed, SeedGlint, SteppingStones } from "@/components/sacred/living";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth, useOptionalAuth } from "@/contexts/AuthContext";
 import { fetchGameMe, QuestClaim, useGameConfig } from "@/lib/gameApi";
@@ -246,7 +245,8 @@ export default function Quests() {
             className="text-center mb-6"
           >
             <div className={`${RING} mx-auto mb-6 size-16`}>
-              <Compass className="size-7" aria-hidden="true" />
+              {/* The quests' one mark, the same the tab bar and the menus draw (QA, 25 Nov 2026). */}
+              <SteppingStones className="size-7" aria-hidden="true" />
             </div>
             <p className={EYEBROW}>{t({ message: "Quests", context: "open work board eyebrow" })}</p>
             <h1 className={`${H1} mb-4 mt-2`}>

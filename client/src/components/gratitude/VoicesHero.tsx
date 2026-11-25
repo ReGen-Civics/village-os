@@ -128,7 +128,10 @@ export default function VoicesHero() {
                 ? undefined
                 : {
                     duration: 14 + (i % 5) * 3,
-                    repeat: Infinity,
+                    // Two breaths and then still, ending where it started: an
+                    // endless pulse dimmed the very lines being read, and never
+                    // rested off screen (QA, 25 Nov 2026; the wave 2 rest rule).
+                    repeat: 2,
                     ease: "easeInOut",
                     // Staggered so the field never pulses as one block, which
                     // reads as a page loading rather than as air moving.

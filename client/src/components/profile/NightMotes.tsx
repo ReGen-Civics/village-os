@@ -37,7 +37,15 @@
  *                   still; the page is not empty.
  *   hidden tab      `visibilitychange` cancels the frame and resumes it, so a
  *                   profile left open in a background tab draws nothing.
- *   unmount         the frame and both listeners are released together.
+ *   at rest         after about twenty seconds with no input it stops on the
+ *                   frame it is showing, and the next input wakes it (the
+ *                   wave 2 rule, journey/nature/useRest.ts). Measured before
+ *                   this: an idle phone kept its main thread over half busy
+ *                   redrawing it (QA, 25 Nov 2026).
+ *   unmount         the frame and every listener are released together.
+ *
+ * It keeps to the margins: a mask fades it out of the reading column
+ * (index.css, `.m-margins`), so no mote lands on a letter.
  *
  * ── THE COLOUR IS THE THEME'S, READ AT RUNTIME ───────────────────────────
  *
@@ -51,6 +59,7 @@
 import { useEffect, useRef } from "react";
 
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
+import { REST_AFTER_MS } from "@/components/journey/nature/useRest";
 
 const COUNT = 40;
 /** Alpha never reaches 1: this is air, and air does not compete with text. */
@@ -141,25 +150,37 @@ export default function NightMotes() {
 
     let frame = 0;
     const started = performance.now();
+    let lastInput = started;
     const tick = (now: number) => {
       draw((now - started) / 1000);
-      frame = requestAnimationFrame(tick);
+      // At rest: the last frame stays on screen and nothing more is drawn until the reader moves.
+      frame = now - lastInput > REST_AFTER_MS ? 0 : requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
 
+    const wake = () => {
+      lastInput = performance.now();
+      if (!frame && !document.hidden) frame = requestAnimationFrame(tick);
+    };
     const onVisibility = () => {
       if (document.hidden) {
         cancelAnimationFrame(frame);
         frame = 0;
-      } else if (!frame) {
-        frame = requestAnimationFrame(tick);
+      } else {
+        wake();
       }
     };
-    const onResize = () => fit();
+    const onResize = () => {
+      fit();
+      wake();
+    };
+    const wakers = ["pointermove", "pointerdown", "keydown", "touchstart", "scroll", "wheel"] as const;
+    for (const e of wakers) window.addEventListener(e, wake, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("resize", onResize);
     return () => {
       if (frame) cancelAnimationFrame(frame);
+      for (const e of wakers) window.removeEventListener(e, wake);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
     };
@@ -171,7 +192,7 @@ export default function NightMotes() {
       aria-hidden="true"
       // `text-foreground` is here to be READ, not to paint: it is what
       // getComputedStyle resolves the ink from above.
-      className="pointer-events-none fixed inset-0 h-full w-full text-foreground"
+      className="m-margins pointer-events-none fixed inset-0 h-full w-full text-foreground"
     />
   );
 }

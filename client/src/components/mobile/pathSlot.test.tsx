@@ -94,13 +94,31 @@ describe("the path slot, in the bar", () => {
     expect(slotLink()?.textContent).toBe("Steward");
   });
 
-  it("a visitor sees the seed and is asked to choose, by name for a screen reader", () => {
+  it("a visitor sees the seed and is asked to choose, by a name that starts with the label they see", () => {
     bar();
     const a = slotLink();
     expect(a?.dataset.pathSlot).toBe("");
-    expect(a?.getAttribute("href")).toBe("/#choose-path");
-    expect(a?.getAttribute("aria-label")).toBe("Choose your path");
+    // The whole-path page, which every village has; the front page's four ways exist only with brochure pages on.
+    expect(a?.getAttribute("href")).toBe("/path");
+    expect(a?.getAttribute("aria-label")).toBe("Your path: choose one");
+    expect(a?.getAttribute("aria-label")?.startsWith(a?.textContent ?? "")).toBe(true);
     expect(a?.querySelector("svg")?.getAttribute("class")).toContain("living-seed");
+  });
+
+  it("is lit on the profile, where its door leads", () => {
+    user = { id: 1, paths: ["resident"], membershipGranted: true };
+    window.history.replaceState(null, "", "/profile");
+    bar();
+    expect(slotLink()?.getAttribute("aria-current")).toBe("page");
+    window.history.replaceState(null, "", "/");
+  });
+
+  it("CONTROL: and not on another page", () => {
+    user = { id: 1, paths: ["resident"], membershipGranted: true };
+    window.history.replaceState(null, "", "/quests");
+    bar();
+    expect(slotLink()?.getAttribute("aria-current")).toBeNull();
+    window.history.replaceState(null, "", "/");
   });
 
   it("never draws Circles in the bar", () => {

@@ -243,11 +243,18 @@ export function Dawn({ plan, still }: SceneProps) {
           <stop offset="0" stopColor="var(--nat-dawn-low, #f6c98a)" />
           <stop offset="1" stopColor="var(--nat-dawn-high, rgba(246,201,138,0))" />
         </linearGradient>
+        {/* Everything that rises stays above the land: the sun used to show in front of and below the
+            horizon line on its way up (QA, 25 Nov 2026). */}
+        <clipPath id={`nat-dawn-above-${uid}`}>
+          <rect x="0" y="0" width="100" height="72" />
+        </clipPath>
       </defs>
-      <rect
+      <g clipPath={`url(#nat-dawn-above-${uid})`}>
+      {/* The sky as a glow rising from the horizon, with no edge to read as a box. */}
+      <ellipse
         className={still ? undefined : "nat-dawn-sky"}
         style={still ? undefined : vars(0, per)}
-        x="4" y="18" width="92" height="54" rx="10" fill={`url(#nat-dawn-sky-${uid})`}
+        cx="50" cy="72" rx="48" ry="54" fill={`url(#nat-dawn-sky-${uid})`}
         opacity={still ? 1 : undefined}
       />
       {plan.elements.map((e, n) => (
@@ -270,6 +277,7 @@ export function Dawn({ plan, still }: SceneProps) {
         cx="50" cy={still ? 60 : 72} r="15"
         fill="var(--nat-sun, #ecb163)"
       />
+      </g>
       <line x1="2" y1="72" x2="98" y2="72" stroke="var(--nat-horizon-line, #7f9155)" strokeWidth="2" strokeLinecap="round" />
     </g>
   );
