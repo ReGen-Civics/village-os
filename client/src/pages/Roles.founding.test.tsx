@@ -34,6 +34,10 @@ vi.mock("@/modules/ModuleProvider", () => ({ useModule: () => undefined, useModu
 vi.mock("@/components/natural/useReducedMotion", () => ({ useReducedMotion: () => true, prefersReducedMotion: () => true }));
 
 import Roles from "./Roles";
+import { resetGameConfigForTests } from "@/lib/gameApi";
+
+/** The village's story-page switches, as /api/game/config serves them. */
+const brochure = { on: true, hidden: [] as string[] };
 
 class NoopIntersectionObserver {
   observe() {}
@@ -116,6 +120,9 @@ beforeEach(() => {
     roles: [seat("finance", "Lead Finance Steward"), seat("land", "Regenerative Land & Building Lead"), seat("cook", "Village Cook")],
   };
   founding = { on: true, roleIds: ["land", "finance"], sections: { finance: SECTIONS }, showPayRanges: false, villagePay: VILLAGE_PAY };
+  brochure.on = true;
+  brochure.hidden = [];
+  resetGameConfigForTests();
   roleCard = (id: string) => ({ roleId: id, sections: id === "finance" ? SECTIONS : null, lastEdited: { by: "Mara", on: "2026-11-11" }, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
   vi.stubGlobal(
     "fetch",
@@ -127,6 +134,8 @@ beforeEach(() => {
       if (u === "/api/org/founding-team") return reply(founding);
       if (u.startsWith("/api/org/role-card/")) return reply(roleCard(decodeURIComponent(u.split("/").pop() ?? "")));
       if (u === "/api/season") return reply({ current: null });
+      // A village serving its story pages, unless a test says otherwise (`brochure`).
+      if (u === "/api/game/config") return reply({ project: { name: "Willowbrook" }, brochurePages: brochure.on, brochureHidden: brochure.hidden });
       return reply([], 404);
     }),
   );
@@ -425,12 +434,51 @@ describe("the two pay lines on the card", () => {
 });
 
 describe("the other ways in, and the words", () => {
-  it("offers Propose a new role from the start, and names the conflict steps in the village's words", async () => {
+  it("offers a member Propose a new role from the start, and names the conflict steps in the village's words", async () => {
+    session.user = { id: "u-member", role: "admin" };
     renderRoles();
     const other = await screen.findByRole("region", { name: "Other ways to join" });
     expect(within(other).getByRole("link", { name: /Propose a new role/ }).getAttribute("href")).toBe("/role-proposals/new");
     expect(screen.getByRole("heading", { name: "How we evolve through conflict" })).toBeTruthy();
     expect(screen.queryByText(/When a Tension Is Between People/)).toBeNull();
+    session.user = null;
+  });
+
+  it("never offers a visitor the member's door for a new role (the five-reviewer QA pass, 25 Nov 2026)", async () => {
+    session.user = null;
+    renderRoles();
+    const other = await screen.findByRole("region", { name: "Other ways to join" });
+    expect(within(other).queryByRole("link", { name: /Propose a new role/ })).toBeNull();
+  });
+});
+
+describe("the other ways in with the story pages off (the five-reviewer QA pass, 25 Nov 2026)", () => {
+  it("draws no seeder or gifts tile that would 404, and keeps the rest", async () => {
+    brochure.on = false;
+    renderRoles();
+    await screen.findByRole("region", { name: "Join the founding team" });
+    const other = screen.getByRole("region", { name: "Other ways to join" });
+    expect(within(other).queryByRole("link", { name: /Become a Founding Seeder/ })).toBeNull();
+    expect(within(other).queryByRole("link", { name: /Offer your gifts/ })).toBeNull();
+    expect(within(other).getByRole("link", { name: /Take a quest/ })).toBeTruthy();
+  });
+
+  it("drops only the tile whose own page is switched off", async () => {
+    brochure.hidden = ["/work-with-us"];
+    renderRoles();
+    await screen.findByRole("region", { name: "Join the founding team" });
+    const other = screen.getByRole("region", { name: "Other ways to join" });
+    expect(within(other).getByRole("link", { name: /Become a Founding Seeder/ }).getAttribute("href")).toBe("/resident");
+    expect(within(other).queryByRole("link", { name: /Offer your gifts/ })).toBeNull();
+  });
+
+  it("keeps a seeder tile the village pointed at an address of its own", async () => {
+    brochure.on = false;
+    founding = { ...founding, otherWays: { seeder: { title: "Join the Friends", line: "Come close first.", href: "https://friends.example.test" }, gifts: { title: "Give a day", line: "Saturdays.", href: "/work-with-us" } } };
+    renderRoles();
+    await screen.findByRole("region", { name: "Join the founding team" });
+    const other = screen.getByRole("region", { name: "Other ways to join" });
+    expect(within(other).getByRole("link", { name: /Join the Friends/ }).getAttribute("href")).toBe("https://friends.example.test");
   });
 });
 
@@ -852,3 +900,19 @@ describe("a founding team that would not load (performance QA sweep, resilience 
     expect(screen.queryByText("We couldn't load the founding team just now.")).toBeNull();
   });
 });
+
+describe("the open counts agree (the five-reviewer QA pass, 25 Nov 2026)", () => {
+  it("names both parts of the heading's count in the tally, so the numbers add up", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const heading = screen.getByRole("heading", { name: /Open roles/ });
+    const total = Number(/\((\d+)\)/.exec(heading.textContent ?? "")?.[1]);
+    const tally = within(section).getByTestId("lineup-tally").textContent ?? "";
+    const now = Number(/(\d+) open now/.exec(tally)?.[1] ?? 0);
+    const later = Number(/(\d+) opening next/.exec(tally)?.[1] ?? 0);
+    expect(now).toBe(2);
+    expect(later).toBeGreaterThan(0);
+    expect(now + later).toBe(total);
+  });
+});
+

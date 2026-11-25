@@ -43,6 +43,22 @@ export function isMemberView(user: AdmissionView | null | undefined, stages: rea
   return !!granted && stages.findIndex((s) => s.id === granted) >= door;
 }
 
+/**
+ * `useNewcomer` for a component that can also be drawn with no AuthProvider above it (a shared card on the landing
+ * and on /roles): no provider reads as a visitor, which is what such a page is to anybody it is drawn for.
+ */
+export function useNewcomerOrVisitor(): boolean {
+  let user: unknown = null;
+  try {
+    // useAuth reads the context first and throws only after, so the hooks run in the same order either way.
+    user = useAuth().user;
+  } catch {
+    user = null;
+  }
+  const cfg = useGameConfig();
+  return !isMemberView(user as AdmissionView | null, cfg?.stages ?? null);
+}
+
 /** True for a visitor and for a signed-in account the village has not admitted; false for a member. */
 export function useNewcomer(): boolean {
   const { user } = useAuth();

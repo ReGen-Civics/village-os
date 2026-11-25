@@ -11,7 +11,7 @@
  * with no voices, still renders nothing at all.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup as cleanupVoices, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/components/natural/useReducedMotion", () => ({
   useReducedMotion: () => true,
@@ -66,5 +66,20 @@ describe("VoicesHero once the read has settled with nothing to show", () => {
     const { container } = render(<VoicesHero />);
     await waitFor(() => expect(pending(container)).toBeNull());
     expect(container.innerHTML).toBe("");
+  });
+});
+
+describe("VoicesHero tells the wall whether it drew examples (25 Nov 2026)", () => {
+  it("says yes when a line is marked as an example, and no for the village's own lines", async () => {
+    answerWith(async () => json({ voices: [{ id: "v1", message: "You carried water to the new beds.", isExample: true }] }));
+    const seen: boolean[] = [];
+    render(<VoicesHero onExamples={(b) => seen.push(b)} />);
+    await waitFor(() => expect(seen.at(-1)).toBe(true));
+    cleanupVoices();
+    answerWith(async () => json({ voices: [{ id: "v2", message: "Thank you for the bread.", isExample: false }] }));
+    const real: boolean[] = [];
+    render(<VoicesHero onExamples={(b) => real.push(b)} />);
+    await waitFor(() => expect(screen.getAllByText("Thank you for the bread.").length).toBeGreaterThan(0));
+    expect(real.at(-1)).toBe(false);
   });
 });

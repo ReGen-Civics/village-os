@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import BuildProgress from "@/components/BuildProgress";
 import SeasonBanner from "@/components/SeasonBanner";
 import MapPeek from "@/components/MapPeek";
-import { useFourWaysHeading, useRouteWords, useVentureHref } from "@/components/ContributorRoutes";
+import { OPEN_VENTURES_HREF, useFourWaysHeading, useRouteWords, useVentureHref } from "@/components/ContributorRoutes";
 import { altOr, useBrandImages, useGameConfig, useVillageLinks } from "@/lib/gameApi";
 import { Link } from "wouter";
 import { m } from "framer-motion";
@@ -582,7 +582,7 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
   const words = useRouteWords();
   const ventureHref = useVentureHref();
   const others = [
-    { key: "venture", href: ventureHref, art: FOUR_WAYS_ART.venture, eyebrow: t({ message: "A business of your own", context: "landing, four ways: the venture card's eyebrow" }) },
+    { key: "venture", href: ventureHref ?? OPEN_VENTURES_HREF, art: FOUR_WAYS_ART.venture, eyebrow: t({ message: "A business of your own", context: "landing, four ways: the venture card's eyebrow" }) },
     { key: "partner", href: "/partner", art: FOUR_WAYS_ART.partner, eyebrow: t({ message: "Work alongside us", context: "landing, four ways: the partner card's eyebrow" }) },
     { key: "quest", href: "/propose-quest", art: FOUR_WAYS_ART.quest, eyebrow: t({ message: "One piece of work", context: "landing, four ways: the quest card's eyebrow" }) },
   ] as const;
