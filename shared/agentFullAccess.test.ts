@@ -12,6 +12,9 @@
  *   reads     the two new shipped reads pass without the person-saved list, and lose contact data
  *   seat      seat_power is additive only and refuses a group carrying the veto, the break-glass, money or admin
  *   note      an approval covers a selection only by the batch code or every change's code
+ *   25 nov    reads open: any read under /api/ for the full-access seat once a person opens it, as a plain member
+ *             outside /api/admin/, under the read floor, one case per category and failing closed on a floor word;
+ *             any other agent, and the seat with reads closed, exactly as before; writes unchanged
  *   24 nov    the lead's ruling of 24 Nov 2026: for the full-access holder, variables, modules, settings and the email
  *             sends open; any other agent is refused as before; every kept floor item still refuses the holder
  */
@@ -21,12 +24,16 @@ import { describe, expect, it } from "vitest";
 import {
   adminRequestDecision,
   ALWAYS_A_PERSON,
+  DEFAULT_AGENT_ADMIN_PATHS,
   isFloorCapability,
   leadApprovedBodyProblem,
   leadApprovedEntry,
   LEAD_APPROVAL_WORDS,
   LIFTABLE_RULES,
   MONEY_MODULE_IDS,
+  READ_FLOOR,
+  READ_FLOOR_WORDS,
+  readFloor,
   SHIPPED_AGENT_READS,
   stripContactData,
   type AgentAdminPathsDoc,
@@ -41,6 +48,7 @@ import {
   FULL_ACCESS_WORDS,
   fullAccessEmailSend,
   isUnnamedSend,
+  READS_OPEN_KEPT,
   recipientsProblem,
   fullAccessBodyProblem,
   fullAccessDecision,
@@ -522,5 +530,120 @@ describe("24 Nov 2026: the full-access role's agent changes settings and sends e
       expect(all, w).toContain(w);
     }
     expect(FULL_ACCESS_KEPT.length).toBeLessThanOrEqual(12);
+  });
+});
+
+// ── The lead's ruling of 25 Nov 2026: reads open, for the full-access seat only ─────────────────────
+
+describe("25 Nov 2026: reads open for the full-access seat", () => {
+  const routes = registeredRoutes();
+  const OPEN = { fullAccess: true, readsOpen: true } as const;
+  const READS: Array<[string, string]> = [["GET", "/api/org/drafts"], ["GET", "/api/org/role-card/r-1"], ["HEAD", "/api/org/role-card/r-1"], ["GET", "/api/events"], ["GET", "/api/admin/events"], ["GET", "/api/admin/roles/r-1"]];
+
+  it("opens any read under /api/ to the seat's agent, as a plain member outside /api/admin/", () => {
+    for (const [m, p] of READS) {
+      const d = fullAccessDecision(m, p, EMPTY, SELF, OPEN);
+      expect(d, `${m} ${p}`).toMatchObject({ ok: true, write: false, fullAccess: true, readOpen: true });
+      expect((d as any).asMember === true, `${m} ${p}`).toBe(!p.startsWith("/api/admin/"));
+    }
+  });
+
+  it("keeps a listed or shipped read as it was, and never as a plain member", () => {
+    const d = fullAccessDecision("GET", "/api/admin/member-tasks/access", DEFAULT_AGENT_ADMIN_PATHS, SELF, OPEN);
+    expect(d).toMatchObject({ ok: true, readOpen: true });
+    expect((d as any).asMember).toBeUndefined();
+    expect((fullAccessDecision("GET", "/api/sessions", EMPTY, SELF, OPEN) as any).asMember).toBeUndefined();
+  });
+
+  it("leaves the seat with reads closed exactly as before, and every other agent too, reads open or not", () => {
+    for (const [m, p] of [...READS, ...routes.map((r) => [r.method, r.path] as [string, string])]) {
+      expect(fullAccessDecision(m, p, EMPTY, SELF, FULL), `${m} ${p}`).toEqual(fullAccessDecision(m, p, EMPTY, SELF, { fullAccess: true, readsOpen: false }));
+      for (const opts of [{}, { readsOpen: true }, { fullAccess: false, readsOpen: true }]) {
+        expect(fullAccessDecision(m, p, EMPTY, "agent-1", opts), `${m} ${p}`).toEqual(adminRequestDecision(m, p, EMPTY, "agent-1", {}));
+      }
+    }
+    expect(fullAccessDecision("GET", "/api/org/drafts", EMPTY, SELF, FULL)).toMatchObject({ ok: false, code: "not_allowed" });
+  });
+
+  it("changes no write: every write decides exactly as it did with reads closed", () => {
+    for (const r of routes.filter((x) => x.method !== "GET")) {
+      expect(fullAccessDecision(r.method, r.path, EMPTY, SELF, OPEN), `${r.method} ${r.pattern}`).toEqual(fullAccessDecision(r.method, r.path, EMPTY, SELF, FULL));
+    }
+  });
+
+  it("does not open the connector's own paths, or a bad path", () => {
+    expect(fullAccessDecision("GET", "/api/agent/v1/mcp", EMPTY, SELF, OPEN)).toMatchObject({ ok: false });
+    expect(fullAccessDecision("GET", "/api/org/drafts?x=1", EMPTY, SELF, OPEN)).toMatchObject({ ok: false, code: "bad_path" });
+    expect(fullAccessDecision("GET", "/api/org/../admin/secrets", EMPTY, SELF, OPEN)).toMatchObject({ ok: false });
+    expect(fullAccessDecision("GET", "/health", EMPTY, SELF, OPEN)).toMatchObject({ ok: false });
+  });
+
+  // One case per category, each a read the seat's agent is refused with reads open.
+  const FLOOR: Array<[string, string]> = [
+    ["secrets", "/api/admin/integrations"], ["secrets", "/api/admin/secrets/resend_api_key"], ["secrets", "/api/admin/email-config"], ["secrets", "/api/admin/comms/settings/webhook"],
+    ["applicants", "/api/admin/applications"], ["applicants", "/api/admin/join-requests"], ["applicants", "/api/org/applicants/a-1"], ["applicants", "/api/admin/score-cards/s-1"],
+    ["money", "/api/admin/payouts"], ["money", "/api/moon-review/payers"], ["money", "/api/admin/invoices/i-1"], ["money", "/api/admin/payments"], ["money", "/api/admin/ledger/rows"], ["money", "/api/admin/treasury"], ["money", "/api/org/role-pay/r-1"], ["money", "/api/wallet"],
+    ["contact", "/api/admin/comms/people"], ["contact", "/api/members/contacts"], ["contact", "/api/admin/players/u-1/phone"], ["contact", "/api/org/legal-names"],
+    ["signin", "/api/auth/me"], ["signin", "/api/admin/users/u-1/sessions"], ["signin", "/api/oauth/clients"], ["signin", "/api/me/tokens"],
+    ["agent_paths", "/api/admin/agent-admin-paths"], ["agent_paths", "/api/admin/agent-accounts/full-access"], ["agent_paths", "/api/admin/agent-actions"],
+    ["voice", "/api/admin/applications/a-1/voice"], ["voice", "/api/voice/notes"],
+    ["erasure", "/api/admin/erasures"], ["erasure", "/api/admin/players/u-1/anonymize"],
+  ];
+
+  for (const [key, p] of FLOOR) {
+    it(`refuses a ${key} read: ${p}`, () => {
+      expect(fullAccessDecision("GET", p, EMPTY, SELF, OPEN), p).toMatchObject({ ok: false, code: "always_a_person" });
+      expect(fullAccessDecision("HEAD", p, EMPTY, SELF, OPEN), p).toMatchObject({ ok: false });
+      expect(readFloor(p) ?? fullAccessFloor("GET", p, SELF), p).not.toBeNull();
+    });
+  }
+
+  it("has a deny-list category for every floor the lead named, and each has a case above", () => {
+    expect(READ_FLOOR.map((r) => r.key)).toEqual(["secrets", "applicants", "money", "contact", "signin", "agent_paths", "voice", "erasure"]);
+    for (const r of READ_FLOOR) expect(FLOOR.some(([k, p]) => k === r.key && r.test(p)), r.key).toBe(true);
+    expect(READS_OPEN_KEPT).toEqual(READ_FLOOR.map((r) => r.words));
+  });
+
+  it("fails closed: an unknown path naming a floor word is refused", () => {
+    for (const w of ["pay", "secret", "token", "applicant", "application", "invoice", "ledger", "treasury", "payout", "voice", "erasure", "contact", "email-address"]) {
+      const p = `/api/brand-new-thing/${w}-summary`;
+      expect(readFloor(p), p).not.toBeNull();
+      expect(fullAccessDecision("GET", p, EMPTY, SELF, OPEN), p).toMatchObject({ ok: false, code: "always_a_person" });
+    }
+    expect(READ_FLOOR_WORDS.test("/api/new/Payout-Report")).toBe(true);
+  });
+
+  it("opens applicant data only with the Anchor's approval of AI agents, and never voice", () => {
+    expect(fullAccessDecision("GET", "/api/admin/applications", EMPTY, SELF, { ...OPEN, applicantDataOpen: true })).toMatchObject({ ok: true, readOpen: true });
+    expect(fullAccessDecision("GET", "/api/org/applicant-notes", EMPTY, SELF, { ...OPEN, applicantDataOpen: true })).toMatchObject({ ok: true });
+    expect(fullAccessDecision("GET", "/api/admin/applications/a-1/voice", EMPTY, SELF, { ...OPEN, applicantDataOpen: true })).toMatchObject({ ok: false });
+  });
+
+  it("walks every registered read: each is refused or opened, and every one naming a floor word is refused", () => {
+    let opened = 0;
+    let floored = 0;
+    for (const r of routes.filter((x) => x.method === "GET" && !x.path.startsWith("/api/agent/"))) {
+      const d = fullAccessDecision("GET", r.path, EMPTY, SELF, OPEN);
+      if (READ_FLOOR_WORDS.test(r.path) || READ_FLOOR.some((f) => f.test(r.path))) {
+        floored++;
+        expect(d, r.pattern).toMatchObject({ ok: false });
+      } else if (d.ok) {
+        opened++;
+        expect(d, r.pattern).toMatchObject({ readOpen: true, write: false });
+      }
+    }
+    expect(opened).toBeGreaterThan(100);
+    expect(floored).toBeGreaterThan(50);
+  });
+
+  it("strips legal names and postal lines from every full-access answer, beside contact keys", () => {
+    expect(stripContactData({ name: "Fern", legalName: "Fern A. Oak", legal_name: "x", postalAddress: "1 Road", members: [{ name: "Ivy", email: "ivy@example.test" }] })).toEqual({ name: "Fern", members: [{ name: "Ivy" }] });
+  });
+
+  it("reads the switch as closed unless it is exactly true, and keeps it across a missing role", () => {
+    expect(parseFullAccessDoc({ roleId: "r-ops", readsOpen: "yes" }).readsOpen).toBe(false);
+    expect(parseFullAccessDoc({ roleId: "r-ops", readsOpen: true, readsSetBy: "u-1" })).toMatchObject({ roleId: "r-ops", readsOpen: true, readsSetBy: "u-1" });
+    expect(parseFullAccessDoc({ readsOpen: true })).toMatchObject({ roleId: null, readsOpen: true });
+    expect(parseFullAccessDoc(null).readsOpen).toBe(false);
   });
 });

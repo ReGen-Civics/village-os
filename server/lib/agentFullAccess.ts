@@ -8,6 +8,8 @@
  *                                written without it.
  *   fullAccessRecipients         who an email send reaches, read fresh at both calls of the two-call confirm, so
  *                                the preview names them and the confirmToken covers them (the lead, 24 Nov 2026)
+ *   readsOpenFor                 whether this holder's agent reads open now (the lead, 25 Nov 2026), read at every call
+ *   noticeReadsOpenChange        reads open turned on or off: recorded, and told to the Anchor Circle like the switch
  *   noticeFullAccessChange       the switch turned on or off: one admin-audience event naming who did it, and a
  *                                notice to every live role holder of the Anchor Circle, so consent stays visible.
  */
@@ -38,6 +40,17 @@ export async function fullAccessFor(pool: Pool, userId: string): Promise<boolean
     return await holdsLiveSeat(pool, userId, doc.roleId);
   } catch (err) {
     console.warn("[agent-full-access] could not read the switch, so it reads as off", (err as Error)?.message);
+    return false;
+  }
+}
+
+/** Whether this holder's agent reads open now: full access is theirs, and a person turned reads open on. Fails closed. */
+export async function readsOpenFor(pool: Pool, userId: string): Promise<boolean> {
+  try {
+    const doc = await readFullAccess(pool);
+    return doc.readsOpen === true && (await fullAccessFor(pool, userId));
+  } catch (err) {
+    console.warn("[agent-full-access] could not read reads open, so it reads as closed", (err as Error)?.message);
     return false;
   }
 }
@@ -176,6 +189,52 @@ export async function noticeFullAccessChange(
       const people = Array.from(new Set((await holdersInCircles(pool, [anchor])).map((h) => h.userId)));
       for (const userId of people) {
         await deps.notify({ userId, type: "agent_full_access", title, body, link: "/admin", actorUserId: change.actorUserId, dedupeKey: `agent-full-access:${on ? "on" : "off"}:${roleId ?? "none"}:${stamp}:${userId}` });
+        anchorNotified++;
+      }
+    }
+  } catch (err) {
+    console.warn("[agent-full-access] the Anchor Circle notice did not go out", (err as Error)?.message);
+  }
+  return { anchorNotified };
+}
+
+/** Reads open moved (the lead, 25 Nov 2026): recorded with who did it, and told to the Anchor Circle, as the switch is. */
+export async function noticeReadsOpenChange(
+  pool: Pool,
+  deps: NoticeDeps,
+  change: { actorUserId: string; before: FullAccessDoc; after: FullAccessDoc },
+): Promise<{ anchorNotified: number }> {
+  const on = change.after.readsOpen;
+  const roleId = change.after.roleId;
+  const role = roleId ? await orgRoleForFullAccess(pool, roleId) : null;
+  const roleName = role?.name ?? roleId ?? "the full-access role";
+  const title = on ? `Reads are open for the agent of whoever holds ${roleName}` : `Reads are closed again for the agent of ${roleName}`;
+  const body = on
+    ? "That role's agent may now read the village's pages without a listed path, as a plain member reads them. Secrets, money, applicant data, contact details, sign-in, the agent list, voice and erasure records stay closed."
+    : "That role's agent reads only the paths a person lists for agents.";
+  await recordEvent(pool, {
+    kind: "audit",
+    text: on ? `opened reads for the agent of whoever holds ${roleName} (${roleId ?? "no role named"})` : `closed reads for the agent of ${roleName} (${roleId ?? "no role named"})`,
+    actorUserId: change.actorUserId,
+    entityType: "app_config",
+    entityRef: FULL_ACCESS_DOC,
+    audience: "admin",
+  });
+  let anchorNotified = 0;
+  try {
+    const circles = deps.circles().map((c) => ({
+      id: String(c?.id ?? ""),
+      name: String(c?.name ?? ""),
+      isAnchor: !!c?.isAnchor,
+      parentCircleId: c?.parentCircleId ? String(c.parentCircleId) : null,
+      isExample: !!c?.isExample,
+    }));
+    const anchor = anchorCircleId(circles);
+    if (anchor) {
+      const stamp = change.after.readsSetAt ?? new Date().toISOString();
+      const people = Array.from(new Set((await holdersInCircles(pool, [anchor])).map((h) => h.userId)));
+      for (const userId of people) {
+        await deps.notify({ userId, type: "agent_full_access", title, body, link: "/admin", actorUserId: change.actorUserId, dedupeKey: `agent-reads-open:${on ? "on" : "off"}:${roleId ?? "none"}:${stamp}:${userId}` });
         anchorNotified++;
       }
     }

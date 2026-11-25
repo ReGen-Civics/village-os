@@ -1,4 +1,5 @@
 import { anonymizeMember, backfillFinishedErasures, erasureBackfillJob } from "./lib/erasure";
+import { readsAsPlainMember } from "./lib/readAsMember";
 import { backfillSeasonGoalIds, SEASON_GOAL_ID_BACKFILL } from "./lib/seasonGoalIds";
 import { backfillConnectorOutcomes, CONNECTOR_OUTCOME_BACKFILL } from "./lib/suggestionOutcome";
 import { markNameFreeJournalLinesPublic } from "./repos/orgSeatErasure";
@@ -1950,6 +1951,8 @@ function userIsAdmin(user: any): boolean {
 
 async function isAdmin(req: express.Request): Promise<boolean> {
   markAdminGate(req);
+  // A request marked to read as a plain member is never an admin's (server/lib/readAsMember.ts, the lead, 25 Nov 2026).
+  if (readsAsPlainMember(req)) return false;
   const user = await authedUser(req);
   if (!userIsAdmin(user)) {
     // An admin first, unchanged; then a holder of the power this route names (server/lib/operatorRoutes.ts).

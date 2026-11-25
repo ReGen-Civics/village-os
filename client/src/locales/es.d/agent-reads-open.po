@@ -1,0 +1,56 @@
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Open reads for the agent of whoever holds {roleName}? The Anchor Circle is told."
+msgstr "¿Abrir las lecturas para el agente de quien ocupe {roleName}? Se avisa al Círculo Ancla."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Close reads again? The Anchor Circle is told."
+msgstr "¿Cerrar las lecturas otra vez? Se avisa al Círculo Ancla."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads are open for that role's agent."
+msgstr "Las lecturas están abiertas para el agente de ese rol."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads are closed again."
+msgstr "Las lecturas están cerradas otra vez."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "reads open, who set it when the name is unknown"
+msgid "a person"
+msgstr "una persona"
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "agents panel, the reads open switch heading"
+msgid "Reads open"
+msgstr "Lecturas abiertas"
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "With this on, the same agent may read the village's pages without a listed path, as a plain member reads them, so an admin's wider view never reaches it. Writes still need your yes in the chat. Secrets and keys, money and pay, applicant data, members' contact details and legal names, sign-in and tokens, the agent list, voice recordings and erasure records stay closed."
+msgstr "Con esto activo, el mismo agente puede leer las páginas de la aldea sin una ruta en la lista, como las lee un miembro sin más permisos, así que la vista amplia de una persona administradora nunca le llega. Escribir sigue pidiendo tu sí en el chat. Los secretos y las claves, el dinero y la paga, los datos de quienes postulan, los datos de contacto y los nombres legales de los miembros, el inicio de sesión y los tokens, la lista de agentes, las grabaciones de voz y los registros de borrado siguen cerrados."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Reads open for the full-access role's agent"
+msgstr "Lecturas abiertas para el agente del rol con acceso total"
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Open. Set by {readsBy}."
+msgstr "Abiertas. Las abrió {readsBy}."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Closed. Tick to open reads."
+msgstr "Cerradas. Marca la casilla para abrir las lecturas."
+
+# needs-native-review: first pass, reads open for the full-access agent, 25 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Name a role above first."
+msgstr "Primero elige un rol arriba."

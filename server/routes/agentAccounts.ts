@@ -9,6 +9,7 @@
  *   POST /api/admin/agent-actions/:id/undo put back one of Sera's actions (B7), within 30 days
  *   GET /api/admin/agent-accounts/full-access  the full-access switch: which role, if any, and the roles to pick from
  *   PUT /api/admin/agent-accounts/full-access  name one role, or none (the lead, 20 Nov 2026; shared/agentFullAccess.ts)
+ *   PUT /api/admin/agent-accounts/full-access/reads-open  open or close that role's agent's reads (the lead, 25 Nov 2026)
  *
  * Every route is an admin's, and the two writes are a PERSON's: an agent
  * account is refused them even with a session, and `admin_request` can never
@@ -31,8 +32,8 @@ import { boolVar } from "../lib/variables";
 import { recentApprovedWrites } from "../lib/agentLeadApproval";
 import { orgRoleForFullAccess } from "../repos/agentAccounts";
 import { listOrgRoles } from "../lib/orgChart";
-import { noticeFullAccessChange, readFullAccess } from "../lib/agentFullAccess";
-import { FULL_ACCESS_DOC, FULL_ACCESS_FLOOR, type FullAccessDoc } from "../../shared/agentFullAccess";
+import { noticeFullAccessChange, noticeReadsOpenChange, readFullAccess } from "../lib/agentFullAccess";
+import { FULL_ACCESS_DOC, FULL_ACCESS_FLOOR, READS_OPEN_KEPT, type FullAccessDoc } from "../../shared/agentFullAccess";
 
 /** `notify` and `circlesRepo` tell the Anchor Circle when the full-access switch moves; without them it is only recorded. */
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin"> & Partial<Pick<AppDeps, "notify" | "circlesRepo">>;
@@ -144,7 +145,31 @@ export function register(app: Express, deps: Deps): void {
       setAt: doc.setAt,
       roles,
       floor: FULL_ACCESS_FLOOR.map((f) => f.why).filter((w, i, all) => all.indexOf(w) === i),
+      readsOpen: doc.readsOpen,
+      readsSetBy: doc.readsSetBy ? (await namesOf(getPool(), [doc.readsSetBy]))[doc.readsSetBy] ?? null : null,
+      readsSetAt: doc.readsSetAt,
+      readsKept: READS_OPEN_KEPT,
     });
+  });
+
+  // ── Reads open, beside the switch (the lead, 25 Nov 2026) ─────────────────
+  // A person's act, as the switch is: `person` refuses an agent account, and the `agents` rule keeps the connector
+  // off this path. It opens reads only for the agent the switch already names, under the read floor.
+  app.put("/api/admin/agent-accounts/full-access/reads-open", async (req, res) => {
+    const actor = await person(req, res);
+    if (!actor) return;
+    const raw = (req.body as { on?: unknown } | undefined)?.on;
+    if (typeof raw !== "boolean") return res.status(400).json({ error: "Send on: true to open reads, or on: false to close them." });
+    const before = await readFullAccess(getPool());
+    if (before.readsOpen === raw) return res.json({ readsOpen: raw, unchanged: true });
+    const after: FullAccessDoc = { ...before, readsOpen: raw, readsSetBy: actor.id, readsSetAt: new Date().toISOString() };
+    await writeConfigDocument(getPool(), FULL_ACCESS_DOC, after as unknown as Record<string, unknown>);
+    const told = await noticeReadsOpenChange(
+      getPool(),
+      { notify: deps.notify ? (n) => deps.notify!(n) : async () => undefined, circles: () => (deps.circlesRepo ? (deps.circlesRepo.all() as any[]) : []) },
+      { actorUserId: actor.id, before, after },
+    );
+    res.json({ readsOpen: raw, anchorNotified: told.anchorNotified });
   });
 
   app.put("/api/admin/agent-accounts/full-access", async (req, res) => {
@@ -160,7 +185,8 @@ export function register(app: Express, deps: Deps): void {
     }
     const before = await readFullAccess(getPool());
     if ((before.roleId ?? null) === roleId) return res.json({ on: !!roleId, roleId, unchanged: true });
-    const after: FullAccessDoc = { roleId, setBy: actor.id, setAt: new Date().toISOString() };
+    // Reads open is its own act, so naming or changing the role carries it over as it stands.
+    const after: FullAccessDoc = { ...before, roleId, setBy: actor.id, setAt: new Date().toISOString() };
     await writeConfigDocument(getPool(), FULL_ACCESS_DOC, after as unknown as Record<string, unknown>);
     const told = await noticeFullAccessChange(
       getPool(),
