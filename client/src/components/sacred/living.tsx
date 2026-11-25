@@ -17,7 +17,7 @@
 import { Svg, type GlyphProps } from "./glyphs";
 import { asIcon, Dot, WASH } from "./livingCore";
 
-export { Cell, CellRing, MushroomNetwork, Pines, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
+export { Cell, CellRing, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "./livingCore";
 
 const PETAL = "M12 10.2c-1.6-2.6-1.4-5.6 0-6.7 1.4 1.1 1.6 4.1 0 6.7z";
 
@@ -214,6 +214,25 @@ function SproutDrawing(props: GlyphProps) {
   );
 }
 
+/** Three pines rising on one ground line: growth (the investor's path, prosperity). */
+function PinesDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 20.6h18M6 20.6v-1.6M12 20.6v-2M18 20.6v-2.4" />
+      <path {...WASH} d="M6 13.8l2.4 5.2H3.6zM12 9.6l3.2 9H8.8zM18 4.6l3.8 13.8h-7.6z" />
+    </Svg>
+  );
+}
+/** Two mushrooms joined by threads under the ground: people connected, the network beneath (community, team). */
+function MushroomNetworkDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.6 11.2a4 4 0 0 1 8 0zM7.6 11.2v5.2M13.8 13.4a3.2 3.2 0 0 1 6.4 0zM17 13.4v3.2" />
+      <path d="M7.6 16.4c1.6 2.5 8 2.5 9.4.2M10.2 17.9l-.8 2M14.4 17.9l.9 1.9M12.3 18.4v2" />
+    </Svg>
+  );
+}
+
 /* The glyphs, each a drop-in for a lucide icon. */
 export const SeedPod = /* @__PURE__ */ asIcon("SeedPod", SeedPodDrawing);
 export const SeedPin = /* @__PURE__ */ asIcon("SeedPin", SeedPinDrawing);
@@ -234,3 +253,5 @@ export const Splash = /* @__PURE__ */ asIcon("Splash", SplashDrawing);
 export const SeedEye = /* @__PURE__ */ asIcon("SeedEye", SeedEyeDrawing);
 export const Feather = /* @__PURE__ */ asIcon("Feather", FeatherDrawing);
 export const Sprout = /* @__PURE__ */ asIcon("Sprout", SproutDrawing);
+export const Pines = /* @__PURE__ */ asIcon("Pines", PinesDrawing);
+export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", MushroomNetworkDrawing);

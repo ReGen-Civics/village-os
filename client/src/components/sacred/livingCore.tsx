@@ -5,7 +5,7 @@
  *
  * Split out for the bundle, not for meaning. A module lands in one chunk whole,
  * so while the tab bar imported living.tsx, every glyph any page used rode on
- * the first page with it. The first page now carries these ten and nothing
+ * the first page with it. The first page now carries these eight and nothing
  * else; the others stay in the lazy chunks of the pages that draw them.
  * living.tsx says how they are drawn and holds the test of the house style.
  */
@@ -64,24 +64,6 @@ function SunLeafDrawing(props: GlyphProps) {
     <Svg {...props}>
       <path {...WASH} d="M6 19.6c-.6-6.4 3.4-11.6 10.6-12.4.8 7.2-4.2 12.2-10.6 12.4z" />
       <path d="M6 19.6l7.6-8M18.6 4.4l.6-1.6M20.4 6.2l1.6-.6M16.6 3.6l-.2-1.4" />
-    </Svg>
-  );
-}
-/** Two mushrooms joined by threads under the ground: people connected, the network beneath (community, team). */
-function MushroomNetworkDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path d="M3.6 11.2a4 4 0 0 1 8 0zM7.6 11.2v5.2M13.8 13.4a3.2 3.2 0 0 1 6.4 0zM17 13.4v3.2" />
-      <path d="M7.6 16.4c1.6 2.5 8 2.5 9.4.2M10.2 17.9l-.8 2M14.4 17.9l.9 1.9M12.3 18.4v2" />
-    </Svg>
-  );
-}
-/** Three pines rising on one ground line: growth (the investor's path, prosperity). */
-function PinesDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path d="M3 20.6h18M6 20.6v-1.6M12 20.6v-2M18 20.6v-2.4" />
-      <path {...WASH} d="M6 13.8l2.4 5.2H3.6zM12 9.6l3.2 9H8.8zM18 4.6l3.8 13.8h-7.6z" />
     </Svg>
   );
 }
@@ -170,12 +152,10 @@ function SeedHandDrawing(props: GlyphProps) {
   );
 }
 
-/* The path tab's glyphs ride here too: the bar draws the reader's path (config/mobileNav.ts, PATH_GLYPHS). */
+/* The four paths' glyphs and the seed: the menu draws each path by one, and the bar draws the reader's (config/nav.ts, config/mobileNav.ts PATH_GLYPHS). */
 export const Cell = /* @__PURE__ */ asIcon("Cell", CellDrawing);
 export const CellRing = /* @__PURE__ */ asIcon("CellRing", CellRingDrawing);
 export const SteppingStones = /* @__PURE__ */ asIcon("SteppingStones", SteppingStonesDrawing);
-export const Pines = /* @__PURE__ */ asIcon("Pines", PinesDrawing);
-export const MushroomNetwork = /* @__PURE__ */ asIcon("MushroomNetwork", MushroomNetworkDrawing);
 export const SeedPodHome = /* @__PURE__ */ asIcon("SeedPodHome", SeedPodHomeDrawing);
 export const SunLeaf = /* @__PURE__ */ asIcon("SunLeaf", SunLeafDrawing);
 export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
