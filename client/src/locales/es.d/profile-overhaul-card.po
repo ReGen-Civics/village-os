@@ -1,0 +1,49 @@
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: a pull that failed"
+msgid "The card did not turn. Try again."
+msgstr "La carta no se dio vuelta. Inténtalo de nuevo."
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: eyebrow"
+msgid "Today's card"
+msgstr "La carta de hoy"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: heading"
+msgid "A card for your day"
+msgstr "Una carta para tu día"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: the face of the card"
+msgid "The Sun's gate"
+msgstr "La puerta del Sol"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: the fold under the card"
+msgid "Today's sky"
+msgstr "El cielo de hoy"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: before the pull"
+msgid "Pull a card and read today's sky against your own lines."
+msgstr "Saca una carta y lee el cielo de hoy frente a tus propias líneas."
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: under the card"
+msgid "A lens, never a forecast."
+msgstr "Una lente, nunca un pronóstico."
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: button"
+msgid "Pull again"
+msgstr "Saca otra vez"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: button while it pulls"
+msgid "Turning the card"
+msgstr "Dando vuelta la carta"
+
+# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+msgctxt "today's card: button"
+msgid "Pull today's card"
+msgstr "Saca la carta de hoy"
