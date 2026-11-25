@@ -151,3 +151,44 @@ it("sends with no credentials when it falls back to fetch", () => {
     vi.unstubAllGlobals();
   }
 });
+
+describe("noise is never told, from any path (crash-alert sweep, 25 Nov 2026)", () => {
+  const withStack = (message: string, stack: string) => Object.assign(new TypeError(message), { stack });
+
+  it("the boundary's own path drops Safari's network drop, as the window listeners already did", () => {
+    const s = senderAt();
+    expect(reportCrash(new TypeError("Load failed"), "boundary", s.sender)).toBe(false);
+    expect(reportCrash(new TypeError("Failed to fetch"), "boundary", s.sender)).toBe(false);
+    expect(s.sent).toHaveLength(0);
+  });
+
+  it("drops an in-app browser's injected global failing in its own script", () => {
+    const s = senderAt();
+    const foreign = "@user-script:1:12\nglobal code@user-script:3:1";
+    for (const message of [
+      "undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')",
+      "Can't find variable: __firefox__",
+      "undefined is not an object (evaluating 'window.__firefox__.reader')",
+    ]) {
+      expect(reportCrash(withStack(message, foreign), "error", s.sender), message).toBe(false);
+      s.advance(MIN_GAP_MS);
+    }
+    expect(s.sent).toHaveLength(0);
+  });
+
+  it("CONTROL: the same global named from our own bundle is still told, and so is a real error", () => {
+    const s = senderAt();
+    const ours = "connectWallet@https://village.example.test/assets/Roles-B6yHa53f.js:4:2201";
+    expect(reportCrash(withStack("undefined is not an object (evaluating 'window.ethereum.request')", ours), "boundary", s.sender)).toBe(true);
+    s.advance(MIN_GAP_MS);
+    expect(reportCrash(new ReferenceError("Cannot access uninitialized variable."), "boundary", s.sender)).toBe(true);
+    s.advance(MIN_GAP_MS);
+    // A real error that merely mentions a fetch is not the network drop.
+    expect(reportCrash(new Error("Failed to fetch the roles: missing id"), "boundary", s.sender)).toBe(true);
+    expect(s.sent.map((r) => r.message)).toEqual([
+      "undefined is not an object (evaluating 'window.ethereum.request')",
+      "Cannot access uninitialized variable.",
+      "Failed to fetch the roles: missing id",
+    ]);
+  });
+});

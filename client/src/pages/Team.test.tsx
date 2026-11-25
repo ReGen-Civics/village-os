@@ -59,11 +59,15 @@ vi.mock("@/lib/gameApi", () => ({
   useGameConfig: () => ({ project: { name: "Willowbrook" }, currency: { name: "Thanks" } }),
   useVillageLinks: () => ({ siteUrl: "", eventsUrl, contactEmail: "", mailTo: () => "" }),
 }));
+const sectionsRead: string[] = [];
 vi.mock("@/hooks/useVillageContent", () => ({
-  readVillageSection: (section: string) => Promise.resolve(section === "team" ? teamCards : section === "page-team" ? storedTeam : null),
+  readVillageSection: (section: string) => {
+    sectionsRead.push(section);
+    return Promise.resolve(section === "team" ? teamCards : section === "page-team" ? storedTeam : null);
+  },
 }));
 
-import Team, { openRoleCount } from "./Team";
+import Team, { openRoleCount, teamCardsShown } from "./Team";
 
 const role = (name: string, seats: number, holders: string[], extra: Record<string, unknown> = {}) => ({
   id: name.toLowerCase().replace(/\s+/g, "-"),
@@ -99,7 +103,21 @@ beforeEach(() => {
   storedTeam = null;
   teamCards = [{ name: "Juno", bio: "Grows the beans." }];
   eventsUrl = "";
+  sectionsRead.length = 0;
 });
+
+/** /api/org as a member reads it: signed in, and holder rows that carry `kind`. */
+const memberTier = () => {
+  org = {
+    ...org,
+    people: { visible: true, membersOnly: false, signedIn: true },
+    roles: [role("Garden Lead", 1, []), role("Seed Keeper", 2, [])].map((r, i) => ({
+      ...r,
+      holders: [[{ name: "Juno Fairweather", kind: "member" }], [{ name: "Ash", kind: "member" }]][i],
+      holderCount: 1,
+    })),
+  };
+};
 
 describe("every field in the Team spec reaches the page", () => {
   it("renders a distinct marker typed into each field and each list row", async () => {
@@ -212,11 +230,63 @@ describe("the open-roles line says only what is true", () => {
   });
 });
 
-describe("the people are still the village's roles and Team cards", () => {
+describe("the people are still the village's roles and Team cards, for a member", () => {
   it("merges a role holder with their Team card", async () => {
+    memberTier();
+    teamCards = [{ name: "Juno Fairweather", bio: "Grows the beans.", photo: "/uploads/juno.webp" }];
     renderTeam();
-    expect(await screen.findByText("Juno")).toBeInTheDocument();
+    expect(await screen.findByText("Juno Fairweather")).toBeInTheDocument();
     expect(screen.getByText("Grows the beans.")).toBeInTheDocument();
     expect(screen.getByText("Garden Lead")).toBeInTheDocument();
+    expect(sectionsRead).toContain("team");
+  });
+
+  it("still draws a card for somebody who holds no seat", async () => {
+    memberTier();
+    teamCards = [{ name: "Rowan Hale", role: "Friend of the garden", bio: "Brings seeds." }];
+    renderTeam();
+    expect(await screen.findByText("Rowan Hale")).toBeInTheDocument();
+  });
+});
+
+/**
+ * /team TO A VISITOR (the lead, 25 Nov 2026): first names only. No surname, no email, no photo, no bio, no
+ * profile link, and "A member" for whoever turned off "Show my first name to visitors" (which /api/org says).
+ */
+describe("a visitor reads first names only", () => {
+  beforeEach(() => {
+    // The public tier: a holder row is a first name and nothing else.
+    org = { ...org, roles: [role("Garden Lead", 1, ["Juno"]), role("Seed Keeper", 2, ["A member"])] };
+    teamCards = [
+      { name: "Juno Fairweather", bio: "Grows the beans.", photo: "/uploads/juno.webp", email: "juno@example.test" },
+      { name: "Rowan Hale", role: "Friend of the garden", bio: "Brings seeds.", photo: "/uploads/rowan.webp" },
+    ];
+  });
+
+  it("has no surname, photo, bio or email anywhere on the page, and never asks for the cards", async () => {
+    renderTeam();
+    expect(await screen.findByText("Juno")).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toContain("Fairweather");
+    expect(text).not.toContain("Rowan");
+    expect(text).not.toContain("Grows the beans.");
+    expect(text).not.toContain("@example.test");
+    expect(document.querySelector('img[src*="/uploads/"]')).toBeNull();
+    expect(Array.from(document.querySelectorAll("a[href]")).map((a) => a.getAttribute("href")).filter((h) => /^\/(people|u|profile|members)\b/.test(h ?? ""))).toEqual([]);
+    expect(sectionsRead).not.toContain("team");
+  });
+
+  it("names a member who turned off their first name as the words /api/org sends", async () => {
+    renderTeam();
+    expect(await screen.findByText("A member")).toBeInTheDocument();
+  });
+
+  it("is decided by the tier the payload proves", () => {
+    const rows = [{ holders: [{ name: "Juno" }] }];
+    expect(teamCardsShown({ visible: true, membersOnly: false, signedIn: false }, rows)).toBe(false);
+    // Signed in, but the rows are the public tier's (a newcomer): still no cards.
+    expect(teamCardsShown({ visible: true, membersOnly: false, signedIn: true }, rows)).toBe(false);
+    expect(teamCardsShown({ visible: true, membersOnly: false, signedIn: true }, [{ holders: [{ name: "Juno Fairweather", kind: "member" }] }])).toBe(true);
+    expect(teamCardsShown(null, rows)).toBe(false);
   });
 });

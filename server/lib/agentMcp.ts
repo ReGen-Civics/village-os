@@ -51,7 +51,7 @@
  * holder, a `cash.pay` holder included.
  */
 import { isShippedAgentRead, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, stripContactData, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts, type SeatPowerFacts } from "../../shared/agentAdmin";
-import { fullAccessBodyProblem, fullAccessDecision } from "../../shared/agentFullAccess";
+import { FULL_ACCESS_KEPT, fullAccessBodyProblem, fullAccessDecision, fullAccessEmailSend, recipientsProblem, type FullAccessRecipients, type FullAccessSendKind } from "../../shared/agentFullAccess";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
 import { LIBRARY_API, LIBRARY_LIMITS, libraryItemUrl } from "../../shared/sessionLibrary";
 import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
@@ -148,7 +148,12 @@ export interface ToolContext {
    */
   fullAccess?: {
     on: () => Promise<boolean>;
-    recorded: (a: { method: string; path: string; summary: string; approvedBy: string; approvalNote: string }) => Promise<void>;
+    recorded: (a: { method: string; path: string; summary: string; approvedBy: string; approvalNote: string; recipients?: FullAccessRecipients | null }) => Promise<void>;
+    /**
+     * Who an email send reaches (the lead, 24 Nov 2026), read fresh by the server at both calls, or null when it
+     * cannot say. A send with no answer is refused, so nothing goes to people the preview did not name.
+     */
+    recipients?: (send: { kind: FullAccessSendKind; params: Record<string, string> }, body: Record<string, unknown> | undefined) => Promise<FullAccessRecipients | null>;
   };
   /** Writes one `agent_actions` row. Only the admin and Sera tools record through it. */
   recordAction?: (a: { scope: string; tool: string; method: string | null; path: string | null; echoHash: string; state: "done" | "refused" | "asked" }) => Promise<void>;
@@ -771,7 +776,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     kind: "write",
     title: "Call an admin path",
     description:
-      "Calls one admin path the village has opened to agents, as the holder, with the holder's own admin checks. GET answers at once. A write answers first with what it would do and a confirmToken; call again with the same arguments and the token to make it. Some writes a person makes in the app, and the answer says so. Every write also carries summary, the first argument: one plain sentence a non-technical person can read in the permission box, naming the people and roles by name, with no ids and no jargon, such as: Remove the duplicate record of Ana on the Gardener role. She keeps the role. A client that connected before summary existed, whose tool list has no summary argument, puts the same sentence in body.summary; it is taken out before the route sees the body, and summary wins when both are there. The sentence is shown to the person with the platform's own line on what the call does, and kept in the audit. A role card, org draft, wording or seating write carries approvedBy and approvalNote in its body: who approved it and their approval in this chat, quoted; it is kept in the village's audit and its organisational memory. Erasure, powers, money, secrets and the agent accounts are never reachable here. Always open to read: GET /api/sessions (each circle's coming meeting, its rhythms by key under comingUp.rows[].rhythms, and the waiting agenda items under library.items) and GET /api/sessions/circles/{circleId}/summary. To put items on a meeting's agenda, use propose_changes with kind session_agenda.",
+      "Calls one admin path the village has opened to agents, as the holder, with the holder's own admin checks. GET answers at once. A write answers first with what it would do and a confirmToken; call again with the same arguments and the token to make it. Some writes a person makes in the app, and the answer says so. Every write also carries summary, the first argument: one plain sentence a non-technical person can read in the permission box, naming the people and roles by name, with no ids and no jargon, such as: Remove the duplicate record of Ana on the Gardener role. She keeps the role. A client that connected before summary existed, whose tool list has no summary argument, puts the same sentence in body.summary; it is taken out before the route sees the body, and summary wins when both are there. The sentence is shown to the person with the platform's own line on what the call does, and kept in the audit. A role card, org draft, wording or seating write carries approvedBy and approvalNote in its body: who approved it and their approval in this chat, quoted; it is kept in the village's audit and its organisational memory. Erasure, powers, money, secrets and the agent accounts are never reachable here. With full access, an email send states who it goes to, and how many, in the first call's answer under recipients, and a refusal from the floor lists what stays a person's under stillAPersons. Always open to read: GET /api/sessions (each circle's coming meeting, its rhythms by key under comingUp.rows[].rhythms, and the waiting agenda items under library.items) and GET /api/sessions/circles/{circleId}/summary. To put items on a meeting's agenda, use propose_changes with kind session_agenda.",
     inputSchema: {
       type: "object",
       properties: {
@@ -806,8 +811,8 @@ export const MCP_TOOLS: readonly ToolDef[] = [
       const summary = plain(args.summary) || plain(bodySummary);
       // The summary is the caller's words to the person, never the route's input. It rides in the echo so the
       // sentence the person read at the preview is the one the confirmToken covers.
-      const echo = summary ? { summary, method, path, body: body ?? null } : { method, path, body: body ?? null };
-      const hash = echoHash(echo);
+      let echo: Record<string, unknown> = summary ? { summary, method, path, body: body ?? null } : { method, path, body: body ?? null };
+      let hash = echoHash(echo);
       const record = (state: "done" | "refused" | "asked") =>
         ctx.recordAction!({ scope: "admin", tool: "admin_request", method: method.slice(0, 8) || null, path: path.slice(0, 500) || null, echoHash: hash, state });
 
@@ -821,7 +826,8 @@ export const MCP_TOOLS: readonly ToolDef[] = [
       });
       if (!decision.ok) {
         await record("refused");
-        return { ok: false, error: decision.words, detail: { code: decision.code } };
+        // The full-access role's agent is told, in plain words, what the floor still keeps (the lead, 24 Nov 2026).
+        return { ok: false, error: decision.words, detail: { code: decision.code, ...(fullOn ? { stillAPersons: FULL_ACCESS_KEPT } : {}) } };
       }
       const full = decision.fullAccess === true;
       // A lead-approved write (the lead's ruling, 10 and 11 Nov 2026): the body is checked at both calls, and a
@@ -851,6 +857,28 @@ export const MCP_TOOLS: readonly ToolDef[] = [
           return { ok: false, error: problem, detail: { code: "full_access_refused" } };
         }
       }
+      // AN EMAIL SEND names its recipients before the yes (the lead, 24 Nov 2026): read fresh by the server at both
+      // calls, shown in the preview, and carried in the echo the confirmToken covers, so an audience that moved
+      // between the two calls is asked again. A send the server cannot name the recipients of is refused.
+      let recipients: FullAccessRecipients | null = null;
+      const send = full && decision.write ? fullAccessEmailSend(method, path) : null;
+      if (send) {
+        let read: FullAccessRecipients | null = null;
+        try {
+          read = ctx.fullAccess?.recipients ? await ctx.fullAccess.recipients({ kind: send.kind, params: send.params }, body) : null;
+        } catch (err) {
+          console.warn("[agent-mcp] the recipients of a send could not be read", (err as Error)?.message);
+          read = null;
+        }
+        const problem = recipientsProblem(send.kind, read);
+        if (problem || !read) {
+          await record("refused");
+          return { ok: false, error: problem ?? "The platform could not say who this email goes to, so it was not sent.", detail: { code: "recipients_unknown" } };
+        }
+        recipients = { to: read.to, count: read.count, names: read.names.slice(0, 20) };
+        echo = { ...echo, recipients };
+        hash = echoHash(echo);
+      }
       if (!decision.write) {
         const a = await ctx.dispatch("GET", path);
         await record(a.status < 300 ? "done" : "refused");
@@ -871,7 +899,13 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         return { ok: false, error: "Say what this does in one plain sentence, naming the people and roles, in summary or, if your connector has no summary argument yet, in body.summary. The person sees it before they approve.", detail: { code: "summary_required" } };
       }
       // What the platform itself says the call does, where it has a line for it, so the person reads both.
-      const platformSays = lead ? leadApprovalSubject(lead, path, body, seatRoleId).what : full ? "A change made with the operations role's full access" : null;
+      const platformSays = lead
+        ? leadApprovalSubject(lead, path, body, seatRoleId).what
+        : send && recipients
+          ? `${send.label}, sent by the operations role's agent on your yes. It goes to ${recipients.to} (${recipients.count} ${recipients.count === 1 ? "person" : "people"})`
+          : full
+            ? "A change made with the operations role's full access"
+            : null;
       if (args.confirmToken === undefined) {
         const { token, expiresAt } = ctx.mintConfirm("admin_request", echo);
         await record("asked");
@@ -881,6 +915,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
             confirmRequired: true,
             summary,
             ...(platformSays ? { platformSays } : {}),
+            ...(recipients ? { recipients } : {}),
             echo,
             confirmToken: token,
             expiresAt,
@@ -924,7 +959,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         const approval = readLeadApproval(body);
         try {
           if (!approval.ok || !ctx.fullAccess) throw new Error("no approval to record");
-          await ctx.fullAccess.recorded({ method, path, summary, approvedBy: approval.approvedBy, approvalNote: approval.approvalNote });
+          await ctx.fullAccess.recorded({ method, path, summary, approvedBy: approval.approvedBy, approvalNote: approval.approvalNote, ...(recipients ? { recipients } : {}) });
         } catch (err) {
           console.error("[agent-mcp] the full-access record failed, so the write was not made", err);
           await record("refused");

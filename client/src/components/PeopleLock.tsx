@@ -32,7 +32,7 @@
  *               land them back where they started.
  */
 import { Link, useLocation } from "wouter";
-import { Users } from "lucide-react";
+import { MushroomNetwork } from "@/components/sacred/living";
 import { internalPath } from "@/lib/internalPath";
 import { Trans } from "@lingui/react/macro";
 
@@ -64,7 +64,7 @@ export function PeopleLockNote({
   return (
     <div className="rounded-2xl border border-border bg-muted/30 p-6 md:p-8 text-center max-w-2xl mx-auto">
       <div className="w-12 h-12 rounded-full bg-sage/10 flex items-center justify-center mx-auto mb-4">
-        <Users className="w-6 h-6 text-sage" />
+        <MushroomNetwork className="w-6 h-6 text-sage" />
       </div>
       <p className="font-display text-2xl font-bold text-foreground mb-2">
         <Trans context="PeopleLock, p">{seats} {seats === 1 ? "place" : "places"}, {held} of them held

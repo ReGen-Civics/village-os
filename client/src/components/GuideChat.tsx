@@ -3,7 +3,8 @@
 // /api/assistant/proposal with a `kind`, so the two flows stay in step.
 import { useEffect, useRef, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
-import { Sparkles, CheckCircle2, ArrowRight, Send } from "lucide-react";
+import { CheckCircle2, ArrowRight, Send } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { sendProposal, ProposalKind } from "@/lib/proposals";
 import type { IdeaReceipt } from "@shared/questIdeas";
 import MicButton from "@/components/MicButton";
@@ -138,7 +139,7 @@ export default function GuideChat({
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-muted/40">
         <div className="w-9 h-9 rounded-full bg-notice text-background flex items-center justify-center">
-          <Sparkles className="w-4 h-4" />
+          <SeedGlint className="w-4 h-4" />
         </div>
         <div>
           <p className="font-semibold text-foreground leading-tight">{guideNameAtSentenceStart(assistantName)}</p>

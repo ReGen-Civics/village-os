@@ -22,7 +22,7 @@
  * Renders nothing at all for a member who is owed nothing and keeps no books.
  */
 import { lazy, Suspense, useEffect, useState } from "react";
-import { HandCoins } from "lucide-react";
+import { OfferingHands } from "@/components/sacred/living";
 import { authToken } from "@/lib/gameApi";
 import { formatMoney } from "@shared/money";
 import {
@@ -134,7 +134,7 @@ export default function CashOwedPanel() {
     <div id="cash-owed" className="scroll-mt-24 rounded-2xl bg-card p-6 shadow-lg sm:p-8 space-y-5">
       <div>
         <h3 className="flex items-center gap-2 font-display text-xl font-bold text-card-foreground">
-          <Trans context="CashOwedPanel, h3"><HandCoins className="h-6 w-6" aria-hidden="true" />
+          <Trans context="CashOwedPanel, h3"><OfferingHands className="h-6 w-6" aria-hidden="true" />
           Cash
         </Trans></h3>
         <p className="mt-2 text-sm text-muted-foreground">

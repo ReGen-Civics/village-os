@@ -17,7 +17,8 @@
  */
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { authToken } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
 import type { SeasonSummary } from "@shared/seasonSummary";
@@ -95,7 +96,7 @@ export default function SeasonSummaryOffer() {
     <div className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-sm sm:right-6 sm:left-auto sm:mx-0">
       <div role="dialog" aria-labelledby="season-offer-title" className="sheet-night rounded-2xl border border-notice bg-card p-5 text-card-foreground shadow-sm">
         <div className="flex items-start gap-3">
-          <Sparkles className="mt-1 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
+          <SeedGlint className="mt-1 h-5 w-5 shrink-0 text-notice" aria-hidden="true" />
           <div className="flex-1 space-y-1">
             <p id="season-offer-title" className="font-display text-xl"><Trans context="SeasonSummaryOffer, p">{offer.season.name} has turned</Trans></p>
             <p className="text-sm text-muted-foreground"><Trans context="SeasonSummaryOffer, p">What you earned, what you carried and your badges, on one card you can share.</Trans></p>

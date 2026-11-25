@@ -33,14 +33,14 @@ import { filterChoices, filterShelf, isFiltered, NO_FILTERS, type ShelfFilters }
 import { TIER_PILL } from "@shared/moduleCatalog";
 import type { ModuleTier } from "@shared/modules";
 import { useCatalyst } from "@/lib/gameApi";
-import { Hammer } from "lucide-react";
+import { TendingHands } from "@/components/sacred/living";
 import { useMemo, useState } from "react";
 
 function BuilderCard({ guideUrl, poolUrl }: { guideUrl: string; poolUrl: string }) {
   return (
     <div className="rounded-xl border border-dashed border-notice/50 bg-notice/10 p-4 flex flex-col min-w-0 break-words">
       <div className="flex items-center gap-2 mb-2">
-        <Hammer className="w-5 h-5 text-notice" aria-hidden="true" />
+        <TendingHands className="w-5 h-5 text-notice" aria-hidden="true" />
         <h3 className="font-semibold text-foreground">
           Build one, get paid in{" "}
           <InfoTip tip="$ReGen is the network's own token. The builders' pool pays module builders in it, each lunar cycle, sized by how many members open their module."><Trans context="Modules, InfoTip">$ReGen</Trans></InfoTip>

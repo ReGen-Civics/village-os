@@ -8,6 +8,7 @@
  * sanitize, the same posture Messages takes.
  */
 import Layout from "@/components/Layout";
+import ComingSoonPanel from "@/components/ComingSoonPanel";
 import ModuleGate, { SignInDoors } from "@/components/modules/ModuleGate";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -773,7 +774,16 @@ function PolicyLine({
 }
 
 function Board({ entries }: { entries: BoardEntry[] }) {
-  if (!entries.length) return null;
+  const { t } = useLingui();
+  // Nothing posted yet (UNFINISHED-AREAS 4): the area is coming, said plainly, in place of a page with no board.
+  if (!entries.length) {
+    return (
+      <ComingSoonPanel
+        title={t({ message: "Introductions", context: "coming soon: the introductions board" })}
+        body={t({ message: "When members say what they seek and what they offer, it gathers here, and both people say yes before a conversation opens.", context: "coming soon: the introductions board" })}
+      />
+    );
+  }
   return (
     <section className="rounded-xl border border-border bg-card p-4 space-y-3">
       <h2 className="font-display text-lg font-bold text-foreground"><Trans context="Introductions, h2">The board</Trans></h2>

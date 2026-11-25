@@ -29,7 +29,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
-const session = vi.hoisted(() => ({ token: null as string | null, user: null as null | { id: string; name: string; handle: string; paths: string[]; role?: string }, mayConfirm: false }));
+const session = vi.hoisted(() => ({ token: null as string | null, user: null as null | { id: string; name: string; handle: string; paths: string[]; role?: string; membershipGranted?: boolean }, mayConfirm: false }));
 const gameFetchMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/components/Layout", () => ({
@@ -216,7 +216,9 @@ function signIn() {
   // `paths` because Profile reads `user.paths` unguarded at one of its two
   // uses, while the other reads `user?.paths ?? []`. A signed-in member always
   // has the field, so this is the realistic shape rather than a workaround.
-  session.user = { id: "u1", name: "A Member", handle: "a-member", paths: [] };
+  // `membershipGranted` because a signed-in account the village has not admitted is a newcomer, and /messages
+  // refuses a newcomer on the page (the lead, 25 Nov 2026). This file's "signed in" is a member.
+  session.user = { id: "u1", name: "A Member", handle: "a-member", paths: [], membershipGranted: true };
 }
 function signOut() {
   session.token = null;

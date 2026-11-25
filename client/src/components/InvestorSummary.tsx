@@ -3,14 +3,13 @@ import { BTN_PRIMARY, CARD, EYEBROW, LEDE, RING, TILE } from "@/components/journ
 import {
   DollarSign,
   Shield,
-  TrendingUp,
   Percent,
   Calendar,
   ArrowRight,
-  Users,
   Info,
   Wallet,
 } from "lucide-react";
+import { MushroomNetwork, Pines } from "@/components/sacred/living";
 import { Trans } from "@lingui/react/macro";
 
 interface SummaryDetail {
@@ -36,11 +35,11 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   wallet: Wallet,
   dollar: DollarSign,
   shield: Shield,
-  "trending-up": TrendingUp,
+  "trending-up": Pines,
   percent: Percent,
   calendar: Calendar,
   "arrow-right": ArrowRight,
-  users: Users,
+  users: MushroomNetwork,
 };
 
 export default function InvestorSummary() {

@@ -323,12 +323,28 @@ function PageLoading() {
   return <QuietLoading world label={t({ message: "Gathering your page", context: "loading: a page is on its way" })} />;
 }
 
+/**
+ * The responsive bottom bar's visit count (client/src/lib/navVisits.ts): after a
+ * signed-in member's page settles, its address is counted once per session, and
+ * nothing about the member leaves the phone. Loaded on its own, after the paint.
+ */
+function NavVisits() {
+  const [location] = useLocation();
+  useEffect(() => {
+    // The lazy module reads the session itself: signed out, it sends nothing.
+    const id = window.setTimeout(() => void import("@/lib/navVisits").then((m) => m.visitedNow(location)).catch(() => undefined), 1500);
+    return () => window.clearTimeout(id);
+  }, [location]);
+  return null;
+}
+
 function Router() {
   const [location] = useLocation();
   return (
     <>
     <ScrollToTop />
       <PageTitle />
+      <NavVisits />
     <ErrorBoundary key={location}>
     <Suspense fallback={<PageLoading />}>
     <EntranceGate waiting={<PageLoading />}>

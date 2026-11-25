@@ -103,7 +103,7 @@ describe("the role in one minute", () => {
     const facts = el.querySelectorAll('[data-testid="card-facts"]');
     expect(facts).toHaveLength(1);
     expect((el.querySelector("header") as HTMLElement).contains(facts[0])).toBe(true);
-    expect(facts[0].textContent).toContain("Commitment60%");
+    expect(facts[0].textContent).toContain("CommitmentPart time, 60%");
     expect(facts[0].textContent).toContain("WhereOn the land");
   });
 

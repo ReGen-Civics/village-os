@@ -13,7 +13,7 @@
  * says the document is not kept.
  */
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import GuidePicker from "@/components/guide/GuidePicker";
 import { fetchGuide } from "@/lib/guideApi";
 import type { GuideState } from "@shared/guideChoice";
@@ -115,7 +115,7 @@ export default function RoleGuidePanel({
       {!asked && (
         <div>
           <button type="button" className={QUIET} disabled={busy} onClick={() => void turn([], null)}>
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            <SeedGlint className="h-4 w-4" aria-hidden="true" />
             {ROLE_GUIDE_WORDS.open}
           </button>
         </div>

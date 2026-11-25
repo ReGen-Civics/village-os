@@ -22,8 +22,15 @@
  *   THE FLOOR, a person's act with the switch on: every path the existing `ALWAYS_A_PERSON` rules refuse for
  *   secrets, erasure, money, members leaving or being let in, a member's sign-in and admin flag, the agent accounts,
  *   voice recordings, comparing proposals and applicant data (read only with the Anchor's approval of AI agents,
- *   as before), plus the parts of the powers rule that are the veto and the break-glass, and the parts of the
- *   settings and tier C rules that send letters or email. The rules are reused, never copied, so a new route that
+ *   as before), plus the parts of the powers rule that are the veto and the break-glass, the part of the tier C
+ *   rule that writes to an applicant, and the part of the settings rule that holds the email provider's keys and a
+ *   person's own yes or no to letters (`FULL_ACCESS_SETTINGS_KEPT`).
+ *
+ *   24 NOVEMBER 2026 (the lead; the record is in shared/agentAdmin.ts): the village's modules, variables and
+ *   settings, and sending email, opened to this role's agent. Each send is one of `FULL_ACCESS_EMAIL_SENDS`, and its
+ *   preview states its recipients, and the count for a letter, read by the server at both calls, so the confirmToken
+ *   covers exactly who it goes to. A write shaped like a send that is not on that list stays a person's
+ *   (`isUnnamedSend`). `FULL_ACCESS_KEPT` says in plain words what the floor still keeps. The rules are reused, never copied, so a new route that
  *   matches one is covered on the day it lands. Beside the paths, the body of a write never names a capability an
  *   agent may not hand out (`isFloorCapability`), a game variable that moves money, sends email, guards sign-in
  *   or runs the connector stays a person's, and so does a write under an admin area that moves value under a name
@@ -69,6 +76,13 @@ export function parseFullAccessDoc(raw: unknown): FullAccessDoc {
 }
 
 /**
+ * What the settings rule still keeps from the full-access role (the lead, 24 Nov 2026): the legacy email settings,
+ * which can carry the provider's key, the provider's webhook secret, key check and domain, and a person's own yes or
+ * no to letters (suppressing or restoring an address).
+ */
+export const FULL_ACCESS_SETTINGS_KEPT = /email-?config|\/comms\/settings\/(webhook|key-rights|domain)(\/|$)|\/comms\/people\//i;
+
+/**
  * THE FLOOR, by `ALWAYS_A_PERSON` rule key. A rule with no `only` is in the floor whole; one with `only` is in the
  * floor where its own test AND `only` both match the path. Each rule keeps its own mode: an "always" rule refuses
  * every method, a "writes" rule refuses writes, and the "personal" rule answers a GET only with the Anchor's approval.
@@ -84,17 +98,20 @@ export const FULL_ACCESS_FLOOR: ReadonlyArray<{ key: string; only?: RegExp; why:
   { key: "accounts", why: "a member's sign-in and admin flag" },
   { key: "agents", why: "the agent accounts and tokens" },
   { key: "powers", only: /veto|break-?glass|override|admin-access/i, why: "the veto and the break-glass" },
-  { key: "settings", only: /\/letters?(\/|$)|\/send(\/|$)|e-?mail|\/comms(\/|$)/i, why: "sending letters and email" },
-  { key: "tier_c", only: /first-?repl|decision-?letter|letter-?drafts?/i, why: "sending letters and email" },
+  // The lead, 24 Nov 2026: the village's modules, variables and settings, and sending email with its recipients named,
+  // are opened. What stays of this rule is the sending provider's keys, webhook and domain, the legacy email settings
+  // that can carry a key, and a person's own yes or no to letters.
+  { key: "settings", only: FULL_ACCESS_SETTINGS_KEPT, why: "the email provider's keys, and a person's own yes or no to letters" },
+  { key: "tier_c", only: /first-?repl|decision-?letter|letter-?drafts?/i, why: "a first reply or a decision letter to an applicant" },
 ];
 
 /** The rule keys whose whole rule is in the floor. */
 export const FULL_ACCESS_FLOOR_WHOLE: readonly string[] = FULL_ACCESS_FLOOR.filter((f) => !f.only).map((f) => f.key);
 
-/** Game variable categories that move money, send email, guard sign-in or run the connector: a person sets them. */
+/** Game variable categories that move money, guard sign-in or run the connector: a person sets them. Email and reminders opened on 24 Nov 2026. */
 export const FULL_ACCESS_VARIABLE_CATEGORIES: readonly string[] = [
   "Gratitude", "Ledger", "The Mint", "Exchange", "Payments", "Stays", "Library", "Exit", "Hidden map",
-  "Connector", "Accounts & sessions", "Abuse guards", "Email and reminders",
+  "Connector", "Accounts & sessions", "Abuse guards",
 ];
 
 /**
@@ -107,8 +124,100 @@ export const FULL_ACCESS_VALUE_AREAS: readonly string[] = ["stays", "products", 
 /** The village's signing key is a credential: replacing it is a person's act, as every secret is. */
 export const FULL_ACCESS_KEY_AREAS: readonly string[] = ["identity"];
 
+// ── Sending email, with its recipients named (the lead, 24 Nov 2026) ─────────
+
+/** Who an email send reaches, as the platform reads it: the holder themselves, a letter's audience, and so on. */
+export type FullAccessSendKind = "holder" | "letter" | "journey" | "message" | "waitlist";
+
+/**
+ * EVERY EMAIL SEND THE FULL-ACCESS ROLE'S AGENT MAY MAKE, by route. Each names a kind, and the server reads that
+ * kind's recipients fresh at both calls of the two-call confirm (server/lib/agentFullAccess.ts), so the preview says
+ * who the email goes to, and how many for a letter or a waitlist letter, and the confirmToken covers exactly those.
+ * A write shaped like a send that is not on this list stays a person's (`isUnnamedSend`).
+ */
+export const FULL_ACCESS_EMAIL_SENDS: ReadonlyArray<{ path: string; kind: FullAccessSendKind; label: string }> = [
+  { path: "/api/admin/comms/settings/test", kind: "holder", label: "A test email from Comms Settings" },
+  { path: "/api/admin/comms/letters/:id/test", kind: "holder", label: "A test of a letter" },
+  { path: "/api/admin/comms/journeys/:key/steps/:step/test", kind: "holder", label: "A test of one journey step's email" },
+  { path: "/api/admin/comms/words/:key/test", kind: "holder", label: "A test of one email's words" },
+  { path: "/api/admin/comms/letter-previews/send", kind: "holder", label: "A preview of an email's words" },
+  { path: "/api/admin/comms/letters/:id/send", kind: "letter", label: "A letter to its audience" },
+  { path: "/api/admin/comms/journeys/:key/state", kind: "journey", label: "A journey turned on or off" },
+  { path: "/api/admin/comms/messages/:id/retry", kind: "message", label: "One failed email tried again" },
+  { path: "/api/admin/roles/waitlist-letters/send", kind: "waitlist", label: "A letter to everyone waiting for a role" },
+];
+
+/** Segments of a route pattern matched against a path, with the `:name` segments read out, or null. */
+function matchRoute(pattern: string, path: string): Record<string, string> | null {
+  const want = pattern.split("/");
+  const got = path.split("/");
+  if (want.length !== got.length) return null;
+  const params: Record<string, string> = {};
+  for (let i = 0; i < want.length; i++) {
+    if (want[i]!.startsWith(":")) {
+      if (!got[i] || !SEGMENT.test(got[i]!)) return null;
+      params[want[i]!.slice(1)] = got[i]!;
+    } else if (want[i] !== got[i]) return null;
+  }
+  return params;
+}
+
+/** The email send this write is, with its route's parameters, or null. POST only, as every send route is. Pure. */
+export function fullAccessEmailSend(method: string, path: string): { kind: FullAccessSendKind; label: string; params: Record<string, string> } | null {
+  if (String(method ?? "").toUpperCase() !== "POST") return null;
+  for (const e of FULL_ACCESS_EMAIL_SENDS) {
+    const params = matchRoute(e.path, String(path ?? ""));
+    if (params) return { kind: e.kind, label: e.label, params };
+  }
+  return null;
+}
+
+/** A write shaped like an email send: a send anywhere in admin, or a test, retry or run under Comms. */
+const SEND_SHAPE = /\/send(\/|$)|\/comms\/(.+\/)?(test|retry|run)$/i;
+
+/** A write shaped like a send that `FULL_ACCESS_EMAIL_SENDS` does not name, so nobody can say who it reaches first. Pure. */
+export function isUnnamedSend(method: string, path: string): boolean {
+  const m = String(method ?? "").toUpperCase();
+  return m !== "GET" && SEND_SHAPE.test(String(path ?? "")) && !fullAccessEmailSend(m, path);
+}
+
+/** Who a send reaches, as the preview states it and the confirmToken covers it. */
+export interface FullAccessRecipients {
+  /** One plain line: who it goes to. */
+  to: string;
+  /** How many people it goes to now. */
+  count: number;
+  /** Up to twenty of them by name, where the platform has a name. Never an address but the holder's own. */
+  names: string[];
+}
+
+/** Whether a recipients answer is one an informed yes can stand on: a line, a count, and somebody to send to for a letter. */
+export function recipientsProblem(kind: FullAccessSendKind, r: FullAccessRecipients | null | undefined): string | null {
+  if (!r || typeof r.to !== "string" || !r.to.trim() || !Number.isInteger(r.count) || r.count < 0 || !Array.isArray(r.names)) return FULL_ACCESS_WORDS.noRecipients;
+  if ((kind === "letter" || kind === "waitlist" || kind === "holder" || kind === "message") && r.count < 1) return FULL_ACCESS_WORDS.noRecipients;
+  return null;
+}
+
+/**
+ * WHAT THE FLOOR STILL KEEPS from the full-access role's agent (the lead, 24 Nov 2026), in plain words, so the agent
+ * can say what it cannot do. The connector shows it in the admin tool's description and with every floor refusal.
+ */
+export const FULL_ACCESS_KEPT: readonly string[] = [
+  "Secrets and integration keys, including the email provider's key, webhook and domain: never read or written by an agent.",
+  "Money and value: pay, payers, invoices, payments, the ledger, minting, the treasury, credits and prices, money modules and money variables.",
+  "Erasing or anonymising a member.",
+  "Letting a member in or out, invitations, and a member's sign-in, sessions and admin flag.",
+  "The agent accounts, their tokens, the agent path list and the full-access switch itself.",
+  "The steward's veto, the break-glass and the admin panel.",
+  "Applicant data, read only with the Anchor's approval of AI agents and never changed; first replies and decision letters to applicants. No AI selects, ranks or judges applicants.",
+  "Voice recordings, and comparing proposals side by side.",
+  "A person's own yes or no to letters, and any email whose recipients the platform cannot name before it goes.",
+];
+
 export const FULL_ACCESS_WORDS = {
-  variable: "That game variable moves money, sends email, guards sign-in or runs the connector. A person sets it in Admin, Variables.",
+  variable: "That game variable moves money, guards sign-in or runs the connector. A person sets it in Admin, Variables.",
+  unnamedSend: "This sends email, and the platform cannot name who it goes to before it goes. A person sends it in the app.",
+  noRecipients: "The platform could not say who this email goes to, so it was not sent. For a letter, preview it first so its audience is fixed, then send.",
   module: "Turning a money module on or off, or changing its settings, is a person's act in the app.",
   valueArea: "This moves value: credits, prices, payments or a quest's release. A person makes it in the app.",
   keyArea: "The village's signing key is a credential. A person replaces it in the app.",
@@ -132,6 +241,7 @@ export function fullAccessFloor(method: string, path: string, selfUserId?: strin
     return { key: r.key, words: r.words };
   }
   if (selfUserId && p.split("/").includes(selfUserId)) return { key: "agents", words: FULL_ACCESS_WORDS.self };
+  if (isUnnamedSend(m, p)) return { key: "settings", words: FULL_ACCESS_WORDS.unnamedSend };
   if (m !== "GET") {
     const segs = p.split("/");
     // A game variable by key: a money, email, sign-in or connector variable, any key under `agents.`, an unknown key.

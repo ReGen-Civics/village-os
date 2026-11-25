@@ -49,6 +49,32 @@ export interface RecoveryDeps {
   origin(): string;
   projectName(): string;
   recordAudit(text: string, userId: string): void;
+  /**
+   * The account an EXTRA address belongs to, and the address as it was proved
+   * (0430). Optional: a village before 0430, or a test, has none.
+   */
+  attachedAddress?(email: string): Promise<{ userId: string; email: string } | null>;
+}
+
+/**
+ * WHERE A RESET LETTER GOES: the address that asked, as the account holds it.
+ *
+ * Typed at the main address, the main address. Typed at an extra address the
+ * member proved (0430), that extra address, because essential mail goes to the
+ * mailbox that asked for it. Never what was typed: `users.email` and
+ * `member_emails.email` compare case- and accent-insensitively, so `wrén@`
+ * finds the account held at `wren@`, and a letter sent to the typed form would
+ * hand a reset link to a different mailbox. Anything unexpected falls back to
+ * the main address, which is where the letter always went.
+ */
+export async function recoveryAddress(
+  deps: Pick<RecoveryDeps, "attachedAddress">,
+  user: { id: string; email: string },
+  typed: string,
+): Promise<string> {
+  if (String(user.email).trim().toLowerCase() === typed.trim().toLowerCase()) return user.email;
+  const extra = deps.attachedAddress ? await deps.attachedAddress(typed).catch(() => null) : null;
+  return extra && extra.userId === user.id ? extra.email : user.email;
 }
 
 /**
@@ -145,7 +171,7 @@ export function register(app: Express, deps: RecoveryDeps): void {
       // real account's answer slower than an unknown address's by one email
       // round trip, which told a stranger which addresses are members. The
       // answer below now leaves at the same moment for every address.
-      void sendRecoveryLetter(deps, user, verdict.kind, letter);
+      void recoveryAddress(deps, user, email).then((to) => sendRecoveryLetter(deps, { id: user.id, email: to }, verdict.kind, letter));
       deps.recordAudit(
         verdict.kind === "reset" ? "auth:password-reset-requested" : "auth:claim-link-requested",
         user.id,

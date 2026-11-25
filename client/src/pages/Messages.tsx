@@ -16,14 +16,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useRoute, useSearch } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
-import { authToken } from "@/lib/gameApi";
+import { authToken, useGameConfig } from "@/lib/gameApi";
+import { isMemberView, type AdmissionView } from "@/lib/newcomer";
+import MessagesMembersOnly from "@/components/messages/MessagesMembersOnly";
 import { toast } from "sonner";
 import { reportFeedback } from "@/lib/reportFeedback";
 import { actionError } from "@/lib/actionOutcome";
 import {
-  ArrowLeft, Bell, BellOff, Crown, Flag, LogOut, Pencil, Plus, Search, Send, Trash2,
-  ListChecks, Scroll, UserMinus, UserPlus, Users, X,
+  ArrowLeft, Bell, BellOff, LogOut, Pencil, Plus, Search, Send, Trash2,
+  ListChecks, Scroll, UserMinus, UserPlus, X,
 } from "lucide-react";
+import { MushroomNetwork, SunLeaf, TreeCrown } from "@/components/sacred/living";
 import {
   canManageMembers,
   canRename,
@@ -71,9 +74,20 @@ export default function Messages() {
   // The framework decides existence. ModuleGate keeps the ordinary 404 for
   // off and preview, and offers sign-in when the module is members-only and
   // the visitor simply is not signed in yet (R36).
+  const { user } = useAuth();
+  const cfg = useGameConfig();
   if (modules.loaded && !messagingModule) return <ModuleGate moduleId="messaging" name="Messages" />;
+  // A newcomer (signed in, not admitted yet) is told on the page itself, before any inbox or "New" button is
+  // drawn: the server already refuses them a message (`message.send`), and the page used to invite them to
+  // "message anyone here" first. Until the ladder arrives a member admitted by stage alone reads as a newcomer,
+  // so the page waits for it rather than flashing the refusal at them.
+  if (user && !isMemberView(user as AdmissionView, cfg?.stages ?? null)) {
+    if (!cfg) return <Layout><div className="container max-w-2xl py-6 sm:py-10" aria-busy="true" /></Layout>;
+    return <MessagesMembersOnly />;
+  }
   return params?.id ? <ThreadView id={params.id} /> : <Inbox />;
 }
+
 
 // ── Inbox ────────────────────────────────────────────────────────────────────
 
@@ -144,7 +158,7 @@ function Inbox() {
 
         {!loading && !ordered.length && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <Users className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
+            <MushroomNetwork className="w-7 h-7 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
             <p className="font-semibold text-foreground mb-1"><Trans context="Messages, p">No conversations yet</Trans></p>
             <p className="text-sm text-muted-foreground"><Trans context="Messages, p">Tap New to message anyone here.</Trans></p>
           </div>
@@ -194,7 +208,7 @@ function InboxList({ list, viewerId, now }: { list: InboxConversation[]; viewerI
                 ) : work ? (
                   c.contextType === "task" ? <ListChecks className="w-5 h-5" /> : <Scroll className="w-5 h-5" />
                 ) : (
-                  <Users className="w-5 h-5" />
+                  <MushroomNetwork className="w-5 h-5" />
                 )}
               </span>
               <span className="min-w-0 flex-1">
@@ -752,7 +766,7 @@ function ThreadView({ id }: { id: string }) {
                             className="grid place-items-center w-8 h-8 rounded-full hover:bg-muted"
                             title={`Make ${m.name ?? "them"} the owner`}
                           >
-                            <Crown className="w-3.5 h-3.5" aria-hidden="true" />
+                            <TreeCrown className="w-3.5 h-3.5" aria-hidden="true" />
                             <span className="sr-only"><Trans context="Messages, span">Make {m.name ?? "them"} the owner</Trans></span>
                           </button>
                           <button
@@ -916,7 +930,7 @@ function ThreadView({ id }: { id: string }) {
                               }}
                               className="inline-flex items-center gap-1 py-2 hover:text-destructive"
                             >
-                              <Flag className="w-3 h-3" aria-hidden="true" />
+                              <SunLeaf className="w-3 h-3" aria-hidden="true" />
                               <span className="sr-only"><Trans context="Messages, span">Report this message</Trans></span>
                             </button>
                           )}

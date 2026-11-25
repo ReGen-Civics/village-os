@@ -17,7 +17,8 @@
  * The words never say "sign".
  */
 import { useEffect, useState } from "react";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check} from "lucide-react";
+import { Canopy } from "@/components/sacred/living";
 import { ALIGN_WORDS, alignedOnWords } from "@shared/alignments";
 import { useSeason } from "@/lib/gameApi";
 import { IdentityConfirmField, identityBody, identityReady, useIdentityConfirm } from "@/components/auth/ConfirmWithGoogle";
@@ -79,7 +80,7 @@ export function ReconfirmPanel({ onConfirmed, reason = ALIGN_WORDS.reconfirmLine
   return (
     <div data-reconfirm="" className={`${TILE} mt-3`}>
       <p className="flex items-start gap-2 text-sm text-foreground">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
+        <Canopy className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
         {reason}
       </p>
       {/* A form, so Enter confirms (red team U8). */}

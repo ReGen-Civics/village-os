@@ -14,6 +14,7 @@ import { Trans } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import type { NavItem } from "@shared/rites";
 import { seasonView, type SeasonView } from "@shared/seasonGoalsView";
+import RitesSignedOut from "@/components/rites/RitesSignedOut";
 import { useAuth } from "@/contexts/AuthContext";
 import { BottomNav, Chip, Icon, RitesWorld, TopBar, type Look, type Places } from "@/components/rites/parts";
 import { ritesGet } from "@/components/rites/ritesApi";
@@ -87,17 +88,7 @@ export default function Fleet() {
     };
   }, [user]);
 
-  if (!user && !loading) {
-    return (
-      <RitesWorld>
-        <div className="app pad" style={{ paddingTop: 40 }}>
-          <Link className="btn gold" href="/login?next=/fleet">
-            <Trans context="rites">Sign in</Trans>
-          </Link>
-        </div>
-      </RitesWorld>
-    );
-  }
+  if (!user && !loading) return <RitesSignedOut next="/fleet" />;
   if (!data) return <RitesWorld><div className="app pad" style={{ paddingTop: 40 }}>{error ? <p className="muted">{error}</p> : null}</div></RitesWorld>;
 
   const w = data.words;

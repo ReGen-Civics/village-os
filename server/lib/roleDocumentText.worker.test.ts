@@ -31,7 +31,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { DOCUMENT_WORDS } from "./roleDocumentText";
+import { DOCUMENT_WORDS, ROLE_DOCUMENT_TEXT_MAX } from "./roleDocumentText";
 import { makeBombPdf, makeBrokenXrefPdf, makeClaimedPagesPdf, makePdf } from "../testkit/roleDocuments";
 
 const SLOW = { ok: false, status: 422, error: DOCUMENT_WORDS.slowPdf };
@@ -160,9 +160,19 @@ describe("ADVERSARIAL: hostile PDFs on the real PDF.js, each answered within its
     const bomb = makeBombPdf();
     expect(bomb.length).toBeLessThan(1024 * 1024);
     const run = await readWhileServing(() => readPdf(bomb, 4000));
-    // Whatever the thread made of it, the answer is a refusal in words, inside the bound.
-    expect((run.result as any).ok).toBe(false);
-    expect([DOCUMENT_WORDS.slowPdf, DOCUMENT_WORDS.brokenPdf, DOCUMENT_WORDS.tooLong]).toContain((run.result as any).error);
+    // Whatever the thread made of it, the answer is bounded: a refusal in words, or the little text the page really
+    // shows. Which one depends on the machine, never on the code: PDF.js inflates this bomb and lays its one page out
+    // in about 4.7 s on a four-core box (68 characters of "A", well under the cap), so a runner slower than that hits
+    // the 4 s timeout and says slowPdf while a faster one finishes and reads it. The test asserted the refusal alone
+    // and went red on a fast CI shard (#1589, 24 Nov 2026, "expected true to be false"); the bound is what it pins.
+    const r = run.result as any;
+    if (r.ok) {
+      expect(r.kind).toBe("pdf");
+      expect(r.text.length).toBeLessThanOrEqual(ROLE_DOCUMENT_TEXT_MAX);
+      expect(r.text).toMatch(/^A+$/);
+    } else {
+      expect([DOCUMENT_WORDS.slowPdf, DOCUMENT_WORDS.brokenPdf, DOCUMENT_WORDS.tooLong]).toContain(r.error);
+    }
     expect(run.readTook).toBeLessThan(6000);
     expect(run.answeredBeforeRead, `the other request answered at ${run.answeredAt} ms, the read at ${run.readTook} ms`).toBe(true);
     await vi.waitFor(() => expect(pdfWorkersRunning()).toBe(0), { timeout: 3000 });

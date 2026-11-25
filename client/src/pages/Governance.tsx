@@ -8,19 +8,16 @@ import VillageConflictSteps from "@/components/governance/VillageConflictSteps";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import VoiceSpreadBand from "@/components/governance/VoiceSpreadBand";
 import {
-  Vote,
-  Users,
   Eye,
-  Lightbulb,
   MessageSquare,
   CheckCircle2,
   RefreshCw,
   Network,
   ArrowRight,
   Scale,
-  ShieldCheck,
   Printer,
 } from "lucide-react";
+import { Canopy, CouncilCircle, MushroomNetwork, Seed } from "@/components/sacred/living";
 import { useStoryPageShown } from "@/lib/brochure";
 import { useHypha } from "@/modules/ModuleProvider";
 import { HyphaAdminNote } from "@/components/HyphaAdminNote";
@@ -38,8 +35,8 @@ const CanvasPublicLines = lazy(() => import("@/components/canvas/CanvasPublicLin
 const DecisionMatrix = lazy(() => import("@/components/canvas/DecisionMatrix"));
 
 /** The icons the cards and steps take in turn, whatever the village wrote. */
-const PRINCIPLE_ICONS = [CheckCircle2, Users, Eye];
-const STEP_ICONS = [Lightbulb, MessageSquare, Users, CheckCircle2, Eye];
+const PRINCIPLE_ICONS = [CheckCircle2, MushroomNetwork, Eye];
+const STEP_ICONS = [Seed, MessageSquare, MushroomNetwork, CheckCircle2, Eye];
 
 /** Paragraphs a village left blank are not drawn. */
 const paragraphs = (...texts: string[]) => texts.filter((t) => t.trim() !== "");
@@ -113,7 +110,7 @@ export default function Governance() {
       <section className="bg-teal-band text-white py-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-3">
-            <Vote className="w-6 h-6 text-amber-on-band shrink-0" />
+            <CouncilCircle className="w-6 h-6 text-amber-on-band shrink-0" />
             <span className="text-amber-on-band font-medium text-sm tracking-widest uppercase break-words min-w-0">
               {hero.fields.eyebrow}
             </span>
@@ -339,7 +336,7 @@ export default function Governance() {
       <section className="bg-white py-20">
         <div className="container max-w-3xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
-            <ShieldCheck className="w-6 h-6 text-teal-deep shrink-0" />
+            <Canopy className="w-6 h-6 text-teal-deep shrink-0" />
             <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep break-words min-w-0">
               {stewards.fields.heading}
             </h2>

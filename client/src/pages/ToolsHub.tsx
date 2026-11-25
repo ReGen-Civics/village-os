@@ -12,23 +12,19 @@ import { authToken } from "@/lib/gameApi";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import {
   ExternalLink,
-  Landmark,
   MessageCircle,
   FileText,
-  Wrench,
-  Users,
   Calendar,
   Globe,
   BookOpen,
-  Vote,
-  Coins,
 } from "lucide-react";
+import { CouncilCircle, MushroomNetwork, SeedPod, TendingHands } from "@/components/sacred/living";
 import { Trans } from "@lingui/react/macro";
 
 const TOOL_ICONS: Record<string, React.ElementType> = {
-  Landmark, MessageCircle, FileText, Wrench, Users, Calendar, Globe, BookOpen, Vote, Coins,
+  Landmark: CouncilCircle, MessageCircle, FileText, Wrench: TendingHands, Users: MushroomNetwork, Calendar, Globe, BookOpen, Vote: CouncilCircle, Coins: SeedPod,
 };
-const iconFor = (slug: string | null | undefined): React.ElementType => TOOL_ICONS[String(slug ?? "")] ?? Wrench;
+const iconFor = (slug: string | null | undefined): React.ElementType => TOOL_ICONS[String(slug ?? "")] ?? TendingHands;
 
 interface Tool {
   id: string;
@@ -93,7 +89,7 @@ export default function ToolsHub() {
             <div className="rounded-2xl border-2 border-teal-deep/30 bg-teal-deep/5 p-6">
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-teal-deep/10 flex items-center justify-center">
-                  <Landmark className="w-5 h-5 text-teal-deep" />
+                  <CouncilCircle className="w-5 h-5 text-teal-deep" />
                 </div>
                 <div>
                   <h2 className="font-semibold text-foreground"><Trans context="ToolsHub, h2">{data.hyphaCard.name} on Hypha</Trans></h2>

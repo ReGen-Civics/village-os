@@ -11,7 +11,8 @@
 import { ContributionWord } from "@/components/ContributionWord";
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
-import { ExternalLink, Link2, ShieldCheck } from "lucide-react";
+import { ExternalLink, Link2} from "lucide-react";
+import { Canopy } from "@/components/sacred/living";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { Trans, useLingui } from "@lingui/react/macro";
 
@@ -158,7 +159,7 @@ export default function OnchainCard() {
         <h2 className="text-2xl font-display font-bold text-card-foreground"><Trans context="OnchainCard, h2">On-chain holdings</Trans></h2>
         {verified ? (
           <span className="inline-flex items-center gap-1.5 text-xs bg-open/10 text-open px-2 py-1 rounded-full">
-            <Trans context="OnchainCard, span"><ShieldCheck className="w-3.5 h-3.5" />
+            <Trans context="OnchainCard, span"><Canopy className="w-3.5 h-3.5" />
             {String(data.wallet.address).slice(0, 6)}…{String(data.wallet.address).slice(-4)} verified
           </Trans></span>
         ) : (

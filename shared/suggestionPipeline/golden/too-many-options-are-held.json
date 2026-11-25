@@ -1,0 +1,101 @@
+{
+  "synthetic": true,
+  "name": "too-many-options-are-held",
+  "why": "A thing with more options than the cap keeps the first ones; the rest wait in Held, so a flood cannot bury the real one.",
+  "staged": [
+    {
+      "id": "s1",
+      "stream": "connector",
+      "filer": "p-1",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Wording 1."
+        }
+      },
+      "receivedAt": "2026-11-20T10:01:00.000Z"
+    },
+    {
+      "id": "s2",
+      "stream": "agent",
+      "filer": "p-2",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Wording 2."
+        }
+      },
+      "receivedAt": "2026-11-20T10:02:00.000Z"
+    },
+    {
+      "id": "s3",
+      "stream": "sera",
+      "filer": "p-3",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Wording 3."
+        }
+      },
+      "receivedAt": "2026-11-20T10:03:00.000Z"
+    },
+    {
+      "id": "s4",
+      "stream": "connector",
+      "filer": "p-4",
+      "kind": "role_card",
+      "target": {
+        "roleId": "water"
+      },
+      "body": {
+        "words": {
+          "purpose": "Wording 4."
+        }
+      },
+      "receivedAt": "2026-11-20T10:04:00.000Z"
+    }
+  ],
+  "context": {
+    "liveRefs": [
+      "role:water"
+    ],
+    "caps": {
+      "perFilerPerDay": 50,
+      "optionsPerThing": 2
+    }
+  },
+  "expect": {
+    "cards": [
+      {
+        "shape": "choose",
+        "options": [
+          [
+            "s1"
+          ],
+          [
+            "s2"
+          ]
+        ]
+      }
+    ],
+    "held": [
+      {
+        "stagedId": "s3",
+        "code": "too_many_options"
+      },
+      {
+        "stagedId": "s4",
+        "code": "too_many_options"
+      }
+    ]
+  }
+}

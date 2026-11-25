@@ -5,14 +5,17 @@
  */
 import { useLingui } from "@lingui/react/macro";
 import { ANCHOR_MARK } from "@shared/circlePicker";
+import { Taproot } from "@/components/sacred/living";
 
 export default function CircleName({ name, anchor, className }: { name: string; anchor?: boolean | null; className?: string }) {
   const { t } = useLingui();
   if (!anchor) return <span className={className}>{name}</span>;
   return (
     <span className={className}>
-      <span role="img" aria-label={t({ message: "Anchor circle", context: "circle name" })} title={t({ message: "Anchor circle", context: "circle name" })}>
-        {ANCHOR_MARK}
+      {/* The anchor circle's taproot (the lead, 24 Nov 2026). The plain-text label below keeps the character,
+          because an option in a select cannot hold a drawing. */}
+      <span role="img" aria-label={t({ message: "Anchor circle", context: "circle name" })} title={t({ message: "Anchor circle", context: "circle name" })} className="inline-flex align-[-0.15em]">
+        <Taproot className="size-[1.1em]" aria-hidden="true" />
       </span>{" "}
       {name}
     </span>

@@ -32,7 +32,8 @@
  */
 import { useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ChartPie, Gauge, History } from "lucide-react";
+import { ChartPie, History } from "lucide-react";
+import { Gourd } from "@/components/sacred/living";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import {
   COMMITMENT_PERIODS,
@@ -117,7 +118,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
   return (
     <div className="mt-5 rounded-xl border border-border/60 p-4" data-commitment-field="">
       <h3 id="my-commitment-title" className="flex items-center gap-2 font-display text-lg font-semibold text-card-foreground">
-        <Gauge className="h-5 w-5 text-notice" aria-hidden="true" />
+        <Gourd className="h-5 w-5 text-notice" aria-hidden="true" />
         {t({ message: "How much you give", context: "commitment on the roles card: heading" })}
       </h3>
       <p className={`mt-1 ${HINT}`}>

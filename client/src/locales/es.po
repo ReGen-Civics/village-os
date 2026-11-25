@@ -7,6 +7,270 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: removed"
+msgid "Address removed."
+msgstr "Dirección eliminada."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: d.pending.email
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code sent"
+msgid "We sent a code to {0}. Enter it below."
+msgstr "Enviamos un código a {0}. Escríbelo abajo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery needs extra"
+msgid "Add another address to choose it here."
+msgstr "Agrega otra dirección para poder elegirla aquí."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof sent"
+msgid "A confirmation email is on its way to your main address."
+msgstr "Un correo de confirmación va en camino a tu dirección principal."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: confirm remove"
+msgid "Remove {email} from your account? You will no longer be able to sign in with it."
+msgstr "¿Quitar {email} de tu cuenta? Ya no podrás iniciar sesión con ella."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: the main address label"
+msgid "Main"
+msgstr "Principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "Main address only"
+msgstr "Solo la dirección principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: network failure"
+msgid "That did not reach the village. Check your connection and try again."
+msgstr "No llegó a la aldea. Revisa tu conexión e intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Send a confirmation email"
+msgstr "Enviar un correo de confirmación"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: main state"
+msgid "(main, not confirmed yet)"
+msgstr "(principal, aún sin confirmar)"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "My main address only"
+msgstr "Solo mi dirección principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Make main"
+msgstr "Hacer principal"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: add label"
+msgid "Add an email address"
+msgstr "Agregar una dirección de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: generic failure"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code not sent"
+msgid "The code could not be sent from this village right now. Try again later, or ask a steward to check the email settings."
+msgstr "No se pudo enviar el código desde esta aldea en este momento. Intenta más tarde, o pide a un guardián que revise la configuración de correo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "My other address only"
+msgstr "Solo mi otra dirección"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails"
+msgid "Loading..."
+msgstr "Cargando..."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof not sent"
+msgid "The village could not send the email just now. Try again later."
+msgstr "La aldea no pudo enviar el correo en este momento. Intenta más tarde."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery saved"
+msgid "Saved. Your email will go where you chose."
+msgstr "Guardado. Tu correo irá adonde elegiste."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: heading"
+msgid "Your email addresses"
+msgstr "Tus direcciones de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery essential"
+msgid "Sign-in codes and password links always go to the address that asked for them."
+msgstr "Los códigos de inicio de sesión y los enlaces de contraseña siempre van a la dirección que los pidió."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery legend"
+msgid "Where your email goes"
+msgstr "Adónde va tu correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: goesTo.join(", ")
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery answer"
+msgid "Village email goes to {0}."
+msgstr "El correo de la aldea va a {0}."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Send a code"
+msgstr "Enviar un código"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: lede"
+msgid "Sign in with any address on this list. Add another one, such as a village address beside your personal one, and choose where your email goes."
+msgstr "Inicia sesión con cualquier dirección de esta lista. Agrega otra, como una dirección de la aldea junto a la personal, y elige adónde va tu correo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: summary"
+msgid "Email addresses"
+msgstr "Direcciones de correo"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: new Date(e.verifiedAt).toLocaleDateString()
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: extra state"
+msgid "(confirmed {0})"
+msgstr "(confirmada el {0})"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: no admin write"
+msgid "Only the member can add an address, by entering the code sent to it."
+msgstr "Solo la persona puede agregar una dirección, escribiendo el código que se le envió."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code hint"
+msgid "The code works for 15 minutes. To send a new one, add the address again."
+msgstr "El código sirve por 15 minutos. Para recibir uno nuevo, agrega la dirección otra vez."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "Both addresses"
+msgstr "Ambas direcciones"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: which other address"
+msgid "The other address is"
+msgstr "La otra dirección es"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: data.pending.email
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: code label"
+msgid "Enter the code we sent to {0}"
+msgstr "Escribe el código que enviamos a {0}"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#. placeholder {0}: deliveryWords[data.delivery]
+#. placeholder {1}: data.deliversTo.join(", ")
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery line"
+msgid "Email goes to: {0} ({1})"
+msgstr "El correo va a: {0} ({1})"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails"
+msgid "The addresses could not be read. Try again."
+msgstr "No se pudieron leer las direcciones. Intenta de nuevo."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: delivery choice"
+msgid "Both addresses"
+msgstr "Ambas direcciones"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: attached"
+msgid "Address added. You can sign in with it now."
+msgstr "Dirección agregada. Ya puedes iniciar sesión con ella."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: proof already"
+msgid "Your main address is already confirmed. Reload the page to add another."
+msgstr "Tu dirección principal ya está confirmada. Recarga la página para agregar otra."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: main unproved"
+msgid "Confirm your main address before adding another. Open the confirmation email we sent it, or send a new one here."
+msgstr "Confirma tu dirección principal antes de agregar otra. Abre el correo de confirmación que le enviamos, o envía uno nuevo aquí."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: button"
+msgid "Confirm the code"
+msgstr "Confirmar el código"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: delivery"
+msgid "The other address only"
+msgstr "Solo la otra dirección"
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/AccountEmailsPanel.tsx
+msgctxt "account emails: main changed"
+msgid "{email} is now your main address."
+msgstr "{email} ahora es tu dirección principal."
+
+# needs-native-review: account email addresses, 24 Nov 2026
+#: client/src/components/admin/MemberEmails.tsx
+msgctxt "admin member emails: main state"
+msgid "(main, confirmed)"
+msgstr "(principal, confirmada)"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
@@ -7798,7 +8062,7 @@ msgstr "Elija de una a cinco. Cada rol y cada misión crecen de estas raíces, y
 #: client/src/components/path/RootLine.tsx
 msgctxt "your path, the strip under the header"
 msgid "Your path"
-msgstr "Tu camino"
+msgstr "Su camino"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -27170,7 +27434,7 @@ msgstr "Guardado"
 #: client/src/components/path/YourPathCard.tsx
 msgctxt "your path, the profile card"
 msgid "Your path"
-msgstr "Tu camino"
+msgstr "Su camino"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageHealth.tsx
@@ -60981,3 +61245,207 @@ msgstr "Participación"
 msgctxt "Decision, placeholder"
 msgid "Opened against the wrong draft. The corrected one goes to a vote today."
 msgstr "Se abrió sobre el borrador equivocado. El corregido va a votación hoy."
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Investor"
+msgstr "Inversionista"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Steward"
+msgstr "Custodio"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Resident"
+msgstr "Residente"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, a path"
+msgid "Prosperity"
+msgstr "Prosperidad"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path"
+msgstr "Su camino"
+
+# needs-native-review: new words, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Choose your path"
+msgstr "Elija su camino"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card fact: a role that can be shared"
+msgid "Full or part time, from {lo}%"
+msgstr "Tiempo completo o parcial, desde el {lo}%"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card fact: a role offered at one share"
+msgid "Part time, {pct}%"
+msgstr "Medio tiempo, {pct}%"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full time"
+msgstr "Tiempo completo"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full time, contract"
+msgstr "Tiempo completo, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Part time or fractional"
+msgstr "Medio tiempo o fraccional"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Part time or fractional, contract"
+msgstr "Medio tiempo o fraccional, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full or part time"
+msgstr "Tiempo completo o parcial"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Full or part time, contract"
+msgstr "Tiempo completo o parcial, por contrato"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card commitment label"
+msgid "Contract"
+msgstr "Por contrato"
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Add your name."
+msgstr "Escriba su nombre."
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Escriba un correo al que podamos escribirle."
+
+#: client/src
+msgctxt "steward question form: a field to fix"
+msgid "Write your question, in under 2,000 characters."
+msgstr "Escriba su pregunta, en menos de 2.000 caracteres."
+
+#: client/src
+msgctxt "steward question form: sent"
+msgid "Your question is with us"
+msgstr "Su pregunta ya está con nosotros"
+
+#: client/src
+msgctxt "steward question form: sent"
+msgid "The people who look after the roles read every question. We will write to the email you gave."
+msgstr "Las personas que cuidan los roles leen cada pregunta. Le escribiremos al correo que nos dio."
+
+#: client/src
+msgctxt "steward question form"
+msgid "No account needed. We write back to the email you give."
+msgstr "No necesita una cuenta. Le respondemos al correo que nos dé."
+
+#: client/src
+msgctxt "steward question form: the list of fields to fix"
+msgid "A few things to fix before it can go:"
+msgstr "Hay que corregir algunas cosas antes de enviarla:"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your name"
+msgstr "Su nombre"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your email"
+msgstr "Su correo"
+
+#: client/src
+msgctxt "steward question form"
+msgid "Your question"
+msgstr "Su pregunta"
+
+#: client/src
+msgctxt "steward question form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "No se envió. Inténtelo de nuevo en unos minutos."
+
+#: client/src
+msgctxt "steward question form: the button while it sends"
+msgid "Sending"
+msgstr "Enviando"
+
+#: client/src
+msgctxt "steward question form: the button"
+msgid "Send my question"
+msgstr "Enviar mi pregunta"
+
+#: client/src
+msgctxt "steward page: the question form's heading"
+msgid "Ask us a question"
+msgstr "Háganos una pregunta"
+
+#: client/src
+msgctxt "coming soon: the decisions page"
+msgid "The village's decisions"
+msgstr "Las decisiones de la aldea"
+
+#: client/src
+msgctxt "coming soon: the decisions page"
+msgid "When somebody takes a proposal to a vote, it appears here with a clock on it, and every vote the village settles stays on the record below."
+msgstr "Cuando alguien lleva una propuesta a votación, aparece aquí con su reloj, y cada votación que la aldea resuelve queda en el registro de abajo."
+
+#: client/src
+msgctxt "coming soon: the decisions page, the door meanwhile"
+msgid "Start a proposal"
+msgstr "Iniciar una propuesta"
+
+#: client/src
+msgctxt "coming soon: the introductions board"
+msgid "Introductions"
+msgstr "Presentaciones"
+
+#: client/src
+msgctxt "coming soon: the introductions board"
+msgid "When members say what they seek and what they offer, it gathers here, and both people say yes before a conversation opens."
+msgstr "Cuando los miembros dicen lo que buscan y lo que ofrecen, se reúne aquí, y ambas personas dicen que sí antes de abrir una conversación."
+
+#: client/src
+msgctxt "coming soon: an empty moon on the calendar"
+msgid "The village's gatherings"
+msgstr "Los encuentros de la aldea"
+
+#: client/src
+msgctxt "coming soon: an empty moon on the calendar"
+msgid "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day."
+msgstr "Todavía no hay nada en esta luna. Los encuentros, festivales y llamadas aparecen aquí a medida que la aldea los planea, cada uno en su día."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Messages are for members"
+msgstr "Los mensajes son para quienes ya son miembros"
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "Once the village welcomes you as a member, you can write to anyone here. Until then, your path shows the next step."
+msgstr "Cuando la aldea te reciba como miembro, podrás escribirle a cualquier persona aquí. Mientras tanto, tu camino te muestra el siguiente paso."
+
+# needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
+#: client/src/components/messages/MessagesMembersOnly.tsx
+msgctxt "Messages, newcomer refusal"
+msgid "See my path"
+msgstr "Ver mi camino"

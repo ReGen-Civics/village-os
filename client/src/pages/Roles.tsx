@@ -19,7 +19,8 @@ export { roleForOldLink };
 import Layout from "@/components/Layout";
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import { WovenBasket } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
 import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { GROUP_BREAK, GROUP_H2 } from "@/components/roleCard/groupLook";
@@ -51,6 +52,7 @@ import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
 import { heldButRecruiting, relatedRolesShown, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
+import CommitmentChip from "@/components/roleCard/CommitmentChip";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
@@ -189,6 +191,7 @@ function RoleCard({ role, expanded, onToggle, canTagNeeds, sheet }: RoleCardProp
                     {stateWords[role.status]}
                   </span>
                 )}
+                <CommitmentChip role={role.raw} />
                 <NotListedChip role={role.raw} />
                 <HeldByAgentLine role={role.raw} className="basis-full" />
                 {/* 0374: the card says an agent may hold it (a card that has not said shows nothing). */}
@@ -798,7 +801,7 @@ export default function Roles() {
             className="text-center mb-16"
           >
             <div className={`${RING} mx-auto mb-6 size-16`}>
-              <Briefcase className="w-7 h-7" aria-hidden="true" />
+              <WovenBasket className="w-7 h-7" aria-hidden="true" />
             </div>
             <HeroHeading className={`${H1} mb-4`}>
               {t({ message: `Roles and Circles`, context: "roles page" })}

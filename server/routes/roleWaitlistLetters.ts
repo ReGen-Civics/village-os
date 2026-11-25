@@ -5,10 +5,11 @@
  *   GET  /api/admin/roles/waitlist-letters        the letters sent so far, and whether this village can send
  *   POST /api/admin/roles/waitlist-letters/send   one letter to everyone waiting for one role
  *
- * NOTHING HERE SENDS BY ITSELF. There is no job, no schedule and no agent door: the one
- * route that sends takes `confirm: true` and the count the person was shown, from a person
- * the capability gate passed (`comms.manage`, the village's letters to people who agreed to
- * hear from it). The letter's words come from that person's own screen.
+ * NOTHING HERE SENDS BY ITSELF. There is no job and no schedule: the one route that sends
+ * takes `confirm: true` and the count the person was shown, from an account the capability
+ * gate passed (`comms.manage`, the village's letters to people who agreed to hear from it).
+ * The one agent door is the full-access role's (the lead, 24 Nov 2026; shared/agentFullAccess.ts):
+ * its preview states the role and the count, and the holder's yes in the chat is the confirm.
  *
  * Each letter is ordinary consented mail, kind `letters`, through the post office. It goes only
  * to an address whose newest sign-up ticked "write to me" (`lettersRecipients`); that tick, with

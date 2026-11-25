@@ -12,6 +12,8 @@
  *   reads     the two new shipped reads pass without the person-saved list, and lose contact data
  *   seat      seat_power is additive only and refuses a group carrying the veto, the break-glass, money or admin
  *   note      an approval covers a selection only by the batch code or every change's code
+ *   24 nov    the lead's ruling of 24 Nov 2026: for the full-access holder, variables, modules, settings and the email
+ *             sends open; any other agent is refused as before; every kept floor item still refuses the holder
  */
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -32,8 +34,14 @@ import {
 } from "./agentAdmin";
 import {
   approvalCovers,
+  FULL_ACCESS_EMAIL_SENDS,
   FULL_ACCESS_FLOOR,
+  FULL_ACCESS_KEPT,
+  FULL_ACCESS_VARIABLE_CATEGORIES,
   FULL_ACCESS_WORDS,
+  fullAccessEmailSend,
+  isUnnamedSend,
+  recipientsProblem,
   fullAccessBodyProblem,
   fullAccessDecision,
   fullAccessFloor,
@@ -41,6 +49,7 @@ import {
   parseFullAccessDoc,
 } from "./agentFullAccess";
 import { BADGE_GRANTABLE, BREAK_GLASS_SEAT } from "./capabilities";
+import { VARIABLES_BY_KEY } from "./gameVariables";
 import { MONEY_MODULES } from "./regenImport";
 
 const EMPTY: AgentAdminPathsDoc = { paths: [] };
@@ -140,8 +149,13 @@ describe("the floor: a person's act even with full access on, one case per categ
     ["powers", "POST", "/api/admin/break-glass"],
     ["powers", "PUT", "/api/admin/stewards/veto"],
     ["powers", "PUT", "/api/admin/roles/r-1/admin-access"],
-    ["settings", "POST", "/api/admin/comms/letters/l-1/send"],
     ["settings", "PUT", "/api/admin/email-config"],
+    ["settings", "POST", "/api/admin/comms/settings/webhook"],
+    ["settings", "PUT", "/api/admin/comms/settings/webhook"],
+    ["settings", "POST", "/api/admin/comms/settings/key-rights"],
+    ["settings", "POST", "/api/admin/comms/settings/domain"],
+    ["settings", "POST", "/api/admin/comms/people/c-1/restore"],
+    ["settings", "POST", "/api/admin/comms/people/c-1/suppress"],
     ["tier_c", "POST", "/api/admin/letter-drafts/d-1/send"],
     ["members", "POST", "/api/admin/invites"],
     ["personal", "PUT", "/api/admin/applications/a-1"],
@@ -166,8 +180,8 @@ describe("the floor: a person's act even with full access on, one case per categ
     expect(fullAccessDecision("PUT", `/api/admin/member-tasks/access/${SELF}`, EMPTY, SELF, FULL)).toMatchObject({ ok: false, code: "always_a_person" });
   });
 
-  it("keeps money, email, sign-in and connector variables, and every agents. key, a person's", () => {
-    for (const k of ["gratitude.pool_per_cycle", "redemption.fee_pct", "exit.keep_pct.credit", "comms.daily_cap", "auth.session_days", "agents.lead_approved_writes", "no.such_key"]) {
+  it("keeps money, sign-in and connector variables, and every agents. key, a person's", () => {
+    for (const k of ["gratitude.pool_per_cycle", "redemption.fee_pct", "exit.keep_pct.credit", "auth.session_days", "agents.lead_approved_writes", "no.such_key"]) {
       expect(fullAccessDecision("PUT", `/api/admin/variables/${k}`, EMPTY, SELF, FULL), k).toMatchObject({ ok: false, code: "always_a_person" });
     }
     expect(fullAccessDecision("PUT", "/api/admin/variables/sessions.default_minutes", EMPTY, SELF, FULL)).toMatchObject({ ok: true, confirm: "agent", fullAccess: true });
@@ -376,5 +390,137 @@ describe("an approval note covers a selection by its codes", () => {
     expect(approvalCovers("B-66", [{ code: "B-66.1", batchCode: "B-66" }, { code: "B-67.1", batchCode: "B-67" }])).toBe(false);
     expect(namesCode("B-66.12 only", "B-66.1")).toBe(false);
     expect(namesCode("see B-66.1.", "B-66.1")).toBe(true);
+  });
+});
+
+// ── The lead's ruling of 24 Nov 2026: settings and email, for the full-access role only ─────────────
+
+describe("24 Nov 2026: the full-access role's agent changes settings and sends email", () => {
+  const routes = registeredRoutes();
+  const NOT_FULL = [{}, { fullAccess: false }, { leadApprovedWrites: true }, { applicantDataOpen: true }] as const;
+
+  /** The writes the ruling opens, each a registered route. */
+  const OPENED: Array<[string, string]> = [
+    ["PUT", "/api/admin/variables/comms.daily_cap"],
+    ["PUT", "/api/admin/variables/comms.letters_per_day"],
+    ["PUT", "/api/admin/variables/sessions.default_minutes"],
+    ["PUT", "/api/admin/modules/comms/lifecycle"],
+    ["PUT", "/api/admin/modules/sessions/config"],
+    ["PUT", "/api/admin/settings"],
+    ["PUT", "/api/admin/comms/settings"],
+    ["PUT", "/api/admin/comms/settings/sender"],
+    ["POST", "/api/admin/comms/letters"],
+    ["PUT", "/api/admin/comms/letters/l-1"],
+    ["POST", "/api/admin/comms/letters/l-1/preview"],
+    ["PUT", "/api/admin/comms/journeys/welcome/steps/s-1"],
+    ["PUT", "/api/admin/comms/words/welcome"],
+    ...FULL_ACCESS_EMAIL_SENDS.map((e) => ["POST", e.path.replace(/:[A-Za-z]+/g, "x1")] as [string, string]),
+  ];
+
+  it("opens each one for the full-access holder, with the agent confirming", () => {
+    for (const [m, p] of OPENED) {
+      expect(fullAccessDecision(m, p, EMPTY, SELF, FULL), `${m} ${p}`).toMatchObject({ ok: true, write: true, confirm: "agent", fullAccess: true });
+    }
+  });
+
+  it("still refuses each one for any other agent", () => {
+    for (const [m, p] of OPENED) {
+      for (const opts of NOT_FULL) expect(fullAccessDecision(m, p, EMPTY, SELF, opts).ok, `${m} ${p} ${JSON.stringify(opts)}`).toBe(false);
+    }
+  });
+
+  it("names every email send the agent may make, each a route the server registers, POST only", () => {
+    for (const e of FULL_ACCESS_EMAIL_SENDS) {
+      expect(routes.some((r) => r.method === "POST" && r.pattern === e.path), e.path).toBe(true);
+      expect(fullAccessEmailSend("POST", e.path.replace(/:[A-Za-z]+/g, "x1")), e.path).toMatchObject({ kind: e.kind });
+      expect(fullAccessEmailSend("PUT", e.path.replace(/:[A-Za-z]+/g, "x1")), e.path).toBeNull();
+    }
+    expect(fullAccessEmailSend("POST", "/api/admin/comms/letters/l-9/send")).toEqual({ kind: "letter", label: expect.any(String), params: { id: "l-9" } });
+    expect(fullAccessEmailSend("POST", "/api/admin/comms/journeys/welcome/state")).toMatchObject({ kind: "journey", params: { key: "welcome" } });
+    expect(fullAccessEmailSend("POST", "/api/admin/comms/letters/l-9/preview")).toBeNull();
+  });
+
+  it("keeps a send whose recipients the platform cannot name a person's, on every registered route", () => {
+    for (const [m, p] of [["POST", "/api/admin/comms/run"], ["POST", "/api/admin/member-tasks/bridge/send"], ["POST", "/api/admin/comms/x1/x1/test"]] as const) {
+      expect(isUnnamedSend(m, p), p).toBe(true);
+      expect(fullAccessDecision(m, p, EMPTY, SELF, FULL), p).toMatchObject({ ok: false, code: "always_a_person" });
+    }
+    // Every registered write shaped like a send is either named, or refused.
+    let shaped = 0;
+    for (const r of routes) {
+      if (r.method === "GET" || !/\/send(\/|$)|\/comms\/(.+\/)?(test|retry|run)$/i.test(r.path)) continue;
+      shaped++;
+      const d = fullAccessDecision(r.method, r.path, EMPTY, SELF, FULL);
+      if (fullAccessEmailSend(r.method, r.path)) expect(d, r.pattern).toMatchObject({ ok: true });
+      else expect(d, r.pattern).toMatchObject({ ok: false });
+    }
+    expect(shaped).toBeGreaterThan(10);
+  });
+
+  it("keeps every floor item for the full-access holder, unchanged", () => {
+    const KEPT: Array<[string, string, string]> = [
+      ["secrets", "PUT", "/api/admin/integrations/resend_api_key"],
+      ["secrets", "GET", "/api/admin/integrations"],
+      ["secrets", "PUT", "/api/admin/email-config"],
+      ["secrets", "PUT", "/api/admin/comms/settings/webhook"],
+      ["secrets", "POST", "/api/admin/comms/settings/key-rights"],
+      ["money", "POST", "/api/admin/tokens/seed/mint"],
+      ["money", "PUT", "/api/moon-review/payers"],
+      ["money", "PUT", "/api/admin/variables/gratitude.pool_per_cycle"],
+      ["money", "POST", "/api/admin/stays/adjust"],
+      ["erasure", "POST", "/api/admin/players/u-9/anonymize"],
+      ["erasure", "DELETE", "/api/admin/players/u-9"],
+      ["members", "POST", "/api/admin/invites"],
+      ["members", "POST", "/api/admin/exits/e-1"],
+      ["accounts", "PUT", "/api/admin/users/u-9/role"],
+      ["accounts", "POST", "/api/admin/users/u-9/send-password-link"],
+      ["accounts", "PUT", "/api/admin/variables/auth.session_days"],
+      ["agents", "PUT", "/api/admin/agent-accounts/full-access"],
+      ["agents", "PUT", "/api/admin/agent-admin-paths"],
+      ["agents", "PUT", "/api/admin/players/u-9/agent"],
+      ["agents", "PUT", "/api/admin/variables/agents.lead_approved_writes"],
+      ["powers", "POST", "/api/admin/break-glass"],
+      ["powers", "PUT", "/api/admin/stewards/veto"],
+      ["personal", "PUT", "/api/admin/applications/a-1"],
+      ["personal", "GET", "/api/admin/applications"],
+      ["tier_c", "POST", "/api/admin/letter-drafts/d-1/send"],
+      ["tier_c", "POST", "/api/admin/applications/a-1/first-reply"],
+      ["voice", "GET", "/api/admin/applications/a-1/voice"],
+      ["compare", "GET", "/api/admin/proposal-compare"],
+      ["consent", "POST", "/api/admin/comms/people/c-1/restore"],
+    ];
+    for (const [what, m, p] of KEPT) {
+      for (const leadApprovedWrites of [false, true]) {
+        expect(fullAccessDecision(m, p, EMPTY, SELF, { fullAccess: true, leadApprovedWrites }), `${what}: ${m} ${p}`).toMatchObject({ ok: false, code: "always_a_person" });
+      }
+    }
+    // The applicant data read opens only with the Anchor's approval, exactly as before; writing it never does.
+    expect(fullAccessDecision("PUT", "/api/admin/applications/a-1", EMPTY, SELF, { ...FULL, applicantDataOpen: true })).toMatchObject({ ok: false });
+  });
+
+  it("opens email variables and keeps money, sign-in and connector categories", () => {
+    expect(FULL_ACCESS_VARIABLE_CATEGORIES).not.toContain("Email and reminders");
+    for (const c of ["Gratitude", "Ledger", "Payments", "Connector", "Accounts & sessions", "Abuse guards"]) expect(FULL_ACCESS_VARIABLE_CATEGORIES).toContain(c);
+    expect(VARIABLES_BY_KEY["comms.daily_cap"]?.category).toBe("Email and reminders");
+  });
+
+  it("reads a recipients answer as enough for an informed yes only with a line, a count and somebody to send to", () => {
+    const r = { to: "the 12 people in this letter's audience", count: 12, names: ["Ana"] };
+    expect(recipientsProblem("letter", r)).toBeNull();
+    expect(recipientsProblem("letter", null)).toBe(FULL_ACCESS_WORDS.noRecipients);
+    expect(recipientsProblem("letter", { ...r, count: 0 })).toBe(FULL_ACCESS_WORDS.noRecipients);
+    expect(recipientsProblem("waitlist", { ...r, count: 0 })).toBe(FULL_ACCESS_WORDS.noRecipients);
+    expect(recipientsProblem("letter", { ...r, to: " " })).toBe(FULL_ACCESS_WORDS.noRecipients);
+    expect(recipientsProblem("letter", { ...r, count: 1.5 })).toBe(FULL_ACCESS_WORDS.noRecipients);
+    // Turning a journey off reaches nobody new, and says so.
+    expect(recipientsProblem("journey", { to: "nobody new", count: 0, names: [] })).toBeNull();
+  });
+
+  it("gives the agent a short list of what the floor still keeps, naming every kept category", () => {
+    const all = FULL_ACCESS_KEPT.join(" ").toLowerCase();
+    for (const w of ["secrets", "money", "erasing", "letting a member in", "sign-in", "agent accounts", "tokens", "full-access switch", "veto", "break-glass", "applicant", "no ai selects, ranks or judges", "voice", "yes or no to letters"]) {
+      expect(all, w).toContain(w);
+    }
+    expect(FULL_ACCESS_KEPT.length).toBeLessThanOrEqual(12);
   });
 });

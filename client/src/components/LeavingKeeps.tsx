@@ -19,7 +19,8 @@
  * failed: the server asks again before it erases.
  */
 import { useEffect, useState } from "react";
-import { Banknote, Vote } from "lucide-react";
+import { Banknote} from "lucide-react";
+import { CouncilCircle } from "@/components/sacred/living";
 import { authToken } from "@/lib/gameApi";
 import {
   CASH_GIVE_UP_LABEL,
@@ -87,7 +88,7 @@ export function CashOwedNotice({
 export function VotesCastNotice() {
   return (
     <p data-leaving-votes="" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-      <Vote className="size-3.5" aria-hidden="true" />
+      <CouncilCircle className="size-3.5" aria-hidden="true" />
       {VOTE_CAST_STAYS}
     </p>
   );

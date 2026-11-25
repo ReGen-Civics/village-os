@@ -18,7 +18,8 @@ import { useModules } from "@/modules/ModuleProvider";
 import SeasonBanner from "@/components/SeasonBanner";
 import { Image } from "@/components/Image";
 import { Link } from "wouter";
-import { Heart, Landmark, Scroll } from "lucide-react";
+import { Heart, Scroll } from "lucide-react";
+import { CouncilCircle } from "@/components/sacred/living";
 import { altOr, useBrandImages, useGameConfig } from "@/lib/gameApi";
 import { useVillageLocation, useVillageName } from "@/hooks/useVillageName";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,7 +44,7 @@ const doors = (tokenName: string) => [
     href: "/governance",
     title: "How we decide",
     body: "Who holds which power, and how a proposal becomes a decision.",
-    Icon: Landmark,
+    Icon: CouncilCircle,
   },
 ];
 

@@ -118,3 +118,117 @@
       m-knot-glow 6s var(--m-ease-sway, ease-in-out) calc(var(--d, 0ms) + 1400ms) 3;
   }
 }
+
+/* ---------- Air: canopy light and spores or fireflies (Air.tsx) ---------- */
+/* The light through the canopy, by the part of the village's day. Tokens, so a village can re-tune them. */
+:root {
+  --m-light-night: rgba(127, 180, 182, 0.2);
+  --m-shade-night: rgba(4, 12, 10, 0.45);
+  --m-light-dawn: rgba(190, 200, 230, 0.28);
+  --m-shade-dawn: rgba(20, 30, 30, 0.3);
+  --m-light-morning: rgba(255, 240, 200, 0.4);
+  --m-shade-morning: rgba(20, 50, 40, 0.22);
+  --m-light-noon: rgba(255, 252, 235, 0.45);
+  --m-shade-noon: rgba(20, 60, 45, 0.2);
+  --m-light-golden: rgba(255, 205, 130, 0.5);
+  --m-shade-golden: rgba(60, 40, 20, 0.22);
+  --m-light-dusk: rgba(240, 150, 110, 0.4);
+  --m-shade-dusk: rgba(40, 25, 30, 0.3);
+}
+.m-air[data-day="night"] { --m-light: var(--m-light-night); --m-shade: var(--m-shade-night); }
+.m-air[data-day="dawn"] { --m-light: var(--m-light-dawn); --m-shade: var(--m-shade-dawn); }
+.m-air[data-day="morning"] { --m-light: var(--m-light-morning); --m-shade: var(--m-shade-morning); }
+.m-air[data-day="noon"] { --m-light: var(--m-light-noon); --m-shade: var(--m-shade-noon); }
+.m-air[data-day="golden"] { --m-light: var(--m-light-golden); --m-shade: var(--m-shade-golden); }
+.m-air[data-day="dusk"] { --m-light: var(--m-light-dusk); --m-shade: var(--m-shade-dusk); }
+.m-air {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.m-air[data-paused] *,
+.m-air[data-paused] *::before {
+  animation-play-state: paused !important;
+}
+.m-air .m-dapple {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--m-light) 0%, transparent 65%);
+}
+.m-air .m-leafshade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 30% 18% at 62% 6%, var(--m-shade), transparent 70%),
+    radial-gradient(ellipse 26% 20% at 92% 2%, var(--m-shade), transparent 70%);
+}
+/* Night (the default world, and dark mode): fireflies, a soft glow each. */
+.m-air .m-mote {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: var(--sheet-dash-gold-lit, #f3d891);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--sheet-dash-gold-lit, #f3d891) 55%, transparent);
+  opacity: 0.25;
+}
+/* Day (light mode): pollen and spores, smaller light, no glow. */
+:root[data-mode="light"] .m-air .m-mote {
+  background: var(--sheet-notice, #b0813c);
+  box-shadow: none;
+  opacity: 0.35;
+}
+@media (max-width: 639px) {
+  .m-air .m-mote:nth-of-type(n + 9) {
+    display: none;
+  }
+}
+
+@keyframes m-dapple {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(var(--dx), var(--dy)) scale(1.08); }
+}
+@keyframes m-firefly {
+  0%, 100% { opacity: 0.08; transform: translate(0, 0); }
+  30% { opacity: 0.9; }
+  50% { opacity: 0.25; transform: translate(var(--dx), -18px); }
+  70% { opacity: 0.8; }
+}
+@keyframes m-spore {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 0.45; }
+  85% { opacity: 0.35; }
+  100% { opacity: 0; transform: translate(var(--dx), -90px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .m-air .m-dapple { animation: m-dapple var(--t) var(--m-ease-sway, ease-in-out) infinite; }
+  .m-air .m-mote { animation: m-firefly var(--t) var(--m-ease-sway, ease-in-out) var(--dl) infinite; }
+  :root[data-mode="light"] .m-air .m-mote { animation: m-spore calc(var(--t) * 1.6) linear var(--dl) infinite; }
+}
+
+/* ---------- The living network (LivingNetwork.tsx) ---------- */
+.m-network {
+  position: absolute;
+  top: -6rem;
+  bottom: -3rem;
+  left: 50%;
+  z-index: -1;
+  width: 100vw;
+  height: calc(100% + 9rem);
+  translate: -50% 0;
+  pointer-events: none;
+  opacity: 0.75;
+  /* The words sit in the middle: the threads keep to the edges around them. */
+  -webkit-mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
+  mask-image: radial-gradient(ellipse 42% 46% at 50% 46%, transparent 0%, transparent 55%, #000 100%);
+}

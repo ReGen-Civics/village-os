@@ -15,12 +15,9 @@
  *  - `roles` hides a link unless the signed-in member holds one of them.
  */
 import {
-  TrendingUp,
-  Users,
-  Home as HomeIcon,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import { SeedHand, SeedPodHome, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 
 export type NavLink = {
@@ -287,10 +284,11 @@ export const NAV: readonly NavEntry[] = [
   {
     label: "Join",
     items: [
-      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: TrendingUp },
-      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: Users },
-      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: HomeIcon },
-      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: Sparkles },
+      // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
+      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand },
+      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown },
+      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome },
+      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf },
       { href: "/opportunities", brochure: true, label: "Business Opportunities" },
       { href: "/visit", brochure: true, label: "Plan a Visit" },
       { href: "/love-letter", brochure: true, label: "Sign the Love Letter" },
@@ -368,9 +366,11 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // of what waits on them beside it. The shortcuts button carries the other
   // door (config/mobileNav.ts).
   { href: TASK_BOARD_PATH, label: TASK_MENU.label, module: "sessions", count: "tasks" },
-  { href: "/badges", label: "Badges", module: "badges" },
-  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page.
-  { href: "/budget", label: "Cash Budget" },
+  // Examples only until the village's first real badge (UNFINISHED-AREAS 20), so a newcomer meets it once it is in use.
+  { href: "/badges", label: "Badges", module: "badges", newcomers: "in-use" },
+  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page. A member's
+  // surface: the budget read refuses anyone not admitted, so a newcomer was offered a page that answers 403.
+  { href: "/budget", label: "Cash Budget", newcomers: "never" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"] },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15).
   { href: "/treasury", label: "Treasury", door: "treasury" },

@@ -525,7 +525,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(header.contains(facts)).toBe(false);
     expect(facts.textContent).toContain("Paid contractor");
     expect(facts.textContent).not.toContain("Commitment");
-    expect(card.querySelector('[data-one-minute-fact="commitment"] dd')?.textContent).toBe("100%");
+    expect(card.querySelector('[data-one-minute-fact="commitment"] dd')?.textContent).toBe("Full time");
     expect(card.querySelector('[data-one-minute-fact="where"] dd')?.textContent).toBe("On the land or remote");
     // One act: in the seat column on a desktop, riding the bottom of the screen on a phone (jsdom is narrow).
     expect(within(card).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
@@ -584,7 +584,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
     expect(piece.textContent).not.toContain("full band");
     expect(piece.textContent).not.toContain("value in, value out");
-    expect(card.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("Full or part commitment (from 30%)");
+    expect(card.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("Full or part time, from 30%");
   });
   it("a role offered whole says nothing about sharing (control)", async () => {
     const card = await open();

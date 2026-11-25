@@ -11,17 +11,14 @@ import {
   Heart,
   Shield,
   Leaf,
-  Users,
-  Coins,
   TreePine,
   Star,
-  Crown,
   Compass,
   ArrowRight,
-  Wrench,
   Baby,
   RefreshCw,
 } from "lucide-react";
+import { MushroomNetwork, SeedPod, TendingHands, TreeCrown } from "@/components/sacred/living";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, RING, WORLD } from "@/components/journey/look";
 
@@ -40,9 +37,9 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, RING, WORLD }
  * deleted. Since 2026-10-22 the card's words are the village's to edit, and
  * the note arrives through the `{transfer}` word, which only this page fills.
  */
-const RIGHT_ICONS = [Home, Shield, Users, Leaf, Heart, Coins, Star, Compass];
-const RESPONSIBILITY_ICONS = [Home, TreePine, Wrench, Coins, Users, Heart, Baby, Star];
-const STAGE_ICONS = [Home, Star, Crown, Compass, TreePine];
+const RIGHT_ICONS = [Home, Shield, MushroomNetwork, Leaf, Heart, SeedPod, Star, Compass];
+const RESPONSIBILITY_ICONS = [Home, TreePine, TendingHands, SeedPod, MushroomNetwork, Heart, Baby, Star];
+const STAGE_ICONS = [Home, Star, TreeCrown, Compass, TreePine];
 
 interface LegalContent {
   landShareTransferNote?: string;

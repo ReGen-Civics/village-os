@@ -11,7 +11,8 @@ import { useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
-import { Award, CircleHelp, Hammer, Medal, Plus, ShieldAlert, Sparkles, X } from "lucide-react";
+import { CircleHelp, Plus, ShieldAlert, X } from "lucide-react";
+import { Bloom, SeedGlint, TendingHands } from "@/components/sacred/living";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { failureWords } from "@/lib/failureWords";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -35,11 +36,11 @@ const headers = (): Record<string, string> => {
  * a deny beats role and stage.
  */
 const KIND_META: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
-  self: { label: "self-declared", icon: Sparkles, cls: "bg-sky-50 text-sky-700 border-sky-200" },
-  earned: { label: "earned", icon: Medal, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  granted: { label: "granted", icon: Award, cls: "bg-amber-50 text-amber-700 border-amber-200" },
+  self: { label: "self-declared", icon: SeedGlint, cls: "bg-sky-50 text-sky-700 border-sky-200" },
+  earned: { label: "earned", icon: Bloom, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  granted: { label: "granted", icon: Bloom, cls: "bg-amber-50 text-amber-700 border-amber-200" },
   warning: { label: "warning", icon: ShieldAlert, cls: "bg-red-50 text-red-700 border-red-200" },
-  hypha: { label: "hypha", icon: Award, cls: "bg-purple-50 text-purple-700 border-purple-200" },
+  hypha: { label: "hypha", icon: Bloom, cls: "bg-purple-50 text-purple-700 border-purple-200" },
 };
 
 /**
@@ -163,7 +164,7 @@ export default function Badges() {
           {user && (
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Hammer className="w-4 h-4 text-teal-deep" />
+                <TendingHands className="w-4 h-4 text-teal-deep" />
                 <p className="font-semibold text-foreground text-sm"><Trans context="Badges, p">Your skills</Trans></p>
               </div>
               <div className="flex flex-wrap gap-2 mb-3">

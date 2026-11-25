@@ -5,7 +5,8 @@ import { useShareNames } from "@/components/ContributionWord";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Lightbulb, ArrowLeft, Sparkles, MessageCircle, ClipboardList } from "lucide-react";
+import { ArrowLeft, MessageCircle, ClipboardList } from "lucide-react";
+import { Seed, SeedGlint } from "@/components/sacred/living";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchConfigCached } from "@/lib/gameApi";
 import { useTokenInUse, useTokenNameFor } from "@/hooks/useTokenNameFor";
@@ -261,7 +262,7 @@ export default function ProposeQuest() {
               </Trans></a>
             </Link>
             <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">
-              <Lightbulb className="w-8 h-8 text-notice" />
+              <Seed className="w-8 h-8 text-notice" />
             </div>
             <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl mb-4">
               <Trans context="ProposeQuest, h1">Propose a Quest
@@ -487,7 +488,7 @@ export default function ProposeQuest() {
               disabled={submitting}
               className={`${BTN_PRIMARY} w-full`}
             >
-              <Sparkles className="w-5 h-5" />
+              <SeedGlint className="w-5 h-5" />
               {submitting ? "Sending…" : "Send your Quest proposal"}
             </button>
             <p className="text-xs text-muted-foreground text-center">

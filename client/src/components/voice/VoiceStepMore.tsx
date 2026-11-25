@@ -27,7 +27,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Sparkles } from "lucide-react";
+import { SeedGlint } from "@/components/sacred/living";
 import { BTN_SECONDARY, HINT } from "@/components/journey/look";
 import { speechLang } from "@/lib/speechLang";
 import { VOICE_NOTE_MAX_SECONDS, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
@@ -249,7 +249,7 @@ function WriteDownButton({ again, busy, press }: { again: boolean; busy: boolean
   const { t } = useLingui();
   return (
     <button type="button" onClick={press} disabled={busy} className={`${BTN_SECONDARY} min-h-11 justify-self-start`} data-voice-transcribe-button="">
-      <Sparkles className="size-4" aria-hidden="true" />
+      <SeedGlint className="size-4" aria-hidden="true" />
       {again ? t({ message: "Write it down again", context: "voice transcription" }) : t({ message: "Write down my words", context: "voice transcription" })}
     </button>
   );

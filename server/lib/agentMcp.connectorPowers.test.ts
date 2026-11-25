@@ -7,6 +7,9 @@
  *   seat       seat_power reads the role's groups through its own GET, as the holder, and refuses a removal
  *   full       admin_request with full access: an unlisted admin write in two calls, carrying the approval,
  *              audited BEFORE it is dispatched and never without it; the floor refused; off is as before
+ *   24 nov     the lead's ruling of 24 Nov 2026: a variable, a module and an email send in two calls for the full-access
+ *              holder, each send naming its recipients at the first call and covered by the token; refused for any
+ *              other agent; a send with no recipients, or whose audience moved, sends nothing; the floor lists what it keeps
  *   accept     accept_proposals refuses without full access, lists every change first, and needs a note that
  *              names the batch code or every change's code before it sends anything
  */
@@ -14,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import { handleMcpMessage, MCP_TOOLS, toolsFor, WITHDRAW_MAX, type RouteAnswer, type ToolContext } from "./agentMcp";
 import { CONFIRM_REASON_SENTENCE, createConfirmSpendBook, mintConfirmToken, verifyConfirmToken, type AgentScope } from "./agentTokens";
 import { DEFAULT_AGENT_ADMIN_PATHS, type AgentAdminPathsDoc } from "../../shared/agentAdmin";
+import { FULL_ACCESS_KEPT, FULL_ACCESS_WORDS, type FullAccessRecipients } from "../../shared/agentFullAccess";
 import { ACCEPT_AS_HOLDER_PATH } from "./agentMcpProposals";
 
 const SECRET = "test-secret-for-connector-powers"; // module-review-ok: a throwaway confirm-token key; every route here is a stand-in
@@ -25,7 +29,10 @@ const out = (r: any) => r.result.structuredContent;
 type Route = (method: string, path: string, body?: any) => RouteAnswer | undefined;
 
 /** A holder whose routes are `route`, with real confirm tokens spent once, and the connector's ports recorded. */
-function holder(route: Route, opts: { full?: boolean; recordFails?: boolean; doc?: AgentAdminPathsDoc; lead?: boolean } = {}) {
+function holder(
+  route: Route,
+  opts: { full?: boolean; recordFails?: boolean; doc?: AgentAdminPathsDoc; lead?: boolean; recipients?: NonNullable<ToolContext["fullAccess"]>["recipients"] } = {},
+) {
   const calls: Array<{ method: string; path: string; body?: any }> = [];
   const audits: Array<Record<string, unknown>> = [];
   const order: string[] = [];
@@ -59,6 +66,7 @@ function holder(route: Route, opts: { full?: boolean; recordFails?: boolean; doc
         if (opts.recordFails) throw new Error("the events table is down");
         audits.push(a);
       },
+      ...(opts.recipients ? { recipients: opts.recipients } : {}),
     },
   };
   return { ctx, calls, audits, order };
@@ -234,7 +242,7 @@ describe("admin_request with full access", () => {
 
   it("refuses the floor and a body naming a floor power, with the switch on", async () => {
     const h = holder(routes, { full: true });
-    for (const [method, path] of [["PUT", "/api/admin/integrations/stripe"], ["POST", "/api/admin/tokens/seed/mint"], ["PUT", "/api/admin/agent-accounts/full-access"], ["POST", "/api/admin/players/u-9/anonymize"], ["POST", "/api/admin/comms/letters/l-1/send"], ["POST", ACCEPT_AS_HOLDER_PATH]]) {
+    for (const [method, path] of [["PUT", "/api/admin/integrations/stripe"], ["POST", "/api/admin/tokens/seed/mint"], ["PUT", "/api/admin/agent-accounts/full-access"], ["POST", "/api/admin/players/u-9/anonymize"], ["PUT", "/api/admin/email-config"], ["POST", "/api/admin/comms/run"], ["POST", ACCEPT_AS_HOLDER_PATH]]) {
       const r = out(await ask("admin_request", { ...args, method, path }, ["admin"], h.ctx));
       expect(r.detail?.code, `${method} ${path}`).toBe("always_a_person");
     }
@@ -255,6 +263,101 @@ describe("admin_request with full access", () => {
       const r = out(await ask("admin_request", { method: "GET", path }, ["admin"], h.ctx));
       expect(r.detail?.code, path).toBe("always_a_person");
     }
+    expect(h.calls).toEqual([]);
+  });
+});
+
+// ── The lead's ruling of 24 Nov 2026: settings and email for the full-access role ──────────────
+
+describe("admin_request, 24 Nov 2026: settings and email for the full-access holder", () => {
+  const approval = { approvedBy: "The lead", approvalNote: "Yes, send it." };
+  const routes: Route = (method, path) => {
+    if (method === "PUT" && path.startsWith("/api/admin/variables/")) return { status: 200, body: { ok: true } };
+    if (method === "PUT" && path === "/api/admin/modules/comms/lifecycle") return { status: 200, body: { lifecycle: "members" } };
+    if (method === "POST" && path === "/api/admin/comms/letters/l-1/send") return { status: 200, body: { state: "sending", counts: { posted: 12 } } };
+    if (method === "POST" && path === "/api/admin/comms/settings/test") return { status: 200, body: { ok: true } };
+    return undefined;
+  };
+  const letterTo = (count: number): FullAccessRecipients => ({ to: `the ${count} people in this letter's audience`, count, names: ["Ana", "Ivy"] });
+  const variable = { summary: "Raise the daily email cap to forty.", method: "PUT", path: "/api/admin/variables/comms.daily_cap", body: { value: 40, ...approval } };
+  const lifecycle = { summary: "Open Comms to members.", method: "PUT", path: "/api/admin/modules/comms/lifecycle", body: { lifecycle: "members", ...approval } };
+  const letter = { summary: "Send the November letter to the village.", method: "POST", path: "/api/admin/comms/letters/l-1/send", body: { confirmToken: "route-token", idempotencyKey: "k-123456789012", ...approval } };
+  const commsTest = { summary: "Send me a test email from Comms Settings.", method: "POST", path: "/api/admin/comms/settings/test", body: { ...approval } };
+
+  it("changes a game variable and a module's lifecycle in two calls, audited before each is made", async () => {
+    for (const args of [variable, lifecycle]) {
+      const h = holder(routes, { full: true });
+      const first = out(await ask("admin_request", args, ["admin"], h.ctx));
+      expect(first.confirmRequired, args.path).toBe(true);
+      expect(h.calls).toEqual([]);
+      const second = await ask("admin_request", { ...args, confirmToken: first.confirmToken }, ["admin"], h.ctx);
+      expect(second.result.isError, args.path).toBe(false);
+      expect(h.order).toEqual(["audit", `dispatch ${args.method} ${args.path}`]);
+      expect(h.audits[0]).toMatchObject({ approvedBy: "The lead", approvalNote: approval.approvalNote });
+      expect(h.calls[0]!.body).not.toHaveProperty("approvedBy");
+    }
+  });
+
+  it("refuses the same writes for any other agent, and sends nothing", async () => {
+    for (const args of [variable, lifecycle, letter, commsTest]) {
+      const h = holder(routes, { full: false, recipients: async () => letterTo(12) });
+      const r = out(await ask("admin_request", args, ["admin"], h.ctx));
+      expect(["always_a_person", "not_allowed"], args.path).toContain(r.detail?.code);
+      expect(r.detail?.stillAPersons, args.path).toBeUndefined();
+      expect(h.calls).toEqual([]);
+    }
+  });
+
+  it("states a letter's recipients and count at the first call, covers them with the token, and records them", async () => {
+    const h = holder(routes, { full: true, recipients: async (send) => (send.kind === "letter" && send.params.id === "l-1" ? letterTo(12) : null) });
+    const first = out(await ask("admin_request", letter, ["admin"], h.ctx));
+    expect(first.confirmRequired).toBe(true);
+    expect(first.recipients).toEqual(letterTo(12));
+    expect(first.echo.recipients).toEqual(letterTo(12));
+    expect(first.platformSays).toContain("the 12 people in this letter's audience (12 people)");
+    expect(first.message).toContain("12 people");
+    expect(h.calls).toEqual([]);
+    const second = await ask("admin_request", { ...letter, confirmToken: first.confirmToken }, ["admin"], h.ctx);
+    expect(second.result.isError).toBe(false);
+    expect(h.order).toEqual(["audit", "dispatch POST /api/admin/comms/letters/l-1/send"]);
+    expect(h.audits[0]).toMatchObject({ recipients: letterTo(12), approvedBy: "The lead" });
+    expect(h.calls[0]!.body).toEqual({ confirmToken: "route-token", idempotencyKey: "k-123456789012" });
+  });
+
+  it("refuses the yes when the audience moved between the two calls, and sends nothing", async () => {
+    let count = 12;
+    const h = holder(routes, { full: true, recipients: async () => letterTo(count) });
+    const first = out(await ask("admin_request", letter, ["admin"], h.ctx));
+    count = 13;
+    const second = out(await ask("admin_request", { ...letter, confirmToken: first.confirmToken }, ["admin"], h.ctx));
+    expect(second.error).toBeTruthy();
+    expect(h.calls).toEqual([]);
+    expect(h.audits).toEqual([]);
+  });
+
+  it("refuses a send whose recipients cannot be named, at either call, and sends nothing", async () => {
+    for (const recipients of [undefined, async () => null, async () => letterTo(0), async () => { throw new Error("down"); }]) {
+      const h = holder(routes, { full: true, ...(recipients ? { recipients } : {}) });
+      const r = out(await ask("admin_request", letter, ["admin"], h.ctx));
+      expect(r.detail?.code).toBe("recipients_unknown");
+      expect(r.error).toBe(FULL_ACCESS_WORDS.noRecipients);
+      expect(h.calls).toEqual([]);
+    }
+  });
+
+  it("sends the Comms test to the holder, saying so before the yes", async () => {
+    const h = holder(routes, { full: true, recipients: async (send) => (send.kind === "holder" ? { to: "you, at fern@example.test", count: 1, names: ["Fern"] } : null) });
+    const first = out(await ask("admin_request", commsTest, ["admin"], h.ctx));
+    expect(first.recipients).toEqual({ to: "you, at fern@example.test", count: 1, names: ["Fern"] });
+    const second = await ask("admin_request", { ...commsTest, confirmToken: first.confirmToken }, ["admin"], h.ctx);
+    expect(second.result.isError).toBe(false);
+    expect(h.calls.map((c) => c.path)).toEqual(["/api/admin/comms/settings/test"]);
+  });
+
+  it("tells the full-access holder's agent what the floor keeps, with each floor refusal", async () => {
+    const h = holder(routes, { full: true });
+    const r = out(await ask("admin_request", { ...variable, path: "/api/admin/integrations/resend_api_key" }, ["admin"], h.ctx));
+    expect(r.detail).toEqual({ code: "always_a_person", stillAPersons: FULL_ACCESS_KEPT });
     expect(h.calls).toEqual([]);
   });
 });

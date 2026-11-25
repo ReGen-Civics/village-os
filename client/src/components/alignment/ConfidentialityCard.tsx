@@ -8,7 +8,8 @@
  * again. A village that wrote no agreement shows nothing here.
  */
 import { useEffect, useState } from "react";
-import { FileText, ShieldCheck } from "lucide-react";
+import { FileText} from "lucide-react";
+import { Canopy } from "@/components/sacred/living";
 import { ALIGN_WORDS } from "@shared/alignments";
 import { CONFIDENTIALITY_WORDS } from "@shared/confidentiality";
 import AlignButton from "./AlignButton";
@@ -43,7 +44,7 @@ export default function ConfidentialityCard({ onAligned, embedded = false }: { o
   return (
     <section id="confidentiality" aria-labelledby="confidentiality-h" data-confidentiality="" className={embedded ? "" : `${CARD} mb-8`}>
       <h2 id="confidentiality-h" className={`${H2} flex items-center gap-2`}>
-        <ShieldCheck className="size-5 shrink-0 text-notice" aria-hidden="true" />
+        <Canopy className="size-5 shrink-0 text-notice" aria-hidden="true" />
         {CONFIDENTIALITY_WORDS.heading(agreement.title)}
       </h2>
       <p className={`${HINT} mt-2 max-w-2xl leading-relaxed`}>
