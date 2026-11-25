@@ -11,8 +11,8 @@ import { isMemberView } from "./newcomer";
 import { areaInUse } from "./areasInUse";
 import { eventsInUse } from "./areasInUseReads";
 import { newcomerSlots } from "@/components/mobile/MobileTabBar";
-import { resolve } from "@/components/mobile/MobileFab";
-import { FAB_ACTIONS, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_SLOT, TAB_SLOTS } from "@/config/mobileNav";
+import { cornerRows } from "@/components/mobile/MobileFab";
+import { NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_SLOT, TAB_SLOTS } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup } from "@/config/nav";
 
 const STAGES = [{ id: "guest" }, { id: "explorer" }, { id: "member" }, { id: "steward" }];
@@ -96,15 +96,15 @@ describe("a newcomer's phone tab bar", () => {
   });
 });
 
-describe("a newcomer's shortcuts", () => {
-  it("leave out messages, live sessions, the task board and the hidden map for someone signed in and not admitted", () => {
-    const on = () => true;
-    const newcomer = resolve(FAB_ACTIONS, "/", true, on, true).map((a) => a.key);
-    const member = resolve(FAB_ACTIONS, "/", true, on, false).map((a) => a.key);
-    for (const k of ["messages", "sessions", "tasks", "hidden-map"]) {
-      expect(newcomer, k).not.toContain(k);
-      expect(member, k).toContain(k);
+describe("a newcomer's corner (phone doors v4)", () => {
+  // The lotus's shortcut rows are gone: the corner is companions and help, for everybody, and the
+  // working areas reach a member through More, from the account entries Layout already gates for a
+  // newcomer (config/nav.ts, `newcomers`).
+  it("offers nobody messages, live sessions, the task board or the hidden map", () => {
+    const t = ({ message }: { message: string }) => message;
+    for (const signedIn of [true, false]) {
+      const keys = cornerRows({ signedIn, admin: false, army: null, guide: "the guide", t }).map((r) => r.key);
+      for (const k of ["messages", "sessions", "tasks", "hidden-map"]) expect(keys, k).not.toContain(k);
     }
-    expect(newcomer).toContain("quests");
   });
 });

@@ -15,6 +15,7 @@
  *
  * Order-dependent: run the whole file, never a -t slice.
  */
+import { openStaged } from "./repos/suggestionStaging";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -278,6 +279,9 @@ describe.skipIf(!DB_CONFIGURED)("the Operations agent (B6)", () => {
     // Three calls inside one second share a created_at, so compare the states as a set of counts.
     const [rows] = await pool.query<any[]>("SELECT state FROM agent_actions WHERE actor_user_id = ?", [agent.id]);
     expect(rows.map((r: any) => r.state).sort()).toEqual(["asked", "done", "done", "refused"]);
+    // STAGING ADDS NO SECOND APPROVAL (lane 5, the coordinator, 25 Nov 2026): an admin_request write lands on its own
+    // confirm, as before, and never passes through the review engine's staging.
+    expect(await openStaged(pool as any)).toEqual([]);
   });
 
   it("takes the summary from body.summary, for a client that connected before the summary argument", async () => {

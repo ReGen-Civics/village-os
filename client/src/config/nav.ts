@@ -11,7 +11,7 @@
  *    with its optional modules off never gets an empty dropdown.
  *  - `module` hides a link unless that module is on for the viewer. Ids match
  *    shared/modules.ts, which is why they do not always match the label or the
- *    route (stays -> /stay, health -> /village-health, exchange -> /tokens).
+ *    route (stays -> /stay, health -> /village-health, exchange -> /wallet).
  *  - `roles` hides a link unless the signed-in member holds one of them.
  */
 import {
@@ -198,7 +198,7 @@ export const NAV: readonly NavEntry[] = [
       { href: "/housing", brochure: true, label: "Housing" },
       { href: "/library", label: "Library", module: "library" },
       { href: "/tools", label: "Tools", module: "tools", newcomers: "in-use" },
-      { href: "/tokens", label: "The Exchange", module: "exchange" },
+      { href: "/wallet", label: "Wallet", module: "exchange" },
       { href: "/village-health", label: "Health", module: "health" },
     ],
   },
@@ -300,7 +300,7 @@ export const NAV: readonly NavEntry[] = [
        * link to /campaigns in the whole client sat on the campaign page,
        * reachable only from /campaigns: a closed loop with no door in.
        */
-      { href: "/campaigns", label: "Pooling Resources", module: "crowdpool", newcomers: "in-use" },
+      { href: "/campaigns", label: "Crowd pooling", module: "crowdpool", newcomers: "in-use" },
     ],
   },
   {
@@ -361,7 +361,7 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // Direct messages and the shared work chats, with the member's own unread
   // count. The shortcuts button carries the other door (config/mobileNav.ts).
   { href: "/messages", label: "Messages", module: "messaging", count: "messages", newcomers: "never" },
-  { href: "/profile#wallet", label: "Wallet", module: "exchange" },
+  { href: "/wallet", label: "Wallet", module: "exchange" },
   // The live-session task board on the profile, with the member's own count
   // of what waits on them beside it. The shortcuts button carries the other
   // door (config/mobileNav.ts).

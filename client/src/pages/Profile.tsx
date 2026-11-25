@@ -73,7 +73,6 @@ const TodayCard = lazy(() => import("@/components/todayCard/TodayCard"));
 import AsksPanel from "@/components/asks/AsksPanel";
 import FollowUps from "@/components/followUps/FollowUps";
 import MyWeekCard from "@/components/priorities/MyWeekCard";
-import CompanionCorner from "@/components/profileDash/CompanionCorner";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
 import LevelUpMoment from "@/components/profileDash/LevelUpMoment";
 import ProfileTabs, { phoneTab, type ProfileTab } from "@/components/profileDash/ProfileTabs";
@@ -605,7 +604,7 @@ export default function Profile() {
             )}
             {/* WHAT YOU ASKED OF A ROLE is a row of Follow-ups now, under Waiting on others. */}
 
-            {/* YOUR COMPANIONS stand in the corner now (CompanionCorner, Direction D), drawn with MoonDock below. */}
+            {/* YOUR COMPANIONS stand in the corner now, on every page: the corner button (MobileFab, phone doors v4). */}
 
             <div className={tabOf("treasury")}>
               <TreasuryPanel
@@ -980,7 +979,6 @@ export default function Profile() {
           </m.div>
         </div>
         <MoonDock />
-        <CompanionCorner />
       </div>
       {advance ? (
         <LevelUpMoment

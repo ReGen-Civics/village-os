@@ -39,7 +39,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 }));
 vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-session", useGameConfig: () => null }));
 vi.mock("wouter", () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a href="/tokens">{children}</a>,
+  Link: ({ children }: { children: React.ReactNode }) => <a href="/wallet">{children}</a>,
 }));
 
 import WalletCard from "./WalletCard";
@@ -120,7 +120,7 @@ describe("the wallet on a member's own profile", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("/api/me/wallet");
     expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toMatchObject({ Authorization: "Bearer a-session" });
     // No exchange, no link to it.
-    expect(screen.queryByText("The Exchange")).toBeNull();
+    expect(screen.queryByText("Buy and exchange")).toBeNull();
   });
 
   it("prints ten for ten Village Voice, and never the ledger's thousand", async () => {
@@ -183,7 +183,7 @@ describe("the wallet on a member's own profile", () => {
     render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText(/\$0\.40 each at the exchange/)).toBeInTheDocument());
     expect(screen.getByText(/yours come to \$5\.00/)).toBeInTheDocument();
-    expect(screen.getByText("The Exchange")).toBeInTheDocument();
+    expect(screen.getByText("Buy and exchange")).toBeInTheDocument();
   });
 
   it("tells a failed load apart from an empty wallet", async () => {

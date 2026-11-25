@@ -1193,6 +1193,15 @@ describe("the confirmation link", () => {
     expect(document.querySelector('[data-step-after="review"]')?.textContent).toBe("Our review Within 7 days");
   });
 
+  it("a bare address with no token sends nothing, says the link is not usable, and offers to apply again", async () => {
+    window.history.pushState({}, "", "/propose-a-role/confirm");
+    serve({}, { status: 400, body: { error: "should not be asked" } });
+    render(<ConfirmProposal />);
+    expect(await screen.findByText(/That link has run out or was already used/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Apply again" }).getAttribute("href")).toBe("/propose-a-role");
+    expect(posted.filter((p) => p.url === "/api/open-proposals/confirm")).toEqual([]);
+  });
+
   it("a link that ran out says so, and offers to apply again", async () => {
     window.history.pushState({}, "", "/propose-a-role/confirm?token=old");
     serve({}, { status: 410, body: { error: OPEN_WORDS.confirmGone } });

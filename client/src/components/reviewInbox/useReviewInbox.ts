@@ -43,7 +43,10 @@ export function useReviewInbox(enabled: boolean) {
     try {
       const r = await fetch("/api/admin/review/inbox", { headers: inboxHeaders() });
       if (!r.ok) return setLoad({ phase: "failed" });
-      setLoad({ phase: "ready", answer: (await r.json()) as InboxAnswer });
+      const body = (await r.json().catch(() => null)) as Partial<InboxAnswer> | null;
+      // An answer without its two lists is not a list with nothing in it: say the read failed.
+      if (!body || !Array.isArray(body.items) || !Array.isArray(body.sections)) return setLoad({ phase: "failed" });
+      setLoad({ phase: "ready", answer: body as InboxAnswer });
     } catch {
       setLoad({ phase: "failed" });
     }

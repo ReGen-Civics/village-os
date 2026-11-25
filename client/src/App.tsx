@@ -8,6 +8,7 @@ import { useLingui } from "@lingui/react/macro";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { LazyMotion, MotionConfig } from "framer-motion";
 import { LucideProvider } from "lucide-react";
+import { LIVING_STROKE } from "@/components/sacred/livingCore";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
@@ -420,7 +421,8 @@ function Router() {
       <Route path="/first-walk" component={FirstWalk} />
       <Route path="/feed" component={Feed} />
       <Route path="/stay" component={Stay} />
-      <Route path="/tokens" component={Wallet} />
+      {/* The Exchange's old address: one page called Wallet now (the lead, 25 Nov 2026). The query and hash ride along. */}
+      <Route path="/tokens">{() => <Redirect to={`/wallet${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/wallet" component={Wallet} />
       <Route path="/pay" component={Pay} />
       <Route path="/badges" component={Badges} />
@@ -596,10 +598,10 @@ function App() {
        * run `repeat: Infinity` and never stopped for anyone.
        */}
       <MotionConfig reducedMotion="user">
-      {/* One line weight for every icon: the stock ones drawn at the living glyphs' 1.5
-          (components/sacred), so a row of the two reads as one family (QA, 25 Nov 2026).
-          An icon that names its own strokeWidth keeps it. */}
-      <LucideProvider strokeWidth={1.5}>
+      {/* One line weight for every icon: the stock ones drawn at the living glyphs' line
+          (LIVING_STROKE, components/sacred/livingCore.tsx), so a row of the two reads as one
+          family. An icon that names its own strokeWidth keeps it. */}
+      <LucideProvider strokeWidth={LIVING_STROKE}>
       <LazyMotion features={loadMotionFeatures}>
         <AuthProvider>
         {/* The visitor's language, before any page renders (internal spec i18n, US1). */}

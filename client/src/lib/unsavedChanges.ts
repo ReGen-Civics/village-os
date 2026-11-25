@@ -201,7 +201,11 @@ export function useDraftDoc<T extends Record<string, unknown>>(loaded: T | null,
   const [base, setBase] = useState<T | null>(loaded);
   const [draft, setDraft] = useState<T | null>(loaded);
   // A new load replaces both, so the bar never compares against a stale copy.
-  useEffect(() => { setBase(loaded); setDraft(loaded); }, [loaded]);
+  // Done while rendering, keyed on the last load seen, so no frame shows the
+  // old copy and an edit made in that frame is never overwritten afterwards
+  // (the same fix as useSeedFrom in components/admin/ModuleConfigPanels.tsx).
+  const [seen, setSeen] = useState<T | null>(loaded);
+  if (seen !== loaded) { setSeen(loaded); setBase(loaded); setDraft(loaded); }
   const changed = useMemo(() => changedKeys(base, draft, keys), [base, draft, keys]);
   const patch = useCallback((p: Partial<T>) => setDraft((d) => (d ? { ...d, ...p } : d)), []);
   const discard = useCallback(() => setDraft(base), [base]);

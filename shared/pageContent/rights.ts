@@ -320,7 +320,7 @@ export const RIGHTS_RESIDENT_PAGE: PageSpec = rightsPage({
       {
         title: "Share the Work",
         description:
-          "Shared spaces and systems need looking after. Every resident takes a share of that work, and the quest board shows what needs doing.",
+          "Shared spaces and systems need looking after. Every resident takes a share of that work, and Quests shows what needs doing.",
       },
       {
         title: "Pay Your Village Dues",

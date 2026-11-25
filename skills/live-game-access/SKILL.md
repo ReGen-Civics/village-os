@@ -47,11 +47,23 @@ infisical run -- env LIVE_QA_URL=https://amora.regencivics.earth \
 - refuses to run without `LIVE_QA_TOKEN`, and never prints it;
 - first asks the server who the token is, and stops unless the server marks the answer `X-Live-View: read-only`;
 - opens Chromium signed in as you, visits each path, and saves a screenshot of each to `--out`;
-- reports uncaught errors, console errors, failed reads, and any write a page tried that the server refused as read-only.
+- puts the token on every read of the village's own `/api/`, and stops every request that is not a read before it leaves the browser;
+- reports uncaught errors, console errors, failed reads, and any write a page tried.
 
 Exit code 0 means every page drew clean, 1 means a page had a problem, 2 means it could not start (and says why).
 
-For your own Playwright code, the same token works: put it in the page's `localStorage` under `village-auth-token` before the first page loads (`context.addInitScript`), and every API call the app makes carries it. For a single read with fetch or curl, send `Authorization: Bearer $LIVE_QA_TOKEN`.
+For your own Playwright code, the same token works, in two places. Put it in the page's `localStorage` under `village-auth-token` before the first page loads (`context.addInitScript`). Also add it as `Authorization: Bearer` to requests for the village's own `/api/` (`page.route`), because some of the app's reads use a bare fetch that never attaches the stored sign-in, and without the header they meet the entrance and the page draws with parts missing. Keep it off the page request itself, which answers 401 with it, and abort anything that is not a GET. For a single read with fetch or curl, send `Authorization: Bearer $LIVE_QA_TOKEN`.
+
+### In a cloud session that holds the token as a network secret
+
+A cloud environment can keep the token as a network secret: its egress proxy adds `Authorization: Bearer <token>` to every request for the village's host, and no process in the session ever sees the value. A session started before the secret was saved does not have it; start a new one.
+
+```
+LIVE_QA_URL=https://amora.regencivics.earth \
+  node scripts/live-qa-session.mjs --proxy-auth / /roles /circles --out ./live-qa --phone
+```
+
+`--proxy-auth` (or `LIVE_QA_PROXY_AUTH=1`) reads no token. It opens a page of the village in the same browser it crawls with and asks who it is there, going on only for a signed-in answer marked `X-Live-View: read-only`. If the proxy replaces an Authorization the page sends, a placeholder goes into the app's sign-in slot so pages draw as you; if not, the run says that parts the client draws only for a member will look signed out. Exit 2 with "the network secret did not reach this browser" means no secret for this host, or a session older than the secret.
 
 ## What you may and may not do on production
 
@@ -85,7 +97,7 @@ For each finding, write:
 - **How sure:** seen once, seen every time, or inferred.
 - **Severity:** blocks a member, confuses a member, or cosmetic.
 
-Keep observation separate from guesses about the cause. Name the page or the pattern, never a person. Put findings where the work is tracked: a GitHub issue on the Village OS repository, or the pull request you are working on, or a task for the Front-End & Game Platform role. A write the probe reports as "refused as read-only" on a page load is itself a finding: a page should not write when someone only looks at it.
+Keep observation separate from guesses about the cause. Name the page or the pattern, never a person. Put findings where the work is tracked: a GitHub issue on the Village OS repository, or the pull request you are working on, or a task for the Front-End & Game Platform role. A write the probe reports as "stopped before it left" on a page load is itself a finding: a page should not write when someone only looks at it.
 
 ## When it does not work
 

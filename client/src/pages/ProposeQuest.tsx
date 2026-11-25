@@ -179,7 +179,7 @@ export default function ProposeQuest() {
                   <Trans context="ProposeQuest, button">Change it and send again
                 </Trans></button>
                 <Link href="/quests" className={BTN_SECONDARY}>
-                    <Trans context="ProposeQuest, a">Back to the Quest Board
+                    <Trans context="ProposeQuest, a">Back to Quests
                   </Trans>
                 </Link>
               </div>
@@ -210,7 +210,7 @@ export default function ProposeQuest() {
               <p className="-mt-5 mb-8 font-semibold text-foreground" data-route-promise="">{replyPromise}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link href="/quests" className={BTN_PRIMARY}>
-                    <Trans context="ProposeQuest, a">Back to the Quest Board
+                    <Trans context="ProposeQuest, a">Back to Quests
                   </Trans>
                 </Link>
                 <button
@@ -255,7 +255,7 @@ export default function ProposeQuest() {
           >
             <Link href="/quests" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
                 <Trans context="ProposeQuest, a"><ArrowLeft className="w-4 h-4" />
-                Back to the Quest Board
+                Back to Quests
               </Trans>
             </Link>
             <div className="w-16 h-16 rounded-full bg-notice/15 flex items-center justify-center mx-auto mb-6">

@@ -18,7 +18,8 @@ import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/confi
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
-const MobileFab = lazy(() => import("./mobile/MobileFab")); // phone-only and fixed, so it arrives after the page and shifts nothing (front door, 24 Nov 2026)
+const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
+const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More (phone doors v4, 25 Nov 2026)
 const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
@@ -345,7 +346,7 @@ export default function Layout({ children }: LayoutProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-xl overflow-hidden z-50"
+                        className="absolute top-full right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
                         {accountItems.map((item) => (
                           <Link
@@ -400,17 +401,16 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Mobile Menu Button (bell beside it when signed in) */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
             {user && <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>}
-            {/* Icon-only, so it needs a spoken name and a state a screen
-                reader can hear — otherwise it announces as bare "button". */}
+            {/* Icon-only, so it needs a spoken name and a state. Phones use the bar's More instead (MoreSheet). */}
             <button
               ref={menuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? t({ message: "Close menu", context: "site header" }) : t({ message: "Open menu", context: "site header" })}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="text-white inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
+              className="text-white hidden md:inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -436,7 +436,7 @@ export default function Layout({ children }: LayoutProps) {
               // the darker surface (band's own contrast floor for white is
               // 5.36:1 worst case vs brand's 4.50:1), so nothing else in
               // this drawer is put at risk by the change.
-              className="lg:hidden bg-teal-band/95 border-t border-white/10 overflow-hidden"
+              className="max-md:hidden lg:hidden bg-teal-band/95 border-t border-white/10 overflow-hidden"
             >
               <div className="container py-4 space-y-1">
                 {navEntries.map((entry) =>
@@ -747,7 +747,7 @@ export default function Layout({ children }: LayoutProps) {
                 </li>
                 <li>
                   <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Quest Board</Trans>
+                    <Trans context="Layout, Link">Quests</Trans>
                   </Link>
                 </li>
                 {commerceModule && (
@@ -764,7 +764,7 @@ export default function Layout({ children }: LayoutProps) {
                 {crowdpoolModule && showsHref("/campaigns") && (
                   <li>
                     <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Pooling Resources</Trans>
+                      <Trans context="Layout, Link">Crowd pooling</Trans>
                     </Link>
                   </li>
                 )}
@@ -902,6 +902,7 @@ export default function Layout({ children }: LayoutProps) {
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
       <MobileTabBar />
+      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} /></Suspense>}
       <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
@@ -967,7 +968,7 @@ function NavDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-white rounded-xl shadow-xl overflow-hidden z-50`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
           >
             {items.map((item) => (
               <Link
@@ -983,7 +984,7 @@ function NavDropdown({
                     {/* Same badge the bar used to carry, in the ink the white
                         sheet needs: amber-200 on white measured below 2:1. */}
                     {lifecycleOf(item.module) === "preview" && (
-                      <span className="ml-1.5 text-[9px] bg-amber/30 text-gold px-1 py-0.5 rounded uppercase align-middle"><Trans context="Layout, span">preview</Trans></span>
+                      <span className="ml-1.5 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground align-middle"><Trans context="Layout, span">preview</Trans></span>
                     )}
                   </span>
                   {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}

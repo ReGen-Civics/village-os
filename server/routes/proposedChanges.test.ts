@@ -126,6 +126,10 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
     await q("DELETE FROM suggestion_outcomes");
+    await q("DELETE FROM suggestion_staging");
+    // What is live starts the same for every case: filing reads it, and a value an earlier case left live is held.
+    content["page-home"] = { hero: { headline: "Welcome home", badge: "Open" } };
+    faqs.steward = [{ id: "ste-1", question: "Who decides?", answer: "The circle." }];
   });
 
   const call = async (method: string, path: string, body?: unknown, as: string | null = ADMIN.id, extra: Record<string, string> = {}) => {
@@ -156,7 +160,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(two.body.batchCode).toBe("B-2");
     expect(two.body.codes).toEqual([{ id: two.body.ids[0], code: "B-2.1" }]);
     // Adding to a batch already waiting carries on its numbering.
-    const more = await call("POST", "/api/admin/proposals", { batchId: one.body.batchId, items: [DIAL] }, AGENT.id);
+    // A different value: the same one sent again while it waits is answered with the change that waits.
+    const more = await call("POST", "/api/admin/proposals", { batchId: one.body.batchId, items: [{ ...DIAL, body: { value: "13" } }] }, AGENT.id);
     expect(more.body.batchCode).toBe("B-1");
     expect(more.body.codes.map((c: any) => c.code)).toEqual(["B-1.3"]);
 
@@ -169,7 +174,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
     // A discarded change keeps its code, and the next batch is never given a number already used.
     await call("POST", "/api/admin/proposals/discard", { ids: two.body.ids });
-    const three = await call("POST", "/api/admin/proposals", { batch: "Third", items: [FAQ] }, AGENT.id);
+    const three = await call("POST", "/api/admin/proposals", { batch: "Third", items: [{ ...FAQ, body: { ...FAQ.body, question: "Who keeps the keys?" } }] }, AGENT.id);
     expect(three.body.batchCode).toBe("B-3");
     const decided = (await call("GET", "/api/admin/proposals")).body.decided;
     expect(decided).toEqual([expect.objectContaining({ code: "B-2.1", batchCode: "B-2" })]);
@@ -428,7 +433,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(rows.map((r) => JSON.parse(r.body_json).status)).toEqual(["scheduled", "draft"]);
     const acc = await call("POST", "/api/admin/proposals/accept", { items: filed.body.ids.map((id: string) => ({ id })) });
     expect(acc.body.results.map((x: any) => x.ok)).toEqual([true, true]);
-    expect(hits.map((h) => [h.path, h.body.status])).toEqual([["/api/admin/events", "scheduled"], ["/api/admin/events", "draft"]]);
+    // Filing reads what is live (lane 5); what reached the calendar is the writes.
+    expect(hits.filter((h) => h.method !== "GET").map((h) => [h.path, h.body.status])).toEqual([["/api/admin/events", "scheduled"], ["/api/admin/events", "draft"]]);
   });
 
   it("a gathering proposed before that rule, with no status, is still put on the calendar when it is accepted", async () => {
@@ -568,8 +574,11 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
   it("HELD: lists the connector's held suggestions by code, never another stream's, and a person clears or releases each", async () => {
     await q("DELETE FROM suggestion_staging");
+    // Each arrives a second after the one before: Held lists oldest first, and two rows staged in one millisecond would
+    // tie on their arrival and fall back to their random ids (CI, 25 Nov 2026).
+    let arrival = Date.now() - 60_000;
     const stage = async (stream: "connector" | "sera", body: Record<string, unknown>, reconsider: { code: string; reason: string } | null = null) =>
-      (await stageSuggestion(pool, { stream, streamRef: `ref-${JSON.stringify(body)}`, filer: AGENT.id, filerKind: "agent", kind: "page_content", target: { section: "page-home" }, body, reconsider, now: new Date() })).id;
+      (await stageSuggestion(pool, { stream, streamRef: `ref-${JSON.stringify(body)}`, filer: AGENT.id, filerKind: "agent", kind: "page_content", target: { section: "page-home" }, body, reconsider, now: new Date((arrival += 1000)) })).id;
     const discarded = await stage("connector", { hero: { headline: "Sent again" } }, { code: "B-9.1", reason: "Shorter now." });
     const live = await stage("connector", { hero: { headline: "Already there" } });
     const sera = await stage("sera", { hero: { headline: "Another stream" } });
@@ -590,15 +599,61 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect((await call("POST", `/api/admin/proposals/held/${live}/release`)).status).toBe(409);
     expect((await call("POST", `/api/admin/proposals/held/${sera}/clear`)).status).toBe(409);
 
-    expect((await call("POST", `/api/admin/proposals/held/${discarded}/release`)).body).toEqual({ success: true });
+    // Let through, it goes onto the review page as the filer's own proposal (lane 5).
+    const released = await call("POST", `/api/admin/proposals/held/${discarded}/release`);
+    expect(released.body).toEqual({ success: true, published: { id: expect.any(String), code: expect.any(String) } });
+    const [made] = await q("SELECT proposed_by, proposed_by_kind, status, summary FROM proposed_changes WHERE id = ?", [released.body.published.id]);
+    expect(made).toMatchObject({ proposed_by: AGENT.id, proposed_by_kind: "agent", status: "proposed" });
     expect((await call("POST", `/api/admin/proposals/held/${live}/clear`)).body).toEqual({ success: true });
     expect((await call("POST", `/api/admin/proposals/held/${live}/clear`)).status, "cleared once").toBe(409);
     const after = await call("GET", "/api/admin/proposals/held");
-    expect(after.body.held.map((h: any) => [h.id, h.released])).toEqual([[discarded, true]]);
+    expect(after.body.held, "the released one waits on the review page now, the cleared one is closed").toEqual([]);
     const outcomes = await q("SELECT source_id, outcome, decided_by_capability FROM suggestion_outcomes WHERE source_id IN (?, ?) ORDER BY outcome", [discarded, live]);
     expect(outcomes.map((o: any) => [o.source_id, o.outcome, o.decided_by_capability])).toEqual([[live, "discarded", "admin"], [discarded, "released", "admin"]]);
     const [closed] = await q("SELECT state FROM suggestion_staging WHERE id = ?", [live]);
     expect(closed.state).toBe("closed");
+  });
+
+  // ── Lane 5: the connector's filings meet the engine before a person sees them ─────────────────────────────
+
+  it("STAGING: the same value discarded within the window is held, not filed; with a reason it waits for a person to let it through", async () => {
+    const first = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    expect((await call("POST", "/api/admin/proposals/discard", { ids: first.body.ids })).body.results[0].ok).toBe(true);
+
+    // Sent again unchanged: held with its reason, nothing filed, nothing to decide on the review page.
+    const again = await call("POST", "/api/admin/proposals", { batch: "Words again", items: [PAGE] }, AGENT.id);
+    expect(again.status).toBe(200);
+    expect(again.body).toMatchObject({ success: true, batchId: null, ids: [], held: [{ index: 0, code: "recently_discarded", fields: { discarded: expect.any(String) } }] });
+    expect(again.body.held[0].words).toContain("reconsider");
+    expect(await q("SELECT id FROM proposed_changes WHERE status = 'proposed'")).toHaveLength(0);
+
+    // Sent with what is new: held for a person, who lets it through, and it then waits on the review page.
+    const reasoned = await call("POST", "/api/admin/proposals", { batch: "Words, reconsidered", items: [{ ...PAGE, reconsider: { code: first.body.codes[0].code, reason: "The circle asked for it again." } }] }, AGENT.id);
+    expect(reasoned.body.held).toEqual([expect.objectContaining({ index: 0, code: "reconsider_waits" })]);
+    const held = (await call("GET", "/api/admin/proposals/held")).body.held;
+    const row = held.find((h: any) => h.code === "reconsider_waits");
+    expect(row.reconsider).toEqual({ code: first.body.codes[0].code });
+    const let_ = await call("POST", `/api/admin/proposals/held/${row.id}/release`);
+    expect(let_.body.published).toEqual({ id: expect.any(String), code: expect.any(String) });
+    const [waiting] = await q("SELECT status, summary, proposed_by FROM proposed_changes WHERE id = ?", [let_.body.published.id]);
+    expect(waiting).toEqual({ status: "proposed", summary: PAGE.summary, proposed_by: AGENT.id });
+  });
+
+  it("STAGING: a value already live is held, and the same filing sent again while it waits is answered with the change that waits", async () => {
+    const live = await call("POST", "/api/admin/proposals", { batch: "Nothing new", items: [{ ...PAGE, body: { hero: { headline: "Welcome home" } } }] }, AGENT.id);
+    expect(live.body).toMatchObject({ ids: [], held: [{ index: 0, code: "already_live" }] });
+
+    const one = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE, FAQ] }, AGENT.id);
+    const twice = await call("POST", "/api/admin/proposals", { batch: "Words again", items: [PAGE] }, AGENT.id);
+    expect(twice.body).toMatchObject({ batchId: null, ids: [], held: [], waiting: [{ index: 0, id: one.body.ids[0], code: one.body.codes[0].code }] });
+    expect(await q("SELECT id FROM proposed_changes")).toHaveLength(2);
+
+    // Decided, its staged row closes: the same value sent later is judged afresh (here, it is live by then).
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: one.body.ids[0] }] })).body.results[0].ok).toBe(true);
+    const [closed] = await q("SELECT state FROM suggestion_staging WHERE published_change_id = ?", [one.body.ids[0]]);
+    expect(closed.state).toBe("closed");
+    const later = await call("POST", "/api/admin/proposals", { batch: "Words later", items: [PAGE] }, AGENT.id);
+    expect(later.body.held).toEqual([expect.objectContaining({ code: "already_live" })]);
   });
 
   // ── Putting it back ────────────────────────────────────────────────────────
@@ -654,6 +709,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     const BRAND = { kind: "setting", target: { method: "PUT", path: "/api/admin/brand" }, body: { tagline: "Living together" }, summary: "A new tagline." };
     const filed = await call("POST", "/api/admin/proposals", { batch: "Brand", items: [BRAND] }, AGENT.id);
     const id = filed.body.ids[0];
+    hits.length = 0; // filing read what is live (lane 5); this case is about what the accept reads
     dropGet.add("/api/admin/brand");
     const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
     expect(acc.body.results).toEqual([{ id, ok: true }]);
@@ -670,6 +726,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   it("a new calendar event keeps nothing and is never put back; a change accepted before this release says so", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "Calendar", items: [GATHERING] }, AGENT.id);
     const id = filed.body.ids[0];
+    hits.length = 0; // filing read what is live (lane 5); this case is about what the accept reads
     expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
     expect(hits.map((h) => h.method), "the calendar was never read").toEqual(["POST"]);
     const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
