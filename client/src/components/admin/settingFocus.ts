@@ -62,3 +62,26 @@ export function useSettingFocus(key: string, elementId: string, ready: boolean):
     forgetSetting();
   }, [key, elementId, ready]);
 }
+
+/**
+ * Focus an element a page has worked out from the address, once, when it is
+ * really there. For a page that lands on several controls (Mail settings has
+ * fourteen), where one `useSettingFocus` per key would be fourteen hooks: the
+ * page reads `setting`, opens whatever holds the control, and hands the
+ * control's id here. Then the key is taken back out of the address, for the
+ * same reason as above.
+ *
+ * @param elementId the control to focus, or null when the address named none of this page's controls
+ * @param ready     false until the control has rendered
+ */
+export function useLandingFocus(elementId: string | null, ready: boolean): void {
+  useEffect(() => {
+    if (!elementId || !ready) return;
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.scrollIntoView?.({ block: "center" });
+      el.focus({ preventScroll: true });
+    }
+    forgetSetting();
+  }, [elementId, ready]);
+}

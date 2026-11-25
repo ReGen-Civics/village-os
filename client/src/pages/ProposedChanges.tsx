@@ -37,7 +37,7 @@ import { authToken } from "@/lib/gameApi";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
 import { CHANGE_FACES, faceOf, type ChangeFace } from "@shared/proposalReview";
-import { conflictCounts, oldestFirst, waitingConflicts } from "@shared/proposalConflicts";
+import { conflictCounts, oldestFirst, staleVersionOf, waitingConflicts } from "@shared/proposalConflicts";
 import { matchesFind, normalizeCode } from "@shared/proposedChanges";
 import BatchCard, { HistoryBatch } from "@/components/proposals/BatchCard";
 import ChangeCard, { DecidedCard, faceWords } from "@/components/proposals/ChangeCard";
@@ -66,6 +66,8 @@ export default function ProposedChanges() {
   const [edits, setEdits] = useState<Record<string, Record<string, unknown>>>({});
   // A change whose last try may have landed is tried again only once the person ticks that they checked its page.
   const [checkedPage, setCheckedPage] = useState<Record<string, boolean>>({});
+  // A stale change's version of what is live now, as the person saw it: its accept carries it (the lead, 25 Nov 2026).
+  const [seen, setSeen] = useState<Record<string, string>>({});
   const [problems, setProblems] = useState<Record<string, Problem[]>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Record<string, "saving" | "saved" | "failed">>({});
@@ -80,10 +82,13 @@ export default function ProposedChanges() {
   const [find, setFind] = useState(() => (typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("find") ?? "").slice(0, 80));
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<ReviewPayload | null> => {
     try {
       const r = await fetch("/api/admin/proposals", { headers: headers() });
-      if (r.status === 401 || r.status === 403) return setState("refused");
+      if (r.status === 401 || r.status === 403) {
+        setState("refused");
+        return null;
+      }
       if (!r.ok) throw new Error("read failed");
       const d = (await r.json()) as ReviewPayload;
       setZone(d.timezone || "UTC");
@@ -92,10 +97,20 @@ export default function ProposedChanges() {
       setDecided(d.decided ?? []);
       setEdits(Object.fromEntries(d.changes.map((c) => [c.id, c.draft ?? c.body])));
       setState("ok");
+      return d;
     } catch {
       setState("failed");
+      return null;
     }
   }, []);
+
+  /** Read the page again and redraw a stale change against what is live now: that is what lets its Accept through. */
+  const seeLive = async (id: string) => {
+    const d = await load();
+    const fresh = d?.changes.find((c) => c.id === id);
+    if (fresh) setSeen((s) => ({ ...s, [id]: staleVersionOf(fresh.stale ?? []) }));
+  };
+  const seenNow = (c: Proposal) => seen[c.id] !== undefined && seen[c.id] === staleVersionOf(c.stale ?? []);
 
   useEffect(() => {
     if (auth?.loading || signedOut) return;
@@ -138,13 +153,22 @@ export default function ProposedChanges() {
     }
   };
 
-  /** Accept these changes: the dry run first, then each through its own route as this person, in order. */
-  const accept = async (list: Proposal[]) => {
+  /**
+   * Accept these changes: the dry run first, then each through its own route as this person, in order. `over` is the
+   * person's choice of this one change over the others for the same thing, made on its own card.
+   */
+  const accept = async (list: Proposal[], choice?: { over?: string[] }) => {
     if (!list.length) return;
     setBusy(true);
     setOutcome(null);
     try {
-      const items = list.map((c) => ({ id: c.id, body: edits[c.id] ?? c.body, ...(c.status === "unknown" && checkedPage[c.id] ? { checked: true } : {}) }));
+      const items = list.map((c) => ({
+        id: c.id,
+        body: edits[c.id] ?? c.body,
+        ...(c.status === "unknown" && checkedPage[c.id] ? { checked: true } : {}),
+        ...(list.length === 1 && choice?.over?.length ? { over: choice.over } : {}),
+        ...(seenNow(c) && (c.stale ?? []).length ? { seen: seen[c.id] } : {}),
+      }));
       const check = await fetch("/api/admin/proposals/check", { method: "POST", headers: headers(), body: JSON.stringify({ items }) });
       const cd = (await check.json().catch(() => ({}))) as { results?: Result[] };
       if (!check.ok) {
@@ -473,10 +497,11 @@ export default function ProposedChanges() {
                   expanded={isOpen(batch.id)}
                   onToggle={() => setOpen((o) => ({ ...o, [batch.id]: !isOpen(batch.id) }))}
                   busy={busy}
-                  onAcceptAll={() => void accept(items)}
+                  // A change that waits on a choice, or on a look at what is live now, is decided on its own card.
+                  onAcceptAll={() => void accept(items.filter((c) => !(conflicts[c.id] ?? []).length && !((c.stale ?? []).length && !seenNow(c))))}
                   onDiscardAll={() => void discard(items)}
                   found={foundBatch.has(batch.id)}
-                  laterConflicts={items.filter((c) => (conflicts[c.id] ?? []).some((o) => o.later)).length}
+                  laterConflicts={items.filter((c) => (conflicts[c.id] ?? []).length || ((c.stale ?? []).length && !seenNow(c))).length}
                   renderChange={(c) => (
                     <ChangeCard
                       key={c.id}
@@ -491,7 +516,9 @@ export default function ProposedChanges() {
                       checkedPage={!!checkedPage[c.id]}
                       onCheckedPage={(v) => setCheckedPage((p) => ({ ...p, [c.id]: v }))}
                       onEdit={(path, next) => edit(c.id, path, next)}
-                      onAccept={() => void accept([c])}
+                      onAccept={(choice) => void accept([c], choice)}
+                      seenLive={seenNow(c)}
+                      onSeeLive={() => void seeLive(c.id)}
                       onDiscard={() => void discard([c])}
                     />
                   )}
