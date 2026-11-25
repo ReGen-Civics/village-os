@@ -70,7 +70,9 @@ type CtaId = (typeof GUIDE_CTA_IDS)[number];
 const IKIGAI_LOOK: Record<IkigaiId, { x: number; y: number; fill: string; box: string; icon: typeof Heart; iconColor: string }> = {
   love: { x: 200, y: 80, fill: "fill-primary", box: "bg-primary/5 border-primary", icon: Heart, iconColor: "text-primary" },
   good: { x: 305, y: 260, fill: "fill-sage", box: "bg-sage/5 border-sage", icon: Star, iconColor: "text-sage" },
-  needs: { x: 95, y: 320, fill: "fill-sage", box: "bg-emerald-100/50 border-emerald-600", icon: Leaf, iconColor: "text-emerald-600" },
+  // The sheet's living green (whole-app QA, 25 Nov 2026): a fixed emerald-100 wash stayed light in dark mode
+  // under text that had moved light, and the box's words measured 2.11 and 2.75:1.
+  needs: { x: 95, y: 320, fill: "fill-sage", box: "bg-open/10 border-open", icon: Leaf, iconColor: "text-open" },
   pays: { x: 280, y: 150, fill: "fill-amber", box: "bg-amber/5 border-amber", icon: DollarSign, iconColor: "text-amber" },
 };
 
