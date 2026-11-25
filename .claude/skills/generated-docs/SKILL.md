@@ -1,6 +1,6 @@
 ---
 name: generated-docs
-description: Use when a change touches routes, capabilities, tokens, dials, modules, or user-facing strings, or when CI complains about GOVERNANCE.md, ECONOMICS.md, TOKENS.md, VARIABLES.md, MODULES.md, CAPABILITIES.md or en.po. Main regenerates these; a pull request never commits them.
+description: Use when a change touches routes, capabilities, tokens, dials, modules, or user-facing strings, or when CI complains about GOVERNANCE.md, ECONOMICS.md, TOKENS.md, VARIABLES.md, MODULES.md, CAPABILITIES.md, en.po or es.po. Main regenerates these; a pull request never commits them.
 ---
 
 # Generated docs
@@ -9,7 +9,8 @@ Main owns eight generated files. Read `docs/GENERATED_DOCS.md` for the full flow
 
 - Do NOT run a generator and commit its output. Do NOT hand-edit `docs/GOVERNANCE.md`,
   `docs/knowledge/governance-lineage.md`, `docs/TOKENS.md`, `docs/VARIABLES.md`, `docs/MODULES.md`,
-  `docs/CAPABILITIES.md`, `client/src/locales/en.po`, or the `generated:` regions of `docs/ECONOMICS.md`.
+  `docs/CAPABILITIES.md`, `client/src/locales/en.po`, `client/src/locales/es.po` (Spanish goes in
+  `client/src/locales/es.d/<name>.po`, which main folds in), or the `generated:` regions of `docs/ECONOMICS.md`.
   The prose around those regions is yours to edit.
 - Do change the code. CI runs the generator on your tree and fails if it throws or a rule inside it breaks
   (an unclassified route, a voice breach, a short message with no context).
