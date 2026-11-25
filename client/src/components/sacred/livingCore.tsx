@@ -155,9 +155,9 @@ function SeedHandDrawing(props: GlyphProps) {
 function EarthshipDomeDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path d="M2.6 19.6h18.8" />
+      <path d="M3 19.6h18" />
       {/* The earth it is bermed into, held against both sides. */}
-      <path {...WASH} d="M2.8 19.6c.6-3 2-5.2 3.8-6.2-.9 1.9-1.4 3.9-1.4 6.2zM21.2 19.6c-.6-3-2-5.2-3.8-6.2.9 1.9 1.4 3.9 1.4 6.2z" />
+      <path {...WASH} d="M3 19.6c.6-3 1.8-5.2 3.6-6.2-.9 1.9-1.4 3.9-1.4 6.2zM21 19.6c-.6-3-2-5.2-3.8-6.2.9 1.9 1.4 3.9 1.4 6.2z" />
       <path d="M5.2 19.6C5.2 12.8 8.2 8 12 8s6.8 4.8 6.8 11.6" />
       <path d="M8.8 19.6v-3.4a3.2 3.2 0 0 1 6.4 0v3.4M12 13v6.6M8.8 16.6h6.4" />
       <path d="M12 8V6.2M12 6.8c.7-1 1.8-1.3 2.6-1-.4.9-1.5 1.3-2.6 1z" />

@@ -259,7 +259,7 @@ function GatheringDrawing(props: GlyphProps) {
 function SunriseDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path d="M2.8 17h18.4M7 20.2h10" />
+      <path d="M3 17h18M7 20.2h10" />
       <path {...WASH} d="M7 17a5 5 0 0 1 10 0z" />
       <path d="M12 6.4v2.4M5.6 9.2l1.6 1.6M18.4 9.2l-1.6 1.6M3.2 13.6h2.2M18.6 13.6h2.2" />
     </Svg>
