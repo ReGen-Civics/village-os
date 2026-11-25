@@ -2,7 +2,8 @@
  * WHICH BROWSER CRASH REPORTS ARE NOISE, AND WHICH ARE OURS (the lead, 25 Nov 2026: "we're getting noise for crash
  * logs ... fix that so we're not bogged down in noise").
  *
- * Shared, so the crash route can apply the same rules the page does (client/src/lib/crashReport.ts, `isNoise`). A
+ * Shared, so the crash route applies the same rules the page does (client/src/lib/crashReport.ts, `isNoise`, reads
+ * them from here). A
  * filter in the page alone can never catch a tab still running the bundle from before a deploy, and every release
  * that taught the page a new kind of noise left the old tabs sending it for days. The server reads these now.
  *
@@ -14,12 +15,14 @@
  *     one signature across deploys and one email a day says how many times it happened.
  */
 
-/** A cross-origin script that hides its message, or ResizeObserver's harmless notice. */
-const OPAQUE = /^(?:Script error\.?|ResizeObserver loop (?:limit exceeded|completed with undelivered notifications)\.?)$/;
+/** A cross-origin script that hides its message. */
+const OPAQUE = /^Script error\.?$/;
+/** ResizeObserver's harmless notice, in any engine's words. */
+const RESIZE_LOOP = /ResizeObserver loop/;
 
 /**
  * A fetch the network dropped: each engine's whole message for it, and nothing about the page. Matched whole, so a
- * real error that merely mentions a fetch is still told. Kept equal to `NETWORK_DROP` in client/src/lib/crashReport.ts.
+ * real error that merely mentions a fetch is still told.
  */
 const NETWORK_DROP = /^(?:TypeError: )?(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?)$/;
 
@@ -48,7 +51,7 @@ export function framesAreOurs(frames: string | readonly string[]): boolean {
 /** True for a report nobody can act on: dropped by the page and, for older pages, by the server. */
 export function isCrashNoise(message: string, frames: string | readonly string[]): boolean {
   const msg = (message ?? "").trim();
-  if (!msg || OPAQUE.test(msg) || NETWORK_DROP.test(msg)) return true;
+  if (!msg || OPAQUE.test(msg) || RESIZE_LOOP.test(msg) || NETWORK_DROP.test(msg)) return true;
   const stack = joined(frames);
   if (EXTENSION_FRAME.test(stack)) return true;
   if (INJECTED_GLOBAL.test(msg) && !OUR_BUNDLE.test(stack)) return true;
