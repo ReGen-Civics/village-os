@@ -41,7 +41,7 @@ import { Link } from "wouter";
 import { Home, ArrowLeft, Check} from "lucide-react";
 import { SeedPin } from "@/components/sacred/living";
 import { hamletNumbers, homeChoices, preselectedHome, type PublicHome } from "@/lib/housingForm";
-import { useStoryPageOffAlone } from "@/lib/brochure";
+import { useStoryPageShown } from "@/lib/brochure";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { Trans } from "@lingui/react/macro";
 
@@ -73,9 +73,10 @@ interface HousingEntry {
 }
 
 export default function ReserveHome() {
-  // The way back goes only to a Housing page this village has not switched
-  // off on its own (Admin, Pages, "Show this page").
-  const housingOn = !useStoryPageOffAlone()("/housing");
+  // The way back goes only to a Housing page this village serves: the story
+  // pages on, and Housing not switched off on its own (Admin, Pages, "Show this
+  // page"). /reserve is not a story page, so it cannot assume the switch is on.
+  const housingOn = useStoryPageShown()("/housing");
   /*
    * Read once, on first render. `useState` with an initialiser and not a
    * `useEffect`: reading the query string in an effect renders one frame with
