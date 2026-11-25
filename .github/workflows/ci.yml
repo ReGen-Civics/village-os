@@ -66,9 +66,26 @@ on:
 # ref so a push run never cancels the merge-with-main run that is the more
 # valuable of the two; only a run of the SAME kind, on the SAME ref, that a
 # newer commit has already replaced.
+#
+# NEVER A PUSH TO MAIN (25 Nov 2026). Every landing on main is followed a
+# minute later by the generated-docs bot's own commit. With one group per ref
+# and cancel-in-progress, that commit CANCELLED the merge commit's run, so
+# tag-release.yml found no green push run on the merge commit and a release
+# waited a whole second run on the bot commit, about 35 minutes each time
+# (712becf, 1.3.66). So on main each commit gets a group of its own (keyed on
+# the sha) and nothing is cancelled: the merge commit's run and the bot
+# commit's run both finish, side by side, neither queued behind the other.
+#
+#   event          ref                     group key        cancelled by a newer push?
+#   pull_request   refs/pull/N/merge       PR number        yes, same PR
+#   push           wt/*-integration*       the ref          yes, same branch
+#   push           main                    the commit sha   never
+#
+# The cost is that :edge (release.yml, our image, not villages') is published
+# by whichever main run finishes last, which is almost always the newer one.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.ref == 'refs/heads/main' && github.sha) || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # Every step runs under bash, on purpose.
 #
