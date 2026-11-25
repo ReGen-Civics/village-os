@@ -1,0 +1,9 @@
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+msgctxt "week strip, the calendar read failed"
+msgid "The calendar did not load, so this week may be missing gatherings."
+msgstr "El calendario no cargó, así que a esta semana le pueden faltar encuentros."
+
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+msgctxt "week strip, retry the calendar read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
