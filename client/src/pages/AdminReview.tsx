@@ -70,7 +70,7 @@ export default function AdminReview() {
     cash: t({ context: "review inbox: section", message: "Cash owed" }),
     owed: t({ context: "review inbox: section", message: "Postings owed" }),
     mint: t({ context: "review inbox: section", message: "Mint requests" }),
-    cycle: t({ context: "review inbox: section", message: "Gratitude cycles to settle" }),
+    cycle: t({ context: "review inbox: section", message: "Cycles to settle" }),
     cosign: t({ context: "review inbox: section", message: "Keys waiting for a co-sign" }),
     letter: t({ context: "review inbox: section", message: "Letters waiting to be read" }),
     assistant: t({ context: "review inbox: section", message: "Drafts from the assistant" }),

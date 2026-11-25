@@ -282,8 +282,8 @@ msgstr "Solicitudes de emisión"
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
 msgctxt "review inbox: section"
-msgid "Gratitude cycles to settle"
-msgstr "Ciclos de gratitud por cerrar"
+msgid "Cycles to settle"
+msgstr "Ciclos por cerrar"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
