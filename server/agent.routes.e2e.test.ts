@@ -922,3 +922,134 @@ describe.skipIf(!DB_CONFIGURED)("the two mints refuse a session a new password e
     expect(await liveFeeds(una.id), "a private calendar address outlived the bump that ended its session").toBe(0);
   });
 });
+
+/*
+ * THE LIVE VIEW FOR QA (the lead, 25 Nov 2026; server/lib/liveView.ts).
+ *
+ * Here and not in a suite of its own because every e2e port window is taken
+ * (scripts/check-e2e-ports.mjs), and this is the agent-token suite: a live
+ * view token is an agent token with one scope. LAST in the file on purpose,
+ * because it turns the portal entrance on.
+ */
+describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token reads the live game past the entrance, and never writes", () => {
+  let quinn = { token: "", id: "" };
+  let live = "";
+  let assignmentId = "";
+  const SEAT = "qa-seat";
+  let seatId = SEAT;
+  const raw = (route: string, token: string) => fetch(BASE + route, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); // module-review-ok: the test client dialling the built server on localhost
+
+  it("the boot made an empty QA viewers group carrying only the live view", async () => {
+    const [rows] = await pool.query<any[]>("SELECT capabilities FROM roles WHERE id = 'qa-viewers'"); // module-review-ok: the e2e harness reading its own scratch schema
+    const caps = typeof rows[0]?.capabilities === "string" ? JSON.parse(rows[0].capabilities) : rows[0]?.capabilities;
+    expect(caps).toEqual(["qa.live_view"]);
+    const [held] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM role_holders WHERE role_id = 'qa-viewers'"); // module-review-ok: same
+    expect(Number(held[0].n)).toBe(0);
+  });
+
+  it("is not offered to a member with no seat carrying it, and cannot be minted by one", async () => {
+    quinn = await register("Quinn Check", "quinn");
+    expect((await call("PUT", `/api/admin/players/${quinn.id}/stage`, { stageId: "member" })).status).toBe(200);
+    const setup = await call("GET", "/api/agent/setup", undefined, quinn.token);
+    expect(setup.status, setup.text).toBe(200);
+    expect(setup.json.scopes).not.toContain("live.view");
+    const minted = await call("POST", "/api/agent/tokens", { name: "QA", scopes: ["live.view"] }, quinn.token);
+    expect(minted.status).toBe(400);
+    expect(String(minted.json?.error)).toContain("live view");
+  });
+
+  it("is offered once a seat linked to the QA viewers group holds them", async () => {
+    const made = await call("POST", "/api/admin/org/roles", { id: SEAT, name: "QA", circleId: null, aim: "Check that the live game works as members meet it.", seats: 2 });
+    expect(made.status, made.text).toBeLessThan(300);
+    seatId = String(made.json?.id ?? SEAT);
+    const linked = await call("PUT", `/api/admin/org-roles/${seatId}/power-groups`, { roleIds: ["qa-viewers"] });
+    expect(linked.status, linked.text).toBe(200);
+    const seated = await call("POST", `/api/admin/org/roles/${seatId}/holders`, { userId: quinn.id, holderKind: "member" });
+    expect(seated.status, seated.text).toBeLessThan(300);
+    const [rows] = await pool.query<any[]>("SELECT id FROM org_role_assignments WHERE org_role_id = ? AND user_id = ? AND ended_at IS NULL", [seatId, quinn.id]); // module-review-ok: the e2e harness reading its own scratch schema
+    assignmentId = String(rows[0]?.id ?? "");
+    expect(assignmentId).toBeTruthy();
+    expect((await call("GET", "/api/agent/setup", undefined, quinn.token)).json.scopes).toContain("live.view");
+  });
+
+  it("mints live.view alone, for a week", async () => {
+    expect((await call("POST", "/api/agent/tokens", { name: "QA", scopes: ["live.view", "moon.read"] }, quinn.token)).status).toBe(400);
+    const minted = await call("POST", "/api/agent/tokens", { name: "QA", scopes: ["live.view"] }, quinn.token);
+    expect(minted.status, minted.text).toBe(200);
+    live = String(minted.json?.token ?? "");
+    expect(live.startsWith("vat_")).toBe(true);
+    const days = (new Date(minted.json.row.expiresAt).getTime() - Date.now()) / 86_400_000;
+    expect(days).toBeGreaterThan(6.9);
+    expect(days).toBeLessThan(7.1);
+  });
+
+  it("passes the entrance as the member, where a signed-out read is stopped", async () => {
+    expect((await call("PUT", "/api/admin/variables/entrance.required", { value: true })).status).toBe(200);
+    const out = await call("GET", "/api/me/profile", undefined, "");
+    expect([out.status, out.json?.error]).toEqual([401, "entrance_required"]);
+    const seen = await raw("/api/me/profile", live);
+    expect(seen.status).toBe(200);
+    expect(seen.headers.get("x-live-view")).toBe("read-only");
+    const mine = await raw("/api/me/profile", quinn.token);
+    expect(mine.headers.get("x-live-view"), "a member's own session is never marked").toBeNull();
+    expect(Object.keys(await seen.json()).sort(), "the live view reads what the member reads").toEqual(Object.keys(await mine.json()).sort());
+  });
+
+  it("refuses every write, and writes nothing", async () => {
+    const [[before]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM agent_tokens WHERE user_id = ?", [quinn.id]); // module-review-ok: the e2e harness reading its own scratch schema
+    for (const [method, route, body] of [
+      ["POST", "/api/agent/tokens", { name: "more", scopes: ["moon.read"] }],
+      ["PUT", "/api/me/profile", { bio: "changed by a live view" }],
+      ["DELETE", "/api/agent/tokens/anything", undefined],
+      ["POST", `/api/agent/v1/events/${eventId}/rsvp`, { status: "going" }],
+    ] as const) {
+      const r = await call(method, route, body, live);
+      expect([method, route, r.status, r.json?.error]).toEqual([method, route, 403, "live_view_read_only"]);
+    }
+    const [[after]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM agent_tokens WHERE user_id = ?", [quinn.id]); // module-review-ok: same
+    expect(Number(after.n)).toBe(Number(before.n));
+  });
+
+  it("an admin with no QA seat is refused the live view like anybody else", async () => {
+    // The founder is an admin. The live view is judged as a plain member, so being an admin opens nothing.
+    expect((await call("GET", "/api/agent/setup")).json.scopes).not.toContain("live.view");
+    const refused = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
+    expect(refused.status, refused.text).toBe(400);
+  });
+
+  it("an admin seated in QA reads as a plain member: no pay ceiling, no editor's door, no admin page", async () => {
+    const seated = await call("POST", `/api/admin/org/roles/${seatId}/holders`, { userId: founderId, holderKind: "member" });
+    expect(seated.status, seated.text).toBeLessThan(300);
+    // A pay ceiling on the QA card, written by the founder as its editor. org.show_pay_ranges stays off (its default).
+    const priced = await call("POST", `/api/org/role-edit/${seatId}`, { sections: { payCeiling: { amount: 13000, currency: "USD", per: "month" } } });
+    expect(priced.status, priced.text).toBe(200);
+    const asFounder = await call("GET", `/api/org/role-card/${seatId}`);
+    expect(asFounder.status, asFounder.text).toBe(200);
+    expect(asFounder.json?.mayEdit).toBe(true);
+    expect(asFounder.json?.sections?.payCeiling?.amount, "the control: the founder's own session reads the ceiling").toBe(13000);
+    expect((await call("GET", "/api/admin/players")).status).toBe(200);
+
+    const minted = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
+    expect(minted.status, minted.text).toBe(200);
+    const founderLive = String(minted.json?.token ?? "");
+    const asLive = await call("GET", `/api/org/role-card/${seatId}`, undefined, founderLive);
+    expect(asLive.status, asLive.text).toBe(200);
+    expect(asLive.json?.mayEdit).toBe(false);
+    expect("payCeiling" in (asLive.json?.sections ?? {})).toBe(false);
+    expect(asLive.text).not.toContain("13000");
+    expect((await call("GET", "/api/admin/players", undefined, founderLive)).status).not.toBe(200);
+    // The mark only takes power away: the founder's own session is untouched.
+    expect((await call("GET", "/api/admin/players")).status).toBe(200);
+  });
+
+  it("ends on the very next request once the seating ends", async () => {
+    const ended = await call("DELETE", `/api/admin/org/seatings/${assignmentId}`, { reason: "e2e" });
+    expect(ended.status, ended.text).toBeLessThan(300);
+    const r = await call("GET", "/api/me/profile", undefined, live);
+    expect([r.status, r.json?.error]).toEqual([403, "live_view_not_held"]);
+  });
+
+  it("never puts the token in the server's log", () => {
+    expect(logs.join("")).not.toContain(live);
+  });
+});

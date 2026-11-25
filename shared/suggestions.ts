@@ -111,6 +111,7 @@ export const SUGGESTION_ROUTE: Record<Capability, SuggestionRoute> = {
   // stored as a readable draft, and a secret is write-only.
   "operator.secrets": "holders",
   "operator.recover": "holders",
+  "qa.live_view": "holders",
 };
 
 export interface RouteInput {

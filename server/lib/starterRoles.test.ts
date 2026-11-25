@@ -7,7 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import { grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, seedStarterRoles, TREASURY_ROLE_ID } from "./starterRoles";
+import { ensureQaViewersGroup, grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, QA_VIEWERS_GROUP_ID, seedStarterRoles, TREASURY_ROLE_ID } from "./starterRoles";
 import { HANDOVER_SET, TRANSFERABLE } from "../../shared/capabilities";
 
 type Role = { id: string; name: string; description?: string; capabilities?: string[] };
@@ -103,5 +103,27 @@ describe("the end-of-moon review's two held-back keys (decisions 18 and 19)", ()
       expect(TRANSFERABLE[g.capability]).toBe(false);
       expect(HANDOVER_SET).not.toContain(g.capability);
     }
+  });
+});
+
+describe("the QA viewers power group (the lead, 25 Nov 2026)", () => {
+  it("arrives once, after the seed, carrying the live view and nothing else, with an order the NOT NULL column needs", async () => {
+    const roles = store([]);
+    await seedStarterRoles(roles, SEED);
+    const before = roles.all().map((r) => ({ ...r }));
+    expect(await ensureQaViewersGroup(roles)).toBe(true);
+    const group = roles.all().find((r) => r.id === QA_VIEWERS_GROUP_ID) as any;
+    expect(group.capabilities).toEqual(["qa.live_view"]);
+    expect(group.grantsAdmin).toBe(false);
+    expect(Number.isInteger(group.order)).toBe(true);
+    expect(group.order).toBeGreaterThan(Math.max(...before.map((r: any) => Number(r.order ?? 0))));
+    expect(roles.all().filter((r) => r.id !== QA_VIEWERS_GROUP_ID)).toEqual(before);
+  });
+
+  it("leaves a village that already has the id alone", async () => {
+    const roles = store([{ id: QA_VIEWERS_GROUP_ID, name: "Our own QA", capabilities: [] }]);
+    expect(await ensureQaViewersGroup(roles)).toBe(false);
+    expect(roles.writes()).toBe(0);
+    expect(roles.all()[0].capabilities).toEqual([]);
   });
 });

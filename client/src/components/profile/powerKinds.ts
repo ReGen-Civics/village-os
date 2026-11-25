@@ -85,6 +85,7 @@ export const POWER_KIND_OF: Record<Capability, PowerKind> = {
   "operator.config": "keep",
   "operator.secrets": "keep",
   "operator.recover": "keep",
+  "qa.live_view": "keep",
 };
 
 /** A key the table does not know (an older server's, or a new one) still has a home. */
