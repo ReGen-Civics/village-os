@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 import { GoldenSpiral, Tripoint } from "@/components/sacred/glyphs";
-import { Cell, EarthshipDome, Seed, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
+import { Cell, EarthshipDome, LeafCompass, SeedHand, SeedPodHome, SteppingStones, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -61,11 +61,12 @@ export type TabSlot = {
  * reads the reader's first claimed path (their primary) and draws that path's
  * glyph and the village's name for it, linking to the path's own card and
  * ladder on the profile. With no path yet it offers the choice instead, with
- * the seed. Circles is in the menu behind More.
+ * the stepping stones (the lead, 25 Nov 2026), the path's own mark in every
+ * menu too. Circles is in the menu behind More.
  */
-export const PATH_SLOT: TabSlot = { path: "/path", label: "Your path", Icon: Seed, personal: "path" };
+export const PATH_SLOT: TabSlot = { path: "/path", label: "Your path", Icon: SteppingStones, personal: "path" };
 
-/** One glyph per path, so the slot shows WHICH path it is without a second icon. A path this map does not know takes the seed. */
+/** One glyph per path, so the slot shows WHICH path it is without a second icon. A path this map does not know takes the stepping stones. */
 export const PATH_GLYPHS: Readonly<Record<string, LucideIcon>> = {
   investor: SeedHand,
   steward: TreeCrown,
@@ -95,7 +96,7 @@ export const TAB_SLOTS: TabSlot[] = [
   { path: "/", label: "Home", Icon: EarthshipDome },
   PATH_SLOT,
   { path: "/roles", label: "Roles", Icon: Cell },
-  { path: "/quests", label: "Quests", Icon: SteppingStones },
+  { path: "/quests", label: "Quests", Icon: LeafCompass },
   { event: "open-mobile-menu", label: "More", Icon: Tripoint },
 ];
 

@@ -123,15 +123,6 @@ function TreeCrownDrawing(props: GlyphProps) {
     </Svg>
   );
 }
-/** A seed with its seam: an idea, something to plant. */
-function SeedDrawing(props: GlyphProps) {
-  return (
-    <Svg {...props}>
-      <path {...WASH} d="M12 3.6c3.5 3.2 5 6.6 5 9.9s-2.2 6.7-5 6.7-5-3.3-5-6.7 1.5-6.7 5-9.9z" />
-      <path d="M12 8.2v8.6" />
-    </Svg>
-  );
-}
 /** A hand holding a heap of seeds: value you can hold and plant (money, where a price must be clear). */
 function SeedHandDrawing(props: GlyphProps) {
   return (
@@ -151,16 +142,30 @@ function SeedHandDrawing(props: GlyphProps) {
   );
 }
 
-/** An earthship dome: a rounded home bermed into the earth, its glass front to the sun, a living roof (home). */
+/** An earthship: walls bermed into the earth, a sloped glass front to the sun, a planted roof (home; the lead, 25 Nov 2026). */
 function EarthshipDomeDrawing(props: GlyphProps) {
   return (
     <Svg {...props}>
-      <path d="M3 19.6h18" />
-      {/* The earth it is bermed into, held against both sides. */}
-      <path {...WASH} d="M3 19.6c.6-3 1.8-5.2 3.6-6.2-.9 1.9-1.4 3.9-1.4 6.2zM21 19.6c-.6-3-2-5.2-3.8-6.2.9 1.9 1.4 3.9 1.4 6.2z" />
-      <path d="M5.2 19.6C5.2 12.8 8.2 8 12 8s6.8 4.8 6.8 11.6" />
-      <path d="M8.8 19.6v-3.4a3.2 3.2 0 0 1 6.4 0v3.4M12 13v6.6M8.8 16.6h6.4" />
-      <path d="M12 8V6.2M12 6.8c.7-1 1.8-1.3 2.6-1-.4.9-1.5 1.3-2.6 1z" />
+      <path d="M3 20.4h18" />
+      {/* The earth it is bermed into, held against its back wall. */}
+      <path {...WASH} d="M3 20.4c0-5.4 1.2-9.6 3.6-12.4v12.4z" />
+      {/* Its walls and rounded, planted roof, and the glass front sloping down to the sun. */}
+      <path d="M6.6 20.4V9.8c0-2.4 1.9-4.2 4.3-4.2h2.6c1.4 0 2.6.8 3.1 2.1L21 20.4" />
+      <path d="M13.2 8.4l2.4 12M16.2 8l3 12.4" />
+      <path d="M8.6 5.6V3.8M8.6 4.4c-.7-.9-1.7-1.1-2.3-.7.5.8 1.4 1.1 2.3.7zM11.6 5.6V4.4M11.6 4.9c.6-.8 1.5-1 2.1-.6-.4.7-1.3.9-2.1.6z" />
+      <path d="M8.8 20.4v-4a1.4 1.4 0 0 1 2.8 0v4" />
+    </Svg>
+  );
+}
+/** A compass whose needle is a leaf: finding the way to the work (quests; the lead, 25 Nov 2026: the stones went to the path). */
+function LeafCompassDrawing(props: GlyphProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="8.4" />
+      <path d="M12 3.6v1.8M12 18.6v1.8M3.6 12h1.8M18.6 12h1.8" />
+      <path {...WASH} d="M8 16c.2-4.4 3.2-7.6 8-8-.2 4.6-3.4 7.8-8 8z" />
+      <path d="M8 16l8-8" />
+      <Dot cx={12} cy={12} r={1} />
     </Svg>
   );
 }
@@ -171,6 +176,6 @@ export const SteppingStones = /* @__PURE__ */ asIcon("SteppingStones", SteppingS
 export const SeedPodHome = /* @__PURE__ */ asIcon("SeedPodHome", SeedPodHomeDrawing);
 export const SunLeaf = /* @__PURE__ */ asIcon("SunLeaf", SunLeafDrawing);
 export const TreeCrown = /* @__PURE__ */ asIcon("TreeCrown", TreeCrownDrawing);
-export const Seed = /* @__PURE__ */ asIcon("Seed", SeedDrawing);
 export const SeedHand = /* @__PURE__ */ asIcon("SeedHand", SeedHandDrawing);
 export const EarthshipDome = /* @__PURE__ */ asIcon("EarthshipDome", EarthshipDomeDrawing);
+export const LeafCompass = /* @__PURE__ */ asIcon("LeafCompass", LeafCompassDrawing);
