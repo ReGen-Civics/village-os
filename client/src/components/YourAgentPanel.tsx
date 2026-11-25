@@ -62,7 +62,7 @@ const SCOPE_WORDS: Record<string, string> = {
   "moon.write": "draft your own moon: import a moon pack, change an item, set next moon's goals, each after your yes",
   "moon.review": "for a reviewer: read the review queue and the role signals, never with amounts",
   "sessions.write": "add items to the agenda library for a circle's sessions, after your yes",
-  "live.view": "for QA, offered while your seat carries the live view: open the live game in a browser as you, for reading only. Mint it on its own, keep it in your own secrets store as LIVE_QA_TOKEN, and it lasts 7 days",
+  "live.view": "for QA, offered while your role carries the live view: open the live game in a browser as you, for reading only. Mint it on its own, keep it in your own secrets store as LIVE_QA_TOKEN, and it lasts 7 days",
 };
 
 const TIER_WORDS: Record<Profile["aboutTier"], string> = {

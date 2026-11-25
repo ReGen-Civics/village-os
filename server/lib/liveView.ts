@@ -88,7 +88,7 @@ export function liveViewMiddleware(deps: LiveViewDeps) {
         return;
       }
       if (!(await deps.mayView(user))) {
-        res.status(403).json({ error: "live_view_not_held", message: "This token's holder is not seated with the live view for QA now." });
+        res.status(403).json({ error: "live_view_not_held", message: "This token's holder no longer holds a role that carries the live view for QA." });
         return;
       }
       if (await deps.overLimit(`live-view:${row.id}`, LIVE_VIEW_READS_PER_HOUR, 60 * 60 * 1000)) {

@@ -189,7 +189,7 @@ export async function ensureQaViewersGroup<T extends { id: string; capabilities?
   const group = {
     id: QA_VIEWERS_GROUP_ID,
     name: "QA viewers",
-    description: "Members who check the live game works by looking at it, read-only. Link this group to a QA seat on the org chart; whoever holds that seat may then make a personal live view token on their profile.",
+    description: "Members who check the live game works by looking at it, read-only. Link this group to a QA role on the org chart; whoever holds that role may then make a personal live view token on their profile.",
     capabilities: ["qa.live_view"],
     minStage: null,
     circleId: null,

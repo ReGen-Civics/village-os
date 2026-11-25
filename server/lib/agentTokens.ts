@@ -155,7 +155,7 @@ export function cleanScopes(raw: unknown, opts: { intentsAllowed: boolean; admin
     if (v === "intents.write" && !opts.intentsAllowed) return { ok: false, error: "Posting intents is not open on this deployment yet" };
     if (v === "admin" && !opts.adminAllowed) return { ok: false, error: "Only an admin can give a token the admin scope" };
     if (v === "sera.undoable" && !opts.seraAllowed) return { ok: false, error: "Only Sera's agent account can hold the sera.undoable scope" };
-    if (v === LIVE_VIEW_SCOPE && !opts.liveViewAllowed) return { ok: false, error: "Only a member seated with the live view for QA can make a live.view token" };
+    if (v === LIVE_VIEW_SCOPE && !opts.liveViewAllowed) return { ok: false, error: "Only a member whose role carries the live view for QA can make a live.view token" };
     if (!seen.has(v)) { seen.add(v); scopes.push(v as AgentScope); }
   }
   // Alone, so a live view token can only ever read: it opens no agent path and adds to no other scope.

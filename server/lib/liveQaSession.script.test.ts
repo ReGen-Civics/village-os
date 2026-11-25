@@ -43,8 +43,9 @@ describe("the live QA probe", () => {
 
   it("never puts the token in a problem it prints", () => {
     const opts = parseArgs([], { LIVE_QA_URL: "https://village.example" });
-    for (const env of [{ LIVE_QA_TOKEN: "notatoken-secret-value" }, {}]) {
-      expect(String(startProblem(opts, env))).not.toContain("secret-value");
+    const wrongShape = "abc-" + "q".repeat(20); // not a credential: the wrong shape on purpose
+    for (const env of [{ LIVE_QA_TOKEN: wrongShape }, {}]) {
+      expect(String(startProblem(opts, env))).not.toContain("qqqqqqqqqq");
     }
   });
 
