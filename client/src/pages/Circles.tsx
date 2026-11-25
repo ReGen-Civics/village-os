@@ -23,7 +23,7 @@ import SeatTradingCard from "@/components/power/SeatTradingCard";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
-import { useOptionalAuth } from "@/contexts/AuthContext";
+import { useUserOrVisitor } from "@/lib/newcomer";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import CircleLines, { type CircleHolder } from "@/components/geneKeys/CircleLines";
 import { coordinatingCircle } from "@shared/coordinatingCircle";
@@ -275,7 +275,7 @@ export default function Circles() {
   // card offers one only while this reader's catalog lists that module as on.
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
-  const authUser = useOptionalAuth()?.user ?? null;
+  const authUser = useUserOrVisitor();
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
   // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else

@@ -47,14 +47,20 @@ export function isMemberView(user: AdmissionView | null | undefined, stages: rea
  * `useNewcomer` for a component that can also be drawn with no AuthProvider above it (a shared card on the landing
  * and on /roles): no provider reads as a visitor, which is what such a page is to anybody it is drawn for.
  */
-export function useNewcomerOrVisitor(): boolean {
-  let user: unknown = null;
+/**
+ * The signed-in account, or null, for a component that can also be drawn with no AuthProvider above it: no provider
+ * reads as a visitor. useAuth reads the context first and throws only after, so the hooks run in the same order.
+ */
+export function useUserOrVisitor(): AdmissionView | null {
   try {
-    // useAuth reads the context first and throws only after, so the hooks run in the same order either way.
-    user = useAuth().user;
+    return (useAuth().user as AdmissionView | null) ?? null;
   } catch {
-    user = null;
+    return null;
   }
+}
+
+export function useNewcomerOrVisitor(): boolean {
+  const user = useUserOrVisitor();
   const cfg = useGameConfig();
   return !isMemberView(user as AdmissionView | null, cfg?.stages ?? null);
 }
