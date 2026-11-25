@@ -523,6 +523,12 @@ msgctxt "IdentityPackPanel, label"
 msgid "Who you are, visually"
 msgstr "Quiénes son ustedes, en imágenes"
 
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+#: client/src/components/today/WeekStrip.tsx
+msgctxt "week strip, retry the calendar read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "the season's ordered list of group priorities"
@@ -595,6 +601,12 @@ msgstr "Los doce bloques"
 msgctxt "SaberraBridgeBoard, button"
 msgid "Dry run"
 msgstr "Prueba sin cambios"
+
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/ModuleConfigPanels.tsx
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the {moduleName} categories"
+msgstr "las categorías de {moduleName}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Quests.tsx
@@ -707,6 +719,12 @@ msgstr "Marque todas las horas en que puede asistir. La hora con más marcas ser
 msgctxt "admin compare"
 msgid "Waiting for a decision"
 msgstr "Esperando una decisión"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a source"
+msgid "Your tasks"
+msgstr "Tus tareas"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/VoteResult.tsx
@@ -914,6 +932,12 @@ msgctxt "SetupWalk, placeholder"
 msgid "Say it in one line"
 msgstr "Dígalo en una línea"
 
+# needs-native-review: Sera naming (the lead, 25 Nov 2026), 2026-11-25
+#: client/src/components/admin/SaberraConfigPanel.tsx
+msgctxt "SaberraConfigPanel, p"
+msgid "Reading Sera…"
+msgstr "Leyendo Sera…"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
 #~ msgid "Commitment not chosen yet"
@@ -1015,7 +1039,7 @@ msgid "Role pay"
 msgstr "Pago de roles"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Erasures to retry"
 msgstr "Borrados por reintentar"
@@ -1190,6 +1214,12 @@ msgctxt "sera answers"
 msgid "Kept ours. It stays out of the list until it changes again."
 msgstr "Se mantuvo la nuestra. Queda fuera de la lista hasta que vuelva a cambiar."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "What it does"
+msgstr "Qué hace"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journal/ReviewStep.tsx
 msgctxt "ReviewStep, p"
@@ -1344,6 +1374,12 @@ msgctxt "CommsSetupWords, label"
 msgid "Business Inquiries (Prosperity / Contact)"
 msgstr "Consultas de negocios (Prosperidad / Contacto)"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Settling it releases what the cycle holds."
+msgstr "Cerrarlo libera lo que el ciclo guarda."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/PoolStatement.tsx
 msgctxt "PoolStatement, th"
@@ -1427,6 +1463,12 @@ msgstr ""
 msgctxt "admin venture accounts"
 msgid "{0} (future venture)"
 msgstr "{0} (emprendimiento futuro)"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Something in it cannot be applied as the village stands, so it cannot be published yet."
+msgstr "Algo en él no se puede aplicar tal como está la aldea, así que todavía no se puede publicar."
 
 #. placeholder {0}: Number(d?.started) || 0
 #: client/src/components/admin/OpenProposalsPanel.tsx
@@ -1724,6 +1766,12 @@ msgctxt "CommsSetupWords, button"
 msgid "Use the platform's questions"
 msgstr "Usar las preguntas de la plataforma"
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, footer"
+msgid "↑ ↓ to move, Enter to open, Esc to close."
+msgstr "↑ ↓ para moverse, Enter para abrir, Esc para cerrar."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Ceremony.tsx
 msgctxt "rites"
@@ -1820,6 +1868,12 @@ msgstr "Cuál es el modo de peso"
 #: client/src/pages/HiddenMap.tsx
 msgid "Waiting for a second person"
 msgstr "Esperando a una segunda persona"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: when a role expects to pick it up"
+msgid "Around the week of {when}"
+msgstr "Hacia la semana del {when}"
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
@@ -2355,6 +2409,12 @@ msgstr "Guardado. Se le avisó al miembro que lo reportó."
 msgctxt "SaberraOutboxPanel, aria-label"
 msgid "Counts"
 msgstr "Conteos"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Publish"
+msgstr "Publicar"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -3137,6 +3197,12 @@ msgctxt "bottom tab bar"
 msgid "Home"
 msgstr "Inicio"
 
+# needs-native-review: whole-app QA, a failed thanks wall read, 2026-11-25
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "thanks wall: the wall read failed"
+msgid "The wall didn't load. The thanks are still there; try again in a moment."
+msgstr "El muro no cargó. Los agradecimientos siguen ahí; inténtalo de nuevo en un momento."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/power/ResourcesAdminPanel.tsx
 msgctxt "ResourcesAdminPanel, p"
@@ -3173,6 +3239,12 @@ msgstr "El juego de configuración"
 msgctxt "CommunityCalendarCard, label"
 msgid "Until"
 msgstr "Hasta"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Co-signing it lets the key be planted."
+msgstr "Firmarla también permite plantar la clave."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Forum.tsx
@@ -3238,6 +3310,12 @@ msgstr "Cada tipo hace preguntas distintas y sigue un camino distinto. Elija el 
 msgctxt "Admin, h3"
 msgid "Selling library credits is {0}"
 msgstr "La venta de créditos de la biblioteca está {0}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the edit"
+msgstr "Leer la edición"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -3477,6 +3555,18 @@ msgstr "No se pudo cargar la configuración del mapa"
 msgctxt "applicant's application status, adoption"
 msgid "The circle said yes. We'd love you on the team."
 msgstr "El círculo dijo que sí. Nos encantaría tenerte en el equipo."
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a group"
+msgid "Coming up"
+msgstr "Lo que viene"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "That did not go through. Reload and try again."
+msgstr "Eso no se completó. Recarga e inténtalo de nuevo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsLetters.tsx
@@ -3754,6 +3844,12 @@ msgstr "Construir la comunidad"
 msgctxt "role card commitment label"
 msgid "Full time"
 msgstr "Tiempo completo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A change request"
+msgstr "Una solicitud de cambio"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
@@ -4151,9 +4247,9 @@ msgstr "Este rol no tiene precio publicado, así que al adoptarlo el contrato no
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
-msgctxt "review inbox: section"
-msgid "Drafts to publish"
-msgstr "Borradores por publicar"
+#~ msgctxt "review inbox: section"
+#~ msgid "Drafts to publish"
+#~ msgstr "Borradores por publicar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/roleProposal/AgentProposalForm.tsx
@@ -4565,6 +4661,12 @@ msgctxt "PathsPanel, p"
 msgid "No longer offered here."
 msgstr "Ya no se ofrece aquí."
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, heading"
+msgid "Recent places"
+msgstr "Lugares recientes"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "It changes something everyone shares, such as a path, the water or a common building."
@@ -4635,6 +4737,12 @@ msgstr "Círculo (vacío para toda la aldea)"
 msgctxt "open proposal kept"
 msgid "Keep this link: we couldn't email it to you. Keep it to yourself too: it is how we know it is you."
 msgstr "Guarda este enlace: no pudimos enviártelo por correo. Y no lo compartas: es como sabemos que eres tú."
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a source"
+msgid "Asked of a role"
+msgstr "Pedido a un rol"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: s.last4
@@ -5118,7 +5226,7 @@ msgid "Could not reach the server."
 msgstr "No se pudo conectar con el servidor."
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Votes waiting on you"
 msgstr "Votaciones que esperan su voto"
@@ -5325,7 +5433,7 @@ msgid "Stop {what}?"
 msgstr "¿Detener {what}?"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Postings owed"
 msgstr "Registros pendientes"
@@ -5421,6 +5529,12 @@ msgstr "Termina el"
 msgctxt "pay board"
 msgid "Their answer: {answer}"
 msgstr "Su respuesta: {answer}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it puts it on the quest board."
+msgstr "Aprobarla la pone en el tablero de misiones."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: opp.theirs.incognito ? "them" : them
@@ -5637,9 +5751,9 @@ msgstr "Tono de piel"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraConfigPanel.tsx
-msgctxt "SaberraConfigPanel, toast"
-msgid "Saved. The next sync calls this address"
-msgstr "Guardado. La próxima sincronización llama a esta dirección"
+#~ msgctxt "SaberraConfigPanel, toast"
+#~ msgid "Saved. The next sync calls this address"
+#~ msgstr "Guardado. La próxima sincronización llama a esta dirección"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -6061,6 +6175,12 @@ msgstr "Haga clic en su avatar, arriba a la derecha."
 msgctxt "Mail settings, danger zone button"
 msgid "Disconnect..."
 msgstr "Desconectar..."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Confirm"
+msgstr "Confirmar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/ProposalWizard.tsx
@@ -7005,6 +7125,12 @@ msgstr "De {0} · esta luna"
 msgid "Ways of seeing it that count"
 msgstr "Formas de verlo que cuentan"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Cash owed for work"
+msgstr "Efectivo adeudado por trabajo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/QuestCrews.tsx
 msgctxt "QuestCrews, button"
@@ -7223,6 +7349,12 @@ msgctxt "application backup file"
 msgid "Value items"
 msgstr "Elementos de valor"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Taking it makes it yours."
+msgstr "Aceptarla la hace tuya."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "The {careShown} role, and the {coverShown} role when they cannot."
@@ -7355,7 +7487,7 @@ msgid "Which events count"
 msgstr "Qué eventos cuentan"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Keys waiting for a co-sign"
 msgstr "Llaves que esperan una segunda firma"
@@ -7480,6 +7612,12 @@ msgstr "Capas del bosque"
 #~ msgid "Physical work on site"
 #~ msgstr ""
 
+# needs-native-review: whole-app QA, a failed calendar read, 2026-11-25
+#: client/src/pages/Events.tsx
+msgctxt "calendar: the events read failed"
+msgid "The calendar didn't load, so the days below may look empty while it is missing."
+msgstr "El calendario no cargó, así que los días de abajo pueden verse vacíos mientras falta."
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/PaySteps.tsx
 msgctxt "pay page"
@@ -7497,6 +7635,12 @@ msgstr "Dijeron: {0}"
 msgctxt "admin, AI setup banner"
 msgid "Connect an Anthropic key (or Sera, if your village uses it for org memory) and {guide} helps you through the rest of setup: finding settings, explaining them and proposing changes for you to approve. It turns on by itself once the key is saved."
 msgstr "Conecte una clave de Anthropic (o Sera, si su aldea la usa para la memoria de la organización) y {guide} le ayuda con el resto de la configuración: encontrar ajustes, explicarlos y proponer cambios para que usted los apruebe. Se enciende solo cuando se guarda la clave."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: kinds"
+msgid "What is waiting, by kind"
+msgstr "Lo que espera, por tipo"
 
 #: client/src/i18n/LanguagePicker.tsx
 #, fuzzy
@@ -7521,6 +7665,12 @@ msgstr "Una cosa por corregir antes de enviar:"
 msgctxt "NeedsPanel, h3"
 msgid "What meets them"
 msgstr "Qué las atiende"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it closes the task."
+msgstr "Aceptarlo cierra la tarea."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
@@ -7599,6 +7749,12 @@ msgstr "a {0}"
 msgctxt "protocols page"
 msgid "Yours to tick, as {keptFor}."
 msgstr "Le toca marcarlo a usted, como {keptFor}."
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, input name"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
 
 # needs-native-review: deciding on /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/HeldList.tsx
@@ -7839,6 +7995,12 @@ msgctxt "priority board, an item's place in the order"
 msgid "Number {0}"
 msgstr "Número {0}"
 
+# needs-native-review: profile overhaul, the week strip's failed read, 25 Nov 2026
+#: client/src/components/today/WeekStrip.tsx
+msgctxt "week strip, the calendar read failed"
+msgid "The calendar did not load, so this week may be missing gatherings."
+msgstr "El calendario no cargó, así que a esta semana le pueden faltar encuentros."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -7998,6 +8160,12 @@ msgstr "Todavía no hay rol responsable"
 #~ msgctxt "open proposal stones"
 #~ msgid "Stone {stoneNumber} of {stoneCount}"
 #~ msgstr "Piedra {stoneNumber} de {stoneCount}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A draft from the assistant"
+msgstr "Un borrador del asistente"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraBridgeBoard.tsx
@@ -8320,6 +8488,12 @@ msgctxt "GuidePanel, p"
 msgid "Did I get that right?"
 msgstr "¿Lo entendí bien?"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a source"
+msgid "Your roles' tasks"
+msgstr "Las tareas de tus roles"
+
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription"
 msgid "Writing down your words. A long take can take a few minutes."
@@ -8607,9 +8781,9 @@ msgstr "Enlace a lo que necesita"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
-msgctxt "hidden map settings"
-msgid "Save"
-msgstr "Guardar"
+#~ msgctxt "hidden map settings"
+#~ msgid "Save"
+#~ msgstr "Guardar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/OnchainCard.tsx
@@ -10165,6 +10339,12 @@ msgctxt "PulseTab, p"
 msgid "Averages of everyone who answered each week. The words you write in a pulse stay in your own journal."
 msgstr "Promedios de todas las personas que respondieron cada semana. Las palabras que escribe en un pulso se quedan en su propio diario."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{n, plural, one {# change} other {# changes}}"
+msgstr "{n, plural, one {# cambio} other {# cambios}}"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgctxt "full access, the save button"
@@ -10510,6 +10690,12 @@ msgstr "Juntas dan {0}%, justo el {1}% que el rol necesita."
 msgctxt "founding application refusal"
 msgid "One of those roles isn't open any more. Reload the page and pick again."
 msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
+
+# needs-native-review: whole-app QA, a failed forum read, 2026-11-25
+#: client/src/pages/Forum.tsx
+msgctxt "forum: the thread list read failed"
+msgid "The threads didn't load. Try again in a moment."
+msgstr "Los hilos no cargaron. Inténtalo de nuevo en un momento."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/QuestDetail.tsx
@@ -11201,6 +11387,12 @@ msgctxt "sera changes"
 msgid "Showing {shownCount}: {shownWords}"
 msgstr "Mostrando {shownCount}: {shownWords}"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "An application for a role"
+msgstr "Una solicitud para un rol"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequests.tsx
 msgid "Edit the name or the why"
@@ -11538,6 +11730,12 @@ msgstr "Definido por esta aldea"
 msgid "Which of {roleName}'s goals will you move? Pick up to {0}, each with a target."
 msgstr "¿Qué metas de “{roleName}” vas a impulsar? Elige hasta {0}, cada una con un objetivo."
 
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/ModuleConfigPanels.tsx
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the linked campaigns"
+msgstr "las campañas vinculadas"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, toast"
@@ -11597,6 +11795,12 @@ msgstr "Entrar"
 #: client/src/pages/Powers.tsx
 msgid "What this village looks after"
 msgstr "Lo que cuida esta aldea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Paying it records the payment."
+msgstr "Pagarlo registra el pago."
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
@@ -11813,6 +12017,12 @@ msgstr "Percibir: lecturas de {name}"
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgid "Saved. The role draft board now uses this."
 msgstr "Guardado. El tablero de borradores de roles ya usa esto."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Compare them"
+msgstr "Compararlas"
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft goal"
@@ -12047,6 +12257,12 @@ msgctxt "admin portal visitors"
 msgid "Forget"
 msgstr "Olvidar"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a read failed"
+msgid "Some of your follow-ups did not load, so this list may be short."
+msgstr "Algunos de tus seguimientos no cargaron, así que a esta lista le pueden faltar cosas."
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup lede"
@@ -12241,6 +12457,12 @@ msgctxt "open the suggest form"
 msgid "Suggest a change"
 msgstr "Sugerir un cambio"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Feedback"
+msgstr "Comentarios"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, h1"
@@ -12264,6 +12486,12 @@ msgstr "Compartido o completo"
 msgctxt "Admin, placeholder"
 msgid "e.g. 250"
 msgstr "p. ej. 250"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a date"
+msgid "By {when}"
+msgstr "Para el {when}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraActs.tsx
@@ -13035,10 +13263,23 @@ msgctxt "SeatSettingsFields, label"
 msgid "Currency code"
 msgstr "Código de moneda"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#. placeholder {0}: r.with
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: who you asked"
+msgid "Waiting on {0}"
+msgstr "Esperando a {0}"
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft character count"
 msgid "{n} open roles fit"
 msgstr "{n} roles abiertos encajan"
+
+# needs-native-review: whole-app QA, retry button, 2026-11-25
+#: client/src/pages/Messages.tsx
+msgctxt "messages: retry the inbox read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work filter row"
@@ -13095,6 +13336,12 @@ msgstr "Abrirlo en su propia página"
 msgctxt "shape the role"
 msgid "The role card couldn't open just now. You can still send your application."
 msgstr "La tarjeta del rol no se pudo abrir ahora. Aún puede enviar su solicitud."
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a source"
+msgid "Asked of you"
+msgstr "Te pidieron"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/RitesHub.tsx
@@ -13314,6 +13561,12 @@ msgctxt "admin invitation requests: bulk promote"
 msgid "Promote the {0} picked"
 msgstr "Hacer miembros a los {0} elegidos"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A suggestion from Sera or an outside service"
+msgstr "Una sugerencia de Sera o de un servicio externo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Budget.tsx
 msgctxt "budget page"
@@ -13365,6 +13618,12 @@ msgstr "Usted la tomó a su precio anterior, y su reclamo mantiene ese precio a 
 msgctxt "QuestsTab, placeholder"
 msgid "Which circle?"
 msgstr "¿Qué círculo?"
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, empty hint"
+msgid "A page, a setting or a button: “mail settings”, “send test”, “who runs comms”."
+msgstr "Una página, un ajuste o un botón: “configuración del correo”, “enviar prueba”, “quién lleva el correo”."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraCompare.tsx
@@ -13914,6 +14173,12 @@ msgstr "Las líneas de arriba marcadas como Ejemplo muestran cómo son unas grac
 msgctxt "SeatSettingsFields, label"
 msgid "What is measured"
 msgstr "Qué se mide"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Retry"
+msgstr "Reintentar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -14722,6 +14987,12 @@ msgctxt "quest editor"
 msgid "Suggested {0}, likely {1} to {2}."
 msgstr "Sugerido {0}, probablemente de {1} a {2}."
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a source"
+msgid "Your asks"
+msgstr "Tus pedidos"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, toast"
@@ -14971,7 +15242,7 @@ msgid "From"
 msgstr "De"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Feedback to read"
 msgstr "Comentarios por leer"
@@ -15451,6 +15722,12 @@ msgstr "Registre la regeneración a medida que sucede: árboles sembrados, agua 
 msgctxt "ModuleDetail, Link"
 msgid "<0/>Module Library"
 msgstr "<0/>Biblioteca de módulos"
+
+# needs-native-review: whole-app QA, a failed inbox read, 2026-11-25
+#: client/src/pages/Messages.tsx
+msgctxt "messages: the inbox read failed"
+msgid "Your conversations didn't load. They are safe; try again in a moment."
+msgstr "Tus conversaciones no cargaron. Están a salvo; inténtalo de nuevo en un momento."
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgid "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
@@ -16318,6 +16595,12 @@ msgctxt "sera answers"
 msgid "Take {owner} for {n}"
 msgstr "Tomar {owner} para {n}"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A proposal from outside the village"
+msgstr "Una propuesta de fuera de la aldea"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "button: the story's holder sets aside a canvas suggestion"
@@ -16360,6 +16643,12 @@ msgstr "El <0>{0}%</0> de arriba de los votantes tiene el <1>{1}%</1> de la Voz"
 msgctxt "settings: inner life door"
 msgid "Your character"
 msgstr "Tu personaje"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a blocking ask"
+msgid "Someone is stuck until it is done"
+msgstr "Alguien está detenido hasta que se haga"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: a turning"
@@ -16417,6 +16706,12 @@ msgstr "Herramientas"
 #~ msgctxt "CommsSettings, h3"
 #~ msgid "Pause all {0}"
 #~ msgstr "Pausar todos los {0}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Not yet"
+msgstr "Todavía no"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/roleCard/valueExplainerWords.ts
@@ -16889,6 +17184,12 @@ msgctxt "voice invite"
 msgid "What we heard, in your words"
 msgstr "Lo que escuchamos, en tus palabras"
 
+# needs-native-review: whole-app QA, retry button, 2026-11-25
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "thanks wall: retry the wall read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
 # needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
 #: client/src/components/profileDash/CompanionCorner.tsx
 msgctxt "companion corner: the panel's close button"
@@ -16920,6 +17221,12 @@ msgstr "<0/>Cómo sirve esto al propósito de la aldea<1/>"
 msgctxt "ConsentCard, p"
 msgid "<0/>{0} {1} money"
 msgstr "<0/>{0} {1} dinero"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a group"
+msgid "Today"
+msgstr "Hoy"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -17048,6 +17355,12 @@ msgstr "Enviar un correo de confirmación"
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Question above its kinds"
 msgstr "Pregunta sobre sus tipos"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the application"
+msgstr "Leer la solicitud"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose for this role"
@@ -17211,6 +17524,12 @@ msgstr "Estas filas no se pueden guardar como están escritas. Las demás filas 
 msgctxt "an area the village has not filled yet: the eyebrow over its name"
 msgid "Coming soon"
 msgstr "Próximamente"
+
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/ModuleConfigPanels.tsx
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the resources routing"
+msgstr "el enrutamiento de recursos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequests.tsx
@@ -17652,6 +17971,12 @@ msgctxt "YourAgentPanel, p"
 msgid "An https URL your agent listens on. The village sends it the week ahead and, once introductions are on, your opportunities, signed with a secret shown once."
 msgstr "Una URL https donde escucha su agente. La aldea le envía la semana que viene y, cuando las presentaciones estén activas, sus oportunidades, firmadas con un secreto que se muestra una sola vez."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Sending it is a person's act, on its own page."
+msgstr "Enviarla es un acto de una persona, en su propia página."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: new Date(report.scannedAt).toLocaleString()
 #. placeholder {1}: report.scan.columns
@@ -17669,6 +17994,12 @@ msgstr "Leído a las {0} contra {1} columna(s) de {2} tabla(s), {3} valor(es) gu
 msgctxt "sera answers"
 msgid "Edit"
 msgstr "Editar"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Published. The org chart has changed."
+msgstr "Publicado. El organigrama ha cambiado."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Training.tsx
@@ -18641,6 +18972,13 @@ msgctxt "agent proposal: sent"
 msgid "See where it stands"
 msgstr "Ver cómo va"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#. placeholder {0}: r.with
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: who asked"
+msgid "From {0}"
+msgstr "De {0}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/launch/StartTheGame.tsx
 msgctxt "StartTheGame, title"
@@ -18723,6 +19061,12 @@ msgctxt "CommsSetupWords, label"
 msgid "Core Team (Steward)"
 msgstr "Equipo central (custodio)"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Showing only {title}."
+msgstr "Solo se muestra: {title}."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/SeatSettingsFields.tsx
 msgctxt "SeatSettingsFields, legend"
@@ -18739,6 +19083,12 @@ msgstr "Esfuerzo estimado para la luna, en horas"
 msgctxt "Admin, label"
 msgid "Per"
 msgstr "Por"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review the request"
+msgstr "Revisar la solicitud"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/AgentFullAccessPanel.tsx
@@ -19148,6 +19498,12 @@ msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
 msgstr "Enviar la sugerencia"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your vote counts toward the village's decision."
+msgstr "Tu voto cuenta para la decisión de la aldea."
+
 # needs-native-review: visitor profile, 2026-11-25
 #. placeholder {0}: r.name
 #: client/src/components/admin/InvitationRequests.tsx
@@ -19275,6 +19631,12 @@ msgstr "Enviar ahora"
 msgctxt "Stay, placeholder"
 msgid "Anything the stewards should know?"
 msgstr "¿Algo que los custodios deban saber?"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it lets it go live."
+msgstr "Aprobarlo lo publica."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: names.equity
@@ -19634,6 +19996,12 @@ msgstr "Sin la marca, tus grabaciones no se envían. Se quedan en esta página h
 msgid " (leave it empty to use the file's name)"
 msgstr " (déjelo vacío para usar el nombre del archivo)"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A suggested edit to something you hold"
+msgstr "Una edición sugerida a algo que sostienes"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
@@ -19976,6 +20344,12 @@ msgctxt "TransferCeremony, dd"
 msgid "The admin panel carries this one again. {0} passes this gate by being {1}, and the village stops being told each time somebody acts on it. The role keeps the power itself, so the same people can still do it. What ends is the village holding it."
 msgstr "El panel de administración vuelve a llevar este. {0} pasa esta puerta por ser {1}, y ya no se le avisa a la aldea cada vez que alguien actúa sobre ella. El rol conserva el poder en sí, así que las mismas personas todavía pueden hacerlo. Lo que termina es que la aldea lo tenga."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put this draft to the village? A vote opens, and the village decides it."
+msgstr "¿Llevar este borrador a la aldea? Se abre una votación y la aldea lo decide."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: m.consulted.ownRecord.join("; ")
 #: client/src/components/journey/LaunchGuide.tsx
@@ -20110,6 +20484,12 @@ msgstr "No se envió. Inténtalo de nuevo en unos minutos."
 msgctxt "hidden map, logging a place"
 msgid "Remove photo {0}"
 msgstr "Quitar la foto {0}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review it"
+msgstr "Revisarla"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
@@ -20264,6 +20644,12 @@ msgstr "Esta página es para quienes administran."
 msgctxt "label of the appeal box on the consequences ladder"
 msgid "How someone appeals"
 msgstr "Cómo apela alguien"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Decide it"
+msgstr "Decidirlo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Welcome.tsx
@@ -20974,7 +21360,7 @@ msgid "Loading the homes."
 msgstr "Cargando los hogares."
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/InboxRow.tsx
 msgctxt "review inbox: item"
 msgid "Sent {sent}"
 msgstr "Enviado el {sent}"
@@ -21287,6 +21673,12 @@ msgctxt "quest safety heading"
 msgid "Before you come to the site"
 msgstr "Antes de venir a la obra"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Something an agent filed"
+msgstr "Algo que presentó un agente"
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/StartConversation.tsx
 msgctxt "start a conversation"
@@ -21311,7 +21703,7 @@ msgid "A person"
 msgstr "Una persona"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Where Sera's memory differs"
 msgstr "Donde la memoria de Sera difiere"
@@ -21476,6 +21868,12 @@ msgstr "Cada línea que toca esta luna. Una línea retirada queda en el registro
 msgctxt "FeedbackGive, p"
 msgid "Nobody has said yes to feedback yet. When someone does, they appear here."
 msgstr "Nadie ha aceptado recibir comentarios todavía. Cuando alguien lo haga, aparecerá aquí."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it puts it live on its page."
+msgstr "Aceptarlo lo publica en su página."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/RitesHub.tsx
@@ -21846,6 +22244,12 @@ msgstr "Cada archivo debe pesar {mb} MB o menos."
 msgctxt "pricing desk"
 msgid "Waiting for a signer"
 msgstr "Esperando a alguien que firme"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a tick that failed"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -22286,9 +22690,9 @@ msgstr "Cuándo sueles poder reunirte (opcional)"
 
 # needs-native-review: deciding on /admin/review, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
-msgctxt "review inbox: lede"
-msgid "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
-msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Los cambios propuestos se deciden aquí. Abre lo demás para decidirlo donde vive."
+#~ msgctxt "review inbox: lede"
+#~ msgid "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
+#~ msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Los cambios propuestos se deciden aquí. Abre lo demás para decidirlo donde vive."
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
@@ -22319,6 +22723,12 @@ msgstr "Elige la raíz<0/> de la que creces, mira las metas de esta temporada y 
 msgctxt "SaberraOutboxPanel, li"
 msgid "<0>Members who left: </0>{0} When a member leaves, their items here are cleared and their code-name waits for Saberra to confirm a delete. Saberra has no delete endpoint yet, so it stays pending."
 msgstr "<0>Miembros que se fueron: </0>{0} Cuando un miembro se va, sus elementos aquí se borran y su nombre clave espera a que Saberra confirme el borrado. Saberra todavía no tiene forma de borrar, así que queda pendiente."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Reading it marks it seen."
+msgstr "Leerlo lo marca como visto."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/power/MapToolStrip.tsx
@@ -22554,8 +22964,8 @@ msgstr "Aceptado en un borrador"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
-msgid "Saved. Members see it on their next look at the map."
-msgstr "Guardado. Los miembros lo verán la próxima vez que miren el mapa."
+#~ msgid "Saved. Members see it on their next look at the map."
+#~ msgstr "Guardado. Los miembros lo verán la próxima vez que miren el mapa."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/power/CardBookingLink.tsx
@@ -22689,6 +23099,12 @@ msgstr "Lo máximo que puede ser un pago: {0} {1}"
 msgctxt "CommsPeople, aria-label"
 msgid "Person"
 msgstr "Persona"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put it to the village"
+msgstr "Llevarlo a la aldea"
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 #~ msgctxt "companion welcome"
@@ -22957,6 +23373,12 @@ msgctxt "SeraLinkPanel, button"
 msgid "Match now ({0})"
 msgstr "Emparejar ahora ({0})"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: heading with nothing of yours"
+msgid "Nothing is yours to do right now"
+msgstr "Ahora no tienes nada por hacer"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/SetPassword.tsx
 msgctxt "SetPassword, placeholder"
@@ -23001,6 +23423,12 @@ msgstr "Desvincular"
 msgctxt "Modules, InfoTip"
 msgid "wears its pills"
 msgstr "lleva sus etiquetas"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Erasures to retry"
+msgstr "Borrados por reintentar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/SwapCard.tsx
@@ -23436,6 +23864,12 @@ msgctxt "Review, p"
 msgid "Source: {0}"
 msgstr "Fuente: {0}"
 
+# needs-native-review: whole-app QA, a failed team read, 2026-11-25
+#: client/src/pages/Team.tsx
+msgctxt "team page: the team read failed"
+msgid "The team didn't load. Refresh the page in a moment to see who holds the roles."
+msgstr "El equipo no cargó. Actualiza la página en un momento para ver quién sostiene los roles."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
@@ -23488,6 +23922,12 @@ msgstr "Un rol puede dar la aprobación final. Las entrevistas toman {minutes} m
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Saved as a draft. Nobody has adopted it yet."
 msgstr "Guardado como borrador. Nadie lo ha adoptado todavía."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A request to issue recognition"
+msgstr "Una solicitud para emitir reconocimiento"
 
 #. placeholder {0}: g.name
 #. placeholder {1}: g.count
@@ -23797,6 +24237,12 @@ msgctxt "admin helper panel, who answers"
 msgid "Answers come from Sera, through your village's org memory connection."
 msgstr "Las respuestas vienen de Sera, por la conexión de memoria de la organización de su aldea."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Org chart drafts"
+msgstr "Borradores del organigrama"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decisions.tsx
 msgctxt "Decisions, title"
@@ -23860,6 +24306,12 @@ msgstr "Claro"
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
 msgstr "Adoptado. Los miembros lo leen en la página de la política de salida, y la lista de lanzamiento lo cuenta."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "The village is voting on this draft."
+msgstr "La aldea está votando este borrador."
 
 #: client/src/components/admin/PortalVisitorsTab.tsx
 #, needs-native-review
@@ -24055,6 +24507,12 @@ msgstr "Color semilla"
 msgctxt "coming up, i'll be there, said once it is taken back"
 msgid "Thank you for saying. Your circle in the seed is open again."
 msgstr "Gracias por avisar. Tu círculo en la semilla vuelve a estar abierto."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it closes it or turns it into work."
+msgstr "Responderla la cierra o la convierte en trabajo."
 
 #. placeholder {0}: r.name
 #: client/src/components/fireflyPath/MoreRoles.tsx
@@ -25617,6 +26075,12 @@ msgctxt "CashPayoutsTab, aria-label"
 msgid "Totals"
 msgstr "Totales"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Publishing it changes the org chart now."
+msgstr "Publicarlo cambia el organigrama ahora."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "A required role is hidden from members who say they can give less. Nothing that pays reads this."
@@ -26388,7 +26852,7 @@ msgid "Classes"
 msgstr "Clases"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Proposed changes"
 msgstr "Cambios propuestos"
@@ -26559,6 +27023,12 @@ msgctxt "admin helper panel"
 msgid "Close the helper"
 msgstr "Cerrar el asistente"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Answer"
+msgstr "Responder"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, label"
@@ -26602,7 +27072,7 @@ msgstr "Las misiones y los roles se editan en sus propias pantallas. Nada aquí 
 #~ msgstr "Te responderemos en {days} días."
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Approvals"
 msgstr "Aprobaciones"
@@ -26941,6 +27411,12 @@ msgstr "{0} {1} a {2} cada uno"
 msgid "{0}. Adopted on {1}."
 msgstr "{0}. Adoptado el {1}."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Witness it"
+msgstr "Atestiguarlo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/CashPayoutsTab.tsx
 msgctxt "CashPayoutsTab, a"
@@ -27047,6 +27523,12 @@ msgstr "Reclamado hasta ahora: {0}"
 msgctxt "portal entrance: what draws you, a founding seeder"
 msgid "Becoming a \"Founding Seeder\""
 msgstr "Ser \"Semilla Fundadora\""
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A place waiting for your vouch"
+msgstr "Un lugar que espera tu aval"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ScanLink.tsx
@@ -27194,7 +27676,7 @@ msgid "Pay from it"
 msgstr "Pagar desde aquí"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Done work to accept"
 msgstr "Trabajo terminado por aceptar"
@@ -27274,6 +27756,12 @@ msgstr "¿Borrar este hito?"
 msgctxt "GoLiveCard, p"
 msgid "{0} is set up. Go live?"
 msgstr "{0} está listo. ¿Publicarlo?"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "An org chart draft"
+msgstr "Un borrador del organigrama"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgentsPanel.tsx
@@ -27470,6 +27958,12 @@ msgctxt "admin portal visitors: verified or not"
 msgid "Address"
 msgstr "Dirección"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Witnessing it records the work as done."
+msgstr "Atestiguarlo registra el trabajo como hecho."
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: every role is paid through one agreement"
 msgid "Your roles share one pay, so there is nothing you need to split. Splitting your time is only for your own planning."
@@ -27600,7 +28094,7 @@ msgid "Read the list again"
 msgstr "Leer la lista de nuevo"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Asked to consent"
 msgstr "Se le pide su consentimiento"
@@ -27610,6 +28104,13 @@ msgstr "Se le pide su consentimiento"
 msgctxt "Messages, aria-label"
 msgid "Send"
 msgstr "Enviar"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#. placeholder {0}: r.title
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: the tick, read aloud"
+msgid "Mark done: {0}"
+msgstr "Marcar como hecho: {0}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
@@ -29144,7 +29645,7 @@ msgid "Birth time (if you know it)"
 msgstr "Hora de nacimiento (si la sabes)"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Proposals from outside the village"
 msgstr "Propuestas de fuera de la aldea"
@@ -29940,6 +30441,12 @@ msgctxt "voice field purpose: objection ruling note"
 msgid "Why you ruled this objection the way you did, for the record."
 msgstr "Por qué resolvió esta objeción como lo hizo, para el registro."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Review the recap"
+msgstr "Revisar el resumen"
+
 # needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: under the mode switch, the mode the page is in"
@@ -30382,6 +30889,12 @@ msgctxt "your path, the whole path page"
 msgid "These wait behind the step above. Take them in any order once it's done."
 msgstr "Estos esperan al paso de arriba. Tómelos en cualquier orden cuando esté hecho."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A proposed change"
+msgstr "Un cambio propuesto"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: c.cycleNumber
 #. placeholder {0}: openCycle.cycleNumber
@@ -30547,6 +31060,12 @@ msgctxt "NeedsPanel, h3"
 msgid "How much of each person's needs"
 msgstr "Qué parte de las necesidades de cada persona"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Vouching for it puts it on the map."
+msgstr "Avalarlo lo pone en el mapa."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -30644,6 +31163,12 @@ msgctxt "CarryAcross, p"
 msgid "You can read this list. {who}"
 msgstr "Usted puede leer esta lista. {who}"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A change waiting on your approval"
+msgstr "Un cambio que espera tu aprobación"
+
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
 msgctxt "Layout, aria-label"
@@ -30661,6 +31186,12 @@ msgstr "<0/>Lo que usted compartirá"
 msgctxt "proposed changes: a batch"
 msgid "Discard all"
 msgstr "Descartar todo"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, open the vote"
+msgstr "Sí, abrir la votación"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/RitesHub.tsx
@@ -31012,6 +31543,12 @@ msgstr "Dónde"
 msgctxt "quests board, roots filter hid everything"
 msgid "None of these grow from your roots yet."
 msgstr "Ninguna de estas crece de sus raíces todavía."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it turns it into a real change."
+msgstr "Aceptarlo lo convierte en un cambio real."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/JourneyWalk.tsx
@@ -31701,6 +32238,18 @@ msgctxt "HyphaModulePanel, span"
 msgid "<0/>confirmed {0}"
 msgstr "<0/>confirmado {0}"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: the filter, read aloud"
+msgid "Show follow-ups from"
+msgstr "Mostrar seguimientos de"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it issues it."
+msgstr "Aprobarla lo emite."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: item.trustTier
 #. placeholder {1}: item.confidence === null ? "not stated" : item.confidence.toFixed(2)
@@ -31780,6 +32329,12 @@ msgstr "Escrito por última vez por {0} el {1}"
 msgctxt "commitment field: the period a member's word covers"
 msgid "This moon"
 msgstr "Esta luna"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: one kind"
+msgid "Show everything"
+msgstr "Mostrar todo"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page: the founding team read failed"
@@ -32210,6 +32765,12 @@ msgctxt "funding rounds"
 msgid "Who might do it:"
 msgstr "Quién podría hacerlo:"
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, results list"
+msgid "Results"
+msgstr "Resultados"
+
 #. placeholder {0}: dayWords(d.decidedOn, i18n.locale)
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, what we decided"
@@ -32441,6 +33002,12 @@ msgstr "En la sala: {0}"
 msgctxt "funding rounds"
 msgid "Open the round"
 msgstr "Abrir la ronda"
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, ask the guide row"
+msgid "Ask your guide about “{query}”"
+msgstr "Preguntar a su guía sobre “{query}”"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: tokenModule(t.slug)
@@ -32715,6 +33282,12 @@ msgstr "Cargando…"
 msgid "Nobody holds the care role today, so a private intake would reach nobody."
 msgstr "Hoy nadie ocupa el rol de cuidado, así que una solicitud privada no le llegaría a nadie."
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: the filter"
+msgid "All"
+msgstr "Todo"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: the heading, before the village has a name"
@@ -32964,6 +33537,12 @@ msgstr "¿Para qué reunión es?"
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "No circles yet. Add a role from a card above and it can start one."
 msgstr "Todavía no hay círculos. Agregue un rol desde una tarjeta de arriba y puede iniciar uno."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Co-sign"
+msgstr "Firmar también"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/governance/VoiceSpreadBand.tsx
@@ -33382,6 +33961,12 @@ msgctxt "application backup file"
 msgid "Languages"
 msgstr "Idiomas"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it adds it to the village."
+msgstr "Aceptarla la añade a la aldea."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
@@ -33581,6 +34166,12 @@ msgstr "Una línea"
 msgid "No Quests posted yet. Post the first one."
 msgstr "Todavía no hay misiones publicadas. Publica la primera."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the letter"
+msgstr "Leer la carta"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/power/CircleWall.tsx
 msgctxt "CircleWall, p"
@@ -33747,6 +34338,12 @@ msgstr "Cuánto participa la aldea"
 msgctxt "budget desk"
 msgid "This moon"
 msgstr "Esta luna"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding gives them the power, or does not."
+msgstr "Decidir le da el poder, o no."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgentPathTree.tsx
@@ -33918,6 +34515,12 @@ msgstr "Quitar esta sugerencia"
 msgctxt "sera answers"
 msgid "It goes into a draft. It goes live when the draft is published."
 msgstr "Va a un borrador. Se activa cuando se publique el borrador."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the payouts"
+msgstr "Abrir los pagos"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -34114,6 +34717,12 @@ msgstr "Responde por {answers} metas"
 msgctxt "TurnOnAction, p"
 msgid "{needs}. One press turns on all of them, in order."
 msgstr "{needs}. Con solo presionar una vez se activan todos, en orden."
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, dialog name"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgeBandCorrection.tsx
@@ -34583,6 +35192,12 @@ msgstr "Sugerir un cambio"
 msgid "That sound did not save."
 msgstr "Ese sonido no se guardó."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A tension raised with your role"
+msgstr "Una tensión planteada a tu rol"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
 msgid "Your time zone"
@@ -35033,7 +35648,7 @@ msgid "How I like to be helped"
 msgstr "Cómo me gusta que me ayuden"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Drafts from the assistant"
 msgstr "Borradores del asistente"
@@ -36149,6 +36764,12 @@ msgctxt "pay page, amount pad key"
 msgid "Delete the last digit"
 msgstr "Borrar el último dígito"
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, kind of result"
+msgid "Button or field"
+msgstr "Botón o campo"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Replay the tour"
@@ -36309,6 +36930,12 @@ msgstr "{loadError} Guardar está desactivado hasta que se pueda leer, así nada
 msgctxt "site header"
 msgid "Your account, {firstName}"
 msgstr "Cuenta de {firstName}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the postings"
+msgstr "Abrir los registros"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/SigningKeyCard.tsx
@@ -36595,6 +37222,12 @@ msgstr "Reportar este mensaje"
 msgctxt "Admin, button"
 msgid "Close what is due"
 msgstr "Cerrar lo que vence"
+
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/SaberraConfigPanel.tsx
+msgctxt "SaberraConfigPanel, save bar"
+msgid "the Sera addresses"
+msgstr "las direcciones de Sera"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/PaySteps.tsx
@@ -37061,6 +37694,12 @@ msgctxt "what the launch guide read"
 msgid "Your brief: {0}."
 msgstr "Su resumen: {0}."
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, heading"
+msgid "Type what you are looking for"
+msgstr "Escriba lo que busca"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Review.tsx
 msgctxt "Review, toast"
@@ -37093,7 +37732,7 @@ msgid "Recording {0}"
 msgstr "Grabación {0}"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Tensions raised with your role"
 msgstr "Tensiones planteadas a su rol"
@@ -37242,6 +37881,12 @@ msgstr "Calendario de Google de la finca"
 msgctxt "SpringPackets, dt"
 msgid "Harvest"
 msgstr "Cosecha"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A letter waiting to be read"
+msgstr "Una carta que espera ser leída"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
@@ -37451,6 +38096,12 @@ msgstr "Asigne el rol en Administración y luego márquelo como hecho."
 msgctxt "ResourcesPanel, p"
 msgid "Opening a decision requires the co-creator stage or a role that grants it."
 msgstr "Para abrir una decisión se necesita la etapa de cocreador o un rol que lo permita."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "The village is voting on this draft. The vote closes {closes}."
+msgstr "La aldea está votando este borrador. La votación cierra el {closes}."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx
@@ -37998,9 +38649,9 @@ msgstr "Para quien guarda el fondo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
-msgctxt "ModuleConfigPanels, toast"
-msgid "Categories saved"
-msgstr "Categorías guardadas"
+#~ msgctxt "ModuleConfigPanels, toast"
+#~ msgid "Categories saved"
+#~ msgstr "Categorías guardadas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/PoolStatement.tsx
@@ -38496,7 +39147,7 @@ msgid "Start with: {s}"
 msgstr "Empieza con: {s}"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Finished work to witness"
 msgstr "Trabajo terminado por atestiguar"
@@ -38823,6 +39474,12 @@ msgctxt "treasury sync"
 msgid "Tokens, by source"
 msgstr "Tokens, por origen"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it moves it to its next stage."
+msgstr "Aprobarlo lo pasa a su siguiente etapa."
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
 #~ msgid "We write to you by {byWords} with what comes next."
@@ -39014,6 +39671,12 @@ msgstr "Marcar todas las misiones actuales como ejemplos"
 msgctxt "ConsentQueue, li"
 msgid "{0} on {1}: {2}"
 msgstr "{0} en {1}: {2}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{n, plural, one {Publish this draft? Its one change goes onto the org chart now.} other {Publish this draft? Its # changes go onto the org chart now.}}"
+msgstr "{n, plural, one {¿Publicar este borrador? Su único cambio pasa al organigrama ahora.} other {¿Publicar este borrador? Sus # cambios pasan al organigrama ahora.}}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decision.tsx
@@ -39232,6 +39895,12 @@ msgctxt "founding application value"
 msgid "How we will know it is done"
 msgstr "Cómo sabremos que está hecho"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: heading"
+msgid "One thing is yours to do"
+msgstr "Tienes una cosa por hacer"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
@@ -39342,6 +40011,12 @@ msgctxt "a part of the Say frame is loading"
 msgid "Opening"
 msgstr "Abriendo"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding answers the person who sent it."
+msgstr "Decidir responde a quien la envió."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, span"
@@ -39381,9 +40056,9 @@ msgstr "· sin ubicar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
-msgctxt "ModuleConfigPanels, toast"
-msgid "Saved. /resources reads it on the next request"
-msgstr "Guardado. /resources lo lee en la próxima solicitud"
+#~ msgctxt "ModuleConfigPanels, toast"
+#~ msgid "Saved. /resources reads it on the next request"
+#~ msgstr "Guardado. /resources lo lee en la próxima solicitud"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: weekly ? "Let people vote on the series' weekday and time. The series follows the leading time, and an evening inside the freeze never moves." : "Let people vote on this gathering's time. The gathering follows the leading time until the vote closes."
@@ -39704,6 +40379,12 @@ msgctxt "GeneKeys, p"
 msgid "Step 1 of 2 · Find your lines"
 msgstr "Paso 1 de 2 · Encuentre sus líneas"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Posting it gives the recognition."
+msgstr "Registrarlo otorga el reconocimiento."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/ProfileJourney.tsx
 msgctxt "ProfileJourney, span"
@@ -39747,6 +40428,12 @@ msgstr "Los colores y las palabras propias de la aldea, cambiados mientras usted
 msgctxt "admin protocols editor"
 msgid "Or paste the file here"
 msgstr "O pegue el archivo aquí"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A place where Sera's memory differs from the village"
+msgstr "Un punto donde la memoria de Sera difiere de la aldea"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -40370,6 +41057,12 @@ msgctxt "new role from a card"
 msgid "Choose the file to bring in."
 msgstr "Elija el archivo que quiere traer."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read and decide"
+msgstr "Leer y decidir"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsJourneys.tsx
 msgctxt "CommsJourneys, p"
@@ -40812,6 +41505,12 @@ msgctxt "circle standing"
 msgid "Operating"
 msgstr "En funcionamiento"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A task handed to you"
+msgstr "Una tarea que te pasaron"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/calendar/CommunityCalendarCard.tsx
 msgctxt "CommunityCalendarCard, button"
@@ -41029,7 +41728,7 @@ msgid "{villageName} sets its own rules for {currencyName}, {valueName} and its 
 msgstr "{villageName} pone sus propias reglas para {currencyName}, {valueName} y sus otros tokens.{0}"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "From Sera and outside services"
 msgstr "De Sera y de servicios externos"
@@ -41121,9 +41820,9 @@ msgstr "En todos sus roles"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraConfigPanel.tsx
-msgctxt "SaberraConfigPanel, p"
-msgid "Reading Organisational Memory…"
-msgstr "Leyendo la Memoria Organizacional…"
+#~ msgctxt "SaberraConfigPanel, p"
+#~ msgid "Reading Organisational Memory…"
+#~ msgstr "Leyendo la Memoria Organizacional…"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsSentMail.tsx
@@ -41429,6 +42128,12 @@ msgctxt "SeatAction, p"
 msgid "They'll receive this by email, with YOUR email address as the reply-to, so replying reaches you directly."
 msgstr "Lo recibirán por correo electrónico, con SU dirección de correo como respuesta, así que al responder le escriben a usted directamente."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A member asking to hold a power"
+msgstr "Un miembro que pide sostener un poder"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Feedback.tsx
 msgctxt "voice field purpose: feedback detail"
@@ -41638,6 +42343,12 @@ msgstr "Integraciones"
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Decided in the last 30 days"
 msgstr "Decidido en los últimos 30 días"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A vote"
+msgstr "Una votación"
 
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price ask summary"
@@ -42601,6 +43312,12 @@ msgctxt "role editor"
 msgid "Where it is worked"
 msgstr "Dónde se trabaja"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Done work to accept"
+msgstr "Trabajo hecho por aceptar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HyphaModulePanel.tsx
 msgctxt "HyphaModulePanel, p"
@@ -42636,6 +43353,12 @@ msgstr "Cómo apagarlo"
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The vote did not open"
 msgstr "La votación no se abrió"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: lede"
+msgid "Everything waiting on you, from every queue, in one list. Decide what you can on its row. The rest opens where it is decided."
+msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Decide lo que puedas en su fila. Lo demás se abre donde se decide."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/QuestProposalCard.tsx
@@ -43705,6 +44428,12 @@ msgctxt "founding application check, a box over its limit"
 msgid "Reference {n}: email or phone"
 msgstr "Referencia {n}: correo o teléfono"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: eyebrow"
+msgid "Follow-ups"
+msgstr "Seguimientos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: c.name
 #: client/src/pages/Messages.tsx
@@ -44159,7 +44888,7 @@ msgid "This platform does not move {0}. A vote here records what the village wan
 msgstr "Esta plataforma no mueve {0}. Una votación aquí registra lo que la aldea quiere, y el poder se queda donde está hasta que la plataforma pueda trasladarlo."
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Suggested edits to what you hold"
 msgstr "Ediciones sugeridas a lo que usted sostiene"
@@ -44351,6 +45080,12 @@ msgstr "Aquí está cada lugar que los miembros han registrado."
 msgctxt "portal entrance: the privacy line, how to see or delete it, when the village has no contact address"
 msgid "To see it or have it deleted, ask anyone at the village."
 msgstr "Para verlo o pedir que lo borremos, pregunta a cualquier persona de la aldea."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Answer it"
+msgstr "Responderla"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/VillageMap.tsx
@@ -45271,6 +46006,12 @@ msgctxt "founding application check, a box over its limit"
 msgid "Languages you work in"
 msgstr "Idiomas en que trabaja"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Retrying finishes removing a member's data."
+msgstr "Reintentar termina de quitar los datos de un miembro."
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/RoleIndexCard.tsx
 #~ msgctxt "roles index card: open this role's own page"
@@ -45620,6 +46361,12 @@ msgstr "Recibiendo propuestas"
 #~ msgid "These quests are held until the village decides."
 #~ msgstr ""
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: retry the reads"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Door.tsx
 msgctxt "rites"
@@ -45710,6 +46457,12 @@ msgstr "Ver los roles abiertos"
 msgctxt "map light setting"
 msgid "Show my light on the map"
 msgstr "Mostrar mi luz en el mapa"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding says which one is right."
+msgstr "Decidir dice cuál es la correcta."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/PinPanel.tsx
@@ -46774,9 +47527,9 @@ msgstr "Conservar como misión real"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
-msgctxt "review inbox: open the page where it is decided"
-msgid "Open"
-msgstr "Abrir"
+#~ msgctxt "review inbox: open the page where it is decided"
+#~ msgid "Open"
+#~ msgstr "Abrir"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -47104,6 +47857,12 @@ msgctxt "open proposal: where the contract's pay comes from"
 msgid "From their price ask, at {pct}% commitment."
 msgstr "De su precio propuesto, con un compromiso del {pct}%."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, publish it"
+msgstr "Sí, publicarlo"
+
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: what draws you, curiosity"
@@ -47341,7 +48100,7 @@ msgid "{project} hasn't opened this room yet. Only the team running the village 
 msgstr "{project} todavía no ha abierto este espacio. Solo el equipo que lleva la aldea puede abrirlo, así que pregúnteles si desea que se abra."
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Mint requests"
 msgstr "Solicitudes de emisión"
@@ -47420,6 +48179,12 @@ msgstr "Ideal para <0>{0}</0>"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Contacts outside the village"
 msgstr "Contactos fuera de la aldea"
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, kind of result"
+msgid "Page"
+msgstr "Página"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal keys"
@@ -47726,6 +48491,12 @@ msgstr "Cancelarlo"
 msgctxt "AdminFeel, p"
 msgid "All clear for today."
 msgstr "Todo en orden por hoy."
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, field placeholder"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/yourList/SeraActionsPanel.tsx
@@ -48207,6 +48978,12 @@ msgctxt "role editor card"
 msgid "Choose a file"
 msgstr "Elegir un archivo"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Vouch"
+msgstr "Avalar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/CrowdpoolCampaign.tsx
 msgctxt "CrowdpoolCampaign, h1"
@@ -48547,6 +49324,12 @@ msgctxt "proposal goals list"
 msgid "Add a goal"
 msgstr "Agregar una meta"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the proposal"
+msgstr "Leer la propuesta"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: o.current ?? 0
 #. placeholder {1}: o.target
@@ -48646,6 +49429,12 @@ msgctxt "agents panel, the reads open switch heading"
 msgid "Reads open"
 msgstr "Lecturas abiertas"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Vote"
+msgstr "Votar"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/LiveDecisionsBand.tsx
 msgctxt "LiveDecisionsBand, span"
@@ -48703,6 +49492,12 @@ msgstr "Pida prestado lo que necesite con {libraryName}."
 msgctxt "JourneyView, span"
 msgid "alive"
 msgstr "viva"
+
+# needs-native-review: whole-app QA, the invitation line in a village whose calendar is off, 2026-11-25
+#: client/src/pages/Register.tsx
+msgctxt "register, invitation needed, no calendar"
+msgid "No link yet? Ask to join, and someone from the village will reach out."
+msgstr "¿Aún no tienes enlace? Pide unirte y alguien de la aldea se pondrá en contacto."
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/pages/Pay.tsx
@@ -48764,7 +49559,7 @@ msgid "Download CSV"
 msgstr "Descargar CSV"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Moon recaps to review"
 msgstr "Resúmenes de luna por revisar"
@@ -49133,7 +49928,7 @@ msgid "Sign in or join"
 msgstr "Iniciar sesión o unirse"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Cycles to settle"
 msgstr "Ciclos por cerrar"
@@ -49273,6 +50068,12 @@ msgctxt "Admin, div"
 msgid "unidentified, {0}"
 msgstr "sin identificar, {0}"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A quest idea"
+msgstr "Una idea de misión"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journal/GuidePanel.tsx
 msgctxt "GuidePanel, aria-label"
@@ -49343,6 +50144,12 @@ msgstr "{witness} terminó la misión de testigo"
 msgctxt "limit notice under a box"
 msgid "{count} characters over the limit. Trim {count} characters to send. Everything you wrote is kept."
 msgstr "{count} caracteres por encima del límite. Recorta {count} caracteres para enviar. Todo lo que escribiste se conserva."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the cycle"
+msgstr "Abrir el ciclo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PlayerCard.tsx
@@ -49498,6 +50305,12 @@ msgstr "Exacto"
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "A contact outside the village"
 msgstr "Un contacto fuera de la aldea"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A moon recap"
+msgstr "Un resumen de luna"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/gratitude/MoonsPast.tsx
@@ -49687,6 +50500,12 @@ msgstr "Semilla guardada"
 msgctxt "founding application, the role beside"
 msgid "The role"
 msgstr "El rol"
+
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: a group"
+msgid "Waiting on others"
+msgstr "Esperando a otros"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -50826,6 +51645,12 @@ msgstr "{0}% {1} ({2})"
 #~ msgid "These quests are held until the village decides, in a vote that closes {closes}."
 #~ msgstr ""
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: heading"
+msgid "{mine} things are yours to do"
+msgstr "Tienes {mine} cosas por hacer"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profile/InvitePanel.tsx
 msgctxt "InvitePanel, h3"
@@ -51291,6 +52116,12 @@ msgstr "Agregar una hora"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopt this new version"
 msgstr "Adoptar esta nueva versión"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read and approve"
+msgstr "Leer y aprobar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: mine.profile
@@ -51908,6 +52739,12 @@ msgctxt "circle hearth, we meet"
 msgid "{0} of us said we will be there."
 msgstr "{0} de nosotros dijimos que estaremos allí."
 
+# needs-native-review: whole-app QA, retry button, 2026-11-25
+#: client/src/pages/Events.tsx
+msgctxt "calendar: retry the events read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/ErrorBoundary.tsx
 msgid "A refresh usually brings it back."
@@ -51941,7 +52778,7 @@ msgid "Which change request"
 msgstr "Qué solicitud de cambio"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Cash owed"
 msgstr "Efectivo adeudado"
@@ -52049,6 +52886,12 @@ msgstr "Cerrando esto"
 msgctxt "today's card: a pull that failed"
 msgid "The card did not turn. Try again."
 msgstr "La carta no se dio vuelta. Inténtalo de nuevo."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read it"
+msgstr "Leerlo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: a.feedback.sent
@@ -52698,6 +53541,12 @@ msgctxt "exitPolicyEditing, button"
 msgid "Remove"
 msgstr "Quitar"
 
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/ModuleConfigPanels.tsx
+msgctxt "ModuleConfigPanels, save bar"
+msgid "the call automation settings"
+msgstr "los ajustes de automatización de llamadas"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/RequestMembership.tsx
 msgctxt "RequestMembership, label"
@@ -52986,6 +53835,12 @@ msgstr "Misión"
 msgctxt "account forms: field label"
 msgid "Password"
 msgstr "Contraseña"
+
+# needs-native-review: whole-app QA, retry button, 2026-11-25
+#: client/src/pages/Forum.tsx
+msgctxt "forum: retry the thread list read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Forum.tsx
@@ -54295,6 +55150,12 @@ msgstr "Dónde"
 #~ msgid "Close menu"
 #~ msgstr "Cerrar menú"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your review moves it toward a vote."
+msgstr "Tu revisión la acerca a una votación."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, li"
@@ -54398,11 +55259,23 @@ msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
 #~ msgid "If it is adopted, a formal invitation to make your account comes to your email."
 #~ msgstr "Si se adopta, te llega a tu correo una invitación formal para crear tu cuenta."
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, opens the search"
+msgid "Search Admin"
+msgstr "Buscar en Admin"
+
 # needs-native-review: profile overhaul, the settings page, 25 Nov 2026
 #: client/src/pages/ProfileSettings.tsx
 msgctxt "settings: a group"
 msgid "Connected tools and agents"
 msgstr "Herramientas y agentes conectados"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A cycle to settle"
+msgstr "Un ciclo por cerrar"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -54414,6 +55287,12 @@ msgstr "Su propia personalidad"
 msgctxt "CashPayoutsTab, button"
 msgid "Clear"
 msgstr "Limpiar"
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, no results"
+msgid "Nothing in Admin matches “{query}”. Try another word, or open the menu for every area."
+msgstr "Nada en Admin coincide con “{query}”. Pruebe otra palabra, o abra el menú para ver todas las áreas."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: status?.hubBaseUrl || "not set"
@@ -54712,6 +55591,12 @@ msgctxt "hidden map, adding photos to a place"
 msgid "Preparing"
 msgstr "Preparando"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Give your answer"
+msgstr "Dar tu respuesta"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: mine.servesGoal
 #. placeholder {0}: p.line.servesGoal
@@ -54839,6 +55724,12 @@ msgstr "Cancelar"
 #: client/src/components/openProposal/MembershipAtApplication.tsx
 msgid "Loading the membership letter..."
 msgstr "Cargando la carta de membresía..."
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, input placeholder"
+msgid "Search settings, pages and buttons"
+msgstr "Buscar ajustes, páginas y botones"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/SeatSettingsFields.tsx
@@ -54981,7 +55872,7 @@ msgid "/master-plan"
 msgstr "/master-plan"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Change requests in review"
 msgstr "Solicitudes de cambio en revisión"
@@ -55275,7 +56166,7 @@ msgid "Details for a bug report"
 msgstr "Detalles para un informe de error"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Places waiting for your vouch"
 msgstr "Lugares que esperan su aval"
@@ -55661,6 +56552,12 @@ msgctxt "admin protocols editor"
 msgid "Imported {count} protocols."
 msgstr "Se importaron {count} protocolos."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A consent round"
+msgstr "Una ronda de consentimiento"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/SevenMeter.tsx
 msgctxt "hidden map, progress toward opening the map"
@@ -55954,6 +56851,12 @@ msgstr "Dónde lo decidió el Ancla (el hilo, la reunión o la fecha)"
 msgctxt "calendar moon view: the moon's window"
 msgid "{firstDay} to {lastDay}. The new moon is at the centre, and each day is a seed further out."
 msgstr "Del {firstDay} al {lastDay}. La luna nueva está en el centro, y cada día es una semilla más hacia afuera."
+
+# needs-native-review: Admin save bar, 2026-11-25
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings, save bar"
+msgid "the map's words and quests"
+msgstr "las palabras y misiones del mapa"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -56399,6 +57302,13 @@ msgctxt "founding application choose, later roles heading"
 msgid "Opening next"
 msgstr "Lo que abre después"
 
+# needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
+#. placeholder {0}: r.with
+#: client/src/components/followUps/FollowUps.tsx
+msgctxt "follow-ups: the role you asked"
+msgid "With {0}"
+msgstr "Con {0}"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/ExitPolicy.tsx
 msgid "Bring it to the {intakeRoleLabel} and you hear back within {replyHours, plural, one {# hour} other {# hours}}."
@@ -56675,6 +57585,12 @@ msgctxt "role card front: a share of the pay mix as the card names it"
 msgid "{pct}% {label}"
 msgstr "{pct}% {label}"
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, kind of result"
+msgid "Dial"
+msgstr "Ajuste"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Arrived.tsx
 msgctxt "rites"
@@ -56852,7 +57768,7 @@ msgid "Paths they walk"
 msgstr "Caminos que recorren"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Members asking to hold a power"
 msgstr "Miembros que piden sostener un poder"
@@ -58189,6 +59105,12 @@ msgctxt "sera answers"
 msgid "Nothing was undone."
 msgstr "No se deshizo nada."
 
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, footer"
+msgid "Search only takes you there. Nothing runs from here."
+msgstr "La búsqueda solo le lleva allí. Nada se ejecuta desde aquí."
+
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: empty choice"
 msgid "No goal yet"
@@ -58229,7 +59151,7 @@ msgid "Search by address or name"
 msgstr "Buscar por dirección o nombre"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Tasks handed to you"
 msgstr "Tareas que le entregaron"
@@ -59006,9 +59928,9 @@ msgstr "Rechazar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
-msgctxt "hidden map settings"
-msgid "Saving"
-msgstr "Guardando"
+#~ msgctxt "hidden map settings"
+#~ msgid "Saving"
+#~ msgstr "Guardando"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -59033,7 +59955,7 @@ msgid "village-life"
 msgstr "village-life"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Applications for a role"
 msgstr "Solicitudes para un rol"
@@ -59358,7 +60280,7 @@ msgid "A note (optional)"
 msgstr "Una nota (opcional)"
 
 # needs-native-review: the deciders' one list, a section, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Letters waiting to be read"
 msgstr "Cartas que esperan ser leídas"
@@ -59393,6 +60315,12 @@ msgctxt "Admin, div"
 msgid "Loading..."
 msgstr "Cargando..."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Accepting it makes the edit."
+msgstr "Aceptarla hace la edición."
+
 #: client/src/pages/RoleProposal.tsx
 msgid "Propose a role for this moon without an account"
 msgstr "Propón un rol para esta luna sin una cuenta"
@@ -59409,6 +60337,12 @@ msgstr "1. Ejecute la imagen publicada"
 msgctxt "InvestorJourney, span"
 msgid "Stage: {0}"
 msgstr "Etapa: {0}"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Deciding answers the applicant."
+msgstr "Decidir responde a quien solicita."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Mint.tsx
@@ -59744,6 +60678,12 @@ msgctxt "Training, span"
 msgid "Link coming soon"
 msgstr "Enlace muy pronto"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the draft"
+msgstr "Leer el borrador"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/YourPath.tsx
 msgctxt "your path, the whole path page"
@@ -60055,6 +60995,12 @@ msgctxt "coming soon: an empty moon on the calendar"
 msgid "Nothing is on this moon yet. Gatherings, festivals and calls appear here as the village plans them, each on its own day."
 msgstr "Todavía no hay nada en esta luna. Los encuentros, festivales y llamadas aparecen aquí a medida que la aldea los planea, cada uno en su día."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A posting owed for finished work"
+msgstr "Un registro pendiente por trabajo terminado"
+
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
 msgid "Drawn by"
@@ -60182,6 +61128,12 @@ msgstr "La ley de correos masivos pide una dirección postal real en el pie de c
 msgctxt "protocols page"
 msgid "Kept on your phone. It sends when you're back in signal."
 msgstr "Guardado en su teléfono. Se envía cuando vuelva a tener señal."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A key waiting for a second signature"
+msgstr "Una clave que espera una segunda firma"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journal/FeedbackSentList.tsx
@@ -60583,6 +61535,12 @@ msgctxt "Admin, toast"
 msgid "Exit opened"
 msgstr "Salida abierta"
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Accept it"
+msgstr "Aceptarlo"
+
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application first day"
@@ -60686,6 +61644,12 @@ msgstr "Confirmar el código"
 msgid "An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing."
 msgstr "Una IA puede ayudarnos a redactar nuestras respuestas; siempre las lee y las envía una persona, y ninguna IA participa en la elección."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Approving it lets it go live. Seatings are listed in the order they arrived."
+msgstr "Aprobarlo lo publica. Las asignaciones se listan en el orden en que llegaron."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, declines the proposed change"
@@ -60742,6 +61706,12 @@ msgstr "{n, plural, one {{pledged} comprometido por # patrocinador} other {{pled
 msgctxt "admin portal visitors"
 msgid "Everyone who gave their name and email at the portal entrance, newest first. The entrance is on while the setting Ask visitors for their name and email before the portal is on, in Game Mechanics. Nobody here has been emailed by the platform."
 msgstr "Todas las personas que dieron su nombre y correo en la entrada del portal, de la más reciente a la más antigua. La entrada está activa mientras el ajuste Pedir a los visitantes su nombre y correo antes del portal esté activado, en Mecánicas del juego. La plataforma no ha enviado ningún correo a estas personas."
+
+# needs-native-review: Admin search, 2026-11-25
+#: client/src/components/admin/search/AdminSearch.tsx
+msgctxt "admin search, close"
+msgid "Close search"
+msgstr "Cerrar la búsqueda"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
@@ -61262,9 +62232,9 @@ msgstr "El sitio acaba de crecer"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
-msgctxt "ModuleConfigPanels, toast"
-msgid "Linked campaigns saved"
-msgstr "Campañas enlazadas guardadas"
+#~ msgctxt "ModuleConfigPanels, toast"
+#~ msgid "Linked campaigns saved"
+#~ msgstr "Campañas enlazadas guardadas"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -61365,6 +62335,12 @@ msgstr "Horarios habituales: {windowList}"
 msgctxt "forgot password: after sending"
 msgid "If an account exists for that address, a link to set a new password is on its way. It expires in an hour and works once."
 msgstr "Si existe una cuenta con esa dirección, ya va en camino un enlace para crear una contraseña nueva. Vence en una hora y sirve una sola vez."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the idea"
+msgstr "Leer la idea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/yourList/RoleHandoffs.tsx
@@ -61896,6 +62872,12 @@ msgctxt "PlayerCard, p"
 msgid "Opens the admin panel through {0}, while they hold it."
 msgstr "Abre el panel de admin a través de {0}, mientras lo tenga."
 
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Put to the village. A vote is open."
+msgstr "Llevado a la aldea. Hay una votación abierta."
+
 #: client/src/components/governance/TermsEight.tsx
 msgid "Mark anything you'd like to talk through. Nothing is final until we agree together."
 msgstr "Marca lo que quieras conversar. Nada es definitivo hasta que lo acordemos en conjunto."
@@ -62396,9 +63378,9 @@ msgstr "Crear una cuenta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
-msgctxt "ModuleConfigPanels, toast"
-msgid "Saved. The next sync reads it"
-msgstr "Guardado. La próxima sincronización lo lee"
+#~ msgctxt "ModuleConfigPanels, toast"
+#~ msgid "Saved. The next sync reads it"
+#~ msgstr "Guardado. La próxima sincronización lo lee"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/VentureAccountsCard.tsx
@@ -62842,7 +63824,7 @@ msgid "Your request for an invitation is with us, since {0}. We will let you kno
 msgstr "Tu solicitud de invitación está con nosotros desde el {0}. Te avisaremos."
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "From agents"
 msgstr "De agentes"
@@ -62864,6 +63846,12 @@ msgstr "Pasos de {title} hechos"
 msgctxt "ConsentQueue, button"
 msgid "Consent"
 msgstr "Doy mi consentimiento"
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Your consent, or your objection, decides whether it goes ahead."
+msgstr "Tu consentimiento, o tu objeción, decide si sigue adelante."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/CaptureForm.tsx
@@ -63066,7 +64054,7 @@ msgid "Finished work waiting for a witness"
 msgstr "Trabajo terminado que espera un testigo"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
-#: client/src/pages/AdminReview.tsx
+#: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
 msgid "Quest ideas"
 msgstr "Ideas de misiones"
@@ -63428,6 +64416,12 @@ msgstr "Cancelar"
 msgctxt "admin letter samples"
 msgid "Sending..."
 msgstr "Enviando..."
+
+# needs-native-review: the rows of /admin/review, 25 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "Finished work"
+msgstr "Trabajo terminado"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."
