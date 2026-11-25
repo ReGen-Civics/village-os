@@ -245,7 +245,7 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
 
   return (
     <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 sm:p-5 space-y-4">
-      <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="SaberraConfigPanel, p">Reading Organisational Memory…</Trans></p>}>
+      <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="SaberraConfigPanel, p">Reading Sera…</Trans></p>}>
         <SaberraBridgeBoard password={password} />
       </Suspense>
       <Suspense fallback={<p className="text-xs text-gray-500"><Trans context="SaberraConfigPanel, p">Reading the Sera links…</Trans></p>}>
@@ -282,7 +282,7 @@ export default function SaberraConfigPanel({ password }: { password: string }) {
         </div>
         <SaveBar
           count={addressesEdited ? 1 : 0}
-          what={t({ message: "the service addresses", context: "SaberraConfigPanel, save bar" })}
+          what={t({ message: "the Sera addresses", context: "SaberraConfigPanel, save bar" })}
           onSave={writeAddresses}
           onDiscard={() => {
             setApiDraft(null);

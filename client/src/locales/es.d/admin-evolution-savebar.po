@@ -23,10 +23,15 @@ msgstr "los ajustes de automatización de llamadas"
 
 # needs-native-review: Admin save bar, 2026-11-25
 msgctxt "SaberraConfigPanel, save bar"
-msgid "the service addresses"
-msgstr "las direcciones del servicio"
+msgid "the Sera addresses"
+msgstr "las direcciones de Sera"
 
 # needs-native-review: Admin save bar, 2026-11-25
 msgctxt "hidden map settings, save bar"
 msgid "the map's words and quests"
 msgstr "las palabras y misiones del mapa"
+
+# needs-native-review: Sera naming (the lead, 25 Nov 2026), 2026-11-25
+msgctxt "SaberraConfigPanel, p"
+msgid "Reading Sera…"
+msgstr "Leyendo Sera…"
