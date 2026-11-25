@@ -54,7 +54,10 @@ import { heldButRecruiting, relatedRolesShown, rolesLeadWillBuild, ventureOpenNo
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import CommitmentChip from "@/components/roleCard/CommitmentChip";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
-import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
+import { DEFAULT_OTHER_WAYS } from "@shared/otherWays";
+import { useNewcomerOrVisitor } from "@/lib/newcomer";
+import { useStoryPageShown } from "@/lib/brochure";
+import OtherWaysTiles from "@/components/roles/OtherWaysTiles";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
 import { useRootsFilter } from "@/components/roots/useRootsFilter";
 
@@ -473,7 +476,11 @@ export default function Roles() {
   // Join the team and Start a venture land on this page's founding team and open ventures while the founding team
   // leads; with none leading neither section is drawn, so they go to the role board and the venture form instead.
   const ventureHref = useVentureHref();
+  // A newcomer with no venture form to open and no open ventures drawn here gets no venture door (the five-reviewer
+  // QA pass, 25 Nov 2026): the member's door it used to fall back to is closed to them.
   const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
+  const newcomer = useNewcomerOrVisitor();
+  const storyShown = useStoryPageShown();
   // Arriving on /roles#founding-team, #open-ventures or #four-ways lands on the section once it is drawn, and holds it
   // there while the founding team above it finishes drawing (sectionAnchor.ts).
   useLandOnSection(heroShown, [leads, roles]);
@@ -614,40 +621,7 @@ export default function Roles() {
           <section aria-labelledby="other-ways" className={`mx-auto mb-14 max-w-4xl ${featured.length > 0 ? "border-t border-border pt-10" : ""}`} data-other-ways="">
             <h2 id="other-ways" className={`${H2} mb-2`}>{t({ message: "Other ways to join", context: "roles page, other ways to join" })}</h2>
             <p className="mb-4 text-sm text-muted-foreground">{t({ message: "Not every way in is a founding role. Each of these is open now.", context: "roles page, other ways to join" })}</p>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              <li className={TILE}>
-                <Link href="/role-proposals/new" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`} data-propose-new-role="">
-                  {t({ message: "Propose a new role", context: "roles page, other ways to join" })}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">{t({ message: "Propose is for a role we don't list. Tell us the role you see, and the village decides.", context: "roles page, other ways to join" })}</p>
-              </li>
-              <li className={TILE}>
-                <Link href="/quests" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`}>
-                  {t({ message: "Take a quest, alone or with others", context: "roles page, other ways to join" })}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </li>
-              {/* QA2-07: the resident path and the gifts tile, the village's own words (shared/otherWays.ts). */}
-              <li className={TILE} data-other-way="seeder">
-                <Link href={otherWays.seeder.href} className={`inline-flex min-h-11 items-center gap-2 ${LINK}`}>
-                  {otherWays.seeder.title === OTHER_WAYS_DEFAULTS.seederTitle ? t({ message: "Become a Founding Seeder", context: "roles page, other ways to join" }) : otherWays.seeder.title}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {otherWays.seeder.line === OTHER_WAYS_DEFAULTS.seederLine ? t({ message: "Live here one day? Start on the resident path.", context: "roles page, other ways to join" }) : otherWays.seeder.line}
-                </p>
-              </li>
-              <li className={TILE} data-other-way="gifts">
-                <Link href={otherWays.gifts.href} className={`inline-flex min-h-11 items-center gap-2 ${LINK}`}>
-                  {otherWays.gifts.title === OTHER_WAYS_DEFAULTS.giftsTitle ? t({ message: "Offer your gifts", context: "roles page, other ways to join" }) : otherWays.gifts.title}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {otherWays.gifts.line === OTHER_WAYS_DEFAULTS.giftsLine ? t({ message: "Volunteer or work-trade: tell us what you would like to give.", context: "roles page, other ways to join" }) : otherWays.gifts.line}
-                </p>
-              </li>
-            </ul>
+            <OtherWaysTiles otherWays={otherWays} newcomer={newcomer} shown={storyShown} />
             {/* QA2-02: while the founding team is featured, the game's way in sits here, quiet and
                 secondary, with no "Step one": the founding application keeps the only steps on the page. */}
             {featured.length > 0 && (

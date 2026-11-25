@@ -2973,6 +2973,13 @@ msgctxt "hidden map page"
 msgid "Download"
 msgstr "Descargar"
 
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#. placeholder {0}: laterCount
+#: client/src/components/roleCard/FoundingLineup.tsx
+#~ msgctxt "founding team tally: roles opening after the founding team"
+#~ msgid "{0} opening next"
+#~ msgstr "{0} se abren después"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: stageNameOf(i.minStage)
 #: client/src/pages/Library.tsx
@@ -4766,7 +4773,7 @@ msgid "You have opened {0} redemptions this moon, which is what this village all
 msgstr "Usted ha abierto {0} canjes esta luna, que es lo que esta aldea permite. El conteo empieza de nuevo con la luna nueva."
 
 # needs-native-review: new words, 12 Nov 2026
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Offer your gifts"
 msgstr "Ofrece tus dones"
@@ -6226,6 +6233,13 @@ msgstr "Inicie sesión con su cuenta de administración para abrir la Casa de Em
 msgctxt "SaberraBridgeBoard, p"
 msgid "Reading Organisational Memory…"
 msgstr "Leyendo la Memoria Organizacional…"
+
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#. placeholder {0}: roles.length
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "founding team tally: open roles"
+msgid "{0} open now"
+msgstr "{0} abiertos ahora"
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
@@ -12023,9 +12037,9 @@ msgstr "Su compromiso: {0}"
 
 # needs-native-review: new words, 25 Nov 2026
 #: client/src/components/mobile/MobileTabBar.tsx
-msgctxt "bottom tab bar, no path chosen yet"
-msgid "Choose your path"
-msgstr "Elija su camino"
+#~ msgctxt "bottom tab bar, no path chosen yet"
+#~ msgid "Choose your path"
+#~ msgstr "Elija su camino"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/WizardField.tsx
@@ -12233,6 +12247,12 @@ msgstr "Lo que necesita que hagan"
 msgctxt "ResourcesAdminPanel, h2"
 msgid "Measured inflows"
 msgstr "Ingresos medidos"
+
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "A picture of the village's circles and their roles"
+msgstr "Una imagen de los círculos de la aldea y sus roles"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/NotifyPrefsPanel.tsx
@@ -13425,6 +13445,12 @@ msgstr "Rechazar"
 msgctxt "funding rounds"
 msgid "Who might do it?"
 msgstr "¿Quién podría hacerlo?"
+
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "empty thanks wall under the example lines"
+msgid "The lines above marked Example show what a thanks looks like. The first real one lands here."
+msgstr "Las líneas de arriba marcadas como Ejemplo muestran cómo son unas gracias. Las primeras de verdad llegan aquí."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/SeatSettingsFields.tsx
@@ -19234,6 +19260,12 @@ msgctxt "JourneyWalk, placeholder"
 msgid "Their email address"
 msgstr "Su correo electrónico"
 
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Light mode: switch to dark"
+msgstr "Claro: cambiar al modo oscuro"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopted on {adoptedOn} by the founders, before the Game started."
@@ -20863,6 +20895,12 @@ msgstr "Declararlo"
 msgctxt "GameMechanics, label"
 msgid "Search the dials"
 msgstr "Buscar en los diales"
+
+# needs-native-review: the bottom bar's path slot, its accessible name, 25 Nov 2026
+#: client/src/components/mobile/MobileTabBar.tsx
+msgctxt "bottom tab bar, no path chosen yet"
+msgid "Your path: choose one"
+msgstr "Su camino: elija uno"
 
 #. placeholder {0}: e.name
 #: client/src/components/admin/PortalVisitorsTab.tsx
@@ -22523,7 +22561,7 @@ msgid "Your email"
 msgstr "Tu correo electrónico"
 
 # needs-native-review: new words, 12 Nov 2026
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Volunteer or work-trade: tell us what you would like to give."
 msgstr "Voluntariado o intercambio de trabajo: cuéntanos qué te gustaría dar."
@@ -25638,6 +25676,11 @@ msgstr "Ritmo"
 msgctxt "role card tooltip: Founding Seeder"
 msgid "Someone who means to live in the village one day and starts on the resident path now."
 msgstr "Alguien que quiere vivir en la aldea algún día y empieza ya el camino de residente."
+
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "founding team tally: roles opening after the founding team"
+msgid "{laterCount} opening next"
+msgstr ""
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/HistoryPanel.tsx
@@ -31419,7 +31462,7 @@ msgctxt "role card: book a conversation"
 msgid "Book a time"
 msgstr "Reservar un horario"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
 msgstr "Propón un nuevo rol"
@@ -34302,7 +34345,7 @@ msgctxt "Admin, h3"
 msgid "Token-for-token swapping is {0}"
 msgstr "El intercambio de token por token está {0}"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Take a quest, alone or with others"
 msgstr "Toma una misión, sola o con otras personas"
@@ -37668,9 +37711,9 @@ msgstr "Una persona o un agente"
 
 # needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to dark mode"
-msgstr "Cambiar al modo oscuro"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to dark mode"
+#~ msgstr "Cambiar al modo oscuro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
@@ -41033,6 +41076,12 @@ msgctxt "Library, p"
 msgid "<0/>No items on the shelf yet."
 msgstr "<0/>Todavía no hay nada en el estante."
 
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "The living map opens to members. This picture shows each circle and its roles: a hollow dot is a role still open."
+msgstr "El mapa vivo se abre para quienes son miembros. Esta imagen muestra cada círculo y sus roles: un punto hueco es un rol que sigue abierto."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/CodeChip.tsx
 msgctxt "proposed changes: a short code"
@@ -44294,7 +44343,7 @@ msgid "Phone / WhatsApp (optional)"
 msgstr "Teléfono / WhatsApp (opcional)"
 
 # needs-native-review: new words, 12 Nov 2026
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Live here one day? Start on the resident path."
 msgstr "¿Vivir aquí algún día? Empieza por el camino de residente."
@@ -46782,6 +46831,12 @@ msgstr "Abrir la solicitud de rol"
 msgid "Risk tags, separated by commas (optional)"
 msgstr "Etiquetas de riesgo, separadas por comas (opcional)"
 
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "empty thanks wall under the example lines"
+msgid "Nobody here has carried a thanks yet"
+msgstr "Aquí nadie ha llevado unas gracias todavía"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/MapSkinPanel.tsx
 msgctxt "MapSkinPanel, placeholder"
@@ -47103,6 +47158,12 @@ msgctxt "Bootstrap, label"
 msgid "Your email"
 msgstr "Su correo electrónico"
 
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/Circles.tsx
+msgctxt "circles page, the map picture for a visitor"
+msgid "How the circles sit together"
+msgstr "Cómo se relacionan los círculos"
+
 # needs-native-review: new words, 24 Nov 2026 (public launch QA, the sign-in path)
 #: client/src/pages/Register.tsx
 msgctxt "register, invitation needed: the second button"
@@ -47135,9 +47196,9 @@ msgstr "Cada cuánto se califica"
 
 # needs-native-review: first pass, merge, 24 Nov 2026
 #: client/src/components/ThemeSwitch.tsx
-msgctxt "site header: the mode switch, read aloud"
-msgid "Switch to light mode"
-msgstr "Cambiar al modo claro"
+#~ msgctxt "site header: the mode switch, read aloud"
+#~ msgid "Switch to light mode"
+#~ msgstr "Cambiar al modo claro"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -53926,6 +53987,12 @@ msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Abierta a todos los círculos"
 
+# needs-native-review: the mode switch's spoken name now starts with the word under it (Claro, Oscuro), WCAG 2.5.3, 25 Nov 2026
+#: client/src/components/ThemeSwitch.tsx
+msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
+msgid "Dark mode: switch to light"
+msgstr "Oscuro: cambiar al modo claro"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, toast"
@@ -58383,7 +58450,7 @@ msgid "Skip to content"
 msgstr "Ir al contenido"
 
 # needs-native-review: new words, 20 Nov 2026
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose is for a role we don't list. Tell us the role you see, and the village decides."
 msgstr "Proponer es para un rol que no listamos. Cuéntanos el rol que ves, y la aldea decide."
@@ -58443,9 +58510,9 @@ msgstr "Deshacer mis cambios"
 
 #. placeholder {0}: roles.length
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team tally: open roles"
-msgid "{0} open"
-msgstr "{0} abiertos"
+#~ msgctxt "founding team tally: open roles"
+#~ msgid "{0} open"
+#~ msgstr "{0} abiertos"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/QuestActions.tsx
@@ -58889,6 +58956,12 @@ msgstr "Algo que adjuntaste no nos llegó completo. Envíalo de nuevo, por favor
 msgctxt "under a steward's card: a role someone already holds"
 msgid "Held"
 msgstr "Ocupado"
+
+# needs-native-review: first pass, five-reviewer QA fixes, 25 Nov 2026
+#: client/src/pages/Feedback.tsx
+msgctxt "feedback page: the kind"
+msgid "What kind of feedback"
+msgstr "Qué tipo de comentario"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
@@ -61486,7 +61559,7 @@ msgstr "Un lote"
 #~ msgstr "1 meta para tu primera luna"
 
 # needs-native-review: new words, 12 Nov 2026
-#: client/src/pages/Roles.tsx
+#: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"

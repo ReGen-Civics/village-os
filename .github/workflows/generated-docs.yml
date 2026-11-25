@@ -42,8 +42,15 @@ permissions:
 
 # One at a time, newest wins: every run regenerates from the head it checked out,
 # so a superseded run has nothing the next one will not do.
+#
+# THE BOT'S OWN COMMIT GETS ITS OWN GROUP. Pushed with the deploy key, that commit
+# starts a run of this workflow, and the job skips it by message. But concurrency is
+# decided before any job's `if:`, so in a shared group that skipped run still
+# cancelled the run that pushed it, during its Strict check: every committing run from
+# #319 to #327 (25 Nov 2026) ended "cancelled" with the strict check unfinished and no
+# issue opened. In a group of its own, the skipped run cancels nothing.
 concurrency:
-  group: generated-docs
+  group: generated-docs-${{ github.event_name == 'push' && startsWith(github.event.head_commit.message, 'Regenerate the generated docs and catalogs') && 'bot-commit' || 'regenerate' }}
   cancel-in-progress: true
 
 defaults:

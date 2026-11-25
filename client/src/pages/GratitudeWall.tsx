@@ -98,6 +98,8 @@ export default function GratitudeWall() {
   const { t } = useLingui();
   const { user } = useAuth();
   const wide = useWide();
+  // Whether the hero above an empty wall drew lines marked as examples (VoicesHero, `onExamples`).
+  const [heroExamples, setHeroExamples] = useState(false);
   // Null until the first read lands: an empty array is a claim that the wall is empty.
   const [wall, setWall] = useState<WallEntry[] | null>(null);
   // undefined = not loaded (or the load failed); null = loaded, no game state.
@@ -363,13 +365,16 @@ export default function GratitudeWall() {
               {wall === null ? null : wall.length === 0 ? (
                 <>
                   {/* An empty wall still opens with words: the hero's labelled examples. */}
-                  <VoicesHero />
+                  <VoicesHero onExamples={setHeroExamples} />
                   {/* An empty ring of places, nobody named yet, and one door: to the
                       composer for a member, none for a visitor, whose sign-in
-                      door already sits above the wall (components/quiet). */}
+                      door already sits above the wall (components/quiet).
+                      With the hero's examples above, it says they are examples
+                      and this is where the first real one lands, so the two
+                      never read as a contradiction (25 Nov 2026). */}
                   <QuietEmpty
                     drawing="ring"
-                    title={t`No thanks on the wall yet`}
+                    title={heroExamples ? t({ message: "Nobody here has carried a thanks yet", context: "empty thanks wall under the example lines" }) : t`No thanks on the wall yet`}
                     door={
                       user
                         ? asSheet
@@ -379,7 +384,9 @@ export default function GratitudeWall() {
                     }
                     className="justify-center"
                   >
-                    {t`The wall is waiting for its first appreciation.`}
+                    {heroExamples
+                      ? t({ message: "The lines above marked Example show what a thanks looks like. The first real one lands here.", context: "empty thanks wall under the example lines" })
+                      : t`The wall is waiting for its first appreciation.`}
                   </QuietEmpty>
                 </>
               ) : (

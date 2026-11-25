@@ -26,10 +26,32 @@ import path from "node:path";
 import { provisionTestDb, testDbConfigured, waitForPortFree, E2E_BOOT_DEADLINE_MS } from "../server/db/testDb.ts";
 import { startFakeResend } from "../server/testkit/fakeResend.ts";
 import { main as smoke } from "./browser-smoke.mjs";
+import { healthFailure } from "./lib/healthFailure.mjs";
 
 const DIST = path.resolve("dist/index.js");
-const PORT = 6500 + (process.pid % 400);
-const BASE = `http://localhost:${PORT}`;
+/*
+ * 7400-7799, because no port in it is one fetch() refuses. The old 6500-6899 held eight
+ * (6566, 6665-6669, 6679, 6697: the Fetch standard's blocked list, which undici enforces with
+ * "fetch failed", cause "bad port", before opening a socket). A pid landing on one booted a
+ * healthy server the /health poll could never reach: run 45580310597 drew 6667 and logged
+ * "Server listening on 0.0.0.0:6667" beside "did not start within 120s". The run that #1627
+ * below blames on ::1 drew 6566, which is on the same list.
+ *
+ * Every port from 1024 to 32767 already belongs to an e2e suite's window
+ * (scripts/check-e2e-ports.mjs), so no window here can be disjoint from all of them. This one
+ * shares ports only with server/agent.routes.e2e.test.ts's STUB_PORT, which matters for a
+ * local run beside that suite and never in CI, where this job has its runner to itself.
+ */
+const PORT = 7400 + (process.pid % 400);
+/*
+ * 127.0.0.1, never "localhost" (#1627, 25 Nov 2026). The server binds IPv4 0.0.0.0 and waitForPortFree checks
+ * 127.0.0.1, but "localhost" may resolve to ::1 first on a runner. Asked by name, the boot poll could reach whatever
+ * holds the port on the IPv6 side, which the free-port check never looked at, while the server it started answered
+ * nobody: run 45557117427 logged "listening on 0.0.0.0:6566" at +1.0s and then two minutes of "fetch failed". The
+ * address the poll asks is now the one checked and the one bound.
+ */
+const SMOKE_HOST = "127.0.0.1";
+const BASE = `http://${SMOKE_HOST}:${PORT}`;
 const ADMIN = `browser-smoke-admin-${crypto.randomBytes(12).toString("hex")}`;
 const PROVIDER_KEY = "re_test_browser_smoke";
 const FOUNDER = { email: `smoke-founder-${PORT}@example.test`, name: "Smoke Founder", password: "SmokeFounder123!" };
@@ -170,7 +192,7 @@ async function run() {
         if (res.ok) break;
         lastHealth = `HTTP ${res.status} ${(await res.text().catch(() => "")).slice(0, 400)}`;
       } catch (e) {
-        lastHealth = `no answer (${String(e?.name ?? "")}: ${String(e?.message ?? e).slice(0, 200)})`;
+        lastHealth = `no answer (${healthFailure(e)})`;
       }
       await new Promise((r) => setTimeout(r, 400));
     }

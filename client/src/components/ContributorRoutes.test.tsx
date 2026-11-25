@@ -11,12 +11,16 @@ let config: any = null;
 let served = false;
 vi.mock("@/lib/gameApi", () => ({ useGameConfig: () => config }));
 vi.mock("@/lib/brochure", () => ({ useStoryPageShown: () => (href: string) => served && href === "/work-with-us" }));
+/** Whether the reader is a member; a newcomer has no new-role door to fall back to (25 Nov 2026). */
+let member = true;
+vi.mock("@/lib/newcomer", () => ({ useNewcomerOrVisitor: () => !member }));
 
 import ContributorRoutes, { StartVentureButton, useFourWaysHeading, useReplyPromise } from "./ContributorRoutes";
 
 afterEach(() => {
   cleanup();
   config = null;
+  member = true;
   served = false;
 });
 
@@ -91,6 +95,13 @@ describe("the four cards", () => {
     render(<StartVentureButton />);
     expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/role-proposals/new");
   });
+
+  it("draws no pitch button for a newcomer while the proposal form is off: the member's door is closed to them (25 Nov 2026)", () => {
+    served = false;
+    member = false;
+    render(<StartVentureButton />);
+    expect(screen.queryByRole("link", { name: "Start a venture" })).toBeNull();
+  });
 });
 
 describe("Start a venture lands on the venture form (the lead, 24 Nov 2026)", () => {
@@ -122,6 +133,18 @@ describe("Start a venture lands on the venture form (the lead, 24 Nov 2026)", ()
   it("CONTROL: a village that switched the proposal page off sends a venture to the new-role door, never a page it hid", () => {
     render(<ContributorRoutes variant="links" except={["team"]} />);
     expect(ventureHref()).toBe("/role-proposals/new");
+  });
+
+  it("with the proposal page off, sends a newcomer's venture to the open ventures on /roles, never the member's door", () => {
+    member = false;
+    render(<ContributorRoutes variant="links" except={["team"]} />);
+    expect(ventureHref()).toBe("/roles#open-ventures");
+  });
+
+  it("leaves out a route the page says this reader cannot open", () => {
+    render(<ContributorRoutes variant="links" except={["team"]} hrefs={{ venture: null }} />);
+    expect(document.querySelector('[data-route-door="venture"]')).toBeNull();
+    expect(document.querySelector('[data-route-door="partner"]')).toBeTruthy();
   });
 });
 

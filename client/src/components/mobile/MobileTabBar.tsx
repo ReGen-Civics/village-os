@@ -15,6 +15,7 @@
  *  - It pads for env(safe-area-inset-bottom) so the bar clears the iOS home
  *    indicator.
  */
+import { useMobileMenuOpen } from "@/lib/mobileMenuState";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { BARE_ROUTES, CHOOSE_PATH_HREF, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_GLYPHS, PATH_SLOT, TAB_SLOTS, pathProgressHref, type TabSlot } from "@/config/mobileNav";
@@ -178,6 +179,8 @@ export function pathTab(claimed: readonly string[] | undefined, signedIn: boolea
 
 export default function MobileTabBar() {
   const [location] = useLocation();
+  // Whether the drawer More opens is open, for More's aria-expanded (lib/mobileMenuState.ts).
+  const menuOpen = useMobileMenuOpen();
   const currentPath = normalisePath(location);
   // The token slot reads the village's word for its token; `path` never moves.
   const tokenName = useTokenName("Recognition");
@@ -318,12 +321,14 @@ export default function MobileTabBar() {
             );
           }
 
+          const opensMenu = slot.event === "open-mobile-menu";
           return (
             <button
               key={slot.label}
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(slot.event!))}
               aria-label={slot.label}
+              {...(opensMenu ? { "aria-expanded": menuOpen, "aria-controls": "mobile-menu" } : {})}
               className={cls}
             >
               {inner}

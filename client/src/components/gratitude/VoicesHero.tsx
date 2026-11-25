@@ -52,7 +52,11 @@ import { Trans } from "@lingui/react/macro";
 const SIZES = ["text-2xl", "text-xl", "text-lg"] as const;
 const sizeAt = (i: number): string => SIZES[i % SIZES.length] ?? SIZES[2];
 
-export default function VoicesHero() {
+/**
+ * `onExamples` hears whether the hero drew any line marked as an example, so the wall below can say the same thing
+ * the hero does (the five-reviewer QA pass, 25 Nov 2026: examples above, then "the wall is empty").
+ */
+export default function VoicesHero({ onExamples }: { onExamples?: (shown: boolean) => void } = {}) {
   const [answer, setAnswer] = useState<VoicesAnswer | null>(null);
   // True once the read has landed or failed. Until then the hero holds its
   // place (see the placeholder below).
@@ -76,6 +80,11 @@ export default function VoicesHero() {
       alive = false;
     };
   }, []);
+
+  const examplesShown = !!answer && answer.voices.some((v) => v.isExample);
+  useEffect(() => {
+    onExamples?.(examplesShown);
+  }, [examplesShown, onExamples]);
 
   /*
    * THE HERO HOLDS ITS PLACE WHILE IT LOADS.

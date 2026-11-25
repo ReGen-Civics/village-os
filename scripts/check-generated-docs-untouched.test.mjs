@@ -210,6 +210,14 @@ check("the workflow runs on main, needs no secret but its deploy key, names no r
   }
   assert.match(wf, /i18n:extract/);
 });
+check("the bot's own commit runs in its own concurrency group, so it cannot cancel the strict check of the run that pushed it", () => {
+  const group = wf.match(/^concurrency:\n\s+group:\s*(.+)$/m)?.[1] ?? "";
+  // The job skips its own commit by this message; the group must split on the same words.
+  const skip = wf.match(/startsWith\(github\.event\.head_commit\.message, '([^']+)'\)/)?.[1];
+  assert.ok(skip, "the job's own-commit skip");
+  assert.ok(group.includes(`startsWith(github.event.head_commit.message, '${skip}')`), `group ${group} does not split on "${skip}"`);
+  assert.notEqual(group.trim(), "generated-docs", "CONTROL: one shared group lets the bot's run cancel the committing run");
+});
 check("CONTROL: ci.yml never sets strict, because a merge commit is one bot commit older than its docs", () => {
   const ci = fs.readFileSync(path.join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
   assert.doesNotMatch(ci, /GENERATED_DOCS_MODE:\s*strict/);

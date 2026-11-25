@@ -26,6 +26,7 @@ vi.mock("@/modules/ModuleProvider", () => ({ useModule: () => undefined, useModu
 vi.mock("@/components/natural/useReducedMotion", () => ({ useReducedMotion: () => true, prefersReducedMotion: () => true }));
 
 import Roles, { roleForOldLink } from "./Roles";
+import { resetGameConfigForTests } from "@/lib/gameApi";
 
 class NoopIntersectionObserver {
   observe() {}
@@ -64,6 +65,7 @@ let founding: any;
 const wide = () => vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
 
 beforeEach(() => {
+  resetGameConfigForTests();
   window.history.replaceState(null, "", "/roles");
   try {
     window.localStorage.clear();
@@ -104,6 +106,8 @@ beforeEach(() => {
       if (u === "/api/org") return reply(org);
       if (u === "/api/org/founding-team") return reply(founding);
       if (u === "/api/season") return reply({ current: null });
+      // A village serving its story pages, the work-with-us form among them.
+      if (u === "/api/game/config") return reply({ project: { name: "Willowbrook" }, brochurePages: true, brochureHidden: [] });
       return reply({}, 404);
     }),
   );
