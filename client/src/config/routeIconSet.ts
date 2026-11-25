@@ -11,7 +11,7 @@
  */
 import { Heart } from "lucide-react";
 import { Lotus } from "@/components/sacred/glyphs";
-import { Cell, CellRing, CouncilCircle, MushroomNetwork, Seed, SeedPin, Songbird, Splash, Sprout, SteppingStones } from "@/components/sacred/living";
+import { Cell, CellRing, CouncilCircle, Seed, SeedPin, Songbird, Splash, Sprout, SteppingStones } from "@/components/sacred/living";
 import type { RouteIcon } from "./routeIcons";
 
 export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
@@ -24,7 +24,8 @@ export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
   "/gratitude": Heart,
   "/profile": Sprout,
   "/path": Seed,
-  "/governance": MushroomNetwork,
+  // How the village decides: the council circle, as the welcome page's "How we decide" door draws it.
+  "/governance": CouncilCircle,
   "/decisions": CouncilCircle,
   "/messages": Songbird,
   "/feed": Splash,
