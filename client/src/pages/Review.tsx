@@ -74,7 +74,7 @@ import { CHANGE_LIMIT_HREF, countWithEdits, limitSentence, readWithdrawRefusal }
 import { STRUCTURE_KINDS } from "@shared/structurePlan";
 import { PROPOSE_QUEST_MODULE } from "@shared/questIdeas";
 import { SeraFold, SeraMemberPage, SeraTop, useSeraOnReview } from "@/components/review/SeraOnReview";
-import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, H1, LABEL, LEDE, LINK, TILE, WORLD } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, TILE, WORLD } from "@/components/journey/look";
 import { byArrival } from "@/components/governance/deciderOrder";
 
 /** The kinds that change the chart, as the structure review reads them. */
@@ -598,6 +598,10 @@ export default function Review() {
               a draft you preview before it goes live.
             </Trans></p>
           )}
+          <p className={`${HINT} mt-2`}>
+            <Trans context="Review, a door to the one list">Looking for a code such as B-71, or for everything waiting in one list?</Trans>{" "}
+            <Link href="/admin/review" className={LINK}><Trans context="Review, a door to the one list">Find it here</Trans></Link>
+          </p>
         </div>
 
         <SeraTop sera={sera} queue={queue} witness={(consent.claims ?? []).filter((c) => c.status === "submitted").length} onReload={load} />

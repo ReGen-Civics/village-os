@@ -214,6 +214,8 @@ const RitesDoor = lazyPage(() => import("./pages/rites/Door").then((m) => ({ def
 const RitesPacket = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Packet })));
 const Mint = lazyPage(() => import("./pages/Mint"));
 const ProposedChanges = lazyPage(() => import("./pages/ProposedChanges"));
+// The deciders' one list, each queue read as the person (docs/REVIEW_INBOX_PLAN.md, lane 4a).
+const AdminReview = lazyPage(() => import("./pages/AdminReview"));
 const PublicProfile = lazyPage(() => import("./pages/PublicProfile"));
 const Register = lazyPage(() => import("./pages/Register"));
 const SetPassword = lazyPage(() => import("./pages/SetPassword"));
@@ -462,6 +464,7 @@ function Router() {
       <Route path="/admin/mint" component={Mint} />
       {/* Every change an agent proposed, reviewed, edited and accepted on one page. */}
       <Route path="/admin/proposals" component={ProposedChanges} />
+      <Route path="/admin/review" component={AdminReview} />
       <Route path="/profile" component={Profile} />
       {/* The class select. Under /profile because a party is part of who you
           are here, not a separate account setting. */}
