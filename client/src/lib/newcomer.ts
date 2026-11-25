@@ -52,11 +52,13 @@ export function isMemberView(user: AdmissionView | null | undefined, stages: rea
  * reads as a visitor. useAuth reads the context first and throws only after, so the hooks run in the same order.
  */
 export function useUserOrVisitor(): AdmissionView | null {
+  let user: AdmissionView | null = null;
   try {
-    return (useAuth().user as AdmissionView | null) ?? null;
+    user = (useAuth().user as AdmissionView | null) ?? null;
   } catch {
-    return null;
+    user = null;
   }
+  return user;
 }
 
 export function useNewcomerOrVisitor(): boolean {
