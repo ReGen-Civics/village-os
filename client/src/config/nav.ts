@@ -17,7 +17,7 @@
 import {
   type LucideIcon,
 } from "lucide-react";
-import { MushroomNetwork, Pines, SeedPodHome, SunLeaf } from "@/components/sacred/livingCore";
+import { SeedHand, SeedPodHome, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
 
 export type NavLink = {
@@ -284,8 +284,9 @@ export const NAV: readonly NavEntry[] = [
   {
     label: "Join",
     items: [
-      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: Pines },
-      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: MushroomNetwork },
+      // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
+      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand },
+      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown },
       { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome },
       { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf },
       { href: "/opportunities", brochure: true, label: "Business Opportunities" },
