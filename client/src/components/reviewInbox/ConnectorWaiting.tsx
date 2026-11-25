@@ -3,7 +3,7 @@
  * on /admin/proposals, and every set of changes that write the same thing gathered into one conflict card.
  */
 import { useMemo } from "react";
-import { H2 } from "@/components/journey/look";
+import { CHIP_SOFT, H2 } from "@/components/journey/look";
 import ChangeCard from "@/components/proposals/ChangeCard";
 import type { Proposal } from "@/components/proposals/reviewTypes";
 import { conflictGroups, oldestFirst, waitingConflicts, type ConflictInput } from "@shared/proposalConflicts";
@@ -12,7 +12,7 @@ import type { ConnectorDesk } from "./useConnectorDesk";
 
 type Slot = { kind: "one"; change: Proposal } | { kind: "choose"; options: Proposal[] };
 
-export default function ConnectorWaiting({ desk, title, found }: { desk: ConnectorDesk; title: string; found: ReadonlySet<string> }) {
+export default function ConnectorWaiting({ desk, title, count, found }: { desk: ConnectorDesk; title: string; count: number; found: ReadonlySet<string> }) {
   const { slots, links } = useMemo(() => {
     const list = [...desk.changes].sort(oldestFirst);
     // What each would be accepted with: the person's saved edits when there are any, as the server reads it.
@@ -41,8 +41,10 @@ export default function ConnectorWaiting({ desk, title, found }: { desk: Connect
   if (!slots.length) return null;
   return (
     <section className="space-y-3" aria-labelledby="review-connector">
-      <h2 id="review-connector" className={H2}>
+      <h2 id="review-connector" className={`${H2} flex items-baseline gap-3`}>
         {title}
+        {" "}
+        <span className={CHIP_SOFT}>{count}</span>
       </h2>
       {desk.notice ? (
         <p className="text-sm text-foreground" role="status" data-testid="decide-notice">
