@@ -78,7 +78,7 @@ export async function stageSuggestion(db: Db, input: StageInput): Promise<{ id: 
   const id = `sg_${randomUUID().replace(/-/g, "").slice(0, 24)}`;
   const dedupeKey = dedupeKeyOf(input.filer, input);
   const keys = keysOfAim(aimOf(input.kind, input.target, input.body));
-  const [res] = await db.query<ResultSetHeader>(
+  await db.query<ResultSetHeader>(
     "INSERT INTO suggestion_staging (id, stream, stream_ref, filer, filer_kind, kind, target_json, body_json, why, evidence_json, reconsider_json, touches_person, needs_json, provides_json, keys_json, value_digest, dedupe_key, state, held_code, held_fields_json, released_by_capability, released_at, card_id, published_change_id, received_at, updated_at) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'staged', NULL, NULL, NULL, NULL, NULL, NULL, ?, ?) " +
       "ON DUPLICATE KEY UPDATE id = id",
@@ -104,9 +104,12 @@ export async function stageSuggestion(db: Db, input: StageInput): Promise<{ id: 
       input.now,
     ],
   );
-  if (res.affectedRows === 1) return { id, duplicate: false };
+  // The row that holds the key is the answer. `affectedRows` cannot tell an insert from a duplicate
+  // here: mysql2 connects with CLIENT_FOUND_ROWS, so `ON DUPLICATE KEY UPDATE id = id` reports one
+  // row for a duplicate too, and a re-send was once answered as new with an id never stored.
   const [rows] = await db.query<RowDataPacket[]>("SELECT id FROM suggestion_staging WHERE stream = ? AND dedupe_key = ? LIMIT 1", [input.stream, dedupeKey]);
-  return { id: String(rows[0]?.id ?? id), duplicate: true };
+  const held = rows[0] ? String(rows[0].id) : id;
+  return { id: held, duplicate: held !== id };
 }
 
 function rowOf(r: RowDataPacket): StagedRow {
