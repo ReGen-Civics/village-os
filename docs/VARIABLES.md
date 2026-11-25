@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 64 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 287 open and 67 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 324 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 327 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-351 dials in 41 categories. 175 carry a minimum and a maximum. By type: 136 integer, 21 decimal, 19 percentage, 52 boolean, 37 choice, 73 text, 13 longtext.
+354 dials in 41 categories. 176 carry a minimum and a maximum. By type: 137 integer, 21 decimal, 19 percentage, 53 boolean, 37 choice, 74 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 324 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 25 | 24 | 1 |
+| The village's people | 28 | 24 | 4 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
@@ -297,6 +297,9 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Reports that hide a photograph on their own | `map.photo_report_hide_threshold` | Village map | integer | `3` | the whole village |
 | Keep the record of a removed photograph for | `map.photo_tombstone_days` | Village map | integer | `180` | the founder or an admin |
 | Show who holds each role to visitors | `org.public_people` | The village's people | boolean | `true` | the founder or an admin |
+| Ask visitors for their name and email before the portal | `entrance.required` | The village's people | boolean | `false` | the founder or an admin |
+| Portal entrance: Turnstile site key | `entrance.turnstile_site_key` | The village's people | text | blank | the founder or an admin |
+| Portal entrance: Brevo list | `entrance.brevo_list_id` | The village's people | integer | `0` | the founder or an admin |
 | Ask the circle to consent after the conversations | `org.consent_after_interviews` | The village's people | boolean | `false` | the whole village |
 | The role that sends first replies to applicants | `org.onboarding_role` | The village's people | text | blank | the whole village |
 | The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
@@ -3870,7 +3873,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-25 dials. 24 for the whole village, 1 for the founder or an admin.
+28 dials. 24 for the whole village, 4 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3882,6 +3885,48 @@ On, anyone can read the first names of the people holding each role on the Team,
 | Type | boolean, on or off |
 | Default | `true` |
 | Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Ask visitors for their name and email before the portal
+
+On, a visitor who is not signed in meets one calm screen before the roles, the game, the quests, the circles and the map: their name and email, a WhatsApp number and a website or social link if they want, a box to tick for updates, and a check that they are a person. Their device is remembered for 90 days. The public pages stay open to everyone, and signed-in members never see the screen. Admin, Portal visitors lists everyone who entered, with a CSV. Off, everything that was public stays public.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.required` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: Turnstile site key
+
+The public half of a Cloudflare Turnstile widget, which checks that a visitor at the portal entrance is a person. It works only together with its secret, typed under Admin, Integrations. Blank, or without the secret, the entrance uses its simpler check: a hidden field, a minimum time on the form and a limit per connection.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.turnstile_site_key` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Portal entrance: Brevo list
+
+The number of the Brevo list that portal visitors join when they tick "send me updates". It works only together with the Brevo key, typed under Admin, Integrations. 0 means nobody is sent to Brevo, and the visitors stay on the Portal visitors list in Admin. Joining the list sends no email by itself; a welcome goes out only if the list has one set up inside Brevo.
+
+| Fact | Value |
+| --- | --- |
+| Key | `entrance.brevo_list_id` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 100000000 |
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
