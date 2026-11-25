@@ -144,19 +144,30 @@ async function run() {
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
-  child.stdout.on("data", (d) => logs.push(String(d)));
-  child.stderr.on("data", (d) => logs.push(String(d)));
+  // Each line stamped with the time since spawn: the boot that gave up on #1592 (run 45489920721) printed every line
+  // at the same instant, so nobody could tell a two-minute boot from a server that was up and answering 503.
+  const spawned = Date.now();
+  const stamp = (d) => String(d).split("\n").filter((l) => l.length).map((l) => `[+${((Date.now() - spawned) / 1000).toFixed(1)}s] ${l}\n`).join("");
+  child.stdout.on("data", (d) => logs.push(stamp(d)));
+  child.stderr.on("data", (d) => logs.push(stamp(d)));
   try {
     const deadline = Date.now() + E2E_BOOT_DEADLINE_MS;
+    let lastHealth = "no answer yet";
     for (;;) {
       if (Date.now() > deadline || child.exitCode !== null) {
-        console.error(`browser-smoke-local: the server did not start.\n${logs.join("").slice(-4000)}`);
+        console.error(`browser-smoke-local: the server did not start within ${E2E_BOOT_DEADLINE_MS / 1000}s${child.exitCode !== null ? ` (it exited with ${child.exitCode})` : ""}.`);
+        console.error(`browser-smoke-local: the last /health answer, at +${((Date.now() - spawned) / 1000).toFixed(1)}s: ${lastHealth}`);
+        console.error(`browser-smoke-local: what the database was doing:\n${await databaseNow(db.url)}`);
+        console.error(`browser-smoke-local: the server's last lines:\n${logs.join("").slice(-4000)}`);
         return 2;
       }
       try {
-        if ((await fetch(`${BASE}/health`)).ok) break;
-      } catch {
-        /* not up yet */
+        // A bounded ask: a request the server accepts and never answers would otherwise hold the loop past its deadline.
+        const res = await fetch(`${BASE}/health`, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) break;
+        lastHealth = `HTTP ${res.status} ${(await res.text().catch(() => "")).slice(0, 400)}`;
+      } catch (e) {
+        lastHealth = `no answer (${String(e?.name ?? "")}: ${String(e?.message ?? e).slice(0, 200)})`;
       }
       await new Promise((r) => setTimeout(r, 400));
     }
@@ -185,3 +196,24 @@ run().then(
     process.exit(2);
   },
 );
+
+/**
+ * What the database is busy with when a boot gives up: every connection that is not idle, how long it has been
+ * on its statement, and what it waits for, so a boot stuck behind a lock names the lock. Best effort: a database
+ * that cannot be asked says so in one line and never hides the rest of the report.
+ */
+async function databaseNow(url) {
+  try {
+    const mysql = (await import("mysql2/promise")).default;
+    const conn = await mysql.createConnection({ uri: url, connectTimeout: 5000 });
+    try {
+      const [rows] = await conn.query("SELECT ID, USER, DB, COMMAND, TIME, STATE, LEFT(INFO, 200) AS INFO FROM information_schema.PROCESSLIST WHERE COMMAND NOT IN ('Sleep', 'Daemon') AND ID <> CONNECTION_ID() ORDER BY TIME DESC LIMIT 20");
+      if (!rows.length) return "  (no connection is busy)";
+      return rows.map((r) => `  #${r.ID} ${r.USER}@${r.DB ?? "-"} ${r.COMMAND} ${r.TIME}s ${r.STATE ?? ""} ${r.INFO ?? ""}`.trimEnd()).join("\n");
+    } finally {
+      await conn.end().catch(() => {});
+    }
+  } catch (e) {
+    return `  (could not ask the database: ${String(e?.message ?? e).slice(0, 200)})`;
+  }
+}
