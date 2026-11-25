@@ -3573,9 +3573,13 @@ async function mayAct(req: express.Request, cap: Capability): Promise<Capability
  * village having taken something on, and an operator who believes the panel
  * is broken starts looking for a database to edit.
  */
-/** Whether this member holds the live view for QA now, asked of THE gate (server/lib/liveView.ts). */
+/**
+ * Whether this member holds the live view for QA now, asked of THE gate (server/lib/liveView.ts), judged as a
+ * plain member: no admin short-circuit and no founder, so only a seat carrying `qa.live_view` opens it (the
+ * coordinator, 25 Nov 2026). An admin with no QA seat is refused like anybody else.
+ */
 async function mayLiveView(user: any): Promise<boolean> {
-  return capabilityDecision("qa.live_view", await capabilityCtx(user)).allowed;
+  return capabilityDecision("qa.live_view", { ...(await capabilityCtx(user)), isAdmin: false, isFounder: false }).allowed;
 }
 
 async function guardCapability(

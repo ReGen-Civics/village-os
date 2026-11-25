@@ -959,7 +959,7 @@ describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token r
   });
 
   it("is offered once a seat linked to the QA viewers group holds them", async () => {
-    const made = await call("POST", "/api/admin/org/roles", { id: SEAT, name: "QA", circleId: null, aim: "Check that the live game works as members meet it.", seats: 1 });
+    const made = await call("POST", "/api/admin/org/roles", { id: SEAT, name: "QA", circleId: null, aim: "Check that the live game works as members meet it.", seats: 2 });
     expect(made.status, made.text).toBeLessThan(300);
     seatId = String(made.json?.id ?? SEAT);
     const linked = await call("PUT", `/api/admin/org-roles/${seatId}/power-groups`, { roleIds: ["qa-viewers"] });
@@ -1010,22 +1010,34 @@ describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token r
     expect(Number(after.n)).toBe(Number(before.n));
   });
 
-  it("an admin's live view reads as a plain member: no admin page, no editor's door, whatever the holder may do", async () => {
-    // The founder is an admin, and an admin holds qa.live_view by being one, so they may make a live view token.
-    const minted = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
-    expect(minted.status, minted.text).toBe(200);
-    const founderLive = String(minted.json?.token ?? "");
-    // An admin-only read: the founder's own session opens it, their live view does not.
-    expect((await call("GET", "/api/admin/players")).status).toBe(200);
-    const players = await call("GET", "/api/admin/players", undefined, founderLive);
-    expect(players.status, players.text).not.toBe(200);
-    // The role card: the founder's session holds the editor's door, their live view reads it as a member does.
+  it("an admin with no QA seat is refused the live view like anybody else", async () => {
+    // The founder is an admin. The live view is judged as a plain member, so being an admin opens nothing.
+    expect((await call("GET", "/api/agent/setup")).json.scopes).not.toContain("live.view");
+    const refused = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
+    expect(refused.status, refused.text).toBe(400);
+  });
+
+  it("an admin seated in QA reads as a plain member: no pay ceiling, no editor's door, no admin page", async () => {
+    const seated = await call("POST", `/api/admin/org/roles/${seatId}/holders`, { userId: founderId, holderKind: "member" });
+    expect(seated.status, seated.text).toBeLessThan(300);
+    // A pay ceiling on the QA card, written by the founder as its editor. org.show_pay_ranges stays off (its default).
+    const priced = await call("POST", `/api/org/role-edit/${seatId}`, { sections: { payCeiling: { amount: 13000, currency: "USD", per: "month" } } });
+    expect(priced.status, priced.text).toBe(200);
     const asFounder = await call("GET", `/api/org/role-card/${seatId}`);
     expect(asFounder.status, asFounder.text).toBe(200);
     expect(asFounder.json?.mayEdit).toBe(true);
+    expect(asFounder.json?.sections?.payCeiling?.amount, "the control: the founder's own session reads the ceiling").toBe(13000);
+    expect((await call("GET", "/api/admin/players")).status).toBe(200);
+
+    const minted = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
+    expect(minted.status, minted.text).toBe(200);
+    const founderLive = String(minted.json?.token ?? "");
     const asLive = await call("GET", `/api/org/role-card/${seatId}`, undefined, founderLive);
-    if (asLive.status === 200) expect(asLive.json?.mayEdit).toBe(false);
-    else expect(asLive.status, "an unlisted role is hidden from a member, so a 404 is the member's answer").toBe(404);
+    expect(asLive.status, asLive.text).toBe(200);
+    expect(asLive.json?.mayEdit).toBe(false);
+    expect("payCeiling" in (asLive.json?.sections ?? {})).toBe(false);
+    expect(asLive.text).not.toContain("13000");
+    expect((await call("GET", "/api/admin/players", undefined, founderLive)).status).not.toBe(200);
     // The mark only takes power away: the founder's own session is untouched.
     expect((await call("GET", "/api/admin/players")).status).toBe(200);
   });
