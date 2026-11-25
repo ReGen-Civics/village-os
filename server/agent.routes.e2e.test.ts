@@ -936,6 +936,7 @@ describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token r
   let live = "";
   let assignmentId = "";
   const SEAT = "qa-seat";
+  let seatId = SEAT;
   const raw = (route: string, token: string) => fetch(BASE + route, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); // module-review-ok: the test client dialling the built server on localhost
 
   it("the boot made an empty QA viewers group carrying only the live view", async () => {
@@ -960,7 +961,7 @@ describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token r
   it("is offered once a seat linked to the QA viewers group holds them", async () => {
     const made = await call("POST", "/api/admin/org/roles", { id: SEAT, name: "QA", circleId: null, aim: "Check that the live game works as members meet it.", seats: 1 });
     expect(made.status, made.text).toBeLessThan(300);
-    const seatId = String(made.json?.id ?? SEAT);
+    seatId = String(made.json?.id ?? SEAT);
     const linked = await call("PUT", `/api/admin/org-roles/${seatId}/power-groups`, { roleIds: ["qa-viewers"] });
     expect(linked.status, linked.text).toBe(200);
     const seated = await call("POST", `/api/admin/org/roles/${seatId}/holders`, { userId: quinn.id, holderKind: "member" });
@@ -1007,6 +1008,26 @@ describe.skipIf(!DB_CONFIGURED)("the live view for QA: a seated holder's token r
     }
     const [[after]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM agent_tokens WHERE user_id = ?", [quinn.id]); // module-review-ok: same
     expect(Number(after.n)).toBe(Number(before.n));
+  });
+
+  it("an admin's live view reads as a plain member: no admin page, no editor's door, whatever the holder may do", async () => {
+    // The founder is an admin, and an admin holds qa.live_view by being one, so they may make a live view token.
+    const minted = await call("POST", "/api/agent/tokens", { name: "QA founder", scopes: ["live.view"] });
+    expect(minted.status, minted.text).toBe(200);
+    const founderLive = String(minted.json?.token ?? "");
+    // An admin-only read: the founder's own session opens it, their live view does not.
+    expect((await call("GET", "/api/admin/players")).status).toBe(200);
+    const players = await call("GET", "/api/admin/players", undefined, founderLive);
+    expect(players.status, players.text).not.toBe(200);
+    // The role card: the founder's session holds the editor's door, their live view reads it as a member does.
+    const asFounder = await call("GET", `/api/org/role-card/${seatId}`);
+    expect(asFounder.status, asFounder.text).toBe(200);
+    expect(asFounder.json?.mayEdit).toBe(true);
+    const asLive = await call("GET", `/api/org/role-card/${seatId}`, undefined, founderLive);
+    if (asLive.status === 200) expect(asLive.json?.mayEdit).toBe(false);
+    else expect(asLive.status, "an unlisted role is hidden from a member, so a 404 is the member's answer").toBe(404);
+    // The mark only takes power away: the founder's own session is untouched.
+    expect((await call("GET", "/api/admin/players")).status).toBe(200);
   });
 
   it("ends on the very next request once the seating ends", async () => {

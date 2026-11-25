@@ -26,15 +26,19 @@
  *     in server/index.ts) on every request, so a holder unseated a minute ago
  *     is refused now, 403 `live_view_not_held`;
  *   - turns a read into an in-process session as the holder, the way the agent
- *     gateway does, so the request is the member's own read: it passes the
- *     entrance as any signed-in member does and sees what they would see.
- *     The session is minted for this request and never sent back.
+ *     gateway does, so it passes the entrance as any signed-in member does.
+ *     The session is minted for this request and never sent back;
+ *   - marks the read to be answered as a PLAIN MEMBER (server/lib/readAsMember.ts):
+ *     an admin's token reads no admin route, no editor's door, no pay terms
+ *     and no key held only by being an admin. "Read-only QA" never becomes
+ *     an admin's view in a lane's browser.
  *
  * The agent paths (`/api/agent/v1`) are left to the agent gateway, which reads
  * the token natively and opens nothing for a scope it does not know.
  */
 import type { NextFunction, Request, Response } from "express";
 import { isAgentBearer, LIVE_VIEW_SCOPE, type AgentTokenRow } from "./agentTokens";
+import { READ_AS_MEMBER_HEADER, READ_AS_MEMBER_VALUE } from "./readAsMember";
 
 /** Reads a browser crawl may make in an hour on one token. A page draws ten or twenty. */
 export const LIVE_VIEW_READS_PER_HOUR = 3000;
@@ -96,6 +100,9 @@ export function liveViewMiddleware(deps: LiveViewDeps) {
         return;
       }
       req.headers.authorization = `Bearer ${deps.sessionFor(user)}`;
+      // Read as a PLAIN MEMBER, whatever the holder's own powers (the coordinator, 25 Nov 2026): no admin, no
+      // editor's door, no pay terms (server/lib/readAsMember.ts, the one helper for this). QA sees what a member sees.
+      req.headers[READ_AS_MEMBER_HEADER] = READ_AS_MEMBER_VALUE;
       (req as any).liveView = { tokenId: row.id, prefix: row.prefix } satisfies LiveViewMark;
       res.setHeader("X-Live-View", "read-only");
       next();

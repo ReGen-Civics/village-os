@@ -12,6 +12,7 @@ import type { Request, Response } from "express";
 import { liveViewMiddleware, LIVE_VIEW_READS_PER_HOUR, type LiveViewDeps } from "./liveView";
 import { cleanScopes, LIVE_VIEW_DEFAULT_TTL_DAYS, LIVE_VIEW_MAX_TTL_DAYS, tokenTtlDays, type AgentTokenRow } from "./agentTokens";
 import { capabilityDecision, type CapabilityCtx } from "../../shared/capabilities";
+import { readsAsPlainMember } from "./readAsMember";
 
 const TOKEN = "vat_" + "x".repeat(43);
 
@@ -55,6 +56,17 @@ describe("the live view middleware", () => {
     expect(r.auth).toBe("Bearer session-for-u1");
     expect(r.mark).toEqual({ tokenId: "atk-1", prefix: "vat_xxxxxx" });
     expect(r.headers["X-Live-View"]).toBe("read-only");
+  });
+
+  it("marks every read it serves to be answered as a plain member, so an admin holder reads no more than a member", async () => {
+    const req: any = { method: "GET", path: "/api/org/role-card/r1", headers: { authorization: `Bearer ${TOKEN}` } };
+    const res: any = { status() { return res; }, json() { return res; }, setHeader() {} };
+    await liveViewMiddleware(deps())(req, res, () => {});
+    expect(readsAsPlainMember(req)).toBe(true);
+    // A refused write is never marked: nothing past this middleware runs for it.
+    const write: any = { method: "POST", path: "/api/org", headers: { authorization: `Bearer ${TOKEN}` } };
+    await liveViewMiddleware(deps())(write, res, () => {});
+    expect(readsAsPlainMember(write)).toBe(false);
   });
 
   it("refuses every write, whatever its holder may do signed in", async () => {

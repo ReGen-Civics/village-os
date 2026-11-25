@@ -3475,9 +3475,13 @@ async function mayAct(req: express.Request, cap: Capability): Promise<Capability
   // now asks this function instead of `isAdmin`, which is exactly the kind of
   // quiet loss a gate swap produces: the route still works, and every record
   // it writes says nobody did it.
-  if (user.role === "admin" || user.role === "founder") (req as any).adminUser = user;
-  const ctx = await capabilityCtx(user);
-  const wanted = wantsOverride(req);
+  // A request marked to read as a plain member (server/lib/readAsMember.ts) is judged as one: no admin
+  // short-circuit, no founder, no break-glass, so a key an admin holds only by being one is not held here.
+  const plain = readsAsPlainMember(req);
+  if (!plain && (user.role === "admin" || user.role === "founder")) (req as any).adminUser = user;
+  const held = await capabilityCtx(user);
+  const ctx = plain ? { ...held, isAdmin: false, isFounder: false } : held;
+  const wanted = !plain && wantsOverride(req);
   const decision = capabilityDecision(cap, { ...ctx, adminOverride: wanted });
 
   if (decision.reachedPastVillage) {
