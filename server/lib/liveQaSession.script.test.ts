@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error: a plain .mjs script, no declarations
-import { parseArgs, startProblem, whoAmI, TOKEN_KEY, LIVE_VIEW_HEADER } from "../../scripts/live-qa-session.mjs";
+import { parseArgs, startProblem, whoAmI, readOnlyRoute, stoppedHere, TOKEN_KEY, LIVE_VIEW_HEADER } from "../../scripts/live-qa-session.mjs";
 import { TOKEN_KEY as APP_TOKEN_KEY } from "../../client/src/lib/gameApi";
 
 const TOKEN = "vat_" + "y".repeat(43);
@@ -47,6 +47,33 @@ describe("the live QA probe", () => {
     for (const env of [{ LIVE_QA_TOKEN: wrongShape }, {}]) {
       expect(String(startProblem(opts, env))).not.toContain("qqqqqqqqqq");
     }
+  });
+
+  it("puts the token on the village's own API reads only, and stops every write before it leaves", () => {
+    const stopped: string[] = [];
+    const rule = readOnlyRoute("https://v.example", TOKEN, stopped);
+    const run = (method: string, url: string) => {
+      const out: { did?: string; headers?: Record<string, string> } = {};
+      rule({
+        request: () => ({ url: () => url, method: () => method, headers: () => ({ accept: "application/json" }) }),
+        continue: (o?: { headers?: Record<string, string> }) => { out.did = "continue"; out.headers = o?.headers; },
+        abort: () => { out.did = "abort"; },
+      });
+      return out;
+    };
+    expect(run("GET", "https://v.example/api/season")).toEqual({ did: "continue", headers: { accept: "application/json", authorization: `Bearer ${TOKEN}` } });
+    expect(run("GET", "https://v.example/roles")).toEqual({ did: "continue", headers: undefined });
+    expect(run("GET", "https://elsewhere.example/api/season")).toEqual({ did: "continue", headers: undefined });
+    expect(run("POST", "https://v.example/api/nav/visit")).toEqual({ did: "abort" });
+    expect(run("DELETE", "https://v.example/api/quests/1")).toEqual({ did: "abort" });
+    expect(stopped).toEqual(["POST /api/nav/visit", "DELETE /api/quests/1"]);
+  });
+
+  it("does not count a write it stopped a second time, as a failed load", () => {
+    const stopped = ["POST /api/nav/visit"];
+    expect(stoppedHere(stopped, "https://v.example/api/nav/visit")).toBe(true);
+    expect(stoppedHere(stopped, "https://v.example/api/season")).toBe(false);
+    expect(stoppedHere(stopped, undefined)).toBe(false);
   });
 
   it("goes on only for a signed-in read marked read-only", async () => {

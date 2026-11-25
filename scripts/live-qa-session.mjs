@@ -19,15 +19,21 @@
  *      `X-Live-View: read-only`, which proves the server is treating the
  *      token as a read-only live view.
  *   2. Opens Chromium with the token in the slot the app keeps its sign-in
- *      in, so every page loads as you, past the entrance.
+ *      in, so every page loads as you, past the entrance. It also puts the
+ *      token on every read of the village's own /api/, because some of the
+ *      app's reads use a bare fetch that never attaches the stored sign-in,
+ *      and without it those reads meet the entrance (401) and the page draws
+ *      with parts missing. The page itself is loaded without it: the server
+ *      answers a page request carrying an agent token with 401.
  *   3. Visits each path, saves a full-page screenshot, and reports what went
  *      wrong: uncaught errors, console errors, failed API reads, and every
- *      write the page tried that the server refused as read-only (a page that
- *      writes on load is worth knowing about).
+ *      write the page tried (a page that writes on load is worth knowing
+ *      about).
  *
- * WHAT IT CANNOT DO. Change anything. Every request other than a read is
- * refused by the server (server/lib/liveView.ts), whatever the token's holder
- * may do signed in by hand.
+ * WHAT IT CANNOT DO. Change anything. Every request to the village other than
+ * a read is stopped in the browser before it leaves, and reported. The server
+ * refuses them too (server/lib/liveView.ts), whatever the token's holder may
+ * do signed in by hand.
  *
  * Options (flag, or env):
  *   --url <origin>        LIVE_QA_URL        the village's game site (required)
@@ -108,25 +114,55 @@ function loadPlaywright() {
   return null;
 }
 
-async function drawOne(context, origin, p, file) {
+/**
+ * The browser's rule for every request to the village: a read of /api/ carries
+ * the token, any other read goes as it is, and anything that is not a read is
+ * written down in `stopped` and never leaves. Requests to other origins are not
+ * touched and never see the token.
+ */
+export function readOnlyRoute(origin, token, stopped) {
+  return (route) => {
+    const req = route.request();
+    const u = new URL(req.url());
+    if (u.origin !== origin) return route.continue();
+    const method = req.method();
+    if (method !== "GET" && method !== "HEAD") {
+      stopped.push(`${method} ${u.pathname}`);
+      return route.abort();
+    }
+    if (u.pathname.startsWith("/api/")) return route.continue({ headers: { ...req.headers(), authorization: `Bearer ${token}` } });
+    return route.continue();
+  };
+}
+
+/** Whether a failed load is one of the writes this script stopped. */
+export function stoppedHere(stopped, url) {
+  if (!url) return false;
+  let pathname;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    return false;
+  }
+  return stopped.some((w) => w.slice(w.indexOf(" ") + 1) === pathname);
+}
+
+async function drawOne(context, origin, p, file, token) {
   const page = await context.newPage();
   const problems = [];
   const refusedWrites = [];
+  await page.route(`${origin}/**`, readOnlyRoute(origin, token, refusedWrites));
   page.on("pageerror", (err) => problems.push(`uncaught error: ${String(err?.message ?? err).split("\n")[0].slice(0, 300)}`));
   page.on("console", (m) => {
-    if (m.type() === "error") problems.push(`console error: ${m.text().slice(0, 300)}`);
+    if (m.type() !== "error") return;
+    // A write this script stopped shows up as a failed load too; it is reported once, as a write.
+    if (m.text().includes("net::ERR_FAILED") && stoppedHere(refusedWrites, m.location()?.url)) return;
+    problems.push(`console error: ${m.text().slice(0, 300)}`);
   });
   page.on("response", async (r) => {
     const u = new URL(r.url());
     if (u.origin !== origin || !u.pathname.startsWith("/api/")) return;
     const method = r.request().method();
-    if (r.status() === 403 && method !== "GET" && method !== "HEAD") {
-      const body = await r.json().catch(() => null);
-      if (body?.error === READ_ONLY_ERROR) {
-        refusedWrites.push(`${method} ${u.pathname}`);
-        return;
-      }
-    }
     if (r.status() >= 500) problems.push(`${method} ${u.pathname} answered ${r.status()}`);
     else if ((r.status() === 401 || r.status() === 403) && method === "GET") problems.push(`${method} ${u.pathname} refused (${r.status()})`);
   });
@@ -180,7 +216,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       await context.addInitScript(([k, v]) => { try { window.localStorage.setItem(k, v); } catch { /* storage closed */ } }, [TOKEN_KEY, token]);
       for (const p of opts.paths) {
         const name = `${label}${p === "/" ? "-home" : p.replace(/[^A-Za-z0-9]+/g, "-")}.png`;
-        report.pages.push({ shape: label, ...(await drawOne(context, opts.url, p, path.join(opts.out, name))) });
+        report.pages.push({ shape: label, ...(await drawOne(context, opts.url, p, path.join(opts.out, name), token)) });
       }
       await context.close();
     }
@@ -196,7 +232,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       const mark = r.problems.length || !r.status || r.status >= 400 ? "PROBLEM" : "ok";
       console.log(`  ${mark.padEnd(7)} ${r.shape.padEnd(7)} ${r.path}  (${r.status || "no answer"})  ${r.screenshot}`);
       for (const p of r.problems) console.log(`          ${p}`);
-      for (const w of r.refusedWrites) console.log(`          the page tried a write, refused as read-only: ${w}`);
+      for (const w of r.refusedWrites) console.log(`          the page tried a write, stopped before it left: ${w}`);
     }
   }
   return bad.length ? 1 : 0;
