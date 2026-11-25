@@ -54,8 +54,10 @@ let eventsUrl = "";
 vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+/** False makes /api/org answer 503, the way a dropped read does. */
+let orgOk = true;
 vi.mock("@/lib/gameApi", () => ({
-  gameFetch: async () => ({ ok: true, json: async () => org }),
+  gameFetch: async () => (orgOk ? { ok: true, json: async () => org } : { ok: false, status: 503, json: async () => ({}) }),
   useGameConfig: () => ({ project: { name: "Willowbrook" }, currency: { name: "Thanks" } }),
   useVillageLinks: () => ({ siteUrl: "", eventsUrl, contactEmail: "", mailTo: () => "" }),
 }));
@@ -103,7 +105,18 @@ beforeEach(() => {
   storedTeam = null;
   teamCards = [{ name: "Juno", bio: "Grows the beans." }];
   eventsUrl = "";
+  orgOk = true;
   sectionsRead.length = 0;
+});
+
+describe("a team that could not be read", () => {
+  it("says the read failed, and never that nobody has joined", async () => {
+    orgOk = false;
+    renderTeam();
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("The team didn't load");
+    expect(document.body.textContent).not.toContain("No one has joined the team yet");
+  });
 });
 
 /** /api/org as a member reads it: signed in, and holder rows that carry `kind`. */
