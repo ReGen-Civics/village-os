@@ -17,8 +17,15 @@ vi.mock("./lib/variables", async (load) => {
 const { shellWithTheme, withVillageLook } = await import("./routes/brandTheme");
 
 const SHELL = '<!doctype html>\n<html lang="en">\n<head><script>(function(){var x=1;})();</script></head><body></body></html>';
-const scriptOf = (html: string) => /<script>[\s\S]*?<\/script>/.exec(html)?.[0];
-const htmlTag = (html: string) => /<html[^>]*>/.exec(html)?.[0];
+/** The text between two markers, by plain index: no pattern to run over the page. */
+function between(html: string, open: string, close: string): string | undefined {
+  const start = html.indexOf(open);
+  if (start < 0) return undefined;
+  const end = html.indexOf(close, start + open.length);
+  return end < 0 ? undefined : html.slice(start, end + close.length);
+}
+const scriptOf = (html: string) => between(html, "<script>", "</script>");
+const htmlTag = (html: string) => between(html, "<html", ">");
 
 describe("withVillageLook", () => {
   it("writes the village's mode and paper onto <html>", () => {
