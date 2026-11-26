@@ -17,6 +17,7 @@ import { typeConfig, type WizardType } from "./wizardConfig";
 import { walkFor } from "./wizardWalk";
 import type { ProposalDraft } from "./governanceApi";
 import { Trans } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /** The best name this draft has, from whichever field carries one. */
 export function draftTitle(draft: ProposalDraft): string {
@@ -42,6 +43,7 @@ export default function DraftCards({
   onContinue: (draft: ProposalDraft) => void;
   onDiscard: (draft: ProposalDraft) => void;
 }) {
+  const ww = useWizardWords();
   if (drafts.length === 0) return null;
 
   return (
@@ -63,7 +65,7 @@ export default function DraftCards({
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
-                  {cfg?.title ?? d.wizardType}
+                  {ww(cfg?.title) ?? d.wizardType}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   <Trans context="DraftCards, span">Last edited{" "}

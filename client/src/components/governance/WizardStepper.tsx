@@ -19,6 +19,7 @@ import { Check } from "lucide-react";
 import type { StepKey } from "./wizardConfig";
 import { walkFor } from "./wizardWalk";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 export default function WizardStepper({
   typeId,
@@ -32,6 +33,7 @@ export default function WizardStepper({
   current: StepKey;
   onGoBack: (step: StepKey) => void;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const walk = walkFor(typeId, answers);
   const at = Math.max(0, walk.findIndex((s) => s.key === current));
@@ -57,7 +59,7 @@ export default function WizardStepper({
                 {done ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : i + 1}
               </span>
               <span className={here ? "font-semibold text-foreground" : done ? "text-foreground" : "text-muted-foreground"}>
-                {step.label}
+                {ww(step.label)}
               </span>
             </>
           );
@@ -88,7 +90,7 @@ export default function WizardStepper({
       {/* Mobile: one step and a row of dots. */}
       <div className="lg:hidden">
         <p className="text-sm font-semibold text-foreground">
-          {walk[at]?.label}
+          {ww(walk[at]?.label)}
           <span className="ml-2 font-normal text-muted-foreground">
             <Trans context="WizardStepper, span">step {at + 1} of {walk.length}</Trans>
           </span>
@@ -103,8 +105,12 @@ export default function WizardStepper({
                 }`}
               >
                 <span className="sr-only">
-                  {step.label}
-                  {i < at ? ", done" : i === at ? ", you are here" : ", to come"}
+                  {ww(step.label)}
+                  {i < at
+                    ? t({ message: ", done", context: "WizardStepper: screen reader, after a step already done" })
+                    : i === at
+                      ? t({ message: ", you are here", context: "WizardStepper: screen reader, after the current step" })
+                      : t({ message: ", to come", context: "WizardStepper: screen reader, after a step still to come" })}
                 </span>
               </span>
             </li>

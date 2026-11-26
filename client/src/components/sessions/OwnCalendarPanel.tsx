@@ -25,9 +25,10 @@ import CirclePicker from "@/components/circles/CirclePicker";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { CALENDAR_LIMITS, OWN_CALENDAR_COPY, ownCalendarUrl, type OwnCalendarView } from "@shared/sessionCalendar";
-import { RHYTHM_COPY } from "@shared/sessionRhythm";
+
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_DANGER, BTN_DANGER_QUIET, BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, INPUT, LABEL, LABEL_CAPS, PANEL, UNDER_BOX } from "./roomUi";
+import { rhythmWords, useRhythmWords } from "@/components/sessions/rhythmWords";
 
 type Sent = { ok: true; body: { read?: boolean } } | { ok: false; error: string };
 
@@ -37,9 +38,9 @@ async function send(path: string, method: string, body?: unknown): Promise<Sent>
     const out = (await res.json().catch(() => null)) as { error?: unknown; read?: boolean } | null;
     if (res.ok) return { ok: true, body: out ?? {} };
     const text = typeof out?.error === "string" ? out.error.trim() : "";
-    return { ok: false, error: /\s/.test(text) ? text : RHYTHM_COPY.failed };
+    return { ok: false, error: /\s/.test(text) ? text : rhythmWords().failed };
   } catch {
-    return { ok: false, error: RHYTHM_COPY.failed };
+    return { ok: false, error: rhythmWords().failed };
   }
 }
 
@@ -70,6 +71,7 @@ export default function OwnCalendarPanel({
   onChanged: () => Promise<void> | void;
   onSaid: (text: string) => void;
 }) {
+  const RY = useRhythmWords();
   const [open, setOpen] = useState(false);
   const [circleId, setCircleId] = useState(circles.length === 1 ? circles[0].id : "");
   const [url, setUrl] = useState("");
@@ -222,7 +224,7 @@ export default function OwnCalendarPanel({
                     )}
                     <div className={UNDER_BOX}>
                       <button type="submit" className={BTN_PRIMARY} disabled={busy}>
-                        {busy ? RHYTHM_COPY.saving : t`Save which events count`}
+                        {busy ? RY.saving : t`Save which events count`}
                       </button>
                       <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setFiltering(null)}>
                         {OWN_CALENDAR_COPY.cancel}

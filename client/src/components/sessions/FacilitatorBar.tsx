@@ -41,10 +41,11 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
-import { ROOM_COPY, SESSION_STAGES, STAGE_DEFS, type SessionStage, type SessionView } from "@shared/sessions";
+import { SESSION_STAGES, STAGE_DEFS, type SessionStage, type SessionView } from "@shared/sessions";
 import { BTN_FORWARD, BTN_QUIET, BTN_SECONDARY, INPUT, LABEL } from "./roomUi";
 import type { RoomActions } from "./useSessionRoom";
 import { ON_BEHALF_COPY } from "@shared/sessionOnBehalf";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export default function FacilitatorBar({
   view,
@@ -63,6 +64,7 @@ export default function FacilitatorBar({
   /** The control that discards this session, shown in the bar's own row before the toggles. */
   discard?: ReactNode;
 }) {
+  const RC = useRoomWords();
   const [panel, setPanel] = useState<"cues" | "hosts" | null>(null);
   const [busy, setBusy] = useState(false);
   const [handTo, setHandTo] = useState("");
@@ -88,7 +90,7 @@ export default function FacilitatorBar({
 
   const begun = () => {
     focusNext.current = true;
-    setSaid(ROOM_COPY.sessionBegun);
+    setSaid(RC.sessionBegun);
   };
 
   const run = async (fn: () => Promise<{ ok: boolean }>, after?: () => void) => {
@@ -117,12 +119,12 @@ export default function FacilitatorBar({
         disabled={busy}
         onClick={() => void run(() => actions.act({ type: "go", stage: shown }), onMoved)}
       >
-        {ROOM_COPY.moveHere}
+        {RC.moveHere}
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </button>
     ) : !started ? (
       <button key="begin" type="button" data-forward="" className={BTN_FORWARD} disabled={busy} onClick={() => void run(() => actions.act({ type: "start" }), begun)}>
-        {ROOM_COPY.beginSession}
+        {RC.beginSession}
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </button>
     ) : (
@@ -136,20 +138,20 @@ export default function FacilitatorBar({
           disabled={busy}
           onClick={() => void run(() => actions.act({ type: "go", stage: next }), onMoved)}
         >
-          {ROOM_COPY.nextStage}: {STAGE_DEFS[next].short}
+          {RC.nextStage}: {STAGE_DEFS[next].short}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       )
     );
 
   return (
-    <section aria-label={ROOM_COPY.youFacilitate} className="space-y-3">
+    <section aria-label={RC.youFacilitate} className="space-y-3">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         {rail && <div className="min-w-0 flex-1">{rail}</div>}
         {forward && <div className="flex shrink-0 justify-end lg:pt-1.5">{forward}</div>}
       </div>
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2">
-        <p className="mr-auto text-sm font-semibold text-foreground">{ROOM_COPY.youFacilitate}</p>
+        <p className="mr-auto text-sm font-semibold text-foreground">{RC.youFacilitate}</p>
         {actions.fillFor && others.length > 0 && (
           // Filling in for somebody (0288): what the facilitator adds next goes in as theirs, and they are told.
           <label htmlFor="fill-in-for" className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -174,10 +176,10 @@ export default function FacilitatorBar({
         </p>
         {discard}
         <button type="button" className={BTN_QUIET} aria-expanded={panel === "cues"} onClick={() => setPanel((p) => (p === "cues" ? null : "cues"))}>
-          {panel === "cues" ? ROOM_COPY.hideCues : ROOM_COPY.showCues}
+          {panel === "cues" ? RC.hideCues : RC.showCues}
         </button>
         <button type="button" className={BTN_QUIET} aria-expanded={panel === "hosts"} onClick={() => setPanel((p) => (p === "hosts" ? null : "hosts"))}>
-          {ROOM_COPY.hostsTitle}
+          {RC.hostsTitle}
         </button>
       </div>
 
@@ -203,11 +205,11 @@ export default function FacilitatorBar({
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="host-facilitator" className={LABEL}>
-                {ROOM_COPY.handTo}
+                {RC.handTo}
               </label>
               <div className="mt-1 flex gap-2">
                 <select id="host-facilitator" className={INPUT} value={handTo} onChange={(e) => setHandTo(e.target.value)} disabled={busy || !others.length}>
-                  <option value="">{ROOM_COPY.nobodyYet}</option>
+                  <option value="">{RC.nobodyYet}</option>
                   {others.map((p) => (
                     <option key={p.userId} value={p.userId}>
                       {p.name}
@@ -220,13 +222,13 @@ export default function FacilitatorBar({
                   disabled={busy || !handTo}
                   onClick={() => void run(() => actions.hosts({ facilitatorUserId: Number(handTo) }), () => setHandTo(""))}
                 >
-                  {ROOM_COPY.handOver}
+                  {RC.handOver}
                 </button>
               </div>
             </div>
             <div>
               <label htmlFor="host-secretary" className={LABEL}>
-                {ROOM_COPY.secretaryLabel}
+                {RC.secretaryLabel}
               </label>
               <select
                 id="host-secretary"
@@ -235,7 +237,7 @@ export default function FacilitatorBar({
                 aria-busy={secretarySaving != null}
                 onChange={(e) => nameSecretary(e.target.value)}
               >
-                <option value="">{ROOM_COPY.nobodyYet}</option>
+                <option value="">{RC.nobodyYet}</option>
                 {view.people.map((p) => (
                   <option key={p.userId} value={p.userId}>
                     {p.name}

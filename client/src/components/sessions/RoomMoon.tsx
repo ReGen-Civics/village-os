@@ -15,12 +15,13 @@
  * fallbacks, never a colour of its own, so on the room's night it is the
  * village's band and cream, and on the linen record the same.
  */
-import { ROOM_COPY, type SessionStamp } from "@shared/sessions";
+import { type SessionStamp } from "@shared/sessions";
 import MoonGlyph from "@/components/calendar/MoonGlyph";
+import { roomWords } from "@/components/sessions/roomWords";
 
 /** "Moon 4 · Waxing gibbous · Green", leaving out whatever the stamp does not hold. */
 export function skyLine(stamp: Pick<SessionStamp, "moonOrdinal" | "moonName" | "season">): string {
-  return [stamp.moonOrdinal != null ? ROOM_COPY.moonOrdinal(stamp.moonOrdinal) : null, stamp.moonName, stamp.season?.trim() || null]
+  return [stamp.moonOrdinal != null ? roomWords().moonOrdinal(stamp.moonOrdinal) : null, stamp.moonName, stamp.season?.trim() || null]
     .filter(Boolean)
     .join(" · ");
 }

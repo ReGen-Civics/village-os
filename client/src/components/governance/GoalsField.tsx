@@ -17,6 +17,7 @@ import { GoalsAssist } from "./SeraDraftFields";
 import { loadOrg } from "./pickSources";
 import { pickedSeats } from "./SeatPicksField";
 import { openGoals } from "./SeasonGoalField";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 export default function GoalsField({
   field,
@@ -31,6 +32,7 @@ export default function GoalsField({
   answers: Record<string, unknown>;
   problem?: string | null;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const ids = pickedSeats(answers.seatIds ?? answers.seatId);
   const key = ids.join(",");
@@ -72,8 +74,8 @@ export default function GoalsField({
 
   return (
     <fieldset className="grid gap-2" data-goals-field="">
-      <legend className="mb-1 text-sm font-semibold text-foreground">{field.label}</legend>
-      {field.help && <p className="text-sm text-muted-foreground">{field.help}</p>}
+      <legend className="mb-1 text-sm font-semibold text-foreground">{ww(field.label)}</legend>
+      {field.help && <p className="text-sm text-muted-foreground">{ww(field.help)}</p>}
       {org === null ? (
         <p className="text-sm text-muted-foreground">{t`Loading your roles' goals…`}</p>
       ) : (

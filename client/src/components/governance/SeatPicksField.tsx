@@ -21,6 +21,7 @@ import InfoTip from "@/components/InfoTip";
 import type { FieldSpec } from "./wizardConfig";
 import { loadPickOptions, type PickOption } from "./pickSources";
 import { MAX_SEATS } from "@shared/seatApplications";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /** The picked ids out of whatever the answer holds: a list, or one id from an older draft. */
 export function pickedSeats(value: unknown): string[] {
@@ -44,6 +45,7 @@ export default function SeatPicksField({
   invalid: boolean;
   footerNode: React.ReactNode;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const [options, setOptions] = useState<PickOption[] | null>(null);
   const me = String((useOptionalAuth()?.user as any)?.id ?? "");
@@ -94,10 +96,10 @@ export default function SeatPicksField({
   return (
     <fieldset aria-describedby={describedBy} aria-invalid={invalid} className="min-w-0">
       <legend className="block text-sm font-semibold text-foreground">
-        {field.label}
+        {ww(field.label)}
         {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
         {field.required && <span className="sr-only"> <Trans context="SeatPicksField, span">(required)</Trans></span>}
-        {field.tip && <InfoTip tip={field.tip} label={`What ${field.label.toLowerCase()} means`} />}
+        {field.tip && <InfoTip tip={ww(field.tip)} label={`What ${ww(field.label).toLowerCase()} means`} />}
       </legend>
       <p className="mt-0.5 text-xs text-muted-foreground" aria-live="polite">
         <Trans context="SeatPicksField, p">{picked.length} of at most {max} picked.
