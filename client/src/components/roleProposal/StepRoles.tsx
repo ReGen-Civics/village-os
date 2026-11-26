@@ -19,8 +19,9 @@ import WorkPayBlock from "@/components/WorkPayBlock";
 import type { ProposalOut, OrgCircleIn, OrgRoleIn } from "./proposalApi";
 import type { OwnAnswers, SuggestRoleIn } from "@shared/roleSuggestions";
 import { RoleSuggestions } from "./RoleSuggestions";
-import { RP_WORDS } from "./proposalWords";
+
 import { FOCUS, INPUT, LEDE, PANEL, PRIMARY, QUIET } from "./parts";
+import { proposalWords, useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export interface OrgView {
   roles: OrgRoleIn[];
@@ -63,10 +64,10 @@ export function roleFacts(r: OrgRoleIn, me: string, applying: number): string[] 
   const others = mine ? held - 1 : held;
   const of = r.seats || 1;
   const out: string[] = [];
-  if (mine) out.push(RP_WORDS.youHoldThis);
-  if (others > 0) out.push(RP_WORDS.heldBy(others));
-  out.push(held < of ? RP_WORDS.places(of - held, of) : RP_WORDS.everyPlaceHeld);
-  if (applying > 0) out.push(RP_WORDS.applying(applying));
+  if (mine) out.push(proposalWords().youHoldThis);
+  if (others > 0) out.push(proposalWords().heldBy(others));
+  out.push(held < of ? proposalWords().places(of - held, of) : proposalWords().everyPlaceHeld);
+  if (applying > 0) out.push(proposalWords().applying(applying));
   return out;
 }
 
@@ -76,6 +77,7 @@ export function suggestInput(r: OrgRoleIn, me: string, about: string): SuggestRo
 }
 
 export default function StepRoles({ proposal, picked, newRoles, org, applying, me, onToggle, onAddNew, onRemoveNew, onRetry, ownWords }: StepRolesProps) {
+  const RW = useProposalWords();
   const max = proposal.limits.maxRoles;
   const count = picked.length + newRoles.length;
   const atMost = count >= max;
@@ -104,9 +106,9 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
   };
 
   const groups: Array<{ key: Group; heading: string }> = [
-    { key: "youHold", heading: RP_WORDS.youHold },
-    { key: "open", heading: RP_WORDS.open },
-    { key: "othersHold", heading: RP_WORDS.othersHold },
+    { key: "youHold", heading: RW.youHold },
+    { key: "open", heading: RW.open },
+    { key: "othersHold", heading: RW.othersHold },
   ];
 
   const roleRow = (r: OrgRoleIn) => {
@@ -129,7 +131,7 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
           />
           <span className="grid min-w-0 gap-0.5">
             <span className="break-words font-semibold text-foreground">{r.name}</span>
-            <span className="break-words text-sm text-muted-foreground">{circle ? RP_WORDS.circleLine(circle.name, circle.purpose ?? null) : RP_WORDS.noCircle}</span>
+            <span className="break-words text-sm text-muted-foreground">{circle ? RW.circleLine(circle.name, circle.purpose ?? null) : RW.noCircle}</span>
             <span className="text-xs text-muted-foreground" data-role-facts="">
               {roleFacts(r, me, applying.get(r.id) ?? 0).join(". ")}.
             </span>
@@ -147,7 +149,7 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
 
   return (
     <div className="grid gap-4">
-      <p className={LEDE}>{RP_WORDS.rolesLede}</p>
+      <p className={LEDE}>{RW.rolesLede}</p>
       {ownWords && org && org !== "failed" && (
         <RoleSuggestions
           answers={ownWords}
@@ -158,22 +160,22 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
         />
       )}
       <p className="text-sm font-medium text-foreground" aria-live="polite" data-picked-count="">
-        {RP_WORDS.picked(count, max)}
-        {atMost ? ` ${RP_WORDS.atMost(max)}` : ""}
+        {RW.picked(count, max)}
+        {atMost ? ` ${RW.atMost(max)}` : ""}
       </p>
 
-      {org === null && <p className="text-sm text-muted-foreground">{RP_WORDS.loadingRoles}</p>}
+      {org === null && <p className="text-sm text-muted-foreground">{RW.loadingRoles}</p>}
       {org === "failed" && (
         <p className="text-sm text-coral">
-          {RP_WORDS.rolesFailed}{" "}
+          {RW.rolesFailed}{" "}
           {onRetry && (
             <button type="button" className={QUIET} onClick={onRetry}>
-              {RP_WORDS.tryAgain}
+              {RW.tryAgain}
             </button>
           )}
         </p>
       )}
-      {org && org !== "failed" && roles.length === 0 && <p className="text-sm text-muted-foreground">{RP_WORDS.noRolesYet}</p>}
+      {org && org !== "failed" && roles.length === 0 && <p className="text-sm text-muted-foreground">{RW.noRolesYet}</p>}
 
       {groups.map((g) => {
         const list = roles.filter((r) => groupOf(r, me) === g.key);
@@ -198,15 +200,15 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
       })}
 
       {newRoles.length > 0 && (
-        <ul className="grid gap-2" aria-label={RP_WORDS.newRoleTag}>
+        <ul className="grid gap-2" aria-label={RW.newRoleTag}>
           {newRoles.map((r) => (
             <li key={r.id} className="flex min-h-[44px] items-center justify-between gap-2 rounded-lg border border-notice border-l-4 bg-notice/10 p-3">
               <span className="grid min-w-0">
-                <span className="text-xs font-semibold uppercase tracking-wide text-notice">{RP_WORDS.newRoleTag}</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-notice">{RW.newRoleTag}</span>
                 <span className="break-words font-semibold text-foreground">{r.name}</span>
                 {r.circleName && <span className="text-sm text-muted-foreground">{r.circleName}</span>}
               </span>
-              <button type="button" onClick={() => onRemoveNew(r.id)} aria-label={RP_WORDS.removeNewRole(r.name)} className={`${QUIET} min-w-[44px] justify-center`}>
+              <button type="button" onClick={() => onRemoveNew(r.id)} aria-label={RW.removeNewRole(r.name)} className={`${QUIET} min-w-[44px] justify-center`}>
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </li>
@@ -215,16 +217,16 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
       )}
 
       <div className={`${PANEL} grid gap-3`} data-new-role-form="">
-        <h3 className="font-semibold text-foreground">{RP_WORDS.newRoleHeading}</h3>
-        <p className={LEDE}>{RP_WORDS.newRoleLede}</p>
+        <h3 className="font-semibold text-foreground">{RW.newRoleHeading}</h3>
+        <p className={LEDE}>{RW.newRoleLede}</p>
         {org && org !== "failed" && circles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{RP_WORDS.noCircles}</p>
+          <p className="text-sm text-muted-foreground">{RW.noCircles}</p>
         ) : (
           <>
             <label className="grid gap-1 text-sm font-medium text-foreground">
-              {RP_WORDS.newRoleCircle}
+              {RW.newRoleCircle}
               <select value={circleId} onChange={(e) => setCircleId(e.target.value)} className={`${INPUT} min-h-[44px]`} disabled={atMost}>
-                <option value="">{RP_WORDS.pickCircle}</option>
+                <option value="">{RW.pickCircle}</option>
                 {circles.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -233,13 +235,13 @@ export default function StepRoles({ proposal, picked, newRoles, org, applying, m
               </select>
             </label>
             <label className="grid gap-1 text-sm font-medium text-foreground">
-              {RP_WORDS.newRoleName}
+              {RW.newRoleName}
               <input value={name} maxLength={120} onChange={(e) => setName(e.target.value)} className={`${INPUT} min-h-[44px]`} disabled={atMost} />
             </label>
             <div>
               <button type="button" onClick={() => void add()} disabled={atMost || adding || !circleId || !name.trim()} className={PRIMARY}>
                 <Plus className="h-4 w-4" aria-hidden="true" />
-                {count > 0 ? RP_WORDS.addAnotherRole : RP_WORDS.addNewRole}
+                {count > 0 ? RW.addAnotherRole : RW.addNewRole}
               </button>
             </div>
             {said && (
