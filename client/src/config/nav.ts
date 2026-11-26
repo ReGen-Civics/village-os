@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { SeedHand, SeedPodHome, SunLeaf, TreeCrown } from "@/components/sacred/livingCore";
 import { TASK_BOARD_PATH, TASK_MENU } from "@shared/taskMenu";
+// The menu's words in the reader's language live beside it (navWords.ts); Layout reaches them through here.
+export { navMenuId, navWord, platformWords } from "./navWords";
 
 export type NavLink = {
   href: string;
