@@ -3066,3 +3066,22 @@ html:has(#sera-changes [data-sera-strip-on]) {
     to { transform: scale(1); }
   }
 }
+
+/*
+ * The entrance's glass card rises into view as a visitor scrolls down to it (client/src/components/EntranceBackdrop.tsx).
+ * Scroll-driven, so it moves only with the visitor's own scrolling; a browser without scroll timelines, or a
+ * device that asks for less motion, shows the card where it rests.
+ */
+@keyframes entrance-rise {
+  from { opacity: 0.4; transform: translateY(48px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .entrance-rise {
+      animation: entrance-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
