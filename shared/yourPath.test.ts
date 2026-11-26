@@ -239,9 +239,9 @@ describe("yourPath: words", () => {
 
   it("says a case in Spanish", () => {
     const a = yourPath(CASES.find((c) => c.state === "start-day")!.facts);
-    expect(sayPath(a, "es-CR")).toEqual({ step: "Conoce Land Steward antes de empezar", after: "Tu rol empieza el 21 de diciembre.", whose: "Te toca a ti" });
+    expect(sayPath(a, "es-CR")).toEqual({ step: "Conozca Land Steward antes de empezar", after: "Su rol empieza el 21 de diciembre.", whose: "Le toca a usted" });
     const recap = yourPath(CASES.find((c) => c.state === "recap-due")!.facts);
-    expect(sayPath(recap, "es").after).toBe("Envíalo a más tardar el lunes 7 de diciembre.");
+    expect(sayPath(recap, "es").after).toBe("Envíelo a más tardar el lunes 7 de diciembre.");
   });
 
   it("no rendered sentence carries an hour, a dash, an ISO date or a brace, in either language", () => {
@@ -262,7 +262,7 @@ describe("yourPath: words", () => {
   it("a missing word for what members sign falls back, never a raw brace", () => {
     const f = { ...CASES.find((c) => c.state === "membership")!.facts, commitment: null };
     expect(sayPath(yourPath(f), "en").step).toBe("Sign the letter");
-    expect(sayPath(yourPath(f), "es").step).toBe("Firma la carta");
+    expect(sayPath(yourPath(f), "es").step).toBe("Firme la carta");
   });
 
   it("a day is the village's civil day in three zones, never the UTC instant", () => {
@@ -356,7 +356,7 @@ describe("yourPath: the walk and newness", () => {
       if (step !== null) expect(isCompanionStep(step), s).toBe(true);
     }
     expect(companionStepFor("agreements")).toBeNull();
-    expect(companionLine({ step: companionStepFor("visitor"), visitor: true, locale: "es" })?.short).toBe("Empieza por los roles que te llaman.");
+    expect(companionLine({ step: companionStepFor("visitor"), visitor: true, locale: "es" })?.short).toBe("Empiece por los roles que le llaman.");
     expect(companionLine({ step: companionStepFor("agreements") })).toBeNull();
   });
 });
