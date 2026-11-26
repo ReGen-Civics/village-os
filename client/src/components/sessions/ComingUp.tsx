@@ -54,7 +54,6 @@ import { SESSION_LIST_COPY } from "@shared/sessions";
 import { circleWords } from "@shared/sessionTasks";
 import {
   MAIN_RHYTHM,
-  RHYTHM_COPY,
   RHYTHM_LIMITS,
   comingAnchor,
   rhythmsUrl,
@@ -73,6 +72,7 @@ import OwnCalendarPanel from "./OwnCalendarPanel";
 import RhythmForm from "./RhythmForm";
 import { useHash } from "./useHash";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, EYEBROW, HINT, LABEL_CAPS, PANEL } from "./roomUi";
+import { rhythmWords, useRhythmWords } from "@/components/sessions/rhythmWords";
 
 /** The one row whose "I'll be there" carries the page's fireflies: the viewer's own circle that meets soonest and has not heard from them. */
 export function leadRow(rows: readonly ComingUpRow[]): string | null {
@@ -90,9 +90,9 @@ async function send(path: string, method: string, body: unknown): Promise<Sent> 
     const out = (await res.json().catch(() => null)) as { error?: unknown; row?: ComingUpRow | null } | null;
     if (res.ok) return { ok: true, row: out?.row ?? null };
     const text = typeof out?.error === "string" ? out.error.trim() : "";
-    return { ok: false, error: /\s/.test(text) ? text : RHYTHM_COPY.failed };
+    return { ok: false, error: /\s/.test(text) ? text : rhythmWords().failed };
   } catch {
-    return { ok: false, error: RHYTHM_COPY.failed };
+    return { ok: false, error: rhythmWords().failed };
   }
 }
 
@@ -127,6 +127,7 @@ function Row({
   onSaid: (text: string) => void;
   onGone: () => void;
 }) {
+  const RY = useRhythmWords();
   const { t } = useLingui();
   /** Which form is open: a rhythm's key, ADDING for another meeting, or null. */
   const [editing, setEditing] = useState<string | null>(null);
@@ -171,7 +172,7 @@ function Row({
     refocus.current = "change";
     const stopped = input.kind === "none";
     void write(rhythmUrl(circleId), "PUT", withKey(input, key), (next) =>
-      !next ? RHYTHM_COPY.stopped(row.circleName) : stopped ? t`Stopped. That meeting has left Coming up.` : RHYTHM_COPY.saved(row.circleName),
+      !next ? RY.stopped(row.circleName) : stopped ? t`Stopped. That meeting has left Coming up.` : RY.saved(row.circleName),
     );
   };
 
@@ -183,7 +184,7 @@ function Row({
   const skip = (meeting: Meeting, key: string | null) => {
     refocus.current = "skip";
     void write(rhythmSkipUrl(row.circleId), "POST", withKey({ key: meeting.key }, key), (next) =>
-      next ? RHYTHM_COPY.skipped(row.circleName, phraseOf(next.words)) : RHYTHM_COPY.skippedLast(row.circleName),
+      next ? RY.skipped(row.circleName, phraseOf(next.words)) : RY.skippedLast(row.circleName),
     );
   };
 
@@ -234,17 +235,17 @@ function Row({
                 <p className="mt-0.5 line-clamp-2 break-words text-sm text-foreground [overflow-wrap:anywhere]">{row.nextTitle ?? row.nextName}</p>
               )}
               <p className="mt-1 text-sm text-muted-foreground">
-                {several ? RHYTHM_COPY.waiting(row.waiting) : `${row.rhythmWords} · ${RHYTHM_COPY.waiting(row.waiting)}`}
+                {several ? RY.waiting(row.waiting) : `${row.rhythmWords} · ${RY.waiting(row.waiting)}`}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
               {row.openRoom ? (
                 <Link href={`/sessions/${row.openRoom.id}`} className={`${BTN_PRIMARY} no-underline`} aria-describedby={describedBy}>
-                  {RHYTHM_COPY.openNow}: {SESSION_LIST_COPY.enterRoom}
+                  {RY.openNow}: {SESSION_LIST_COPY.enterRoom}
                 </Link>
               ) : (
                 <button type="button" className={BTN_SECONDARY} aria-describedby={describedBy} onClick={() => onGetReady(row)}>
-                  {RHYTHM_COPY.getReady}
+                  {RY.getReady}
                 </button>
               )}
             </div>
@@ -265,7 +266,7 @@ function Row({
                         </p>
                         <p id={`${lineId}-when`} className="text-sm text-muted-foreground">
                           {line.name ? `${line.words} · ` : ""}
-                          {line.next ? t({ message: `Next: ${line.next.words}`, context: "sessions coming up, one rhythm's next meeting" }) : t({ message: "Nothing coming up", context: "sessions coming up, a rhythm with no meeting ahead" })} · {RHYTHM_COPY.waiting(line.waiting)}
+                          {line.next ? t({ message: `Next: ${line.next.words}`, context: "sessions coming up, one rhythm's next meeting" }) : t({ message: "Nothing coming up", context: "sessions coming up, a rhythm with no meeting ahead" })} · {RY.waiting(line.waiting)}
                         </p>
                         {row.canKeep && (
                           <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -276,7 +277,7 @@ function Row({
                               aria-describedby={`${anchor}-circle ${lineId}-name ${lineId}-when`}
                               onClick={() => setEditing(line.key)}
                             >
-                              {RHYTHM_COPY.change}
+                              {RY.change}
                             </button>
                             {line.next && (
                               <button
@@ -286,7 +287,7 @@ function Row({
                                 aria-describedby={`${anchor}-circle ${lineId}-name ${lineId}-when`}
                                 onClick={() => skip(line.next!, line.key)}
                               >
-                                {RHYTHM_COPY.skip}
+                                {RY.skip}
                               </button>
                             )}
                           </div>
@@ -302,7 +303,7 @@ function Row({
             <div className="mt-2 flex flex-wrap items-center gap-1">
               {!several && (
                 <button ref={changeButton} type="button" className={BTN_QUIET} disabled={busy} aria-describedby={describedBy} onClick={() => setEditing(ROW)}>
-                  {row.rhythm.kind === "none" ? RHYTHM_COPY.setRhythm : RHYTHM_COPY.change}
+                  {row.rhythm.kind === "none" ? RY.setRhythm : RY.change}
                 </button>
               )}
               {!several && row.rhythmNext && (
@@ -314,7 +315,7 @@ function Row({
                   aria-describedby={describedBy}
                   onClick={() => skip(row.rhythmNext!, row.nextRhythmKey ?? only?.key ?? null)}
                 >
-                  {row.nextFrom === "rhythm" ? RHYTHM_COPY.skip : RHYTHM_COPY.skipRhythm(phraseOf(row.rhythmNext.words))}
+                  {row.nextFrom === "rhythm" ? RY.skip : RY.skipRhythm(phraseOf(row.rhythmNext.words))}
                 </button>
               )}
               {canAdd && editing !== ADDING && (
@@ -353,6 +354,7 @@ export default function ComingUp({
   onGetReady: (row: ComingUpRow) => void;
   onChanged: () => Promise<void> | void;
 }) {
+  const RY = useRhythmWords();
   const [setting, setSetting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -416,20 +418,20 @@ export default function ComingUp({
     await onChanged();
     setBusy(false);
     closeForm();
-    setSaid(RHYTHM_COPY.saved(circles.find((c) => c.id === circleId)?.name ?? ""));
+    setSaid(RY.saved(circles.find((c) => c.id === circleId)?.name ?? ""));
   };
 
   return (
     <section aria-labelledby="sessions-coming-heading">
       <h2 ref={heading} tabIndex={-1} id="sessions-coming-heading" className="font-display text-2xl text-foreground outline-none">
-        {RHYTHM_COPY.sectionTitle}
+        {RY.sectionTitle}
       </h2>
       {/* Mounted from the start, so what landed is read out when its words arrive. */}
       <p aria-live="polite" className={`text-sm text-open ${said ? "mt-2" : "sr-only"}`}>
         {said}
       </p>
       {comingUp.rows.length === 0 ? (
-        <p className={`mt-3 ${PANEL} ${HINT}`}>{RHYTHM_COPY.empty}</p>
+        <p className={`mt-3 ${PANEL} ${HINT}`}>{RY.empty}</p>
       ) : (
         <ul className="mt-4 space-y-3">
           {comingUp.rows.map((row) => (
@@ -452,7 +454,7 @@ export default function ComingUp({
         <div className={`mt-3 ${PANEL}`}>
           {setting ? (
             <>
-              <h3 className={`${LABEL_CAPS} mb-3`}>{RHYTHM_COPY.formTitle}</h3>
+              <h3 className={`${LABEL_CAPS} mb-3`}>{RY.formTitle}</h3>
               <RhythmForm
                 idBase="rhythm-new"
                 circles={keepable}
@@ -474,7 +476,7 @@ export default function ComingUp({
                 setSaid("");
               }}
             >
-              {RHYTHM_COPY.setRhythm}
+              {RY.setRhythm}
             </button>
           )}
         </div>

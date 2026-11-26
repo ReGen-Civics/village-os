@@ -15,7 +15,8 @@
  * stillness sees the ring step once a second and never glide.
  */
 import { useId } from "react";
-import { ROOM_COPY, roomClock, type TimeboxPhase } from "@shared/sessions";
+import { roomClock, type TimeboxPhase } from "@shared/sessions";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const TONE: Record<TimeboxPhase, string> = {
   idle: "text-muted-foreground",
@@ -35,12 +36,13 @@ export default function TimeboxRing({
   totalSeconds: number;
   size?: number;
 }) {
+  const RC = useRoomWords();
   const id = useId();
   const gradient = `timebox-arc-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const r = 44;
   const c = 2 * Math.PI * r;
   const left = totalSeconds > 0 ? Math.min(1, Math.max(0, secondsLeft / totalSeconds)) : 0;
-  const label = phase === "over" ? ROOM_COPY.timeOver(secondsLeft) : ROOM_COPY.timeLeft(secondsLeft);
+  const label = phase === "over" ? RC.timeOver(secondsLeft) : RC.timeLeft(secondsLeft);
   return (
     <div className="w-fit shrink-0 rounded-full bg-muted p-1.5 ring-1 ring-notice/60" data-timebox="">
       <div className="relative" style={{ width: size, height: size }} role="timer" aria-label={label}>
@@ -69,7 +71,7 @@ export default function TimeboxRing({
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className={`font-body text-xl font-semibold tabular-nums ${TONE[phase]}`}>{roomClock(secondsLeft)}</span>
-          <span className="text-xs text-muted-foreground">{phase === "over" ? ROOM_COPY.overWord : ROOM_COPY.leftWord}</span>
+          <span className="text-xs text-muted-foreground">{phase === "over" ? RC.overWord : RC.leftWord}</span>
         </span>
       </div>
     </div>

@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.82 (2026-11-26)
+
+### What changed for your village
+
+- **More Spanish:** the proposal wizard, the Live Sessions room, the live sessions pages and the meeting rhythm.
+- **Spanish speaks with usted.** The Spanish across the site now uses the courteous usted throughout.
+- **A lighter download.** Small pieces of the site that shipped as separate files now travel together.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.81 still works.
+
+---
+
 ## 1.3.81 (2026-11-26)
 
 ### What changed for your village

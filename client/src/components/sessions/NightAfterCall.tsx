@@ -19,9 +19,10 @@
  * Times are read on the room's own clock (`now`), never the device's alone.
  */
 import { useState } from "react";
-import { CONSENT_LABELS, ROOM_COPY, SESSION_LIMITS, cleanLine, consentNeedsWords, type NightRound, type SessionView } from "@shared/sessions";
+import { CONSENT_LABELS, SESSION_LIMITS, cleanLine, consentNeedsWords, type NightRound, type SessionView } from "@shared/sessions";
 import type { RoomActions } from "./useSessionRoom";
 import { BTN_PRIMARY, BTN_SECONDARY, HINT, INPUT, nameOf, nightWhen, tile } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const AFTER_NIGHT = ["consent", "concern", "object"] as const;
 type AfterNight = (typeof AFTER_NIGHT)[number];
@@ -42,6 +43,7 @@ export default function NightAfterCall({
   /** What landed, for the record to read out, and to move the focus to this proposal. */
   onDone?: (words: string) => void;
 }) {
+  const RC = useRoomWords();
   const target = `decision:${entryId}`;
   const nights = view.responses.filter((r) => r.target === target && r.value === "sleep" && r.answerBy);
   const mine = nights.find((r) => r.userId === view.me.userId);
@@ -57,7 +59,7 @@ export default function NightAfterCall({
     if (!choice || busy || !actions) return;
     const sentence = cleanLine(words, SESSION_LIMITS.text);
     if (consentNeedsWords(choice) && !sentence) {
-      setNote(ROOM_COPY.consentNeedsSentence);
+      setNote(RC.consentNeedsSentence);
       return;
     }
     setNote(null);
@@ -65,7 +67,7 @@ export default function NightAfterCall({
     const r = await actions.answerNight(entryId, choice, consentNeedsWords(choice) ? sentence : null, { quiet: true });
     setBusy(false);
     if (!r.ok) setNote(r.error);
-    else onDone?.(ROOM_COPY.nightAnswered);
+    else onDone?.(RC.nightAnswered);
   };
 
   const decide = async () => {
@@ -75,7 +77,7 @@ export default function NightAfterCall({
     const r = await actions.decideAfterNight(entryId, { quiet: true });
     setBusy(false);
     if (!r.ok) setNote(r.error);
-    else onDone?.(ROOM_COPY.decidedAfterNight);
+    else onDone?.(RC.decidedAfterNight);
   };
 
   return (
@@ -85,20 +87,20 @@ export default function NightAfterCall({
         if (r === mine && mineLasts) {
           return (
             <p key={`night-${r.userId}`} className="text-sm font-semibold text-foreground">
-              {ROOM_COPY.recordNightYours(nightWhen(at, now))}
+              {RC.recordNightYours(nightWhen(at, now))}
             </p>
           );
         }
         const name = nameOf(view, r.userId) ?? "";
         return (
           <p key={`night-${r.userId}`} className="text-sm text-foreground">
-            {at <= now ? ROOM_COPY.nightOver(name, nightWhen(at, now)) : ROOM_COPY.nightOpen(name, nightWhen(at, now))}
+            {at <= now ? RC.nightOver(name, nightWhen(at, now)) : RC.nightOpen(name, nightWhen(at, now))}
           </p>
         );
       })}
       {mineLasts && actions && (
         <div className="space-y-2">
-          <div role="radiogroup" aria-label={ROOM_COPY.nightAnswerAsk} className="grid gap-2 sm:grid-cols-3">
+          <div role="radiogroup" aria-label={RC.nightAnswerAsk} className="grid gap-2 sm:grid-cols-3">
             {AFTER_NIGHT.map((v) => (
               <button
                 key={v}
@@ -118,7 +120,7 @@ export default function NightAfterCall({
           {choice && consentNeedsWords(choice) && (
             <div>
               <label htmlFor={`${idBase}-words`} className={`${HINT} block`}>
-                {ROOM_COPY.consentSentence}
+                {RC.consentSentence}
               </label>
               <input
                 id={`${idBase}-words`}
@@ -130,14 +132,14 @@ export default function NightAfterCall({
             </div>
           )}
           <button type="button" className={BTN_PRIMARY} disabled={!choice || busy} onClick={() => void send()}>
-            {ROOM_COPY.consentSend}
+            {RC.consentSend}
           </button>
         </div>
       )}
-      {!round.open && <p className="text-sm font-semibold text-foreground">{round.consented ? ROOM_COPY.recordConsented : ROOM_COPY.recordNotConsented}</p>}
+      {!round.open && <p className="text-sm font-semibold text-foreground">{round.consented ? RC.recordConsented : RC.recordNotConsented}</p>}
       {round.canDecide && actions && (
         <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void decide()}>
-          {ROOM_COPY.markDecided}
+          {RC.markDecided}
         </button>
       )}
       {note && (

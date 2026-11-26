@@ -29,9 +29,7 @@
 import { useState } from "react";
 import SendTension from "./SendTension";
 import {
-  ROOM_COPY,
   ROOM_ITEM_MINUTES_DEFAULT,
-  SESSION_COPY,
   SESSION_LIMITS,
   cleanLine,
   type ItemAim,
@@ -40,6 +38,8 @@ import { groupForCheck, type TaskCard } from "@shared/sessionTasks";
 import TaskCardView from "@/components/tasks/TaskCard";
 import EntryCard from "./EntryCard";
 import { BTN_QUIET, BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, heldLine, keepsNotes, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { useTaskWords } from "@/components/tasks/taskWords";
 import { AIM_DEFS } from "./libraryCopy";
 
@@ -77,6 +77,8 @@ function newestSource(cards: readonly TaskCard[]): number | null {
 }
 
 export default function FromLastTime({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const TW = useTaskWords();
   const carried = view.carried;
   const [busy, setBusy] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
   const source = carried?.sessionId ?? newestSource(tasks);
   // The action check is a title of the room's own, so the room asks its agenda whether it is there yet.
   // Any earlier session counts: a member with standing and no `carried` reads another source, and one check is enough.
-  const checkTitle = ROOM_COPY.actionCheckTitle.toLowerCase();
+  const checkTitle = RC.actionCheckTitle.toLowerCase();
   const checkAdded = view.items.some((i) => i.fromSessionId != null && i.title.toLowerCase() === checkTitle);
   // The server knows when the circle last met; the cards' own guess is the fallback.
   const groups = useTasks ? groupForCheck(tasks, view.circleLastMetAt ?? lastMetFrom(tasks)) : [];
@@ -118,22 +120,22 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
   return (
     <section className={CARD} aria-labelledby="carried-title">
       <h3 id="carried-title" tabIndex={-1} className={`${H3} outline-none`}>
-        {SESSION_COPY.carriedTitle}
+        {SC.carriedTitle}
       </h3>
       {carried && <p className={HINT}>{carried.title}</p>}
 
       {(useTasks || carriedActions.length > 0) && (
         <div className="mt-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className={LABEL_CAPS}>{SESSION_COPY.carriedActions}</h4>
+            <h4 className={LABEL_CAPS}>{SC.carriedActions}</h4>
             {canAdd && source != null && !checkAdded && (
               <button
                 type="button"
                 className={BTN_QUIET}
                 disabled={busy != null}
-                onClick={() => void bring("check", ROOM_COPY.actionCheckTitle, "report", 5)}
+                onClick={() => void bring("check", RC.actionCheckTitle, "report", 5)}
               >
-                {ROOM_COPY.addActionCheck}
+                {RC.addActionCheck}
               </button>
             )}
           </div>
@@ -172,7 +174,7 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
                     extra={
                       <p className="mt-1 text-sm text-muted-foreground">
                         {heldLine(a)}
-                        {a.dueOn ? ` · ${ROOM_COPY.dueLabel} ${a.dueOn}` : ""}
+                        {a.dueOn ? ` · ${RC.dueLabel} ${a.dueOn}` : ""}
                       </p>
                     }
                   />
@@ -185,14 +187,14 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
 
       {(backlog.length > 0 || parkedItems.length > 0) && (
         <div className="mt-4">
-          <h4 className={LABEL_CAPS}>{SESSION_COPY.carriedBacklog}</h4>
+          <h4 className={LABEL_CAPS}>{SC.carriedBacklog}</h4>
           <ul className="mt-2 space-y-2">
             {parkedItems.map((p, i) => (
               <li key={`p${i}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted px-3.5 py-3 text-sm">
                 <span className="min-w-0">
                   <span className="text-foreground">{p.title}</span>{" "}
                   <span className={CHIP}>
-                    {AIM_DEFS[p.aim].label} · {p.minutes} {ROOM_COPY.minutesShort}
+                    {AIM_DEFS[p.aim].label} · {p.minutes} {RC.minutesShort}
                   </span>
                 </span>
                 {canAdd && (
@@ -202,7 +204,7 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
                     disabled={busy != null}
                     onClick={() => void bring(`p${i}`, p.title, p.aim, p.minutes)}
                   >
-                    {ROOM_COPY.addToAgenda}
+                    {RC.addToAgenda}
                   </button>
                 )}
               </li>
@@ -224,7 +226,7 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
                             disabled={busy != null}
                             onClick={() => void bring(`e${e.id}`, e.text, "explore", ROOM_ITEM_MINUTES_DEFAULT)}
                           >
-                            {ROOM_COPY.addToAgenda}
+                            {RC.addToAgenda}
                           </button>
                         )}
                         {e.kind === "tension" && carried && <SendTension view={view} actions={actions} entry={e} sessionId={carried.sessionId} returnFocusTo="carried-title" />}

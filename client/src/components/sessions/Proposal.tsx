@@ -30,7 +30,7 @@
 import { useState } from "react";
 import FilledInNote from "./FilledInNote";
 import { Lock, X } from "lucide-react";
-import { ROOM_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanText, type SessionEntry, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, SESSION_REFUSALS, cleanText, type SessionEntry, type SessionView } from "@shared/sessions";
 import { CHECK_COPY, type EntryCheck } from "@shared/sessionCheck";
 import ClampedNote from "./ClampedNote";
 import Celebration from "@/components/natural/Celebration";
@@ -60,9 +60,11 @@ import {
   seesAnswers,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /** "Decided by consent", for the facilitator, once the room has consented. */
 export function DecideButton({ view, actions, entry, className = "" }: Omit<StageProps, "now"> & { entry: SessionEntry; className?: string }) {
+  const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const { tally } = consentOn(view, `decision:${entry.id}`);
   if (!leads(view) || !tally.consented || entry.status === "done") return null;
@@ -81,7 +83,7 @@ export function DecideButton({ view, actions, entry, className = "" }: Omit<Stag
         }
       }}
     >
-      {ROOM_COPY.decide}
+      {RC.decide}
     </button>
   );
 }
@@ -182,6 +184,7 @@ const Handshake = ENTRY_GLYPH.decision;
 const DECIDED_CHIP = "inline-flex shrink-0 items-center gap-1 rounded-full border border-open/50 bg-muted px-2.5 py-0.5 text-xs font-semibold text-open";
 
 export default function Proposal({ view, actions, entry, now }: Omit<StageProps, "now"> & { entry: SessionEntry; now?: number }) {
+  const RC = useRoomWords();
   const [removing, setRemoving] = useState(false);
   const decided = entry.status === "done";
   const rights = entryRightsFor(view, entry);
@@ -221,16 +224,16 @@ export default function Proposal({ view, actions, entry, now }: Omit<StageProps,
           <EditableText
             value={entry.text}
             may={mayEdit}
-            label={ROOM_COPY.proposal.toLowerCase()}
+            label={RC.proposal.toLowerCase()}
             max={SESSION_LIMITS.text}
             mic
-            warn={ROOM_COPY.rewordWarn}
+            warn={RC.rewordWarn}
             draftKey={`${view.id}:edit:entry:${entry.id}`}
             onSave={save}
             bare
             tools={
               mayRemove ? (
-                <button type="button" className={BTN_ICON} aria-label={ROOM_COPY.remove} disabled={removing} onClick={() => void remove()}>
+                <button type="button" className={BTN_ICON} aria-label={RC.remove} disabled={removing} onClick={() => void remove()}>
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               ) : null
@@ -246,8 +249,8 @@ export default function Proposal({ view, actions, entry, now }: Omit<StageProps,
         </div>
         {decided && (
           <span className={DECIDED_CHIP}>
-            {blossom && <Celebration kind="blossom" intensity="whisper" size={28} message={ROOM_COPY.decidedBadge} />}
-            {ROOM_COPY.decide}
+            {blossom && <Celebration kind="blossom" intensity="whisper" size={28} message={RC.decidedBadge} />}
+            {RC.decide}
           </span>
         )}
       </div>
@@ -255,7 +258,7 @@ export default function Proposal({ view, actions, entry, now }: Omit<StageProps,
         <>
           <p className={`${LOCK_LINE} mt-3`}>
             <Lock className="h-3.5 w-3.5" aria-hidden="true" />
-            {ROOM_COPY.decidedLock}
+            {RC.decidedLock}
           </p>
           <div className="mt-3 empty:hidden">
             <ProposalCheck view={view} actions={actions} entry={entry} now={now} />
@@ -270,7 +273,7 @@ export default function Proposal({ view, actions, entry, now }: Omit<StageProps,
             actions={actions}
             now={now}
             target={`decision:${entry.id}`}
-            ask={ROOM_COPY.proposalConsentAsk}
+            ask={RC.proposalConsentAsk}
             readOnly={!view.me.joined || view.status !== "open"}
           />
           <DecideButton view={view} actions={actions} entry={entry} className="mt-3" />
@@ -285,15 +288,16 @@ export default function Proposal({ view, actions, entry, now }: Omit<StageProps,
  * room stands on it. A proposal left open goes into the record as not decided.
  */
 export function OpenProposals({ view, actions }: Omit<StageProps, "now">) {
+  const RC = useRoomWords();
   const open = view.entries.filter((e) => e.kind === "decision" && e.status === "open");
   if (view.status !== "open" || !open.length) return null;
   const answers = seesAnswers(view);
   return (
     <section className={CARD} aria-labelledby="close-proposals">
       <h3 id="close-proposals" className={H3}>
-        {ROOM_COPY.openProposalsTitle}
+        {RC.openProposalsTitle}
       </h3>
-      <p className={`${HINT} mt-1`}>{ROOM_COPY.openProposalsHint}</p>
+      <p className={`${HINT} mt-1`}>{RC.openProposalsHint}</p>
       <ul className="mt-3 space-y-2">
         {open.map((e) => {
           const { tally } = consentOn(view, `decision:${e.id}`);
@@ -302,9 +306,9 @@ export function OpenProposals({ view, actions }: Omit<StageProps, "now">) {
             <li key={e.id} className="rounded-xl border border-border bg-muted px-4 py-3">
               {itemTitle && <span className={CHIP}>{itemTitle}</span>}
               <p className="mt-1 whitespace-pre-line font-medium text-foreground">{e.text}</p>
-              <p className={`${HINT} mt-1`}>{answers ? ROOM_COPY.tallyLine(tally) : ROOM_COPY.answersHeardInRoom}</p>
+              <p className={`${HINT} mt-1`}>{answers ? RC.tallyLine(tally) : RC.answersHeardInRoom}</p>
               <WaitingLine view={view} target={`decision:${e.id}`} className="mt-0.5" />
-              {answers && tally.consented && <p className="text-sm font-semibold text-open">{ROOM_COPY.consented}</p>}
+              {answers && tally.consented && <p className="text-sm font-semibold text-open">{RC.consented}</p>}
               <DecideButton view={view} actions={actions} entry={e} className="mt-2" />
             </li>
           );

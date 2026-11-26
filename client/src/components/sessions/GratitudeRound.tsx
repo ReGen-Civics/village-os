@@ -16,15 +16,18 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Heart } from "lucide-react";
-import { ROOM_COPY, ROOM_GRATITUDE_AMOUNT, SESSION_COPY, SESSION_LIMITS, cleanText, type SessionPerson } from "@shared/sessions";
+import { ROOM_GRATITUDE_AMOUNT, SESSION_LIMITS, cleanText, type SessionPerson } from "@shared/sessions";
 import { gameFetch } from "@/lib/gameApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import GrowingText from "./GrowingText";
 import PersonDisc from "./PersonDisc";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, CARD, H3, HINT, INPUT, LABEL, UNDER_BOX, firstName, type StageProps } from "./roomUi";
 import { refusalSentence } from "./useSessionRoom";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 function ThankRow({ person }: { person: SessionPerson }) {
+  const RC = useRoomWords();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [amount, setAmount] = useState(ROOM_GRATITUDE_AMOUNT);
@@ -48,11 +51,11 @@ function ThankRow({ person }: { person: SessionPerson }) {
         setSaid({ ok: false, text: refusalSentence(body, res.status) });
         return;
       }
-      setSaid({ ok: true, text: ROOM_COPY.thankSent(name) });
+      setSaid({ ok: true, text: RC.thankSent(name) });
       setMessage("");
       setOpen(false);
     } catch {
-      setSaid({ ok: false, text: ROOM_COPY.offline });
+      setSaid({ ok: false, text: RC.offline });
     } finally {
       setBusy(false);
     }
@@ -69,12 +72,12 @@ function ThankRow({ person }: { person: SessionPerson }) {
           !open && (
             <button type="button" className={BTN_SECONDARY} onClick={() => setOpen(true)}>
               <Heart className="h-4 w-4" aria-hidden="true" />
-              {ROOM_COPY.thank(name)}
+              {RC.thank(name)}
             </button>
           )
         ) : (
           <Link href="/gratitude" className={BTN_QUIET}>
-            {ROOM_COPY.thankOnWall}
+            {RC.thankOnWall}
           </Link>
         )}
       </div>
@@ -92,14 +95,14 @@ function ThankRow({ person }: { person: SessionPerson }) {
             onValue={setMessage}
             onSubmit={() => void send()}
             onCancel={() => setOpen(false)}
-            label={ROOM_COPY.thankPlaceholder}
+            label={RC.thankPlaceholder}
             max={SESSION_LIMITS.text}
             minRows={2}
             singleLine
           />
           <div className={UNDER_BOX}>
             <label htmlFor={`${base}-amt`} className="block w-24">
-              <span className={`${LABEL} text-xs`}>{ROOM_COPY.amountLabel}</span>
+              <span className={`${LABEL} text-xs`}>{RC.amountLabel}</span>
               <input
                 id={`${base}-amt`}
                 type="number"
@@ -111,10 +114,10 @@ function ThankRow({ person }: { person: SessionPerson }) {
               />
             </label>
             <button type="submit" className={BTN_PRIMARY} disabled={busy}>
-              {ROOM_COPY.send}
+              {RC.send}
             </button>
             <button type="button" className={BTN_QUIET} onClick={() => setOpen(false)}>
-              {ROOM_COPY.cancel}
+              {RC.cancel}
             </button>
           </div>
         </form>
@@ -129,15 +132,17 @@ function ThankRow({ person }: { person: SessionPerson }) {
 }
 
 export default function GratitudeRound({ view }: Pick<StageProps, "view">) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const on = useModuleOn("gratitude");
   if (!on) return null;
   const others = view.people.filter((p) => p.userId !== view.me.userId);
   return (
     <section className={CARD} aria-labelledby="close-gratitude">
       <h3 id="close-gratitude" className={H3}>
-        {SESSION_COPY.gratitudeTitle}
+        {SC.gratitudeTitle}
       </h3>
-      <p className={`${HINT} mb-3`}>{SESSION_COPY.gratitudeLede}</p>
+      <p className={`${HINT} mb-3`}>{SC.gratitudeLede}</p>
       {others.length > 0 && view.me.joined ? (
         <ul className="space-y-2">
           {others.map((p) => (
@@ -145,7 +150,7 @@ export default function GratitudeRound({ view }: Pick<StageProps, "view">) {
           ))}
         </ul>
       ) : (
-        <p className={HINT}>{view.me.joined ? ROOM_COPY.noOneToThank : ROOM_COPY.joinFirst}</p>
+        <p className={HINT}>{view.me.joined ? RC.noOneToThank : RC.joinFirst}</p>
       )}
     </section>
   );

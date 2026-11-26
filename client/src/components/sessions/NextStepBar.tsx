@@ -24,9 +24,11 @@
  */
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { ROOM_COPY, SESSION_COPY, SESSION_LIMITS, STAGE_DEFS, timebox, type SessionAction, type SessionStage, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, STAGE_DEFS, timebox, type SessionAction, type SessionStage, type SessionView } from "@shared/sessions";
 import { BTN_PRIMARY, BTN_SECONDARY, agendaOrder, leads } from "./roomUi";
 import type { RoomActions } from "./useSessionRoom";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /** What a button does: moves for the room, in order, or a place on the page to go to. */
 type Move = { acts: SessionAction[] } | { focus: string };
@@ -50,9 +52,9 @@ export function nextStep(view: Pick<SessionView, "state" | "items" | "status" | 
     const first = order.find((i) => i.status === "waiting");
     if (!first) return null;
     return {
-      line: ROOM_COPY.upNext(first.title),
+      line: roomWords().upNext(first.title),
       over: false,
-      primary: { label: ROOM_COPY.startFirst, move: { acts: [{ type: "go", stage: "items" }, { type: "item", itemId: first.id }] } },
+      primary: { label: roomWords().startFirst, move: { acts: [{ type: "go", stage: "items" }, { type: "item", itemId: first.id }] } },
     };
   }
   if (stage === "items") {
@@ -61,28 +63,28 @@ export function nextStep(view: Pick<SessionView, "state" | "items" | "status" | 
     if (active) {
       const over = timebox(view.state.itemStartedAt, active.minutes, view.state.itemExtraMin, now).phase === "over";
       return {
-        line: over ? ROOM_COPY.timeUpFor(active.title) : next ? ROOM_COPY.upNext(next.title) : ROOM_COPY.lastItem,
+        line: over ? roomWords().timeUpFor(active.title) : next ? roomWords().upNext(next.title) : roomWords().lastItem,
         over,
-        primary: { label: next ? ROOM_COPY.wrapNext : ROOM_COPY.wrapUp, move: { acts: [{ type: "item", itemId: next?.id ?? null }] } },
-        ...(over ? { secondary: { label: ROOM_COPY.extendFive, move: { acts: [{ type: "extend", minutes: SESSION_LIMITS.extendStepMin }] } } } : {}),
+        primary: { label: next ? roomWords().wrapNext : roomWords().wrapUp, move: { acts: [{ type: "item", itemId: next?.id ?? null }] } },
+        ...(over ? { secondary: { label: roomWords().extendFive, move: { acts: [{ type: "extend", minutes: SESSION_LIMITS.extendStepMin }] } } } : {}),
       };
     }
     if (next) {
       const begun = view.items.some((i) => i.status === "done");
       return {
-        line: ROOM_COPY.upNext(next.title),
+        line: roomWords().upNext(next.title),
         over: false,
-        primary: { label: begun ? ROOM_COPY.startNext : ROOM_COPY.startFirst, move: { acts: [{ type: "item", itemId: next.id }] } },
+        primary: { label: begun ? roomWords().startNext : roomWords().startFirst, move: { acts: [{ type: "item", itemId: next.id }] } },
       };
     }
     return {
-      line: ROOM_COPY.itemsDone,
+      line: roomWords().itemsDone,
       over: false,
-      primary: { label: `${ROOM_COPY.nextStage}: ${STAGE_DEFS.actions.short}`, move: { acts: [{ type: "go", stage: "actions" }] } },
+      primary: { label: `${roomWords().nextStage}: ${STAGE_DEFS.actions.short}`, move: { acts: [{ type: "go", stage: "actions" }] } },
     };
   }
   if (stage === "close") {
-    return { line: ROOM_COPY.closeLast, over: false, primary: { label: ROOM_COPY.goToClose, move: { focus: CLOSE_TARGET } } };
+    return { line: roomWords().closeLast, over: false, primary: { label: roomWords().goToClose, move: { focus: CLOSE_TARGET } } };
   }
   return null;
 }
@@ -101,6 +103,8 @@ export default function NextStepBar({
   shown: SessionStage;
   onMoved: () => void;
 }) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const step = shown === view.state.stage ? nextStep(view, now) : null;
   if (!step) return null;
@@ -126,17 +130,17 @@ export default function NextStepBar({
 
   return (
     <section
-      aria-label={ROOM_COPY.nextStepLabel}
+      aria-label={RC.nextStepLabel}
       data-next-step=""
       className={`sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-30 flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3 shadow-lg backdrop-blur ${
         step.over ? "border-destructive/60 bg-muted/95" : "border-notice/60 bg-card/95"
       }`}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{ROOM_COPY.nextStepLabel}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{RC.nextStepLabel}</p>
         <p role="status" aria-live="polite" aria-atomic="true" className="mt-0.5 font-semibold text-foreground">
           {step.line}
-          {step.over && <span className="sr-only"> {SESSION_COPY.overChoices}</span>}
+          {step.over && <span className="sr-only"> {SC.overChoices}</span>}
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

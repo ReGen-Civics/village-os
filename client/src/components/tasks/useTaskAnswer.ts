@@ -18,8 +18,8 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { gameFetch } from "@/lib/gameApi";
-import { ROOM_COPY } from "@shared/sessions";
 import { TASK_REFUSALS, taskUrl, type TaskAnswer, type TaskCard, type TaskOp } from "@shared/sessionTasks";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 import { useTaskWords } from "@/components/tasks/taskWords";
 
 /** What happened to one answer. `moved` and `ok` both hand back a card to show. */
@@ -36,11 +36,11 @@ function refusalOf(body: unknown, status: number): string {
   const b = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const said = typeof b.error === "string" ? b.error.trim() : "";
   if (said && /\s/.test(said)) return said;
-  if (status === 401) return ROOM_COPY.signedOut;
+  if (status === 401) return roomWords().signedOut;
   if (status === 404) return TASK_REFUSALS.notFound;
   if (status === 429) return TASK_REFUSALS.tooMany;
   if (status === 403) return TASK_REFUSALS.notYours;
-  return ROOM_COPY.writeFailed;
+  return roomWords().writeFailed;
 }
 
 /** Fields an answer may carry beside its op. */
@@ -55,6 +55,7 @@ export interface TaskAnswerFields {
  * place.
  */
 export function useTaskAnswer(onCard?: (t: TaskCard) => void) {
+  const RC = useRoomWords();
   const TW = useTaskWords();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -83,7 +84,7 @@ export function useTaskAnswer(onCard?: (t: TaskCard) => void) {
           outcome = { kind: "refused", error: refusalOf(reply, res.ok ? 0 : res.status) };
         }
       } catch {
-        outcome = { kind: "refused", error: ROOM_COPY.offline };
+        outcome = { kind: "refused", error: RC.offline };
       } finally {
         inFlight.current = false;
         setBusy(false);

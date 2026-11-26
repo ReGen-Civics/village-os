@@ -17,16 +17,20 @@
  * left and who is here and the sit stay beside it, so the circle is seen
  * whole while it breathes.
  */
-import { ROOM_COPY, SESSION_COPY } from "@shared/sessions";
+
 import PeopleHere from "./PeopleHere";
 import SharedBreath from "./SharedBreath";
 import SharedSit from "./SharedSit";
 import PullACard from "@/components/sessionCard/PullACard";
 import { CARD, H3, presentPeople } from "./roomUi";
 import type { StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 export default function StageDropIn({ view, actions, offset }: StageProps & { offset: number }) {
-  const placeLine = view.stamp.placeLine?.trim() || SESSION_COPY.placeLineFallback;
+  const SC = useSessionWords();
+  const RC = useRoomWords();
+  const placeLine = view.stamp.placeLine?.trim() || SC.placeLineFallback;
   return (
     <div className="space-y-5">
       <figure className="px-1 py-4 sm:px-4">
@@ -41,7 +45,7 @@ export default function StageDropIn({ view, actions, offset }: StageProps & { of
         <div className="space-y-5">
           <section className={CARD} aria-labelledby="dropin-who">
             <h3 id="dropin-who" className={`${H3} mb-3`}>
-              {ROOM_COPY.whoIsHere}
+              {RC.whoIsHere}
             </h3>
             <PeopleHere view={view} />
           </section>

@@ -35,7 +35,7 @@
  */
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { ROOM_COPY, SESSION_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, cleanText, itemSectionsOn, timebox, type SessionItem } from "@shared/sessions";
+import { SESSION_LIMITS, SESSION_REFUSALS, cleanLine, cleanText, itemSectionsOn, timebox, type SessionItem } from "@shared/sessions";
 import { ActionRow, AddAction } from "./ActionRow";
 import EditableText from "./EditableText";
 import EntryCard from "./EntryCard";
@@ -61,6 +61,8 @@ import {
   useDraft,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { AIM_DEFS } from "./libraryCopy";
 
 /**
@@ -127,6 +129,8 @@ function AddBox({
 }
 
 export default function ItemPage({ view, now, actions, item }: StageProps & { item: SessionItem }) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const live = view.state.activeItemId === item.id;
   const box = live
@@ -172,14 +176,14 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className={EYEBROW}>{AIM_DEFS[item.aim].label}</span>
                 <span className="text-sm tabular-nums text-muted-foreground">
-                  {item.minutes + (live ? view.state.itemExtraMin : 0)} {ROOM_COPY.minutesShort} · {ROOM_COPY.itemStatus[item.status]}
+                  {item.minutes + (live ? view.state.itemExtraMin : 0)} {RC.minutesShort} · {RC.itemStatus[item.status]}
                 </span>
               </p>
               <div className="mt-1">
                 <EditableText
                   value={item.title}
                   may={mayEditItemTitle(view, item)}
-                  label={ROOM_COPY.itemTitleLabel}
+                  label={RC.itemTitleLabel}
                   max={SESSION_LIMITS.agendaTitle}
                   singleLine
                   draftKey={`${view.id}:edit:item:${item.id}:title`}
@@ -195,7 +199,7 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
             </div>
             {live && box.phase !== "over" && leads(view) && (
               <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void choose("wrap")}>
-                {nextItem ? ROOM_COPY.wrapNext : ROOM_COPY.wrapUp}
+                {nextItem ? RC.wrapNext : RC.wrapUp}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
@@ -203,17 +207,17 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
 
           {live && box.phase === "over" && (
             <div role="status" className="rounded-xl border border-destructive/50 bg-muted px-4 py-3">
-              <p className="text-sm font-medium text-foreground">{SESSION_COPY.overChoices}</p>
+              <p className="text-sm font-medium text-foreground">{SC.overChoices}</p>
               {leads(view) && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void choose("extend")}>
-                    {ROOM_COPY.extendFive}
+                    {RC.extendFive}
                   </button>
                   <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void choose("park")}>
-                    {SESSION_COPY.park}
+                    {SC.park}
                   </button>
                   <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void choose("wrap")}>
-                    {nextItem ? ROOM_COPY.wrapNext : ROOM_COPY.wrapUp}
+                    {nextItem ? RC.wrapNext : RC.wrapUp}
                   </button>
                 </div>
               )}
@@ -223,10 +227,10 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
           {(on.has("notes") || on.has("ideas")) && (
             <div className={ITEM_STREAMS}>
               {on.has("notes") && (
-                <EntryStream view={view} actions={actions} kind="note" itemId={item.id} title={ROOM_COPY.notes} addLabel={SESSION_COPY.addNote} />
+                <EntryStream view={view} actions={actions} kind="note" itemId={item.id} title={RC.notes} addLabel={SC.addNote} />
               )}
               {on.has("ideas") && (
-                <EntryStream view={view} actions={actions} kind="idea" itemId={item.id} title={ROOM_COPY.ideas} addLabel={SESSION_COPY.addIdea} />
+                <EntryStream view={view} actions={actions} kind="idea" itemId={item.id} title={RC.ideas} addLabel={SC.addIdea} />
               )}
             </div>
           )}
@@ -237,16 +241,16 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               actions={actions}
               kind="win"
               itemId={item.id}
-              title={ROOM_COPY.wins}
-              addLabel={SESSION_COPY.addWin}
-              help={ROOM_COPY.winsHelp}
+              title={RC.wins}
+              addLabel={SC.addWin}
+              help={RC.winsHelp}
             />
           )}
 
           {on.has("proposal") && (
             <section className="space-y-3" aria-labelledby={ids.proposal}>
               <h4 id={ids.proposal} className={LABEL_CAPS}>
-                {ROOM_COPY.proposal}
+                {RC.proposal}
               </h4>
               {proposals.map((p) => (
                 <Proposal key={p.id} view={view} actions={actions} entry={p} now={now} />
@@ -254,8 +258,8 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               {canAdd && (proposals.length === 0 || item.aim === "decide") && (
                 <AddBox
                   draftKey={`${view.id}:${item.id}:decision`}
-                  label={SESSION_COPY.addDecision}
-                  button={ROOM_COPY.add}
+                  label={SC.addDecision}
+                  button={RC.add}
                   minRows={3}
                   onSend={async (text) => (await actions.addEntry({ kind: "decision", text, itemId: item.id })).ok}
                 />
@@ -267,10 +271,10 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
             <section className="space-y-3" aria-labelledby={ids.seed}>
               <div>
                 <h4 id={ids.seed} className={LABEL_CAPS}>
-                  {ROOM_COPY.seed}
+                  {RC.seed}
                 </h4>
                 <p id={`${ids.seed}-help`} className={`${HINT} mt-1`}>
-                  {ROOM_COPY.seedHelp}
+                  {RC.seedHelp}
                 </p>
               </div>
               {learned.length > 0 && (
@@ -285,8 +289,8 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               {canAdd && (
                 <AddBox
                   draftKey={`${view.id}:${item.id}:seed`}
-                  label={SESSION_COPY.itemSeedPrompt}
-                  button={ROOM_COPY.seedSave}
+                  label={SC.itemSeedPrompt}
+                  button={RC.seedSave}
                   singleLine
                   minRows={2}
                   describedBy={`${ids.seed}-help`}
@@ -299,7 +303,7 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
           {on.has("actions") && (
             <section className="space-y-3" aria-labelledby={ids.actions}>
               <h4 id={ids.actions} className={LABEL_CAPS}>
-                {ROOM_COPY.actionsHere}
+                {RC.actionsHere}
               </h4>
               {itemActions.length > 0 && (
                 <ul className="space-y-2">

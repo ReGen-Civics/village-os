@@ -1,0 +1,1149 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: moveHere"
+msgid "Move the room here"
+msgstr "Mover la sala aquí"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tallyLine, waiting"
+msgid ", {0} still to answer"
+msgstr ", {0} por responder"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: amountLabel"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: away"
+msgid "Away"
+msgstr "Ausente"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tensionPlaceholder"
+msgid "What are you sensing? It goes to the backlog."
+msgstr "¿Qué está percibiendo? Va a los pendientes."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: arrivalNumbers"
+msgid "{count} gave a number. The middle was {median} of 11, from {low} to {high}."
+msgstr "{count} dieron un número. El valor medio fue {median} de 11, de {low} a {high}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: editKeys"
+msgid "Enter saves. Shift and Enter starts a new line. Escape cancels."
+msgstr "Enter guarda. Mayúscula y Enter empieza una línea nueva. Escape cancela."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sleepingOpen"
+msgid "Somebody asked for a night. The round stays open until they answer."
+msgstr "Alguien pidió una noche. La ronda queda abierta hasta que responda."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tallyLine, sleeping"
+msgid ", {sleeping} sleeping on it"
+msgstr ", {sleeping} lo consultan con la almohada"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: closeLast"
+msgid "Last step: one word each, then close the session."
+msgstr "Último paso: una palabra cada quien, y luego cerrar la sesión."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: actionHolderLabel"
+msgid "Who holds it"
+msgstr "Quién la sostiene"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: youFacilitate"
+msgid "You are facilitating."
+msgstr "Usted está facilitando."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: seedSave"
+msgid "Add to the record"
+msgstr "Agregar al registro"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: takingNotes"
+msgid "Taking notes"
+msgstr "Tomando notas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitationHeading"
+msgid "What the room said about the facilitation"
+msgstr "Lo que la sala dijo sobre la facilitación"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: here"
+msgid "Here now"
+msgstr "Aquí ahora"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nobodyHere"
+msgid "The room is quiet. Nobody has arrived yet."
+msgstr "La sala está en silencio. Nadie ha llegado todavía."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: addActionCheck"
+msgid "Add an action check to the agenda"
+msgstr "Agregar una revisión de acciones a la agenda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: toolSend"
+msgid "Send the idea"
+msgstr "Enviar la idea"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: takeOverHint"
+msgid "If the facilitator has stepped away, an admin can hold the room from here."
+msgstr "Si quien facilita se ausentó, una persona administradora puede sostener la sala desde aquí."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: thankSent"
+msgid "Your thanks reached {name}."
+msgstr "Su agradecimiento llegó a {name}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: decidedAfterNight"
+msgid "Marked decided."
+msgstr "Marcada como decidida."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roomMovedTo"
+msgid "The room moved on to {title}."
+msgstr "La sala pasó a {title}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: leftWord"
+msgid "left"
+msgstr "restante"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: consentChange"
+msgid "Change my answer"
+msgstr "Cambiar mi respuesta"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: showCues"
+msgid "Cues for you"
+msgstr "Indicaciones para usted"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightAnswerAsk"
+msgid "Your answer after a night"
+msgstr "Su respuesta después de una noche"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: joinFirst"
+msgid "Join the room to take part here."
+msgstr "Únase a la sala para participar aquí."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: writeHere"
+msgid "Write it here"
+msgstr "Escríbalo aquí"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: copied"
+msgid "Copied."
+msgstr "Copiado."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: holding"
+msgid "Holding"
+msgstr "Sosteniendo"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: thank"
+msgid "Thank {name}"
+msgstr "Agradecer a {name}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: wins"
+msgid "Wins and celebrations"
+msgstr "Logros y celebraciones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: minutesFailed"
+msgid "The minutes did not load. Try again."
+msgstr "El acta no cargó. Intente de nuevo."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: remove"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: decidedBadge"
+msgid "Decided"
+msgstr "Decidido"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: stagesLabel"
+msgid "The stages of this session"
+msgstr "Las etapas de esta sesión"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathDone"
+msgid "Let the quiet sit for a moment."
+msgstr "Deje que el silencio repose un momento."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: lastItem"
+msgid "This is the last item on the agenda."
+msgstr "Este es el último punto de la agenda."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: waitingFor"
+msgid "Waiting for {who}"
+msgstr "Esperando a {who}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: rewordWarn"
+msgid "Changing the words starts the consent round again."
+msgstr "Cambiar las palabras reinicia la ronda de consentimiento."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: speakingNow"
+msgid "Speaking now"
+msgstr "Hablando ahora"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: wordSave"
+msgid "Leave my word"
+msgstr "Dejar mi palabra"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: usedOf"
+msgid "{used} of {of} min"
+msgstr "{used} de {of} min"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemsDone"
+msgid "Every item on the agenda is done."
+msgstr "Todos los puntos de la agenda están hechos."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: doneLabel"
+msgid "Done"
+msgstr "Hecho"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: liveBadge"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitationReplace"
+msgid "Sending again replaces what you sent before."
+msgstr "Enviar de nuevo reemplaza lo que envió antes."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: agendaNone"
+msgid "Add an item to the agenda, or move on."
+msgstr "Agregue un punto a la agenda, o siga adelante."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: minutesLoading"
+msgid "Reading the minutes"
+msgstr "Leyendo el acta"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathRounds"
+msgid "Rounds"
+msgstr "Rondas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: editKeysOneLine"
+msgid "Enter saves. Escape cancels."
+msgstr "Enter guarda. Escape cancela."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nextStage"
+msgid "Next stage"
+msgstr "Siguiente etapa"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: signoff"
+msgid "With gratitude"
+msgstr "Con gratitud"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightTimeLabel"
+msgid "Or choose a time"
+msgstr "O elija una hora"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightOpen"
+msgid "{name} asked for a night. The round stays open until {when}."
+msgstr "{name} pidió una noche. La ronda queda abierta hasta el {when}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: closeYes"
+msgid "Yes, close it"
+msgstr "Sí, cerrarla"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightTwoDays"
+msgid "In two days, 9:00"
+msgstr "En dos días, 9:00"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: decide"
+msgid "Decided by consent"
+msgstr "Decidido por consentimiento"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathIdle"
+msgid "When the facilitator starts it, every screen breathes at the same pace."
+msgstr "Cuando quien facilita la empieza, cada pantalla respira al mismo ritmo."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemStatus.parked"
+msgid "Parked"
+msgstr "En espera"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: saved"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: openProposalsTitle"
+msgid "Proposals still open"
+msgstr "Propuestas aún abiertas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: backlogHeading"
+msgid "Backlog for next time"
+msgstr "Pendientes para la próxima vez"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: decisionsHeading"
+msgid "Decisions"
+msgstr "Decisiones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: hideCues"
+msgid "Hide the cues"
+msgstr "Ocultar las indicaciones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sessionBegun"
+msgid "The session has begun. The clock is running."
+msgstr "La sesión comenzó. El reloj está corriendo."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitMinutes"
+msgid "Minutes"
+msgstr "Minutos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: consented"
+msgid "Everyone here consents."
+msgstr "Todas las personas aquí dan su consentimiento."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nothingYet"
+msgid "Nothing here yet."
+msgstr "Aquí no hay nada todavía."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: closedOn"
+msgid "Closed {date}"
+msgstr "Cerrada el {date}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: extendFive"
+msgid "Add five minutes"
+msgstr "Agregar cinco minutos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: timeUpFor"
+msgid "Time is up for {title}."
+msgstr "Se acabó el tiempo para {title}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: upNext"
+msgid "Up next: {title}"
+msgstr "Lo siguiente: {title}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightOver"
+msgid "{name}'s night ended at {when}, so it counts as no objection."
+msgstr "La noche de {name} terminó el {when}, así que cuenta como sin objeción."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitatedBy"
+msgid "Facilitated by {name}"
+msgstr "Facilitada por {name}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitStartedSay"
+msgid "{minutes, plural, one {The sit has started, # minute.} other {The sit has started, # minutes.}}"
+msgstr "{minutes, plural, one {La pausa empezó, # minuto.} other {La pausa empezó, # minutos.}}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitStart"
+msgid "Start the sit"
+msgstr "Empezar la pausa"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathTitle"
+msgid "Breathe together"
+msgstr "Respirar juntos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightTomorrow"
+msgid "Tomorrow, 9:00"
+msgstr "Mañana, 9:00"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitSitting"
+msgid "Rest your eyes. The bowl will call you back."
+msgstr "Descanse la vista. El cuenco le llamará de vuelta."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: copyFailed"
+msgid "This browser would not copy. Select the text and copy it by hand."
+msgstr "Este navegador no quiso copiar. Seleccione el texto y cópielo a mano."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: recordConsented"
+msgid "The round consented after the call: nobody objects."
+msgstr "La ronda dio su consentimiento después del llamado: nadie objeta."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathPattern"
+msgid "Pattern"
+msgstr "Patrón"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: ideas"
+msgid "Ideas"
+msgstr "Ideas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: moonOrdinal"
+msgid "Moon {n}"
+msgstr "Luna {n}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: wrapNext"
+msgid "Wrap up and start the next"
+msgstr "Cerrar y empezar el siguiente"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: takeOver"
+msgid "Take over facilitating"
+msgstr "Asumir la facilitación"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: wrapUp"
+msgid "Wrap it up"
+msgstr "Cerrarlo"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: openProposalsHint"
+msgid "Mark each one decided by consent, or leave it open and it goes in the record as not decided."
+msgstr "Marque cada una como decidida por consentimiento, o déjela abierta y queda en el registro como no decidida."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tallyLine"
+msgid "{consent} consent, {concern} with a concern, {object} objecting"
+msgstr "{consent} dan su consentimiento, {concern} con una inquietud, {object} objetan"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: secretaryLabel"
+msgid "Who takes notes"
+msgstr "Quién toma notas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roundStart"
+msgid "Start a speaking round"
+msgstr "Empezar una ronda de palabra"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: browsing"
+msgid "You are looking at {yours}. The room is on {room}."
+msgstr "Usted está viendo {yours}. La sala está en {room}."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitating"
+msgid "Facilitating"
+msgstr "Facilitando"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: closeConfirm"
+msgid "Close the session now? The arrival words are erased, and the notes are saved for everyone who was here."
+msgstr "¿Cerrar la sesión ahora? Las palabras de llegada se borran, y las notas se guardan para todas las personas que estuvieron aquí."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemStatus.waiting"
+msgid "Waiting"
+msgstr "Esperando"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: signedOut"
+msgid "Your sign-in ended. Sign in again to carry on in the room."
+msgstr "Su sesión expiró. Inicie sesión de nuevo para seguir en la sala."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: beginSession"
+msgid "Begin the session"
+msgstr "Comenzar la sesión"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: arrivalHeardInRoom"
+msgid "The numbers are shared with the people who joined the room."
+msgstr "Los números se comparten con las personas que se unieron a la sala."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: consentSentence"
+msgid "Say it in one sentence"
+msgstr "Dígalo en una frase"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: seedsHeading"
+msgid "What we learned"
+msgstr "Lo que aprendimos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: add"
+msgid "Add"
+msgstr "Agregar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: actionsHere"
+msgid "Actions"
+msgstr "Acciones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: edit"
+msgid "Edit"
+msgstr "Editar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitIdle"
+msgid "A few minutes of quiet for the whole room. A singing bowl rings on every screen when it ends."
+msgstr "Unos minutos de silencio para toda la sala. Un cuenco tibetano suena en cada pantalla al terminar."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: notes"
+msgid "Notes"
+msgstr "Notas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: addToAgenda"
+msgid "Add to the agenda"
+msgstr "Agregar a la agenda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: startNext"
+msgid "Start the next item"
+msgstr "Empezar el siguiente punto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathRound"
+msgid "Round {n} of {of}"
+msgstr "Ronda {n} de {of}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: actionsHeading"
+msgid "Actions"
+msgstr "Acciones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: allSessions"
+msgid "All sessions"
+msgstr "Todas las sesiones"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: bellMuted"
+msgid "Sound is muted on this device, so the bowl will not ring."
+msgstr "El sonido está apagado en este dispositivo, así que el cuenco no sonará."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: consentSend"
+msgid "Give my answer"
+msgstr "Dar mi respuesta"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightAsk"
+msgid "When will you answer by?"
+msgstr "¿Para cuándo responderá?"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: changeNumber"
+msgid "Change my number"
+msgstr "Cambiar mi número"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: saving"
+msgid "Saving..."
+msgstr "Guardando..."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitEndedSay"
+msgid "The sit has ended."
+msgstr "La pausa terminó."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: agendaEmpty"
+msgid "The agenda is still blank. Anyone in the room can add the first item."
+msgstr "La agenda todavía está en blanco. Cualquiera en la sala puede agregar el primer punto."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: handOver"
+msgid "Hand over"
+msgstr "Entregar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: goToClose"
+msgid "Go to Close the session"
+msgstr "Ir a Cerrar la sesión"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: moveDown"
+msgid "Move down"
+msgstr "Bajar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitLeftHint"
+msgid "left in the quiet"
+msgstr "restante en el silencio"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: bellOn"
+msgid "Bell on this screen"
+msgstr "Campana en esta pantalla"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: wordPlaceholder"
+msgid "One word"
+msgstr "Una palabra"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitTitle"
+msgid "Sit together"
+msgstr "Pausa juntos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: seatLabel"
+msgid "A role holds it"
+msgstr "La sostiene un rol"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: notReached"
+msgid "Not reached"
+msgstr "No se llegó"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: theRoom"
+msgid "The room"
+msgstr "La sala"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: answerAgain"
+msgid "Answer again to change it."
+msgstr "Responda de nuevo para cambiarla."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: answersHeardInRoom"
+msgid "The answers are shared with the people who joined the room."
+msgstr "Las respuestas se comparten con las personas que se unieron a la sala."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: parkedItems"
+msgid "Parked last time"
+msgstr "Quedó en espera la vez anterior"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: unownedOne"
+msgid "1 action still needs someone"
+msgstr "1 acción todavía necesita a alguien"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: cancel"
+msgid "Cancel"
+msgstr "Cancelar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightNeeded"
+msgid "Say when you will answer by."
+msgstr "Diga para cuándo responderá."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: readyNext"
+msgid "Ready next"
+msgstr "Lista para seguir"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: clockLine"
+msgid "{elapsedMin} of {durationMin} min"
+msgstr "{elapsedMin} de {durationMin} min"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sessionTitleLabel"
+msgid "Session title"
+msgstr "Título de la sesión"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nobodyYet"
+msgid "Nobody yet"
+msgstr "Nadie todavía"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roundNext"
+msgid "Next speaker"
+msgstr "Siguiente persona"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathStepLine"
+msgid "{secondsLeft, plural, one {# second · Round {round} of {of}} other {# seconds · Round {round} of {of}}}"
+msgstr "{secondsLeft, plural, one {# segundo · Ronda {round} de {of}} other {# segundos · Ronda {round} de {of}}}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathStartedSay"
+msgid "The shared breath has started, {rounds} rounds."
+msgstr "La respiración compartida empezó, {rounds} rondas."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roundDone"
+msgid "Everyone has spoken. Thank you all."
+msgstr "Todas las personas hablaron. Gracias a todas."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitationSent"
+msgid "Thanks. The facilitator reads it unsigned."
+msgstr "Gracias. Quien facilita lo lee sin firma."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: hostsTitle"
+msgid "Hosting"
+msgstr "Anfitrión"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: agendaReady"
+msgid "When the agenda is ready, start the first item."
+msgstr "Cuando la agenda esté lista, empiece el primer punto."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: bellOff"
+msgid "Turn the bell on"
+msgstr "Encender la campana"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitAgain"
+msgid "Sit again"
+msgstr "Otra pausa"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roundBack"
+msgid "Back one"
+msgstr "Atrás uno"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: actionCheckTitle"
+msgid "Action check from last time"
+msgstr "Revisión de acciones de la vez anterior"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: startFirst"
+msgid "Start the first item"
+msgstr "Empezar el primer punto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: thankOnWall"
+msgid "Thank them on the gratitude wall"
+msgstr "Agradecerle en el muro de gratitud"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitMinutesWord"
+msgid "{n, plural, one {# minute} other {# minutes}}"
+msgstr "{n, plural, one {# minuto} other {# minutos}}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: addItemButton"
+msgid "Add it"
+msgstr "Agregarlo"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: takeOff"
+msgid "Take it off the agenda"
+msgstr "Quitarlo de la agenda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: missing"
+msgid "This session is not here. The link may be old, or the session was removed."
+msgstr "Esta sesión no está aquí. Puede que el enlace sea viejo, o que la sesión se haya quitado."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: recordNightYours"
+msgid "You asked for a night. Answer by {when}, or your answer counts as no objection."
+msgstr "Usted pidió una noche. Responda para el {when}, o su respuesta cuenta como sin objeción."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: decidedLock"
+msgid "Decided by consent. The words stay as the room agreed them."
+msgstr "Decidido por consentimiento. Las palabras quedan tal como la sala las acordó."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nobodyHolds"
+msgid "Nobody holds this yet"
+msgstr "Nadie lo sostiene todavía"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: seed"
+msgid "What we learned"
+msgstr "Lo que aprendimos"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: offline"
+msgid "Could not reach the village. Try again."
+msgstr "No se pudo contactar a la aldea. Intente de nuevo."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: seedHelp"
+msgid "One sentence the circle wants to remember from this item. It goes into the record."
+msgstr "Una frase que el círculo quiere recordar de este punto. Queda en el registro."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: backToRoom"
+msgid "Back to the room"
+msgstr "Volver a la sala"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nowOn"
+msgid "Now: {title}"
+msgstr "Ahora: {title}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: proposalOpen"
+msgid "Proposal, not decided"
+msgstr "Propuesta, no decidida"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: noArrival"
+msgid "Nobody gave a number."
+msgstr "Nadie dio un número."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: failed"
+msgid "The room is not answering just now. It keeps trying."
+msgstr "La sala no responde en este momento. Sigue intentando."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: offAgenda"
+msgid "Off the agenda"
+msgstr "Fuera de la agenda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: save"
+msgid "Save"
+msgstr "Guardar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: noteTaking"
+msgid "Taking notes"
+msgstr "Tomando notas"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: agendaFitLine"
+msgid "{planned} min planned, {left} min left"
+msgstr "{planned} min previstos, quedan {left} min"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitStop"
+msgid "End the sit early"
+msgstr "Terminar la pausa antes"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathAgain"
+msgid "Breathe again"
+msgstr "Respirar de nuevo"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: opening"
+msgid "Opening the room"
+msgstr "Abriendo la sala"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: startItem"
+msgid "Start this item"
+msgstr "Empezar este punto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: overWord"
+msgid "over"
+msgstr "de más"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: winsHelp"
+msgid "Something you won at, finished, or want the circle to celebrate. It goes into the record."
+msgstr "Algo que logró, terminó, o quiere que el círculo celebre. Queda en el registro."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: clockWaitingYou"
+msgid "The clock starts when you begin, or when you first move the room on."
+msgstr "El reloj empieza cuando usted comienza, o cuando hace avanzar la sala por primera vez."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: proposalConsentAsk"
+msgid "Do you consent to this proposal?"
+msgstr "¿Da su consentimiento a esta propuesta?"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: actionPlaceholder"
+msgid "What needs doing, in a sentence"
+msgstr "Lo que hay que hacer, en una frase"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitationNone"
+msgid "No feedback yet."
+msgstr "Aún no hay comentarios."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: facilitationSend"
+msgid "Send it unsigned"
+msgstr "Enviarla sin firma"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: closeNo"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: parkedNext"
+msgid "Parked for next time"
+msgstr "En espera para la próxima vez"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roomWords"
+msgid "The room's words"
+msgstr "Las palabras de la sala"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathStart"
+msgid "Start the breath"
+msgstr "Empezar la respiración"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: whoIsHere"
+msgid "Who is here"
+msgstr "Quién está aquí"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: clockWaiting"
+msgid "The clock starts when the facilitator begins the session or moves the room on."
+msgstr "El reloj empieza cuando quien facilita comienza la sesión o hace avanzar la sala."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: backlogSoFar"
+msgid "In the backlog so far"
+msgstr "En los pendientes hasta ahora"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tallyLine, by default"
+msgid ", {byDefault} no objection by default"
+msgstr ", {byDefault} sin objeción por defecto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: timeOver"
+msgid "{clock} over"
+msgstr "{clock} de más"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: dueLabel"
+msgid "Due by"
+msgstr "Para el"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: sitDone"
+msgid "The bowl has rung. Come back slowly."
+msgstr "El cuenco ya sonó. Vuelva despacio."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: roundEnd"
+msgid "End the round"
+msgstr "Terminar la ronda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightAnswered"
+msgid "Your answer is in the record."
+msgstr "Su respuesta está en el registro."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: timeLeft"
+msgid "{clock} left"
+msgstr "quedan {clock}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: writeFailed"
+msgid "That did not go through. Try again."
+msgstr "Eso no se pudo enviar. Intente de nuevo."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: consentNeedsSentence"
+msgid "A concern or an objection needs one sentence, so the room can hear it whole."
+msgstr "Una inquietud o una objeción necesita una frase, para que la sala pueda escucharla completa."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: giveNumber"
+msgid "Give my number"
+msgstr "Dar mi número"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: countOf"
+msgid "{n} of {max}"
+msgstr "{n} de {max}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: outsideAgenda"
+msgid "Outside the agenda"
+msgstr "Fuera de la agenda"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: heldBy"
+msgid "Held by"
+msgstr "La sostiene"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: notYet"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: bringBack"
+msgid "Bring it back"
+msgstr "Traerlo de vuelta"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: noSeat"
+msgid "No role"
+msgstr "Sin rol"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: bellHint"
+msgid "Browsers stay silent until you tap once. Tap here so the bowl can ring for you."
+msgstr "Los navegadores se quedan en silencio hasta que toque una vez. Toque aquí para que el cuenco pueda sonar para usted."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nightHint"
+msgid "If you have not answered by then, your answer counts as no objection."
+msgstr "Si no ha respondido para entonces, su respuesta cuenta como sin objeción."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: joinLede"
+msgid "You can look around. Join to give your number, add to the agenda and take actions."
+msgstr "Puede mirar. Únase para dar su número, agregar a la agenda y tomar acciones."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: showMinutes"
+msgid "Show the shareable minutes"
+msgstr "Mostrar el acta para compartir"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: tensionSaved"
+msgid "Thanks. It's in the backlog."
+msgstr "Gracias. Está en los pendientes."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: parkedLabel"
+msgid "Parked"
+msgstr "En espera"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: markDecided"
+msgid "Mark it decided"
+msgstr "Marcarla como decidida"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: minutesShort"
+msgid "min"
+msgstr "min"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: agendaHeading"
+msgid "Agenda and outcomes"
+msgstr "Agenda y resultados"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: breathStop"
+msgid "Stop the breath"
+msgstr "Detener la respiración"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemStatus.active"
+msgid "On now"
+msgstr "En curso"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemStatus.done"
+msgid "Done"
+msgstr "Hecho"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: arrivalHeading"
+msgid "How the room arrived"
+msgstr "Cómo llegó la sala"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: handTo"
+msgid "Hand facilitation to"
+msgstr "Pasar la facilitación a"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: noOneToThank"
+msgid "When others join the room, you can thank them here."
+msgstr "Cuando otras personas se unan a la sala, puede agradecerles aquí."
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: nextStepLabel"
+msgid "Next step"
+msgstr "Siguiente paso"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: editThis"
+msgid "Edit {what}"
+msgstr "Editar {what}"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemTitlePlaceholder"
+msgid "What needs the circle's time?"
+msgstr "¿Qué necesita el tiempo del círculo?"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: send"
+msgid "Send"
+msgstr "Enviar"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: moveUp"
+msgid "Move up"
+msgstr "Subir"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: itemTitleLabel"
+msgid "Item title"
+msgstr "Título del punto"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: proposal"
+msgid "Proposal"
+msgstr "Propuesta"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: thankPlaceholder"
+msgid "What did they bring today?"
+msgstr "¿Qué trajo hoy?"
+
+# needs-native-review: the live session room, 26 Nov 2026
+msgctxt "live session room: recordNotConsented"
+msgid "The night is over, and the round did not consent."
+msgstr "La noche terminó, y la ronda no dio su consentimiento."
