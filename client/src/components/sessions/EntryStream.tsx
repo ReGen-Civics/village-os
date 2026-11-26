@@ -19,10 +19,11 @@ import { useState } from "react";
 import { templateRoomApi } from "@shared/sessionTemplates";
 import { gameFetch } from "@/lib/gameApi";
 import { ServesChip, ServesPicker, useSeasonGoals } from "./ServesPicker";
-import { ROOM_COPY, SESSION_LIMITS, cleanText, type EntryKind } from "@shared/sessions";
+import { SESSION_LIMITS, cleanText, type EntryKind } from "@shared/sessions";
 import EntryCard from "./EntryCard";
 import GrowingText from "./GrowingText";
 import { BTN_SECONDARY, HINT, LABEL_CAPS, UNDER_BOX, useDraft, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export interface EntryStreamProps extends Omit<StageProps, "now"> {
   kind: Extract<EntryKind, "note" | "idea" | "win">;
@@ -34,6 +35,7 @@ export interface EntryStreamProps extends Omit<StageProps, "now"> {
 }
 
 export default function EntryStream({ view, actions, kind, itemId, title, addLabel, help }: EntryStreamProps) {
+  const RC = useRoomWords();
   const draft = useDraft(`${view.id}:${itemId ?? "loose"}:${kind}`);
   const text = draft.text;
   const [busy, setBusy] = useState(false);
@@ -95,7 +97,7 @@ export default function EntryStream({ view, actions, kind, itemId, title, addLab
           ))}
         </ul>
       ) : (
-        <p className={HINT}>{ROOM_COPY.nothingYet}</p>
+        <p className={HINT}>{RC.nothingYet}</p>
       )}
       {canAdd && (
         <form
@@ -108,7 +110,7 @@ export default function EntryStream({ view, actions, kind, itemId, title, addLab
           <GrowingText value={text} onValue={draft.set} onSubmit={() => void add()} label={addLabel} max={SESSION_LIMITS.text} minRows={2} describedBy={help ? `${headingId}-help` : undefined} mic />
           <div className={UNDER_BOX}>
             <button type="submit" className={BTN_SECONDARY} disabled={busy || !text.trim()}>
-              {ROOM_COPY.add}
+              {RC.add}
             </button>
           </div>
         </form>

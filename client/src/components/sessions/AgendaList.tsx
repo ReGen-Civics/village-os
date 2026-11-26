@@ -33,8 +33,7 @@
  */
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ThumbsDown, ThumbsUp } from "lucide-react";
-import { ITEM_AIMS, ROOM_COPY, SESSION_COPY, SESSION_LIMITS, cleanLine, type ItemAim, type SessionItem } from "@shared/sessions";
-
+import { ITEM_AIMS, SESSION_LIMITS, cleanLine, type ItemAim, type SessionItem } from "@shared/sessions";
 import { VOTE_COPY, nextVote, voteScore } from "@shared/sessionVotes";
 import GrowingText from "./GrowingText";
 import FilledInNote from "./FilledInNote";
@@ -57,6 +56,8 @@ import {
   type StageProps,
 } from "./roomUi";
 import type { ItemPatch } from "./useSessionRoom";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { AIM_DEFS, LIBRARY_COPY } from "./libraryCopy";
 
 const clampMinutes = (n: number) =>
@@ -86,11 +87,13 @@ function ItemFields({
   onSubmit: () => void;
   onCancel?: () => void;
 }) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   return (
     <div className="space-y-3">
       <div>
         <label htmlFor={`${idBase}-title`} className={`${LABEL} mb-1`}>
-          {ROOM_COPY.itemTitleLabel}
+          {RC.itemTitleLabel}
         </label>
         <GrowingText
           id={`${idBase}-title`}
@@ -98,7 +101,7 @@ function ItemFields({
           onValue={onTitle}
           onSubmit={onSubmit}
           onCancel={onCancel}
-          label={ROOM_COPY.itemTitlePlaceholder}
+          label={RC.itemTitlePlaceholder}
           max={SESSION_LIMITS.agendaTitle}
           minRows={1}
           singleLine
@@ -108,7 +111,7 @@ function ItemFields({
         <>
           <div className={UNDER_BOX}>
             <label htmlFor={`${idBase}-aim`} className="block min-w-[10rem]">
-              <span className={LABEL}>{SESSION_COPY.agendaAimLabel}</span>
+              <span className={LABEL}>{SC.agendaAimLabel}</span>
               <select id={`${idBase}-aim`} className={`${INPUT} mt-1`} value={aim} onChange={(e) => onAim(e.target.value as ItemAim)}>
                 {ITEM_AIMS.map((a) => (
                   <option key={a} value={a}>
@@ -118,7 +121,7 @@ function ItemFields({
               </select>
             </label>
             <label htmlFor={`${idBase}-min`} className="block w-28">
-              <span className={LABEL}>{SESSION_COPY.agendaMinutesLabel}</span>
+              <span className={LABEL}>{SC.agendaMinutesLabel}</span>
               <input
                 id={`${idBase}-min`}
                 type="number"
@@ -139,6 +142,8 @@ function ItemFields({
 }
 
 export function AddItem({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const [title, setTitle] = useState("");
   const [aim, setAim] = useState<ItemAim>("explore");
   const [minutes, setMinutes] = useState(10);
@@ -168,7 +173,7 @@ export function AddItem({ view, actions }: Omit<StageProps, "now">) {
         void add();
       }}
     >
-      <h4 className={LABEL_CAPS}>{SESSION_COPY.agendaAdd}</h4>
+      <h4 className={LABEL_CAPS}>{SC.agendaAdd}</h4>
       <ItemFields
         idBase="agenda-new"
         title={title}
@@ -181,7 +186,7 @@ export function AddItem({ view, actions }: Omit<StageProps, "now">) {
         onSubmit={() => void add()}
       />
       <button type="submit" className={BTN_PRIMARY} disabled={busy || !title.trim()}>
-        {ROOM_COPY.addItemButton}
+        {RC.addItemButton}
       </button>
     </form>
   );
@@ -257,6 +262,7 @@ function ItemRow({
   onMove: (item: SessionItem, dir: -1 | 1) => void;
   busy: boolean;
 }) {
+  const RC = useRoomWords();
   /** What the item held when Edit opened: the form starts here, and save sends what differs from it. */
   const [opened, setOpened] = useState<Pick<SessionItem, "title" | "aim" | "minutes"> | null>(null);
   const editing = opened != null;
@@ -325,10 +331,10 @@ function ItemRow({
         />
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className={BTN_PRIMARY} disabled={saving || !title.trim()} onClick={() => void save()}>
-            {ROOM_COPY.save}
+            {RC.save}
           </button>
           <button type="button" className={BTN_QUIET} onClick={() => setOpened(null)}>
-            {ROOM_COPY.cancel}
+            {RC.cancel}
           </button>
         </div>
       </li>
@@ -347,9 +353,9 @@ function ItemRow({
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span className={CHIP}>{AIM_DEFS[item.aim].label}</span>
           <span>
-            {item.minutes} {ROOM_COPY.minutesShort}
+            {item.minutes} {RC.minutesShort}
           </span>
-          {item.status !== "waiting" && <span>· {ROOM_COPY.itemStatus[item.status]}</span>}
+          {item.status !== "waiting" && <span>· {RC.itemStatus[item.status]}</span>}
           {item.broughtBy ? (
             <span>· {LIBRARY_COPY.broughtByName(item.broughtBy)}</span>
           ) : (
@@ -362,13 +368,13 @@ function ItemRow({
       <div className="flex flex-wrap items-center gap-1">
         {mayRun && !parked && view.state.orderSet && (
           <>
-            <button type="button" className={BTN_ICON} aria-label={ROOM_COPY.moveUp} disabled={busy || index === 0} onClick={() => onMove(item, -1)}>
+            <button type="button" className={BTN_ICON} aria-label={RC.moveUp} disabled={busy || index === 0} onClick={() => onMove(item, -1)}>
               <ArrowUp className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
               className={BTN_ICON}
-              aria-label={ROOM_COPY.moveDown}
+              aria-label={RC.moveDown}
               disabled={busy || index === count - 1}
               onClick={() => onMove(item, 1)}
             >
@@ -378,17 +384,17 @@ function ItemRow({
         )}
         {mayEdit && !parked && (
           <button type="button" className={BTN_QUIET} onClick={startEdit}>
-            {ROOM_COPY.edit}
+            {RC.edit}
           </button>
         )}
         {mayRun && item.status === "waiting" && (
           <button type="button" className={BTN_QUIET} disabled={saving} onClick={() => void setStatus("parked")}>
-            {ROOM_COPY.takeOff}
+            {RC.takeOff}
           </button>
         )}
         {mayRun && parked && (
           <button type="button" className={BTN_SECONDARY} disabled={saving} onClick={() => void setStatus("waiting")}>
-            {ROOM_COPY.bringBack}
+            {RC.bringBack}
           </button>
         )}
       </div>
@@ -397,6 +403,7 @@ function ItemRow({
 }
 
 export default function AgendaList({ view, actions }: Omit<StageProps, "now">) {
+  const RC = useRoomWords();
   const [moving, setMoving] = useState(false);
   const [setting, setSetting] = useState(false);
   const ordered = agendaOrder(view.items);
@@ -470,11 +477,11 @@ export default function AgendaList({ view, actions }: Omit<StageProps, "now">) {
           ))}
         </ol>
       ) : (
-        <p className={HINT}>{ROOM_COPY.agendaEmpty}</p>
+        <p className={HINT}>{RC.agendaEmpty}</p>
       )}
       {off.length > 0 && (
         <div>
-          <h4 className={`${LABEL_CAPS} mb-2`}>{ROOM_COPY.offAgenda}</h4>
+          <h4 className={`${LABEL_CAPS} mb-2`}>{RC.offAgenda}</h4>
           <ul className="space-y-2">
             {off.map((item, i) => (
               <ItemRow key={item.id} view={view} actions={actions} item={item} index={i} count={off.length} onMove={() => {}} busy={moving} />

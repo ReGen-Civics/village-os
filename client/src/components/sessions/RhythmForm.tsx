@@ -24,8 +24,9 @@ import CirclePicker from "@/components/circles/CirclePicker";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { SESSION_LIMITS } from "@shared/sessions";
-import { RHYTHM_COPY, RHYTHM_LIMITS, WEEKDAYS, addDays, villageKey, type RhythmInput } from "@shared/sessionRhythm";
+import { RHYTHM_LIMITS, WEEKDAYS, addDays, villageKey, type RHYTHM_COPY, type RhythmInput } from "@shared/sessionRhythm";
 import { BTN_DANGER, BTN_DANGER_QUIET, BTN_PRIMARY, BTN_QUIET, HINT, INPUT, LABEL, UNDER_BOX } from "./roomUi";
+import { useRhythmWords } from "@/components/sessions/rhythmWords";
 
 type HowOften = keyof typeof RHYTHM_COPY.howOften;
 
@@ -60,6 +61,7 @@ export interface RhythmFormProps {
 }
 
 export default function RhythmForm({ idBase, circles, fixedCircleId, initial, labelledBy, saveLabel, stopConfirm, defaultMinutes, zone, busy, error, onSubmit, onCancel }: RhythmFormProps) {
+  const RY = useRhythmWords();
   const { t } = useLingui();
   const initialName = initial && initial.kind !== "none" ? (initial.name ?? "") : "";
   const [name, setName] = useState(initialName);
@@ -107,19 +109,19 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
       {!fixedCircleId && (
         <div>
           <label htmlFor={`${idBase}-circle`} className={LABEL}>
-            {RHYTHM_COPY.circleLabel}
+            {RY.circleLabel}
           </label>
-          <CirclePicker id={`${idBase}-circle`} className={`mt-1 ${INPUT}`} circles={circles} value={circleId} onChange={setCircleId} placeholder={RHYTHM_COPY.circleChoose} autoDefault />
+          <CirclePicker id={`${idBase}-circle`} className={`mt-1 ${INPUT}`} circles={circles} value={circleId} onChange={setCircleId} placeholder={RY.circleChoose} autoDefault />
         </div>
       )}
       <div>
         <label htmlFor={`${idBase}-often`} className={LABEL}>
-          {RHYTHM_COPY.howOftenLabel}
+          {RY.howOftenLabel}
         </label>
         <select id={`${idBase}-often`} autoFocus={!!fixedCircleId} className={`mt-1 ${INPUT}`} value={howOften} onChange={(e) => setHowOften(e.target.value as HowOften)}>
           {HOW_OFTEN.map((h) => (
             <option key={h} value={h}>
-              {RHYTHM_COPY.howOften[h]}
+              {RY.howOften[h]}
             </option>
           ))}
         </select>
@@ -128,7 +130,7 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={`${idBase}-weekday`} className={LABEL}>
-              {RHYTHM_COPY.weekdayLabel}
+              {RY.weekdayLabel}
             </label>
             <select id={`${idBase}-weekday`} className={`mt-1 ${INPUT}`} value={weekday} onChange={(e) => setWeekday(Number(e.target.value))}>
               {WEEKDAYS.map((d, i) => (
@@ -140,7 +142,7 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
           </div>
           <div>
             <label htmlFor={`${idBase}-from`} className={LABEL}>
-              {RHYTHM_COPY.startsOnLabel}
+              {RY.startsOnLabel}
             </label>
             <input id={`${idBase}-from`} type="date" min={today} max={lastDay} className={`mt-1 ${INPUT}`} value={startsOn} onChange={(e) => setStartsOn(e.target.value)} />
           </div>
@@ -149,7 +151,7 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
       {howOften === "once" && (
         <div>
           <label htmlFor={`${idBase}-on`} className={LABEL}>
-            {RHYTHM_COPY.onLabel}
+            {RY.onLabel}
           </label>
           <input id={`${idBase}-on`} type="date" min={today} max={lastDay} className={`mt-1 ${INPUT}`} value={on} onChange={(e) => setOn(e.target.value)} />
         </div>
@@ -157,13 +159,13 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor={`${idBase}-time`} className={LABEL}>
-            {RHYTHM_COPY.timeLabel}
+            {RY.timeLabel}
           </label>
           <input id={`${idBase}-time`} type="time" className={`mt-1 ${INPUT}`} value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
         <div>
           <label htmlFor={`${idBase}-length`} className={LABEL}>
-            {RHYTHM_COPY.durationLabel}
+            {RY.durationLabel}
           </label>
           <input
             id={`${idBase}-length`}
@@ -195,18 +197,18 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
           {t`Optional. A name tells one of the circle's meetings from another.`}
         </p>
       </div>
-      <p className={HINT}>{RHYTHM_COPY.zoneHint(zone)}</p>
+      <p className={HINT}>{RY.zoneHint(zone)}</p>
       {error && (
         <p role="alert" className="text-sm font-medium text-destructive">
           {error}
         </p>
       )}
       {askStop && fixedCircleId ? (
-        <div role="group" aria-label={RHYTHM_COPY.clear} className="rounded-xl border border-border bg-muted px-3 py-3">
-          <p className="text-sm text-foreground">{stopConfirm ?? RHYTHM_COPY.clearConfirm(circleName)}</p>
+        <div role="group" aria-label={RY.clear} className="rounded-xl border border-border bg-muted px-3 py-3">
+          <p className="text-sm text-foreground">{stopConfirm ?? RY.clearConfirm(circleName)}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" className={BTN_DANGER} disabled={busy} onClick={() => onSubmit(fixedCircleId, { kind: "none" })}>
-              {busy ? RHYTHM_COPY.saving : RHYTHM_COPY.clearYes}
+              {busy ? RY.saving : RY.clearYes}
             </button>
             <button
               type="button"
@@ -218,21 +220,21 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
                 setAskStop(false);
               }}
             >
-              {RHYTHM_COPY.keep}
+              {RY.keep}
             </button>
           </div>
         </div>
       ) : (
         <div className={UNDER_BOX}>
           <button type="submit" className={BTN_PRIMARY} disabled={busy || !circleId}>
-            {busy ? RHYTHM_COPY.saving : (saveLabel ?? RHYTHM_COPY.save)}
+            {busy ? RY.saving : (saveLabel ?? RY.save)}
           </button>
           <button type="button" className={BTN_QUIET} onClick={onCancel}>
-            {RHYTHM_COPY.cancel}
+            {RY.cancel}
           </button>
           {fixedCircleId && hasRhythm && (
             <button ref={stopButton} type="button" className={`${BTN_DANGER_QUIET} sm:ml-auto`} disabled={busy} onClick={() => setAskStop(true)}>
-              {RHYTHM_COPY.clear}
+              {RY.clear}
             </button>
           )}
         </div>

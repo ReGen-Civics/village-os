@@ -18,16 +18,20 @@
  * the card says where it went.
  */
 import { useState } from "react";
-import { ROOM_COPY, SESSION_COPY, SESSION_LIMITS, cleanText } from "@shared/sessions";
+import { SESSION_LIMITS, cleanText } from "@shared/sessions";
 import EntryCard from "./EntryCard";
 import SendTension from "./SendTension";
 import { TENSION_SEND_COPY } from "@shared/sessionLibrary";
 import GrowingText from "./GrowingText";
 import { BTN_PRIMARY, BTN_QUIET, ENTRY_GLYPH, LABEL_CAPS, PANEL, UNDER_BOX, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 const Feather = ENTRY_GLYPH.tension;
 
 export default function TensionCatcher({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,7 +59,7 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
     tensions.length > 0 ? (
       <section className={PANEL} aria-labelledby="tension-backlog">
         <h3 id="tension-backlog" tabIndex={-1} className={`${LABEL_CAPS} mb-3 outline-none`}>
-          {ROOM_COPY.backlogSoFar}
+          {RC.backlogSoFar}
         </h3>
         <ul className="space-y-2">
           {tensions.map((e) => {
@@ -95,7 +99,7 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
           }}
         >
           <label className="sr-only" htmlFor="tension-text">
-            {SESSION_COPY.addTension}
+            {SC.addTension}
           </label>
           <GrowingText
             id="tension-text"
@@ -103,7 +107,7 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
             onValue={setText}
             onSubmit={() => void send()}
             onCancel={() => setOpen(false)}
-            label={ROOM_COPY.tensionPlaceholder}
+            label={RC.tensionPlaceholder}
             max={SESSION_LIMITS.text}
             minRows={3}
             mic
@@ -111,10 +115,10 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
           />
           <div className={UNDER_BOX}>
             <button type="submit" className={BTN_PRIMARY} disabled={busy || !text.trim()}>
-              {ROOM_COPY.send}
+              {RC.send}
             </button>
             <button type="button" className={BTN_QUIET} onClick={() => setOpen(false)}>
-              {ROOM_COPY.cancel}
+              {RC.cancel}
             </button>
           </div>
         </form>
@@ -129,11 +133,11 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
             }}
           >
             <Feather className="h-4 w-4" aria-hidden="true" />
-            {SESSION_COPY.addTension}
+            {SC.addTension}
           </button>
           {saved && (
             <p role="status" className="text-sm text-open">
-              {ROOM_COPY.tensionSaved}
+              {RC.tensionSaved}
             </p>
           )}
         </div>
