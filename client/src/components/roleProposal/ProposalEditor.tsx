@@ -45,7 +45,7 @@ import {
   type ProposalUpdate,
   type ShareOut,
 } from "./proposalApi";
-import { RP_WORDS, STEP_TITLES, STEPS, type StepKey } from "./proposalWords";
+import { STEP_TITLES, STEPS, type StepKey } from "./proposalWords";
 import { resumeAt } from "@shared/roleProposalProgress";
 import { changedSections, newWordsToSave, roleProblems, shownText, stateFrom, wordsToSave } from "./roleWords";
 import { FOCUS, H2, LEDE, PRIMARY, SaveLine, SECONDARY } from "./parts";
@@ -60,6 +60,7 @@ import StepDoneCard from "./StepDoneCard";
 import BringInRole from "./BringInRole";
 import OwnAiPrompt from "./OwnAiPrompt";
 import ProposalState from "./ProposalState";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 interface LocalNew {
   id: string;
@@ -103,6 +104,7 @@ function stepFromUrl(): StepKey {
 /** The card in proposal mode, with the changed words in gold. */
 /** `partner` is the Ops role from the village chart, as the terms step reads it; null while it loads. */
 export function ProposalPreview({ proposal, partner }: { proposal: ProposalOut; partner?: string | null }) {
+  const RW = useProposalWords();
   const [card, setCard] = useState<PlayerCardPayload | null | "failed">(null);
   useEffect(() => {
     let alive = true;
@@ -113,12 +115,13 @@ export function ProposalPreview({ proposal, partner }: { proposal: ProposalOut; 
       alive = false;
     };
   }, [proposal.id, proposal.updatedAt]);
-  if (card === null || partner === null) return <BreathingLoader label={RP_WORDS.loadingPreview} />;
-  if (card === "failed") return <p className="text-coral">{RP_WORDS.previewFailed}</p>;
+  if (card === null || partner === null) return <BreathingLoader label={RW.loadingPreview} />;
+  if (card === "failed") return <p className="text-coral">{RW.previewFailed}</p>;
   return <PlayerRoleCardView data={withPartnerName(card, partner)} mode="proposal" changed={changedSections(proposal)} />;
 }
 
 export default function ProposalEditor({ initial, me }: { initial: ProposalOut; me: string }) {
+  const RW = useProposalWords();
   // This tab's place first; failing that, the first unwritten part of the saved draft (a new tab agrees).
   const resumed = !urlNamesPlace() ? readPlace(initial.id) ?? fromDraft(initial) : null;
   const [proposal, setProposal] = useState(initial);
@@ -196,7 +199,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
       update.newRoles = list;
     }
     if (groups.has("settings")) {
-      if (!parseSeatSettings(s.settings).ok) return { ok: false, error: RP_WORDS.termsNotSaved };
+      if (!parseSeatSettings(s.settings).ok) return { ok: false, error: RW.termsNotSaved };
       update.settings = s.settings;
     }
     if (groups.has("season")) {
@@ -222,13 +225,13 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
     if (!role) return;
     seededRole.current = true;
     if (!org.roles.some((r) => r.id === role && !r.isExample)) {
-      setSeedNote(RP_WORDS.roleNotOnChart);
+      setSeedNote(RW.roleNotOnChart);
       return;
     }
     const now = latest.current;
     if (now.picked.includes(role)) return;
     if (now.picked.length + now.newRoles.length >= now.proposal.limits.maxRoles) {
-      setSeedNote(RP_WORDS.atMost(now.proposal.limits.maxRoles));
+      setSeedNote(RW.atMost(now.proposal.limits.maxRoles));
       return;
     }
     // The save reads this ref, and it is only rewritten on the next render.
@@ -371,7 +374,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
       const typedName = typed[n.id]?.name;
       return {
         id: n.id,
-        name: (typedName ?? server?.name ?? "").trim() || RP_WORDS.newRoleTag,
+        name: (typedName ?? server?.name ?? "").trim() || RW.newRoleTag,
         isNew: true,
         fields: server?.fields ?? null,
         reviewOn: reviews[n.id] ?? "",
@@ -396,7 +399,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
           aria-valuemin={0}
           aria-valuemax={progressTotal}
           aria-valuenow={progressNow}
-          aria-label={front === "steps" ? RP_WORDS.stepOf(index + 1, STEPS.length) : front === "yours" ? RP_WORDS.yourWordsTitle : RP_WORDS.welcomeTitle}
+          aria-label={front === "steps" ? RW.stepOf(index + 1, STEPS.length) : front === "yours" ? RW.yourWordsTitle : RW.welcomeTitle}
           className="h-2.5 overflow-hidden rounded-md border border-dash-edge bg-dash-track"
         >
           <div
@@ -406,8 +409,8 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
         </div>
       </div>
       <header className="grid gap-1">
-        <h1 className="font-display text-3xl font-bold text-foreground">{RP_WORDS.title}</h1>
-        <p className={LEDE}>{target ? RP_WORDS.forSeason(target.name, civilDayWords(target.startsOn)) : proposal.targetWords}</p>
+        <h1 className="font-display text-3xl font-bold text-foreground">{RW.title}</h1>
+        <p className={LEDE}>{target ? RW.forSeason(target.name, civilDayWords(target.startsOn)) : proposal.targetWords}</p>
         {seedNote && (
           <p role="status" className="text-sm font-medium text-foreground" data-role-seed="">
             {seedNote}
@@ -431,18 +434,18 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
       <>
       {goFailed && (
         <div role="alert" className="grid gap-2 rounded-lg border border-coral p-3 text-sm text-foreground" data-go-failed="">
-          <p>{RP_WORDS.goFailed}</p>
+          <p>{RW.goFailed}</p>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={`${PRIMARY} ${FOCUS}`} onClick={() => void go(goFailed)}>{RP_WORDS.tryAgain}</button>
-            <button type="button" className={`${SECONDARY} ${FOCUS}`} onClick={() => setGoFailed(null)}>{RP_WORDS.stayHere}</button>
+            <button type="button" className={`${PRIMARY} ${FOCUS}`} onClick={() => void go(goFailed)}>{RW.tryAgain}</button>
+            <button type="button" className={`${SECONDARY} ${FOCUS}`} onClick={() => setGoFailed(null)}>{RW.stayHere}</button>
           </div>
         </div>
       )}
       {limitNote && <p role="alert" className="text-sm font-medium text-foreground">{limitNote}</p>}
       <button type="button" className={`${SECONDARY} ${FOCUS} justify-self-start`} onClick={() => { setDone(null); setFront("yours"); }}>
-        {RP_WORDS.editYourWords}
+        {RW.editYourWords}
       </button>
-      <nav aria-label={RP_WORDS.stepOf(index + 1, STEPS.length)}>
+      <nav aria-label={RW.stepOf(index + 1, STEPS.length)}>
         <ol className="flex flex-wrap gap-2" data-step-indicator="">
           {STEPS.map((s, i) => (
             <li key={s}>
@@ -450,7 +453,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
                 type="button"
                 onClick={() => void go(s)}
                 aria-current={s === step ? "step" : undefined}
-                aria-label={RP_WORDS.goToStep(i + 1, STEP_TITLES[s])}
+                aria-label={RW.goToStep(i + 1, STEP_TITLES[s])}
                 className={`inline-flex size-11 items-center justify-center rounded-full border text-sm font-semibold ${FOCUS} ${
                   s === step
                     ? "border-dash-gold bg-dash-gold text-dash-gold-ink"
@@ -468,7 +471,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
 
       <section aria-labelledby="rp-step-title" className="grid gap-4" data-step={step}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-dash-gold-lit">{RP_WORDS.stepOf(index + 1, STEPS.length)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-dash-gold-lit">{RW.stepOf(index + 1, STEPS.length)}</p>
           <h2 id="rp-step-title" tabIndex={-1} className={`${H2} outline-none`}>
             {STEP_TITLES[step]}
           </h2>
@@ -528,7 +531,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
         )}
         {step === "preview" && (
           <div className="grid gap-3">
-            <p className={LEDE}>{RP_WORDS.previewLede}</p>
+            <p className={LEDE}>{RW.previewLede}</p>
             <ProposalPreview proposal={proposal} partner={org === null ? null : opsPartner(operationsRoleName(org !== "failed" ? org.roles : []))} />
           </div>
         )}
@@ -581,11 +584,11 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
             className={SECONDARY}
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            {RP_WORDS.back}
+            {RW.back}
           </button>
           {index < STEPS.length - 1 ? (
             <button type="button" onClick={() => void go(STEPS[index + 1])} className={PRIMARY}>
-              {RP_WORDS.next}
+              {RW.next}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           ) : (
@@ -598,7 +601,7 @@ export default function ProposalEditor({ initial, me }: { initial: ProposalOut; 
                 submitOpen.current();
               }}
             >
-              {RP_WORDS.submit}
+              {RW.submit}
             </button>
           )}
         </div>

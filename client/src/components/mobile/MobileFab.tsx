@@ -385,8 +385,10 @@ export default function MobileFab() {
           // Named properties, never `all`: `all` also animates the visibility
           // this button inherits from the hide rule in index.css, which held
           // it on screen through a dialog's opening and late after it closed.
-          className={`relative flex items-end justify-center transition-[transform,opacity,box-shadow] duration-300 motion-reduce:transition-none hover:scale-105 active:scale-95 ${
-            standing.length ? "min-h-14 rounded-full p-1.5 pb-2" : "w-14 h-14 rounded-full shadow-xl items-center"
+          // One alignment per branch: with both items-end and items-center on the button, the stylesheet's order
+          // picked items-end and the bird sat on the circle's bottom edge (the lead, 26 Nov 2026: "centered").
+          className={`relative flex justify-center transition-[transform,opacity,box-shadow] duration-300 motion-reduce:transition-none hover:scale-105 active:scale-95 ${
+            standing.length ? "min-h-14 items-end rounded-full p-1.5 pb-2" : "w-14 h-14 items-center rounded-full shadow-xl"
           } ${hidden ? "pointer-events-none scale-0 opacity-0" : "pointer-events-auto"} ${open ? "scale-105" : ""}`}
           style={
             standing.length

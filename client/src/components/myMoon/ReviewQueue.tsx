@@ -17,29 +17,26 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import {
-  MY_MOON_WORDS,
-  QUEUE_STAGE_WORDS,
-  QUEUE_WORDS,
-  RECAP_STATUS_WORDS,
-  SELF_APPROVED_WORDS,
   dayWords,
 } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import type { QueueData, QueueRowView } from "./moonApi";
 import { ERROR, H2, INPUT, KICKER, LABEL, MUTED, PANEL, SMALL_BTN, SMALL_BTN_ON } from "./moonUi";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 /** Who sent it, where it waits, and the self-approved mark. */
 export function RowHead({ row }: { row: QueueRowView }) {
+  const MW = useMoonWords();
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h4 className="m-0 text-base font-semibold text-foreground">{row.name}</h4>
         <span className="text-xs text-muted-foreground">
-          {row.waitingOn ? QUEUE_STAGE_WORDS[row.waitingOn] : RECAP_STATUS_WORDS[row.status]}
+          {row.waitingOn ? MW.queueStage[row.waitingOn] : MW.recapStatus[row.status]}
           {row.dueOn ? `, ${dayWords(row.dueOn)}` : ""}
         </span>
       </div>
-      {row.selfApproved ? <p className="m-0 text-xs font-semibold text-destructive" data-testid="self-approved">{SELF_APPROVED_WORDS}</p> : null}
+      {row.selfApproved ? <p className="m-0 text-xs font-semibold text-destructive" data-testid="self-approved">{MW.selfApproved}</p> : null}
     </div>
   );
 }
@@ -47,6 +44,7 @@ export function RowHead({ row }: { row: QueueRowView }) {
 type ItemDecision = { review: "approved" | "returned"; note: string };
 
 function WorkRow({ row, onDone, noEligible }: { row: QueueRowView; onDone: () => Promise<unknown>; noEligible: boolean }) {
+  const MW = useMoonWords();
   const [open, setOpen] = useState(false);
   const [decisions, setDecisions] = useState<Record<string, ItemDecision>>({});
   const [note, setNote] = useState("");
@@ -84,11 +82,11 @@ function WorkRow({ row, onDone, noEligible }: { row: QueueRowView; onDone: () =>
       <ul className="m-0 list-disc pl-5 text-sm text-foreground">
         {row.roles.map((r) => <li key={r.roleId}>{r.name}: {r.itemCount}</li>)}
       </ul>
-      {row.outsideMyRoles > 0 ? <p className={MUTED}>{QUEUE_WORDS.outside(row.outsideMyRoles)}</p> : null}
-      <p className="m-0 text-xs text-muted-foreground">{QUEUE_WORDS.approvers(row.workApprovers)}</p>
-      {noEligible ? <p className="m-0 text-xs text-muted-foreground">{QUEUE_WORDS.noEligible}</p> : null}
+      {row.outsideMyRoles > 0 ? <p className={MUTED}>{MW.queue.outside(row.outsideMyRoles)}</p> : null}
+      <p className="m-0 text-xs text-muted-foreground">{MW.queue.approvers(row.workApprovers)}</p>
+      {noEligible ? <p className="m-0 text-xs text-muted-foreground">{MW.queue.noEligible}</p> : null}
       {row.waitingOn === "work" ? (
-        <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? QUEUE_WORDS.close : QUEUE_WORDS.open}</button>
+        <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? MW.queue.close : MW.queue.open}</button>
       ) : null}
       {open ? (
         <div className="flex flex-col gap-3">
@@ -102,22 +100,22 @@ function WorkRow({ row, onDone, noEligible }: { row: QueueRowView; onDone: () =>
                     <p className="m-0 text-sm text-foreground">{i.text}</p>
                     {i.accountabilityWords ? <p className="m-0 text-xs text-muted-foreground">{i.accountabilityWords}</p> : null}
                     <div className="flex flex-wrap gap-2">
-                      <button type="button" aria-pressed={!returned} className={!returned ? SMALL_BTN_ON : SMALL_BTN} onClick={() => decide(i.id, { review: "approved" })}>{QUEUE_WORDS.approve}</button>
-                      <button type="button" aria-pressed={returned} className={returned ? SMALL_BTN_ON : SMALL_BTN} onClick={() => decide(i.id, { review: "returned" })}>{QUEUE_WORDS.returnIt}</button>
+                      <button type="button" aria-pressed={!returned} className={!returned ? SMALL_BTN_ON : SMALL_BTN} onClick={() => decide(i.id, { review: "approved" })}>{MW.queue.approve}</button>
+                      <button type="button" aria-pressed={returned} className={returned ? SMALL_BTN_ON : SMALL_BTN} onClick={() => decide(i.id, { review: "returned" })}>{MW.queue.returnIt}</button>
                     </div>
-                    {returned ? <input aria-label={QUEUE_WORDS.note} placeholder={QUEUE_WORDS.note} value={d?.note ?? ""} onChange={(e) => decide(i.id, { note: e.target.value })} className={INPUT} /> : null}
+                    {returned ? <input aria-label={MW.queue.note} placeholder={MW.queue.note} value={d?.note ?? ""} onChange={(e) => decide(i.id, { note: e.target.value })} className={INPUT} /> : null}
                   </li>
                 );
               })}
             </ul>
-          ) : <p className={MUTED}>{QUEUE_WORDS.noItemsInQueue}</p>}
+          ) : <p className={MUTED}>{MW.queue.noItemsInQueue}</p>}
           <label className={LABEL}>
-            {QUEUE_WORDS.note}
+            {MW.queue.note}
             <textarea value={note} rows={2} onChange={(e) => setNote(e.target.value)} className={INPUT} />
           </label>
           <div className="flex flex-wrap gap-2">
-            {row.items && row.hash ? <button type="button" className={SMALL_BTN_ON} disabled={busy} onClick={approve}>{QUEUE_WORDS.approveWork}</button> : null}
-            <button type="button" className={SMALL_BTN} disabled={busy || !note.trim()} onClick={returnIt}>{QUEUE_WORDS.returnIt}</button>
+            {row.items && row.hash ? <button type="button" className={SMALL_BTN_ON} disabled={busy} onClick={approve}>{MW.queue.approveWork}</button> : null}
+            <button type="button" className={SMALL_BTN} disabled={busy || !note.trim()} onClick={returnIt}>{MW.queue.returnIt}</button>
           </div>
           {error ? <p role="alert" className={ERROR}>{error}</p> : null}
         </div>
@@ -127,21 +125,22 @@ function WorkRow({ row, onDone, noEligible }: { row: QueueRowView; onDone: () =>
 }
 
 export function ReviewQueueView({ data, reload }: { data: QueueData; reload: () => Promise<unknown> }) {
+  const MW = useMoonWords();
   const noEligible = new Set(data.noEligible.map((n) => n.recapId));
   return (
-    <section aria-label={QUEUE_WORDS.heading} className={`${PANEL} flex flex-col gap-4 p-4 sm:p-6`} data-testid="moon-queue">
+    <section aria-label={MW.queue.heading} className={`${PANEL} flex flex-col gap-4 p-4 sm:p-6`} data-testid="moon-queue">
       <div>
         <p className={KICKER}>{data.moon.periodWords}</p>
-        <h2 className={H2}>{QUEUE_WORDS.heading}</h2>
+        <h2 className={H2}>{MW.queue.heading}</h2>
       </div>
-      {data.rows.length === 0 ? <p className={MUTED}>{QUEUE_WORDS.empty}</p> : (
+      {data.rows.length === 0 ? <p className={MUTED}>{MW.queue.empty}</p> : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {data.rows.map((r) => <WorkRow key={r.recapId} row={r} onDone={reload} noEligible={noEligible.has(r.recapId)} />)}
         </ul>
       )}
       {data.rolesWithNoItems.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <h3 className="m-0 text-base font-semibold text-foreground">{QUEUE_WORDS.rolesWithNoItems}</h3>
+          <h3 className="m-0 text-base font-semibold text-foreground">{MW.queue.rolesWithNoItems}</h3>
           <ul className="m-0 list-disc pl-5 text-sm text-foreground">
             {data.rolesWithNoItems.map((r) => <li key={`${r.userId}:${r.roleId}`}>{r.name}</li>)}
           </ul>
@@ -153,6 +152,7 @@ export function ReviewQueueView({ data, reload }: { data: QueueData; reload: () 
 
 /** The loader. A refusal or an off module draws nothing. */
 export default function ReviewQueue() {
+  const MW = useMoonWords();
   const [data, setData] = useState<QueueData | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const load = useCallback(async () => {
@@ -164,7 +164,7 @@ export default function ReviewQueue() {
     else setData(null);
   }, []);
   useEffect(() => { void load(); }, [load]);
-  if (failed) return <p className={ERROR}>{failed || MY_MOON_WORDS.failed}</p>;
+  if (failed) return <p className={ERROR}>{failed || MW.myMoon.failed}</p>;
   if (!data) return null;
   return <ReviewQueueView data={data} reload={load} />;
 }

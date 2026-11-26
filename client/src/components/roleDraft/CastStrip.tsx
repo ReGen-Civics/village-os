@@ -5,12 +5,14 @@
  * has one, so a village with no cast shows no empty frame.
  */
 import { useEffect, useState } from "react";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import { Link } from "wouter";
 import { characterArt } from "@shared/roleDraft";
 import ArtImage from "./ArtImage";
 
 export default function CastStrip({ href = "/roles/select", size = "size-20 sm:size-24" }: { href?: string | null; size?: string }) {
-  const [cast, setCast] = useState<Array<{ key: string; name: string }>>([]);
+  const [castServed, setCast] = useState<Array<{ key: string; name: string }>>([]);
+  const cast = useArchetypesInLanguage(castServed); // the village's class words in the reader's language
   useEffect(() => {
     let live = true;
     fetch("/api/archetypes")

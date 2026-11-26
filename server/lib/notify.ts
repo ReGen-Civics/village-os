@@ -30,6 +30,7 @@ import { emailAccent, NEUTRAL_ACCENT } from "./emailAccent";
 import { wordsInAppOnly } from "../../shared/notificationKinds";
 import { manyLine } from "../../shared/notificationKindWords";
 import { noticeTitle, type NoticeWords } from "../../shared/noticeWords";
+import { noticeWordsJson, readNoticeWords, type NoticePart, type NoticeWordsRef } from "../../shared/noticeKeys";
 
 /**
  * Fallback only — the live ceiling is the notify.daily_email_cap game
@@ -49,6 +50,12 @@ export interface NotifyInput {
   link?: string | null;
   actorUserId?: string | null;
   dedupeKey: string;
+  /**
+   * The same words as a key and its values (shared/noticeKeys.ts), so the bell can draw them in the reader's
+   * language. Optional, and stored beside the English above, never in place of it: the email, the digest and any
+   * client that does not know the key read the English. An unknown key or a wrong value stores nothing.
+   */
+  words?: NoticeWordsRef | null;
 }
 
 /**
@@ -534,16 +541,29 @@ export async function insertNotification(deps: NotifyDeps, input: NotifyInput): 
   const id = `ntf-${Date.now()}-${crypto.randomBytes(6).toString("hex")}`;
   // The village's own title for this kind, with the producer's as {default}.
   // Read once here, so the bell, the email and the digest all carry it.
+  // The parts the village wrote itself: those stay its words in every language.
+  const villageOwn: NoticePart[] = [];
   try {
     const own = deps.noticeWords?.();
-    if (own && own.words[input.type]?.title) input = { ...input, title: noticeTitle(own.words, input.type, input.title, own.vars) };
+    if (own && own.words[input.type]?.title) {
+      input = { ...input, title: noticeTitle(own.words, input.type, input.title, own.vars) };
+      villageOwn.push("title");
+    }
   } catch {
     /* the producer's title stands */
   }
+  const storedTitle = input.title.slice(0, 255);
+  // The words beside the English, carrying the title they were stored with (shared/noticeKeys.ts). Null stores none.
+  let words: string | null = null;
+  try {
+    words = noticeWordsJson(input.type, input.words, storedTitle, villageOwn);
+  } catch {
+    /* the English stands alone */
+  }
   try {
     await deps.pool.query(
-      "INSERT INTO notifications (id, user_id, type, title, body, link, actor_user_id, dedupe_key) VALUES (?,?,?,?,?,?,?,?)",
-      [id, input.userId, input.type, input.title.slice(0, 255), input.body ?? null, input.link ?? null, input.actorUserId ?? null, input.dedupeKey],
+      "INSERT INTO notifications (id, user_id, type, title, body, link, actor_user_id, dedupe_key, words) VALUES (?,?,?,?,?,?,?,?,?)",
+      [id, input.userId, input.type, storedTitle, input.body ?? null, input.link ?? null, input.actorUserId ?? null, input.dedupeKey, words],
     );
   } catch (e: any) {
     if (e?.code === "ER_DUP_ENTRY") return { fresh: false };
@@ -878,7 +898,7 @@ function unseenClause(seenAt: unknown): { sql: string; params: unknown[] } {
 
 export async function notificationsFor(pool: Pool, userId: string, limit = 50, seenAt?: unknown) {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT id, type, title, body, link, is_read, actor_user_id, created_at FROM notifications " +
+    "SELECT id, type, title, body, link, is_read, actor_user_id, created_at, words FROM notifications " +
       "WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?",
     [userId, Math.max(1, Math.min(200, limit))],
   );
@@ -900,6 +920,8 @@ export async function notificationsFor(pool: Pool, userId: string, limit = 50, s
       isRead: !!r.is_read,
       actorUserId: r.actor_user_id ?? null,
       at: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
+      // Never throws, and reads as null for a malformed value or a row whose title has since been rewritten.
+      words: readNoticeWords(r.words, String(r.title), String(r.type)),
     })),
   };
 }

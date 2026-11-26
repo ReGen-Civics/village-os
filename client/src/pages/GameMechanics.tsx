@@ -38,7 +38,7 @@
  */
 import { ballotIdIn, HistoryEntry, historyHeaders, SettingHistory, type Amendment } from "@/components/governance/SettingHistory";
 import Layout from "@/components/Layout";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Scale,
   SlidersHorizontal,
@@ -52,15 +52,19 @@ import { MushroomNetwork, Songbird } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { useCatalyst, useGameConfig, authToken } from "@/lib/gameApi";
 import { ballotReturn } from "./gameMechanicsBallotCopy";
+import { dialLabel, localizeDials } from "./gameMechanicsDialWords";
 import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdoption";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFocusTarget } from "@/lib/useFocusTarget";
 import { dialFromSearch } from "@shared/comms/memberView";
+import { localizeConstitution } from "./gameMechanicsConstitutionWords";
 import InfoTip, { DialFact } from "@/components/InfoTip";
 import LongText from "@/components/LongText";
 import PurposeAlignmentField, { usePurposeAlignment } from "@/components/governance/PurposeAlignmentField";
 import { AskVillageButton, mayAskVillageOn } from "./gameMechanicsAskVillage";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 
 interface MechanicsVariable {
   key: string;
@@ -186,24 +190,24 @@ interface Standing {
   mayAskVillage?: boolean; // a held outcome after launch (./gameMechanicsAskVillage.tsx)
 }
 
-export const STATUS_COPY: Record<ProposalStatus, { label: string; cls: string }> = {
-  draft: { label: "draft, needs a sponsor", cls: "bg-amber-50 text-amber-700" },
-  open: { label: "open for support", cls: "bg-emerald-50 text-emerald-700" },
-  withdrawn: { label: "withdrawn", cls: "bg-stone-100 text-stone-600" },
-  to_hypha: { label: "at Hypha for the vote", cls: "bg-sky-50 text-sky-700" },
-  onsite_vote: { label: "at the village vote", cls: "bg-sky-50 text-sky-700" },
-  passed_claimed: { label: "passed, awaiting verification", cls: "bg-violet-50 text-violet-700" },
+export const STATUS_COPY: Record<ProposalStatus, { label: MessageDescriptor; cls: string }> = {
+  draft: { label: msg({ message: "draft, needs a sponsor", context: "a proposal's state chip" }), cls: "bg-amber-50 text-amber-700" },
+  open: { label: msg({ message: "open for support", context: "a proposal's state chip" }), cls: "bg-emerald-50 text-emerald-700" },
+  withdrawn: { label: msg({ message: "withdrawn", context: "a proposal's state chip" }), cls: "bg-stone-100 text-stone-600" },
+  to_hypha: { label: msg({ message: "at Hypha for the vote", context: "a proposal's state chip" }), cls: "bg-sky-50 text-sky-700" },
+  onsite_vote: { label: msg({ message: "at the village vote", context: "a proposal's state chip" }), cls: "bg-sky-50 text-sky-700" },
+  passed_claimed: { label: msg({ message: "passed, awaiting verification", context: "a proposal's state chip" }), cls: "bg-violet-50 text-violet-700" },
   // ", applying" came off this one too. Whether it is applying depends on the
   // same brake and the same cycle timing as the on-site sibling below, and
   // the chip asserted the happy branch of both.
-  passed_verified: { label: "verified on-chain", cls: "bg-violet-50 text-violet-700" },
+  passed_verified: { label: msg({ message: "verified on-chain", context: "a proposal's state chip" }), cls: "bg-violet-50 text-violet-700" },
   // No ", applying" on this one. Whether it IS applying depends on the landing
   // instant, the brake and the cycle timing, so the chip states the fact that
   // never varies and WaitingNote below says which of the three is holding it.
-  passed_onsite: { label: "carried at the village vote", cls: "bg-violet-50 text-violet-700" },
-  failed: { label: "did not pass", cls: "bg-stone-100 text-stone-600" },
-  vetoed: { label: "stopped by a steward, back with the proposer", cls: "bg-amber-50 text-amber-700" }, // 0172
-  applied: { label: "applied", cls: "bg-teal-deep/10 text-teal-deep" },
+  passed_onsite: { label: msg({ message: "carried at the village vote", context: "a proposal's state chip" }), cls: "bg-violet-50 text-violet-700" },
+  failed: { label: msg({ message: "did not pass", context: "a proposal's state chip" }), cls: "bg-stone-100 text-stone-600" },
+  vetoed: { label: msg({ message: "stopped by a steward, back with the proposer", context: "a proposal's state chip" }), cls: "bg-amber-50 text-amber-700" }, // 0172
+  applied: { label: msg({ message: "applied", context: "a proposal's state chip" }), cls: "bg-teal-deep/10 text-teal-deep" },
 };
 
 /**
@@ -214,8 +218,9 @@ export const STATUS_COPY: Record<ProposalStatus, { label: string; cls: string }>
  * TypeError inside the list and took the whole page down for everyone. A
  * status nobody has taught this page yet now reads as itself instead.
  */
-function statusChip(status: ProposalStatus): { label: string; cls: string } {
-  return STATUS_COPY[status] ?? { label: String(status).replace(/_/g, " "), cls: "bg-stone-100 text-stone-600" };
+function statusChip(status: ProposalStatus, i18n: I18n = appI18n): { label: string; cls: string } {
+  const known = STATUS_COPY[status];
+  return known ? { label: i18n._(known.label), cls: known.cls } : { label: String(status).replace(/_/g, " "), cls: "bg-stone-100 text-stone-600" };
 }
 
 /**
@@ -469,7 +474,7 @@ function DialEditor({
 }
 
 export default function GameMechanics() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const cfg = useGameConfig();
   // A LABEL. Who may withdraw is unchanged: the route still checks
   // proposal.decide and isAdmin, and this only says the village's word for it.
@@ -717,7 +722,8 @@ export default function GameMechanics() {
   };
 
   const villageName = cfg?.project?.name ?? "";
-  const allDials = snapshot?.variables ?? [];
+  // The dials arrive in English; the platform's own words are drawn in the reader's language (gameMechanicsDialWords.ts).
+  const allDials = useMemo(() => localizeDials(snapshot?.variables ?? [], i18n), [snapshot, i18n, i18n.locale]);
   /**
    * An amendment's before and after, in the words its dial uses.
    *
@@ -822,7 +828,8 @@ export default function GameMechanics() {
                   admin, or founder. Everything below them is tunable <em>because</em> these are not.
                 </Trans></p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {snapshot.constitution.map((law) => (
+                  {/* The laws arrive in English; the platform's own words are drawn in the reader's language. */}
+                  {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                     <div
                       key={law.title}
                       className="m-germ bg-white rounded-xl border border-stone-200 p-4"
@@ -1044,7 +1051,7 @@ export default function GameMechanics() {
                   {activeProposals.map((p) => {
                     // Proposer-only actions render for every signed-in member;
                     // the server answers an honest 403 for anyone else.
-                    const status = statusChip(p.status);
+                    const status = statusChip(p.status, i18n);
                     return (
                       <div
                         key={p.id}
@@ -1072,7 +1079,7 @@ export default function GameMechanics() {
                         <ul className="text-sm space-y-1 mb-3">
                           {p.changes.map((c) => (
                             <li key={c.key}>
-                              <span className="text-stone-700">{c.label}:</span>{" "}
+                              <span className="text-stone-700">{dialLabel(c.key, c.label, i18n)}:</span>{" "}
                               <span className="line-through text-stone-500">{c.fromDisplay}</span> →{" "}
                               <span className="font-semibold text-teal-deep">{c.toDisplay}</span>
                               {c.applyTiming === "cycle-close" && (
@@ -1295,7 +1302,7 @@ export default function GameMechanics() {
                       {settledProposals.map((p) => (
                         <li key={p.id} className="text-sm text-stone-500">
                           <span className={`text-xs px-1.5 py-0.5 rounded-full mr-2 ${statusChip(p.status).cls}`}>
-                            {statusChip(p.status).label}
+                            {statusChip(p.status, i18n).label}
                           </span>
                           {p.title} · by {p.proposer}
                           {p.ballotId && (
@@ -1344,7 +1351,7 @@ export default function GameMechanics() {
                       <ul className="divide-y divide-stone-100">
                         {history.map((h) => (
                           <li key={h.id} className="px-4 py-3">
-                            <HistoryEntry h={h} valueOf={amendmentValue} />
+                            <HistoryEntry h={{ ...h, label: dialLabel(h.key, h.label, i18n) }} valueOf={amendmentValue} />
                           </li>
                         ))}
                       </ul>

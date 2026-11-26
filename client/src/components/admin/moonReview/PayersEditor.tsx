@@ -8,14 +8,18 @@
  */
 import { useState } from "react";
 import {
-  ADMIN_WORDS, AUTHORITY_KINDS, AUTHORITY_KIND_WORDS, INVOICING_ROUTES, PAY_ROUTE_SHORT_WORDS,
-  type AuthorityKind, type Payer, type PayersDoc, type PayRoute,
+  AUTHORITY_KINDS,
+  INVOICING_ROUTES,
+  type AuthorityKind,
+  type Payer,
+  type PayersDoc,
+  type PayRoute,
 } from "@shared/moonRecap";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
 import { buttonClass, inputClass, labelClass, listOf, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
-const W = ADMIN_WORDS.payers;
 
 const blank = (): Payer => ({
   key: "", legalName: "", address: "", taxId: null, country: "", currencies: [], invoiceTo: "", invoiceCc: [], invoicing: false, routes: [],
@@ -40,6 +44,8 @@ const fromDraft = (d: Draft): Payer => ({
 });
 
 export default function PayersEditor({ password }: { password: string }) {
+  const W = useMoonWords().admin.payers;
+  const MW = useMoonWords();
   const { state, save, saving, message } = useSettingsDocument<PayersDoc>("payers", password);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [seededFrom, setSeededFrom] = useState<PayersDoc | null>(null);
@@ -90,7 +96,7 @@ export default function PayersEditor({ password }: { password: string }) {
               {INVOICING_ROUTES.map((r) => (
                 <label key={r} className="flex items-center gap-2 text-sm text-foreground">
                   <input type="checkbox" checked={d.routes.includes(r)} onChange={() => toggleRoute(i, r)} />
-                  {PAY_ROUTE_SHORT_WORDS[r]}
+                  {MW.payRouteShort[r]}
                 </label>
               ))}
             </div>
@@ -99,7 +105,7 @@ export default function PayersEditor({ password }: { password: string }) {
             <p className={`${labelClass} sm:col-span-3`}>{W.authority}</p>
             <label className={labelClass}>{W.authorityKind}
               <select className={inputClass} value={d.authority.kind} onChange={(e) => setAuthority(i, { kind: e.target.value as AuthorityKind })}>
-                {AUTHORITY_KINDS.map((k) => <option key={k} value={k}>{AUTHORITY_KIND_WORDS[k]}</option>)}
+                {AUTHORITY_KINDS.map((k) => <option key={k} value={k}>{MW.authorityKind[k]}</option>)}
               </select>
             </label>
             <label className={labelClass}>{W.authorityDate}<input type="date" className={inputClass} value={d.authority.date ?? ""} onChange={(e) => setAuthority(i, { date: e.target.value || null })} /></label>

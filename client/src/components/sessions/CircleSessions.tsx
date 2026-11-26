@@ -23,7 +23,7 @@
  * stands as it is.
  */
 import { useEffect, useState } from "react";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
+import { useCircleWords } from "@/components/circleCard/circleWords";
 import { circleSummaryUrl, type CircleSessionsSummary } from "@shared/sessionRhythm";
 import { gameFetch } from "@/lib/gameApi";
 import CircleDecisions from "./CircleDecisions";
@@ -42,6 +42,7 @@ async function readKeeps(circleId: string): Promise<boolean> {
 }
 
 export default function CircleSessions({ circleId, circleName, sessionsOn }: { circleId: string; circleName: string; sessionsOn: boolean }) {
+  const W = useCircleWords();
   const [keeps, setKeeps] = useState(false);
 
   useEffect(() => {

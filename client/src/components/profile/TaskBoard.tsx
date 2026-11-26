@@ -59,7 +59,6 @@ import { dropBellAnswer } from "@/components/tasks/bellAnswers";
 import { holdInView } from "@/components/tasks/holdInView";
 import {
   TASK_BOARD_ANCHOR,
-  TASK_COPY,
   TASKS_MINE_URL,
   taskCardAnchor,
   taskIdFromHash,
@@ -68,6 +67,7 @@ import {
 } from "@shared/sessionTasks";
 import WaitingOnYou from "@/components/profile/WaitingOnYou";
 import { WAITING_COPY } from "@shared/waitingOnYou";
+import { useTaskWords } from "@/components/tasks/taskWords";
 
 const isCards = (v: unknown): v is TaskCardData[] => Array.isArray(v);
 
@@ -111,6 +111,7 @@ const cardShell = (entryId: number, ringed: number | null): string =>
   }`;
 
 export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
+  const TW = useTaskWords();
   const [board, setBoard] = useState<TaskBoardPayload | null>(null);
   const [waiting, setWaiting] = useState<boolean | null>(null);
   const [failed, setFailed] = useState(false);
@@ -286,9 +287,9 @@ export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
     return (
       <section aria-labelledby={id} className="space-y-3">
         <h3 id={id} className={LABEL_CAPS}>
-          {TASK_COPY.groups[key]}
+          {TW.groups[key]}
         </h3>
-        {key === "circleBack" && <p className={HINT}>{TASK_COPY.circleBackHint}</p>}
+        {key === "circleBack" && <p className={HINT}>{TW.circleBackHint}</p>}
         <ul className="space-y-3">
           {cards.map((c) => (
             <li key={c.entryId} id={taskCardAnchor(c.entryId)} className={cardShell(c.entryId, ringed)}>
@@ -308,9 +309,9 @@ export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
   return (
     <section aria-labelledby="task-board-h" aria-busy={sessions && !board && !failed} hidden={!sessions && !waiting} className={`${PANEL} sm:p-8`}>
       <h2 id="task-board-h" ref={heading} tabIndex={-1} className="font-display text-2xl font-bold text-card-foreground outline-none">
-        {TASK_COPY.heading}
+        {TW.heading}
       </h2>
-      <p className={`${HINT} mt-1`}>{sessions ? TASK_COPY.lede : WAITING_COPY.ledeAlone}</p>
+      <p className={`${HINT} mt-1`}>{sessions ? TW.lede : WAITING_COPY.ledeAlone}</p>
 
       <div className="mt-6 empty:hidden">
         <WaitingOnYou onShown={setWaiting} />
@@ -325,16 +326,16 @@ export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
 
       {sessions && !board && failed && (
         <div className="mt-6 flex flex-wrap items-center gap-3" role="alert">
-          <p className="text-sm text-foreground">{TASK_COPY.loadFailed}</p>
+          <p className="text-sm text-foreground">{TW.loadFailed}</p>
           <button type="button" className={BTN_SECONDARY} onClick={() => void load()}>
-            {TASK_COPY.retry}
+            {TW.retry}
           </button>
         </div>
       )}
 
       {board && (
         <div className="mt-6 space-y-8">
-          {nothingHeld && <p className="text-base text-muted-foreground">{TASK_COPY.empty}</p>}
+          {nothingHeld && <p className="text-base text-muted-foreground">{TW.empty}</p>}
           {group("holding", board.holding, board.today)}
           {group("seatsHold", board.seatsHold, board.today)}
           {group("circleBack", board.circleBack, board.today)}
@@ -348,7 +349,7 @@ export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
               }}
             >
               <summary className={`${BTN_QUIET} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
-                <span className={LABEL_CAPS}>{TASK_COPY.groups.earlier}</span>
+                <span className={LABEL_CAPS}>{TW.groups.earlier}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
               </summary>
               <div className="mt-3" aria-live="polite">
@@ -357,9 +358,9 @@ export default function TaskBoard({ sessions = true }: { sessions?: boolean }) {
                 )}
                 {earlierFailed && (
                   <div className="flex flex-wrap items-center gap-3" role="alert">
-                    <p className="text-sm text-foreground">{TASK_COPY.loadFailed}</p>
+                    <p className="text-sm text-foreground">{TW.loadFailed}</p>
                     <button type="button" className={BTN_SECONDARY} onClick={() => void openEarlier()}>
-                      {TASK_COPY.retry}
+                      {TW.retry}
                     </button>
                   </div>
                 )}
