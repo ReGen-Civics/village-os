@@ -29,7 +29,6 @@ import { useNewcomerOrVisitor } from "@/lib/newcomer";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
 import { replyMoonsOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
 import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
-import Mycelium from "@/components/motion/Mycelium";
 
 /** The proposal page, as the village's story-page switch names it. */
 export const VENTURE_PITCH_PAGE = "/work-with-us";
@@ -201,26 +200,24 @@ export default function ContributorRoutes({
     return (
       <div className={className} data-contributor-routes="tiles">
         {heading ? <Heading id={headingId} className="mb-2 font-display text-lg leading-tight text-foreground sm:mb-3 sm:text-2xl">{heading}</Heading> : null}
-        <Mycelium>
-        <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-          {routes.map((r) => (
-            <li key={r} className="m-germ min-w-0" data-route={r}>
-              {go(
-                r,
-                "m-touch group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
-                <>
-                  {/* The arrow sits on the verb's first line when a long verb wraps (QA, 23 Nov 2026). */}
-                  <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
-                    {words[r].verb}
-                    <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground group-hover:text-notice sm:mt-1" aria-hidden="true" />
-                  </span>
-                  <span className="text-xs leading-snug text-muted-foreground">{words[r].short}</span>
-                </>,
-              )}
-            </li>
-          ))}
-        </ul>
-        </Mycelium>
+      <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+        {routes.map((r) => (
+          <li key={r} className="m-germ min-w-0" data-route={r}>
+            {go(
+              r,
+              "m-touch group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
+              <>
+                {/* The arrow sits on the verb's first line when a long verb wraps (QA, 23 Nov 2026). */}
+                <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
+                  {words[r].verb}
+                  <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground group-hover:text-notice sm:mt-1" aria-hidden="true" />
+                </span>
+                <span className="text-xs leading-snug text-muted-foreground">{words[r].short}</span>
+              </>,
+            )}
+          </li>
+        ))}
+      </ul>
       </div>
     );
   }
@@ -229,25 +226,23 @@ export default function ContributorRoutes({
     return (
       <div className={`grid gap-2 ${className}`} data-contributor-routes="links">
         {heading ? <Heading id={headingId} className={headingAs === "h2" ? EYEBROW : LABEL}>{heading}</Heading> : null}
-        <Mycelium>
-        <ul className="grid gap-3">
-          {routes.map((r) => (
-            <li key={r} className="m-germ" data-route={r}>
-              {go(
-                r,
-                `jw-btn min-h-14 ${DOOR}`,
-                <>
-                  <span className="grid min-w-0 flex-1">
-                    <span>{words[r].verb}</span>
-                    <span className="text-xs font-normal text-muted-foreground">{words[r].line}</span>
-                  </span>
-                  <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-                </>,
-              )}
-            </li>
-          ))}
-        </ul>
-        </Mycelium>
+      <ul className="grid gap-3">
+        {routes.map((r) => (
+          <li key={r} className="m-germ" data-route={r}>
+            {go(
+              r,
+              `jw-btn min-h-14 ${DOOR}`,
+              <>
+                <span className="grid min-w-0 flex-1">
+                  <span>{words[r].verb}</span>
+                  <span className="text-xs font-normal text-muted-foreground">{words[r].line}</span>
+                </span>
+                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              </>,
+            )}
+          </li>
+        ))}
+      </ul>
       </div>
     );
   }
@@ -258,38 +253,36 @@ export default function ContributorRoutes({
   return (
     <div className={className} data-contributor-routes="cards">
       {heading ? <Heading id={headingId} className="mb-4 font-display text-2xl leading-tight text-foreground sm:text-3xl">{heading}</Heading> : null}
-      <Mycelium>
-      <ul className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
-        {routes.map((r) => (
-          <li key={r} className={`m-germ ${TILE} flex flex-col gap-3`} data-route={r}>
-            {/* The verb first, so a phone reader scanning four tall cards sees which is which. */}
-            <Title className="font-display text-xl leading-tight text-foreground">{words[r].verb}</Title>
-            <p className="text-base leading-relaxed text-foreground">{words[r].line}</p>
-            {words[r].note ? <p className="text-sm leading-relaxed text-foreground" data-route-note="">{words[r].note}</p> : null}
-            <dl className="grid gap-2 text-sm">
-              <div>
-                <dt className="font-semibold text-foreground">{t({ message: "You bring", context: "four ways to build: the label before what you bring" })}</dt>
-                <dd className="text-muted-foreground">{words[r].bring}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-foreground">{t({ message: "You get back", context: "four ways to build: the label before what you get back" })}</dt>
-                <dd className="text-muted-foreground">{words[r].back}</dd>
-              </div>
-            </dl>
-            <div className="mt-auto pt-1">
-              {go(
-                r,
-                `${BTN_NOTICE} w-full text-base`,
-                <>
-                  {words[r].verb}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </>,
-              )}
+    <ul className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
+      {routes.map((r) => (
+        <li key={r} className={`m-germ ${TILE} flex flex-col gap-3`} data-route={r}>
+          {/* The verb first, so a phone reader scanning four tall cards sees which is which. */}
+          <Title className="font-display text-xl leading-tight text-foreground">{words[r].verb}</Title>
+          <p className="text-base leading-relaxed text-foreground">{words[r].line}</p>
+          {words[r].note ? <p className="text-sm leading-relaxed text-foreground" data-route-note="">{words[r].note}</p> : null}
+          <dl className="grid gap-2 text-sm">
+            <div>
+              <dt className="font-semibold text-foreground">{t({ message: "You bring", context: "four ways to build: the label before what you bring" })}</dt>
+              <dd className="text-muted-foreground">{words[r].bring}</dd>
             </div>
-          </li>
-        ))}
-      </ul>
-      </Mycelium>
+            <div>
+              <dt className="font-semibold text-foreground">{t({ message: "You get back", context: "four ways to build: the label before what you get back" })}</dt>
+              <dd className="text-muted-foreground">{words[r].back}</dd>
+            </div>
+          </dl>
+          <div className="mt-auto pt-1">
+            {go(
+              r,
+              `${BTN_NOTICE} w-full text-base`,
+              <>
+                {words[r].verb}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </>,
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
     </div>
   );
 }

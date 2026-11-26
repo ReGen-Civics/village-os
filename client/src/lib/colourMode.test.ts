@@ -40,10 +40,10 @@ describe("resolveMode", () => {
     expect(resolveMode(false)).toBe("dark");
   });
 
-  it("opens in light whatever the device says, while FOLLOW_DEVICE is off", () => {
+  it("opens in dark whatever the device says, while FOLLOW_DEVICE is off", () => {
     expect(FOLLOW_DEVICE).toBe(false);
-    prefers("dark");
-    expect(resolveMode(true)).toBe("light");
+    prefers("light");
+    expect(resolveMode(true)).toBe("dark");
   });
 
   it("follows the device when nobody has chosen, once FOLLOW_DEVICE is on", () => {
@@ -51,9 +51,9 @@ describe("resolveMode", () => {
     expect(resolveMode(true, true)).toBe("dark");
   });
 
-  it("falls back to light when the device says nothing", () => {
-    expect(DEFAULT_MODE).toBe("light");
-    expect(resolveMode(true)).toBe("light");
+  it("falls back to dark when the device says nothing (the lead, 26 Nov 2026)", () => {
+    expect(DEFAULT_MODE).toBe("dark");
+    expect(resolveMode(true)).toBe("dark");
   });
 
   it("sets nothing before modes are live, so the site looks as it did", () => {
