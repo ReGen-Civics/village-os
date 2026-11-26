@@ -35,7 +35,7 @@ function WaitingDrafts({ roleId }: { roleId: string }) {
   }, [roleId]);
   if (!drafts.length) return null;
   return (
-    <div className="mt-2 text-sm text-foreground" data-testid={`role-drafts-${roleId}`}>
+    <div className="mt-2 max-w-sm text-sm text-foreground" data-testid={`role-drafts-${roleId}`}>
       <p className="font-semibold">
         <Plural context="role card: open drafts of this role" value={drafts.length} one="A change to this role is waiting:" other="# changes to this role are waiting:" />
       </p>
@@ -58,10 +58,13 @@ export default function EditRoleButton({ roleId, onSaved, className = "" }: { ro
   if (!door) return null;
   return (
     <>
-      <button type="button" className={`${SECONDARY} ${className}`} onClick={() => setOpen(true)} data-edit-role={roleId}>
-        <Trans context="role card, opens the role editor">Edit this role</Trans>
-      </button>
-      <WaitingDrafts roleId={roleId} />
+      {/* The button and what waits on the role stay together, whatever layout the card lays its row out in. */}
+      <span className="inline-flex flex-col items-start">
+        <button type="button" className={`${SECONDARY} ${className}`} onClick={() => setOpen(true)} data-edit-role={roleId}>
+          <Trans context="role card, opens the role editor">Edit this role</Trans>
+        </button>
+        <WaitingDrafts roleId={roleId} />
+      </span>
       {open && (
         <Suspense fallback={null}>
           <RoleEditor roleId={roleId} onClose={() => setOpen(false)} onSaved={onSaved} />
