@@ -48,10 +48,10 @@ import { useState } from "react";
 import { MessageCircleQuestion } from "lucide-react";
 import InfoTip from "@/components/InfoTip";
 import { openAdvisory } from "./governanceApi";
-import { subjectNoun, type WizardType } from "./wizardConfig";
+import type { WizardType } from "./wizardConfig";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useWizardWords } from "@/components/governance/wizardWords";
+import { useDecisionNoun } from "@/components/governance/decisionNounWords";
 
 /**
  * The methods a practice vote may run, in the order a member meets them.
@@ -103,10 +103,10 @@ export default function PracticeVote({
   /** Present when the module library opened this with the question written. */
   asking?: FixedAsk;
 }) {
-  const ww = useWizardWords();
+  const nounOf = useDecisionNoun();
   const { t } = useLingui();
   const Heading = asking ? "h2" : "h3";
-  const noun = about ? ww(subjectNoun(about)) : "";
+  const noun = about ? nounOf(about) : "";
   const [question, setQuestion] = useState(asking?.question ?? "");
   const [detail, setDetail] = useState("");
   const [method, setMethod] = useState("");

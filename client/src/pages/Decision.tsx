@@ -45,7 +45,6 @@ import VoteWidget from "@/components/governance/VoteWidget";
 import StewardSlate from "@/components/governance/StewardSlate";
 import VoterRoll from "@/components/governance/VoterRoll";
 import WeightRecord from "@/components/governance/WeightRecord";
-import { subjectNoun } from "@/components/governance/wizardConfig";
 import { CYCLE_SETTLEMENT } from "@shared/moonSettlement";
 import { DATABASE_EXPORT, VILLAGE_LAUNCH } from "@shared/ballotSubjects";
 import { ExportDelivery } from "@/components/governance/ExportByVote";
@@ -76,7 +75,7 @@ import {
   type StewardSlate as StewardSlateData,
   type WeightRecord as WeightRecordData,
 } from "@/components/governance/governanceApi";
-import { useWizardWords } from "@/components/governance/wizardWords";
+import { useDecisionNoun } from "@/components/governance/decisionNounWords";
 
 /**
  * WHAT EACH METHOD MEANS, and its authority is `BALLOT_METHODS` in
@@ -142,7 +141,7 @@ export const DECISION_METHOD_TIPS = METHOD_TIP;
 export const DECISION_WEIGHT_TIPS = WEIGHT_MODE_TIP;
 
 export default function Decision() {
-  const ww = useWizardWords();
+  const noun = useDecisionNoun();
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   // The village's own word for whoever runs it. A LABEL and nothing more:
@@ -375,7 +374,7 @@ export default function Decision() {
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-            {ww(subjectNoun(ballot.subjectType))}
+            {noun(ballot.subjectType)}
           </span>
           <span className="text-xs text-muted-foreground">
             <Trans context="Decision, span">Decided by {ballot.method}

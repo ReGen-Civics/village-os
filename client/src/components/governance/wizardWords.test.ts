@@ -1,6 +1,7 @@
 import { setupI18n } from "@lingui/core";
 import { describe, expect, it } from "vitest";
 import { SUBJECT_NOUN, TYPE_GROUPS, WIZARD_STEPS, WIZARD_TYPE_CONFIGS } from "./wizardConfig";
+import { DECISION_NOUN_WORDS, decisionNoun } from "./decisionNounWords";
 import { WIZARD_WORDS, wizardWord } from "./wizardWords";
 
 /** The keys of the config whose string value is copy a reader sees. */
@@ -21,10 +22,23 @@ function wizardCopy(): string[] {
   walk(WIZARD_TYPE_CONFIGS);
   WIZARD_STEPS.forEach((s) => out.add(s.label));
   TYPE_GROUPS.forEach((g) => out.add(g));
-  Object.values(SUBJECT_NOUN).forEach((v) => out.add(v));
-  out.add("Decision");
   return [...out];
 }
+
+describe("a decision's noun in the reader's language (lane ES-A)", () => {
+  it("every noun SUBJECT_NOUN names, and the fallback, has a translatable entry", () => {
+    const nouns = [...new Set([...Object.values(SUBJECT_NOUN), "Decision"])];
+    expect(nouns.filter((n) => !DECISION_NOUN_WORDS[n]), "add these to client/src/components/governance/decisionNounWords.ts").toEqual([]);
+  });
+
+  it("draws the English as written, and a catalog's word where it has one", () => {
+    const en = setupI18n({ locale: "en", messages: { en: {} } });
+    expect(decisionNoun("mechanics", en)).toBe("Rule change");
+    expect(decisionNoun("an_id_nobody_knows", en)).toBe("Decision");
+    const d = DECISION_NOUN_WORDS["Rule change"];
+    expect(decisionNoun("mechanics", setupI18n({ locale: "es", messages: { es: { [d.id]: "Cambio de regla" } } }))).toBe("Cambio de regla");
+  });
+});
 
 describe("the proposal wizard's words in the reader's language (lane ES-A)", () => {
   it("every word the config draws has a translatable entry", () => {

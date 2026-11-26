@@ -8,7 +8,8 @@
  * they are drawn: `useWizardWords()` gives `ww(english)`.
  *
  * Every copy string in the config has an entry; wizardWords.test.ts walks the config and fails on one without,
- * so a new field or type cannot ship in English only.
+ * so a new field or type cannot ship in English only. The decision nouns (`SUBJECT_NOUN`) live apart, in
+ * ./decisionNounWords.ts, because the decision pages draw them and should not carry the whole wizard.
  */
 // A value import of the runtime: precompileEnglish compiles the messages of a file that imports it and skips one
 // that only uses `msg` (client/src/components/roleCard/payBandWords.ts says the same).
@@ -181,31 +182,6 @@ export const WIZARD_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   "Subject": msg({ message: "Subject", context: "proposal wizard" }),
   "Terms": msg({ message: "Terms", context: "proposal wizard" }),
   "Review": msg({ message: "Review", context: "proposal wizard" }),
-  "Rule change": msg({ message: "Rule change", context: "proposal wizard" }),
-  "Who holds a role, and on what terms": msg({ message: "Who holds a role, and on what terms", context: "proposal wizard" }),
-  "Agreement": msg({ message: "Agreement", context: "proposal wizard" }),
-  "Badge grant": msg({ message: "Badge grant", context: "proposal wizard" }),
-  "Quest payout": msg({ message: "Quest payout", context: "proposal wizard" }),
-  "Power handover": msg({ message: "Power handover", context: "proposal wizard" }),
-  "Power given to a role": msg({ message: "Power given to a role", context: "proposal wizard" }),
-  "Power handed back": msg({ message: "Power handed back", context: "proposal wizard" }),
-  "Change of purpose": msg({ message: "Change of purpose", context: "proposal wizard" }),
-  "Change to the conflict agreement": msg({ message: "Change to the conflict agreement", context: "proposal wizard" }),
-  "Change to what closing means": msg({ message: "Change to what closing means", context: "proposal wizard" }),
-  "Advisory vote": msg({ message: "Advisory vote", context: "proposal wizard" }),
-  "The end of a moon": msg({ message: "The end of a moon", context: "proposal wizard" }),
-  "Starting the Game": msg({ message: "Starting the Game", context: "proposal wizard" }),
-  "Minting rule change": msg({ message: "Minting rule change", context: "proposal wizard" }),
-  "A new role": msg({ message: "A new role", context: "proposal wizard" }),
-  "Who sits in a role": msg({ message: "Who sits in a role", context: "proposal wizard" }),
-  "A role handed back": msg({ message: "A role handed back", context: "proposal wizard" }),
-  "A change to the structure": msg({ message: "A change to the structure", context: "proposal wizard" }),
-  "A grant of new tokens": msg({ message: "A grant of new tokens", context: "proposal wizard" }),
-  "A suggested change to an admin control": msg({ message: "A suggested change to an admin control", context: "proposal wizard" }),
-  "One copy of the village's database": msg({ message: "One copy of the village's database", context: "proposal wizard" }),
-  "The quests a funding round's two counts disagree on": msg({ message: "The quests a funding round's two counts disagree on", context: "proposal wizard" }),
-  "How votes are counted": msg({ message: "How votes are counted", context: "proposal wizard" }),
-  "Decision": msg({ message: "Decision", context: "proposal wizard" }),
 };
 
 /** One of the wizard's words in `i18n`'s language; a word this file does not know is drawn as it is. */
