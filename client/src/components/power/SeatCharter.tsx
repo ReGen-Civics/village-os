@@ -15,7 +15,8 @@
  */
 import type { ReactNode, Ref } from "react";
 import { Hand, Mail, PenLine, Undo2 } from "lucide-react";
-import { COMMITMENT_LABELS, SHEET_WORDS, type SeatSheetView } from "@shared/roleSheet";
+import type { SeatSheetView } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import LadderChip from "@/components/sheet/LadderChip";
 import { Eyebrow, SeatFigures, StateBadge } from "./SeatCardFront";
 import { SHEET_HEADING } from "./SeatRoster";
@@ -54,6 +55,9 @@ export default function SeatCharter({
   onShortcut: () => void;
   backRef: Ref<HTMLButtonElement>;
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
+  const COMMITMENT_LABELS = RS.labels;
   const seats = view.figures.find((f) => f.key === "places")?.value ?? 0;
   const badge = !embedded && view.badge ? <StateBadge badge={view.badge} seats={seats} /> : null;
   const { sections } = view;
