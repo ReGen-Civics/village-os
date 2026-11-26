@@ -74,7 +74,9 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
     for (const args of samples[l.path]) {
       const want = (l.english as (...a: unknown[]) => unknown)(...args);
       expect((pick(en, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) in English`).toBe(want);
-      if (want !== null && want !== undefined) {
+      // A line with nothing to translate (only a name the village wrote) is drawn as it is.
+      const carries = idsOf((l.mirror as (...a: unknown[]) => MirrorLine | null)(...args)).length > 0;
+      if (want !== null && want !== undefined && carries) {
         expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toContain("XX");
       }
     }
