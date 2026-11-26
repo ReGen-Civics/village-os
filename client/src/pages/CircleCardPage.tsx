@@ -42,7 +42,8 @@ import CirclePulse from "@/components/sessions/CirclePulse";
 import { CARD, LINK, WORLD } from "@/components/journey/look";
 import { gameFetch } from "@/lib/gameApi";
 import type { CircleCard, CircleSection } from "@shared/circleCard";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
+import { localizeCircleCard, useCircleWords } from "@/components/circleCard/circleWords";
+import { useLingui } from "@lingui/react/macro";
 
 type View =
   | { kind: "loading" }
@@ -92,7 +93,11 @@ export default function CircleCardPage() {
   }, [id]);
   useEffect(() => load(), [load]);
 
-  const card = view.kind === "ok" ? view.card : null;
+  const W = useCircleWords();
+  const { i18n } = useLingui();
+  // The card the server built, said again in the reader's language (circleWords.ts); as sent for English.
+  const sent = view.kind === "ok" ? view.card : null;
+  const card = useMemo(() => (sent ? localizeCircleCard(sent, i18n) : null), [sent, i18n, i18n.locale]);
   const circle = useMemo(() => (card ? { id, name: card.header.name } : null), [card, id]);
   const { data, answer } = useHearth(circle, view.kind === "ok" && view.sessionsOn);
 
@@ -146,6 +151,7 @@ function HearthPage({
   data: ReturnType<typeof useHearth>["data"];
   answer: ReturnType<typeof useHearth>["answer"];
 }) {
+  const W = useCircleWords();
   const roles = hearthRoles(card);
   const quiet = roles.kind === "none";
   const stones = roles.kind === "shown" ? stonesOf(roles.roles) : [];
