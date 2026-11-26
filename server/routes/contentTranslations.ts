@@ -28,6 +28,11 @@
 import { isVillageDocRef } from "../../shared/villageDocTranslation";
 import { noSharedCache, readerLocale, villageDocTranslation } from "../lib/contentTranslationRead";
 import { villagePaths } from "../lib/villagePaths";
+import { listArchetypes } from "../lib/characters";
+import { villageId } from "../lib/economy";
+import { readConfigDocument } from "../repos/appConfigDocs";
+import { normalizeSeasonConfig } from "../lib/seasonCalendar";
+import { GAME_CONFIG } from "../../shared/gameConfig";
 import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { CONTENT_KINDS, contentTranslationProblem, translatableLocales, type ContentKind } from "../../shared/contentTranslation";
@@ -125,8 +130,14 @@ export async function savePersonTranslation(
 }
 
 export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, deps: ContentTranslationDeps): void {
-  // The village's path names live in their own store (server/lib/villagePaths.ts), so "paths" is read here.
-  const villageDoc = (ref: string): unknown => (ref === "paths" ? { paths: villagePaths() } : deps.villageDoc?.(ref) ?? null);
+  // Three of the documents are read here from their own stores: the path names (server/lib/villagePaths.ts),
+  // the season calendar (the "season" config document, read as /api/season reads it) and the five classes.
+  const villageDoc = async (ref: string): Promise<unknown> => {
+    if (ref === "paths") return { paths: villagePaths() };
+    if (ref === "season") return { seasons: normalizeSeasonConfig((await readConfigDocument(deps.getPool(), "season")) ?? GAME_CONFIG.season).seasons };
+    if (ref === "archetypes") return { archetypes: await listArchetypes(deps.getPool(), villageId()) };
+    return deps.villageDoc?.(ref) ?? null;
+  };
   const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc });
   const BASE = "/api/admin/content-translations";
 
@@ -141,7 +152,7 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     const locale = readerLocale(req);
     noSharedCache(res);
     if (!locale || !isVillageDocRef(ref)) return res.json({ translation: null });
-    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, villageDoc(ref), locale) });
+    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, await villageDoc(ref), locale) });
   });
 
   app.get(BASE, async (req, res) => {

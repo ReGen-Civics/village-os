@@ -25,6 +25,7 @@
  * read the character page and the wizard make, plus the member's own party.
  */
 import { useEffect, useMemo, useState } from "react";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import { Link } from "wouter";
 import { lineWord } from "@shared/geneKeys";
 import type { GeneKeysView } from "@shared/geneKeys";
@@ -157,7 +158,8 @@ async function readMyCharacters(): Promise<Array<{ key: string; name: string }>>
 export default function RolesForYourLines({ me, lines }: { me: string; lines: readonly number[] }) {
   const [org, setOrg] = useState<{ roles?: any[]; circles?: any[] } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
-  const [characters, setCharacters] = useState<Array<{ key: string; name: string }>>([]);
+  const [charactersServed, setCharacters] = useState<Array<{ key: string; name: string }>>([]);
+  const characters = useArchetypesInLanguage(charactersServed); // the village's class words in the reader's language
   const [people, setPeople] = useState<Record<string, GeneKeysView>>({});
 
   const read = () => {

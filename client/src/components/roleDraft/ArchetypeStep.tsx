@@ -8,6 +8,7 @@
  * roles" is the other way through, and is handled by the page.
  */
 import GlossaryTip from "@/components/GlossaryTip";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import { Fragment, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
@@ -38,7 +39,8 @@ function lower(s: string): string {
 export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { onSeeAll: () => void; allShown: boolean; nested?: boolean }) {
   const { t } = useLingui();
   const rootWord = t({ message: "root", context: "glossary: the word a tip explains" });
-  const [cast, setCast] = useState<Archetype[]>([]);
+  const [castServed, setCast] = useState<Archetype[]>([]);
+  const cast = useArchetypesInLanguage(castServed); // the village's class words in the reader's language
   const Heading = nested ? "h4" : "h2";
   useEffect(() => {
     let live = true;

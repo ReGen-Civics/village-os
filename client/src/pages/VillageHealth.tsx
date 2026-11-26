@@ -7,6 +7,7 @@
  * zero would be shown as a WARNING, not a win.
  */
 import Layout from "@/components/Layout";
+import { useSeasonInLanguage } from "@/hooks/useSeasonWords";
 import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { useEffect, useState } from "react";
@@ -60,7 +61,8 @@ export default function VillageHealth() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
-  const [season, setSeason] = useState<any>(null);
+  const [servedSeason, setSeason] = useState<any>(null);
+  const season = useSeasonInLanguage(servedSeason); // the village's season words in the reader's language
 
   useEffect(() => {
     if (!healthModule) return;
