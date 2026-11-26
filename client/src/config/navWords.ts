@@ -11,7 +11,7 @@
  */
 // A value import of the runtime: precompileEnglish compiles the messages of a file that imports it and skips one
 // that only uses `msg` (client/src/components/roleCard/payBandWords.ts says the same).
-import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
+import { i18n as appI18n, setupI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 
 export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
@@ -94,10 +94,14 @@ export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   "Treasury": msg({ message: "Treasury", context: "site menu" }),
 };
 
+/** Reads a word's own English when no language has been started (a test, or a read before the app starts one). */
+const ENGLISH = setupI18n({ locale: "en", messages: { en: {} } });
+
 /** A menu word in the reader's language; a word this file does not know is drawn as it is. */
 export function navWord(label: string, i18n: I18n = appI18n): string {
   const d = NAV_WORDS[label];
-  return d ? i18n._(d) : label;
+  if (!d) return label;
+  return (i18n.locale ? i18n : ENGLISH)._(d);
 }
 
 /** A menu entry in the platform's own words, in the reader's language; a village's own subtitle is kept as written. */
