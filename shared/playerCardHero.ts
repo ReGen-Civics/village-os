@@ -32,10 +32,10 @@
  */
 import { LUNAR_CLOCK } from "./cycleClock";
 import { civilDate, daysOfSpan, fullMoonsBetween, newMoonsBetween, zonedTimeToUtc } from "./lunar";
-import { CARD_WORDS as W } from "./playerCardWords";
+import { noteDay, sayDay, sayList, W } from "./playerCardSay";
 import { FULL_SEASON_HOURS, hoursAWeek } from "./roleProposalLoad";
 import { commitmentWords } from "./termsWords";
-import { formatDay, joinList, type Read } from "./roleSheet";
+import type { Read } from "./roleSheet";
 
 /** A number and the field it came from, as the model's `Figure`. */
 interface Figure {
@@ -76,15 +76,18 @@ export function moonNameOf(newMoon: Date, timeZone: string): string {
 export function moonLineOf(now: Date, timeZone: string): string {
   const b = LUNAR_CLOCK.boundsFor(now);
   const last = new Date(b.endsAt.getTime() - 1);
-  return W.moonLine(moonNameOf(b.startsAt, timeZone), formatDay(b.startsAt.toISOString(), false, timeZone) ?? "", formatDay(last.toISOString(), false, timeZone) ?? "");
+  return W.moonLine(moonNameOf(b.startsAt, timeZone), sayDay(b.startsAt.toISOString(), false, timeZone) ?? "", sayDay(last.toISOString(), false, timeZone) ?? "");
 }
+
+const civilIso = (c: { year: number; month: number; day: number }) =>
+  `${String(c.year).padStart(4, "0")}-${String(c.month).padStart(2, "0")}-${String(c.day).padStart(2, "0")}`;
 
 /** "1 October to 31 December 2026": the year once when both ends share it. */
 export function spanWords(start: Date, end: Date, timeZone: string): string {
   const a = civilDate(start, timeZone);
   const b = civilDate(end, timeZone);
   const day = (c: { year: number; month: number; day: number }, year: boolean) =>
-    `${c.day} ${MONTH_NAMES[c.month - 1]}${year ? ` ${c.year}` : ""}`;
+    noteDay(`${c.day} ${MONTH_NAMES[c.month - 1]}${year ? ` ${c.year}` : ""}`, civilIso(c), null, year) ?? "";
   return W.heroSpan(day(a, a.year !== b.year), day(b, true));
 }
 
@@ -212,7 +215,7 @@ function circlesPhrase(roles: readonly HeroRoleIn[]): string | null {
     if (n && !names.includes(n)) names.push(n);
   }
   if (!names.length) return null;
-  return joinList(names.map((n) => (/^the\s/i.test(n) ? n : `the ${n}`)));
+  return sayList(names.map((n) => (/^the\s/i.test(n) ? n : `the ${n}`)), names.map((n) => n.replace(/^the\s+/i, "")));
 }
 
 export function heroOf(input: HeroIn): HeroOut {
@@ -309,8 +312,8 @@ export function trackOf(
   const t = now.getTime();
   const kinds = (["new", "full", "invoice"] as const).filter((k) => marks.some((m) => m.kind === k));
   return {
-    startLabel: formatDay(new Date(from).toISOString(), false, timeZone) ?? "",
-    endLabel: formatDay(new Date(to - 1).toISOString(), false, timeZone) ?? "",
+    startLabel: sayDay(new Date(from).toISOString(), false, timeZone) ?? "",
+    endLabel: sayDay(new Date(to - 1).toISOString(), false, timeZone) ?? "",
     marks,
     today: t >= from && t <= to ? pctOf(t, from, to) : null,
     kinds,

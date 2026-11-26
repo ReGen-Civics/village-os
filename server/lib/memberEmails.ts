@@ -36,6 +36,8 @@ import crypto from "node:crypto";
 import { signTokenPayload } from "./memberTokens";
 import { sameAddress } from "./emailVerification";
 import { isPlainAddress } from "./comms/mailer";
+import type { MailLanguage } from "../../shared/mailLanguage";
+import { passwordMailWords } from "../../shared/passwordMailWords";
 import {
   EMAIL_CODE_LENGTH,
   EMAIL_CODE_TRIES,
@@ -147,20 +149,25 @@ export function codeRefusal(check: Exclude<CodeCheck, "ok">): string {
   return { none: ADDRESS_REFUSAL.noCode, expired: ADDRESS_REFUSAL.expired, spent: ADDRESS_REFUSAL.spent, wrong: ADDRESS_REFUSAL.wrong }[check];
 }
 
-/** The letter that carries the code. Essential mail: it goes to the address that asked, whatever the account's delivery choice. */
+/**
+ * The letter that carries the code, in `lang` (shared/passwordMailWords.ts). Essential mail: it goes to the address
+ * that asked, whatever the account's delivery choice.
+ */
 export function addressCodeLetter(
   escapeHtml: (s: string) => string,
   village: string,
   code: string,
+  lang: MailLanguage = "en",
 ): { subject: string; html: string; text: string } {
+  const W = passwordMailWords(lang).addressCode;
   const v = escapeHtml(village);
   const minutes = Math.round(EMAIL_CODE_TTL_MS / 60000);
   return {
-    subject: `Your code to add this address: ${code}`,
-    html: `<p>Somebody signed in to ${v} asked to add this email address to their account.</p>
+    subject: W.subject(code),
+    html: `<p>${W.asked(v)}</p>
 <p style="font-size:24px;letter-spacing:4px;font-weight:bold">${escapeHtml(code)}</p>
-<p>If it was you, enter this code on your profile. It works for ${minutes} minutes.</p>
-<p>If it was not you, do nothing. The address is attached only when this code is entered, and nobody else can see it.</p>`,
-    text: `Somebody signed in to ${village} asked to add this email address to their account.\n\nYour code: ${code}\n\nIf it was you, enter this code on your profile. It works for ${minutes} minutes.\nIf it was not you, do nothing. The address is attached only when this code is entered.`,
+<p>${W.ifYou(minutes)}</p>
+<p>${W.notYouHtml}</p>`,
+    text: `${W.asked(village)}\n\n${W.yourCode(code)}\n\n${W.ifYou(minutes)}\n${W.notYouText}`,
   };
 }

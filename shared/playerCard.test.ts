@@ -195,6 +195,8 @@ describe("unread versus empty", () => {
     expect(value(one.across.seasonalGoals.items)[0]).toEqual({
       title: "Ready to grow the team to 30",
       doneWhen: "Done by 31 Dec when the team can take in 30 people",
+      // The owner's own words, which the editor opens with (never the sentence, which may be in another language).
+      when: "the team can take in 30 people",
     });
   });
 

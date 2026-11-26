@@ -1,0 +1,1054 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, holds no roles"
+msgid "Holds no roles yet"
+msgstr "Aún no tiene roles"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, roles line"
+msgid "{n, plural, one {# role} other {# roles}}: {names}"
+msgstr "{n, plural, one {# rol} other {# roles}}: {names}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, day of season"
+msgid "Day {day} of {of}"
+msgstr "Día {day} de {of}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no season set"
+msgid "No season set"
+msgstr "No hay temporada definida"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, proposes to hold"
+msgid "Proposes to hold {names}"
+msgstr "Propone asumir {names}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, moon name by month"
+msgid "{month} Moon"
+msgstr "Luna de {month}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, moon pill"
+msgid "{moon} · Day {day} of {of}"
+msgstr "{moon} · Día {day} de {of}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, moon line"
+msgid "{moon}, {from} to {to}"
+msgstr "{moon}, del {from} al {to}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, hero span"
+msgid "{from} to {to}"
+msgstr "Del {from} al {to}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline count of roles"
+msgid "{n, plural, =0 {No} =1 {One} =2 {Two} =3 {Three} =4 {Four} =5 {Five} =6 {Six} =7 {Seven} =8 {Eight} =9 {Nine} =10 {Ten} =11 {Eleven} =12 {Twelve} other {#}}"
+msgstr "{n, plural, =0 {Ningún} =1 {Un} =2 {Dos} =3 {Tres} =4 {Cuatro} =5 {Cinco} =6 {Seis} =7 {Siete} =8 {Ocho} =9 {Nueve} =10 {Diez} =11 {Once} =12 {Doce} other {#}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline roles"
+msgid "{count} {n, plural, one {role} other {roles}}"
+msgstr "{count} {n, plural, one {rol} other {roles}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline proposing"
+msgid "Proposing for {count} {n, plural, one {role} other {roles}}"
+msgstr "Propone {count} {n, plural, one {rol} other {roles}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline in circles"
+msgid "{roles} in {circles}"
+msgstr "{roles} en {circles}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline time"
+msgid "{roles} · {time}"
+msgstr "{roles} · {time}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, full time"
+msgid "Full-time"
+msgstr "Tiempo completo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, about hours a week"
+msgid "About {n} hours a week"
+msgstr "Unas {n} horas a la semana"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, portrait alt"
+msgid "{name}'s character portrait"
+msgstr "Retrato de personaje de {name}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, apply door"
+msgid "Apply for a role"
+msgstr "Postularse a un rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, plan door"
+msgid "Plan my season"
+msgstr "Planificar mi temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, my roles"
+msgid "My roles"
+msgstr "Mis roles"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, proposed roles"
+msgid "The roles I am proposing for"
+msgstr "Los roles que propongo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, across one"
+msgid "Across my role"
+msgstr "En todo mi rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, across many"
+msgid "Across all {n} roles"
+msgstr "En mis {n} roles"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, my n roles"
+msgid "{n, plural, one {My role} other {My # roles}}"
+msgstr "{n, plural, one {Mi rol} other {Mis # roles}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, each in full"
+msgid "{n, plural, one {My role in full} other {Each role in full}}"
+msgstr "{n, plural, one {Mi rol completo} other {Cada rol completo}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, aim"
+msgid "My aim this season"
+msgstr "Mi propósito esta temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no aim"
+msgid "No aim written yet"
+msgstr "Aún no hay propósito escrito"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no plan"
+msgid "No season plan filed yet"
+msgstr "Aún no se ha presentado un plan de temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, seasonal goals"
+msgid "{n, plural, one {My seasonal goal} other {My seasonal goals}}"
+msgstr "{n, plural, one {Mi meta de temporada} other {Mis metas de temporada}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, seasonal goals lede"
+msgid "One to three bigger goals for the whole season. Each moon's tasks build toward them."
+msgstr "De una a tres metas mayores para toda la temporada. Las tareas de cada luna avanzan hacia ellas."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no seasonal goals"
+msgid "No seasonal goals set yet"
+msgstr "Aún no hay metas de temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, goal done by"
+msgid "Done by {day} when {w}"
+msgstr "Lista para el {day}, cuando {w}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, goals"
+msgid "Village goals it serves"
+msgstr "Metas de la aldea a las que sirve"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no goals"
+msgid "No village goals named yet"
+msgstr "Aún no se nombran metas de la aldea"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, how it helps"
+msgid "How it helps"
+msgstr "Cómo ayuda"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, how it helps missing"
+msgid "How it helps is not written yet"
+msgstr "Aún no se ha escrito cómo ayuda"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tasks"
+msgid "This moon's tasks"
+msgstr "Tareas de esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no tasks"
+msgid "No tasks this moon yet"
+msgstr "Aún no hay tareas esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, task open"
+msgid "In progress"
+msgstr "En curso"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, task done"
+msgid "Done"
+msgstr "Hecha"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, done when"
+msgid "Done when {w}"
+msgstr "Lista cuando {w}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, signs"
+msgid "How we'll know it's working"
+msgstr "Cómo sabremos que funciona"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, signs lede"
+msgid "Only signs {village} can count by itself, from the game and the site, updated as things happen."
+msgstr "Solo señales que {village} puede contar por sí misma, desde el juego y el sitio, actualizadas a medida que ocurren."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, signs lede with no name"
+msgid "Only signs the village can count by itself, from the game and the site, updated as things happen."
+msgstr "Solo señales que la aldea puede contar por sí misma, desde el juego y el sitio, actualizadas a medida que ocurren."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, sign from"
+msgid "{countedFrom} · {role}"
+msgstr "{countedFrom} · {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, n of"
+msgid "{n} of {of}"
+msgstr "{n} de {of}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no signs"
+msgid "No signs named yet"
+msgstr "Aún no se nombran señales"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load"
+msgid "Load this moon"
+msgstr "Carga de esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load roles"
+msgid "{n, plural, one {# role} other {# roles}}"
+msgstr "{n, plural, one {# rol} other {# roles}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load tasks"
+msgid "{n, plural, one {# open task} other {# open tasks}} this moon"
+msgstr "{n, plural, one {# tarea abierta} other {# tareas abiertas}} esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load caption"
+msgid "My own read, set each moon."
+msgstr "Mi propia lectura, definida cada luna."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load not set"
+msgid "Not set this moon"
+msgstr "Sin definir esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load slider"
+msgid "How this moon feels, from Healthy to Heavy"
+msgstr "Cómo se siente esta luna, de Saludable a Pesada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load step healthy"
+msgid "Healthy"
+msgstr "Saludable"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load step leaning healthy"
+msgid "Leaning healthy"
+msgstr "Más bien saludable"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load step balanced"
+msgid "Balanced"
+msgstr "Equilibrada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load step leaning heavy"
+msgid "Leaning heavy"
+msgstr "Más bien pesada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, load step heavy"
+msgid "Heavy"
+msgstr "Pesada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, trend up"
+msgid "Up on last moon"
+msgstr "Sube respecto a la luna pasada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, trend down"
+msgid "Down on last moon"
+msgstr "Baja respecto a la luna pasada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, trend same"
+msgid "Same as last moon"
+msgstr "Igual que la luna pasada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, trend later"
+msgid "Trend from next moon"
+msgstr "Tendencia a partir de la próxima luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, open sheet"
+msgid "See what makes up: {sign}"
+msgstr "Ver de qué se compone: {sign}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, wallet"
+msgid "My wallet"
+msgstr "Mi billetera"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, pending role words"
+msgid "Proposed, waiting for consent"
+msgstr "Propuesto, en espera de consentimiento"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, growing edge"
+msgid "Growing edge"
+msgstr "Borde de crecimiento"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, who could hold next"
+msgid "Who could hold this next"
+msgstr "Quién podría asumirlo después"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, key role"
+msgid "Key role"
+msgstr "Rol clave"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, held until"
+msgid "Held until {day}"
+msgstr "Asumido hasta el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, review week of"
+msgid "Review week of {day}"
+msgstr "Revisión la semana del {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, purpose"
+msgid "Purpose"
+msgstr "Propósito"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no purpose"
+msgid "No purpose written yet"
+msgstr "Aún no hay propósito escrito"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, exists while"
+msgid "This role exists while"
+msgstr "Este rol existe mientras"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, decide"
+msgid "What I look after"
+msgstr "De qué me ocupo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, authorities"
+msgid "What I can decide on my own"
+msgstr "Qué puedo decidir por mi cuenta"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bring me"
+msgid "Bring me"
+msgstr "Tráigame"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, count on me"
+msgid "What you can count on me for"
+msgstr "Para qué puede contar conmigo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, responsibilities"
+msgid "What I do regularly"
+msgstr "Qué hago con regularidad"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, holding well"
+msgid "Holding this role well"
+msgstr "Sostener bien este rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, signs stretched"
+msgid "Signs I'm stretched"
+msgstr "Señales de sobrecarga"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, flows back"
+msgid "What flows back"
+msgstr "Lo que vuelve a mí"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, step back"
+msgid "How I can step back"
+msgstr "Cómo puedo dar un paso atrás"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, time commitment"
+msgid "Commitment"
+msgstr "Compromiso"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, terms key"
+msgid "Underlined headings show the matching CCOS term when you hover or tap them."
+msgstr "Los títulos subrayados muestran el término CCOS correspondiente al pasar el cursor o tocarlos."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, working"
+msgid "How we'll know it's working"
+msgstr "Cómo sabremos que funciona"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, works with"
+msgid "Works closely with"
+msgstr "Trabaja de cerca con"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, not mine"
+msgid "Not mine to hold"
+msgstr "No me corresponde sostener"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, runbook"
+msgid "Runbook"
+msgstr "Manual de operación"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, powers"
+msgid "Powers handed to this role"
+msgstr "Poderes entregados a este rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, powers shared"
+msgid "Powers handed to this role, shared"
+msgstr "Poderes entregados a este rol, compartidos"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, suited to"
+msgid "Suited to"
+msgstr "Apto para"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, suited note"
+msgid "The village has not handed these over."
+msgstr "La aldea no los ha entregado."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, power shared with"
+msgid "{label}, with {roles}"
+msgstr "{label}, con {roles}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, works with line"
+msgid "{role}: {about}"
+msgstr "{role}: {about}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no powers"
+msgid "No powers held"
+msgstr "No tiene poderes"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, not written"
+msgid "Not written yet"
+msgstr "Aún no está escrito"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, plays as"
+msgid "Plays as"
+msgstr "Juega como"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, not counted yet"
+msgid "Not counted yet"
+msgstr "Aún no se ha contado"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, of target"
+msgid "target {n}"
+msgstr "meta {n}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions"
+msgid "Tensions raised to this role"
+msgstr "Tensiones planteadas a este rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions answered"
+msgid "{n, plural, one {# tension} other {# tensions}} answered"
+msgstr "{n, plural, one {# tensión respondida} other {# tensiones respondidas}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no tensions"
+msgid "No tensions raised"
+msgstr "No se han planteado tensiones"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions open"
+msgid "{n, plural, one {# open tension} other {# open tensions}}"
+msgstr "{n, plural, one {# tensión abierta} other {# tensiones abiertas}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, open tensions all private"
+msgid "{n, plural, one {# open tension} other {# open tensions}}, private to the role's holders"
+msgstr "{n, plural, one {# tensión abierta, privada para quienes asumen el rol} other {# tensiones abiertas, privadas para quienes asumen el rol}}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, open tensions some private"
+msgid "{n, plural, one {# open tension} other {# open tensions}}, {withheld} private to the role's holders"
+msgstr "{n, plural, one {# tensión abierta} other {# tensiones abiertas}}, {withheld, plural, one {# privada} other {# privadas}} para quienes asumen el rol"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions answered this moon"
+msgid "{n} answered this moon"
+msgstr "{n} respondidas esta luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no open tensions"
+msgid "No open tensions"
+msgstr "No hay tensiones abiertas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions brought"
+msgid "Brought to the circle"
+msgstr "Llevadas al círculo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tensions waiting"
+msgid "Answer them in Waiting on you"
+msgstr "Respóndalas en Esperando por usted"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, timeline"
+msgid "My moon cycle"
+msgstr "Mi ciclo lunar"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, timeline eyebrow"
+msgid "The season, new moon to new moon"
+msgstr "La temporada, de luna nueva a luna nueva"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, invoice due"
+msgid "Invoice due"
+msgstr "Vence la factura"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, today"
+msgid "Today"
+msgstr "Hoy"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, timeline lede"
+msgid "Work is planned a moon at a time, from one new moon to the next."
+msgstr "El trabajo se planifica una luna a la vez, de una luna nueva a la siguiente."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, getting started"
+msgid "Getting started"
+msgstr "Primeros pasos"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, new moon"
+msgid "New moon"
+msgstr "Luna nueva"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, full moon"
+msgid "Full moon"
+msgstr "Luna llena"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tasks agreed"
+msgid "This moon's tasks agreed"
+msgstr "Tareas de esta luna acordadas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, new moon circle"
+msgid "New moon circle: your recap, and 3 to 5 goals for the moon, each tied to a season goal. Tasks go on the task board"
+msgstr "Círculo de luna nueva: su resumen y de 3 a 5 metas para la luna, cada una ligada a una meta de temporada. Las tareas van en el tablero de tareas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, full moon check-in"
+msgid "Full moon: a 15-minute halfway check-in"
+msgstr "Luna llena: una revisión de 15 minutos a mitad de camino"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, carry on"
+msgid "Carry on into the next moon?"
+msgstr "¿Continuar en la próxima luna?"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, end of moon"
+msgid "End of Moon: show the work delivered, celebrate wins, thank who helped, confirm your contract per role, and send your invoice"
+msgstr "Fin de Luna: muestre el trabajo entregado, celebre los logros, agradezca a quien ayudó, confirme su contrato por rol y envíe su factura"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, signed off"
+msgid "Last moon's work signed off and its bonus set"
+msgstr "Trabajo de la luna pasada aprobado y su bono definido"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, review on"
+msgid "Check in on how {role} is going"
+msgstr "Revisar cómo va {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, renewal on"
+msgid "Talk about next season for {role}"
+msgstr "Conversar sobre la próxima temporada de {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, term ends"
+msgid "{role} ends for the season"
+msgstr "{role} termina por esta temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, invoice"
+msgid "Send the invoice for {role}"
+msgstr "Enviar la factura de {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, moon dates"
+msgid "{from} to {to}"
+msgstr "Del {from} al {to}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, gathering every week"
+msgid "{label}, every week on {weekday} at {time}, for {role}"
+msgstr "{label}, cada semana el {weekday} a las {time}, para {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, gathering every other week"
+msgid "{label}, every other week on {weekday} at {time}, for {role}"
+msgstr "{label}, cada dos semanas el {weekday} a las {time}, para {role}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, gathering on a set day"
+msgid "a set day"
+msgstr "un día fijo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, accomplished"
+msgid "Accomplished"
+msgstr "Logros"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no accomplished"
+msgid "Nothing accepted as accomplished yet"
+msgstr "Aún no se ha aceptado nada como logrado"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, accepted on"
+msgid "Accepted on {day}"
+msgstr "Aceptado el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, how I hold"
+msgid "How I hold my roles"
+msgstr "Cómo sostengo mis roles"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, applications"
+msgid "My proposals"
+msgstr "Mis propuestas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, history eyebrow"
+msgid "My role history"
+msgstr "Mi historial de roles"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, past seasons"
+msgid "Past seasons"
+msgstr "Temporadas pasadas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, this season"
+msgid "This season"
+msgstr "Esta temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, next season"
+msgid "Next season"
+msgstr "Próxima temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no past"
+msgid "No past seasons yet"
+msgstr "Aún no hay temporadas pasadas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no this season"
+msgid "No proposals this season"
+msgstr "No hay propuestas esta temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no next season"
+msgid "Nothing filed for next season yet"
+msgstr "Aún no se ha presentado nada para la próxima temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, starts once adopted"
+msgid "Starts once adopted"
+msgstr "Comienza una vez adoptado"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, filed on"
+msgid "Filed {day}"
+msgstr "Presentada el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, agreements"
+msgid "My agreements"
+msgstr "Mis acuerdos"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, agreements eyebrow"
+msgid "Agreements"
+msgstr "Acuerdos"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, terms once"
+msgid "Terms for all {count} roles, recorded once"
+msgstr "Condiciones de los {count} roles, registradas una vez"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no terms"
+msgid "No terms written yet"
+msgstr "Aún no hay condiciones escritas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, clocks"
+msgid "Clocks"
+msgstr "Relojes"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, pay by month"
+msgid "Paid by the calendar month"
+msgstr "Pago por mes calendario"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, pay by moon"
+msgid "Paid by the moon"
+msgstr "Pago por luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, work by moon"
+msgid "The work runs by moons"
+msgstr "El trabajo va por lunas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, work by week"
+msgid "The work runs by weeks"
+msgstr "El trabajo va por semanas"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, term"
+msgid "Term"
+msgstr "Plazo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, ends on"
+msgid "Ends {day}"
+msgstr "Termina el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, ends with season"
+msgid "Ends with the season"
+msgstr "Termina con la temporada"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, length in moons"
+msgid "{n, plural, one {# moon} other {# moons}} from the day of seating"
+msgstr "{n, plural, one {# luna} other {# lunas}} desde el día en que se asume"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, review date"
+msgid "Review on {day}"
+msgstr "Revisión el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, no review date"
+msgid "No review date set"
+msgstr "Sin fecha de revisión"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, renewal date"
+msgid "Renewal on {day}"
+msgstr "Renovación el {day}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, notice"
+msgid "{n, plural, one {# day} other {# days}} of notice"
+msgstr "{n, plural, one {# día} other {# días}} de aviso"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, rhythm"
+msgid "Rhythm"
+msgstr "Ritmo"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tasks per moon range"
+msgid "{min} to {max} tasks a moon"
+msgstr "De {min} a {max} tareas por luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tasks per moon"
+msgid "{n, plural, one {# task} other {# tasks}} a moon"
+msgstr "{n, plural, one {# tarea} other {# tareas}} por luna"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, ending"
+msgid "Ending"
+msgstr "Cierre"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, pay through notice"
+msgid "Paid through the notice"
+msgstr "Pagado durante el aviso"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, pay"
+msgid "Pay"
+msgstr "Pago"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, allowance"
+msgid "Allowance"
+msgstr "Asignación"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus"
+msgid "Bonus"
+msgstr "Bono"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus equity"
+msgid "Paid in {village} as {token}, then claimed off the platform."
+msgstr "Se paga en {village} como {token} y luego se reclama fuera de la plataforma."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus equity unnamed"
+msgid "Paid as a contribution token bonus, then claimed off the platform."
+msgstr "Se paga como bono en tokens de contribución y luego se reclama fuera de la plataforma."
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus cap"
+msgid "Cap: {w}"
+msgstr "Tope: {w}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus rated by"
+msgid "Rated by {w}"
+msgstr "Valorado por {w}"
+
+# needs-native-review: player card, 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, bonus cadence"
+msgid "Cadence: {w}"
+msgstr "Frecuencia: {w}"
