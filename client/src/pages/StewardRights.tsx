@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import { Link } from "wouter";
+import ReadingCopyNote from "@/components/ReadingCopyNote";
 import { m } from "framer-motion";
 import { usePageContent, usePageLang } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
@@ -60,6 +61,8 @@ export default function StewardRights() {
       {/* Hero */}
       <section className="relative py-20 overflow-hidden">
         <div className="container relative z-10 max-w-3xl">
+          {/* A reading copy in the reader's language says so, and that the English is binding. */}
+          <ReadingCopyNote spec={RIGHTS_STEWARD_PAGE} />
           <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
