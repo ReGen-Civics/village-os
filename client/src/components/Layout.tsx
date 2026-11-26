@@ -14,8 +14,9 @@ const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/config/nav";
+import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
+import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
@@ -45,7 +46,7 @@ export default function Layout({ children }: LayoutProps) {
   const bare = isBareRoute(location);
   const { user, token, logout } = useAuth();
   const visitor = useVerifiedVisitor(!!user); // a visitor with a profile, and no member account
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   // Named, so the catalog reads "Your account, {firstName}" and not "{0}".
   const firstName = user?.name.split(" ")[0] ?? "";
   // The shell's identity — logo, name, outside links, footer copy — comes
@@ -82,9 +83,9 @@ export default function Layout({ children }: LayoutProps) {
   // this page") loses its entry and its link the same way. While the config
   // loads they stay out rather than flash in.
   const storyShown = (href: string) => storyPageShown(cfg, href);
-  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden
-  // flag per entry, its group names. Gates still decide who sees what.
+  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
+  const siteMenu = useSiteMenuWords(cfg?.site?.menu); // the village's story-page names, translated where it has
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
   const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();
   const visible = (item: NavLink) =>
@@ -105,22 +106,21 @@ export default function Layout({ children }: LayoutProps) {
     if (own) return { ...link, label: own };
     if (link.token) return { ...link, label: tokenName };
     // A story page carries the village's own name for it (Admin, Pages, Whole site).
-    const named = link.brochure ? cfg?.site?.menu?.[link.href] : undefined;
-    return named ? { ...link, label: named.label || link.label, subtitle: named.subtitle || undefined } : link;
+    const named = link.brochure ? siteMenu?.[link.href] : undefined;
+    return platformWords(link, i18n, named?.subtitle, named?.label);
   };
-  // The footer keeps its own wording for a story page until the village
-  // renames that page; the commitment page always follows the village's word.
-  const storyName = (href: string) => cfg?.site?.menu?.[href]?.label ?? "";
+  // The footer keeps its own wording for a story page until the village renames it; the commitment page follows the village's word.
+  const storyName = (href: string) => siteMenu?.[href]?.label ?? "";
   const footerName = (href: string, fallback: string) =>
-    cfg?.site?.menuChanged?.includes(href) ? storyName(href) || fallback : fallback;
+    cfg?.site?.menuChanged?.includes(href) ? ownWord(storyName(href), fallback, i18n) : navWord(fallback, i18n);
 
   // Groups collapse to nothing when every child is filtered out, so a fork with
   // its optional modules off never renders an empty dropdown.
   const groupItems = (group: NavGroup) => group.items.filter(visible).map(withTokenLabel);
   const navEntries = NAV.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
-    isGroup(e) ? { ...e, label: menu.groups[e.label] || e.label } : withTokenLabel(e),
+    isGroup(e) ? { ...e, label: menu.groups[e.label] || navWord(e.label, i18n) } : withTokenLabel(e),
   );
-  const accountItems = ACCOUNT_MENU.filter(visible).map((l) => (menu.labels[l.href] ? { ...l, label: menu.labels[l.href] } : l));
+  const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
   // fork, because every one of these pages renders NotFound with its module
@@ -502,7 +502,7 @@ export default function Layout({ children }: LayoutProps) {
                           className="flex min-h-11 items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <MenuIcon href={item.href} fallback={item.icon} />{item.label === "My Profile" ? `My Profile (${user.name.split(" ")[0]})` : item.label}
+                          <MenuIcon href={item.href} fallback={item.icon} />{item.href === "/profile" && !menu.labels[item.href] ? t({ message: `My Profile (${user.name.split(" ")[0]})`, context: "site menu, the drawer's profile link with the member's first name" }) : item.label}
                           {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
                           {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                         </Link>
@@ -940,7 +940,7 @@ function NavDropdown({
   // The join paths carry a second line; the rest are one word. A single width
   // for both leaves either the paths cramped or the short menus floating.
   const wide = items.some((i) => i.subtitle);
-  const menuId = `nav-menu-${group.label.toLowerCase()}`;
+  const menuId = navMenuId(group.label);
 
   return (
     <div

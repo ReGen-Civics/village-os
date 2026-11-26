@@ -20,6 +20,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { BARE_ROUTES, CHOOSE_PATH_HREF, NEWCOMER_SLOT, NEWCOMER_SWAPPED_TABS, PATH_GLYPHS, PATH_SLOT, TAB_SLOTS, pathProgressHref, type TabSlot } from "@/config/mobileNav";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
+import { navWord } from "@/config/navWords";
 import { Compass } from "lucide-react";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
@@ -185,7 +186,7 @@ export default function MobileTabBar() {
   const currentPath = normalisePath(location);
   // The token slot reads the village's word for its token; `path` never moves.
   const tokenName = useTokenName("Recognition");
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   // The bar speaks the reader's language (go-live pass, M10). Keyed by the
   // slot's fixed path or event, so config/mobileNav.ts keeps its English as
   // the fallback for a slot this list does not know.
@@ -252,7 +253,7 @@ export default function MobileTabBar() {
           const personal = s.personal === "path";
           const slot = personal
             ? { ...s, label: mine.label, Icon: mine.Icon }
-            : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
+            : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? navWord(s.label, i18n) };
           // The path slot is also lit on the profile, where its door leads (a path's card, or the paths).
           const active =
             (personal && currentPath === "/profile") ||
