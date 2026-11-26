@@ -598,7 +598,7 @@ export default function Review() {
             <Inbox className="size-4" aria-hidden="true" />
             <Trans context="review: eyebrow">Waiting on the village</Trans>
           </p>
-          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Review</Trans></h1>
+          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Your work</Trans></h1>
           {!forbidden && (
             <p className={`${LEDE} mt-2`}>
               <Trans context="Review, p">What an outside service has proposed about this village. Nothing here is true yet. Read it,

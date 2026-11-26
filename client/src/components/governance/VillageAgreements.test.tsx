@@ -58,7 +58,7 @@ describe("the village's agreements", () => {
     expect(screen.getByText(/Between ten at night/)).toBeTruthy();
     expect(screen.getByText(/Circle: Hearth\./)).toBeTruthy();
     expect(screen.getByTestId("agreement-review-agr-1").textContent).toContain("Review date:");
-    expect(screen.getByRole("link", { name: /Tools go back to the shed/ }).getAttribute("href")).toBe("/decisions/bal-2");
+    expect(screen.getByRole("link", { name: /Tools go back to the shed/ }).getAttribute("href")).toBe("/governance/decisions/bal-2");
     expect(screen.queryByText("Nobody parks by the gate")).toBeNull();
     expect(fetchMock).toHaveBeenCalledWith("/api/governance/agreements", { headers: { Authorization: "Bearer a-token" } });
   });

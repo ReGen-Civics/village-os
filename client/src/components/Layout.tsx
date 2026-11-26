@@ -645,7 +645,7 @@ export default function Layout({ children }: LayoutProps) {
               <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Governance</Trans></h2>
               <ul className="space-y-0">
                 <li>
-                  <Link href="/governance" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/governance/how" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">How we work together</Trans>
                   </Link>
                 </li>
@@ -719,10 +719,10 @@ export default function Layout({ children }: LayoutProps) {
                     looking may not open it, so a member who follows this link
                     without the capability gets a sentence and never a blank
                     screen. */}
-                {user && showsHref("/review") && (
+                {user && showsHref("/governance/work") && (
                   <li>
-                    <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Review Queue</Trans>
+                    <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Your work</Trans>
                     </Link>
                   </li>
                 )}

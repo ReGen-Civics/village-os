@@ -199,7 +199,7 @@ export default function DecisionOutcome({
         {/* 0334: the two ballots of a quorum re-run point at each other. */}
         {ballot.status === "no_quorum_rerun" && ballot.rerunId && (
           <p className="mt-3 text-sm font-semibold text-foreground">
-            <Link href={`/decisions/${ballot.rerunId}`} className="text-notice hover:underline">
+            <Link href={`/governance/decisions/${ballot.rerunId}`} className="text-notice hover:underline">
               <Trans>Vote on it again here</Trans>
             </Link>
           </p>
@@ -208,7 +208,7 @@ export default function DecisionOutcome({
           <p className="mt-3 text-sm text-muted-foreground">
             <Trans>
               This asks again after{" "}
-              <Link href={`/decisions/${ballot.rerunOf}`} className="text-notice hover:underline">
+              <Link href={`/governance/decisions/${ballot.rerunOf}`} className="text-notice hover:underline">
                 a vote too few of us answered
               </Link>
               .

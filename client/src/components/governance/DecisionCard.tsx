@@ -70,7 +70,7 @@ export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
 
       <h3 className="mt-2 text-lg font-bold leading-snug text-foreground">
         <Link
-          href={`/decisions/${ballot.id}`}
+          href={`/governance/decisions/${ballot.id}`}
           className="rounded-lg hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {ballot.title}
@@ -127,7 +127,7 @@ export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
         </span>
 
         <Link
-          href={`/decisions/${ballot.id}`}
+          href={`/governance/decisions/${ballot.id}`}
           className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-notice hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {open && inRoll && !cast && !expired ? "Vote on this" : "Open it"}

@@ -208,12 +208,13 @@ export const NAV: readonly NavEntry[] = [
      * anywhere in the menu, and the review queue and the powers page sat in
      * the account menu, where they read as personal settings.
      */
-    label: "Decide",
+    // "Governance" (the lead, 26 Nov 2026): this group is how the village governs itself, not a review.
+    label: "Governance",
     items: [
       // The live surface, module-gated: /governance (under About) explains
       // how the village decides and is always there; /decisions shows what it
       // is deciding and exists only where the engine is switched on.
-      { href: "/decisions", label: "Decisions", module: "governance", newcomers: "never" },
+      { href: "/governance/decisions", label: "Decisions", module: "governance", newcomers: "never" },
       // Funding rounds (0338): the village chooses which quests the season funds,
       // within a pot. Signed-in roles only: every door asks for a member.
       { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"], newcomers: "never" },
@@ -239,7 +240,7 @@ export const NAV: readonly NavEntry[] = [
        * the capability straight back behind the panel it was written to
        * escape. Signed in only, because a stranger cannot hold the capability.
        */
-      { href: "/review", label: "Review Queue", roles: ["member", "admin", "founder"], newcomers: "never" },
+      { href: "/governance/work", label: "Your work", roles: ["member", "admin", "founder"], newcomers: "never" },
       // 0098. What the village looks after, and who holds each one: who do I
       // ask. Open to visitors, and the page says what signing in adds.
       // Public since #1529 (the lead, 24 Nov 2026: holders by first name), so a newcomer is offered it too.
@@ -330,7 +331,7 @@ export const NAV: readonly NavEntry[] = [
     items: [
       { href: "/how-we-create", brochure: true, label: "How We Create" },
       // Renamed on 2026-09-28 with the page it opens; the route stays put.
-      { href: "/governance", label: "How we work together" },
+      { href: "/governance/how", label: "How we work together" },
       { href: "/master-plan", brochure: true, label: "Master Plan" },
       { href: "/team", brochure: true, label: "Our Team" },
       // The other villages this one is linked with: part of what it is.

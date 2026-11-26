@@ -121,7 +121,7 @@ export default function StartTheGame({
         </div>
         {running ? (
           <Link
-            href={`/decisions/${running.id}`}
+            href={`/governance/decisions/${running.id}`}
             className="text-sm bg-teal-deep text-white rounded-lg px-5 py-2.5 font-semibold"
           >
             <Trans context="StartTheGame, Link">Open the vote
@@ -159,7 +159,7 @@ export default function StartTheGame({
         <ul className="mt-4 border-t border-stone-900/10 pt-3 space-y-1.5">
           {vote.past.map((p) => (
             <li key={p.id} className="text-xs text-stone-600">
-              <Link href={`/decisions/${p.id}`} className="font-medium text-teal-deep hover:underline">
+              <Link href={`/governance/decisions/${p.id}`} className="font-medium text-teal-deep hover:underline">
                 {p.closedAt ? new Date(p.closedAt).toLocaleDateString() : "Closed"}
               </Link>
               {": "}

@@ -252,7 +252,7 @@ function BallotReturnNote({ proposal }: { proposal: Proposal }) {
   const live = proposal.lastBallotStatus === "open";
   const to = (
     <Link
-      href={`/decisions/${proposal.ballotId}`}
+      href={`/governance/decisions/${proposal.ballotId}`}
       className={`text-sm text-teal-deep font-medium hover:underline ${back?.line ? "mt-1 inline-block" : ""}`}
     >
       {live ? "See the vote" : "See that vote"}
@@ -1301,7 +1301,7 @@ export default function GameMechanics() {
                           {p.ballotId && (
                             <>
                               {" · "}
-                              <Link href={`/decisions/${p.ballotId}`} className="text-teal-deep hover:underline">
+                              <Link href={`/governance/decisions/${p.ballotId}`} className="text-teal-deep hover:underline">
                                 <Trans context="GameMechanics, Link">see its vote
                               </Trans></Link>
                             </>
