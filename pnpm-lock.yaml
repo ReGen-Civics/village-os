@@ -19,6 +19,9 @@ importers:
       '@fontsource/cormorant-garamond':
         specifier: 5.3.0
         version: 5.3.0
+      '@fontsource/im-fell-english':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource/josefin-sans':
         specifier: 5.3.0
         version: 5.3.0
@@ -534,6 +537,9 @@ packages:
 
   '@fontsource/cormorant-garamond@5.3.0':
     resolution: {integrity: sha512-weuGsCirGVWBWqpt6YUp0yLThTe4G8YO45noq8wxeJCRvEpq5lFrxNMFSTxcyOyV5k5otzJ8guDzYegdYlcLMQ==}
+
+  '@fontsource/im-fell-english@5.3.0':
+    resolution: {integrity: sha512-FcgdWfY9WeUM2gQkfmwhn4Ed9LVtlll8LSSZvHfbsUrnHK5tHHnGg6BgwAfHogp52adU3eE89J/3B52qV3b+Vw==}
 
   '@fontsource/josefin-sans@5.3.0':
     resolution: {integrity: sha512-N2xY1l8gBCNrlRa0tMnjUtbSJb/rqWmPLgLSMq6H+EY2/uerAHtbyoHsQQKwhMA8hJat7S+OSk6saxGMceKKvA==}
@@ -3330,6 +3336,8 @@ snapshots:
   '@fontsource/caveat@5.3.0': {}
 
   '@fontsource/cormorant-garamond@5.3.0': {}
+
+  '@fontsource/im-fell-english@5.3.0': {}
 
   '@fontsource/josefin-sans@5.3.0': {}
 

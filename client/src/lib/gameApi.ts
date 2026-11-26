@@ -77,6 +77,8 @@ export function altOr(value: string | undefined, fallback: string): string {
 }
 
 export interface PublicGameConfig {
+  /** Light mode's paper, dial `look.light_paper`: "plain" or "sea-chart" (lib/paperLook.ts). Absent from an older server: plain. */
+  lightPaper?: string;
   /** The village's default language, dial `village.default_locale` (spec i18n US3). */
   defaultLocale?: string;
   /** The languages this village offers (its per-language switches); absent from an older server, which offers them all. */

@@ -1,0 +1,112 @@
+/*
+ * THE SEA CHART: light mode as an old sea chart (the lead, 26 Nov 2026: "Let's go with B as a
+ * village setting and update the whole light theme to match as 1 PR so it's easy to reverse").
+ *
+ * On only where the village set `look.light_paper` to "sea-chart" (shared/gameVariables.ts): the
+ * choice rides on /api/game/config and client/src/lib/paperLook.ts puts `data-paper="sea-chart"` on
+ * <html> (client/index.html does it before the first paint from the device's last answer). Every
+ * rule below starts from that attribute and light mode, so a village on "plain", dark mode and the
+ * night look are untouched, and Admin keeps its own light page (the :has(.admin-root) step aside).
+ * Removing this file and its import is the whole revert.
+ *
+ * What it does, in order:
+ *  1. The chart's palette, on the day palette's own tokens, so every surface that already reads them
+ *     follows. seaChartPalette.test.ts measures each text pair at 4.5:1 or more.
+ *  2. The paper, painted on <html>: crumpled, mottled and ruled with a faint chart grid. Each layer is
+ *     an SVG noise filter drawn once as a tile, so it costs no image download. <body> and the page
+ *     wrappers go clear so the paper shows through.
+ *  3. The burnt edge, fixed to the screen BEHIND the content (z-index -1 under the root), so it frames
+ *     every scroll position and never darkens a word or the tab bar.
+ *  4. Cards as torn, scorched sheets, on every page (the front door included), and plain white
+ *     panels take the chart's panel. The tear is a border image drawn just outside the card (outset),
+ *     not a clip, so nothing inside a card (a menu, a focus ring, a tooltip) is ever cut off.
+ *  5. Old-print headings (IM Fell English, self-hosted in client/src/fonts, fetched only here).
+ *  6. Squarer buttons and a double rule under the header band.
+ * Anyone who asks for more contrast, and every printed page, gets the plain page instead.
+ */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) {
+  --pal-day-ground: #e8d3a3;
+  --pal-day-panel: #f4e6c4;
+  --pal-day-panel-raised: #e6cf9d;
+  --pal-day-ink: #2b1d10;
+  --pal-day-ink-dim: #4f3418;
+  --pal-day-edge: #6e4a1e;
+  --pal-day-accent: #08474b;
+  --pal-day-heading: #08474b;
+  --pal-day-brand: #08474b;
+  --pal-day-living: #0f4a38;
+  --pal-day-warn: #7a2414;
+  --pal-day-band: #d0ae72;
+  --pal-day-band-ink: #2b1d10;
+  --pal-day-rule: #6e4a1e;
+  --pal-day-rule-soft: #9c7a48;
+  --pal-day-sky: #d0ae72;
+  --pal-day-tile-glass: rgb(238 216 172 / 0.55);
+  /* The root's own tokens too, for the pages outside the sheet's world (the front door, and
+     every page drawn straight on the root): they would otherwise keep white cards and grey ink. */
+  --foreground: var(--pal-day-ink);
+  --card: var(--pal-day-panel);
+  --card-foreground: var(--pal-day-ink);
+  --popover: var(--pal-day-panel);
+  --popover-foreground: var(--pal-day-ink);
+  --muted: var(--pal-day-panel-raised);
+  --muted-foreground: var(--pal-day-ink-dim);
+  --border: var(--pal-day-rule-soft);
+  --input: var(--pal-day-rule-soft);
+}
+
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) {
+  background-color: var(--pal-day-ground) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22420%22 height=%22420%22%3E%3Cfilter id=%22c%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.011 0.016%22 numOctaves=%225%22 seed=%2221%22 stitchTiles=%22stitch%22 result=%22n%22/%3E%3CfeDiffuseLighting in=%22n%22 surfaceScale=%222.4%22 lighting-color=%22#fff4dc%22%3E%3CfeDistantLight azimuth=%22230%22 elevation=%2258%22/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix type=%22matrix%22 values=%220 0 0 0 0.42  0 0 0 0 0.27  0 0 0 0 0.10  -1 0 0 0 0.92%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(#c)%22 opacity=%220.7%22/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Cpath d=%22M0 0.5H64M0.5 0V64%22 stroke=%22#6e4a1e%22 stroke-width=%220.8%22 stroke-opacity=%220.16%22 fill=%22none%22/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22900%22 height=%22900%22%3E%3Cfilter id=%22m%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.0055%22 numOctaves=%223%22 seed=%2212%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix type=%22matrix%22 values=%220 0 0 0 0.45  0 0 0 0 0.26  0 0 0 0 0.07  1.4 0 0 0 -0.55%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(#m)%22 opacity=%220.5%22/%3E%3C/svg%3E") !important;
+  background-repeat: repeat;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) body,
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is(.sheet-night.min-h-screen, .min-h-screen.bg-background) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 46%, transparent 58%, rgb(122 62 14 / 0.3) 86%, rgb(62 28 4 / 0.68) 100%);
+}
+
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .bg-card:is(.rounded-2xl, .rounded-xl) {
+  background: radial-gradient(ellipse at 45% 40%, rgb(252 240 212 / 0.82), rgb(238 214 168 / 0.66) 75%) !important;
+  box-shadow: inset 0 0 6px rgb(70 32 6 / 0.55), inset 0 0 22px rgb(128 66 16 / 0.4) !important;
+  border-style: solid;
+  border-width: 1px;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cpath fill-rule=%22evenodd%22 fill=%22#3e1c04%22 fill-opacity=%220.85%22 d=%22M0.0 4.2 L4.1 4.0 L6.1 2.7 L8.9 2.4 L11.0 0.9 L13.9 1.0 L16.8 0.1 L18.8 3.2 L21.6 2.3 L25.1 1.6 L27.1 3.5 L30.3 3.0 L33.6 4.4 L36.3 3.4 L38.9 2.6 L42.3 1.4 L44.3 2.1 L47.9 2.7 L50.7 2.9 L53.0 0.8 L55.5 3.7 L57.8 0.5 L59.8 0.2 L62.3 2.6 L66.1 1.5 L68.8 1.3 L71.3 3.5 L74.4 1.2 L76.5 3.5 L80.0 3.7 L82.3 2.5 L86.3 2.7 L90.4 0.8 L94.6 0.3 L97.4 0.1 L101.1 3.1 L105.2 3.6 L109.3 2.4 L113.5 3.4 L116.1 4.4 L118.8 0.9 L117.9 0.0 L115.8 2.3 L119.0 6.4 L117.6 8.4 L117.6 10.6 L118.9 14.4 L115.9 17.2 L118.5 20.0 L116.3 24.0 L116.9 27.9 L116.9 30.7 L117.1 34.5 L118.7 36.9 L116.5 39.7 L117.5 42.8 L119.5 46.6 L118.5 49.9 L116.2 53.0 L115.7 55.4 L117.5 57.4 L118.9 60.5 L117.9 63.7 L116.8 66.6 L118.3 68.4 L119.4 72.0 L119.1 75.9 L119.2 79.4 L118.1 82.2 L116.9 84.2 L116.9 87.2 L117.5 90.3 L118.7 93.3 L119.6 97.3 L116.1 101.2 L116.5 104.2 L117.3 107.6 L118.6 110.1 L118.6 112.8 L118.5 116.9 L118.1 119.6 L120.0 117.9 L116.9 118.9 L114.4 119.6 L112.1 118.8 L108.2 117.7 L106.2 117.9 L104.1 117.5 L101.2 116.1 L98.8 116.2 L96.4 115.6 L93.1 119.8 L89.3 118.8 L86.7 119.3 L82.9 119.6 L79.3 118.2 L75.9 118.7 L73.9 115.9 L70.5 119.2 L66.4 115.9 L64.1 119.9 L60.9 119.4 L57.3 117.9 L53.8 117.4 L50.1 116.3 L46.9 117.3 L44.3 119.4 L42.3 116.1 L40.0 118.1 L37.4 117.2 L34.4 116.1 L31.5 118.4 L28.2 116.6 L24.1 118.6 L20.2 115.6 L16.0 119.4 L13.3 116.5 L9.5 119.8 L6.8 116.7 L3.2 117.6 L0.9 118.2 L1.4 120.0 L3.7 117.2 L1.9 114.0 L1.4 111.6 L2.0 108.2 L3.7 105.9 L4.4 102.8 L2.8 99.7 L2.7 96.8 L4.4 92.8 L1.9 89.5 L3.8 87.5 L1.7 84.8 L0.2 82.8 L4.4 80.1 L3.2 76.5 L1.2 73.1 L2.7 70.9 L2.6 69.0 L2.4 65.9 L0.3 63.8 L0.7 60.9 L1.4 57.6 L3.4 54.3 L2.4 51.0 L1.6 48.7 L1.2 44.6 L2.2 42.1 L3.6 39.0 L4.3 36.5 L3.6 34.6 L4.1 31.5 L3.1 29.3 L3.0 25.2 L4.1 23.2 L0.5 19.0 L0.4 15.2 L3.6 13.2 L4.3 9.7 L2.3 6.4 L2.6 4.0Z M0.0 7.8 L3.9 6.9 L7.5 8.0 L9.4 8.1 L11.7 6.9 L13.6 7.8 L15.7 8.5 L17.5 8.1 L21.2 7.6 L24.3 8.1 L27.7 6.8 L31.4 7.2 L34.6 7.5 L38.6 7.3 L42.4 6.7 L45.0 7.8 L48.3 8.2 L50.6 8.1 L54.3 6.8 L56.4 7.7 L60.5 7.7 L63.4 7.5 L67.1 7.5 L70.2 7.7 L74.2 8.1 L78.0 7.0 L81.3 8.1 L84.8 8.4 L88.8 6.8 L91.8 7.2 L94.1 7.5 L98.3 8.0 L100.3 7.0 L103.0 8.3 L105.9 6.8 L109.0 7.0 L110.9 7.7 L115.1 8.1 L118.7 6.8 L112.2 0.0 L112.6 3.6 L111.6 5.5 L112.0 8.0 L111.9 10.9 L113.3 13.5 L112.5 16.3 L112.7 20.0 L112.7 23.4 L113.2 27.0 L111.6 30.9 L111.8 32.8 L112.1 36.4 L112.0 38.5 L112.2 42.1 L111.6 46.3 L111.6 49.6 L112.9 51.7 L112.5 54.8 L112.2 58.9 L112.3 62.2 L112.7 66.2 L112.3 69.8 L112.8 72.6 L113.5 74.7 L112.9 77.4 L112.5 79.3 L111.6 82.0 L112.2 85.7 L113.0 89.5 L112.3 91.6 L111.5 93.9 L111.7 96.7 L113.3 99.1 L112.1 102.4 L111.6 104.9 L112.1 109.0 L111.5 113.1 L112.0 115.3 L112.0 118.9 L120.0 112.4 L116.8 111.8 L114.9 112.7 L112.3 111.9 L110.2 113.4 L108.2 113.3 L105.3 111.8 L102.7 113.3 L99.2 112.8 L96.1 112.0 L93.2 112.0 L89.9 111.8 L86.3 111.7 L82.7 112.9 L79.7 112.0 L76.0 112.0 L72.2 111.9 L69.1 112.2 L67.2 112.5 L63.6 111.7 L59.8 112.6 L57.4 111.7 L54.0 113.1 L52.2 111.7 L49.0 113.3 L44.8 112.3 L41.2 111.9 L38.8 112.5 L36.5 112.3 L33.7 111.9 L31.6 113.1 L28.9 113.5 L26.1 111.6 L22.2 113.1 L18.4 113.0 L16.1 112.2 L13.6 113.1 L11.6 113.1 L9.3 111.7 L7.4 112.4 L5.1 112.1 L3.3 112.8 L6.6 120.0 L7.2 117.2 L7.8 114.3 L8.2 112.3 L8.0 109.8 L6.7 107.7 L6.7 105.4 L6.8 103.0 L8.2 101.0 L7.5 98.0 L8.1 94.9 L6.6 93.0 L6.5 89.6 L7.7 86.6 L6.5 82.8 L7.1 80.0 L6.6 76.8 L8.4 73.2 L7.8 70.1 L8.2 66.3 L7.5 62.5 L8.1 60.5 L7.9 56.7 L8.4 54.1 L7.1 50.8 L6.9 47.1 L8.3 44.8 L8.2 42.8 L7.6 40.1 L8.3 36.6 L6.7 34.3 L6.9 31.3 L6.7 28.5 L7.6 26.4 L7.0 24.5 L6.7 21.8 L8.3 18.0 L8.1 16.2 L8.0 13.9 L8.0 12.0 L7.0 8.0 L7.2 5.8 L8.1 1.9Z%22/%3E%3Cpath fill-rule=%22evenodd%22 fill=%22#8a4c14%22 fill-opacity=%220.32%22 d=%22M0.0 7.8 L3.9 6.9 L7.5 8.0 L9.4 8.1 L11.7 6.9 L13.6 7.8 L15.7 8.5 L17.5 8.1 L21.2 7.6 L24.3 8.1 L27.7 6.8 L31.4 7.2 L34.6 7.5 L38.6 7.3 L42.4 6.7 L45.0 7.8 L48.3 8.2 L50.6 8.1 L54.3 6.8 L56.4 7.7 L60.5 7.7 L63.4 7.5 L67.1 7.5 L70.2 7.7 L74.2 8.1 L78.0 7.0 L81.3 8.1 L84.8 8.4 L88.8 6.8 L91.8 7.2 L94.1 7.5 L98.3 8.0 L100.3 7.0 L103.0 8.3 L105.9 6.8 L109.0 7.0 L110.9 7.7 L115.1 8.1 L118.7 6.8 L112.2 0.0 L112.6 3.6 L111.6 5.5 L112.0 8.0 L111.9 10.9 L113.3 13.5 L112.5 16.3 L112.7 20.0 L112.7 23.4 L113.2 27.0 L111.6 30.9 L111.8 32.8 L112.1 36.4 L112.0 38.5 L112.2 42.1 L111.6 46.3 L111.6 49.6 L112.9 51.7 L112.5 54.8 L112.2 58.9 L112.3 62.2 L112.7 66.2 L112.3 69.8 L112.8 72.6 L113.5 74.7 L112.9 77.4 L112.5 79.3 L111.6 82.0 L112.2 85.7 L113.0 89.5 L112.3 91.6 L111.5 93.9 L111.7 96.7 L113.3 99.1 L112.1 102.4 L111.6 104.9 L112.1 109.0 L111.5 113.1 L112.0 115.3 L112.0 118.9 L120.0 112.4 L116.8 111.8 L114.9 112.7 L112.3 111.9 L110.2 113.4 L108.2 113.3 L105.3 111.8 L102.7 113.3 L99.2 112.8 L96.1 112.0 L93.2 112.0 L89.9 111.8 L86.3 111.7 L82.7 112.9 L79.7 112.0 L76.0 112.0 L72.2 111.9 L69.1 112.2 L67.2 112.5 L63.6 111.7 L59.8 112.6 L57.4 111.7 L54.0 113.1 L52.2 111.7 L49.0 113.3 L44.8 112.3 L41.2 111.9 L38.8 112.5 L36.5 112.3 L33.7 111.9 L31.6 113.1 L28.9 113.5 L26.1 111.6 L22.2 113.1 L18.4 113.0 L16.1 112.2 L13.6 113.1 L11.6 113.1 L9.3 111.7 L7.4 112.4 L5.1 112.1 L3.3 112.8 L6.6 120.0 L7.2 117.2 L7.8 114.3 L8.2 112.3 L8.0 109.8 L6.7 107.7 L6.7 105.4 L6.8 103.0 L8.2 101.0 L7.5 98.0 L8.1 94.9 L6.6 93.0 L6.5 89.6 L7.7 86.6 L6.5 82.8 L7.1 80.0 L6.6 76.8 L8.4 73.2 L7.8 70.1 L8.2 66.3 L7.5 62.5 L8.1 60.5 L7.9 56.7 L8.4 54.1 L7.1 50.8 L6.9 47.1 L8.3 44.8 L8.2 42.8 L7.6 40.1 L8.3 36.6 L6.7 34.3 L6.9 31.3 L6.7 28.5 L7.6 26.4 L7.0 24.5 L6.7 21.8 L8.3 18.0 L8.1 16.2 L8.0 13.9 L8.0 12.0 L7.0 8.0 L7.2 5.8 L8.1 1.9Z M14 14H106V106H14Z%22/%3E%3C/svg%3E") 14 / 10px / 6px round;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80):not(input, select, textarea) {
+  background-color: var(--pal-day-panel) !important;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .bg-muted:not(a, button, input, select, textarea, .jw-btn) {
+  background-color: var(--pal-day-tile-glass) !important;
+}
+
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .sheet-night {
+  --font-display: "IM Fell English", Georgia, "Times New Roman", serif;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .font-display {
+  font-family: "IM Fell English", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-synthesis-weight: none;
+}
+
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .jw-btn {
+  border-radius: 6px;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) header > nav.bg-teal-deep {
+  box-shadow: 0 1px 0 var(--pal-day-rule), 0 4px 0 -2px var(--pal-day-rule);
+}
+
+@media (prefers-contrast: more), print {
+  :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) { background-image: none !important; }
+  :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) body::before { display: none; }
+  :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .bg-card:is(.rounded-2xl, .rounded-xl) { border-image: none; background: var(--pal-day-panel) !important; box-shadow: none !important; }
+}

@@ -3950,6 +3950,22 @@ export const VARIABLES: VariableDef[] = [
     unit: "USD",
   },
 
+  // THE LIGHT MODE'S PAPER (the lead, 26 Nov 2026: "Let's go with B as a village setting").
+  // client/src/seaChart.css is the whole look; client/src/lib/paperLook.ts puts it on the page.
+  {
+    key: "look.light_paper",
+    category: "Village",
+    label: "Light mode's paper",
+    description:
+      "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and old-print headings. Dark mode and Admin stay as they are.",
+    type: "choice",
+    default: "plain",
+    choices: [
+      { value: "plain", label: "Plain", hint: "The clean Golden Hour page." },
+      { value: "sea-chart", label: "Sea chart", hint: "Aged paper, torn cards and old-print headings." },
+    ],
+  },
+
   // ── Village rhythm ────────────────────────────────────────────────────────
   // THE RESPONSIVE BOTTOM BAR (24 Nov 2026; shared/navPopularity.ts, server/routes/navBar.ts).
   {
