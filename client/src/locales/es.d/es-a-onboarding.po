@@ -1,0 +1,439 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.decide"
+msgid "Go to the decision"
+msgstr "Ir a la decisión"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerDefault"
+msgid "{role} (the default)"
+msgstr "{role} (el predeterminado)"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.wait_applicant"
+msgid "Waiting on the applicant"
+msgstr "Esperando a la persona solicitante"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: stateWords.skipped"
+msgid "Skipped"
+msgstr "Omitido"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: decided"
+msgid "This application has been decided."
+msgstr "Esta solicitud ya se decidió."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.ask_references"
+msgid "Ask for references"
+msgstr "Pedir referencias"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: stateWords.later"
+msgid "Later"
+msgstr "Después"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.shortlist"
+msgid "Shortlist"
+msgstr "Preseleccionar"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesNeedShortlist"
+msgid "Shortlist the application before asking for references."
+msgstr "Preseleccione la solicitud antes de pedir referencias."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: gatheredIntro"
+msgid "Everything {role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked."
+msgstr "Todo lo que {role} lee antes de la conversación final y la decisión: las notas de seguimiento de cada referencia y la ficha de cada conversación. Nada se suma ni se clasifica."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerRole"
+msgid "A role"
+msgstr "Un rol"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.review"
+msgid "Go to our review"
+msgstr "Ir a nuestra revisión"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notes"
+msgid "Follow-up notes"
+msgstr "Notas de seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerPick"
+msgid "Pick who follows up"
+msgstr "Elegir quién hace el seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.none"
+msgid "Nothing to do"
+msgstr "Nada por hacer"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notAllowed"
+msgid "This is for the people who review this application."
+msgstr "Esto es para quienes revisan esta solicitud."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: shortlistWaitsReview"
+msgid "Our review comes first: invite the applicant to the conversations before the shortlist."
+msgstr "Primero va nuestra revisión: invite a la persona solicitante a las conversaciones antes de la preselección."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerSaved"
+msgid "Saved. They have been told."
+msgstr "Guardado. Ya se le avisó."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: heading"
+msgid "Where this application stands"
+msgstr "En qué va esta solicitud"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesAsked"
+msgid "References were asked for. The applicant adds them from their status page."
+msgstr "Se pidieron las referencias. La persona solicitante las agrega desde su página de estado."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: whatNext"
+msgid "What happens next"
+msgstr "Qué sigue"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: whoActs"
+msgid "Who acts next"
+msgstr "Quién actúa ahora"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: listEmpty"
+msgid "No application is waiting."
+msgstr "No hay ninguna solicitud esperando."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesNone"
+msgid "No references yet."
+msgstr "Aún no hay referencias."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: shortlisted"
+msgid "Shortlisted."
+msgstr "Preseleccionada."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerNobody"
+msgid "Nobody yet"
+msgstr "Nadie todavía"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerMember"
+msgid "A member"
+msgstr "Un miembro"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: owner"
+msgid "Follows up"
+msgstr "Hace el seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.add_final"
+msgid "Add the final conversation"
+msgstr "Agregar la conversación final"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notFollowedUp"
+msgid "Not followed up yet"
+msgstr "Aún sin seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: finalExists"
+msgid "This application already has a final conversation."
+msgstr "Esta solicitud ya tiene una conversación final."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notShortlisted"
+msgid "Not shortlisted. The decision stays with the people who decide: decline with its letter when you are ready."
+msgstr "No preseleccionada. La decisión queda en manos de quienes deciden: decline con su carta cuando lo decida."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is added. It opens once the conversations before it are written up."
+msgstr "Se agregó la conversación final. Se abre cuando las conversaciones anteriores estén escritas."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: listHeading"
+msgid "Applications by stage"
+msgstr "Solicitudes por etapa"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: arrivedOn"
+msgid "Arrived {day}"
+msgstr "Llegó el {day}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: shortlistDone"
+msgid "This application already has a shortlist answer."
+msgstr "Esta solicitud ya tiene respuesta de preselección."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notesSaved"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesFirstRoleOnly"
+msgid "References are asked of a member only for their first long-term role, and this member already holds a role."
+msgstr "Las referencias se piden a un miembro solo para su primer rol de largo plazo, y este miembro ya ocupa un rol."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notesSave"
+msgid "Save my notes"
+msgstr "Guardar mis notas"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notShortlist"
+msgid "Not shortlisted"
+msgstr "No preseleccionada"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.follow_up"
+msgid "Go to the follow-ups"
+msgstr "Ir a los seguimientos"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: listIntro"
+msgid "Every open application, by stage and then by the day it arrived. Nothing here is ranked."
+msgstr "Cada solicitud abierta, por etapa y luego por el día en que llegó. Aquí nada se clasifica."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ownerGive"
+msgid "Give it to them"
+msgstr "Entregárselo"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: gatheredHidden"
+msgid "This view is for the role that makes the final call and the people who decide."
+msgstr "Esta vista es para el rol que toma la decisión final y para quienes deciden."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: intro"
+msgid "One stage at a time. People decide every step: nothing here ranks, scores or judges the applicant."
+msgstr "Una etapa a la vez. Las personas deciden cada paso: aquí nada clasifica, puntúa ni juzga a la persona solicitante."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: gatheredHeading"
+msgid "Gathered for the final call"
+msgstr "Reunido para la decisión final"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesAskedAlready"
+msgid "References were already asked for."
+msgstr "Las referencias ya se pidieron."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: primary.final_conversation"
+msgid "Go to the final conversation"
+msgstr "Ir a la conversación final"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: scorecardsHidden"
+msgid "Scorecards open to you once you have added your own."
+msgstr "Las fichas se le abren cuando haya agregado la suya."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notFound"
+msgid "That application is not here."
+msgstr "Esa solicitud no está aquí."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesAskedNow"
+msgid "Asked. The letter went to the applicant in their language."
+msgstr "Pedidas. La carta le llegó a la persona solicitante en su idioma."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: stateWords.now"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: contact"
+msgid "How to reach them"
+msgstr "Cómo contactarla"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: ally"
+msgid "Why they might be an ally or partner"
+msgstr "Por qué podría ser aliado o socio"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: notYours"
+msgid "Only this reference's follow-up owner writes its notes."
+msgstr "Solo quien hace el seguimiento de esta referencia escribe sus notas."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: finalNoRole"
+msgid "No role is named for the final call. A founder names it in the village's settings."
+msgstr "No hay un rol nombrado para la decisión final. Una persona fundadora lo nombra en los ajustes de la aldea."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesHeading"
+msgid "References and follow-ups"
+msgstr "Referencias y seguimientos"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: stateWords.done"
+msgid "Done"
+msgstr "Hecho"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: followedUp"
+msgid "Followed up"
+msgstr "Con seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: referencesPrivate"
+msgid "Personal details of people who never signed up. Only the people who review this application, the role that makes the final call and each reference's owner read them. No AI reads them. They are deleted with the application."
+msgstr "Datos personales de personas que nunca se registraron. Solo los leen quienes revisan esta solicitud, el rol que toma la decisión final y quien hace el seguimiento de cada referencia. Ninguna IA los lee. Se borran junto con la solicitud."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "applicant onboarding: howKnown"
+msgid "How they know the applicant"
+msgstr "Cómo conoce a la persona solicitante"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: holderOf"
+msgid "A new holder in {role}"
+msgstr "Una persona nueva en {role}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: days"
+msgid "Days {a} to {b}"
+msgstr "Días {a} a {b}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: noBuddy"
+msgid "No buddy is named yet. Ask the one who adopted you."
+msgstr "Aún no hay compañero nombrado. Pregúntele a quien le adoptó."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: doneWhen"
+msgid "Done when:"
+msgstr "Hecho cuando:"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: days, one day"
+msgid "Day {a}"
+msgstr "Día {a}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: due"
+msgid "by day {d}"
+msgstr "para el día {d}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: filed"
+msgid "Day {d} filed"
+msgstr "Día {d} registrado"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: load"
+msgid "How stretched or steady do we feel against the commitment we agreed?"
+msgstr "¿Qué tan exigidos o estables nos sentimos frente al compromiso que acordamos?"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: allDone"
+msgid "Every step is done."
+msgstr "Todos los pasos están hechos."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: failed"
+msgid "The onboarding path did not load."
+msgstr "El camino de incorporación no cargó."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: tick"
+msgid "Mark done"
+msgstr "Marcar como hecho"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: overall"
+msgid "How is it going overall? (1 to 5)"
+msgstr "¿Cómo va en general? (1 a 5)"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: buddy"
+msgid "Your buddy is {name}."
+msgstr "Su compañero es {name}."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: withOwner"
+msgid "With {name}."
+msgstr "Con {name}."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: culture"
+msgid "What has surprised you about how we work together?"
+msgstr "¿Qué le ha sorprendido de cómo trabajamos juntos?"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: oneThing"
+msgid "One thing that would help most next moon"
+msgstr "Una cosa que más ayudaría la próxima luna"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: line"
+msgid "Day {day}. The steps are due by {due}."
+msgstr "Día {day}. Los pasos vencen el {due}."
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: file"
+msgid "File check-in"
+msgstr "Registrar el seguimiento"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: clarity"
+msgid "How clear is your role? (1 to 5)"
+msgstr "¿Qué tan claro es su rol? (1 a 5)"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: checkinOpen"
+msgid "File your day {d} check-in"
+msgstr "Registre su seguimiento del día {d}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: checkins"
+msgid "Check-ins"
+msgstr "Seguimientos"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: basics"
+msgid "Do you have the access and tools you need? What is missing?"
+msgstr "¿Tiene el acceso y las herramientas que necesita? ¿Qué falta?"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: later"
+msgid "After the first fourteen days"
+msgstr "Después de los primeros catorce días"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: retry"
+msgid "Retry"
+msgstr "Reintentar"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: open"
+msgid "{n, plural, one {# step open} other {# steps open}}"
+msgstr "{n, plural, one {# paso abierto} other {# pasos abiertos}}"
+
+# needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
+msgctxt "onboarding path: connection"
+msgid "Who have you worked with? Who do you still want to meet?"
+msgstr "¿Con quién ha trabajado? ¿A quién quiere conocer todavía?"
