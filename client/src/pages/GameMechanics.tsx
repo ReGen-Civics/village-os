@@ -38,7 +38,7 @@
  */
 import { ballotIdIn, HistoryEntry, historyHeaders, SettingHistory, type Amendment } from "@/components/governance/SettingHistory";
 import Layout from "@/components/Layout";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Scale,
   SlidersHorizontal,
@@ -52,6 +52,7 @@ import { MushroomNetwork, Songbird } from "@/components/sacred/living";
 import { Link } from "wouter";
 import { useCatalyst, useGameConfig, authToken } from "@/lib/gameApi";
 import { ballotReturn } from "./gameMechanicsBallotCopy";
+import { dialLabel, localizeDials } from "./gameMechanicsDialWords";
 import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdoption";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFocusTarget } from "@/lib/useFocusTarget";
@@ -469,7 +470,7 @@ function DialEditor({
 }
 
 export default function GameMechanics() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const cfg = useGameConfig();
   // A LABEL. Who may withdraw is unchanged: the route still checks
   // proposal.decide and isAdmin, and this only says the village's word for it.
@@ -717,7 +718,8 @@ export default function GameMechanics() {
   };
 
   const villageName = cfg?.project?.name ?? "";
-  const allDials = snapshot?.variables ?? [];
+  // The dials arrive in English; the platform's own words are drawn in the reader's language (gameMechanicsDialWords.ts).
+  const allDials = useMemo(() => localizeDials(snapshot?.variables ?? [], i18n), [snapshot, i18n, i18n.locale]);
   /**
    * An amendment's before and after, in the words its dial uses.
    *
@@ -1072,7 +1074,7 @@ export default function GameMechanics() {
                         <ul className="text-sm space-y-1 mb-3">
                           {p.changes.map((c) => (
                             <li key={c.key}>
-                              <span className="text-stone-700">{c.label}:</span>{" "}
+                              <span className="text-stone-700">{dialLabel(c.key, c.label, i18n)}:</span>{" "}
                               <span className="line-through text-stone-500">{c.fromDisplay}</span> →{" "}
                               <span className="font-semibold text-teal-deep">{c.toDisplay}</span>
                               {c.applyTiming === "cycle-close" && (
@@ -1344,7 +1346,7 @@ export default function GameMechanics() {
                       <ul className="divide-y divide-stone-100">
                         {history.map((h) => (
                           <li key={h.id} className="px-4 py-3">
-                            <HistoryEntry h={h} valueOf={amendmentValue} />
+                            <HistoryEntry h={{ ...h, label: dialLabel(h.key, h.label, i18n) }} valueOf={amendmentValue} />
                           </li>
                         ))}
                       </ul>
