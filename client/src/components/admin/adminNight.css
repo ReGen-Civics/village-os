@@ -76,7 +76,14 @@
 .admin-root.sheet-night .bg-red-50,
 .admin-root.sheet-night .bg-red-100,
 .admin-root.sheet-night .bg-teal-deep\/5,
-.admin-root.sheet-night .bg-teal-deep\/10 {
+.admin-root.sheet-night .bg-teal-deep\/10,
+/* The cream and aqua notes (the AI setup banner, the agent's warning, the
+   "not ready" chip, the pricing note) and the quest card's half-washed
+   details: light paints the night ink sat on at 1.05 to 2.1:1 (live pass,
+   26 Nov 2026). */
+.admin-root.sheet-night .bg-amber-light,
+.admin-root.sheet-night .bg-aqua-light,
+.admin-root.sheet-night .bg-gray-50\/50 {
   background-color: var(--muted);
 }
 
@@ -90,10 +97,18 @@
 .admin-root.sheet-night .text-blue-700,
 .admin-root.sheet-night .text-violet-700,
 .admin-root.sheet-night .text-sky-700,
+.admin-root.sheet-night .text-sky-800,
+.admin-root.sheet-night .text-violet-800,
 .admin-root.sheet-night .text-stone-500,
 .admin-root.sheet-night .text-yellow-800,
 .admin-root.sheet-night .text-teal-950 {
   color: var(--foreground);
+}
+
+/* The day's amber ink is a dark brown that disappears on the night panel;
+   the night's own notice gold reads there (the pricing desk's notes). */
+.admin-root.sheet-night .text-amber-ink {
+  color: var(--sheet-notice, var(--foreground));
 }
 
 .admin-root.sheet-night .text-red-500,

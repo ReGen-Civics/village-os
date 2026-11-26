@@ -17,7 +17,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTaskCount } from "@/components/tasks/useTaskCount";
 import { BTN_SECONDARY, HINT, LABEL_CAPS, PANEL } from "@/components/sessions/roomUi";
-import { TASK_BOARD_ANCHOR, TASK_COPY, taskDateWords, type TaskCountPayload } from "@shared/sessionTasks";
+import { TASK_BOARD_ANCHOR, taskDateWords, type TaskCountPayload } from "@shared/sessionTasks";
+import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 /** The reader's calendar day as YYYY-MM-DD. */
 export function readerToday(now: Date = new Date()): string {
@@ -29,7 +30,7 @@ export function readerToday(now: Date = new Date()): string {
 
 /** The card's two lines: how many, and the nearest date. */
 export function waitingWords(count: TaskCountPayload, today: string): { count: string; date: string } {
-  const C = TASK_COPY.waitingCard;
+  const C = taskWords().waitingCard;
   const words = count.nextDue ? taskDateWords(count.nextDue, today) : "";
   const date = !count.nextDue || !words ? C.noDate : count.nextDue < today ? C.nextDuePassed(words) : C.nextDue(words);
   return { count: C.count(count.waiting), date };
@@ -53,10 +54,11 @@ export interface TasksWaitingCardProps {
 }
 
 export default function TasksWaitingCard({ enabled }: TasksWaitingCardProps) {
+  const TW = useTaskWords();
   const { user } = useAuth();
   const count = useTaskCount(enabled && !!user, user?.id ?? null);
   if (!count || count.waiting <= 0) return null;
-  const C = TASK_COPY.waitingCard;
+  const C = TW.waitingCard;
   const words = waitingWords(count, readerToday());
   return (
     <section aria-labelledby="tasks-waiting-h" className={`${PANEL} mb-8 flex flex-wrap items-center justify-between gap-4`}>

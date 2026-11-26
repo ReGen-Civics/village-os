@@ -20,6 +20,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import type { SeatSettings } from "@shared/seatSettings";
 import { parseSeatSettings } from "@shared/seatSettings";
 import { OFFER_WORDS } from "@shared/seatTermsOffer";
@@ -37,6 +38,8 @@ export const OFFER_EDITOR_WORDS = {
   saved: "Terms on offer saved",
   cleared: "Terms taken off offer",
   draftTitle: (seat: string) => `Terms on offer: ${seat}`,
+  what: (seat: string) => `the terms on offer for ${seat}`,
+  fix: "Fix the terms marked above first.",
 } as const;
 
 /** Make, preview and publish a one-change draft. Answers whether it published. */
@@ -71,6 +74,15 @@ export default function SeatTermsOfferEditor({
   const villagePresets = useVillagePresets(open);
   const parsed = parseSeatSettings(value);
   const hasOffer = seat.termsOffer !== null && seat.termsOffer !== undefined;
+  const dirty = value !== undefined && JSON.stringify(value) !== JSON.stringify(seat.termsOffer ?? undefined);
+  /** The edited terms, saved from the page's one save bar (components/SaveBar.tsx). Clearing stays an act of its own. */
+  const saveOffer = async (): Promise<SaveResult> => {
+    if (!dirty) return { ok: true };
+    if (!parsed.ok) return { ok: false, reason: OFFER_EDITOR_WORDS.fix };
+    if (!(await publishOffer(call, String(seat.id), String(seat.name ?? seat.id), parsed.settings))) return { ok: false, reason: "That did not save. The reason is in the note above." };
+    onSaved();
+    return { ok: true };
+  };
 
   const save = async (next: SeatSettings | null, said: string) => {
     setBusy(true);
@@ -104,14 +116,6 @@ export default function SeatTermsOfferEditor({
           <TermsWordsEditor value={value} onChange={setValue} />
           <SeatSettingsEditor value={value} onChange={setValue} villagePresets={villagePresets} />
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy || !parsed.ok || value === undefined}
-              onClick={() => void save(parsed.settings, OFFER_EDITOR_WORDS.saved)}
-              className="min-h-[44px] rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-teal-deep"
-            >
-              {OFFER_EDITOR_WORDS.save}
-            </button>
             {hasOffer && (
               <button
                 type="button"
@@ -125,6 +129,12 @@ export default function SeatTermsOfferEditor({
           </div>
         </div>
       )}
+      <SaveBar
+        count={dirty ? 1 : 0}
+        onSave={saveOffer}
+        onDiscard={() => setValue(seat.termsOffer ?? undefined)}
+        what={OFFER_EDITOR_WORDS.what(String(seat.name ?? seat.id))}
+      />
     </div>
   );
 }

@@ -34,7 +34,7 @@
 import { useId, useState } from "react";
 import { Link } from "wouter";
 import { SESSION_SOMEONE } from "@shared/sessions";
-import { TASK_COPY, taskDateWords, type TaskCard as TaskCardData, type TaskOp } from "@shared/sessionTasks";
+import { taskDateWords, type TaskCard as TaskCardData, type TaskOp } from "@shared/sessionTasks";
 import {
   BTN_PRIMARY,
   BTN_QUIET,
@@ -51,6 +51,7 @@ import {
 import { dueWords, fromWords } from "./dateWords";
 import TaskAnswerSheet from "./TaskAnswerSheet";
 import WorkChatButton from "@/components/messages/WorkChatButton";
+import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 export interface TaskCardProps {
   task: TaskCardData;
@@ -66,7 +67,7 @@ export interface TaskCardProps {
 
 /** The status a card wears: Holding, Done, Let go, Back with the circle, or Holding, new date. */
 export function taskStatusLabel(task: Pick<TaskCardData, "status" | "heldAs" | "latest">): string {
-  const L = TASK_COPY.statusLabels;
+  const L = taskWords().statusLabels;
   if (task.status === "done") return task.latest?.kind === "accepted" ? L.accepted : L.done;
   if (task.status === "let_go") return L.let_go;
   if (task.heldAs === "circle") return L.circle;
@@ -77,14 +78,14 @@ export function taskStatusLabel(task: Pick<TaskCardData, "status" | "heldAs" | "
 export function holderWords(task: Pick<TaskCardData, "heldAs" | "holderName" | "seat">): string {
   switch (task.heldAs) {
     case "you":
-      return TASK_COPY.heldYou;
+      return taskWords().heldYou;
     case "person":
-      return TASK_COPY.heldPerson(task.holderName?.trim() || SESSION_SOMEONE);
+      return taskWords().heldPerson(task.holderName?.trim() || SESSION_SOMEONE);
     case "seat":
-      if (!task.seat) return TASK_COPY.heldCircle;
-      return task.seat.holders.length > 0 ? TASK_COPY.heldSeat(task.seat.name, task.seat.holders) : TASK_COPY.heldSeatVacant(task.seat.name);
+      if (!task.seat) return taskWords().heldCircle;
+      return task.seat.holders.length > 0 ? taskWords().heldSeat(task.seat.name, task.seat.holders) : taskWords().heldSeatVacant(task.seat.name);
     case "circle":
-      return TASK_COPY.heldCircle;
+      return taskWords().heldCircle;
   }
 }
 
@@ -92,7 +93,7 @@ export function holderWords(task: Pick<TaskCardData, "heldAs" | "holderName" | "
 export function latestWords(task: Pick<TaskCardData, "latest">): string | null {
   const note = task.latest?.note?.trim();
   if (!note) return null;
-  return task.latest?.byFacilitator ? TASK_COPY.latestByFacilitator(note) : TASK_COPY.latest(note);
+  return task.latest?.byFacilitator ? taskWords().latestByFacilitator(note) : taskWords().latest(note);
 }
 
 /** The acceptance line a done task carries: when it was accepted, or that it waits for someone who may. */
@@ -100,9 +101,9 @@ export function acceptanceWords(task: Pick<TaskCardData, "status" | "latest" | "
   if (task.status !== "done") return null;
   if (task.latest?.kind === "accepted") {
     const on = task.acceptedOn ? taskDateWords(task.acceptedOn, today) : "";
-    return on ? TASK_COPY.acceptedOn(on) : TASK_COPY.statusLabels.accepted;
+    return on ? taskWords().acceptedOn(on) : taskWords().statusLabels.accepted;
   }
-  return task.waitingToBeAccepted === true ? TASK_COPY.waitingToBeAccepted : null;
+  return task.waitingToBeAccepted === true ? taskWords().waitingToBeAccepted : null;
 }
 
 /** The buttons this card offers, in reading order, each with how strongly it is drawn. */
@@ -122,6 +123,7 @@ function buttonsFor(task: TaskCardData): { op: TaskOp; look: string }[] {
 }
 
 export default function TaskCard({ task, today, onAnswered, compact = false, hideRecordLink = false }: TaskCardProps) {
+  const TW = useTaskWords();
   // The card the server last handed back here. A newer card from the parent
   // wins, so a list that re-reads is never overruled by an older answer.
   const [answered, setAnswered] = useState<TaskCardData | null>(null);
@@ -172,13 +174,13 @@ export default function TaskCard({ task, today, onAnswered, compact = false, hid
         {latest && <p className="mt-1 break-words text-sm text-muted-foreground">{latest}</p>}
 
         {shown.inSessionNow ? (
-          <p className={`${HINT} mt-3`}>{TASK_COPY.inSessionNow}</p>
+          <p className={`${HINT} mt-3`}>{TW.inSessionNow}</p>
         ) : (
           buttons.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {buttons.map((b) => (
                 <button key={b.op} type="button" className={b.look} aria-describedby={textId} onClick={() => setOp(b.op)}>
-                  {TASK_COPY.buttons[b.op]}
+                  {TW.buttons[b.op]}
                 </button>
               ))}
             </div>
@@ -190,7 +192,7 @@ export default function TaskCard({ task, today, onAnswered, compact = false, hid
 
         {shown.recordLink && !hideRecordLink && (
           <Link href={`/sessions/${shown.sessionId}`} className={`${BTN_QUIET} mt-2`} aria-describedby={textId}>
-            {TASK_COPY.buttons.record}
+            {TW.buttons.record}
           </Link>
         )}
       </div>

@@ -28,7 +28,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, HINT, L
 import WorkPayBlock from "@/components/WorkPayBlock";
 import type { AdoptionOut, FactsOut, RoleRowOut } from "@shared/circleCard";
 import type { CircleDecision } from "@shared/sessionDecisions";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
+import { useCircleWords } from "./circleWords";
 import { SEED_CIRCLES, seedFill, type LinkedCircle, type PlantState, type TendRow } from "./hearthModel";
 import type { MeetState } from "./useHearth";
 import { roleRowId } from "./Hearth";
@@ -76,6 +76,7 @@ export function WeMeet({
   answer: (status: "going" | "declined") => Promise<{ ok: true } | { ok: false; error: string | null }>;
 }) {
   const { t, i18n } = useLingui();
+  const W = useCircleWords();
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   const g = meet?.gathering ?? null;

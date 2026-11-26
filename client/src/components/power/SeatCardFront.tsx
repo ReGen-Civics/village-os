@@ -21,7 +21,8 @@ import { useState, type ReactNode, type Ref } from "react";
 import FramelessImg from "@/components/FramelessImg";
 import { RotateCcw, Star } from "lucide-react";
 import { SeedGlint } from "@/components/sacred/living";
-import { SHEET_WORDS, speaksForGloss, speaksForLabel, type Pip, type SeatSheetView, type SeatStateWord } from "@shared/roleSheet";
+import type { Pip, SeatSheetView, SeatStateWord } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { ExampleChip } from "@/components/ExamplesBanner";
 import Figure from "@/components/sheet/Figure";
 import { Gloss, GlossChip } from "@/components/sheet/GlossChip";
@@ -87,6 +88,8 @@ const FIGURE_LABEL = "text-[11px] font-semibold uppercase leading-tight tracking
  * row and its date written out under it.
  */
 export function SeatFigures({ view, wide }: { view: SeatSheetView; wide: boolean }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const { figures, clock } = view;
   if (wide) {
     return (
@@ -188,6 +191,8 @@ export default function SeatCardFront({
   onFlip: () => void;
   flipRef: Ref<HTMLButtonElement>;
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const chip = (key: keyof typeof glossIds) => ({
     open: gloss.isOpen(key),
     glossId: glossIds[key],
@@ -262,7 +267,7 @@ export default function SeatCardFront({
               )}
               {chips.speaksFor && (
                 <GlossChip tone="edge" {...chip("speaksFor")}>
-                  {speaksForLabel(chips.speaksFor)}
+                  {RS.speaksForLabel(chips.speaksFor)}
                 </GlossChip>
               )}
             </div>
@@ -274,7 +279,7 @@ export default function SeatCardFront({
           )}
           {chips.speaksFor && (
             <Gloss id={glossIds.speaksFor} open={gloss.isOpen("speaksFor")}>
-              {speaksForGloss(chips.speaksFor)}
+              {RS.speaksForGloss(chips.speaksFor)}
             </Gloss>
           )}
         </div>

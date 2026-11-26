@@ -20,7 +20,7 @@
  */
 import { useEffect, useId, useState } from "react";
 import { authToken, useGameConfig, useRoleWord } from "@/lib/gameApi";
-import { SHEET_WORDS } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { fromPermissionRole } from "@shared/roleSheetInputs";
 import PermissionRoleCard from "@/components/power/PermissionRoleCard";
 import { loadPermissionRoles } from "./pickSources";
@@ -48,6 +48,8 @@ export default function WizardRolePreview({
   /** `rail`: the desktop column beside the steps. `inline`: under the fields on a phone. */
   look: "rail" | "inline";
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const roles = usePermissionRoles();
   const config = useGameConfig();
   const roleWord = useRoleWord();

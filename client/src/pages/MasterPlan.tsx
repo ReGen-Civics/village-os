@@ -20,7 +20,9 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { Emphasized } from "@/components/PageText";
 import { MASTER_PLAN_PAGE, zoneTags } from "@shared/pageContent/masterPlan";
 import type { ResolvedPage } from "@shared/pageContent/types";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { i18n as appI18n, type I18n } from "@lingui/core";
 
 
 /*
@@ -75,9 +77,10 @@ function statShapes(page: ResolvedPage | null) {
  * (DEFAULT_SETTINGS, server/index.ts), so the word about to be published is on
  * screen while the founder types the number, and changing it is one edit.
  */
-function withStatedUnit<T extends { key: string; label: string; note: string }>(stat: T): T {
+function withStatedUnit<T extends { key: string; label: string; note: string }>(stat: T, i18n: I18n = appI18n): T {
   if (stat.key !== "acres") return stat;
-  return { ...stat, label: `Total ${stat.note || "Acres"}` };
+  // The unit is the village's own word (Admin); "Total" is the platform's, in the reader's language.
+  return { ...stat, label: i18n._(msg({ message: `Total ${stat.note || "Acres"}`, context: "master plan: the land tile, the village's unit after it" })) };
 }
 
 /** Icons for the zone cards, handed out in order. The words are the village's (Admin, Pages, Master Plan). */
@@ -93,6 +96,7 @@ function phaseStatusClass(status: string): string {
 export default function MasterPlan() {
   // Blank hides the button rather than pointing at another village.
   const { eventsUrl } = useVillageLinks();
+  const { i18n } = useLingui();
   const villageName = useVillageName();
   // Every word on this page is the village's own, from Admin, Pages, Master
   // Plan (shared/pageContent/masterPlan.ts). Null until the saved words have
@@ -101,7 +105,7 @@ export default function MasterPlan() {
   const brand = useBrandImages();
   const settings = useVillageSettings();
   // The tiles wait for the words too, so a label never changes under a figure.
-  const stats = page ? statedFacts(settings, statShapes(page)).map(withStatedUnit) : [];
+  const stats = page ? statedFacts(settings, statShapes(page)).map((stat) => withStatedUnit(stat, i18n)) : [];
   // Same rule as the investor page: null is "not loaded", never "nothing to
   // say". A village with a valuation must not be told it has none while its
   // own settings are still in flight.

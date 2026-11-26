@@ -26,6 +26,7 @@ import type { ModuleLifecycle } from "@shared/modules";
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import TokensTab from "./TokensTab";
+import { resetUnsavedForTests } from "@/lib/unsavedChanges";
 
 const TOKENS = [
   { slug: "gratitude", name: "Gratitude", kind: "recognition", governance: "platform", transferable: true, active: true, issuedBy: {}, description: "How we thank each other here." },
@@ -71,6 +72,7 @@ describe("TokensTab", () => {
   // Unmount first: a describe's own afterEach runs before setup.ts's cleanup.
   afterEach(() => {
     cleanup();
+    resetUnsavedForTests();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
@@ -106,7 +108,10 @@ describe("TokensTab", () => {
     const box = screen.getByRole("textbox", { name: "What Village Credits means" });
     expect(box.getAttribute("placeholder")).toBe("Say in your own words what this token means here");
     await user.type(box, "  What we pay each other in.  ");
-    await user.click(within(rowFor("Village Credits")).getByRole("button", { name: "Save" }));
+    // Saved from the page's one save bar, never a button in the row (the lead, 25 Nov 2026).
+    expect(within(rowFor("Village Credits")).queryByRole("button", { name: "Save" })).toBeNull();
+    expect(await screen.findByText("1 change not saved yet")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Save" }));
     expect(puts).toEqual([{ url: "/api/admin/tokens/credits", body: { description: "What we pay each other in." } }]);
   });
 
@@ -138,8 +143,36 @@ describe("TokensTab", () => {
     const box = screen.getByLabelText("What your tokens are called together");
     expect(box.getAttribute("placeholder")).toBe("Village Tokens");
     await user.type(box, "Seed Bank");
-    await user.click(box.parentElement!.querySelector("button")!);
+    expect(box.parentElement!.querySelector("button")).toBeNull();
+    await user.click(await screen.findByRole("button", { name: "Save" }));
     expect(puts).toEqual([{ currency: { collectiveName: "Seed Bank" } }]);
+  });
+
+  it("renames a token from the one save bar, and a rename with a meaning edit saves both in one press", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+    const puts: { url: string; body: any }[] = [];
+    const base = (globalThis.fetch as any);
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "PUT") {
+        puts.push({ url: String(url), body: JSON.parse(String(init.body)) });
+        return { ok: true, json: async () => ({ success: true, token: { name: "Thanks" } }) };
+      }
+      return base(url, init);
+    }));
+    renderTab({ stays: "members", library: "members" });
+    await loaded();
+    await user.click(within(rowFor("Gratitude")).getByRole("button", { name: "rename" }));
+    const name = within(table()).getByDisplayValue("Gratitude");
+    await user.clear(name);
+    await user.type(name, "Thanks");
+    await user.click(within(rowFor("Village Credits")).getByRole("button", { name: "write what it means" }));
+    await user.type(screen.getByRole("textbox", { name: "What Village Credits means" }), "What we pay each other in.");
+    expect(await screen.findByText("2 changes not saved yet")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(puts).toEqual(expect.arrayContaining([
+      { url: "/api/admin/tokens/gratitude", body: { name: "Thanks" } },
+      { url: "/api/admin/tokens/credits", body: { description: "What we pay each other in." } },
+    ]));
   });
 
   it("calls a Base token a read-only mirror rather than a governance word", async () => {
