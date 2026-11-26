@@ -128,9 +128,12 @@ export default function GuideSetupStep({
       subtitle={t({ message: "Connect the AI that helps you through the rest of these steps.", context: "setup guide step, subtitle" })}
     >
       <div className="bg-background text-foreground rounded-lg p-4 space-y-4">
-        <p className="text-sm text-foreground">
-          <Trans context="setup guide step, p">The guide finds the right box, explains what a setting does and proposes changes for you to save. Connect it first and it can walk the other steps with you.</Trans>
-        </p>
+        {/* Short lines, never a paragraph (the lead, 26 Nov 2026). */}
+        <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+          <li><Trans context="setup guide step, line">It finds the right box and explains what a setting does.</Trans></li>
+          <li><Trans context="setup guide step, line">It proposes changes. You save them.</Trans></li>
+          <li><Trans context="setup guide step, line">Connect it first and it walks the other steps with you.</Trans></li>
+        </ul>
         {row?.detail && <p role="status" className="text-sm font-medium text-foreground">{row.detail}</p>}
         {note && <p role="status" className="text-sm text-foreground">{note}</p>}
 

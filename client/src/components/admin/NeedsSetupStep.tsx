@@ -114,11 +114,12 @@ export function NeedsSetupStep({
           around it is painted with frozen light grays, so a responsive token
           laid straight onto it is near-white text on light gray in dark mode. */}
       <div className="bg-background text-foreground rounded-lg p-4">
-        <p className="text-sm text-foreground mb-3">
-          <Trans context="NeedsSetupStep, p">A village is a business designed to meet the needs of the people in it. Setting this up front
-          orients everything after it: meeting one need for a tenth of your members and meeting all ten
-          for all of them are two different economic engines.
-        </Trans></p>
+        {/* Short lines, never a paragraph (the lead, 26 Nov 2026). */}
+        <ul className="list-disc space-y-1 pl-5 text-sm text-foreground mb-3">
+          <li><Trans context="NeedsSetupStep, line">A village is a business designed to meet the needs of the people in it.</Trans></li>
+          <li><Trans context="NeedsSetupStep, line">Set this first. It orients everything after it.</Trans></li>
+          <li><Trans context="NeedsSetupStep, line">Meeting one need for a tenth of your members and meeting all ten for all of them are two different economic engines.</Trans></li>
+        </ul>
         <p className={`${HINT} mb-4`}>{stepSummaryLine(summary)}</p>
         <button type="button" onClick={() => onOpenTab("needs-admin")} className={PRIMARY}>
           <Trans context="NeedsSetupStep, button">Open the six screens

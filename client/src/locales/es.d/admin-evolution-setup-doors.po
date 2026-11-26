@@ -1,0 +1,118 @@
+msgid ""
+msgstr ""
+"Language: es\n"
+"Content-Type: text/plain; charset=utf-8\n"
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/AiSetupBanner.tsx
+msgctxt "admin, AI setup banner: opens Make this yours, step 1, to paste the key"
+msgid "Add your Anthropic key"
+msgstr "Agregue su clave de Anthropic"
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/AiSetupBanner.tsx
+msgctxt "admin, AI setup banner, line"
+msgid "Connect an Anthropic key, or Sera if your village uses it for org memory."
+msgstr "Conecte una clave de Anthropic, o Sera si su aldea la usa como memoria de la organización."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/AiSetupBanner.tsx
+msgctxt "admin, AI setup banner, line"
+msgid "{guide} then helps with the rest of setup: finding settings, explaining them, proposing changes for you to approve."
+msgstr "{guide} le ayuda luego con el resto de la configuración: encuentra ajustes, los explica y le propone cambios para que usted los apruebe."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/AiSetupBanner.tsx
+msgctxt "admin, AI setup banner, line"
+msgid "It turns on by itself once the key is saved."
+msgstr "Se activa sola en cuanto se guarda la clave."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/NeedsSetupStep.tsx
+msgctxt "NeedsSetupStep, line"
+msgid "A village is a business designed to meet the needs of the people in it."
+msgstr "Una aldea es un negocio diseñado para satisfacer las necesidades de quienes viven en ella."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/NeedsSetupStep.tsx
+msgctxt "NeedsSetupStep, line"
+msgid "Set this first. It orients everything after it."
+msgstr "Defina esto primero. Orienta todo lo que viene después."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/components/admin/NeedsSetupStep.tsx
+msgctxt "NeedsSetupStep, line"
+msgid "Meeting one need for a tenth of your members and meeting all ten for all of them are two different economic engines."
+msgstr "Satisfacer una necesidad para una décima parte de sus miembros y satisfacer las diez para todos son dos motores económicos distintos."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "Counted from what is connected and saved: your agent or guide, Identity, What this village is for, Pictures. They reopen if that changes."
+msgstr "Se cuentan a partir de lo que está conectado y guardado: su agente o guía, Identidad, Para qué es esta aldea, Imágenes. Se reabren si eso cambia."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "The other four steps are yours to tick."
+msgstr "Los otros cuatro pasos los marca usted."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "Every token this village runs is named in one place, including the one members earn for recognition."
+msgstr "Cada token de esta aldea se nombra en un solo lugar, incluida la que los miembros ganan como reconocimiento."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "A rename there follows to every page that says the word."
+msgstr "Un cambio de nombre allí llega a cada página que usa la palabra."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "The logo, footer mark and tab icon apply live, no deploy."
+msgstr "El logotipo, la marca del pie y el ícono de la pestaña se aplican en vivo, sin publicar una nueva versión."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "Alt text ships with the pictures. A screen reader reads it aloud in place of the image."
+msgstr "El texto alternativo acompaña a las imágenes. Un lector de pantalla lo lee en voz alta en lugar de la imagen."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "What a shared link shows is set in Make it yours, Pages, Whole site. Until then it uses your Tagline and homepage picture."
+msgstr "Lo que muestra un enlace compartido se define en Hágalo suyo, Páginas, Todo el sitio. Mientras tanto usa su lema y la imagen de la página de inicio."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "Village dues, and the land and money figures the investor page and master plan show, live in Settings."
+msgstr "Las cuotas de la aldea, y las cifras de tierra y dinero que muestran la página de inversionistas y el plan maestro, están en Ajustes."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard line"
+msgid "Every one ships blank, and a blank figure shows nothing: your site only states what you stated."
+msgstr "Todas vienen en blanco, y una cifra en blanco no muestra nada: su sitio solo dice lo que usted dijo."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard step"
+msgid "Open the land."
+msgstr "Abra el terreno."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard step"
+msgid "Press Village Settings on the map's dock: colours, the welcome walk, your words for roads, water and zones."
+msgstr "Pulse Ajustes de la aldea en la barra del mapa: colores, el recorrido de bienvenida, sus palabras para caminos, agua y zonas."
+
+# needs-native-review: make this yours, doors and short lines, 26 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, setup wizard step"
+msgid "Save. The map repaints, so you see each change where it lands."
+msgstr "Guarde. El mapa se vuelve a pintar, así que ve cada cambio donde ocurre."

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, CircleDashed, PenLine } from "lucide-react";
 import { SETUP_STEPS, type SetupRow, type SetupStepKey } from "./setupProgress";
+import { setupStepId } from "./setupLanding";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
@@ -139,7 +140,7 @@ export default function SetupSection({
     ) : null;
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
+    <div id={setupStepId(id)} className="scroll-mt-20 border border-gray-200 rounded-xl overflow-hidden mb-4">
       <div className="flex items-center justify-between gap-3 bg-gray-50 px-5 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <span className="w-7 h-7 shrink-0 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center">{n ?? SETUP_STEPS.findIndex((s) => s.key === id) + 1}</span>

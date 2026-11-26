@@ -3,7 +3,8 @@
  * isn't set up, this should be a warning right at the very beginning of Make
  * this yours and on the first page of admin."
  *
- * Shown at the top of Admin Home and Make This Yours while no AI can answer:
+ * Shown at the top of Admin Home while no AI can answer (Make This Yours asks
+ * the same thing as its own step 1, and the key button opens that step):
  * no Anthropic key of the village's own and no working Sera connection. It
  * asks for the key first because the guide then helps with the rest of the
  * journey, and the helper turns on by itself the moment a key is saved (its
@@ -20,6 +21,7 @@ import { guideNameAtSentenceStart, UNNAMED_GUIDE } from "@shared/guideName";
 import { guideLabelIn } from "@/lib/guideNameWords";
 import type { HelperStatus } from "@shared/adminHelper";
 import { fetchHelperStatus } from "./adminHelperApi";
+import { openSetupStep } from "./setupLanding";
 
 export default function AiSetupBanner({
   password,
@@ -59,16 +61,14 @@ export default function AiSetupBanner({
           <h2 id="ai-setup-banner-title" className="font-semibold">
             <Trans context="admin, AI setup banner">Set up your AI guide first</Trans>
           </h2>
-          <p className="text-sm">
-            <GuideSentence guide={guide} />
-          </p>
+          <GuideSteps guide={guide} />
           <div className="flex flex-wrap gap-2 pt-1">
             <button
               type="button"
-              onClick={() => onOpenTab("integrations")}
+              onClick={() => openSetupStep(onOpenTab, "guide")}
               className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Trans context="admin, AI setup banner: opens Integrations to paste the key">Add your Anthropic key</Trans>
+              <Trans context="admin, AI setup banner: opens Make this yours, step 1, to paste the key">Add your Anthropic key</Trans>
             </button>
             <button
               type="button"
@@ -84,10 +84,13 @@ export default function AiSetupBanner({
   );
 }
 
-function GuideSentence({ guide }: { guide: string }) {
+/** Short lines, never a paragraph (the lead, 26 Nov 2026). */
+function GuideSteps({ guide }: { guide: string }) {
   return (
-    <Trans context="admin, AI setup banner">
-      Connect an Anthropic key (or Sera, if your village uses it for org memory) and {guide} helps you through the rest of setup: finding settings, explaining them and proposing changes for you to approve. It turns on by itself once the key is saved.
-    </Trans>
+    <ul className="list-disc space-y-1 pl-5 text-sm">
+      <li><Trans context="admin, AI setup banner, line">Connect an Anthropic key, or Sera if your village uses it for org memory.</Trans></li>
+      <li><Trans context="admin, AI setup banner, line">{guide} then helps with the rest of setup: finding settings, explaining them, proposing changes for you to approve.</Trans></li>
+      <li><Trans context="admin, AI setup banner, line">It turns on by itself once the key is saved.</Trans></li>
+    </ul>
   );
 }

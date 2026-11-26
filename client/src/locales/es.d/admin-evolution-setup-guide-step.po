@@ -17,9 +17,21 @@ msgstr "Conecte la IA que lo acompaña en el resto de estos pasos."
 
 # needs-native-review: make this yours, step 1, 26 Nov 2026
 #: client/src/components/admin/GuideSetupStep.tsx
-msgctxt "setup guide step, p"
-msgid "The guide finds the right box, explains what a setting does and proposes changes for you to save. Connect it first and it can walk the other steps with you."
-msgstr "La guía encuentra la casilla correcta, explica qué hace un ajuste y le propone cambios para que usted los guarde. Conéctela primero y podrá recorrer los demás pasos con usted."
+msgctxt "setup guide step, line"
+msgid "It finds the right box and explains what a setting does."
+msgstr "Encuentra la casilla correcta y explica qué hace un ajuste."
+
+# needs-native-review: make this yours, step 1, 26 Nov 2026
+#: client/src/components/admin/GuideSetupStep.tsx
+msgctxt "setup guide step, line"
+msgid "It proposes changes. You save them."
+msgstr "Propone cambios. Usted los guarda."
+
+# needs-native-review: make this yours, step 1, 26 Nov 2026
+#: client/src/components/admin/GuideSetupStep.tsx
+msgctxt "setup guide step, line"
+msgid "Connect it first and it walks the other steps with you."
+msgstr "Conéctela primero y recorrerá los demás pasos con usted."
 
 # needs-native-review: make this yours, step 1, 26 Nov 2026
 #: client/src/components/admin/GuideSetupStep.tsx
