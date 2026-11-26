@@ -8,15 +8,17 @@
  * An off module, an unsent recap or an empty one draws nothing at all.
  */
 import { useEffect, useState } from "react";
-import { MOON_WORDS, heldPrivatelyWords, type MemberMoonResponse } from "@shared/moonRecap";
+import { heldPrivatelyWords, type MemberMoonResponse } from "@shared/moonRecap";
 import * as api from "./moonApi";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export function MemberMoonView({ data }: { data: MemberMoonResponse }) {
+  const MW = useMoonWords();
   if (data.roles.length === 0) return null;
   return (
-    <section aria-label={MOON_WORDS.thisMoon} className="mt-10 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground" data-testid="member-moon">
+    <section aria-label={MW.moon.thisMoon} className="mt-10 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground" data-testid="member-moon">
       <div>
-        <h2 className="m-0 text-xl font-semibold text-foreground">{MOON_WORDS.thisMoon}</h2>
+        <h2 className="m-0 text-xl font-semibold text-foreground">{MW.moon.thisMoon}</h2>
         <p className="m-0 text-sm text-muted-foreground">{data.moon.periodWords}</p>
       </div>
       {data.roles.map((r) => (

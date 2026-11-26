@@ -9,8 +9,9 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
-import { ADMIN_WORDS } from "@shared/moonRecap";
+
 import type { SaveResult } from "@/components/SaveBar";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export type DocState<T> =
   | { kind: "loading" }
@@ -19,6 +20,7 @@ export type DocState<T> =
   | { kind: "ready"; doc: T; gaps: Array<{ key: string; words: string }>; pendingSeraInbox?: { address: string; proposedBy: string; proposedAt: string } | null };
 
 export function useSettingsDocument<T>(path: "payers" | "settings" | "rhythm", password: string) {
+  const MW = useMoonWords();
   const [state, setState] = useState<DocState<T>>({ kind: "loading" });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -26,8 +28,8 @@ export function useSettingsDocument<T>(path: "payers" | "settings" | "rhythm", p
 
   const take = (status: number, body: any): void => {
     if (status === 404) return setState({ kind: "off" });
-    if (status === 401 || status === 403) return setState({ kind: "refused", text: typeof body?.message === "string" && body.message ? body.message : ADMIN_WORDS.noKey });
-    if (status >= 300) return setState({ kind: "refused", text: refusal(body, ADMIN_WORDS.loadFailed) });
+    if (status === 401 || status === 403) return setState({ kind: "refused", text: typeof body?.message === "string" && body.message ? body.message : MW.admin.noKey });
+    if (status >= 300) return setState({ kind: "refused", text: refusal(body, MW.admin.loadFailed) });
     setState({ kind: "ready", doc: body.document as T, gaps: Array.isArray(body.gaps) ? body.gaps : [], pendingSeraInbox: body.pendingSeraInbox ?? null });
   };
 
@@ -36,7 +38,7 @@ export function useSettingsDocument<T>(path: "payers" | "settings" | "rhythm", p
       const res = await fetch(url, { headers: authHeaders(password) });
       take(res.status, await res.json().catch(() => ({})));
     } catch {
-      setState({ kind: "refused", text: ADMIN_WORDS.loadFailed });
+      setState({ kind: "refused", text: MW.admin.loadFailed });
     }
   }, [url, password]);
 
@@ -56,19 +58,19 @@ export function useSettingsDocument<T>(path: "payers" | "settings" | "rhythm", p
       });
       const body = await res.json().catch(() => ({}));
       if (res.status === 400) {
-        const text = refusal(body, ADMIN_WORDS.loadFailed);
+        const text = refusal(body, MW.admin.loadFailed);
         setMessage({ ok: false, text });
         return { ok: false, reason: text };
       }
       take(res.status, body);
       if (res.ok) {
-        setMessage({ ok: true, text: ADMIN_WORDS.saved(Number(body.changed) || 0) });
+        setMessage({ ok: true, text: MW.admin.saved(Number(body.changed) || 0) });
         return { ok: true };
       }
-      return { ok: false, reason: refusal(body, ADMIN_WORDS.loadFailed) };
+      return { ok: false, reason: refusal(body, MW.admin.loadFailed) };
     } catch {
-      setMessage({ ok: false, text: ADMIN_WORDS.loadFailed });
-      return { ok: false, reason: ADMIN_WORDS.loadFailed };
+      setMessage({ ok: false, text: MW.admin.loadFailed });
+      return { ok: false, reason: MW.admin.loadFailed };
     } finally {
       setSaving(false);
     }
@@ -80,9 +82,9 @@ export function useSettingsDocument<T>(path: "payers" | "settings" | "rhythm", p
     try {
       const res = await fetch(`${API_BASE}/moon-review/settings/sera-inbox/${what}`, { method: "POST", headers: authHeaders(password) });
       const body = await res.json().catch(() => ({}));
-      setMessage(res.ok ? { ok: true, text: what === "confirm" ? ADMIN_WORDS.settings.seraInboxConfirmed : ADMIN_WORDS.settings.seraInboxCancelled } : { ok: false, text: refusal(body, ADMIN_WORDS.loadFailed) });
+      setMessage(res.ok ? { ok: true, text: what === "confirm" ? MW.admin.settings.seraInboxConfirmed : MW.admin.settings.seraInboxCancelled } : { ok: false, text: refusal(body, MW.admin.loadFailed) });
     } catch {
-      setMessage({ ok: false, text: ADMIN_WORDS.loadFailed });
+      setMessage({ ok: false, text: MW.admin.loadFailed });
     }
     await load();
   };
