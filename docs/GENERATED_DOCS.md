@@ -54,18 +54,29 @@ each time, for hours. The documents were the most common reason a pull request w
 3. **The merge.** The integrator composes and lands without regenerating anything.
 4. **Main regenerates.** `.github/workflows/generated-docs.yml` runs every generator on the push to
    main and, when anything changed, makes ONE bot commit (author `github-actions[bot]`). It checks the
-   generators are idempotent before it commits, and then runs every doc guard in strict mode.
-5. **A generator fails.** The job goes red, nothing is committed, and ONE issue titled "Generated docs
-   failed on main" is opened or updated naming the generator. Close it when a run is green.
+   generators are idempotent, then runs every doc guard in strict mode and `scripts/check-post-fold.mjs`
+   (the catalogs in strict mode and every test that reads a catalog) on that tree, and only then
+   pushes. Until 26 Nov 2026 the checks ran after the push, and the bot's commit turned main red twice
+   that day.
+5. **A generator fails, or a check fails on the regenerated tree.** The job goes red, nothing reaches
+   main (main stays green with stale docs), and ONE issue titled "Generated docs failed on main" is
+   opened or updated naming what failed. A tree held back by a failed check is pushed to the branch
+   `bot/generated-docs`, overwritten each time, so a lane can check it out and reproduce. Close the
+   issue when a run is green.
 
 ## Modes
 
 `GENERATED_DOCS_MODE` is `strict` only inside `generated-docs.yml`. Everything else is PR mode, the
 default, including a lane's machine, so a lane never has to think about it.
 
-`ci.yml` never sets strict. The merge commit of a pull request is one bot commit older than its docs,
-so a strict check there would be red on every merge. "Main's docs equal the code" is a claim that can
-only be made after the bot has written, which is where strict runs.
+`ci.yml` never sets strict on the tree as committed. The merge commit of a pull request is one bot
+commit older than its docs, so a strict check there would be red on every merge. "Main's docs equal the
+code" is a claim that can only be made after the bot has written, which is where strict runs.
+
+The one exception is a simulation of that write. `ci.yml`'s step "Main stays green after the docs bot
+folds this tree" runs `scripts/check-post-fold.mjs --fold`: it folds and re-extracts the catalogs on the
+runner's throwaway checkout, exactly as the bot will, and checks the catalogs in strict mode there. A
+pull request that would turn main red after its merge goes red itself instead.
 
 To check a tree strictly by hand (for example to see what the bot will do): `GENERATED_DOCS_MODE=strict node scripts/check-governance-doc.mjs`.
 To see what changes locally, run the generator, read `git diff`, and then `git checkout -- docs client/src/locales`

@@ -1210,6 +1210,23 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Main stays green after the docs bot folds this tree
+        # After the merge, generated-docs.yml folds the es.d fragments into
+        # es.po and re-extracts en.po, then pushes that as a bot commit. On
+        # 26 Nov 2026 that commit turned main red twice while the release
+        # before it was green: a test reading es.po (7366a88) and a folded
+        # plural with no `one` case in strict mode (a187ce0). This folds the
+        # tree the same way, here, and runs the strict catalog check and every
+        # test that reads a catalog (scripts/check-post-fold.mjs), so the red
+        # lands on the pull request or the batch, where it can be fixed.
+        # generated-docs.yml runs the same script before it pushes, as the
+        # second line.
+        #
+        # It folds IN PLACE, so it runs after the build and the budget: they
+        # measured the tree as committed, and nothing after this step reads
+        # the catalogs. About 30 seconds.
+        run: node scripts/check-post-fold.mjs --fold
+
       - name: Dependency audit
         # BLOCKING on FINDINGS, and deliberately not blocking on a registry that
         # will not answer. Those are two different facts and `pnpm audit` returns
