@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Nothing added yet."
+msgstr "Aún no se ha agregado nada."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim: Report"
+msgid "Share what is happening so everyone knows."
+msgstr "Comparta lo que está pasando para que todas las personas lo sepan."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Agenda items"
+msgstr "Puntos de agenda"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: a note's placeholder"
+msgid "Optional"
+msgstr "Opcional"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: {circle} is the circle's name"
+msgid "Thanks. It's added for the {circle}."
+msgstr "Gracias. Quedó agregado para {circle}."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Saving..."
+msgstr "Guardando..."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Which circle is it for?"
+msgstr "¿Para qué círculo es?"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim: Explore"
+msgid "Gather ideas and understanding, usually in a round."
+msgstr "Reúna ideas y comprensión, por lo general en una ronda."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Taken up lately"
+msgstr "Tratados recientemente"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: {n} is 2 or more"
+msgid "Open the room with {n} items"
+msgstr "Abrir la sala con {n} puntos"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: an item's aim"
+msgid "Not sure yet"
+msgstr "Aún no sé"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Add agenda items for future sessions. You can add anything: each session decides which topics to explore."
+msgstr "Agregue puntos de agenda para sesiones futuras. Puede agregar cualquier cosa: cada sesión decide qué temas explorar."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "The agenda items didn't load. Try again in a moment."
+msgstr "Los puntos de agenda no cargaron. Intente de nuevo en un momento."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "The room chooses the aim when it takes it up."
+msgstr "La sala elige el propósito cuando lo trata."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: close a long note"
+msgid "Show less"
+msgstr "Mostrar menos"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Words changed by {name}"
+msgstr "Palabras cambiadas por {name}"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: {noCircle} is the words for no particular circle"
+msgid "Choose a circle, or {noCircle}."
+msgstr "Elija un círculo, o {noCircle}."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: take an item off"
+msgid "Remove it"
+msgstr "Quitarlo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Once a session takes it up, anyone who looks into that session can read it."
+msgstr "Una vez que una sesión lo trate, cualquier persona que consulte esa sesión podrá leerlo."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: open a long note"
+msgid "Show all"
+msgstr "Mostrar todo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim: Decide"
+msgid "Shape a proposal and decide it by consent."
+msgstr "Dé forma a una propuesta y decídala por consentimiento."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Add it again"
+msgstr "Agregarlo de nuevo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: confirm taking an item off"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: keep an item"
+msgid "Keep it"
+msgstr "Conservarlo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Thanks. It's added for any circle."
+msgstr "Gracias. Quedó agregado para cualquier círculo."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim"
+msgid "Decide"
+msgstr "Decidir"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim"
+msgid "Explore"
+msgstr "Explorar"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: {circle} is the circle's name"
+msgid "Agenda items for the {circle}"
+msgstr "Puntos de agenda para {circle}"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "That did not go through. Try again in a moment."
+msgstr "No se pudo completar. Intente de nuevo en un momento."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Anything the circle should know first?"
+msgstr "¿Algo que el círculo deba saber primero?"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: who added an item"
+msgid "Added by {name}"
+msgstr "Agregado por {name}"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Choose a circle"
+msgstr "Elija un círculo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: who added an item, and when"
+msgid "Added by {name} · {date}"
+msgstr "Agregado por {name} · {date}"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Remove this item? It stays on the agenda it's on, and the circle won't see it here anymore."
+msgstr "¿Quitar este punto? Se queda en la agenda donde está, y el círculo ya no lo verá aquí."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Open the room with 1 item"
+msgstr "Abrir la sala con 1 punto"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Agenda items for any circle"
+msgstr "Puntos de agenda para cualquier círculo"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Choose what this session takes up. You can add more and reorder them in the room."
+msgstr "Elija qué tratará esta sesión. Puede agregar más y cambiar su orden en la sala."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: the reader added this item, and when"
+msgid "Added by you · {date}"
+msgstr "Agregado por usted · {date}"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Removing..."
+msgstr "Quitando..."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Remove this item? The circle won't see it anymore."
+msgstr "¿Quitar este punto? El círculo ya no lo verá."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library"
+msgid "Adding..."
+msgstr "Agregando..."
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: the form's heading"
+msgid "Add an agenda item"
+msgstr "Agregar un punto de agenda"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "an agenda item's aim"
+msgid "Report"
+msgstr "Informar"
+
+# needs-native-review: the agenda library on /sessions, 26 Nov 2026
+msgctxt "the agenda library: the button"
+msgid "Add an agenda item"
+msgstr "Agregar un punto de agenda"

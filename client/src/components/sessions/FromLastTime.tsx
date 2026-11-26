@@ -29,7 +29,6 @@
 import { useState } from "react";
 import SendTension from "./SendTension";
 import {
-  AIM_DEFS,
   ROOM_ITEM_MINUTES_DEFAULT,
   SESSION_LIMITS,
   cleanLine,
@@ -42,6 +41,7 @@ import { BTN_QUIET, BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, heldLine, k
 import { useRoomWords } from "@/components/sessions/roomWords";
 import { useSessionWords } from "@/components/sessions/sessionWords";
 import { useTaskWords } from "@/components/tasks/taskWords";
+import { AIM_DEFS } from "./libraryCopy";
 
 /** The room's own day, YYYY-MM-DD, read off the room's clock in this device's zone. */
 export function roomDay(ms: number): string {

@@ -1,5 +1,7 @@
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { m } from "framer-motion";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { MushroomNetwork } from "@/components/sacred/living";
@@ -52,6 +54,7 @@ const columnLines = (column: Readonly<Record<string, string>>) =>
   [column.first, column.second, column.third, column.fourth].filter((line) => (line ?? "").trim() !== "");
 
 export default function Team() {
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   const config = useGameConfig();
   // Every word on this page that is not a person's is the village's own, from
   // Admin, Pages, Team (shared/pageContent/team.ts). Null until the saved
@@ -83,7 +86,7 @@ export default function Team() {
     // alone with no cookie fallback, and this page had never sent one: the
     // capability was therefore consulted on a viewer that was always null,
     // and it had never granted anybody anything here.
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       // The cards are asked for only at the member tier (teamCardsShown), so a
       // visitor's browser never holds a surname or a portrait. Through the
@@ -156,7 +159,7 @@ export default function Team() {
         setTeam(merged);
       })
       .catch(() => setTeamFailed(true));
-  }, []);
+  }, [locale]);
 
   return (
     <Layout>

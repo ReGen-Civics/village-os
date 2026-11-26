@@ -26,6 +26,7 @@
  * seconds on a bell. The reasoning is written out in
  * docs/NOTIFICATION_RESEARCH.md, part 2.
  */
+import { i18n as appI18n } from "@lingui/core";
 import { authToken } from "@/lib/gameApi";
 import type { FeedItem } from "@/lib/notificationFeed";
 
@@ -63,6 +64,30 @@ const arrivalListeners = new Set<ArrivalListener>();
 /** Ids already shown to this page. Seeded silently by the first full load. */
 const seen = new Set<string>();
 let seeded = false;
+
+/** The list as the server sent it, so a change of language redraws it from the stored words. */
+let rawItems: FeedItem[] = [];
+
+/**
+ * The list in the reader's language. A notice that carries words (shared/noticeKeys.ts) is drawn from them; every
+ * other one, and every one for an English reader, is drawn as stored. The words load only when they are needed,
+ * so the bell's first view never carries them, and a failed load draws the stored English.
+ */
+async function inReadersLanguage(items: FeedItem[]): Promise<FeedItem[]> {
+  if (!appI18n.locale || appI18n.locale === "en" || !items.some((it) => it.words)) return items;
+  try {
+    const { localizeNotices } = await import("./noticeWords");
+    return localizeNotices(items, appI18n);
+  } catch {
+    return items;
+  }
+}
+
+async function onLanguage() {
+  if (!state.loaded) return;
+  const items = await inReadersLanguage(rawItems);
+  publish({ ...state, items });
+}
 
 let latestAt: string | null = null;
 let timer: number | null = null;
@@ -102,7 +127,8 @@ async function fetchFull(): Promise<void> {
   const res = await fetch("/api/notifications", { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(String(res.status));
   const d = await res.json();
-  const items: FeedItem[] = Array.isArray(d?.notifications) ? d.notifications : [];
+  rawItems = Array.isArray(d?.notifications) ? d.notifications : [];
+  const items = await inReadersLanguage(rawItems);
   latestAt = items[0]?.at ?? latestAt;
 
   const arrivals: FeedItem[] = [];
@@ -175,6 +201,8 @@ function wire() {
   if (wired || typeof window === "undefined") return;
   wired = true;
   document.addEventListener("visibilitychange", onWake);
+  // A reader who switches language sees the bell in it at once.
+  appI18n.on("change", () => void onLanguage());
   window.addEventListener("focus", onWake);
   for (const ev of ["pointerdown", "keydown"]) {
     window.addEventListener(ev, noteActivity, { passive: true });
@@ -258,6 +286,7 @@ export async function markNotificationsSeen(): Promise<void> {
 /** Test seam: forget everything this module remembered between page loads. */
 export function resetNotificationStore() {
   state = { unread: 0, unseen: 0, items: [], loaded: false };
+  rawItems = [];
   seen.clear();
   seeded = false;
   latestAt = null;

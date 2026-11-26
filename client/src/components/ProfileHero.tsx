@@ -13,6 +13,7 @@
  * server answered.
  */
 import { useEffect, useState, type ReactNode } from "react";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import FramelessImg from "@/components/FramelessImg";
 import { m } from "framer-motion";
 import { authToken, useGameConfig } from "@/lib/gameApi";
@@ -79,7 +80,8 @@ export default function ProfileHero({
   maxFeatured?: number | null;
 }) {
   const [party, setParty] = useState<Character[]>([]);
-  const [archetypes, setArchetypes] = useState<Archetype[]>([]);
+  const [archetypesServed, setArchetypes] = useState<Archetype[]>([]);
+  const archetypes = useArchetypesInLanguage(archetypesServed); // the village's class words in the reader's language
   const [title, setTitle] = useState<string | null>(null);
   const [moons, setMoons] = useState<number | null>(null);
   const [joined, setJoined] = useState<string | null>(null);
