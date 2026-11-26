@@ -90,6 +90,19 @@ describe("the breadcrumb", () => {
     expect(trail()).toBeNull();
   });
 
+  it("carries the hooks the Sea chart's look draws on (client/src/seaChart.css): keep them when you refactor", () => {
+    at("/powers/water", { name: "Water" });
+    const nav = trail()!;
+    expect(nav.getAttribute("data-wayfinding")).toBe("breadcrumb");
+    expect(nav.querySelector('[data-crumb="group"]')?.textContent).toBe("Decide");
+    expect(nav.querySelector('[data-crumb="entry"]')?.textContent).toBe("What We Look After");
+    expect(nav.querySelector('[data-crumb="leaf"]')?.getAttribute("aria-current")).toBe("page");
+    const seps = nav.querySelectorAll("[data-crumb-sep]");
+    expect(seps).toHaveLength(2);
+    for (const s of Array.from(seps)) expect(s.getAttribute("aria-hidden")).toBe("true");
+    expect(document.querySelector('[data-wayfinding="menu"] [data-lit-rule]')).toBeTruthy();
+  });
+
   it("has its name in Spanish", async () => {
     const dir = path.resolve(__dirname, "../locales");
     const es = await formatter({ lineNumbers: false }).parse(mergedPoText(dir, "es"), { locale: "es", sourceLocale: "en", filename: path.join(dir, "es.po") });

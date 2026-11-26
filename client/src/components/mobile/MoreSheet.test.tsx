@@ -149,6 +149,10 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     const link = screen.getByRole("link", { name: /Events/ });
     expect(link.getAttribute("aria-current")).toBe("true");
     expect(link.className).toContain("border-notice");
+    // The hooks the Sea chart's look draws on (client/src/seaChart.css).
+    expect(button.hasAttribute("data-lit")).toBe(true);
+    expect(link.hasAttribute("data-lit")).toBe(true);
+    expect(button.closest('[data-wayfinding="menu"]')).toBeTruthy();
   });
 
   it("opens with every group closed and nothing marked on a page in no entry", async () => {

@@ -289,7 +289,7 @@ export default function Layout({ children }: LayoutProps) {
               half the width. This breakpoint and the mobile button's below are
               a matched pair and must always move together, or some viewport
               gets no navigation at all. */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-6">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-6" data-wayfinding="menu">
             {navEntries.map((entry) =>
               isGroup(entry) ? (
                 <NavDropdown
@@ -435,6 +435,7 @@ export default function Layout({ children }: LayoutProps) {
           {mobileMenuOpen && (
             <m.div
               id="mobile-menu"
+              data-wayfinding="menu"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
