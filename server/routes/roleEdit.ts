@@ -38,7 +38,7 @@ import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import type { PublishDeps } from "../lib/orgDraftDecide";
 import { ORG_DECIDE, publishDoorFor, publishOrgDraft, draftReadiness, type PublishDoor } from "../lib/orgDraftDecide";
-import { addChange, createDraft, getDraft, withdrawDraft } from "../lib/orgDrafts";
+import { addChange, createDraft, getDraft, listDrafts, withdrawDraft } from "../lib/orgDrafts";
 import { listOrgAssignments, listOrgRoles, type OrgRole } from "../lib/orgChart";
 import { firstNameOf } from "../lib/peopleLock";
 import { roleFillsFor } from "../lib/roleFill";
@@ -470,6 +470,21 @@ export function registerRoleEditRoutes(app: Express, gate0: Gate): void {
     const found = await roleOf(res, String(req.params.id ?? ""));
     if (!found) return;
     res.set("Cache-Control", "no-store").json({ entries: await roleHistory(g.getPool(), found.role.id) });
+  });
+
+  /**
+   * The open org drafts that change this role (the draft page, PR E): the role card's "a change is waiting" link.
+   * Behind the editor's own gate, the people who may decide drafts, so a draft's title reaches nobody else. Ids and
+   * titles only; the draft page (/governance/decisions/drafts/:id) says the rest.
+   */
+  app.get(`${BASE}/:id/drafts`, async (req, res) => {
+    const me = await gate(req, res, "drafts", READS);
+    if (!me) return;
+    const found = await roleOf(res, String(req.params.id ?? ""));
+    if (!found) return;
+    const open = await listDrafts(g.getPool(), { status: "open" });
+    const drafts = open.filter((d) => d.changes.some((c) => c.orgRoleId === found.role.id)).map((d) => ({ id: d.id, title: d.title }));
+    res.set("Cache-Control", "no-store").json({ drafts });
   });
 
   app.post(`${BASE}/:id/history/:draftId/revert`, async (req, res) => {
