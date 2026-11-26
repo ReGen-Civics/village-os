@@ -13,9 +13,10 @@ import { turnOnPlan, type LibraryViewer, type PlanModule } from "@shared/moduleS
 import TurnOnAction from "./TurnOnAction";
 import { readBasket, writeBasket } from "./planBasket";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { starterSetWords } from "./starterSetWords";
 
 export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer: LibraryViewer }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const byId = new Map(all.map((m) => [m.id, m]));
   const sets = STARTER_SETS.map((s) => ({ ...s, ids: s.moduleIds.filter((id) => byId.has(id)) })).filter(
     (s) => s.ids.length > 1,
@@ -29,10 +30,11 @@ export default function StarterSets({ all, viewer }: { all: PlanModule[]; viewer
       <div className="mt-3 grid gap-4 sm:grid-cols-3">
         {sets.map((s) => {
           const remaining = seesState ? turnOnPlan(s.ids, viewer.launched ? "members" : "preview", all) : [];
+          const words = starterSetWords(s, i18n);
           return (
             <div key={s.id} className="rounded-xl border border-border bg-card p-4 min-w-0 break-words flex flex-col gap-2">
-              <h3 className="font-semibold text-foreground">{s.name}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{s.gloss}</p>
+              <h3 className="font-semibold text-foreground">{words.name}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{words.gloss}</p>
               <p className="text-sm">
                 {s.ids.map((id, i) => (
                   <span key={id}>
