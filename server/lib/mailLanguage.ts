@@ -21,8 +21,8 @@ function villageDefault(): string | null {
 }
 
 /** A letter to a member: their saved language, then the village's default, then English. */
-export function languageOfMember(member: { prefs?: unknown } | null | undefined): MailLanguage {
-  return mailLanguage({ member: savedLanguage(member), villageDefault: villageDefault() }).language;
+export function languageOfMember(member: object | null | undefined): MailLanguage {
+  return mailLanguage({ member: savedLanguage(member as { prefs?: unknown } | null | undefined), villageDefault: villageDefault() }).language;
 }
 
 /**
