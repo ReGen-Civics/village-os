@@ -266,7 +266,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                     className={`flex min-h-11 w-full items-center justify-between py-2 text-left text-base text-foreground ${lit?.group === e.label ? "font-semibold" : ""}`}
                   >
                     <span className="inline-flex items-center gap-2">
-                      {lit?.group === e.label ? <span aria-hidden="true" className="size-2 rounded-full bg-notice" /> : null}
+                      {lit?.group === e.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
                       {e.label}
                     </span>
                     <ChevronDown aria-hidden="true" className={`size-4 transition-transform ${openGroup === e.label ? "rotate-180" : ""}`} />
