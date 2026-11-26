@@ -19,7 +19,7 @@ msgstr "Guardado."
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal"
 msgid "Waiting on the save bar at the bottom. Nothing changes until you press Save there."
-msgstr "Esperando en la barra de guardar, abajo. Nada cambia hasta que pulses Guardar ahí."
+msgstr "Esperando en la barra de guardar, abajo. Nada cambia hasta que pulse Guardar ahí."
 
 # needs-native-review: first pass, admin guide review and save, 26 Nov 2026
 #: client/src/components/admin/AdminHelperPanel.tsx
@@ -37,4 +37,4 @@ msgstr "Revisar y guardar"
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, opens the setting's own place"
 msgid "Take me there"
-msgstr "Llévame ahí"
+msgstr "Lléveme ahí"
