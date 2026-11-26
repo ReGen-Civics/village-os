@@ -104,3 +104,8 @@ export function pick<T extends object, K extends string>(o: T, keys: readonly K[
   for (const k of keys) if (k in o) out[k] = (o as Record<string, unknown>)[k];
   return out as Pick<T, Extract<K, keyof T>>;
 }
+
+/** The draft page's address: one stable link per org draft, from every list that names one. */
+export function draftPageHref(draftId: string): string {
+  return `/governance/decisions/drafts/${encodeURIComponent(draftId)}`;
+}

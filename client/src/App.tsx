@@ -246,6 +246,7 @@ const Training = lazyPage(() => import("./pages/Training"));
 const Governance = lazyPage(() => import("./pages/Governance"));
 const Decisions = lazyPage(() => import("./pages/Decisions"));
 const Decision = lazyPage(() => import("./pages/Decision"));
+const OrgDraft = lazyPage(() => import("./pages/OrgDraft"));
 const Propose = lazyPage(() => import("./pages/Propose"));
 const SeatApplication = lazyPage(() => import("./pages/SeatApplication"));
 // One chunk for the three role proposal routes (role proposals PR C).
@@ -527,6 +528,8 @@ function Router() {
           match, and a :id above the list would swallow it. */}
       <Route path="/decisions" component={Decisions} />
       <Route path="/decisions/:id" component={Decision} />
+      {/* One org chart draft, before and after, with its revisions and the acts its decide answer allows. */}
+      <Route path="/governance/decisions/drafts/:draftId" component={OrgDraft} />
       <Route path="/propose" component={Propose} />
       {/* One application to hold roles, on terms. Members only, behind terms.read. */}
       <Route path="/role-applications/:id" component={SeatApplication} />
