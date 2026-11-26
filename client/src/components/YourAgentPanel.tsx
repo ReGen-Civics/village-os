@@ -63,6 +63,7 @@ const SCOPE_WORDS: Record<string, string> = {
   "moon.review": "for a reviewer: read the review queue and the role signals, never with amounts",
   "sessions.write": "add items to the agenda library for a circle's sessions, after your yes",
   "live.view": "for QA, offered while your role carries the live view: open the live game in a browser as you, for reading only. Mint it on its own, keep it in your own secrets store as LIVE_QA_TOKEN, and it lasts 7 days",
+  "live.view.admin": "for QA, offered to an admin whose role carries the live view: the same read-only view, reading Admin as you. It never writes, never reads exports, secrets or tokens, and lasts one day. Mint it on its own, only when a second pass over Admin needs it",
 };
 
 const TIER_WORDS: Record<Profile["aboutTier"], string> = {
