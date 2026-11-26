@@ -29,7 +29,7 @@
 # starts no other workflow, so:
 #   - with the secret RELEASE_BOT_TOKEN set, the tag is pushed with it and
 #     release.yml starts on its own tag-push trigger;
-#   - without it, the tag is pushed with GITHUB_TOKEN and the second job
+#   - without it, the tag is pushed with GITHUB_TOKEN and the job's last step
 #     dispatches release.yml on the tag (a dispatch made with GITHUB_TOKEN does
 #     start a run). release.yml treats that dispatch exactly like a tag push.
 
@@ -64,8 +64,12 @@ jobs:
     permissions:
       # To push the tag.
       contents: write
-      # To read ci's runs on the commit.
-      actions: read
+      # To read ci's runs on the commit, and, when the tag went out with
+      # GITHUB_TOKEN, to dispatch release.yml on it (the last step). This was
+      # a second job holding only `actions: write`; folding it in saved a
+      # runner hop of 28 to 57 s per release (26 Nov 2026). The trade: this
+      # job now holds both write scopes, for the minute it runs.
+      actions: write
     outputs:
       tag: ${{ steps.check.outputs.tag }}
       sha: ${{ steps.check.outputs.sha }}
@@ -163,25 +167,18 @@ jobs:
             how="Pushed with RELEASE_BOT_TOKEN, so release.yml starts on the tag push."
           else
             echo "dispatch=true" >> "$GITHUB_OUTPUT"
-            how="Pushed with GITHUB_TOKEN, which starts no workflow, so the next job dispatches release.yml on ${TAG}."
+            how="Pushed with GITHUB_TOKEN, which starts no workflow, so the next step dispatches release.yml on ${TAG}."
           fi
           echo "::notice::Tagged ${TAG} at ${TAG_SHA}. ${how}"
           { echo "### Tagged ${TAG}"; echo; echo "On ${TAG_SHA}. ${how}"; } >> "$GITHUB_STEP_SUMMARY"
 
-  # Only when the tag went out with GITHUB_TOKEN. The only job that holds
-  # actions: write, and all it does is start release.yml on the tag.
-  release:
-    needs: tag
-    if: needs.tag.outputs.dispatch == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      actions: write
-    steps:
       - name: Start release.yml on the tag
+        # Only when the tag went out with GITHUB_TOKEN, which starts no
+        # workflow by pushing; a dispatch made with it does.
+        if: steps.push.outputs.dispatch == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.tag.outputs.tag }}
+          TAG: ${{ steps.check.outputs.tag }}
         run: |
           set -euo pipefail
           gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG"

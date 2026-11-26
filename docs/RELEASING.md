@@ -113,7 +113,11 @@ across.
 ### Should `release.yml` refuse to publish when this fails
 
 **Yes, and it now does.** The `rollback` job runs the guard against the
-previous release tag and the `image` job will not start without it.
+previous release tag, and the `image` job pushes nothing without it. Since 26 Nov 2026 the image
+builds and boots while the rollback job runs, and its step "The rollback check passed" waits for
+that job's verdict before the registry login: success lets the push go ahead, anything else
+(failed, cancelled, skipped, missing, or no verdict in 25 minutes) stops the release before a
+single tag is pushed.
 
 This is deliberately not a second copy of CI's verdict. `release.yml` carries
 no copy of the test suite, on purpose, and its own header explains why: a
@@ -212,7 +216,7 @@ commit. `server/tagRelease.test.ts` holds each guard.
 Then it pushes the annotated tag and makes `release.yml` run. With the secret
 `RELEASE_BOT_TOKEN` set, the tag is pushed with it and `release.yml` starts on
 the tag push. Without it, the tag goes out with the built-in token, which
-starts no workflow, so a second job dispatches `release.yml` on the tag. A
+starts no workflow, so the tag job's last step dispatches `release.yml` on the tag. A
 dispatch on a version tag passes the same gates as the tag push: the version
 check, the green-ci check, the rollback job, the boot test. `release.yml`
 refuses a dispatch on any other ref and builds nothing.
