@@ -1,0 +1,79 @@
+# The client budgets on each pull request, before a ceiling fails it (scripts/budget-comment.mjs).
+#
+# On 26 Nov 2026 the dist total sat within 16 KB of its 8000 KB ceiling most of
+# the day and verify went red on several pull requests for the budget alone; a
+# lane learned its cost only from the red. When ci.yml finishes a pull_request run,
+# this edits ONE comment on that pull request: main JS, first-page JS and the dist
+# total, each against main's latest green push run, with the ceiling and headroom.
+#
+# WHY workflow_run: a pull_request run from a fork gets a read-only token, and this
+# needs to write a comment. workflow_run runs from main's copy of this file with a
+# write token, which is also why it must not trust what the pull request wrote: the
+# artifact is read for numbers only, and the pull request to comment on comes from
+# the event (scripts/budget-comment.mjs, sanitize). A fork's run carries no pull
+# request number in the event, so a fork gets no comment, which is the safe side.
+name: budget-comment
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: budget-comment-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: The comment refuses what it should
+        run: node scripts/budget-comment.test.mjs
+
+      - name: This run's numbers and main's
+        id: fetch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          # This run's numbers. A verify that never built has none: say so and stop.
+          if ! gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" -n dist-budget -D "$RUNNER_TEMP/pr"; then
+            echo "No dist-budget artifact on run ${RUN_ID} (verify did not build). No comment."
+            echo "have=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "have=true" >> "$GITHUB_OUTPUT"
+          # main's baseline: the newest green push run on main that kept one.
+          for id in $(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=10" --jq '.workflow_runs[].id'); do
+            if gh run download "$id" --repo "$GITHUB_REPOSITORY" -n dist-budget -D "$RUNNER_TEMP/main" 2>/dev/null; then
+              echo "main's baseline: run ${id}"
+              break
+            fi
+          done
+
+      - name: Post or edit the comment
+        if: steps.fetch.outputs.have == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node scripts/budget-comment.mjs --pr "$RUNNER_TEMP/pr/budget.json" --main "$RUNNER_TEMP/main/budget.json" \
+            --sha "$HEAD_SHA" --post --pr-number "${PR_NUMBER:-0}"
