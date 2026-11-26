@@ -363,7 +363,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                     </td>
                     <td className="px-4 py-2.5 text-gray-600">
                       {Object.entries(t.issuedBy ?? {}).length === 0
-                        ? <span className="text-gray-300">-</span>
+                        ? <span className="text-gray-500">-</span>
                         : Object.entries(t.issuedBy).map(([acct, n]) => (
                             <div key={acct} className="text-xs">
                               <span className="font-mono text-gray-400">{acct.replace("sys:", "")}</span>: {formatTokenAmount(Number(n), Number(t.decimals ?? 0))}

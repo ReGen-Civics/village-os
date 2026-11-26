@@ -257,7 +257,7 @@ export default function GameRolesTab({ password }: { password: string }) {
                       onClick={() => setRemoving({ roleId: r.id, userId: h.userId })}
                       title={t({ message: "Remove from this group", context: "GameRolesTab, title" })}
                       aria-label={`Remove ${holderName(h)} from ${r.name}`}
-                      className="group -my-2.5 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500"
+                      className="group -my-2.5 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700"
                     >
                       <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded-full group-hover:bg-gray-300">×</span>
                     </button>

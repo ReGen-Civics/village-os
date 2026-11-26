@@ -38,7 +38,7 @@ const STATE_STYLE: Record<LetterState, string> = {
   scheduled: "bg-blue-50 text-blue-800",
   sending: "bg-amber-50 text-amber-900",
   sent: "bg-green-50 text-green-800",
-  cancelled: "bg-gray-100 text-gray-500",
+  cancelled: "bg-gray-100 text-gray-700",
 };
 
 function Numbers({ l }: { l: LetterView }) {

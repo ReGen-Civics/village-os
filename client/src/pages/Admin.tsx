@@ -1063,7 +1063,7 @@ export function IntegrationsTab({ password }: { password: string }) {
                       <button
                         onClick={() => { if (window.confirm("Clear this key? If the host environment provides one, it takes over; otherwise this integration disconnects.")) put(c.key, ""); }}
                         disabled={busy === c.key}
-                        className="text-sm text-gray-500 bg-gray-100 rounded-lg px-3 py-2 font-medium"
+                        className="text-sm text-gray-700 bg-gray-100 rounded-lg px-3 py-2 font-medium"
                       >
                         <Trans context="Admin, button">Clear</Trans></button>
                     )}
@@ -2872,7 +2872,7 @@ export function VillageBrainTab({ password }: { password: string }) { const { t 
                         ? "bg-green-50 text-green-700"
                         : s.status === "proposed"
                           ? "bg-blue-50 text-blue-700"
-                          : "bg-gray-100 text-gray-500"
+                          : "bg-gray-100 text-gray-700"
                     }`}
                   >
                     {s.status === "confirmed"
@@ -3475,7 +3475,7 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
               {unmatched.length === 0 ? <p className="text-xs text-gray-400"><Trans context="Admin, p">None. The map covers what people ask for.</Trans></p> : (
                 <ul className="space-y-1 text-xs text-gray-600">
                   {unmatched.slice(0, 12).map((q: any) => (
-                    <li key={q.id}>"{q.query}" <span className="text-gray-300">· {new Date(q.created_at).toLocaleDateString()}</span></li>
+                    <li key={q.id}>"{q.query}" <span className="text-gray-500">· {new Date(q.created_at).toLocaleDateString()}</span></li>
                   ))}
                 </ul>
               )}
@@ -4068,7 +4068,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
                   <td className="py-2 pr-3">{s.nightsRemaining ?? "-"}</td>
                   <td className="py-2 pr-3">
                     <button onClick={async () => { const d = await post(`/admin/stays/${s.id}`, { autopay: !s.autopay }, "PUT"); if (d) load(); }}
-                      className={`text-xs px-2 py-0.5 rounded-full ${s.autopay ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                      className={`text-xs px-2 py-0.5 rounded-full ${s.autopay ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-700"}`}>
                       {s.autopay ? "on" : "off"}
                     </button>
                   </td>
@@ -5452,7 +5452,7 @@ export function ExitsAdminTab({ password }: { password: string }) { const { t } 
                 <div key={s.domain} className="flex items-start justify-between text-sm gap-3">
                   <span className="text-gray-600"><b className="text-gray-900">{s.domain}</b>: {s.description}</span>
                   {s.count > 0 && (
-                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${s.blocking ? "bg-red-50 text-red-600 font-semibold" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${s.blocking ? "bg-red-50 text-red-700 font-semibold" : "bg-gray-100 text-gray-700"}`}>
                       {s.blocking ? `blocks (${s.count})` : s.count}
                     </span>
                   )}
@@ -5911,7 +5911,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
                 {r.title} <span className="text-xs text-gray-400">({r.source})</span>
                 {flagged(r) && <ExampleChip className="ml-2 align-middle" />}
               </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === "published" ? "bg-emerald-50 text-emerald-700" : r.status === "synthesized" ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === "published" ? "bg-emerald-50 text-emerald-700" : r.status === "synthesized" ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-700"}`}>
                 {r.status}{r.synthesis?.dropped_task_count > 0 ? ` · ${r.synthesis.dropped_task_count} dropped` : ""}
               </span>
             </button>
@@ -6860,7 +6860,7 @@ export function SeasonTab({ password }: { password: string }) { const { t } = us
             <div key={s.id} className={`border rounded-xl overflow-hidden ${isCurrent ? "border-teal-deep" : "border-gray-200"}`}>
               <div className={`flex items-center justify-between px-4 py-2 text-xs font-semibold ${isCurrent ? "bg-teal-deep/10 text-teal-deep" : "bg-gray-50 text-gray-500"}`}>
                 <span>{isCurrent ? "Running now" : upcoming ? "Upcoming" : "Past"}</span>
-                <button onClick={() => setSeasons(seasons.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 font-medium">
+                <button onClick={() => setSeasons(seasons.filter((_, idx) => idx !== i))} className="text-red-700 hover:text-red-800 font-medium">
                   <Trans context="Admin, button">Remove
                 </Trans></button>
               </div>
@@ -7594,7 +7594,7 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
                   </div>
                   <button
                     onClick={async () => { if (await call(`/admin/products/${p.id}`, { active: !p.active }, "PUT")) load(); }}
-                    className={`text-xs rounded-lg px-3 py-1.5 font-medium ${p.active ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-gray-100 text-gray-500"}`}
+                    className={`text-xs rounded-lg px-3 py-1.5 font-medium ${p.active ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-gray-100 text-gray-700"}`}
                   >
                     {p.active ? "Offered" : "Hidden"}
                   </button>
@@ -7722,7 +7722,7 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
   const badge = (s: string) =>
     s === "new" ? "bg-amber-50 text-amber-700 border-amber-200"
     : s === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : s === "declined" ? "bg-gray-100 text-gray-500 border-gray-200"
+    : s === "declined" ? "bg-gray-100 text-gray-700 border-gray-200"
     : "bg-blue-50 text-blue-700 border-blue-200";
 
   return (
