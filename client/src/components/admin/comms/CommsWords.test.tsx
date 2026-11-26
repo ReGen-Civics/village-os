@@ -71,8 +71,8 @@ function stub(calls: Call[], details: Record<string, any> = {}) {
       const key = decodeURIComponent(u.split("/comms/words/")[1]?.split("/")[0] ?? "");
       const current = details[key] ?? detail({ key });
       if (method === "GET" && u.endsWith("/admin/comms/words")) return ok(LIST);
-      if (method === "GET") return ok(current);
       if (u.endsWith("/preview")) return ok(PREVIEW);
+      if (method === "GET") return ok(current);
       if (u.endsWith("/test")) return ok({ status: "sent", reason: null, messageId: "msg_1", sentTo: "ada@village.example" });
       if (u.endsWith("/restore")) return ok({ restored: 1, detail: { ...current, live: { ...current.live, version: 1 } } });
       if (u.endsWith("/adopt")) return ok({ adopted: 4, detail: { ...current, upgradeAvailable: false, live: { ...current.platform, version: 4, source: "village" } } });
@@ -126,7 +126,9 @@ describe("the Words screen", () => {
     expect(frame.getAttribute("sandbox")).toBe("");
     expect(screen.getByText(/Left out when we don't know them/)).toBeTruthy();
     expect(calls.every((c) => c.auth === "Bearer tok")).toBe(true);
-    expect(calls.some((c) => c.method === "POST" && c.url.endsWith("/admin/comms/words/gathering.confirm/preview"))).toBe(true);
+    // Opening the editor reads the saved words' preview with a GET: a look sends nothing write-shaped (admin live pass A7).
+    expect(calls.some((c) => c.method === "GET" && c.url.endsWith("/admin/comms/words/gathering.confirm/preview"))).toBe(true);
+    expect(calls.some((c) => c.method === "POST")).toBe(false);
 
     await userEvent.click(screen.getByRole("button", { name: "Desktop" }));
     expect(screen.getByTitle(/The email at desktop width/)).toBeTruthy();
