@@ -55,6 +55,8 @@ import {
 import { insertDraft } from "../repos/applicationDrafts";
 import { recordVouch } from "../repos/vouches";
 import { resumePath } from "../../shared/applicationDrafts";
+import { welcomeMailWords } from "../../shared/welcomeMailWords";
+import { languageForAddress } from "../lib/mailLanguage";
 
 /** The cookie that holds a sign-in waiting on its code: the entry the code was sent for, signed, short. */
 export const SIGN_IN_COOKIE = "vos_visitor_signin";
@@ -426,17 +428,20 @@ export function registerVisitor(app: Express, ctx: VisitorContext): void {
     const token = makeSetPasswordToken(ctx.secret, String(member.id), Number(member.tokenVersion ?? 0));
     const setUrl = `${ctx.origin()}/set-password?token=${encodeURIComponent(token)}`;
     const profileUrl = `${ctx.origin()}/profile`;
-    const first = ctx.escapeHtml(String(name).split(" ")[0] || "friend");
+    // In their language: the address book holds the one they entered the village in (shared/mailLanguage.ts).
+    const W = welcomeMailWords(await languageForAddress(pool(), String(member.email), { member })).welcome;
+    const firstPlain = String(name).split(" ")[0] || W.friend;
+    const first = ctx.escapeHtml(firstPlain);
     try {
       const r = await ctx.sendEmail({
         to: [String(member.email)],
         origin: "visitor.promoted",
-        subject: `Welcome to ${ctx.projectName()}: you are a member now`,
-        html: `<p>Hi ${first},</p>
-<p>You asked for an invitation, and you are now a member of ${village}. Your member account is ready.</p>
-<p><a href="${ctx.escapeHtml(setUrl)}">Set your password</a>, then go to <a href="${ctx.escapeHtml(profileUrl)}">your profile</a> and fill it out, so the village can get to know you.</p>
-<p>If the link has run out, ask for a new one on the sign-in page with this address.</p>`,
-        text: `Hi ${String(name).split(" ")[0] || "friend"},\n\nYou asked for an invitation, and you are now a member of ${ctx.projectName()}. Your member account is ready.\n\nSet your password: ${setUrl}\nThen fill out your profile: ${profileUrl}\n\nIf the link has run out, ask for a new one on the sign-in page with this address.\n`,
+        subject: W.subject(ctx.projectName()),
+        html: `<p>${W.hi(first)}</p>
+<p>${W.member(village)}</p>
+<p>${W.nextHtml(`<a href="${ctx.escapeHtml(setUrl)}">${W.setWords}</a>`, `<a href="${ctx.escapeHtml(profileUrl)}">${W.profileWords}</a>`)}</p>
+<p>${W.ranOut}</p>`,
+        text: `${W.hi(firstPlain)}\n\n${W.member(ctx.projectName())}\n\n${W.nextText(setUrl, profileUrl)}\n\n${W.ranOut}\n`,
       });
       return { sent: r.sent };
     } catch {
