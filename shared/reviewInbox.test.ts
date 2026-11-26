@@ -49,6 +49,10 @@ describe("reading each queue's answer", () => {
     // An agent's role draft is the same draft the org drafts read lists: one key, so it is listed once.
     expect(fromOrgDrafts([{ id: "d1", title: "Add a role", status: "open", changes: [{}] }]).map((i) => i.key)).toEqual(["structure:d1"]);
     expect(fromApproval.find((i) => i.kind === "seating")?.touchesPerson).toBe(true);
+    // An approval lapses seven days after it was filed, and says when; a draft waits until it is decided.
+    expect(fromApproval.find((i) => i.key === "approval:ap_1")?.lapsesAt).toBe("2026-11-27T00:00:00.000Z");
+    expect(fromApproval.find((i) => i.key === "structure:d1")?.lapsesAt).toBeNull();
+    expect(fromAgent.find((i) => i.kind === "seating")).toMatchObject({ lapsesAt: "2026-11-27T00:00:01.000Z", decideAt: "/approvals" });
   });
 
   it("reads Sera's differences by their sentence", () => {

@@ -7,3 +7,8 @@ msgstr ""
 msgctxt "role card: open drafts of this role"
 msgid "{0, plural, one {A change to this role is waiting:} other {# changes to this role are waiting:}}"
 msgstr "{0, plural, one {Hay un cambio a este rol en espera:} other {Hay # cambios a este rol en espera:}}"
+
+# needs-native-review: the review list, an agent's proposal lapses undecided, 26 Nov 2026
+msgctxt "review inbox: item, an agent's proposal lapses undecided"
+msgid "Lapses on {lapses} if nobody decides it"
+msgstr "Caduca el {lapses} si nadie la decide"

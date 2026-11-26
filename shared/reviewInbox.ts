@@ -17,6 +17,7 @@
  */
 import { matchesFind, normalizeCode } from "./proposedChanges";
 import { draftPageHref } from "./orgDraftView";
+import { expiresAt } from "./approvalInbox";
 
 import { INBOX_ORDER, INBOX_SOURCES, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_SOURCES, type InboxSource };
@@ -36,6 +37,11 @@ export interface InboxItem {
   decideAt: string;
   /** A seating, or anything tied to an application: shown in arrival order, never grouped or judged. */
   touchesPerson: boolean;
+  /**
+   * When it lapses undecided (shared/approvalInbox.ts, seven days after it was filed): an agent's seating or setting.
+   * Absent for everything that waits until somebody decides it.
+   */
+  lapsesAt?: string | null;
 }
 
 /** How one queue answered: `ok` with its items, `refused` (not this reader's), `off` (its module is off), `failed`. */
@@ -178,6 +184,8 @@ export function fromApprovals(body: unknown): InboxItem[] {
       batch: null,
       decideAt: id.startsWith("draft:") ? draftPageHref(id.slice("draft:".length)) : "/approvals",
       touchesPerson: kind === "seating",
+      // A draft waits until it is decided; an approval lapses seven days after it was filed.
+      lapsesAt: !id.startsWith("draft:") && str(c.at) ? expiresAt(String(c.at)).toISOString() : null,
     }];
   });
 }
@@ -193,7 +201,7 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
   const seatings = list(b?.seatings).flatMap((x) => {
     const s = obj(x);
     if (!s || !str(s.id)) return [];
-    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: "/review", touchesPerson: true }];
+    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: "/approvals", touchesPerson: true, lapsesAt: str(s.createdAt) ? expiresAt(String(s.createdAt)).toISOString() : null }];
   });
   return [...drafts, ...seatings];
 }
