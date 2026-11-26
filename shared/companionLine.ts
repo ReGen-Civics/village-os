@@ -33,7 +33,7 @@
  * (`brand.project.commitmentName`), the way `withCommitmentName` does it, so
  * no line ever carries a raw brace.
  *
- * Spanish uses "tú". NEEDS A NATIVE EAR: written carefully, not yet read by a
+ * Spanish uses "usted" (the lead, 26 Nov 2026: usted everywhere). NEEDS A NATIVE EAR: written carefully, not yet read by a
  * native Costa Rican speaker.
  */
 
@@ -156,73 +156,73 @@ const EN: StepTable = {
 
 const ES: StepTable = {
   "find-role": {
-    short: "Empieza por los roles que te llaman.",
-    line: "Lee algunos roles con calma: el que se quede contigo es un buen comienzo.", // needs-native-review: new words, 12 Nov 2026
-    why: "Cada tarjeta de rol dice cuál es el trabajo y a quién sirve, para que elijas con claridad.",
+    short: "Empiece por los roles que le llaman.",
+    line: "Lea algunos roles con calma: el que se quede con usted es un buen comienzo.", // needs-native-review: new words, 12 Nov 2026
+    why: "Cada tarjeta de rol dice cuál es el trabajo y a quién sirve, para que elija con claridad.",
   },
   propose: {
-    short: "Cuéntanos con tus palabras, paso a paso.",
-    line: "Cuéntanos con tus palabras. Bastan unas líneas sinceras, del corazón y de las entrañas.", // needs-native-review: new words, 12 Nov 2026
-    why: "Personas leen lo que escribes aquí, y solo personas deciden.",
+    short: "Cuéntenos con sus palabras, paso a paso.",
+    line: "Cuéntenos con sus palabras. Bastan unas líneas sinceras, del corazón y de las entrañas.", // needs-native-review: new words, 12 Nov 2026
+    why: "Personas leen lo que escribe aquí, y solo personas deciden.",
   },
   "check-email": {
-    short: "Tu enlace te espera en tu correo.",
-    line: "Te enviamos un enlace. Ábrelo desde tu correo y seguimos desde ahí.",
-    why: "El enlace muestra que la dirección es tuya, así nuestras noticias te llegan solo a ti.",
+    short: "Su enlace le espera en su correo.",
+    line: "Le enviamos un enlace. Ábralo desde su correo y seguimos desde ahí.",
+    why: "El enlace muestra que la dirección es suya, así nuestras noticias le llegan solo a usted.",
   },
   "proposal-waiting": {
-    short: "Ya la tenemos. Pasea mientras esperas.",
-    line: "Tu propuesta está con nosotros. Mientras reposa, los senderos de abajo están abiertos.",
-    why: "Varias personas leen cada propuesta y responden juntas, así que toma un tiempo. Te escribimos cuando haya noticias.",
+    short: "Ya la tenemos. Pasee mientras espera.",
+    line: "Su propuesta está con nosotros. Mientras reposa, los senderos de abajo están abiertos.",
+    why: "Varias personas leen cada propuesta y responden juntas, así que toma un tiempo. Le escribimos cuando haya noticias.",
   },
   "founder-setup": {
-    short: "Falta una pieza más de tu aldea.",
+    short: "Falta una pieza más de su aldea.",
     line: "La lista de preparación muestra lo que la aldea aún necesita antes de que lleguen miembros.",
     why: "Cada punto ahí es algo con lo que un miembro tropezaría en su primer día.",
   },
   training: {
     short: "La formación es un primer paseo tranquilo.",
-    line: "La formación te muestra cómo decidimos y compartimos, una parte pequeña a la vez.",
+    line: "La formación le muestra cómo decidimos y compartimos, una parte pequeña a la vez.",
     why: "Todas las personas aquí dieron el mismo paseo, así compartimos las mismas palabras.",
   },
   membership: {
-    short: "Cuando quieras, firma tu {commitment}.",
-    line: "Cuando te parezca bien, lee tu {commitment} y firma. No hay prisa.",
-    why: "Firmar es tu forma de pedir pertenecer. Una persona lee cada firma y la aldea responde.",
+    short: "Cuando quiera, firme su {commitment}.",
+    line: "Cuando le parezca bien, lea su {commitment} y firme. No hay prisa.",
+    why: "Firmar es su forma de pedir pertenecer. Una persona lee cada firma y la aldea responde.",
   },
   "membership-waiting": {
-    short: "Tu {commitment} ya está con nosotros.",
-    line: "Tu {commitment} ya está con nosotros. Mientras, una misión es buena forma de conocer gente.",
+    short: "Su {commitment} ya está con nosotros.",
+    line: "Su {commitment} ya está con nosotros. Mientras, una misión es buena forma de conocer gente.",
     why: "Alguien lee cada firma, así que la respuesta puede tardar un poco.",
   },
   "first-days": {
-    short: "Tus primeros días en el rol te esperan.",
-    line: "Los primeros días de tu rol están en tu perfil. Da el siguiente paso cuando puedas.",
-    why: "Te ayudan a encontrar a las personas, herramientas y ritmos en los que se apoya tu rol.",
+    short: "Sus primeros días en el rol le esperan.",
+    line: "Los primeros días de su rol están en su perfil. Dé el siguiente paso cuando pueda.",
+    why: "Le ayudan a encontrar a las personas, herramientas y ritmos en los que se apoya su rol.",
   },
   "first-quest": {
-    short: "Elige una primera misión a tu medida.",
-    line: "Elige una misión que te quede bien esta semana. Las pequeñas cuentan igual.",
+    short: "Elija una primera misión a su medida.",
+    line: "Elija una misión que le quede bien esta semana. Las pequeñas cuentan igual.",
     why: "Las misiones son cómo nos conocemos trabajando de verdad, lado a lado.",
   },
   "finish-quest": {
-    short: "Tu misión te está esperando.",
-    line: "Cuando termines tu misión, entrégala para que quien la pidió vea que llegó.",
-    why: "Entregarla le permite a quien la ofreció darte las gracias.",
+    short: "Su misión le está esperando.",
+    line: "Cuando termine su misión, entréguela para que quien la pidió vea que llegó.",
+    why: "Entregarla le permite a quien la ofreció darle las gracias.",
   },
   "send-gratitude": {
-    short: "Alguien te ayudó este ciclo. Agradécele.",
-    line: "Piensa en alguien que te ayudó este ciclo y envíale un agradecimiento.",
+    short: "Alguien le ayudó este ciclo. Agradézcale.",
+    line: "Piense en alguien que le ayudó este ciclo y envíele un agradecimiento.",
     why: "Los agradecimientos y la gratitud son cómo notamos el cuidado de los demás, y aquí tienen peso real.", // needs-native-review: new words, 12 Nov 2026
   },
   "gene-keys": {
-    short: "Tus líneas de Gene Keys están aquí si las quieres.", // needs-native-review: new words, 12 Nov 2026
-    line: "Si quieres, agrega tus líneas de Gene Keys. Son tuyas y puedes saltarlas.", // needs-native-review: new words, 12 Nov 2026
-    why: "Son una forma de conocerte un poco mejor. Nadie decide nada a partir de ellas.",
+    short: "Sus líneas de Gene Keys están aquí si las quiere.", // needs-native-review: new words, 12 Nov 2026
+    line: "Si quiere, agregue sus líneas de Gene Keys. Son suyas y puede saltarlas.", // needs-native-review: new words, 12 Nov 2026
+    why: "Son una forma de conocerse un poco mejor. Nadie decide nada a partir de ellas.",
   },
   explore: {
-    short: "Otra misión podría estar llamándote.",
-    line: "Echa un vistazo al tablero de misiones. Algo ahí puede necesitar tus manos.",
+    short: "Otra misión podría estar llamándole.",
+    line: "Eche un vistazo al tablero de misiones. Algo ahí puede necesitar sus manos.",
     why: "Siempre hay más que cuidar, y cada misión la ofrece alguien de aquí.",
   },
 };

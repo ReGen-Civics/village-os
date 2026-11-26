@@ -1622,7 +1622,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     it("the language chosen on the site is kept and the confirmation comes in it", async () => {
       const p = await proposeIn("es-chosen@example.test", { locale: "es", acceptLanguage: "en" });
       expect(p.locale).toBe("es");
-      expect(p.mail.subject).toBe("Confirma tu solicitud a Test Village");
+      expect(p.mail.subject).toBe("Confirme su solicitud a Test Village");
       expect(p.mail.text).toContain("Hola Rowan,");
     });
 
@@ -1645,13 +1645,13 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const p = await proposeIn("ana-es@example.test", { locale: "es" });
       const statusPath = await confirmIt(p.token);
       const statusMail = state.sent.find((m) => m.origin === "open_proposal.status");
-      expect(statusMail?.subject).toBe("Dónde está tu solicitud");
+      expect(statusMail?.subject).toBe("Dónde está su solicitud");
       const note = "Gracias <b>de verdad</b> & hasta pronto";
       const r = await call("POST", `/api/governance/open-proposals/${p.id}/decline`, { note }, FOUNDER.id);
       expect(r.status).toBe(200);
       const mail = state.sent.find((m) => m.origin === "open_proposal.declined");
-      expect(mail?.subject).toBe("Tu propuesta a Test Village");
-      expect(mail?.text).toContain("Gracias por proponerte");
+      expect(mail?.subject).toBe("Su propuesta a Test Village");
+      expect(mail?.text).toContain("Gracias por proponerse");
       expect(mail?.text).toContain(note);
       expect(mail?.html).toContain(escapeHtml(note));
       expect(mail?.html).not.toContain("<b>de verdad</b>");
@@ -1683,7 +1683,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(r.status, JSON.stringify(r.body)).toBe(200);
       const mail = state.sent.find((m) => m.origin === "open_proposal.adopted");
       expect(mail?.text).toContain("Bienvenida.");
-      expect(mail?.text).toContain("aceptó tu propuesta");
+      expect(mail?.text).toContain("aceptó su propuesta");
       expect((await readOpenProposal(pool, p.id))?.body.note).toBe("Bienvenida.");
       await tidyOpenProposals(pool, new Date(Date.now() + 91 * 24 * 60 * 60_000));
       const after = await readOpenProposal(pool, p.id);

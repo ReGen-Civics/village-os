@@ -8,7 +8,9 @@
  */
 import crypto from "node:crypto";
 import { promises as dns } from "node:dns";
+import { accountMailWords } from "../../shared/accountMailWords";
 import { CODE_LENGTH } from "../../shared/entrance";
+import type { MailLanguage } from "../../shared/mailLanguage";
 
 export function makeCode(): string {
   return String(crypto.randomInt(0, 10 ** CODE_LENGTH)).padStart(CODE_LENGTH, "0");
@@ -65,23 +67,25 @@ export interface CodeLetterDeps {
   projectName(): string;
 }
 
-/** The letter. Never throws; answers whether the provider took it. */
-export async function sendCodeLetter(deps: CodeLetterDeps, to: string, code: string, signIn: boolean): Promise<{ sent: boolean; reason?: string }> {
+/**
+ * The letter, in `lang` (shared/accountMailWords.ts; server/lib/mailLanguage.ts chooses it). Never throws;
+ * answers whether the provider took it.
+ */
+export async function sendCodeLetter(deps: CodeLetterDeps, to: string, code: string, signIn: boolean, lang: MailLanguage = "en"): Promise<{ sent: boolean; reason?: string }> {
+  const W = accountMailWords(lang).code;
   const village = deps.escapeHtml(deps.projectName());
   const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
-  const lead = signIn
-    ? `Here is your code to sign in to ${village}.`
-    : `Here is your code to keep exploring ${village}.`;
+  const lead = signIn ? W.signIn(village) : W.explore(village);
   try {
     return await deps.sendEmail({
       to: [to],
       origin: "entrance.code",
-      subject: `${spaced} is your code for ${deps.projectName()}`,
+      subject: W.subject(spaced, deps.projectName()),
       html: `<p>${lead}</p>
 <p style="font-size:28px;letter-spacing:6px;font-weight:bold">${spaced}</p>
-<p>Type it on the page that asked for it. It works for 15 minutes, once.</p>
-<p>If you did not ask for this, you can ignore this message. Nothing happens without the code.</p>`,
-      text: `${lead}\n\n${spaced}\n\nType it on the page that asked for it. It works for 15 minutes, once.\n\nIf you did not ask for this, you can ignore this message. Nothing happens without the code.\n`,
+<p>${W.typeIt}</p>
+<p>${W.ignore}</p>`,
+      text: `${lead}\n\n${spaced}\n\n${W.typeIt}\n\n${W.ignore}\n`,
     });
   } catch {
     return { sent: false, reason: "failed" };

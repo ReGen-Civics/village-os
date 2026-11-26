@@ -82,10 +82,10 @@ export const BLOCKED_WORDS: Record<ApplicantLanguage, Record<"noSender" | "pause
     unreadable: "The village's email state could not be read, so nothing is sent.",
   },
   es: {
-    noSender: "Esta aldea aún no tiene un remitente de correo. Configúralo primero en los ajustes de correo.",
-    paused: "El correo de la aldea está en pausa. Quita la pausa en los ajustes de Comms primero.",
-    off: "Las cartas están cerradas porque el módulo Comms está apagado. Enciéndelo en Miembros o Público en Admin, Módulos, Comms.",
-    preview: "Las cartas están cerradas mientras el módulo Comms está en Vista previa, porque una carta enviada ahora iría a la bandeja de ensayo y no a las personas. Pon Comms en Miembros o Público en Admin, Módulos, Comms.",
+    noSender: "Esta aldea aún no tiene un remitente de correo. Configúrelo primero en los ajustes de correo.",
+    paused: "El correo de la aldea está en pausa. Quite la pausa en los ajustes de Comms primero.",
+    off: "Las cartas están cerradas porque el módulo Comms está apagado. Enciéndalo en Miembros o Público en Admin, Módulos, Comms.",
+    preview: "Las cartas están cerradas mientras el módulo Comms está en Vista previa, porque una carta enviada ahora iría a la bandeja de ensayo y no a las personas. Ponga Comms en Miembros o Público en Admin, Módulos, Comms.",
     unreadable: "No se pudo leer el estado del correo de la aldea, así que no se envía nada.",
   },
 };
@@ -137,7 +137,7 @@ export function readWaitlistLetter(raw: unknown): WaitlistLetterRead {
 /** The line every letter ends with, and the page the link opens. `link` is the one-click removal. */
 export const UNSUBSCRIBE_LINES: Record<ApplicantLanguage, (village: string, link: string) => string> = {
   en: (village, link) => `You get this because you asked ${village} to tell you when this role opens. To come off the waitlist, open this link: ${link}`,
-  es: (village, link) => `Recibes esto porque le pediste a ${village} que te avisara cuando se abra este rol. Para salir de la lista de espera, abre este enlace: ${link}`,
+  es: (village, link) => `Recibe esto porque le pidió a ${village} que le avisara cuando se abra este rol. Para salir de la lista de espera, abra este enlace: ${link}`,
 };
 
 /** The page's words for the removal link (`/email/a`), by language. */
@@ -153,11 +153,11 @@ export const REMOVE_PAGE_WORDS: Record<ApplicantLanguage, { title(village: strin
   },
   es: {
     title: (village) => `Salir de la lista de espera de ${village}`,
-    ask: "Pulsa el botón y quitamos esta dirección de la lista de espera de todos los roles. No pasa nada hasta que pulses.",
+    ask: "Pulse el botón y quitamos esta dirección de la lista de espera de todos los roles. No pasa nada hasta que pulse.",
     button: "Quitarme de la lista de espera",
     keep: "Dejarme en la lista de espera",
-    doneTitle: "Saliste de la lista de espera",
-    done: "Quitamos esta dirección de la lista de espera. No recibirás cartas sobre roles que se abren.",
+    doneTitle: "Salió de la lista de espera",
+    done: "Quitamos esta dirección de la lista de espera. No recibirá cartas sobre roles que se abren.",
     gone: "Esta dirección no está en la lista de espera.",
   },
 };

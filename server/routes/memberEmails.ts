@@ -30,6 +30,7 @@ import {
   type CodeCheck,
 } from "../lib/memberEmails";
 import { isUnclaimable } from "../lib/oauthAccounts";
+import { languageOfMember } from "../lib/mailLanguage";
 import {
   attachAddress,
   deliveryChoiceOf,
@@ -124,7 +125,8 @@ export function register(app: Express, deps: MemberEmailsDeps): void {
       u.prefs = { ...(u.prefs ?? {}), pendingEmail: pending };
     });
     if (!saved) return res.status(404).json({ error: "No such account." });
-    const letter = addressCodeLetter(deps.escapeHtml, deps.projectName(), code);
+    // In the member's own language (shared/mailLanguage.ts), English when they have none.
+    const letter = addressCodeLetter(deps.escapeHtml, deps.projectName(), code, languageOfMember(me));
     let sent = false;
     try {
       const mail = await deps.sendEmail({ to: [address], origin: "auth.add_email", ...letter });
