@@ -1,12 +1,15 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { fetchConfigCached } from "./lib/gameApi";
+import { applyPaper } from "./lib/paperLook";
 import { listenForThemeChanges } from "./lib/liveTheme";
 import { installCrashReporting } from "./lib/crashReport";
 import { installStaleChunkRecovery } from "./lib/staleChunk";
 import { installRouteGrowth } from "./lib/routeGrowth";
 import { installSignedReads } from "./lib/signedReads";
 import "./index.css";
+// Light mode as an old sea chart, where the village chose it (look.light_paper; lib/paperLook.ts).
+import "./seaChart.css";
 
 /**
  * SELF-HOSTED FONTS (was: a render-blocking Google Fonts <link> in index.html).
@@ -103,7 +106,11 @@ warmFirstScreenFonts();
 installSignedReads();
 // Consume the preloaded config now, so it has usually resolved before the
 // first render and useGameConfig/useBrandImages start with it (gameApi.ts).
-fetchConfigCached();
+// The village's light-mode paper rides on it (lib/paperLook.ts, seaChart.css). A failed
+// read changes nothing: the paper the first-paint script put down stays.
+void fetchConfigCached().then((c) => {
+  if (c) applyPaper(c.lightPaper);
+});
 // A Look saved in Admin re-themes open pages without a reload (lib/liveTheme.ts).
 listenForThemeChanges();
 // The village's own sounds, if it loaded any (lib/sound.ts, gap G8). Silent otherwise.
