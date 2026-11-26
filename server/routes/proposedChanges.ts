@@ -169,6 +169,8 @@ export function register(app: Express, deps: Deps): void {
    */
   const readsPay = async (req: express.Request): Promise<boolean> => {
     if (readsAsPlainMember(req)) return false;
+    // Fails closed: with no gate to ask (a harness that wires none), nobody reads pay, and stored pay is kept.
+    if (typeof deps.capabilityCtx !== "function") return false;
     const user = await authedUser(req);
     return !!user && capabilityDecision("terms.read", await deps.capabilityCtx(user)).allowed;
   };
