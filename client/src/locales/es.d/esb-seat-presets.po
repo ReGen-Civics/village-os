@@ -1,0 +1,304 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:until-season-end, label"
+msgid "Until the season ends"
+msgstr "Hasta que termine la temporada"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:until-season-end, blurb"
+msgid "The role runs to the end of the season it starts in."
+msgstr "El rol dura hasta el final de la temporada en que empieza."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:three-moons, label"
+msgid "Three moons"
+msgstr "Tres lunas"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:three-moons, blurb"
+msgid "Three moons from the day of seating, then a review."
+msgstr "Tres lunas desde el día de la asignación, y luego una revisión."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:one-moon-trial, label"
+msgid "One moon trial"
+msgstr "Una luna de prueba"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:one-moon-trial, blurb"
+msgid "One moon to try the role on, with a short notice either way."
+msgstr "Una luna para probar el rol, con un aviso corto de cualquiera de las dos partes."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:pay-month-work-moon, label"
+msgid "Paid monthly, works by the moon"
+msgstr "Pago mensual, trabajo por luna"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:pay-month-work-moon, blurb"
+msgid "Money keeps the calendar month. The work keeps the moon."
+msgstr "El dinero sigue el mes del calendario. El trabajo sigue la luna."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:all-moon, label"
+msgid "Everything by the moon"
+msgstr "Todo por la luna"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:all-moon, blurb"
+msgid "Pay and work both keep the moon."
+msgstr "El pago y el trabajo siguen ambos la luna."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:weekly-sync-plus-core-call, label"
+msgid "Weekly sync and a core call"
+msgstr "Sincronía semanal y una llamada central"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:weekly-sync-plus-core-call, blurb"
+msgid "A short sync early in the week and a core call midweek."
+msgstr "Una sincronía corta al inicio de la semana y una llamada central a mitad de semana."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fortnightly, label"
+msgid "Fortnightly"
+msgstr "Cada dos semanas"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fortnightly, blurb"
+msgid "One gathering every other week."
+msgstr "Un encuentro cada dos semanas."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:async-first, label"
+msgid "Async first"
+msgstr "Primero lo asíncrono"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:async-first, blurb"
+msgid "No standing gatherings. The work is written down and picked up when it suits."
+msgstr "Sin encuentros fijos. El trabajo se escribe y se retoma cuando conviene."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:unpaid, label"
+msgid "Unpaid"
+msgstr "Sin pago"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:unpaid, blurb"
+msgid "The role is held for the love of it. Nothing is owed."
+msgstr "El rol se sostiene por amor. No se debe nada."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:honorary, label"
+msgid "Honorary"
+msgstr "Honorario"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:honorary, blurb"
+msgid "An honour the village gives. Nothing is owed."
+msgstr "Un honor que da la aldea. No se debe nada."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fixed-monthly-stipend, label"
+msgid "Fixed monthly stipend"
+msgstr "Estipendio mensual fijo"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fixed-monthly-stipend, blurb"
+msgid "One amount each month. The village writes in the amount."
+msgstr "Un monto cada mes. La aldea escribe el monto."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:stipend-range, label"
+msgid "Stipend range"
+msgstr "Rango de estipendio"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:stipend-range, blurb"
+msgid "A lowest and a highest amount each month, settled as the season goes."
+msgstr "Un monto mínimo y uno máximo cada mes, que se acuerdan a lo largo de la temporada."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:in-kind-or-deferred, label"
+msgid "In kind or deferred"
+msgstr "En especie o diferido"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:in-kind-or-deferred, blurb"
+msgid "Room, board or other support now, with any cash part owed for later."
+msgstr "Hospedaje, comida u otro apoyo ahora, con cualquier parte en efectivo debida para después."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:no-allowance, label"
+msgid "No allowance"
+msgstr "Sin asignación"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:no-allowance, blurb"
+msgid "Nothing on top of pay."
+msgstr "Nada aparte del pago."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:flat-monthly-allowance, label"
+msgid "Flat monthly allowance"
+msgstr "Asignación mensual fija"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:flat-monthly-allowance, blurb"
+msgid "One amount each month for the costs of the role."
+msgstr "Un monto cada mes para los gastos del rol."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:reimbursed, label"
+msgid "Costs reimbursed"
+msgstr "Gastos reembolsados"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:reimbursed, blurb"
+msgid "Agreed costs are paid back against receipts."
+msgstr "Los gastos acordados se devuelven contra recibos."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:no-bonus, label"
+msgid "No bonus"
+msgstr "Sin bono"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:no-bonus, blurb"
+msgid "No bonus on top."
+msgstr "Ningún bono aparte."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:rated-equity-in-words, label"
+msgid "Rated equity, in words"
+msgstr "Participación valorada, en palabras"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:rated-equity-in-words, blurb"
+msgid "A share of equity, capped and rated in words the funders agree."
+msgstr "Una parte de la participación, con tope y valorada en palabras que acuerdan quienes financian."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:three-to-five-done-when-by-consent, label"
+msgid "Three to five a moon, by consent"
+msgstr "De tres a cinco por luna, por consentimiento"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:three-to-five-done-when-by-consent, blurb"
+msgid "Three to five quests each moon, each with a done when, agreed by consent."
+msgstr "De tres a cinco misiones cada luna, cada una con su criterio de terminado, acordadas por consentimiento."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:starter-measures, label"
+msgid "Starter measures"
+msgstr "Medidas iniciales"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:starter-measures, blurb"
+msgid "Two plain measures of the work, each read from somewhere anyone can check."
+msgstr "Dos medidas sencillas del trabajo, cada una leída de un lugar que cualquiera puede revisar."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fourteen-days-notice, label"
+msgid "Fourteen days notice"
+msgstr "Catorce días de aviso"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:fourteen-days-notice, blurb"
+msgid "Either side gives fourteen days notice, and pay runs through it."
+msgstr "Cualquiera de las dos partes da catorce días de aviso, y el pago sigue durante ese tiempo."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-volunteer-seat, label"
+msgid "Volunteer role"
+msgstr "Rol voluntario"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-volunteer-seat, blurb"
+msgid "Unpaid, async first, a few tasks a moon, until the season ends."
+msgstr "Sin pago, primero lo asíncrono, unas pocas tareas por luna, hasta que termine la temporada."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-stipend-seat, label"
+msgid "Stipend role"
+msgstr "Rol con estipendio"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-stipend-seat, blurb"
+msgid "A fixed monthly stipend and allowance for three moons, with a weekly rhythm."
+msgstr "Un estipendio mensual fijo y una asignación por tres lunas, con un ritmo semanal."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-core-team-seat, label"
+msgid "Core team role"
+msgstr "Rol del equipo central"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-core-team-seat, blurb"
+msgid "A stipend range, costs reimbursed and a rated equity bonus, for the season."
+msgstr "Un rango de estipendio, gastos reembolsados y un bono de participación valorada, por la temporada."
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-trial-moon, label"
+msgid "Trial moon"
+msgstr "Luna de prueba"
+
+# needs-native-review: role term presets, 26 Nov 2026
+#: client/src/components/governance/seatPresetWords.ts
+msgctxt "role term preset platform:whole-trial-moon, blurb"
+msgid "One honorary moon to try the role on before anything else is set."
+msgstr "Una luna honoraria para probar el rol antes de definir cualquier otra cosa."

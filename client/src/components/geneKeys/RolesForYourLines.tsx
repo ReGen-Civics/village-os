@@ -30,6 +30,7 @@ import { lineWord } from "@shared/geneKeys";
 import type { GeneKeysView } from "@shared/geneKeys";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import { orgHolderName } from "@shared/roleSheetInputs";
+import { roleSheetWords } from "@/components/power/roleSheetMirror";
 import { loadOrg } from "@/components/governance/pickSources";
 import { holdersByCircle, lineThisCircleLacks } from "@/components/characters/RolesThatFit";
 import { readPeopleGeneKeys } from "@/lib/geneKeysApi";
@@ -110,7 +111,7 @@ export function rankForLines(
     const holders = liveHolders(r);
     const fit: LineFit = {
       id,
-      label: roleWithHolders(String(r.name ?? id), holders.map(orgHolderName)),
+      label: roleWithHolders(String(r.name ?? id), holders.map((h) => orgHolderName(h, roleSheetWords().words.agent))),
       circle: circle ? String(circle) : null,
       gap: circle ? gap : null,
       suits,

@@ -10,7 +10,7 @@
  * Admin is a light-only workspace by ruling (2026-09-04): fixed grays here.
  */
 import { useState } from "react";
-import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { capabilityLabel } from "@shared/capabilities";
 import { Trans } from "@lingui/react/macro";
 
@@ -45,6 +45,14 @@ export default function RolePowerGroupsEditor({
   };
 
   const dirty = JSON.stringify([...picked].sort()) !== JSON.stringify([...saved].sort());
+  /** Saved from the page's one save bar (components/SaveBar.tsx). */
+  const savePowers = async (): Promise<SaveResult> => {
+    const d = await call(`/admin/org-roles/${role.id}/power-groups`, { roleIds: picked }, "PUT");
+    if (!d) return { ok: false, reason: "That did not save. The reason is in the note above." };
+    setSaved(d.roleIds ?? picked);
+    setPicked(d.roleIds ?? picked);
+    return { ok: true };
+  };
 
   return (
     <div className="mt-3 rounded-lg border border-gray-100 px-3 py-2 text-gray-700">
@@ -83,24 +91,14 @@ export default function RolePowerGroupsEditor({
               </span>
             </label>
           ))}
-          {groups && groups.length > 0 && (
-            <button
-              type="button"
-              disabled={!dirty}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 disabled:opacity-40 min-h-[44px]"
-              onClick={async () => {
-                const d = await call(`/admin/org-roles/${role.id}/power-groups`, { roleIds: picked }, "PUT");
-                if (d) {
-                  toast.success("Saved");
-                  setSaved(d.roleIds ?? picked);
-                }
-              }}
-            >
-              <Trans context="RolePowerGroupsEditor, button">Save the powers this role carries
-            </Trans></button>
-          )}
         </div>
       )}
+      <SaveBar
+        count={dirty ? 1 : 0}
+        onSave={savePowers}
+        onDiscard={() => setPicked(saved)}
+        what={`the powers ${role.name ?? role.id} carries`}
+      />
     </div>
   );
 }

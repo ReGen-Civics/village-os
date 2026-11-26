@@ -12,9 +12,10 @@ import SeatSettingsEditor from "@/components/governance/SeatSettingsEditor";
 import { useVillagePresets } from "@/lib/seatPresetsRead";
 import { COMMITMENT_CHOICES, COMMITMENT_HINT, commitmentWords } from "@shared/termsWords";
 import { parseSeatSettings, type SeatSettings } from "@shared/seatSettings";
-import { RP_WORDS } from "./proposalWords";
+
 import { INPUT, LEDE, PANEL } from "./parts";
 import WrittenDate from "./WrittenDate";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 /** The percent a role's time words carry ("Commitment: 40%"), or null for anything else, such as older words about hours. */
 export function commitmentOf(time: string | null | undefined): number | null {
@@ -48,16 +49,17 @@ export default function StepTerms({
   /** Writes one role's commitment, as the words "Commitment: 40%". Empty clears it. */
   onCommitment: (roleId: string, text: string) => void;
 }) {
+  const RW = useProposalWords();
   const presets = useVillagePresets();
   const parsed = parseSeatSettings(settings);
   return (
     <div className="grid gap-4">
-      <p className={LEDE}>{RP_WORDS.termsLede}</p>
+      <p className={LEDE}>{RW.termsLede}</p>
 
       {roles.length > 0 && (
         <section aria-labelledby="rp-reviews" className={`${PANEL} grid gap-3 pt-4`}>
-          <h3 id="rp-reviews" className="font-semibold text-foreground">{RP_WORDS.reviewDates}</h3>
-          <p className="text-xs text-muted-foreground">{RP_WORDS.reviewHint}</p>
+          <h3 id="rp-reviews" className="font-semibold text-foreground">{RW.reviewDates}</h3>
+          <p className="text-xs text-muted-foreground">{RW.reviewHint}</p>
           {roles.map((r) => (
             <label key={r.id} className="grid gap-1 text-sm font-medium text-foreground">
               <span className="break-words">{r.name}</span>
@@ -69,8 +71,8 @@ export default function StepTerms({
       )}
 
       {roles.length > 0 && (
-        <section className={`${PANEL} grid gap-3`} aria-label={RP_WORDS.commitmentQuestion} data-commitment-section="">
-          <h3 className="font-semibold text-foreground">{RP_WORDS.commitmentQuestion}</h3>
+        <section className={`${PANEL} grid gap-3`} aria-label={RW.commitmentQuestion} data-commitment-section="">
+          <h3 className="font-semibold text-foreground">{RW.commitmentQuestion}</h3>
           <p className="text-xs text-muted-foreground">{COMMITMENT_HINT}</p>
           {roles.map((r) => {
             const pct = commitmentOf(r.time);
@@ -82,7 +84,7 @@ export default function StepTerms({
                   onChange={(e) => onCommitment(r.id, e.target.value === "" ? "" : commitmentWords(Number(e.target.value)))}
                   className={`min-h-[44px] ${INPUT}`}
                 >
-                  <option value="">{RP_WORDS.commitmentChoose}</option>
+                  <option value="">{RW.commitmentChoose}</option>
                   {COMMITMENT_CHOICES.map((n) => (
                     <option key={n} value={n}>
                       {n}%
@@ -97,14 +99,14 @@ export default function StepTerms({
 
       <section aria-labelledby="rp-terms" className="grid gap-2">
         <h3 id="rp-terms" className="font-semibold text-foreground">
-          {RP_WORDS.termsHeading}
+          {RW.termsHeading}
         </h3>
         {partner === null ? (
-          <p className={LEDE} aria-busy="true">{RP_WORDS.termsLoading}</p>
+          <p className={LEDE} aria-busy="true">{RW.termsLoading}</p>
         ) : (
           <>
-            <p className={LEDE}>{RP_WORDS.notSureLine(partner)}</p>
-            {!parsed.ok && <p className="text-sm font-medium text-coral">{RP_WORDS.termsNotSaved}</p>}
+            <p className={LEDE}>{RW.notSureLine(partner)}</p>
+            {!parsed.ok && <p className="text-sm font-medium text-coral">{RW.termsNotSaved}</p>}
             <SeatSettingsEditor value={settings} onChange={onSettings} villagePresets={presets} partner={partner} />
           </>
         )}

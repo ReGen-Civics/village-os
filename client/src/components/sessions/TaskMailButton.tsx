@@ -18,11 +18,12 @@
  */
 import { useState } from "react";
 import { SESSION_SOMEONE } from "@shared/sessions";
-import { TASK_COPY, splitMailSkips, taskDateWords, taskEmailsUrl, type TaskMailResult, type TaskRecordPayload } from "@shared/sessionTasks";
+import { splitMailSkips, taskDateWords, taskEmailsUrl, type TaskMailResult, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
 import { BTN_QUIET, BTN_SECONDARY, HINT } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 type LastSend = TaskRecordPayload["mail"]["lastSend"];
 
@@ -34,11 +35,11 @@ type LastSend = TaskRecordPayload["mail"]["lastSend"];
 export function lastSendLine(last: LastSend, today: string): string | null {
   if (!last) return null;
   const nothing = last.queued === 0;
-  if (last.sendNo === 1 && !last.byName) return nothing ? TASK_COPY.mail.triedAtClose : TASK_COPY.mail.sentAtClose;
+  if (last.sendNo === 1 && !last.byName) return nothing ? taskWords().mail.triedAtClose : taskWords().mail.sentAtClose;
   const at = Date.parse(last.at);
   const when = Number.isFinite(at) ? taskDateWords(roomDay(at), today) : "";
   const name = last.byName ?? SESSION_SOMEONE;
-  return nothing ? TASK_COPY.mail.lastTried(when, name) : TASK_COPY.mail.lastSent(when, name);
+  return nothing ? taskWords().mail.lastTried(when, name) : taskWords().mail.lastSent(when, name);
 }
 
 export default function TaskMailButton({
@@ -54,6 +55,7 @@ export default function TaskMailButton({
   onSent?: (result: TaskMailResult) => void;
 }) {
   const RC = useRoomWords();
+  const TW = useTaskWords();
   const [asking, setAsking] = useState(false);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function TaskMailButton({
         setError(typeof body?.error === "string" ? body.error : RC.writeFailed);
         return;
       }
-      setResult(TASK_COPY.mail.result(body.queued, body.people, splitMailSkips(body.skipped ?? {})));
+      setResult(TW.mail.result(body.queued, body.people, splitMailSkips(body.skipped ?? {})));
       setAsking(false);
       onSent?.(body);
     } catch {
@@ -87,13 +89,13 @@ export default function TaskMailButton({
     <div className="space-y-2" data-task-mail="">
       {asking ? (
         <div className="space-y-2">
-          <p className="text-sm text-foreground">{TASK_COPY.mail.confirm}</p>
+          <p className="text-sm text-foreground">{TW.mail.confirm}</p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={BTN_SECONDARY} disabled={sending} aria-busy={sending} onClick={() => void send()}>
-              {sending ? TASK_COPY.mail.sending : TASK_COPY.mail.confirmButton}
+              {sending ? TW.mail.sending : TW.mail.confirmButton}
             </button>
             <button type="button" className={BTN_QUIET} disabled={sending} onClick={() => setAsking(false)}>
-              {TASK_COPY.mail.cancel}
+              {TW.mail.cancel}
             </button>
           </div>
         </div>
@@ -107,7 +109,7 @@ export default function TaskMailButton({
             setAsking(true);
           }}
         >
-          {TASK_COPY.mail.button}
+          {TW.mail.button}
         </button>
       )}
       {result && (

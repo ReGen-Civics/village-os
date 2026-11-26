@@ -48,6 +48,7 @@ import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
 import RoleRowArt from "@/components/roleCard/RoleRowArt";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
+import { roleSheetWords } from "@/components/power/roleSheetMirror";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
@@ -410,7 +411,7 @@ export default function Roles() {
             status: normalizeStatus(r.state),
             // An agent's member row carries a vendor's name; the header says
             // "An agent", as the card under it and the public tier do.
-            holders: (r.holders ?? []).map(orgHolderName).filter((n: string | null): n is string => !!n),
+            holders: (r.holders ?? []).map((h: any) => orgHolderName(h, roleSheetWords().words.agent)).filter((n: string | null): n is string => !!n),
             icon: r.icon ?? undefined,
             color: r.color ?? undefined,
             isExample: !!r.isExample,

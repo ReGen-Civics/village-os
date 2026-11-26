@@ -17,7 +17,8 @@ import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { PlayVoice, StoredWordsSlot, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
 import { STORED_TRANSCRIBE_WORDS } from "@shared/voiceTranscribe";
-import { ONBOARDING_WORDS, TRACK, TRACK_WORDS, type TrackStage } from "@shared/applicantOnboarding";
+import { TRACK, TRACK_WORDS, type TrackStage } from "@shared/applicantOnboarding";
+import { useOnboardingWords } from "@/components/openProposal/onboardingWords";
 
 interface DeskLink {
   id: string;
@@ -76,6 +77,7 @@ const clipOf = (p: DeskProposal, field: string): ServedClip | undefined => p.voi
 const otherClips = (p: DeskProposal): ServedClip[] => (p.voice?.clips ?? []).filter((c) => c.field !== "why" && c.field !== "aim");
 
 export default function OpenProposalsPanel({ password }: { password: string }) {
+  const OW = useOnboardingWords();
   const [desk, setDesk] = useState<Desk | null>(null);
   const [label, setLabel] = useState("");
   const [made, setMade] = useState<{ label: string; url: string } | null>(null);
@@ -279,9 +281,9 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
           ) : (
             <>
             {/* Every application by stage, so nothing stalls unseen. Ordered by stage, then by the day it arrived: nothing is ranked. */}
-            <nav aria-label={ONBOARDING_WORDS.listHeading} className="grid gap-1 rounded-lg border border-border p-3 text-sm" data-stage-overview="">
-              <p className="font-semibold text-foreground">{ONBOARDING_WORDS.listHeading}</p>
-              <p className="text-muted-foreground">{ONBOARDING_WORDS.listIntro}</p>
+            <nav aria-label={OW.listHeading} className="grid gap-1 rounded-lg border border-border p-3 text-sm" data-stage-overview="">
+              <p className="font-semibold text-foreground">{OW.listHeading}</p>
+              <p className="text-muted-foreground">{OW.listIntro}</p>
               <ul className="mt-1 flex flex-wrap gap-2">
                 {TRACK.map((k) => {
                   const n = desk.proposals.filter((p) => (p.stage?.key ?? "received") === k).length;
@@ -305,10 +307,10 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
               <article className="grid gap-2 rounded-lg border border-border p-3 text-sm" data-open-proposal-row={p.id} data-open-proposal-stage={p.stage?.key ?? ""}>
                 {p.stage && (
                   <p className="break-words text-foreground" data-open-proposal-next="">
-                    <span className="font-semibold">{ONBOARDING_WORDS.whoActs}:</span> {p.stage.who}. {p.stage.next}
+                    <span className="font-semibold">{OW.whoActs}:</span> {p.stage.who}. {p.stage.next}
                   </p>
                 )}
-                {p.confirmedAt && <p className="text-muted-foreground">{ONBOARDING_WORDS.arrivedOn(p.confirmedAt.slice(0, 10))}</p>}
+                {p.confirmedAt && <p className="text-muted-foreground">{OW.arrivedOn(p.confirmedAt.slice(0, 10))}</p>}
                 <p className="break-words font-semibold text-foreground">
                   {p.name ?? "Name taken off"} <span className="font-normal text-gray-600">{p.email}</span>
                   {p.via && <span className="font-normal text-gray-500"> <Trans context="OpenProposalsPanel, span">(through the link for {p.via})</Trans></span>}

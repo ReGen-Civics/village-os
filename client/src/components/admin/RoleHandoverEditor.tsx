@@ -19,6 +19,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { ROLE_HANDOVER_WORDS as W, ROLE_LIST_MAX_ITEMS, RUNBOOK_MAX, handoverChecks } from "@shared/roleHandover";
 import { parseRoleWordList, parseRunbook } from "@shared/roleHandoverParse";
 
@@ -31,6 +32,8 @@ export const HANDOVER_EDITOR_WORDS = {
   saved: "Saved through a draft",
   written: (n: number, of: number) => `${n} of ${of} written`,
   draftTitle: (role: string) => `Handover words: ${role}`,
+  what: (role: string) => `the handover words for ${role}`,
+  fix: "Fix the handover words marked above first.",
 } as const;
 
 const lines = (v: unknown): string => (Array.isArray(v) ? v.filter((s) => typeof s === "string").join("\n") : "");
@@ -65,7 +68,6 @@ export default function RoleHandoverEditor({
   const [bringMe, setBringMe] = useState(lines(role.bringMe));
   const [notMine, setNotMine] = useState(lines(role.notMine));
   const [runbook, setRunbook] = useState(typeof role.runbook === "string" ? role.runbook : "");
-  const [busy, setBusy] = useState(false);
 
   const b = parseRoleWordList(bringMe, "bringMe");
   const n = parseRoleWordList(notMine, "notMine");
@@ -75,18 +77,14 @@ export default function RoleHandoverEditor({
   const checks = handoverChecks(role);
   const written = [checks.bringMe, checks.notMine, checks.runbook].filter(Boolean).length;
 
-  const save = async () => {
-    if (!b.ok || !n.ok || !r.ok) return;
-    setBusy(true);
-    try {
-      const payload = { bringMe: b.value, notMine: n.value, runbook: r.value };
-      if (await publishWords(call, String(role.id), String(role.name ?? role.id), payload)) {
-        toast.success(HANDOVER_EDITOR_WORDS.saved);
-        onSaved();
-      }
-    } finally {
-      setBusy(false);
-    }
+  /** Saved from the page's one save bar (components/SaveBar.tsx), through a one-change draft. */
+  const save = async (): Promise<SaveResult> => {
+    if (!dirty) return { ok: true };
+    if (!b.ok || !n.ok || !r.ok) return { ok: false, reason: HANDOVER_EDITOR_WORDS.fix };
+    const payload = { bringMe: b.value, notMine: n.value, runbook: r.value };
+    if (!(await publishWords(call, String(role.id), String(role.name ?? role.id), payload))) return { ok: false, reason: "That did not save. The reason is in the note above." };
+    onSaved();
+    return { ok: true };
   };
 
   const box = "w-full mt-1 rounded-lg border border-gray-200 px-2 py-1.5 text-sm";
@@ -138,18 +136,14 @@ export default function RoleHandoverEditor({
             {field(`${role.id}-not-mine`, W.notMine, `${W.notMineHint} Up to ${ROLE_LIST_MAX_ITEMS}.`, notMine, setNotMine, n.ok ? null : n.problem, 4)}
           </div>
           {field(`${role.id}-runbook`, W.runbook, `${W.runbookHint} Up to ${RUNBOOK_MAX} characters.`, runbook, setRunbook, r.ok ? null : r.problem, 3)}
-          <div>
-            <button
-              type="button"
-              disabled={busy || !ok || !dirty}
-              onClick={() => void save()}
-              className="min-h-[44px] rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-teal-deep"
-            >
-              {HANDOVER_EDITOR_WORDS.save}
-            </button>
-          </div>
         </div>
       )}
+      <SaveBar
+        count={dirty ? 1 : 0}
+        onSave={save}
+        onDiscard={() => { setBringMe(lines(role.bringMe)); setNotMine(lines(role.notMine)); setRunbook(typeof role.runbook === "string" ? role.runbook : ""); }}
+        what={HANDOVER_EDITOR_WORDS.what(String(role.name ?? role.id))}
+      />
     </div>
   );
 }

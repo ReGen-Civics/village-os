@@ -24,12 +24,13 @@ import { runbookIsLink } from "@shared/roleHandover";
 import type { WordValue } from "@shared/roleProposals";
 import AiHelpButton from "./AiHelpButton";
 import type { WordFieldOut } from "./proposalApi";
-import { RP_WORDS } from "./proposalWords";
+
 import TermGlossary from "@/components/governance/TermGlossary";
 import GrowingField from "@/components/form/GrowingField";
 import { EDIT_FIELDS, fieldProblem, NAME_FIELD, stateFrom, shownText, differs, type EditField } from "./roleWords";
 import WrittenDate from "./WrittenDate";
 import { FieldFrame, FOCUS, INPUT, LEDE, PANEL } from "./parts";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export interface WordsRole {
   /** The role id, or a new role's draft id. */
@@ -59,6 +60,7 @@ const text = (v: WordValue | undefined): string | null => (typeof v === "string"
 
 /** The runbook and the handover meter of a role somebody holds now, as posted. */
 function FromHolder({ role }: { role: WordsRole }) {
+  const RW = useProposalWords();
   const posted = Object.fromEntries((role.fields ?? []).map((f) => [f.field, f.posted]));
   const handover = roleHandover({
     aim: text(posted.aim),
@@ -74,8 +76,8 @@ function FromHolder({ role }: { role: WordsRole }) {
   return (
     <div className={`${PANEL} grid gap-3 bg-muted`} data-from-holder={role.id}>
       <div>
-        <h3 className="font-semibold text-foreground">{RP_WORDS.fromHolder}</h3>
-        <p className={LEDE}>{RP_WORDS.fromHolderLede}</p>
+        <h3 className="font-semibold text-foreground">{RW.fromHolder}</h3>
+        <p className={LEDE}>{RW.fromHolderLede}</p>
       </div>
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{W.runbook}</p>
@@ -88,7 +90,7 @@ function FromHolder({ role }: { role: WordsRole }) {
             <p className="mt-1 whitespace-pre-line break-words text-sm text-foreground">{runbook}</p>
           )
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">{RP_WORDS.noRunbook}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{RW.noRunbook}</p>
         )}
       </div>
       <div data-handover-meter="">
@@ -128,10 +130,11 @@ function WordInput({
   frameworkTerms: boolean;
   onType: (text: string) => void;
 }) {
+  const RW = useProposalWords();
   const id = useId();
   const changed = role.isNew ? true : differs(f.field, value, posted);
   const problem = fieldProblem(f.field, value, posted, role.isNew);
-  const hint = f.hint ?? (f.list ? RP_WORDS.onePerLine : undefined);
+  const hint = f.hint ?? (f.list ? RW.onePerLine : undefined);
   return (
     <FieldFrame changed={changed} isNew={role.isNew} posted={posted} field={f.field}>
       <div className="text-sm font-semibold text-foreground">
@@ -176,8 +179,9 @@ function WordInput({
 }
 
 export default function StepWords({ roles, typed, frameworkTerms, onType, onReview, ownText }: StepWordsProps) {
+  const RW = useProposalWords();
   const [current, setCurrent] = useState(0);
-  if (!roles.length) return <p className="text-muted-foreground">{RP_WORDS.pickRoleFirst}</p>;
+  if (!roles.length) return <p className="text-muted-foreground">{RW.pickRoleFirst}</p>;
   const role = roles[Math.min(current, roles.length - 1)];
   const state = stateFrom(role.fields ?? [], typed[role.id] ?? {});
   const holding = EDIT_FIELDS.filter((f) => f.group === "holding");
@@ -196,13 +200,13 @@ export default function StepWords({ roles, typed, frameworkTerms, onType, onRevi
 
   return (
     <div className="grid gap-4">
-      <p className={LEDE}>{RP_WORDS.wordsLede}</p>
+      <p className={LEDE}>{RW.wordsLede}</p>
       <p className="text-sm text-foreground" data-any-language="">
-        {RP_WORDS.anyLanguage}
+        {RW.anyLanguage}
       </p>
       <TermGlossary />
       {roles.length > 1 && (
-        <div role="group" aria-label={RP_WORDS.whichRole} className="flex flex-wrap gap-2">
+        <div role="group" aria-label={RW.whichRole} className="flex flex-wrap gap-2">
           {roles.map((r, i) => (
             <button
               key={r.id}
@@ -223,13 +227,13 @@ export default function StepWords({ roles, typed, frameworkTerms, onType, onRevi
         <h3 className="break-words font-display text-2xl font-bold text-foreground">{role.name}</h3>
         {!role.isNew && role.holderCount > 0 && role.fields && <FromHolder role={role} />}
         {role.fields === null ? (
-          <p className="text-sm text-muted-foreground">{RP_WORDS.saving}</p>
+          <p className="text-sm text-muted-foreground">{RW.saving}</p>
         ) : (
           <>
             {role.isNew && (
               <FieldFrame changed isNew posted={null} field={NAME_FIELD}>
                 <label className="grid gap-1 text-sm font-semibold text-foreground">
-                  {RP_WORDS.roleName}
+                  {RW.roleName}
                   <input
                     value={shownText(state, NAME_FIELD)}
                     maxLength={120}
@@ -247,8 +251,8 @@ export default function StepWords({ roles, typed, frameworkTerms, onType, onRevi
             </fieldset>
             {EDIT_FIELDS.filter((f) => !f.group).slice(8).map(input)}
             <label className="grid gap-1 rounded-xl border border-border bg-card p-3 text-sm font-semibold text-foreground">
-              {RP_WORDS.reviewOn}
-              <span className="text-xs font-normal text-muted-foreground">{RP_WORDS.reviewHint}</span>
+              {RW.reviewOn}
+              <span className="text-xs font-normal text-muted-foreground">{RW.reviewHint}</span>
               <WrittenDate iso={role.reviewOn} />
               <input type="date" value={role.reviewOn} onChange={(e) => onReview(role.id, e.target.value)} className={`min-h-[44px] ${INPUT}`} />
             </label>

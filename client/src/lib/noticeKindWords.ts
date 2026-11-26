@@ -18,8 +18,9 @@ let pending: Promise<KindWordsOf> | null = null;
 export function loadNoticeKindWords(): Promise<KindWordsOf> {
   if (loaded) return Promise.resolve(loaded);
   if (!pending) {
-    pending = import("@shared/notificationKindWords").then(
-      (m) => (loaded = m.kindWordsOf),
+    // The words in the reader's language (noticeKindWordsI18n.ts mirrors shared/notificationKindWords.ts).
+    pending = import("./noticeKindWordsI18n").then(
+      (m) => (loaded = m.kindWordsIn()),
       (err) => {
         pending = null;
         throw err;

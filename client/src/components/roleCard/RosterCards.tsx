@@ -23,6 +23,7 @@ export interface FilledRole {
   recruiting?: boolean;
 }
 import { rosterOf, type RosterEntry } from "./roster";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 
 /** The Seed of Life as quiet line work behind a roster card's crest. */
 function CrestSeed({ className = "" }: { className?: string }) {
@@ -109,7 +110,8 @@ function RosterCard({ entry, team, variant }: { entry: RosterEntry; team: string
 /** The cards, in a list the page lays out: "filled-roles" on the team sheet, "formation-roster" in the formation. */
 export default function RosterList({ filled, team, variant, className }: { filled: FilledRole[]; team: string | null; variant: LineupView; className: string }) {
   // One card per person, every role they hold listed; alphabetical, so the order says nothing.
-  const roster = rosterOf(filled);
+  const agentWord = useRoleSheetWords().words.agent;
+  const roster = rosterOf(filled, agentWord);
   return (
     <ul className={className} data-testid={variant === "sheet" ? "filled-roles" : "formation-roster"}>
       {roster.map((e) => (

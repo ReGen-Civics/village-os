@@ -27,6 +27,7 @@ import {
 import { readLink, type CheckinAnswers, type PathItemState } from "@shared/onboardingPath";
 import FirstFourteenDays, { StepLink } from "@/components/today/FirstFourteenDays";
 import { showsStrip, splitSteps } from "@/components/today/fourteenDays";
+import { useOnboardingPathWords } from "@/components/profile/onboardingPathWords";
 
 /** "2026-11-24" as "24 November". A date that does not read as one comes back as it was. */
 export function humanDate(iso: string): string {
@@ -102,6 +103,7 @@ function CheckinForm({
   day: number;
   onFiled: (paths: Served[]) => void;
 }) {
+  const PW = useOnboardingPathWords();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -133,15 +135,15 @@ function CheckinForm({
     if (res.ok && Array.isArray(out.paths)) onFiled(out.paths);
     else
       setError(
-        typeof out.error === "string" ? out.error : ONBOARDING_WORDS.failed
+        typeof out.error === "string" ? out.error : PW.failed
       );
   }
   return (
     <form onSubmit={submit} className={`${TILE} mt-3 max-w-xl space-y-3`}>
-      <p className={H2}>{ONBOARDING_WORDS.checkinOpen(day)}</p>
+      <p className={H2}>{PW.checkinOpen(day)}</p>
       {(["clarity", "overall"] as const).map(k => (
         <label key={k} className={`block ${LABEL}`}>
-          {ONBOARDING_WORDS[k]}
+          {PW[k]}
           <select name={k} required defaultValue="" className={FIELD}>
             <option value="" disabled />
             {[1, 2, 3, 4, 5].map(n => (
@@ -155,7 +157,7 @@ function CheckinForm({
       {(["connection", "culture", "basics", "load", "oneThing"] as const).map(
         k => (
           <label key={k} className={`block ${LABEL}`}>
-            {ONBOARDING_WORDS[k]}
+            {PW[k]}
             <textarea name={k} rows={2} maxLength={1000} className={FIELD} />
           </label>
         )
@@ -166,7 +168,7 @@ function CheckinForm({
         </p>
       )}
       <button type="submit" disabled={busy} className={BTN_PRIMARY}>
-        {ONBOARDING_WORDS.file}
+        {PW.file}
       </button>
     </form>
   );
@@ -200,6 +202,7 @@ function PathCard({
   p: Served;
   onPaths: (paths: Served[]) => void;
 }) {
+  const PW = useOnboardingPathWords();
   const [error, setError] = useState<string | null>(null);
   async function tick(key: string) {
     setError(null);
@@ -211,7 +214,7 @@ function PathCard({
     if (res.ok && Array.isArray(out.paths)) onPaths(out.paths);
     else
       setError(
-        typeof out.error === "string" ? out.error : ONBOARDING_WORDS.failed
+        typeof out.error === "string" ? out.error : PW.failed
       );
   }
   // Someone newly seated reads their first fourteen days as a strip of days;
@@ -223,24 +226,24 @@ function PathCard({
       <p className={EYEBROW}>{p.title}</p>
       <h2 id={`onb-${p.id}`} className={`${H2} mt-1`}>
         {p.mine
-          ? ONBOARDING_WORDS.heading(p.roleName)
-          : ONBOARDING_WORDS.holderOf(p.roleName)}
+          ? PW.heading(p.roleName)
+          : PW.holderOf(p.roleName)}
       </h2>
       {/* The strip says the day and each step's date itself. */}
       {!strip && (
         <p className="mt-2 text-foreground">
-          {ONBOARDING_WORDS.line(p.day, humanDate(p.dueOn))}
+          {PW.line(p.day, humanDate(p.dueOn))}
         </p>
       )}
       <p className="mt-1 text-foreground">
         {p.buddyName
-          ? ONBOARDING_WORDS.buddy(p.buddyName)
-          : ONBOARDING_WORDS.noBuddy}
+          ? PW.buddy(p.buddyName)
+          : PW.noBuddy}
       </p>
       <p className={`${HINT} mt-1`}>
         {p.openCount > 0
-          ? ONBOARDING_WORDS.open(p.openCount)
-          : ONBOARDING_WORDS.allDone}
+          ? PW.open(p.openCount)
+          : PW.allDone}
       </p>
       {strip && (
         <div className="mt-5">
@@ -248,14 +251,14 @@ function PathCard({
         </div>
       )}
       {strip && listed.length > 0 && (
-        <p className={`${EYEBROW} mt-6`}>{ONBOARDING_WORDS.later}</p>
+        <p className={`${EYEBROW} mt-6`}>{PW.later}</p>
       )}
       {phasesOf(listed).map(ph => (
         <div key={ph.name} className="mt-4">
           <h3 className="font-display text-lg font-bold text-card-foreground">
             {ph.name}{" "}
             <span className="text-sm font-normal text-muted-foreground">
-              ({ONBOARDING_WORDS.days(ph.from, ph.to)})
+              ({PW.days(ph.from, ph.to)})
             </span>
           </h3>
           <ul className="mt-2 space-y-2">
@@ -276,9 +279,9 @@ function PathCard({
                   <span>
                     {it.title}
                     <span className="block text-sm font-normal text-muted-foreground">
-                      {it.ownerName ? `${ONBOARDING_WORDS.withOwner(it.ownerName)} ` : ""}
-                      {ONBOARDING_WORDS.doneWhen} {it.doneWhen} (
-                      {ONBOARDING_WORDS.due(it.dueDay)})
+                      {it.ownerName ? `${PW.withOwner(it.ownerName)} ` : ""}
+                      {PW.doneWhen} {it.doneWhen} (
+                      {PW.due(it.dueDay)})
                     </span>
                   </span>
                 </span>
@@ -293,7 +296,7 @@ function PathCard({
                     onClick={() => void tick(it.key)}
                     className={BTN_SECONDARY}
                   >
-                    {ONBOARDING_WORDS.tick}
+                    {PW.tick}
                   </button>
                 )}
               </li>
@@ -309,12 +312,12 @@ function PathCard({
       {p.checkins && (p.checkins.length > 0 || p.checkinsDue.length > 0) && (
         <div className="mt-4">
           <h3 className="font-display text-lg font-bold text-card-foreground">
-            {ONBOARDING_WORDS.checkins}
+            {PW.checkins}
           </h3>
           <ul className="mt-1 text-sm text-foreground">
             {p.checkins.map(c => (
               <li key={c.day}>
-                {ONBOARDING_WORDS.filed(c.day)}
+                {PW.filed(c.day)}
                 {c.answers
                   ? ` (${c.answers.clarity} and ${c.answers.overall} of 5)`
                   : ""}
@@ -338,6 +341,7 @@ export function ownDay(paths: readonly Pick<Served, "mine" | "day">[]): number |
 }
 
 export default function OnboardingPath({ onDay }: { onDay?: (day: number | null) => void } = {}) {
+  const PW = useOnboardingPathWords();
   const [paths, setPaths] = useState<Served[] | null>(null);
   const [failed, setFailed] = useState(false);
   const load = useCallback(() => {
@@ -363,9 +367,9 @@ export default function OnboardingPath({ onDay }: { onDay?: (day: number | null)
   if (failed) {
     return (
       <p role="status" className="text-foreground">
-        {ONBOARDING_WORDS.failed}{" "}
+        {PW.failed}{" "}
         <button type="button" onClick={load} className={`${LINK} min-h-11`}>
-          {ONBOARDING_WORDS.retry}
+          {PW.retry}
         </button>
       </p>
     );

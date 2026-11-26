@@ -23,9 +23,10 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import GrowingText from "@/components/sessions/GrowingText";
 import { BTN_PRIMARY, BTN_QUIET, CHIP, HINT, INPUT, LABEL, UNDER_BOX, tile } from "@/components/sessions/roomUi";
-import { TASK_COPY, TASK_NOTE_MAX, addCivilDays, taskDateWords, type TaskCard, type TaskOp } from "@shared/sessionTasks";
+import { TASK_NOTE_MAX, addCivilDays, taskDateWords, type TaskCard, type TaskOp } from "@shared/sessionTasks";
 import { chipDates, isAfterToday } from "./dateWords";
 import { useTaskAnswer } from "./useTaskAnswer";
+import { useTaskWords } from "@/components/tasks/taskWords";
 
 export interface TaskAnswerSheetProps {
   task: TaskCard;
@@ -49,7 +50,8 @@ function wideScreen(): boolean {
 const CHIP_KEYS = ["thisFriday", "nextWeek", "nextNewMoon", "nextFullMoon"] as const;
 
 export default function TaskAnswerSheet({ task, op, today, onDone, onClose }: TaskAnswerSheetProps) {
-  const copy = TASK_COPY.sheets[op];
+  const TW = useTaskWords();
+  const copy = TW.sheets[op];
   const [wide] = useState(wideScreen);
   const [chips] = useState(() => chipDates(today));
   const [note, setNote] = useState("");
@@ -89,18 +91,18 @@ export default function TaskAnswerSheet({ task, op, today, onDone, onClose }: Ta
                   key={key}
                   type="button"
                   aria-pressed={on}
-                  aria-label={`${TASK_COPY.dateChips[key]}, ${taskDateWords(date, today)}`}
+                  aria-label={`${TW.dateChips[key]}, ${taskDateWords(date, today)}`}
                   className={tile(on)}
                   onClick={() => setDueOn(date)}
                 >
-                  {TASK_COPY.dateChips[key]}
+                  {TW.dateChips[key]}
                 </button>
               );
             })}
           </div>
           <div>
             <label htmlFor={dateId} className={HINT}>
-              {TASK_COPY.datePick}
+              {TW.datePick}
             </label>
             <input
               id={dateId}
@@ -113,7 +115,7 @@ export default function TaskAnswerSheet({ task, op, today, onDone, onClose }: Ta
           </div>
           {isAfterToday(dueOn, today) && (
             <p className={CHIP} aria-live="polite">
-              {TASK_COPY.newDate(taskDateWords(dueOn, today))}
+              {TW.newDate(taskDateWords(dueOn, today))}
             </p>
           )}
         </fieldset>
@@ -148,7 +150,7 @@ export default function TaskAnswerSheet({ task, op, today, onDone, onClose }: Ta
 
       <div className={`${UNDER_BOX} justify-end`}>
         <button type="button" className={BTN_QUIET} onClick={onClose} disabled={busy}>
-          {TASK_COPY.cancel}
+          {TW.cancel}
         </button>
         <button
           type="button"
@@ -165,7 +167,7 @@ export default function TaskAnswerSheet({ task, op, today, onDone, onClose }: Ta
 
   // The task's own words are the description, so a screen reader hears which
   // task this answer is for the moment the sheet opens.
-  const title = TASK_COPY.buttons[op];
+  const title = TW.buttons[op];
   const onOpenChange = (open: boolean) => {
     if (!open && !busy) onClose();
   };

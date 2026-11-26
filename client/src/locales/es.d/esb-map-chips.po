@@ -1,0 +1,334 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members, label"
+msgid "Members"
+msgstr "Miembros"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members, under the number"
+msgid "members"
+msgstr "miembros"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members, what it counts"
+msgid "Accounts in the village. Closed accounts and examples are not counted."
+msgstr "Cuentas en la aldea. No se cuentan las cuentas cerradas ni los ejemplos."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members_active, label"
+msgid "Active"
+msgstr "Activos"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members_active, under the number"
+msgid "active this cycle"
+msgstr "activos este ciclo"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip members_active, what it counts"
+msgid "Members who did something the village heard about since this cycle began."
+msgstr "Miembros que hicieron algo de lo que la aldea se enteró desde que empezó este ciclo."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_open, label"
+msgid "Open quests"
+msgstr "Misiones abiertas"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_open, under the number"
+msgid "quests open on the board"
+msgstr "misiones abiertas en el tablero"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_open, what it counts"
+msgid "Quests on the board that are not closed. Examples are not counted."
+msgstr "Misiones en el tablero que no están cerradas. No se cuentan los ejemplos."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_cycle, label"
+msgid "Quests done"
+msgstr "Misiones hechas"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_cycle, under the number"
+msgid "quests done this cycle"
+msgstr "misiones hechas este ciclo"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_cycle, what it counts"
+msgid "Quest work the village consented to since this cycle began."
+msgstr "Trabajo de misiones al que la aldea dio su consentimiento desde que empezó este ciclo."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_season, label"
+msgid "Quests done"
+msgstr "Misiones hechas"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_season, under the number"
+msgid "quests done this season"
+msgstr "misiones hechas esta temporada"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip quests_done_season, what it counts"
+msgid "Quest work the village consented to since the current season began."
+msgstr "Trabajo de misiones al que la aldea dio su consentimiento desde que empezó la temporada actual."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gratitude_cycle, label"
+msgid "Hearts"
+msgstr "Corazones"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gratitude_cycle, under the number"
+msgid "gratitude given this cycle"
+msgstr "gratitud dada este ciclo"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gratitude_cycle, what it counts"
+msgid "Gratitude members gave since this cycle began, less anything taken back."
+msgstr "Gratitud que dieron los miembros desde que empezó este ciclo, menos lo que se haya retirado."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip seats_open, label"
+msgid "Openings"
+msgstr "Puestos abiertos"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip seats_open, under the number"
+msgid "openings waiting for someone"
+msgstr "puestos que esperan a alguien"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip seats_open, what it counts"
+msgid "Places on the village's live roles that nobody holds. A place whose holder's term ran out counts as open."
+msgstr "Lugares en los roles vigentes de la aldea que nadie ocupa. Un lugar cuyo titular terminó su periodo cuenta como abierto."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip circles, label"
+msgid "Circles"
+msgstr "Círculos"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip circles, under the number"
+msgid "active and forming circles"
+msgstr "círculos activos y en formación"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip circles, what it counts"
+msgid "The village's circles that are active or forming. Dormant circles and examples are not counted."
+msgstr "Los círculos de la aldea que están activos o en formación. No se cuentan los círculos inactivos ni los ejemplos."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gatherings_ahead, label"
+msgid "Gatherings"
+msgstr "Encuentros"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gatherings_ahead, under the number"
+msgid "gatherings in the next 30 days"
+msgstr "encuentros en los próximos 30 días"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip gatherings_ahead, what it counts"
+msgid "Gatherings and festivals on the public calendar in the next 30 days, each date of a repeating one counted."
+msgstr "Encuentros y festivales en el calendario público en los próximos 30 días, contando cada fecha de uno que se repite."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip trees_planted, label"
+msgid "Trees"
+msgstr "Árboles"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip trees_planted, under the number"
+msgid "trees planted"
+msgstr "árboles sembrados"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip trees_planted, what it counts"
+msgid "Plantings the village's stewards recorded in Village Health, withdrawn readings left out."
+msgstr "Siembras que registraron las personas custodias de la aldea en Salud de la aldea, sin las lecturas retiradas."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip food_produced, label"
+msgid "Food"
+msgstr "Alimento"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip food_produced, under the number"
+msgid "harvest recorded"
+msgstr "cosecha registrada"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip food_produced, what it counts"
+msgid "Harvest weighed and recorded in Village Health, withdrawn readings left out."
+msgstr "Cosecha pesada y registrada en Salud de la aldea, sin las lecturas retiradas."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip water_protected, label"
+msgid "Water"
+msgstr "Agua"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip water_protected, under the number"
+msgid "liters of water protected"
+msgstr "litros de agua protegidos"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip water_protected, what it counts"
+msgid "Storage and springflow recorded in Village Health, withdrawn readings left out."
+msgstr "Almacenamiento y caudal de manantiales registrados en Salud de la aldea, sin las lecturas retiradas."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip hectares_restored, label"
+msgid "Restoring"
+msgstr "Restaurando"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip hectares_restored, under the number"
+msgid "hectares in restoration"
+msgstr "hectáreas en restauración"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip hectares_restored, what it counts"
+msgid "Land under active regeneration, as recorded in Village Health."
+msgstr "Tierra en regeneración activa, según lo registrado en Salud de la aldea."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip carbon_sequestered, label"
+msgid "Carbon"
+msgstr "Carbono"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip carbon_sequestered, under the number"
+msgid "carbon sequestered"
+msgstr "carbono capturado"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip carbon_sequestered, what it counts"
+msgid "Estimated sequestration from plantings and soil work, as recorded in Village Health."
+msgstr "Captura estimada de las siembras y el trabajo de suelo, según lo registrado en Salud de la aldea."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip treasury, label"
+msgid "Treasury"
+msgstr "Tesorería"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip treasury, under the number"
+msgid "held in the village treasury"
+msgstr "en la tesorería de la aldea"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip treasury, what it counts"
+msgid "What the village treasury holds of the token the cycle pool pays out, in whole tokens."
+msgstr "Lo que tiene la tesorería de la aldea de la ficha que paga el fondo del ciclo, en fichas enteras."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip example people, label"
+msgid "People"
+msgstr "Personas"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip example food, label"
+msgid "Food"
+msgstr "Alimento"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip example water, label"
+msgid "Water"
+msgstr "Agua"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip example canopy, label"
+msgid "Canopy"
+msgstr "Dosel"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip example hearts, label"
+msgid "Hearts"
+msgstr "Corazones"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip, an example's sentence"
+msgid "An example. The founder has not chosen what this chip reads yet."
+msgstr "Un ejemplo. Quien funda todavía no ha elegido qué lee este indicador."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip, a founder's number with no date"
+msgid "set by the founder"
+msgstr "definido por quien funda"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip, a founder's number with no date, its sentence"
+msgid "Set by the founder in Village settings."
+msgstr "Definido por quien funda en los Ajustes de la aldea."
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip, a founder's number and its date"
+msgid "as of {day}"
+msgstr "al {day}"
+
+# needs-native-review: the living map's chips, 26 Nov 2026
+#: client/src/components/map/statChipWords.ts
+msgctxt "map chip, a founder's number and its date, its sentence"
+msgid "Set by the founder in Village settings. True as of {day}."
+msgstr "Definido por quien funda en los Ajustes de la aldea. Vigente al {day}."

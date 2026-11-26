@@ -41,11 +41,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { gameFetch } from "@/lib/gameApi";
-
-import { TASK_COPY, TASK_REFUSALS, taskBoardLink, taskDoneUrl, taskUrl, type TaskCard } from "@shared/sessionTasks";
+import { TASK_REFUSALS, taskBoardLink, taskDoneUrl, taskUrl, type TaskCard } from "@shared/sessionTasks";
 import { tasksChanged } from "./useTaskCount";
 import { bellAnswerFor, forgetBellAnswer, rememberBellAnswer } from "./bellAnswers";
 import { roomWords } from "@/components/sessions/roomWords";
+import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 /** The two notice types that carry the buttons. */
 export const BELL_TASK_TYPES: readonly string[] = ["session_action_held", "session_action_due"];
@@ -79,7 +79,7 @@ export function bellRefusal(body: unknown, status: number): string {
   if (status === 403) return TASK_REFUSALS.notYours;
   if (status === 404) return TASK_REFUSALS.notFound;
   if (status === 429) return TASK_REFUSALS.tooMany;
-  return TASK_COPY.bell.failed;
+  return taskWords().bell.failed;
 }
 
 async function readReply(res: Response): Promise<Record<string, unknown>> {
@@ -91,11 +91,12 @@ const SMALL_BTN =
   "inline-flex items-center justify-center min-h-11 rounded-lg px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
 
 export default function BellTaskActions({ entryId, what, onRead, onLeave, who = null, nested = false }: BellTaskActionsProps) {
+  const TW = useTaskWords();
   // Answered from the bell before, by this member: the row starts as done.
   const [kept] = useState(() => bellAnswerFor(who, entryId));
   const [phase, setPhase] = useState<Phase>(kept ? "marked" : "ready");
   const [card, setCard] = useState<TaskCard | null>(kept);
-  const [line, setLine] = useState(kept ? TASK_COPY.bell.marked : "");
+  const [line, setLine] = useState(kept ? TW.bell.marked : "");
   const rootRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef<HTMLButtonElement>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
@@ -138,7 +139,7 @@ export default function BellTaskActions({ entryId, what, onRead, onLeave, who = 
       if (!live.current) return;
       if (res.ok && isCard(reply.task)) {
         setCard(reply.task);
-        setLine(TASK_COPY.bell.marked);
+        setLine(TW.bell.marked);
         rememberBellAnswer(who, reply.task);
         // With no undo to land on, Open is what is left in the row.
         focusNext.current = reply.task.canReopen ? "undo" : "open";
@@ -160,7 +161,7 @@ export default function BellTaskActions({ entryId, what, onRead, onLeave, who = 
       setPhase("ready");
     } catch {
       if (!live.current) return;
-      setLine(TASK_COPY.bell.failed);
+      setLine(TW.bell.failed);
       setPhase("ready");
     }
   };
@@ -177,7 +178,7 @@ export default function BellTaskActions({ entryId, what, onRead, onLeave, who = 
       if (!live.current) return;
       if (res.ok && isCard(reply.task)) {
         setCard(reply.task);
-        setLine(TASK_COPY.bell.reopened);
+        setLine(TW.bell.reopened);
         forgetBellAnswer(who, entryId);
         focusNext.current = "done";
         setPhase("ready");
@@ -205,12 +206,12 @@ export default function BellTaskActions({ entryId, what, onRead, onLeave, who = 
       setPhase("marked");
     } catch {
       if (!live.current) return;
-      setLine(TASK_COPY.bell.failed);
+      setLine(TW.bell.failed);
       setPhase("marked");
     }
   };
 
-  const B = TASK_COPY.bell;
+  const B = TW.bell;
   const showDone = phase === "ready" || phase === "working";
   const showUndo = (phase === "marked" || phase === "undoing") && !!card?.canReopen;
 
