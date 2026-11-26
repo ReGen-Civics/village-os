@@ -4,7 +4,7 @@
  * the menu as the village set it (config/navBearings.ts), and the entry itself once its dropdown is open.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
@@ -40,6 +40,8 @@ const at = (path: string, menu?: Record<string, unknown>) => {
   );
 };
 
+// Inside the open dropdown: a deeper page also draws the entry in its breadcrumb.
+const dropdown = () => within(document.getElementById("nav-menu-decide")!);
 const group = (name: string) => screen.getByRole("button", { name: new RegExp(`^${name}`) });
 
 describe("the branch the page belongs to", () => {
@@ -54,18 +56,18 @@ describe("the branch the page belongs to", () => {
   it("marks the entry in the open dropdown: the page itself, or the entry above a deeper page", () => {
     at("/powers");
     fireEvent.click(group("Decide"));
-    expect(screen.getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("page");
+    expect(dropdown().getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("page");
     cleanup();
     at("/powers/water");
     fireEvent.click(group("Decide"));
-    expect(screen.getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("true");
+    expect(dropdown().getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("true");
   });
 
   it("lights the group for a page whose entry this reader is not offered, and marks no entry", () => {
     at("/decisions/42"); // Decisions is a member's door: a visitor's Decide has no such entry
     fireEvent.click(group("Decide"));
     expect(group("Decide").getAttribute("aria-current")).toBe("true");
-    expect(screen.queryByRole("link", { name: "Decisions" })).toBeNull();
+    expect(dropdown().queryByRole("link", { name: "Decisions" })).toBeNull();
     expect(document.querySelector('#nav-menu-decide [aria-current]')).toBeNull();
   });
 

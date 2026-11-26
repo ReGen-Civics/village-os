@@ -14,7 +14,7 @@
  *
  * Pure: no React, no hooks, so it is tested on its own (navBearings.test.ts).
  */
-import { NAV, isGroup, type NavEntry, type NavLink } from "./nav";
+import { NAV, isGroup, type NavEntry, type NavGroup, type NavLink } from "./nav";
 
 export interface Bearings {
   /** The menu entry the page sits at or under. */
@@ -74,8 +74,12 @@ export function bearingsFor(
 export interface Lit {
   /** The group's name as the reader sees it (the village's rename, or the platform's word in their language). */
   group: string | null;
+  /** The group's own page, when it has one (NavGroup.href) and the village has not hidden it. */
+  groupHref?: string;
   href: string;
   exact: boolean;
+  /** The entry itself, before the shell puts the village's word on it. */
+  item: NavLink;
 }
 
 /**
@@ -97,9 +101,17 @@ export function litFor(
   visible: (link: NavLink) => boolean,
   menu: { hidden: readonly string[]; groups: Readonly<Record<string, string>> },
   word: (group: string) => string,
+  defined: readonly NavEntry[] = NAV,
 ): Lit | null {
-  const seen = NAV.flatMap((e): NavEntry[] => (isGroup(e) ? [{ ...e, items: e.items.filter(visible) }] : visible(e) ? [e] : []));
-  const b = bearingsFor(location, seen, menu.hidden);
+  const seen = defined.flatMap((e): NavEntry[] => (isGroup(e) ? [{ ...e, items: e.items.filter(visible) }] : visible(e) ? [e] : []));
+  const b = bearingsFor(location, seen, menu.hidden, defined);
   if (!b) return null;
-  return { group: b.group ? menu.groups[b.group] || word(b.group) : null, href: b.item.href, exact: b.exact };
+  const own = b.group ? defined.find((e): e is NavGroup => isGroup(e) && e.label === b.group)?.href : undefined;
+  return {
+    group: b.group ? menu.groups[b.group] || word(b.group) : null,
+    groupHref: own && !menu.hidden.includes(own) ? own : undefined,
+    href: b.item.href,
+    exact: b.exact,
+    item: b.item,
+  };
 }

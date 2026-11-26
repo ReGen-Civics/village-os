@@ -38,6 +38,7 @@ import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { termsSlotFor } from "@/components/power/SeatTermsSlot";
 import { AnchorCircleTip } from "@/components/roleCard/CardTips";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 const SeatLinkCopy = lazy(() => import("@/components/roleCard/SeatLinkCopy"));
 // The seat's record below the card, each loaded when it is drawn.
@@ -86,6 +87,7 @@ export default function RoleShare() {
 
   const roles = org && org !== "failed" ? org.roles : [];
   const role = org && org !== "failed" ? roleForSlug(slug, roles) : null;
+  useCrumbLeaf(role ? String(role.name ?? "") : null); // the last crumb (components/nav/Breadcrumbs.tsx)
   const circles = org && org !== "failed" ? org.circles : [];
   const circle = role ? circles.find((c) => String(c?.id) === String(role.circleId ?? "")) : null;
   const anchorId = anchorCircleId(circles as any);

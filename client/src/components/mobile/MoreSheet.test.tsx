@@ -137,7 +137,7 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     const { hook } = memoryLocation({ path: "/events/7" });
     render(
       <Router hook={hook}>
-        <MoreSheet entries={[COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} lit={{ group: "Community", href: "/events", exact: false }} />
+        <MoreSheet entries={[COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} lit={{ group: "Community", href: "/events", exact: false, item: EVENTS }} />
       </Router>,
     );
     await act(async () => {

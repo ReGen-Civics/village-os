@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NAV, isGroup, type NavEntry } from "./nav";
-import { bearingsFor, bearingsPath, currentFor } from "./navBearings";
+import { bearingsFor, bearingsPath, currentFor, litFor } from "./navBearings";
 
 const SEEN: NavEntry[] = [
   { href: "/map", label: "Living Map" },
@@ -64,11 +64,35 @@ describe("bearingsFor", () => {
 });
 
 describe("currentFor", () => {
-  const lit = { group: "Decide", href: "/decisions", exact: false };
+  const lit = { group: "Decide", href: "/decisions", exact: false, item: { href: "/decisions", label: "Decisions" } };
   it("says page on the page, true on the entry above a deeper page, nothing elsewhere", () => {
     expect(currentFor({ ...lit, exact: true }, "/decisions")).toBe("page");
     expect(currentFor(lit, "/decisions")).toBe("true");
     expect(currentFor(lit, "/propose")).toBeUndefined();
     expect(currentFor(null, "/decisions")).toBeUndefined();
+  });
+});
+
+describe("litFor", () => {
+  const MENU: NavEntry[] = [
+    { label: "Join", href: "/ways-in", items: [{ href: "/steward", label: "Village Steward" }] },
+    { label: "Decide", items: [{ href: "/decisions", label: "Decisions" }] },
+  ];
+  const all = () => true;
+  const word = (g: string) => `[${g}]`;
+
+  it("names the group as it is drawn: the village's rename, else the platform's word in the reader's language", () => {
+    expect(litFor("/decisions/4", all, { hidden: [], groups: {} }, word, MENU)?.group).toBe("[Decide]");
+    expect(litFor("/decisions/4", all, { hidden: [], groups: { Decide: "Choose together" } }, word, MENU)?.group).toBe("Choose together");
+  });
+
+  it("gives the group's own page only where it has one, and not once the village hid it", () => {
+    expect(litFor("/steward/x", all, { hidden: [], groups: {} }, word, MENU)?.groupHref).toBe("/ways-in");
+    expect(litFor("/decisions/4", all, { hidden: [], groups: {} }, word, MENU)?.groupHref).toBeUndefined();
+    expect(litFor("/steward/x", all, { hidden: ["/ways-in"], groups: {} }, word, MENU)?.groupHref).toBeUndefined();
+  });
+
+  it("carries no group page on the platform's own menu today (/join only redirects)", () => {
+    expect(NAV.filter(isGroup).filter((g) => g.href)).toEqual([]);
   });
 });
