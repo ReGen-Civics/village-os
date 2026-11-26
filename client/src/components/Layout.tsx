@@ -16,6 +16,7 @@ import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTrea
 import { altOr, useGameConfig } from "@/lib/gameApi";
 import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
+import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
@@ -82,9 +83,9 @@ export default function Layout({ children }: LayoutProps) {
   // this page") loses its entry and its link the same way. While the config
   // loads they stay out rather than flash in.
   const storyShown = (href: string) => storyPageShown(cfg, href);
-  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden
-  // flag per entry, its group names. Gates still decide who sees what.
+  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
+  const siteMenu = useSiteMenuWords(cfg?.site?.menu); // the village's story-page names, translated where it has
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
   const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();
   const visible = (item: NavLink) =>
@@ -105,12 +106,11 @@ export default function Layout({ children }: LayoutProps) {
     if (own) return { ...link, label: own };
     if (link.token) return { ...link, label: tokenName };
     // A story page carries the village's own name for it (Admin, Pages, Whole site).
-    const named = link.brochure ? cfg?.site?.menu?.[link.href] : undefined;
+    const named = link.brochure ? siteMenu?.[link.href] : undefined;
     return platformWords(link, i18n, named?.subtitle, named?.label);
   };
-  // The footer keeps its own wording for a story page until the village
-  // renames that page; the commitment page always follows the village's word.
-  const storyName = (href: string) => cfg?.site?.menu?.[href]?.label ?? "";
+  // The footer keeps its own wording for a story page until the village renames it; the commitment page follows the village's word.
+  const storyName = (href: string) => siteMenu?.[href]?.label ?? "";
   const footerName = (href: string, fallback: string) =>
     cfg?.site?.menuChanged?.includes(href) ? ownWord(storyName(href), fallback, i18n) : navWord(fallback, i18n);
 
