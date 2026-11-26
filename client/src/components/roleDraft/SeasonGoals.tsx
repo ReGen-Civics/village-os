@@ -33,7 +33,7 @@ const SHOWN = 6;
 
 export default function SeasonGoals() {
   const { t } = useLingui();
-  const season = useSeason();
+  const season = useSeason({ goals: true }); // the goals are read by id here, so their words can be the reader's
   const [all, setAll] = useState(false);
   const [active, setActive] = useState<number | null>(null);
   // The village's open quests per goal (lane C5's read; null until it lands). Each goal opens its thread.

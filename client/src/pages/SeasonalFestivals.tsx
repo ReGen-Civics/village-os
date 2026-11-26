@@ -6,6 +6,7 @@
  * with the rhythm each season carries.
  */
 import Layout from "@/components/Layout";
+import { useSeasonInLanguage } from "@/hooks/useSeasonWords";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useModule } from "@/modules/ModuleProvider";
@@ -23,7 +24,8 @@ export default function SeasonalFestivals() {
    * Village Steward path." Shown only where the village keeps its /steward page.
    */
   const stewardOn = storyShown("/steward");
-  const [season, setSeason] = useState<any>(null);
+  const [servedSeason, setSeason] = useState<any>(null);
+  const season = useSeasonInLanguage(servedSeason, { goals: true }); // the village's season words in the reader's language
   /**
    * The calendar is the other half of this page: seasons say WHEN the year
    * turns, the calendar says what is dated inside them. Gated, because the

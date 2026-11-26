@@ -70,3 +70,36 @@ describe("the village's path names take a translation (the lead's Spanish audit,
     expect(overlayVillageDoc("paths", doc, { "investor.label": "Guardiana" }).paths[0].label).toBe("Guardiana");
   });
 });
+
+describe("the season calendar and the five classes take a translation (the lead's Spanish audit, 26 Nov 2026)", () => {
+  const SEASON = {
+    seasons: [{ id: "founding", name: "Founding Season", theme: "Roots", focus: "Land and water", goals: [{ text: "Plant the food forest", done: false }, { text: "", done: false }] }],
+  };
+  const SERVED = { current: SEASON.seasons[0], upcoming: null, seasons: SEASON.seasons };
+  const CLASSES = { archetypes: [{ key: "the-builder", name: "The Builder", subtitle: "Building & Developing", blurb: "Makes things.", examples: ["Raise a roof"] }] };
+
+  it("addresses a season's words and its goals by place, and nothing else", () => {
+    expect(villageDocFieldOk("season", "founding.name")).toBe(true);
+    expect(villageDocFieldOk("season", "founding.goals.0")).toBe(true);
+    expect(villageDocFieldOk("season", "founding.startsOn")).toBe(false);
+    expect(villageDocFieldOk("season", "founding.goals.x")).toBe(false);
+    expect(villageDocFields("season", SEASON).map((f) => f.field)).toEqual(["founding.name", "founding.theme", "founding.focus", "founding.goals.0"]);
+    expect(villageDocEnglishAt("season", SEASON, "founding.goals.0")).toBe("Plant the food forest");
+  });
+
+  it("lays a season's translation over the calendar and over the current season /api/season serves", () => {
+    const out = overlayVillageDoc("season", SERVED, { "founding.name": "Temporada fundadora", "founding.goals.0": "Sembrar el bosque comestible" });
+    expect(out.current.name).toBe("Temporada fundadora");
+    expect(out.current.goals[0]).toEqual({ text: "Sembrar el bosque comestible", done: false });
+    expect(out.seasons[0].name).toBe("Temporada fundadora");
+    expect(out.upcoming).toBeNull();
+    expect(SERVED.current.name).toBe("Founding Season");
+  });
+
+  it("addresses a class by its key, with its examples by place", () => {
+    expect(villageDocFields("archetypes", CLASSES).map((f) => f.field)).toEqual(["the-builder.name", "the-builder.subtitle", "the-builder.blurb", "the-builder.examples.0"]);
+    expect(villageDocFieldOk("archetypes", "the-builder.sigil")).toBe(false);
+    const out = overlayVillageDoc("archetypes", CLASSES, { "the-builder.name": "La Constructora", "the-builder.examples.0": "Levantar un techo" });
+    expect(out.archetypes[0]).toMatchObject({ key: "the-builder", name: "La Constructora", examples: ["Levantar un techo"], blurb: "Makes things." });
+  });
+});

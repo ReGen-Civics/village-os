@@ -50,8 +50,8 @@ export interface SourceReaders {
   pool: Pool;
   /** The `content` document's section, for a page. */
   contentSection: (section: string) => unknown;
-  /** One of the village's own documents outside its pages, by name ("brand", "visit-config"). Absent: none is read. */
-  villageDoc?: (ref: string) => unknown;
+  /** One of the village's own documents outside its pages, by name ("brand", "season"). Absent: none is read. */
+  villageDoc?: (ref: string) => unknown | Promise<unknown>;
 }
 
 /**
@@ -84,7 +84,7 @@ export async function translatableFields(r: SourceReaders, kind: ContentKind, re
   }
   if (kind === "village_doc") {
     if (!isVillageDocRef(refKey) || !r.villageDoc) return null;
-    for (const f of villageDocFields(refKey, r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
+    for (const f of villageDocFields(refKey, await r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
     return out;
   }
   // page_section

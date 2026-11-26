@@ -13,6 +13,7 @@
  * to say about why.
  */
 import Layout from "@/components/Layout";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import FramelessImg from "@/components/FramelessImg";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useRoute } from "wouter";
@@ -81,7 +82,8 @@ export default function PublicProfile() {
    * back to the key itself, which is a poor label and still infinitely
    * better than the empty string that shipped.
    */
-  const [archetypes, setArchetypes] = useState<Archetype[]>([]);
+  const [archetypesServed, setArchetypes] = useState<Archetype[]>([]);
+  const archetypes = useArchetypesInLanguage(archetypesServed); // the village's class words in the reader's language
   const tokenName = useTokenName("Recognition");
   /**
    * Their badges, for the flower round the portrait. The public card shows only
