@@ -17,6 +17,7 @@ import { setupI18n, type I18n } from "@lingui/core";
 import { cardWordsWith, fixedCardWords, sayCardIn, type PlayerCardWords } from "../../shared/playerCardSpeak";
 import { CARD_MESSAGES, type CardMessageKey } from "../../shared/playerCardMessages";
 import type { PlayerCardPayload } from "../../shared/playerCardPayload";
+import type { NoticeSay } from "../../shared/noticeKeyMessages";
 import { noSharedCache, readerLocale } from "./contentTranslationRead";
 
 /**
@@ -70,6 +71,20 @@ export function sayerFor<K extends string>(i18n: I18n, table: Readonly<Record<K,
       ids.set(key, id);
     }
     if (!(id in i18n.messages)) throw new Error(`no words for ${key}`);
+    return i18n._(id, values);
+  };
+}
+
+/**
+ * A notice's words in a language (shared/noticeKeyMessages.ts), or null when the language has no catalog. A message
+ * the catalog lacks throws, and `sayNotice` keeps that part as stored.
+ */
+export function noticeSayFor(locale: string, dirs?: string[]): NoticeSay | null {
+  const i18n = speakerFor(locale, dirs);
+  if (!i18n) return null;
+  return (m, values) => {
+    const id = messageId(m.message, m.context);
+    if (!(id in i18n.messages)) throw new Error(`no words for "${m.context}"`);
     return i18n._(id, values);
   };
 }
