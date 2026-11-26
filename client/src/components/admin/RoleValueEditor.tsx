@@ -13,7 +13,7 @@
  * Admin is a light-only workspace by ruling (2026-09-04): fixed grays here.
  */
 import { lazy, Suspense, useState } from "react";
-import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { Trans, useLingui } from "@lingui/react/macro";
 import WorkValueEditor, { draftFrom, draftToBody, usePayOptions, type WorkValueDraft } from "@/components/WorkValueEditor";
 import type { TokenAmount } from "@shared/workValue";
@@ -42,6 +42,16 @@ export default function RoleValueEditor({
   const shown = draft ?? base;
   const dirty = JSON.stringify(shown) !== JSON.stringify(base);
   const inputCls = "border border-gray-200 rounded-lg px-2 py-1.5 text-sm";
+  /** Saved from the page's one save bar (components/SaveBar.tsx). */
+  const savePay = async (): Promise<SaveResult> => {
+    const body = draftToBody(shown, offered ?? [], currency, { required: false });
+    if (!body.ok) return { ok: false, reason: body.error };
+    const ok = await call(`/admin/org/roles/${role.id}`, { valueMinor: body.valueMinor, valueTokens: body.valueTokens, cashMinor: body.cashMinor }, "PUT");
+    if (!ok) return { ok: false, reason: t({ message: "That did not save. The reason is in the note above.", context: "RoleValueEditor, refused" }) };
+    setDraft(null);
+    onSaved();
+    return { ok: true };
+  };
 
   return (
     <div className="mt-3 rounded-lg border border-gray-100 px-3 py-2 text-gray-700">
@@ -61,28 +71,14 @@ export default function RoleValueEditor({
       {open && (
         <div className="mt-2 space-y-2">
           <WorkValueEditor draft={shown} onChange={setDraft} offered={offered} currency={currency || null} cadence="cycle" inputClassName={inputCls} />
-          <button
-            type="button"
-            disabled={!dirty}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-2 disabled:opacity-40"
-            onClick={async () => {
-              const body = draftToBody(shown, offered ?? [], currency, { required: false });
-              if (!body.ok) {
-                toast.error(body.error);
-                return;
-              }
-              const ok = await call(`/admin/org/roles/${role.id}`, { valueMinor: body.valueMinor, valueTokens: body.valueTokens, cashMinor: body.cashMinor }, "PUT");
-              if (ok) {
-                toast.success("Saved");
-                setDraft(null);
-                onSaved();
-              }
-            }}
-          >
-            <Trans context="RoleValueEditor, button">Save what it pays
-          </Trans></button>
         </div>
       )}
+      <SaveBar
+        count={dirty ? 1 : 0}
+        onSave={savePay}
+        onDiscard={() => setDraft(null)}
+        what={t({ message: `what ${role.name ?? role.id} pays`, context: "RoleValueEditor, what the save bar saves" })}
+      />
     </div>
   );
 }

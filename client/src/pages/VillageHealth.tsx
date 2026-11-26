@@ -7,9 +7,10 @@
  * zero would be shown as a WARNING, not a win.
  */
 import Layout from "@/components/Layout";
+import { useSeasonInLanguage } from "@/hooks/useSeasonWords";
 import LoadFailed from "@/components/LoadFailed";
 import ModuleGate from "@/components/modules/ModuleGate";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
 /**
@@ -26,6 +27,7 @@ import { Activity, CheckCircle2, Circle, Leaf, Moon, Sprout} from "lucide-react"
 import { MushroomNetwork } from "@/components/sacred/living";
 import { ExampleChip, ExamplesBanner } from "@/components/ExamplesBanner";
 import { BrowserCrashesCard } from "@/components/health/BrowserCrashesCard";
+import { localizeHealth, metricLabel } from "@/components/health/healthWords";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 const headers = (): Record<string, string> => {
@@ -55,12 +57,16 @@ const count = (n: number, one: string, many: string = `${one}s`): string =>
 export default function VillageHealth() {
   const modules = useModules();
   const healthModule = useModule("health");
-  const [data, setData] = useState<any>(null);
+  const [raw, setData] = useState<any>(null);
+  // The server's metric words are English; the platform's own are drawn in the reader's language (healthWords.ts).
+  const { i18n } = useLingui();
+  const data = useMemo(() => localizeHealth(raw, i18n), [raw, i18n, i18n.locale]);
   // A failed read is said as one (whole-app QA, 25 Nov 2026): it used to leave this page empty, blank or loading.
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const retry = () => { setLoadFailed(false); setAttempt((n) => n + 1); };
-  const [season, setSeason] = useState<any>(null);
+  const [servedSeason, setSeason] = useState<any>(null);
+  const season = useSeasonInLanguage(servedSeason); // the village's season words in the reader's language
 
   useEffect(() => {
     if (!healthModule) return;
@@ -219,7 +225,7 @@ export default function VillageHealth() {
                   return (
                     <div key={key} className="border border-border rounded-lg px-3 py-2.5">
                       <p className="text-xl font-bold text-foreground">{latest.value}</p>
-                      <p className="text-xs text-muted-foreground">{snapshotTileLabel(key, label, latest.meta)}</p>
+                      <p className="text-xs text-muted-foreground">{snapshotTileLabel(key, metricLabel(key, label, i18n), latest.meta)}</p>
                       {data.trendsUnlocked && points.length >= 2 && (
                         <p className="text-[10px] text-muted-foreground mt-0.5">
                           {points.slice(-data.trendMinLunations).map((p: any) => p.value).join(" → ")} over recent cycles

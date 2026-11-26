@@ -25,11 +25,13 @@
  * read the character page and the wizard make, plus the member's own party.
  */
 import { useEffect, useMemo, useState } from "react";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import { Link } from "wouter";
 import { lineWord } from "@shared/geneKeys";
 import type { GeneKeysView } from "@shared/geneKeys";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import { orgHolderName } from "@shared/roleSheetInputs";
+import { roleSheetWords } from "@/components/power/roleSheetMirror";
 import { loadOrg } from "@/components/governance/pickSources";
 import { holdersByCircle, lineThisCircleLacks } from "@/components/characters/RolesThatFit";
 import { readPeopleGeneKeys } from "@/lib/geneKeysApi";
@@ -110,7 +112,7 @@ export function rankForLines(
     const holders = liveHolders(r);
     const fit: LineFit = {
       id,
-      label: roleWithHolders(String(r.name ?? id), holders.map(orgHolderName)),
+      label: roleWithHolders(String(r.name ?? id), holders.map((h) => orgHolderName(h, roleSheetWords().words.agent))),
       circle: circle ? String(circle) : null,
       gap: circle ? gap : null,
       suits,
@@ -157,7 +159,8 @@ async function readMyCharacters(): Promise<Array<{ key: string; name: string }>>
 export default function RolesForYourLines({ me, lines }: { me: string; lines: readonly number[] }) {
   const [org, setOrg] = useState<{ roles?: any[]; circles?: any[] } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
-  const [characters, setCharacters] = useState<Array<{ key: string; name: string }>>([]);
+  const [charactersServed, setCharacters] = useState<Array<{ key: string; name: string }>>([]);
+  const characters = useArchetypesInLanguage(charactersServed); // the village's class words in the reader's language
   const [people, setPeople] = useState<Record<string, GeneKeysView>>({});
 
   const read = () => {

@@ -14,7 +14,7 @@
  * LIGHT ONLY, by ruling: the admin panel is a light workspace.
  */
 import { useState } from "react";
-import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { useLingui } from "@lingui/react/macro";
 import RootPicker from "@/components/roots/RootPicker";
 import { forgetRootCast, useRootCast } from "@/components/roots/rootCast";
@@ -38,38 +38,30 @@ export default function RoleCharacterTags({
   const { t } = useLingui();
   const start = Array.isArray(role.archetypes) ? (role.archetypes as unknown[]).filter((k): k is string => typeof k === "string") : [];
   const [tags, setTags] = useState<string[]>(start);
-  const [busy, setBusy] = useState(false);
   // Nothing to pick from until the cast arrives, so nothing (not even a dead save) is drawn.
   const cast = useRootCast();
   if (!cast.length) return null;
 
   const changed = tags.length !== start.length || tags.some((k) => !start.includes(k));
 
-  const save = async () => {
-    if (!changed || busy) return;
-    setBusy(true);
-    try {
-      const ok = await call(`/admin/org/roles/${encodeURIComponent(String(role.id))}`, { archetypes: tags }, "PUT");
-      if (ok) {
-        toast.success(t({ message: "Roots saved", context: "admin role roots" }));
-        onSaved();
-      }
-    } finally {
-      setBusy(false);
-    }
+  /** Saved from the page's one save bar (components/SaveBar.tsx). */
+  const save = async (): Promise<SaveResult> => {
+    if (!changed) return { ok: true };
+    const ok = await call(`/admin/org/roles/${encodeURIComponent(String(role.id))}`, { archetypes: tags }, "PUT");
+    if (!ok) return { ok: false, reason: t({ message: "The roots did not save. The reason is in the note above.", context: "admin role roots" }) };
+    onSaved();
+    return { ok: true };
   };
 
   return (
     <div className="mt-3 rounded-lg border border-border p-3" data-role-roots={String(role.id)}>
       <RootPicker value={tags} onChange={setTags} />
-      <button
-        type="button"
-        disabled={!changed || busy}
-        onClick={() => void save()}
-        className="mt-2 min-h-11 rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-teal-deep"
-      >
-        {t({ message: "Save roots", context: "admin role roots" })}
-      </button>
+      <SaveBar
+        count={changed ? 1 : 0}
+        onSave={save}
+        onDiscard={() => setTags(start)}
+        what={t({ message: `the roots of ${String(role.name ?? role.id)}`, context: "admin role roots, what the save bar saves" })}
+      />
     </div>
   );
 }

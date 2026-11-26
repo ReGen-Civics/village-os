@@ -20,8 +20,9 @@ import EmailFromVillage from "@/components/EmailFromVillage";
 import MapLightSetting from "@/components/map/MapLightSetting";
 import VillageSoundToggle from "@/components/VillageSoundToggle";
 import { useModuleOn } from "@/modules/ModuleProvider";
-import { TASK_COPY, TASK_EMAIL_PREFS, isTaskEmailPref } from "@shared/sessionTasks";
+import { TASK_EMAIL_PREFS, isTaskEmailPref } from "@shared/sessionTasks";
 import { failureWords } from "@/lib/failureWords";
+import { useTaskWords } from "@/components/tasks/taskWords";
 
 const CADENCES: Record<string, Array<{ v: string; label: string }>> = {
   questsEmail: [
@@ -82,6 +83,7 @@ const LABELS: Record<string, string> = {
 };
 
 export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void }) {
+  const TW = useTaskWords();
   const { t } = useLingui();
   const [prefs, setPrefs] = useState<any>(null);
   const [contactable, setContactable] = useState<boolean | null>(null);
@@ -305,7 +307,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
           {(sessionsOn || governanceOn) && (
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <label htmlFor="notify-tasks-email" className="text-sm text-muted-foreground">
-                {TASK_COPY.pref.label}
+                {TW.pref.label}
               </label>
               <select
                 id="notify-tasks-email"
@@ -315,7 +317,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
                 className="min-h-11 w-full sm:w-auto sm:max-w-[60%] text-xs border border-border rounded-lg px-2 py-1.5 bg-card"
               >
                 {TASK_EMAIL_PREFS.map((v) => (
-                  <option key={v} value={v}>{TASK_COPY.pref.options[v]}</option>
+                  <option key={v} value={v}>{TW.pref.options[v]}</option>
                 ))}
               </select>
             </div>

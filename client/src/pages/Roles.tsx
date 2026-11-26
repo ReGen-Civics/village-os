@@ -6,6 +6,8 @@
  * `#<id>`, `#role-<id>`, `#<slug>`) land on its own page, `/roles/<slug>` (RoleShare.tsx), its share link.
  */
 import GlossaryTip from "@/components/GlossaryTip";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import ArchetypeStep from "@/components/roleDraft/ArchetypeStep";
 import SeatHistory from "@/components/power/SeatHistory"; // kept static: lazy, it folds the shared shell chunk into the main bundle (main JS budget)
 import CircleName from "@/components/circles/CircleName";
@@ -48,6 +50,7 @@ import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
 import RoleRowArt from "@/components/roleCard/RoleRowArt";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
+import { roleSheetWords } from "@/components/power/roleSheetMirror";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
@@ -314,6 +317,7 @@ function RoleCard({ role, expanded, onToggle, canTagNeeds, sheet }: RoleCardProp
 }
 
 export default function Roles() {
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   // An old link to one role, read once on arrival; it lands on that role's own page once the roles load.
   const [, navigate] = useLocation();
   const [link] = useState(oldLink);
@@ -386,7 +390,7 @@ export default function Roles() {
   // Authorization header alone, so this page asked as a stranger every time
   // and the holders list was empty for every reader it ever had.
   useEffect(() => {
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data) => {
         if (!data || !Array.isArray(data.roles)) throw new Error("bad shape");
@@ -410,7 +414,7 @@ export default function Roles() {
             status: normalizeStatus(r.state),
             // An agent's member row carries a vendor's name; the header says
             // "An agent", as the card under it and the public tier do.
-            holders: (r.holders ?? []).map(orgHolderName).filter((n: string | null): n is string => !!n),
+            holders: (r.holders ?? []).map((h: any) => orgHolderName(h, roleSheetWords().words.agent)).filter((n: string | null): n is string => !!n),
             icon: r.icon ?? undefined,
             color: r.color ?? undefined,
             isExample: !!r.isExample,
@@ -420,7 +424,7 @@ export default function Roles() {
         );
       })
       .catch(() => setFailed(true));
-  }, []);
+  }, [locale]);
 
   // An old link to one role becomes its own page, replacing the entry; a gone role says so in one line.
   useEffect(() => {

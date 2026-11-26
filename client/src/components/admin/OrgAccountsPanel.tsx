@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import type { OrgAccountEntry, OrgAccountView, OrgServiceLink } from "@shared/orgAccounts";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { formatTokenAmount } from "@/lib/tokenAmount";
@@ -137,13 +138,14 @@ export default function OrgAccountsPanel({ password }: { password: string }) {
     }
   };
 
-  const saveName = async (id: string) => {
+  /** The open account's name, saved from the page's one save bar (components/SaveBar.tsx). */
+  const saveName = async (id: string): Promise<SaveResult> => {
     try {
       await call(`/admin/org-accounts/${encodeURIComponent(id)}`, password, "PUT", { label: rename });
-      toast.success(t({ message: "Name saved", context: "admin venture accounts" }));
       await Promise.all([load(), loadDetail(id)]);
+      return { ok: true };
     } catch (e) {
-      toast.error(said(e, t`The name could not be saved.`));
+      return { ok: false, reason: said(e, t`The name could not be saved.`) };
     }
   };
 
@@ -288,9 +290,12 @@ export default function OrgAccountsPanel({ password }: { password: string }) {
                           onChange={(e) => setRename(e.target.value)}
                         />
                       </label>
-                      <button type="button" className="px-3 py-1 rounded-lg border border-border text-sm" onClick={() => saveName(a.orgRoleId)}>
-                        <Trans context="admin venture accounts">Save name</Trans>
-                      </button>
+                      <SaveBar
+                        count={rename !== detail.account.label ? 1 : 0}
+                        onSave={() => saveName(a.orgRoleId)}
+                        onDiscard={() => setRename(detail.account.label)}
+                        what={t({ message: "the venture's name", context: "admin venture accounts, what the save bar saves" })}
+                      />
                     </div>
                     <div>
                       <p className="text-xs font-medium text-foreground mb-1">

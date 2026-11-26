@@ -14,9 +14,9 @@
  * wallet. Light-only, like the rest of this folder.
  */
 import { useState } from "react";
-import { toast } from "sonner";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 /** The column's width (varchar 600). The server judges it again. */
 const MAX = 600;
@@ -39,13 +39,13 @@ export default function TokenMeaningField({
 }) {
   const { t } = useLingui();
   const [draft, setDraft] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const stored = String(token.description ?? "").trim();
   const name = token.name || token.slug;
 
-  const save = async () => {
-    if (draft === null) return;
-    setSaving(true);
+  /** Saved from the page's one save bar (components/SaveBar.tsx), never a button of its own. */
+  const save = async (): Promise<SaveResult> => {
+    if (draft === null) return { ok: true };
+    if (draft.trim().length > MAX) return { ok: false, reason: t({ message: `What ${name} means is longer than ${MAX} characters.`, context: "TokenMeaningField, too long" }) };
     try {
       const res = await fetch(`${API_BASE}/admin/tokens/${encodeURIComponent(token.slug)}`, {
         method: "PUT",
@@ -53,14 +53,13 @@ export default function TokenMeaningField({
         body: JSON.stringify({ description: draft.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success(draft.trim() ? `Saved what ${name} means` : `Cleared what ${name} means`);
+      if (!res.ok) return { ok: false, reason: refusal(data, t({ message: "Could not save that", context: "TokenMeaningField, refused" })) };
       setDraft(null);
       onSaved();
-    } catch (e: any) {
-      toast.error(e?.message || "Could not save that");
+      return { ok: true };
+    } catch {
+      return { ok: false, reason: t({ message: "Could not save that", context: "TokenMeaningField, refused" }) };
     }
-    setSaving(false);
   };
 
   if (draft !== null) {
@@ -78,14 +77,6 @@ export default function TokenMeaningField({
           className="w-full text-sm border border-border rounded-lg px-2 py-1.5"
         />
         <div className="mt-1 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving || length > MAX}
-            className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"
-          >
-            <Trans context="TokenMeaningField, button">Save
-          </Trans></button>
           <button type="button" onClick={() => setDraft(null)} className="text-xs text-muted-foreground">
             <Trans context="TokenMeaningField, button">Cancel
           </Trans></button>
@@ -93,6 +84,12 @@ export default function TokenMeaningField({
             {length}/{MAX}
           </span>
         </div>
+        <SaveBar
+          count={draft.trim() !== stored ? 1 : 0}
+          onSave={save}
+          onDiscard={() => setDraft(null)}
+          what={t({ message: `what ${name} means`, context: "TokenMeaningField, what the save bar saves" })}
+        />
       </div>
     );
   }

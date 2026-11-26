@@ -166,21 +166,40 @@ export default function Mycelium({ children, className = "" }: { children: React
     const root = wrap.current;
     if (!root) return;
     let frame = 0;
+    let ro: ResizeObserver | null = null;
+    const watched = new Set<Element>();
+    const cardsNow = () => Array.from(root.querySelectorAll<HTMLElement>(":scope > ul > li, :scope > ol > li"));
     const measure = () => {
       frame = 0;
-      const cards = Array.from(root.querySelectorAll<HTMLElement>(":scope > ul > li, :scope > ol > li")).filter((li) => li.offsetWidth > 0 && li.offsetHeight > 0);
+      const all = cardsNow();
+      // Watch every card as well as the wrapper. Cards can change height while the wrapper keeps its own:
+      // when the display face arrives, one row's title unwraps and the next row's wraps, the two rows swap
+      // heights, the wrapper stays the same size, and a thread measured before would sit across the words
+      // below it (the lead, /roles at 390px, 26 Nov 2026).
+      for (const li of all) {
+        if (!ro || watched.has(li)) continue;
+        watched.add(li);
+        ro.observe(li);
+      }
+      const cards = all.filter((li) => li.offsetWidth > 0 && li.offsetHeight > 0);
       const boxes = cards.map((li) => boxIn(li, root)).filter((b): b is Box => b !== null);
       const next = threadsFor(boxes);
       setThreads((prev) => (prev.length === next.length && prev.every((t, i) => t.d === next[i].d) ? prev : next));
     };
-    measure();
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => {
+    const soon = () => {
       if (!frame) frame = requestAnimationFrame(measure);
-    });
-    ro.observe(root);
+    };
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(soon);
+      ro.observe(root);
+    }
+    measure();
+    // And once the page's faces have loaded, which is when titles re-wrap.
+    let live = true;
+    document.fonts?.ready.then(() => live && soon(), () => undefined);
     return () => {
-      ro.disconnect();
+      live = false;
+      ro?.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };
   }, []);

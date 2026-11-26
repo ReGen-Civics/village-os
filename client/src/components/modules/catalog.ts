@@ -11,8 +11,10 @@
  * on either page fires, so a module turned on from the detail page is shown on
  * when the reader goes back to the shelf.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { authToken } from "@/lib/gameApi";
+import { useLingui } from "@lingui/react/macro";
+import { localizeCatalog } from "./moduleWords";
 import type { CatalogModule } from "./ModuleCard";
 import type { LibraryViewer } from "@shared/moduleSwitch";
 
@@ -56,7 +58,10 @@ export function useCatalog(): { data: CatalogPayload | null; failed: boolean; re
   }, []);
   useEffect(() => reload(), [reload]);
   useOnModulesChanged(reload);
-  return { data, failed, reload };
+  // The server's words are English; the platform's own are drawn in the reader's language (moduleWords.ts).
+  const { i18n } = useLingui();
+  const localized = useMemo(() => (data ? localizeCatalog(data, i18n) : null), [data, i18n, i18n.locale]);
+  return { data: localized, failed, reload };
 }
 
 /**

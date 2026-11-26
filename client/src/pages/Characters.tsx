@@ -33,6 +33,7 @@
  *     to announce itself.
  */
 import DraftCarry from "@/components/roleDraft/DraftCarry";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import FramelessImg from "@/components/FramelessImg";
 import { Link } from "wouter";
 import Layout from "@/components/Layout";
@@ -107,7 +108,8 @@ const art = (key: string, p: string, t: string) => `/images/avatars/${key}-${p}-
 export default function Characters() {
   const { t } = useLingui();
   const { user } = useAuth();
-  const [archetypes, setArchetypes] = useState<Archetype[]>([]);
+  const [archetypesServed, setArchetypes] = useState<Archetype[]>([]);
+  const archetypes = useArchetypesInLanguage(archetypesServed); // the village's class words in the reader's language
   const [party, setParty] = useState<Character[]>([]);
   const [activeKey, setActiveKey] = useState("");
   const [presentation, setPresentation] = useState<Character["presentation"]>("f");

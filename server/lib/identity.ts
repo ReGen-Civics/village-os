@@ -39,7 +39,7 @@ import type { Pool } from "mysql2/promise";
  * `supports` array and never on this ordering: a fork that turned a module off
  * is not older, it is differently shaped, and semver cannot say that.
  */
-export const PLATFORM_VERSION = "1.3.78";
+export const PLATFORM_VERSION = "1.3.80";
 
 /**
  * What this software is called, for people. NOT the wire identifier: the

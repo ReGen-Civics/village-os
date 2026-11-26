@@ -13,8 +13,9 @@ import GrowingField from "@/components/form/GrowingField";
 import { AIM_MAX } from "@shared/seasonPlans";
 import { SeasonalGoalsField, ServedGoalsField, type SeasonalRow, type ServedRow } from "@/components/seasonPlans/SeasonGoalsFields";
 import AiHelpButton from "./AiHelpButton";
-import { RP_WORDS } from "./proposalWords";
+
 import { INPUT, LEDE, PANEL } from "./parts";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export interface SeasonState {
   aim: string;
@@ -25,25 +26,26 @@ export interface SeasonState {
 }
 
 export default function StepSeason({ season, orgGoals, onChange }: { season: SeasonState; orgGoals: readonly string[]; onChange: (next: SeasonState) => void }) {
+  const RW = useProposalWords();
   return (
     <div className="grid gap-4">
-      <p className={LEDE}>{RP_WORDS.seasonLede}</p>
+      <p className={LEDE}>{RW.seasonLede}</p>
       <label className="grid gap-1 text-sm font-semibold text-foreground">
-        {RP_WORDS.aim}
-        <span className="text-xs font-normal text-muted-foreground">{RP_WORDS.aimHelp}</span>
+        {RW.aim}
+        <span className="text-xs font-normal text-muted-foreground">{RW.aimHelp}</span>
         <GrowingField minRows={3} maxLength={AIM_MAX} value={season.aim} onChange={(aim) => onChange({ ...season, aim })} className={INPUT} />
       </label>
       <div className={PANEL}>
         <SeasonalGoalsField rows={season.seasonal} onChange={(seasonal) => onChange({ ...season, seasonal })} />
       </div>
       <div className={`${PANEL} grid gap-2`} data-org-goals="">
-        <h3 className="text-sm font-semibold text-foreground">{RP_WORDS.orgGoalsHeading}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{RW.orgGoalsHeading}</h3>
         {orgGoals.length === 0 ? (
           <>
             <p className="text-foreground" data-no-org-goals="">
-              {RP_WORDS.noOrgGoals}
+              {RW.noOrgGoals}
             </p>
-            <p className={LEDE}>{RP_WORDS.noOrgGoalsLine}</p>
+            <p className={LEDE}>{RW.noOrgGoalsLine}</p>
           </>
         ) : (
           <ServedGoalsField rows={season.served} onChange={(served) => onChange({ ...season, served })} />

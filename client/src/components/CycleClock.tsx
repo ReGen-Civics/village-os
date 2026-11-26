@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import GlossaryTip from "@/components/GlossaryTip";
+import { useSeasonInLanguage } from "@/hooks/useSeasonWords";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { SYNODIC_MONTH_DAYS, moonPhase, moonPhaseName } from "@shared/lunar";
 import { closingNewMoonDay, halfwayDay } from "@shared/moonRhythm";
@@ -122,7 +123,8 @@ const pt = (angle: number, r: number) => {
  * already fetched here for the day count, and now carries the answer.
  */
 export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) {
-  const [season, setSeason] = useState<string>("");
+  const [served, setSeason] = useState<{ current?: { id?: string; name?: string } | null } | null>(null);
+  const season = useSeasonInLanguage(served)?.current?.name ?? ""; // in the reader's language where the village translated it
   const { t, i18n } = useLingui();
   const allowanceWord = t({ message: "allowance", context: "glossary: the word a tip explains" });
   const [cycle, setCycle] = useState<ClockCycle | null>(null);
@@ -131,7 +133,7 @@ export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) 
   useEffect(() => {
     fetch("/api/season").then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        setSeason(d?.current?.name ?? "");
+        setSeason(d ? { current: d.current ?? null } : null);
         if (typeof d?.timezone === "string" && d.timezone) setTimeZone(d.timezone);
       }).catch(() => {});
     fetch("/api/game/cycle").then((r) => (r.ok ? r.json() : null))
