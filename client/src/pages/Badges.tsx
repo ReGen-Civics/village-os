@@ -36,12 +36,14 @@ const headers = (): Record<string, string> => {
  * one gate (`shared/capabilities.ts`): `warning` is the kind that DENIES, and
  * a deny beats role and stage.
  */
+// Token chips (whole-app QA, 25 Nov 2026): the fixed sky, emerald, amber, red and purple washes stayed light in dark
+// mode; each chip says its kind in words beside its icon, so the colour only accents it.
 const KIND_META: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
-  self: { label: "self-declared", icon: SeedGlint, cls: "bg-sky-50 text-sky-700 border-sky-200" },
-  earned: { label: "earned", icon: Bloom, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  granted: { label: "granted", icon: Bloom, cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  warning: { label: "warning", icon: ShieldAlert, cls: "bg-red-50 text-red-700 border-red-200" },
-  hypha: { label: "hypha", icon: Bloom, cls: "bg-purple-50 text-purple-700 border-purple-200" },
+  self: { label: "self-declared", icon: SeedGlint, cls: "bg-muted text-muted-foreground border-border" },
+  earned: { label: "earned", icon: Bloom, cls: "bg-open/10 text-open border-open/40" },
+  granted: { label: "granted", icon: Bloom, cls: "bg-notice/10 text-notice border-notice/40" },
+  warning: { label: "warning", icon: ShieldAlert, cls: "bg-destructive/10 text-foreground border-destructive/40" },
+  hypha: { label: "hypha", icon: Bloom, cls: "bg-muted text-foreground border-border" },
 };
 
 /**
@@ -162,7 +164,7 @@ export default function Badges() {
 
       <section className="py-8 bg-background">
         <div className="container max-w-2xl space-y-6">
-          {error && <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">{error}</p>}
+          {error && <p role="alert" className="text-sm text-foreground bg-destructive/10 border border-destructive/40 rounded-lg px-4 py-2.5">{error}</p>}
 
           {user && (
             <div className="bg-card border border-border rounded-xl p-5">
@@ -222,10 +224,10 @@ export default function Badges() {
                         </Trans></p>
                       )}
                       {(b.capabilities ?? []).length > 0 && (
-                        <p className="text-xs text-emerald-700 mt-1"><Trans context="Badges, p">Grants: {b.capabilities.join(", ")}</Trans></p>
+                        <p className="text-xs text-open mt-1"><Trans context="Badges, p">Grants: {b.capabilities.join(", ")}</Trans></p>
                       )}
                       {(b.denies ?? []).length > 0 && (
-                        <p className="text-xs text-red-600 mt-1"><Trans context="Badges, p">Suspends: {b.denies.join(", ")}</Trans></p>
+                        <p className="text-xs font-medium text-foreground mt-1"><Trans context="Badges, p">Suspends: {b.denies.join(", ")}</Trans></p>
                       )}
                       {mine?.note && <p className="text-xs text-muted-foreground italic mt-1">“{mine.note}”</p>}
                       {/* Where the sentence above came from. Only ever on the

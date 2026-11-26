@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.76 (2026-11-25)
+
+### What changed for your village
+
+- **Admin Tools opens again.** The Tools tab crashed whenever a tool had never been checked; it now draws every tool.
+- **Admin search finds the page first.** Typing a tab's own name and pressing Enter opens that tab, never a setting with a longer name (Introductions, Library, Pricing desk and Cash budget were the misses).
+- **Member pages ask only what they may.** Pages read the viewer's own powers once and skip admin reads the viewer cannot pass, so members no longer collect refusals in the background; every page keeps its own honest "not open to you yet" text.
+- **Design passes.** /claim draws in the village's look; the co-creators guide and /badges read in dark mode.
+- **No dead links on a fresh village.** With the story pages off, the Love Letter and Reserve pages no longer link to them.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.75 still works.
+
+---
+
 ## 1.3.75 (2026-11-25)
 
 ### What changed for your village

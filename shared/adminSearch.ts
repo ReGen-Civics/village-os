@@ -284,6 +284,9 @@ function words(s: string): string[] {
  * title first and then in a synonym; single words count after that; an entry
  * that matches every word gets a lift over one that matches some.
  */
+/** Lifts a page whose title is exactly the query above every other kind of match. */
+export const EXACT_PAGE = 1000;
+
 export function scoreEntry(query: string, e: AdminSearchEntry): number {
   const q = norm(query);
   if (!q) return 0;
@@ -309,6 +312,12 @@ export function scoreEntry(query: string, e: AdminSearchEntry): number {
   }
   if (ws.length > 1 && hit === ws.length) n += 10;
   if (n > 0 && e.kind === "page") n += 2;
+  // A page's own name, typed whole, is that page: no control or dial can
+  // outrank it however many of its synonyms also match. "Introductions" once
+  // opened the dial "Introductions one person receives per day" (100 for the
+  // page against about 119 for the dial: title prefix, an equal synonym and
+  // the word bonuses), so Enter on a tab's own name missed the tab.
+  if (e.kind === "page" && title === q) n += EXACT_PAGE;
   return n;
 }
 

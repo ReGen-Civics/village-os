@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { claimLinkHere } from "@/lib/claimLink";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { BTN_PRIMARY, CARD, FIELD, HINT, LABEL, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 
 /**
  * The founder's way in on day one, and the way back in after a lockout.
@@ -115,15 +116,15 @@ export default function Bootstrap() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-teal-deep/5 to-amber/5 py-16">
+      <div className={`${WORLD} py-16`}>
         <div className="mx-auto w-full max-w-lg px-4">
-          <div className="rounded-2xl bg-white p-8 shadow-lg">
+          <div className={CARD}>
             <div className="mb-6 flex flex-col items-center text-center">
-              <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-teal-deep/10">
-                <KeyRound className="h-6 w-6 text-teal-deep" aria-hidden="true" />
+              <span className={`mb-4 ${RING}`}>
+                <KeyRound className="h-5 w-5" aria-hidden="true" />
               </span>
-              <h1 className="text-2xl font-bold text-amber-ink"><Trans context="Bootstrap, h1">Claim this village</Trans></h1>
-              <p className="mt-2 text-sm text-amber-ink">
+              <h1 className="font-display text-3xl text-card-foreground"><Trans context="Bootstrap, h1">Claim this village</Trans></h1>
+              <p className={`mt-2 ${HINT}`}>
                 <Trans context="Bootstrap, p">For the first founder of a new village, and for a founder who has lost their way
                 back in.
               </Trans></p>
@@ -131,40 +132,40 @@ export default function Bootstrap() {
 
             {done ? (
               <div className="space-y-4" role="status">
-                <div className="rounded-lg bg-teal-deep/5 p-4">
-                  <p className="flex items-start gap-2 text-sm font-medium text-teal-deep">
+                <div className={TILE}>
+                  <p className="flex items-start gap-2 text-sm font-medium text-open">
                     <Canopy className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <span><Trans context="Bootstrap, span">You are this village&rsquo;s founder. One step left: set a password.</Trans></span>
                   </p>
                 </div>
 
                 {emailed && (
-                  <p className="text-sm text-amber-ink">
+                  <p className="text-sm text-muted-foreground">
                     <Trans context="Bootstrap, p">A link is on its way to <strong>{email}</strong>. It expires in an hour and
                     works once.
                   </Trans></p>
                 )}
 
                 {note && (
-                  <div className="rounded-lg bg-amber/10 p-4">
-                    <p className="text-sm text-amber-ink">{note}</p>
+                  <div className={TILE}>
+                    <p className="text-sm text-muted-foreground">{note}</p>
                   </div>
                 )}
 
                 {claimUrl && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-amber-ink">
+                    <p className="text-sm font-medium text-card-foreground">
                       <Trans context="Bootstrap, p">Open this now, on this device:
                     </Trans></p>
                     {/* On THIS address: the server builds the link from FRONTEND_URL,
                         which may not answer yet (lib/claimLink.ts). */}
                     <a
                       href={claimLinkHere(claimUrl, window.location.origin)}
-                      className="block break-all rounded-lg bg-amber-ink/5 p-3 text-sm text-teal-deep underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-deep"
+                      className={`block break-all ${TILE} text-sm ${LINK}`}
                     >
                       {claimLinkHere(claimUrl, window.location.origin)}
                     </a>
-                    <p className="text-xs text-amber-ink">
+                    <p className="text-xs text-muted-foreground">
                       <Trans context="Bootstrap, p">It expires in an hour and works once. If it expires, come back to this page
                       and run it again.
                     </Trans></p>
@@ -176,13 +177,13 @@ export default function Bootstrap() {
                 <div>
                   <label
                     htmlFor="bootstrap-email"
-                    className="mb-1.5 block text-sm font-medium text-amber-ink"
+                    className={`mb-1.5 block ${LABEL}`}
                   >
                     <Trans context="Bootstrap, label">Your email
                   </Trans></label>
                   <div className="relative">
                     <Mail
-                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-ink/40"
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                       aria-hidden="true"
                     />
                     <input
@@ -192,11 +193,11 @@ export default function Bootstrap() {
                       autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-lg border border-amber-ink/15 py-2.5 pl-9 pr-3 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                      className={`${FIELD} py-2.5 pl-9 pr-3`}
                       placeholder={t({ message: "you@example.com", context: "Bootstrap, placeholder" })}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-amber-ink">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     <Trans context="Bootstrap, p">The address that becomes this village&rsquo;s founder. If you already have an
                     account here, use that address. The existing account is promoted in place.
                   </Trans></p>
@@ -205,9 +206,9 @@ export default function Bootstrap() {
                 <div>
                   <label
                     htmlFor="bootstrap-name"
-                    className="mb-1.5 block text-sm font-medium text-amber-ink"
+                    className={`mb-1.5 block ${LABEL}`}
                   >
-                    <Trans context="Bootstrap, label">Your name <span className="font-normal text-amber-ink">(optional)</span></Trans>
+                    <Trans context="Bootstrap, label">Your name <span className="font-normal text-muted-foreground">(optional)</span></Trans>
                   </label>
                   <input
                     id="bootstrap-name"
@@ -215,7 +216,7 @@ export default function Bootstrap() {
                     autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-amber-ink/15 px-3 py-2.5 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                    className={`${FIELD} px-3 py-2.5`}
                     placeholder={t({ message: "How the village should greet you", context: "Bootstrap, placeholder" })}
                   />
                 </div>
@@ -223,13 +224,13 @@ export default function Bootstrap() {
                 <div>
                   <label
                     htmlFor="bootstrap-password"
-                    className="mb-1.5 block text-sm font-medium text-amber-ink"
+                    className={`mb-1.5 block ${LABEL}`}
                   >
                     <Trans context="Bootstrap, label">This village&rsquo;s bootstrap password
                   </Trans></label>
                   <div className="relative">
                     <KeyRound
-                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-ink/40"
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                       aria-hidden="true"
                     />
                     <input
@@ -239,12 +240,12 @@ export default function Bootstrap() {
                       autoComplete="off"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-lg border border-amber-ink/15 py-2.5 pl-9 pr-12 text-amber-ink focus:border-teal-deep focus:outline-none focus:ring-2 focus:ring-teal-deep"
+                      className={`${FIELD} py-2.5 pl-9 pr-12`}
                       placeholder={t({ message: "From your hosting environment", context: "Bootstrap, placeholder" })}
                     />
                     <ShowPasswordButton shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
                   </div>
-                  <p className="mt-1 text-xs text-amber-ink">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     This is the <code className="font-mono">ADMIN_PASSWORD</code> variable where
                     this village is hosted, not your account password. It is never stored here and
                     never appears in a link.
@@ -252,16 +253,16 @@ export default function Bootstrap() {
                 </div>
 
                 {error && (
-                  <div className="rounded-lg bg-red-50 p-4" role="alert">
-                    <p className="text-sm font-medium text-red-800">{error}</p>
-                    {hint && <p className="mt-1.5 text-sm text-red-800/85">{hint}</p>}
+                  <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4" role="alert">
+                    <p className="text-sm font-medium text-destructive">{error}</p>
+                    {hint && <p className="mt-1.5 text-sm text-foreground">{hint}</p>}
                   </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-deep py-3 font-medium text-white transition hover:bg-teal-deep-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-deep disabled:opacity-60"
+                  className={`${BTN_PRIMARY} w-full`}
                 >
                   {loading ? "Checking..." : "Claim this village"}
                   {!loading && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
