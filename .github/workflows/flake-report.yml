@@ -31,8 +31,11 @@ permissions:
   actions: read
   contents: read
 
+# Per ref: a newer run of the SAME ref replaces an older one, and two pull
+# requests that both change the report do not cancel each other (they did, on
+# the first live run, #1790 against #1797).
 concurrency:
-  group: flake-report
+  group: flake-report-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
