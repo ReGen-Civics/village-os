@@ -433,7 +433,12 @@ jobs:
   # uploads rather than rebuilds.
   # -------------------------------------------------------------------------
   image:
-    needs: [plan, rollback]
+    # NOT `needs: rollback` (26 Nov 2026). The image builds and boots WHILE
+    # rollback checks the schema, and the step "The rollback check passed"
+    # below waits for rollback's verdict before anything is pushed, so nothing
+    # is published unless it passed, as before. Waiting for the whole job cost
+    # its 55 s of work plus a runner hop (64 s on 1.3.82, 140 s on 1.3.83).
+    needs: [plan]
     # `!cancelled()` is load-bearing and is not decoration. A job whose `needs`
     # were SKIPPED is skipped too unless its own `if` calls a status function,
     # and `rollback` is skipped on the :edge path. Without it, wiring rollback
@@ -441,11 +446,13 @@ jobs:
     #
     # `needs.plan.result == 'success'` is then required explicitly, because
     # `!cancelled()` also stops a failed `plan` from blocking this job.
-    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.plan.outputs.reuse_from == '' && needs.rollback.result != 'failure' }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.plan.outputs.reuse_from == '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      # To read the rollback job's verdict in this same run.
+      actions: read
       # R044: keyless signing and the provenance attestation. `id-token` lets
       # this job ask GitHub's OIDC issuer for a short-lived identity that
       # Sigstore binds to this workflow file; `attestations` lets it record the
@@ -610,6 +617,31 @@ jobs:
       - name: Container logs
         if: always()
         run: docker logs village || true
+
+      - name: The rollback check passed
+        # A tag release publishes only an image a village can roll back from.
+        # rollback runs beside this job; wait here for its verdict, before the
+        # push. Its success lets this continue; anything else (failed,
+        # cancelled, skipped, or no verdict in 25 minutes) stops the release
+        # before a single tag is pushed. The :edge path has no rollback job.
+        if: needs.plan.outputs.tag_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 150); do
+            verdict=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?filter=latest&per_page=100" \
+                        --jq '[.jobs[] | select(.name == "rollback")][0] | "\(.status) \(.conclusion)"')
+            case "$verdict" in
+              "completed success") echo "rollback: passed"; exit 0 ;;
+              completed\ *) echo "::error::rollback concluded '${verdict#completed }', so this release is not published"; exit 1 ;;
+              "null null"|"") echo "::error::this run has no rollback job, so nothing says a village can go back; not published"; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::rollback gave no verdict in 25 minutes; not published"
+          exit 1
 
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
