@@ -151,6 +151,7 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     expect(link.className).toContain("border-notice");
     // The hooks the Sea chart's look draws on (client/src/seaChart.css).
     expect(button.hasAttribute("data-lit")).toBe(true);
+    expect(button.querySelector("[data-lit-dot]")).toBeTruthy();
     expect(link.hasAttribute("data-lit")).toBe(true);
     expect(button.closest('[data-wayfinding="menu"]')).toBeTruthy();
   });
