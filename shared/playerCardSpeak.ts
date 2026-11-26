@@ -14,8 +14,7 @@
 import { CARD_WORDS, WEEKDAYS, type PlayerCard } from "./playerCard";
 import type { CardMessageKey } from "./playerCardMessages";
 import { MONTH_NAMES } from "./playerCardHero";
-import { HANDOVER_PREFIX, HEALTH_PREFIX, JOIN_KEY, LIST_KEY } from "./playerCardSay";
-import type { HealthWordsIn } from "./playerCardHealthMessages";
+import { HANDOVER_PREFIX, HEALTH_PREFIX, JOIN_KEY, LIST_KEY, PROPOSAL_PREFIX } from "./playerCardSay";
 import type { SaidArg, SaidDay } from "./saidWords";
 
 type English = typeof CARD_WORDS;
@@ -462,6 +461,15 @@ export function cardWordsWith(s: CardSay, locale: string): PlayerCardWords {
   };
 }
 
+/** The tables of the lines noted under their own prefix (shared/playerCardSay.ts), each in the reader's language. */
+export interface CardExtraWords {
+  health?: object;
+  handover?: object;
+  proposal?: object;
+}
+
+const EXTRA_PREFIXES: readonly string[] = [HEALTH_PREFIX, HANDOVER_PREFIX, PROPOSAL_PREFIX];
+
 /** A day the server formatted, in the reader's language. */
 function dayIn(d: SaidDay, locale: string): string | null {
   const civil = /^\d{4}-\d{2}-\d{2}$/.test(d.iso);
@@ -489,10 +497,11 @@ const has = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k)
 
 /**
  * The card the server built, said in the reader's language, with no record left on it. An English reader's card,
- * or a card with no record, is returned as built. `health` says the role health and handover lines
- * (shared/playerCardHealthMessages.ts); without it they stay as built.
+ * or a card with no record, is returned as built. `extras` says the lines noted under their own prefix: the role
+ * health and handover lines (shared/playerCardHealthMessages.ts) and the role proposal words
+ * (shared/playerCardProposalMessages.ts). A line whose table is not given stays as built.
  */
-export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: string, health?: HealthWordsIn): PlayerCard {
+export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: string, extras?: CardExtraWords): PlayerCard {
   const said = card.said;
   if (!locale || locale === "en" || !said) return card;
   const known = (s: string) => has(said.words, s) || has(said.days, s);
@@ -511,8 +520,9 @@ export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: stri
     }
     // The health and handover lines are looked up in their own table, the rest in the card's.
     const [head, ...tail] = w.k.split(".");
-    const own = head === HEALTH_PREFIX ? health?.health : head === HANDOVER_PREFIX ? health?.handover : undefined;
-    if ((head === HEALTH_PREFIX || head === HANDOVER_PREFIX) && !own) return null;
+    const prefixed = EXTRA_PREFIXES.includes(head);
+    const own = prefixed ? (extras as Record<string, object | undefined> | undefined)?.[head] : undefined;
+    if (prefixed && !own) return null;
     let entry: unknown = own ?? words;
     const path = own ? tail : w.k.split(".");
     try {

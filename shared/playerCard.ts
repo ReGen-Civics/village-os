@@ -43,9 +43,10 @@ import { walkthroughDay, type RhythmDoc } from "./moonRhythm";
 import { civilDaysBetween, daysOfSpan, fullMoonsBetween, zonedTimeToUtc } from "./lunar";
 import { ALLOWANCE_WORDS, APPLICATION_STATUS_WORDS, PAY_WORDS, PER_WORDS } from "./playerCardWords";
 import { formatDay, type Read } from "./roleSheet";
-import { HANDOVER_PREFIX, HEALTH_PREFIX, pruneCardSaid, recordingWords, sayDay, sayJoin, sayList, sayTable, W } from "./playerCardSay";
+import { HANDOVER_PREFIX, HEALTH_PREFIX, PROPOSAL_PREFIX, pruneCardSaid, recordingWords, sayDay, sayJoin, sayList, sayTable, W } from "./playerCardSay";
 import type { Said } from "./saidWords";
 import type { PlayerCardWords } from "./playerCardSpeak";
+import type { ProposalWordsOut } from "./playerCardProposalMessages";
 import { cycleWindows, readSign, type SignReading, type SignRows } from "./roleSigns";
 import { HEALTH_WORDS, roleHandover, roleHealth, type HandoverOut, type HealthOut, type HealthSayIn } from "./playerCardHealth";
 import { HANDOVER_CHECK_WORDS } from "./roleHandover";
@@ -80,7 +81,7 @@ function nameOpenRowsOnce<T>(card: T, line: string): T {
 }
 import { MONEY_LINE, type SeatSettings } from "./seatSettings";
 import type { AccomplishmentMoon } from "./taskAccomplishments";
-import { roleProposalsOut, type RoleProposalIn, type RoleProposalOut } from "./playerCardProposals";
+import { ROLE_PROPOSAL_WORDS, roleProposalsOut, type RoleProposalIn, type RoleProposalOut } from "./playerCardProposals";
 import { heroOf, moonLineOf, moonNameOf, seatWithCommitment, trackOf, type HeroOut, type TrackOut } from "./playerCardHero";
 import { roleIcon, type RoleIcon } from "./roleIcons";
 
@@ -620,6 +621,11 @@ export interface PlayerCard {
    */
   words?: Partial<PlayerCardWords>;
   /**
+   * The role proposal words the components draw (shared/playerCardProposals.ts), in the reader's language, with the
+   * voting line as a template. Sent only beside `words`; absent, the components draw English.
+   */
+  proposalWords?: ProposalWordsOut;
+  /**
    * What the English above was made from, so the client can say it in the reader's language
    * (shared/saidWords.ts). Absent from an older server; the English is drawn as sent either way.
    */
@@ -886,7 +892,7 @@ function roleOut(role: PlayerRoleIn, input: PlayerCardInput): RoleOut {
     tensionDoor: tensionDoorFor(role, input),
     handover: roleHandover(role, healthSay()),
     pending: role.pendingWords ?? [],
-    proposals: role.proposals ? roleProposalsOut(role.proposals, input.timeZone) : [],
+    proposals: role.proposals ? roleProposalsOut(role.proposals, input.timeZone, { PW: sayTable(ROLE_PROPOSAL_WORDS, PROPOSAL_PREFIX), day: sayDay }) : [],
   };
 }
 
