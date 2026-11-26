@@ -134,6 +134,9 @@ async function seed() {
   // The portal entrance on, as the pilot runs it: every page check draws it in front of /roles and
   // /propose-a-role, and every apply check passes it the way a visitor does (enterPortal).
   must(await call("PUT", "/api/admin/variables/entrance.required", { value: true }, F), "portal entrance on");
+  // A video behind the entrance, so the first screen of video and its Come in are drawn and measured on the phone.
+  // The file need not exist: the first screen is laid out from the setting, and a missing video only leaves it dark.
+  must(await call("PUT", "/api/admin/variables/entrance.background_video", { value: "/smoke-entrance-video.mp4" }, F), "entrance video");
 }
 
 async function run() {
