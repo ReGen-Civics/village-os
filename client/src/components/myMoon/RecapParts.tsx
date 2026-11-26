@@ -13,7 +13,6 @@ import {
   GOALS_MAX,
   GOALS_MIN,
   ITEM_VISIBILITIES,
-  LET_GO_NEEDS_REASON,
   LIMITS,
   THANKS_MAX,
   carriedTooOften,
@@ -220,7 +219,7 @@ export function GoalsPanel({ cycleId, last, goalScore, next, seasonGoals, reload
   const score = async (id: string, status: Exclude<GoalStatus, "open">) => {
     setError(null);
     const reason = (reasons[id] ?? "").trim();
-    if (status === "let_go" && !reason) return setError(LET_GO_NEEDS_REASON);
+    if (status === "let_go" && !reason) return setError(MW.letGoNeedsReason);
     const r = await api.scoreGoal(id, { status, letGoReason: status === "let_go" ? reason : null });
     if (!r.ok) return setError(r.error);
     await reload();

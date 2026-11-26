@@ -61,6 +61,7 @@ import BringInRole from "./BringInRole";
 import OwnAiPrompt from "./OwnAiPrompt";
 import ProposalState from "./ProposalState";
 import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
+import { useLingui } from "@lingui/react/macro";
 
 interface LocalNew {
   id: string;
@@ -106,15 +107,18 @@ function stepFromUrl(): StepKey {
 export function ProposalPreview({ proposal, partner }: { proposal: ProposalOut; partner?: string | null }) {
   const RW = useProposalWords();
   const [card, setCard] = useState<PlayerCardPayload | null | "failed">(null);
+  // The card is said in the reader's language on the server; the words being edited are the proposer's own.
+  const { i18n } = useLingui();
+  const locale = i18n.locale;
   useEffect(() => {
     let alive = true;
-    void fetchProposalCard(proposal.id).then((r) => {
+    void fetchProposalCard(proposal.id, locale).then((r) => {
       if (alive) setCard(r.ok ? r.data : "failed");
     });
     return () => {
       alive = false;
     };
-  }, [proposal.id, proposal.updatedAt]);
+  }, [proposal.id, proposal.updatedAt, locale]);
   if (card === null || partner === null) return <BreathingLoader label={RW.loadingPreview} />;
   if (card === "failed") return <p className="text-coral">{RW.previewFailed}</p>;
   return <PlayerRoleCardView data={withPartnerName(card, partner)} mode="proposal" changed={changedSections(proposal)} />;

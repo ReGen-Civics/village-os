@@ -97,6 +97,20 @@ export const HEALTH_WORDS = {
   nobodyYet: "Nobody named yet",
 } as const;
 
+/**
+ * How these functions read their words. Plain outside a build; inside one, the player card passes the same tables
+ * read through its recorder (shared/playerCardSay.ts), so the server can say each line again in the reader's
+ * language (shared/playerCardHealthMessages.ts). Passed in, so this file imports no recorder.
+ */
+export interface HealthSayIn {
+  HW: typeof HEALTH_WORDS;
+  HC: typeof HANDOVER_CHECK_WORDS;
+  day: (iso: string | null | undefined, withYear?: boolean, timeZone?: string | null) => string | null;
+  join: (items: string[], sep: string) => string;
+}
+
+const PLAIN: HealthSayIn = { HW: HEALTH_WORDS, HC: HANDOVER_CHECK_WORDS, day: formatDay, join: (items, sep) => items.join(sep) };
+
 const RANK: Record<HealthDot, number> = { steady: 0, look: 1, act: 2 };
 const worst = (a: HealthDot, b: HealthDot): HealthDot => (RANK[b] > RANK[a] ? b : a);
 
@@ -114,39 +128,40 @@ export interface HealthIn {
 }
 
 /** Three facts and a dot. Null when nothing about the role could be read. */
-export function roleHealth(role: HealthIn, signs: Slot<SignOut[]>, now: Date, timeZone: string): HealthOut | null {
+export function roleHealth(role: HealthIn, signs: Slot<SignOut[]>, now: Date, timeZone: string, say: HealthSayIn = PLAIN): HealthOut | null {
+  const HW = say.HW;
   const facts: HealthFact[] = [];
   const at = now.getTime();
-  const day = (iso: string) => formatDay(iso, true, timeZone) ?? iso;
+  const day = (iso: string) => say.day(iso, true, timeZone) ?? iso;
 
   if (role.termEndsAt !== undefined) {
     const t = instant(role.termEndsAt);
-    if (t === null) facts.push({ key: "term", words: HEALTH_WORDS.noTerm, dot: "look" });
-    else if (t > at) facts.push({ key: "term", words: HEALTH_WORDS.withinTerm(day(role.termEndsAt!)), dot: "steady" });
-    else facts.push({ key: "term", words: HEALTH_WORDS.termEnded(day(role.termEndsAt!)), dot: "act" });
+    if (t === null) facts.push({ key: "term", words: HW.noTerm, dot: "look" });
+    else if (t > at) facts.push({ key: "term", words: HW.withinTerm(day(role.termEndsAt!)), dot: "steady" });
+    else facts.push({ key: "term", words: HW.termEnded(day(role.termEndsAt!)), dot: "act" });
   }
 
   if (role.settings !== undefined) {
     const reviewOn = role.settings?.term?.reviewOn ?? null;
     const t = instant(reviewOn);
-    if (t === null) facts.push({ key: "review", words: HEALTH_WORDS.noReview, dot: "look" });
-    else if (t >= at) facts.push({ key: "review", words: HEALTH_WORDS.reviewDue(day(reviewOn!)), dot: "steady" });
-    else facts.push({ key: "review", words: HEALTH_WORDS.reviewPassed(day(reviewOn!)), dot: "act" });
+    if (t === null) facts.push({ key: "review", words: HW.noReview, dot: "look" });
+    else if (t >= at) facts.push({ key: "review", words: HW.reviewDue(day(reviewOn!)), dot: "steady" });
+    else facts.push({ key: "review", words: HW.reviewPassed(day(reviewOn!)), dot: "act" });
 
     const targeted = (role.settings?.scoreboard?.measures ?? []).filter(
       (m) => m.countedBy !== undefined && m.targetCount !== undefined,
     );
-    if (!targeted.length) facts.push({ key: "signs", words: HEALTH_WORDS.noTarget, dot: "look" });
+    if (!targeted.length) facts.push({ key: "signs", words: HW.noTarget, dot: "look" });
     else {
       const shown = signs.kind === "shown" ? signs.value : [];
       const counted = shown.filter((s) => s.target !== null && s.reading.kind === "counted");
-      if (!counted.length) facts.push({ key: "signs", words: HEALTH_WORDS.notCountedYet, dot: "look" });
+      if (!counted.length) facts.push({ key: "signs", words: HW.notCountedYet, dot: "look" });
       else {
         const on = counted.filter((s) => s.reading.kind === "counted" && s.reading.now.n >= s.target!.n).length;
         facts.push(
           on === counted.length
-            ? { key: "signs", words: HEALTH_WORDS.signsOnTrack, dot: "steady" }
-            : { key: "signs", words: HEALTH_WORDS.someOnTrack(on, counted.length), dot: "look" },
+            ? { key: "signs", words: HW.signsOnTrack, dot: "steady" }
+            : { key: "signs", words: HW.someOnTrack(on, counted.length), dot: "look" },
         );
       }
     }
@@ -154,7 +169,7 @@ export function roleHealth(role: HealthIn, signs: Slot<SignOut[]>, now: Date, ti
 
   if (!facts.length) return null;
   const dot = facts.reduce<HealthDot>((d, f) => worst(d, f.dot), "steady");
-  return { facts, dot, dotWords: HEALTH_WORDS.dot[dot] };
+  return { facts, dot, dotWords: HW.dot[dot] };
 }
 
 /** What the meter reads about a role. Word field names match `/api/org`. */
@@ -175,7 +190,8 @@ export interface HandoverIn {
 }
 
 /** The four checks. Never a percentage. */
-export function roleHandover(role: HandoverIn): HandoverOut {
+export function roleHandover(role: HandoverIn, say: HealthSayIn = PLAIN): HandoverOut {
+  const { HW, HC } = say;
   const h = handoverChecks({
     aim: role.aim,
     domain: role.domain,
@@ -189,48 +205,48 @@ export function roleHandover(role: HandoverIn): HandoverOut {
   const parts: HandoverPart[] = HANDOVER_CARD_KEYS.map((key) => ({
     key,
     done: h[key],
-    words: h[key] ? HANDOVER_CHECK_WORDS[key].done : HANDOVER_CHECK_WORDS[key].missing,
+    words: h[key] ? HC[key].done : HC[key].missing,
   }));
-  const missing = parts.filter((p) => !p.done).map((p) => HANDOVER_CHECK_WORDS[p.key].label);
+  const missing = parts.filter((p) => !p.done).map((p) => HC[p.key].label);
   checks.push({
     key: "card",
-    label: HEALTH_WORDS.card,
+    label: HW.card,
     state: h.cardComplete ? "ready" : "not-yet",
-    words: HEALTH_WORDS.partsWritten(parts.length - missing.length, parts.length, missing.join(", ")),
+    words: HW.partsWritten(parts.length - missing.length, parts.length, say.join(missing, ", ")),
     parts,
   });
 
   checks.push({
     key: "runbook",
-    label: HEALTH_WORDS.runbook,
+    label: HW.runbook,
     state: h.runbook ? "ready" : "not-yet",
-    words: h.runbook ? HANDOVER_CHECK_WORDS.runbook.done : HANDOVER_CHECK_WORDS.runbook.missing,
+    words: h.runbook ? HC.runbook.done : HC.runbook.missing,
   });
 
   if (role.circle === undefined || role.circleDecisions === undefined) {
-    checks.push({ key: "decisions", label: HEALTH_WORDS.decisions, state: "not-counted", words: HEALTH_WORDS.notCountedYet });
+    checks.push({ key: "decisions", label: HW.decisions, state: "not-counted", words: HW.notCountedYet });
   } else if (role.circle === null) {
-    checks.push({ key: "decisions", label: HEALTH_WORDS.decisions, state: "not-yet", words: HEALTH_WORDS.noCircle });
+    checks.push({ key: "decisions", label: HW.decisions, state: "not-yet", words: HW.noCircle });
   } else {
     const n = role.circleDecisions;
-    checks.push({ key: "decisions", label: HEALTH_WORDS.decisions, state: n > 0 ? "ready" : "not-yet", words: HEALTH_WORDS.decisionsN(n) });
+    checks.push({ key: "decisions", label: HW.decisions, state: n > 0 ? "ready" : "not-yet", words: HW.decisionsN(n) });
   }
 
   if (role.holderCount === undefined && role.covered === undefined) {
-    checks.push({ key: "stepIn", label: HEALTH_WORDS.stepIn, state: "not-counted", words: HEALTH_WORDS.notCountedYet });
+    checks.push({ key: "stepIn", label: HW.stepIn, state: "not-counted", words: HW.notCountedYet });
   } else if ((role.holderCount ?? 0) >= 2) {
-    checks.push({ key: "stepIn", label: HEALTH_WORDS.stepIn, state: "ready", words: HEALTH_WORDS.secondHolder });
+    checks.push({ key: "stepIn", label: HW.stepIn, state: "ready", words: HW.secondHolder });
   } else if (role.covered === true) {
-    checks.push({ key: "stepIn", label: HEALTH_WORDS.stepIn, state: "ready", words: HEALTH_WORDS.covered });
+    checks.push({ key: "stepIn", label: HW.stepIn, state: "ready", words: HW.covered });
   } else {
-    checks.push({ key: "stepIn", label: HEALTH_WORDS.stepIn, state: "not-yet", words: HEALTH_WORDS.nobodyYet });
+    checks.push({ key: "stepIn", label: HW.stepIn, state: "not-yet", words: HW.nobodyYet });
   }
 
   const ready = checks.filter((c) => c.state === "ready").length;
   return {
-    heading: HEALTH_WORDS.handover,
+    heading: HW.handover,
     checks,
-    summary: HEALTH_WORDS.readyOf(ready, checks.length),
+    summary: HW.readyOf(ready, checks.length),
     ready: { n: ready, source: "handover.checks.state" },
     of: { n: checks.length, source: "handover.checks.length" },
   };

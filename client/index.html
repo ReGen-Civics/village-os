@@ -41,13 +41,15 @@
       written out because this cannot import; colourMode.test.ts holds the two
       together, and modePalettes.test.ts holds `light` and `dark` to the two grounds
       in index.css's palette block (--pal-day-ground, --pal-night-ground).
-      It also puts down the village's light-mode paper (data-paper), kept on the
-      device by client/src/lib/paperLook.ts, so a Sea chart village never flashes plain.
+      The village's own default mode and its light-mode paper come from the server,
+      which writes data-village-mode and data-village-paper onto <html> in every page
+      (server/routes/brandTheme.ts), so a first visit gets both with no flash. The
+      device's memory of the paper (client/src/lib/paperLook.ts) covers an older shell.
       The CSP hashes this script from the built shell, so it needs no nonce.
     -->
     <script>
       (function () {
-        var live = true, device = false, fallback = "dark", light = "#f3ebdd", dark = "#14362b";
+        var live = true, device = false, fallback = "light", light = "#f3ebdd", dark = "#14362b";
         var d = document.documentElement, m = null;
         try { m = localStorage.getItem("village-mode"); } catch (e) {}
         if (m !== "light" && m !== "dark") {
@@ -57,7 +59,9 @@
               if (matchMedia("(prefers-color-scheme: dark)").matches) m = "dark";
               else if (matchMedia("(prefers-color-scheme: light)").matches) m = "light";
             } catch (e) {}
-            m = m || fallback;
+            // The village's own default, which the server writes on <html> (server/routes/brandTheme.ts).
+            var v = d.getAttribute("data-village-mode");
+            m = m || (v === "light" || v === "dark" ? v : fallback);
           }
         }
         if (!m) return;
@@ -66,8 +70,9 @@
         // The village's light-mode paper (client/src/lib/paperLook.ts, which names the
         // key and value; paperLook.test.ts holds this script to them). The chart's ground
         // is seaChart.css's --pal-day-ground.
-        var chart = "#e8d3a3", p = null;
-        try { p = localStorage.getItem("village-paper"); } catch (e) {}
+        // The server's word on the village's paper wins; the device's memory covers an older shell.
+        var chart = "#e8d3a3", p = d.getAttribute("data-village-paper");
+        if (p !== "plain" && p !== "sea-chart") { p = null; try { p = localStorage.getItem("village-paper"); } catch (e) {} }
         if (p === "sea-chart") d.setAttribute("data-paper", p);
         var g = m === "light" ? (p === "sea-chart" ? chart : light) : dark;
         d.style.backgroundColor = g;

@@ -47,6 +47,8 @@ const USERS: Record<string, { id: string; name: string; role: string }> = {
 };
 let holders = new Set<string>();
 let villageHeld: string[] = [];
+/** Members below every stage, so a stage-opened power (`terms.read`) is not theirs. */
+let belowStages = new Set<string>();
 let governance = true;
 let reloads = 0;
 let notices: Array<{ userId: string; type: string; title: string; dedupeKey: string }> = [];
@@ -60,7 +62,7 @@ const SEASON = {
 
 const userOf = async (req: any) => USERS[String(req.headers["x-user"] ?? "")] ?? null;
 const ctxOf = async (user: any): Promise<CapabilityCtx> => ({
-  stageIndex: 0,
+  stageIndex: belowStages.has(String(user.id)) ? -1 : 0,
   stageIndexOf: () => 0,
   roleCapabilities: holders.has(String(user.id)) ? ["org.decide"] : [],
   isAdmin: user.role === "admin",
@@ -186,6 +188,7 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
   beforeEach(() => {
     holders = new Set();
     villageHeld = [];
+    belowStages = new Set();
     governance = true;
     reloads = 0;
     notices = [];
@@ -234,6 +237,148 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
       expect(m.json).toMatchObject({ youMayPublish: false, youMayPutToVillage: false, whoMayPutToVillage: "live-holders" });
       // The read names how many hold it, never who.
       expect(JSON.stringify(m.json)).not.toContain("holder-1");
+    });
+  });
+
+  describe("the draft page's read (GET /api/org/drafts/:id/view)", () => {
+    /** A live role to edit, and an open draft that edits its purpose, its list, and its terms. */
+    async function roleAndEdit(by = "admin-1") {
+      seq += 1;
+      const roleId = `land-steward-${seq}`;
+      await pool.query( // module-review-ok: the test seeds a live role for a draft to edit, the one fixture no draft route makes
+        "INSERT INTO org_roles (id, name, aim, domain, accountabilities, seats) VALUES (?,?,?,?,?,1)",
+        [roleId, `Land Steward ${seq}`, "Steward the land so the project grows within what the watershed can carry.", "The land plan.", JSON.stringify(["Keeps the land plan current.", "Signs off every construction contract.", "Holds the permits."])],
+      );
+      const made = await createDraft(pool, { title: `Edit Land Steward ${seq}`, rationale: null, createdBy: by, sourceKind: "human", openCap: null });
+      if (!made.ok) throw new Error(made.error);
+      const r = await addChange(pool, made.id, {
+        op: "update_seat",
+        orgRoleId: roleId,
+        payload: {
+          aim: "Steward the land so the village grows within what the watershed can carry.",
+          accountabilities: ["Keeps the land plan current.", "Brings large contracts to the finance role.", "Holds the permits."],
+          termsOffer: { pay: { kind: "stipend", note: "Seventeen hundred a moon" } },
+        },
+      });
+      if (!r.ok) throw new Error(r.error);
+      return { roleId, draftId: made.id, changeId: r.id };
+    }
+
+    it("shows each changed field before and after, in words and in lines, and folds the rest", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId, roleId } = await roleAndEdit();
+      const r = await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1");
+      expect(r.status).toBe(200);
+      expect(r.json.changeIds).toEqual([changeId]);
+      const [c] = r.json.changes;
+      expect(c).toMatchObject({ kind: "edit", targetId: roleId, holders: null });
+      expect(c.target).toMatch(/^Land Steward /);
+      const aim = c.fields.find((f: any) => f.field === "aim");
+      expect(aim.shape).toBe("text");
+      expect(aim.runs.filter((x: any) => x.op !== "same")).toEqual([
+        { op: "del", text: "project" },
+        { op: "add", text: "village" },
+      ]);
+      const acc = c.fields.find((f: any) => f.field === "accountabilities");
+      expect(acc.shape).toBe("list");
+      expect(acc.runs).toEqual([
+        { op: "same", text: "Keeps the land plan current." },
+        { op: "del", text: "Signs off every construction contract." },
+        { op: "add", text: "Brings large contracts to the finance role." },
+        { op: "same", text: "Holds the permits." },
+      ]);
+      expect(c.unchanged).toContain("domain");
+      expect(c.unchanged).not.toContain("aim");
+    });
+
+    it("tells a reader who may not read terms only that they change, and a reader who may, how", async () => {
+      holders = new Set(["holder-1"]);
+      belowStages = new Set(["holder-1"]);
+      const { draftId } = await roleAndEdit();
+      const r = await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1");
+      const terms = r.json.changes[0].fields.find((f: any) => f.field === "termsOffer");
+      expect(terms).toMatchObject({ shape: "terms", hidden: true, before: null, after: null, runs: [] });
+      expect(JSON.stringify(r.json)).not.toContain("Seventeen hundred");
+      belowStages = new Set();
+      const full = await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1");
+      expect(full.json.changes[0].fields.find((f: any) => f.field === "termsOffer").hidden).toBe(false);
+      expect(JSON.stringify(full.json)).toContain("Seventeen hundred");
+    });
+
+    it("is read by whoever decides drafts and by its author, and is no draft at all to anybody else", async () => {
+      holders = new Set(["holder-1"]);
+      const mine = await roleAndEdit("member-1");
+      expect((await call("GET", `/api/org/drafts/${mine.draftId}/view`, "member-1")).status).toBe(200);
+      const theirs = await roleAndEdit("admin-1");
+      const other = await call("GET", `/api/org/drafts/${theirs.draftId}/view`, "member-1");
+      expect(other.status).toBe(404);
+      expect(other.json.error).toBe("no_such_draft");
+      expect((await call("GET", `/api/org/drafts/${theirs.draftId}/view`, "admin-1")).status).toBe(200);
+      expect((await call("GET", `/api/org/drafts/${theirs.draftId}/view`, "")).status).toBe(401);
+      expect((await call("GET", "/api/org/drafts/no-such-draft/view", "admin-1")).status).toBe(404);
+    });
+
+    it("names another open draft on the same role, and shows a new role as new", async () => {
+      const a = await roleAndEdit();
+      const b = await createDraft(pool, { title: "A second edit", rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
+      if (!b.ok) throw new Error(b.error);
+      await addChange(pool, b.id, { op: "update_seat", orgRoleId: a.roleId, payload: { domain: "The land plan and the permits." } });
+      const r = await call("GET", `/api/org/drafts/${a.draftId}/view`, "admin-1");
+      expect(r.json.otherOpenDrafts).toEqual([{ id: b.id, title: "A second edit" }]);
+      const d = await makeDraft();
+      const n = await call("GET", `/api/org/drafts/${d.id}/view`, "admin-1");
+      const seat = n.json.changes.find((c: any) => c.op === "create_seat");
+      expect(seat.kind).toBe("new");
+      expect(seat.fields.find((f: any) => f.field === "name")).toMatchObject({ before: null, after: d.seat, runs: [{ op: "add", text: d.seat }] });
+      expect(n.json.changes.find((c: any) => c.op === "seat_holder").kind).toBe("other");
+    });
+
+    it("shows the three versions when the live card moved on a field after the draft was written (0436)", async () => {
+      const { draftId, roleId } = await roleAndEdit();
+      await pool.query("UPDATE org_roles SET aim = ? WHERE id = ?", ["Steward the land so the project grows gently within what the watershed can carry.", roleId]); // module-review-ok: the test edits the live card behind the draft's back, the case this read exists to show
+      const r = await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1");
+      const [c] = r.json.changes;
+      expect(c.baseKnown).toBe(true);
+      const aim = c.fields.find((f: any) => f.field === "aim");
+      expect(aim).toMatchObject({ moved: true, base: "Steward the land so the project grows within what the watershed can carry." });
+      expect(aim.before).toContain("grows gently");
+      expect(aim.movedRuns.filter((x: any) => x.op !== "same")).toEqual([{ op: "add", text: "gently " }]);
+      expect(c.fields.find((f: any) => f.field === "accountabilities")).toMatchObject({ moved: false, movedRuns: [] });
+    });
+
+    it("a change written before 0436 says it has no base, and nothing reads as moved", async () => {
+      const { draftId, changeId, roleId } = await roleAndEdit();
+      await pool.query("UPDATE org_draft_changes SET base_json = NULL WHERE id = ?", [changeId]); // module-review-ok: the test makes a change as the release before 0436 wrote it
+      await pool.query("UPDATE org_roles SET aim = 'Moved on.' WHERE id = ?", [roleId]); // module-review-ok: the live card moves, which an unknown base cannot see
+      const [c] = (await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1")).json.changes;
+      expect(c.baseKnown).toBe(false);
+      expect(c.fields.every((f: any) => f.moved === false && f.base === null)).toBe(true);
+    });
+
+    it("never captures a base for a change about who holds a role", async () => {
+      const d = await makeDraft();
+      const draft = await getDraft(pool, d.id);
+      expect(draft?.changes.find((c) => c.op === "seat_holder")?.baseJson).toBeNull();
+      const edit = await roleAndEdit();
+      const base = (await getDraft(pool, edit.draftId))?.changes[0].baseJson;
+      expect(base).toMatchObject({ id: edit.roleId });
+      expect(base).not.toHaveProperty("terms_offer_by");
+    });
+
+    it("carries only the allowlisted keys, at every level", async () => {
+      const { draftId } = await roleAndEdit();
+      const r = await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1");
+      const { DRAFT_VIEW_KEYS, DRAFT_CHANGE_KEYS, DRAFT_FIELD_KEYS, DRAFT_SOURCE_KEYS, DRAFT_PROPOSER_KEYS } = await import("../../shared/orgDraftView");
+      const within = (o: object, keys: readonly string[]) => expect(Object.keys(o).filter((k) => !keys.includes(k))).toEqual([]);
+      within(r.json, DRAFT_VIEW_KEYS);
+      within(r.json.source, DRAFT_SOURCE_KEYS);
+      if (r.json.proposer) within(r.json.proposer, DRAFT_PROPOSER_KEYS);
+      for (const c of r.json.changes) {
+        within(c, DRAFT_CHANGE_KEYS);
+        for (const f of c.fields) within(f, DRAFT_FIELD_KEYS);
+      }
+      // The draft row's own machinery never reaches the page.
+      expect(JSON.stringify(r.json)).not.toMatch(/beforeJson|before_json|threadId|cites|sourceProposalId/);
     });
   });
 

@@ -3966,6 +3966,23 @@ export const VARIABLES: VariableDef[] = [
     ],
   },
 
+  // THE VILLAGE'S DEFAULT MODE (the lead, 26 Nov 2026: a village dial, so a village chooses light or
+  // dark for a first visit). The server writes it onto <html> (server/routes/brandTheme.ts) and the
+  // first-paint script in client/index.html reads it, so there is no flash. A visitor's own choice wins.
+  {
+    key: "look.default_mode",
+    category: "Village",
+    label: "Light or dark on a first visit",
+    description:
+      "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.",
+    type: "choice",
+    default: "light",
+    choices: [
+      { value: "light", label: "Light", hint: "The day page, and Sea chart where the village chose it." },
+      { value: "dark", label: "Dark", hint: "The night page." },
+    ],
+  },
+
   // ── Village rhythm ────────────────────────────────────────────────────────
   // THE RESPONSIVE BOTTOM BAR (24 Nov 2026; shared/navPopularity.ts, server/routes/navBar.ts).
   {

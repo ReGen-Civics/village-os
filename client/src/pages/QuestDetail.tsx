@@ -46,6 +46,7 @@ import {
   currentClaims, gateFix, gateLabel, relativeWhen, statusIs,
   type BoardQuest, type FieldSigns,
 } from "@/lib/questBoard";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 export default function QuestDetail() {
   const [, params] = useRoute("/quests/:id");
@@ -174,6 +175,7 @@ export default function QuestDetail() {
   const why = story && story !== lead ? story : "";
   // Whoever runs the place, in the village's own word (Admin, Make This Yours).
   const catalyst = villageWord(cfg?.project?.catalystName, CATALYST_FALLBACK);
+  useCrumbLeaf(quest?.title); // the last crumb (components/nav/Breadcrumbs.tsx)
 
   if (loaded && !quest) {
     return (

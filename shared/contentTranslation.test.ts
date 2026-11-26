@@ -140,3 +140,26 @@ describe("contentTranslationProblem", () => {
     expect(addedUrls("Mas en https://a.example y https://b.example", "See https://a.example")).toEqual(["https://b.example"]);
   });
 });
+
+describe("a binding page's reading copy (the lead, 26 Nov 2026)", () => {
+  it("is taken on the binding pages alone, at the page's own addresses, and a person writes it", () => {
+    for (const id of PROTECTED_PAGES) {
+      const spec = pageSpecForSection(`page-${id}`);
+      expect(spec, id).toBeTruthy();
+      const s = spec!.sections.find((x) => x.fields.some((f) => f.kind !== "link"))!;
+      const f = s.fields.find((x) => x.kind !== "link")!;
+      const t = translationTarget("reading_copy", `page-${id}`, `${s.id}.${f.key}`);
+      expect(t, id).toMatchObject({ ok: true, protection: "human_only" });
+      // CONTROL: the same address is still refused as an ordinary translation of a binding page.
+      expect(translationTarget("page_section", `page-${id}`, `${s.id}.${f.key}`).ok, id).toBe(false);
+    }
+    expect(translationTarget("reading_copy", "page-home", "hero.headline")).toMatchObject({ ok: false });
+    expect(translationTarget("reading_copy", "page-rights-resident", "hero.nothing")).toMatchObject({ ok: false });
+  });
+
+  it("is never a machine's draft", () => {
+    const base: TranslationInput = { kind: "reading_copy", refKey: "page-rights-resident", field: "hero.headline", locale: "es", text: "Sus derechos", status: "ai_draft", source: "Your rights" };
+    expect(contentTranslationProblem(base)).toMatch(/written by a person/);
+    expect(contentTranslationProblem({ ...base, status: "approved" })).toBeNull();
+  });
+});

@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: sessionsOff"
+msgid "Live Sessions is off, so the objection waits on the application page."
+msgstr "Las Sesiones en vivo están desactivadas, así que la objeción espera en la página de la solicitud."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: objected"
+msgid "A member of the circle objected, so the proposal goes to the circle's next meeting. It can still be adopted by a holder of the power to place people in roles."
+msgstr "Un miembro del círculo objetó, así que la propuesta pasa a la próxima reunión del círculo. Aún puede adoptarla quien tenga el poder de asignar personas a roles."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: windowClosed"
+msgid "The circle's 2 business days have passed, so answers are closed."
+msgstr "Pasaron los 2 días hábiles del círculo, así que las respuestas están cerradas."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: answered"
+msgid "You have answered this already."
+msgstr "Usted ya respondió."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: consented"
+msgid "Consented by the circle"
+msgstr "Consentida por el círculo"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: youConsented"
+msgid "You consented."
+msgstr "Usted consintió."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: notAsked"
+msgid "This proposal did not ask you. The circle's holders answer it."
+msgstr "Esta propuesta no le pregunta a usted. La responden quienes ocupan roles en el círculo."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: record"
+msgid "Record the adoption"
+msgstr "Registrar la adopción"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: failed"
+msgid "That did not reach the server. Try again."
+msgstr "Eso no llegó al servidor. Inténtelo de nuevo."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: withdrawn"
+msgid "This proposal was withdrawn, so answers are closed."
+msgstr "Esta propuesta fue retirada, así que las respuestas están cerradas."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: lapsed"
+msgid "The circle's 2 business days passed with no consent. It can still be adopted by a holder of the power to place people in roles."
+msgstr "Pasaron los 2 días hábiles del círculo sin consentimiento. Aún puede adoptarla quien tenga el poder de asignar personas a roles."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: askTitle"
+msgid "Your circle is asked about a role proposal: {head} and {last}"
+msgstr "Se consulta a su círculo sobre una propuesta de roles: {head} y {last}"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: decided"
+msgid "This proposal has been decided, so answers are closed."
+msgstr "Esta propuesta ya se decidió, así que las respuestas están cerradas."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: notCarried"
+msgid "The circle has not met yet, so the objection waits on the application page."
+msgstr "El círculo aún no se ha reunido, así que la objeción espera en la página de la solicitud."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: noVote"
+msgid "A proposal that changes roles is adopted by its circle's consent or by a holder of the power to place people in roles. It does not go to a village vote."
+msgstr "Una propuesta que cambia roles se adopta con el consentimiento de su círculo o por quien tenga el poder de asignar personas a roles. No va a votación de la aldea."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: askedYou"
+msgid "Your circle asks you to consent or object by {by}."
+msgstr "Su círculo le pide que consienta u objete a más tardar el {by}."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: objectionGoes"
+msgid "Your objection goes to the circle's next meeting."
+msgstr "Su objeción pasa a la próxima reunión del círculo."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: reasonNeeded"
+msgid "Say why you object, so the circle can talk it through."
+msgstr "Diga por qué objeta, para que el círculo pueda conversarlo."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: state heading"
+msgid "Consented by the circle, waiting for a holder of the power to record it"
+msgstr "Consentida por el círculo, a la espera de que quien tenga el poder la registre"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: recordLine"
+msgid "The circle consented. Record the adoption for the village."
+msgstr "El círculo consintió. Registre la adopción para la aldea."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: reasonHelp"
+msgid "Up to {OBJECTION_MAX} characters."
+msgstr "Hasta {OBJECTION_MAX} caracteres."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: notNow"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: state heading"
+msgid "Waiting for a holder of the power"
+msgstr "A la espera de quien tenga el poder"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: noOtherHolders"
+msgid "Nobody else holds a role in this circle, so the circle cannot consent. It is adopted by a holder of the power to place people in roles."
+msgstr "Nadie más ocupa un rol en este círculo, así que el círculo no puede consentir. La adopta quien tenga el poder de asignar personas a roles."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: askTitle"
+msgid "Your circle is asked about a role proposal: a role"
+msgstr "Se consulta a su círculo sobre una propuesta de roles: un rol"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: askTitle"
+msgid "Your circle is asked about a role proposal: {role}"
+msgstr "Se consulta a su círculo sobre una propuesta de roles: {role}"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: sendObjection"
+msgid "Send my objection"
+msgstr "Enviar mi objeción"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: state heading"
+msgid "An objection goes to the circle's next meeting"
+msgstr "Una objeción pasa a la próxima reunión del círculo"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: open"
+msgid "The circle is asked to consent or object by {by}."
+msgstr "Se pide al círculo que consienta u objete a más tardar el {by}."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: answerStands"
+msgid "Each holder answers once, so your answer stands."
+msgstr "Cada quien responde una sola vez, así que su respuesta queda en firme."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: adopted heading"
+msgid "Adopted"
+msgstr "Adoptada"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: heading"
+msgid "The circle's answer"
+msgstr "La respuesta del círculo"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: candidateOpens"
+msgid "The member who proposed it opens this vote."
+msgstr "El miembro que la propuso abre esta votación."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: tally"
+msgid "Asked"
+msgstr "Consultados"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: tally"
+msgid "None"
+msgstr "Ninguno"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: askBody"
+msgid "Consent or object by {by}. It waits under Tasks on your profile too."
+msgstr "Consienta u objete a más tardar el {by}. También le espera en Tareas, en su perfil."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: tally"
+msgid "Consented"
+msgstr "Consintieron"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: youObjected"
+msgid "You objected."
+msgstr "Usted objetó."
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: reasonLabel"
+msgid "Why you object"
+msgstr "Por qué objeta"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: objectButton"
+msgid "Object"
+msgstr "Objetar"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: consentButton"
+msgid "Consent"
+msgstr "Consentir"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: seal"
+msgid "The circle consented"
+msgstr "El círculo consintió"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: state heading"
+msgid "Waiting on the circle"
+msgstr "A la espera del círculo"
+
+# needs-native-review: circle consent on a role proposal, usted, 2026-11-26
+msgctxt "circle consent: tally"
+msgid "Objected"
+msgstr "Objetaron"

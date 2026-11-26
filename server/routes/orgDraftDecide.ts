@@ -48,6 +48,7 @@ import type { SubjectCloser } from "../lib/applyDue";
 import type { RollNotice } from "../lib/ballotNotices";
 import { addChange, createDraft, getDraft, listDrafts, withdrawDraft } from "../lib/orgDrafts";
 import { overlappingOpenDrafts } from "../../shared/orgDraftOverlap";
+import { draftView } from "../lib/orgDraftView";
 import { parseArrangement } from "../lib/circlePlacement";
 import {
   BALLOT_OPEN_REFUSAL,
@@ -156,6 +157,18 @@ export function register(app: Express, deps: Deps): void {
   };
   closers[ORG_DRAFT] = orgDraftCloser(publishDeps);
 
+  /** Whether this reader may read pay and terms: the role editor's answer, and the draft page's. */
+  const canReadTerms = async (req: any): Promise<boolean> => {
+    // A plain member's read never carries pay terms (server/lib/readAsMember.ts).
+    if (readsAsPlainMember(req)) return false;
+    const user = await authedUser(req);
+    return !!user && capabilityDecision("terms.read", await capabilityCtx(user)).allowed;
+  };
+  const circleName = (id: string): string | null => {
+    const row = (circlesRepo.all() as Array<Record<string, unknown>>).find((c) => String(c.id) === id);
+    return row && typeof row.name === "string" ? row.name : null;
+  };
+
   // "Edit this role" (role journey, PR-B): the role card's editor saves through the same publish door.
   registerRoleEditRoutes(app, {
     authedUser,
@@ -164,16 +177,24 @@ export function register(app: Express, deps: Deps): void {
     overLimit,
     liveHoldersOf,
     publishDeps,
-    canReadTerms: async (req) => {
-      // A plain member's read never carries pay terms (server/lib/readAsMember.ts).
-      if (readsAsPlainMember(req)) return false;
-      const user = await authedUser(req);
-      return !!user && capabilityDecision("terms.read", await capabilityCtx(user)).allowed;
-    },
-    circleName: (id) => {
-      const row = (circlesRepo.all() as Array<Record<string, unknown>>).find((c) => String(c.id) === id);
-      return row && typeof row.name === "string" ? row.name : null;
-    },
+    canReadTerms,
+    circleName,
+  });
+
+  /**
+   * THE DRAFT PAGE'S READ (shared/orgDraftView.ts): one draft, before and after, field by field.
+   * Read by whoever may decide drafts (an admin, a live holder of `org.decide`) and by the person
+   * who made it. Anybody else hears there is no such draft, so a draft id says nothing to them.
+   */
+  app.get("/api/org/drafts/:id/view", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to read this draft." });
+    const pool = getPool();
+    const draft = await getDraft(pool, String(req.params.id ?? ""));
+    const userId = String(user.id);
+    const mayRead = !!draft && (draft.createdBy === userId || (await isAdmin(req)) || (await liveHoldersOf(ORG_DECIDE)).includes(userId));
+    if (!draft || !mayRead) return res.status(404).json({ error: "no_such_draft", message: "There is no draft by that id." });
+    res.json(await draftView(pool, draft, { readsTerms: await canReadTerms(req), circleName }));
   });
 
   app.get("/api/org/drafts/:id/decide", async (req, res) => {

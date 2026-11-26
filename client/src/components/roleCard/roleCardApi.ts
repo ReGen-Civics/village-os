@@ -76,7 +76,20 @@ function teamOf(v: unknown): FilledTeamRole[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter((r: any) => r && typeof r.id === "string" && typeof r.name === "string" && r.name.trim())
-    .map((r: any) => ({ id: r.id, name: r.name.trim(), holders: Array.isArray(r.holders) ? r.holders.filter((h: unknown): h is string => typeof h === "string" && !!h.trim()) : [] }));
+    .map((r: any) => {
+      const pairs: { name: string; face: string | null }[] = [];
+      (Array.isArray(r.holders) ? r.holders : []).forEach((h: unknown, i: number) => {
+        if (typeof h !== "string" || !h.trim()) return;
+        pairs.push({ name: h, face: faceOf(Array.isArray(r.faces) ? r.faces[i] : null) });
+      });
+      const holders = pairs.map((p) => p.name);
+      return pairs.some((p) => p.face) ? { id: r.id, name: r.name.trim(), holders, faces: pairs.map((p) => p.face) } : { id: r.id, name: r.name.trim(), holders };
+    });
+}
+
+/** A face the village's own upload store serves, or nothing: a stray URL never becomes an image on the page. */
+function faceOf(v: unknown): string | null {
+  return typeof v === "string" && /^\/api\/uploads\/[^/\\]+$/.test(v) ? v : null;
 }
 
 /** The village's pay block as the server sent it, read again here so a bad answer draws nothing. */

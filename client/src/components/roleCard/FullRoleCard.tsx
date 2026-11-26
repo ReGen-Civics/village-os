@@ -36,7 +36,7 @@ import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squ
 import { companionArtUrl } from "@/lib/natureArt";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
-import { CARD_WORDS as W } from "@shared/playerCardWords";
+import { useCardHeadings } from "@/components/playerCard/cardHeadings";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
@@ -193,6 +193,7 @@ export interface FullRoleCardProps {
 }
 
 export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath, settings }: FullRoleCardProps) {
+  const W = useCardHeadings();
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();

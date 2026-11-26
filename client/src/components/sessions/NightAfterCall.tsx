@@ -19,10 +19,11 @@
  * Times are read on the room's own clock (`now`), never the device's alone.
  */
 import { useState } from "react";
-import { CONSENT_LABELS, SESSION_LIMITS, cleanLine, consentNeedsWords, type NightRound, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, cleanLine, consentNeedsWords, type NightRound, type SessionView } from "@shared/sessions";
 import type { RoomActions } from "./useSessionRoom";
 import { BTN_PRIMARY, BTN_SECONDARY, HINT, INPUT, nameOf, nightWhen, tile } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useConsentLabels } from "@/components/sessions/consentLabels";
 
 const AFTER_NIGHT = ["consent", "concern", "object"] as const;
 type AfterNight = (typeof AFTER_NIGHT)[number];
@@ -44,6 +45,7 @@ export default function NightAfterCall({
   onDone?: (words: string) => void;
 }) {
   const RC = useRoomWords();
+  const CL = useConsentLabels();
   const target = `decision:${entryId}`;
   const nights = view.responses.filter((r) => r.target === target && r.value === "sleep" && r.answerBy);
   const mine = nights.find((r) => r.userId === view.me.userId);
@@ -113,7 +115,7 @@ export default function NightAfterCall({
                   setNote(null);
                 }}
               >
-                {CONSENT_LABELS[v]}
+                {CL[v]}
               </button>
             ))}
           </div>

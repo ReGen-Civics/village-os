@@ -44,6 +44,7 @@ import { gameFetch } from "@/lib/gameApi";
 import type { CircleCard, CircleSection } from "@shared/circleCard";
 import { localizeCircleCard, useCircleWords } from "@/components/circleCard/circleWords";
 import { useLingui } from "@lingui/react/macro";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 type View =
   | { kind: "loading" }
@@ -99,6 +100,7 @@ export default function CircleCardPage() {
   const sent = view.kind === "ok" ? view.card : null;
   const card = useMemo(() => (sent ? localizeCircleCard(sent, i18n) : null), [sent, i18n, i18n.locale]);
   const circle = useMemo(() => (card ? { id, name: card.header.name } : null), [card, id]);
+  useCrumbLeaf(card?.header.name); // the last crumb (components/nav/Breadcrumbs.tsx)
   const { data, answer } = useHearth(circle, view.kind === "ok" && view.sessionsOn);
 
   return (

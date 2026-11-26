@@ -61,7 +61,8 @@ import { WayInNote } from "@/components/openProposal/WayInNote";
 import type { ConsentAnswerOut, ConsentOut } from "@/components/roleProposal/proposalApi";
 import { gameFetch } from "@/lib/gameApi";
 import { DOOR, type DoorReason } from "@shared/openProposalDecide";
-import { CONSENT_WORDS, type ConsentAnswer } from "@shared/roleProposalConsent";
+import { type ConsentAnswer } from "@shared/roleProposalConsent";
+import { consentWords } from "@/components/roleProposal/consentWords";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, BTN_SECONDARY, WORLD } from "@/components/journey/look";
 import { decideWords, useDecideWords } from "@/components/openProposal/decideWords";
@@ -524,7 +525,7 @@ export default function OpenProposal() {
                   />
                 ) : p.you.mayAdopt || p.you.mayDecline ? (
                   <>
-                    <p className="mt-1 text-foreground">{p.you.formerMember ? DW.formerMember : record ? CONSENT_WORDS.recordLine : DW.deciderLine}</p>
+                    <p className="mt-1 text-foreground">{p.you.formerMember ? DW.formerMember : record ? consentWords().recordLine : DW.deciderLine}</p>
                     <div className="mt-4" data-applicant-note-field="">
                       <label htmlFor="op-note" className="mb-2 block text-sm font-semibold text-card-foreground">
                         {t`A note for the applicant (they will see this)`}

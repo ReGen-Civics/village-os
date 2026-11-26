@@ -19,6 +19,8 @@ export interface FilledRole {
   name: string;
   /** Holders' names as the village shows them to this reader; empty when it shows none. */
   holders: string[];
+  /** Each holder's published portrait, by position in `holders`, or null (roleCardApi `teamOf`). */
+  faces?: (string | null)[];
   /** Still recruiting (the lead, 17 Nov 2026): the roster keeps it as held and offers Apply beside it. */
   recruiting?: boolean;
 }
@@ -36,14 +38,24 @@ function CrestSeed({ className = "" }: { className?: string }) {
   );
 }
 
-/** The crest: a gold ring around the holder's initial, or a plain mark when there is no name. Never a face. */
+/**
+ * The crest: a gold ring around the holder's face where they have PUBLISHED a portrait (the lead, 26 Nov 2026:
+ * "I like humans"), else around their initial, or a plain mark when there is no name. The face is decorative here:
+ * the card says the name in words beside it.
+ */
 function Crest({ entry, size }: { entry: RosterEntry; size: string }) {
   const initial = entry.name ? Array.from(entry.name)[0]?.toLocaleUpperCase() : null;
   const Icon = entry.agent ? Firefly : UserRound;
   return (
     <span className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-notice/40 via-notice to-notice/40 p-[3px] shadow-[0_0_24px] shadow-notice/30 ${size}`} aria-hidden="true">
-      <span className="grid size-full place-items-center rounded-full bg-background font-display text-notice">
-        {initial ? <span className="text-[1.75em] leading-none">{initial}</span> : <Icon className="size-1/2" />}
+      <span className="grid size-full place-items-center overflow-hidden rounded-full bg-background font-display text-notice">
+        {entry.face ? (
+          <img src={entry.face} alt="" loading="lazy" decoding="async" className="size-full object-cover object-[50%_25%]" data-roster-face="" />
+        ) : initial ? (
+          <span className="text-[1.75em] leading-none">{initial}</span>
+        ) : (
+          <Icon className="size-1/2" />
+        )}
       </span>
     </span>
   );

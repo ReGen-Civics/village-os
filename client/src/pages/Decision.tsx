@@ -76,6 +76,7 @@ import {
   type WeightRecord as WeightRecordData,
 } from "@/components/governance/governanceApi";
 import { useDecisionNoun } from "@/components/governance/decisionNounWords";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 /**
  * WHAT EACH METHOD MEANS, and its authority is `BALLOT_METHODS` in
@@ -305,6 +306,8 @@ export default function Decision() {
     }
     setBusy(false);
   };
+
+  useCrumbLeaf(ballot?.title); // the last crumb (components/nav/Breadcrumbs.tsx)
 
   if (modules.loaded && !governance) return <ModuleGate moduleId="governance" name="Decisions" />;
 
