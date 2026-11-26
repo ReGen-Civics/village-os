@@ -20,14 +20,19 @@ describe("MEMBER_READABLE_ADMIN_GETS: the admin reads every member may make (Q5)
     for (const [route, why] of Object.entries(MEMBER_READABLE_ADMIN_GETS)) expect(why.length, route).toBeGreaterThan(30);
   });
 
+  it("keeps org chart drafts off the list: they are shown to admins only (the lead, 25 Nov 2026)", () => {
+    expect(isMemberReadable("GET", "/api/admin/org/drafts", true)).toBe(false);
+    expect(isMemberReadable("GET", "/api/admin/org/drafts/:id/preview", true)).toBe(false);
+  });
+
   it("keeps secrets, people and money off the list", () => {
     for (const route of Object.keys(MEMBER_READABLE_ADMIN_GETS)) expect(route).not.toMatch(/integrations|secret|email|users|players|cash|exits|submissions|audit|modules/);
   });
 
   it("opens only a listed GET, only to a member", () => {
-    expect(isMemberReadable("GET", "/api/admin/org/drafts", true)).toBe(true);
-    expect(isMemberReadable("GET", "/api/admin/org/drafts", false)).toBe(false);
-    expect(isMemberReadable("POST", "/api/admin/org/drafts", true)).toBe(false);
+    expect(isMemberReadable("GET", "/api/admin/org/expiring", true)).toBe(true);
+    expect(isMemberReadable("GET", "/api/admin/org/expiring", false)).toBe(false);
+    expect(isMemberReadable("POST", "/api/admin/org/expiring", true)).toBe(false);
     expect(isMemberReadable("GET", "/api/admin/modules", true)).toBe(false);
     expect(isMemberReadable("GET", undefined, true)).toBe(false);
     expect(isMemberReadable("GET", "constructor", true)).toBe(false);

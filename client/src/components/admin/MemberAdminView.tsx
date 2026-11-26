@@ -29,12 +29,6 @@ interface HoldingPayload {
   powers: Array<{ capability: string; title: string; consequence: string; heldBy: { roleName: string | null; roleId: string } | null }>;
   roles: Array<{ id: string; name: string; capabilities: string[]; isExample: boolean; holderCount: number }>;
 }
-interface Draft {
-  id: string;
-  title: string;
-  rationale: string | null;
-  status: string;
-}
 interface Expiring {
   assignmentId: string;
   roleName: string;
@@ -70,17 +64,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function MemberAdminView({ userName, onSignOut }: { userName: string; onSignOut: () => void }) {
   const { t } = useLingui();
   const [holding, setHolding] = useState<Read<HoldingPayload>>({ state: "loading" });
-  const [drafts, setDrafts] = useState<Read<Draft[]>>({ state: "loading" });
   const [expiring, setExpiring] = useState<Read<Expiring[]>>({ state: "loading" });
 
   useEffect(() => {
-    // Literal paths, one per read the server allows members (server/lib/memberReadable.ts).
+    // Literal paths, one per read the server allows members (server/lib/memberReadable.ts). Org chart drafts are not one:
+    // they are shown to admins only (the lead, 25 Nov 2026).
     void read<HoldingPayload>("/api/admin/capabilities/holding").then(setHolding);
-    void read<Draft[]>("/api/admin/org/drafts").then(setDrafts);
     void read<Expiring[]>("/api/admin/org/expiring").then(setExpiring);
   }, []);
 
-  const refusedEverywhere = holding.state === "refused" && drafts.state === "refused" && expiring.state === "refused";
+  const refusedEverywhere = holding.state === "refused" && expiring.state === "refused";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -129,24 +122,6 @@ export default function MemberAdminView({ userName, onSignOut }: { userName: str
                   </li>
                 ))}
             </ul>
-          </Section>
-        )}
-
-        {drafts.state === "ready" && (
-          <Section title={t({ message: "Changes to the village's structure", context: "MemberAdminView, title" })}>
-            {drafts.data.length === 0 ? (
-              <p><Trans context="MemberAdminView, p">Nobody has drafted a change yet.</Trans></p>
-            ) : (
-              <ul className="space-y-2">
-                {drafts.data.map((d) => (
-                  <li key={d.id}>
-                    <span className="font-medium text-gray-900">{d.title}</span>
-                    <span className="ml-2 text-xs text-gray-500">{d.status}</span>
-                    {d.rationale && <span className="block text-gray-600">{d.rationale}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
           </Section>
         )}
 

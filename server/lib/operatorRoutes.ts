@@ -129,6 +129,10 @@ export const ROUTE_POWERS: Readonly<Record<string, Capability>> = {
   "POST /api/admin/needs/retire": "map.publish",
   "POST /api/admin/needs/links": "map.publish",
   "DELETE /api/admin/needs/links/:id": "map.publish",
+  // Reading the drafts belongs to whoever may decide them: org chart drafts are shown to admins only (the lead,
+  // 25 Nov 2026), and to a holder of the power that publishes them.
+  "GET /api/admin/org/drafts": "org.decide",
+  "GET /api/admin/org/drafts/:id/preview": "org.decide",
   "POST /api/admin/org/drafts": "org.decide",
   "POST /api/admin/org/drafts/:id/changes": "org.decide",
   "PUT /api/admin/org/drafts/:id/vision": "org.decide",
