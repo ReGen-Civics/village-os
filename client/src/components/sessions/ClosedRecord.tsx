@@ -40,7 +40,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { Copy } from "lucide-react";
-import { ENTRY_LABELS, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
+import { ENTRY_LABELS, SESSIONS_API, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
 import { taskDateWords, taskRecordUrl, type TaskCard, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
@@ -50,6 +50,7 @@ import TaskMailButton from "./TaskMailButton";
 import NightAfterCall from "./NightAfterCall";
 import type { RoomActions } from "./useSessionRoom";
 import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 import { AIM_DEFS } from "./libraryCopy";
 
@@ -174,6 +175,7 @@ function EntryLines({
 }
 
 function ShareableMinutes({ view }: { view: SessionView }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [text, setText] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "failed">("idle");
@@ -207,9 +209,9 @@ function ShareableMinutes({ view }: { view: SessionView }) {
   return (
     <section className={CARD} aria-labelledby="record-shareable">
       <h3 id="record-shareable" className={H3}>
-        {SESSION_COPY.shareableTitle}
+        {SC.shareableTitle}
       </h3>
-      <p className={`${HINT} mt-1`}>{SESSION_COPY.shareableLede}</p>
+      <p className={`${HINT} mt-1`}>{SC.shareableLede}</p>
       {text == null ? (
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button type="button" className={BTN_SECONDARY} disabled={state === "loading"} onClick={() => void load()}>
@@ -227,7 +229,7 @@ function ShareableMinutes({ view }: { view: SessionView }) {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button type="button" className={BTN_SECONDARY} onClick={() => void copy()}>
               <Copy className="h-4 w-4" aria-hidden="true" />
-              {SESSION_COPY.copyMinutes}
+              {SC.copyMinutes}
             </button>
             {copied && (
               <p role="status" className="text-sm text-muted-foreground">
@@ -253,6 +255,7 @@ export default function ClosedRecord({
   /** The room's own clock, for a round that outlived its call. */
   now?: number;
 }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const TW = useTaskWords();
   // What a round's write landed, read out from a line that outlives the round,
@@ -309,7 +312,7 @@ export default function ClosedRecord({
         {dawn && <Celebration kind="dawn" intensity="whisper" size={72} />}
         <div className="min-w-0 flex-1">
           <p role="status" className="text-base font-medium text-foreground">
-            {SESSION_COPY.closeDone}
+            {SC.closeDone}
           </p>
           <p className="mt-1 font-accent text-3xl text-notice" data-signoff="">
             {RC.signoff}

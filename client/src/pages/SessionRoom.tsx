@@ -39,7 +39,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { m } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { SESSION_COPY, SESSION_DISCARD_COPY, STAGE_DEFS, type SessionStage } from "@shared/sessions";
+import { SESSION_DISCARD_COPY, STAGE_DEFS, type SessionStage } from "@shared/sessions";
 import Layout from "@/components/Layout";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
@@ -66,8 +66,8 @@ import { BTN_QUIET, H2, STAGE_LEDE } from "@/components/sessions/roomUi";
 import { useRoomNow, useSessionRoom } from "@/components/sessions/useSessionRoom";
 import CardInvite from "@/components/sessionCard/CardInvite";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
-const NAME = SESSION_COPY.listTitle;
 
 function roomId(raw: string | undefined): number | null {
   if (!raw || !/^[1-9]\d{0,9}$/.test(raw)) return null;
@@ -93,6 +93,7 @@ function Notice({ children, busy = false }: { children: string; busy?: boolean }
 }
 
 export default function SessionRoom() {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const params = useParams<{ id: string }>();
   const id = roomId(params.id);
@@ -156,11 +157,11 @@ export default function SessionRoom() {
   );
 
   if (!modules.loaded) return <Notice busy>{RC.opening}</Notice>;
-  if (!on) return <ModuleGate moduleId="sessions" name={NAME} />;
-  if (!user) return <SignInToSee moduleId="sessions" name={NAME} />;
+  if (!on) return <ModuleGate moduleId="sessions" name={SC.listTitle} />;
+  if (!user) return <SignInToSee moduleId="sessions" name={SC.listTitle} />;
   if (id == null || room.status === "missing") return <Notice>{RC.missing}</Notice>;
   if (room.status === "gone") return <Notice>{goneSentence}</Notice>;
-  if (room.status === "refused") return <Notice>{SESSION_COPY.closedNoAccess}</Notice>;
+  if (room.status === "refused") return <Notice>{SC.closedNoAccess}</Notice>;
   if (room.status === "signed-out") return <Notice>{RC.signedOut}</Notice>;
   if (room.status === "failed" && !room.view) return <Notice>{RC.failed}</Notice>;
   if (!room.view) return <Notice busy>{RC.opening}</Notice>;

@@ -18,17 +18,19 @@
  * the card says where it went.
  */
 import { useState } from "react";
-import { SESSION_COPY, SESSION_LIMITS, cleanText } from "@shared/sessions";
+import { SESSION_LIMITS, cleanText } from "@shared/sessions";
 import EntryCard from "./EntryCard";
 import SendTension from "./SendTension";
 import { TENSION_SEND_COPY } from "@shared/sessionLibrary";
 import GrowingText from "./GrowingText";
 import { BTN_PRIMARY, BTN_QUIET, ENTRY_GLYPH, LABEL_CAPS, PANEL, UNDER_BOX, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 const Feather = ENTRY_GLYPH.tension;
 
 export default function TensionCatcher({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -97,7 +99,7 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
           }}
         >
           <label className="sr-only" htmlFor="tension-text">
-            {SESSION_COPY.addTension}
+            {SC.addTension}
           </label>
           <GrowingText
             id="tension-text"
@@ -131,7 +133,7 @@ export default function TensionCatcher({ view, actions }: Omit<StageProps, "now"
             }}
           >
             <Feather className="h-4 w-4" aria-hidden="true" />
-            {SESSION_COPY.addTension}
+            {SC.addTension}
           </button>
           {saved && (
             <p role="status" className="text-sm text-open">

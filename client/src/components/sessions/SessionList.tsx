@@ -23,9 +23,10 @@
  */
 import { Link } from "wouter";
 import { MushroomNetwork } from "@/components/sacred/living";
-import { SESSION_COPY, SESSION_LIST_COPY, type SessionListRow } from "@shared/sessions";
+import { SESSION_LIST_COPY, type SessionListRow } from "@shared/sessions";
 import { Gloss, GlossChip, useGlossGroup } from "@/components/sheet/GlossChip";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, GLYPH, GLYPH_ICON, GLYPH_STROKE, INPUT, LABEL, PANEL } from "./roomUi";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
@@ -89,6 +90,7 @@ function SessionRow({
   onJoin: (id: number) => void;
   gloss: ReturnType<typeof useGlossGroup>;
 }) {
+  const SC = useSessionWords();
   const busy = join.joiningId === row.id;
   const refused = join.error && join.error.id === row.id ? join.error.text : null;
   const glossKey = `open-${row.id}`;
@@ -115,7 +117,7 @@ function SessionRow({
         <div className="flex flex-col items-end gap-2">
           {row.status === "open" && opened && (
             <GlossChip tone="open" open={gloss.isOpen(glossKey)} glossId={glossId} onToggle={() => gloss.toggle(glossKey)} onClose={gloss.close}>
-              {SESSION_COPY.openNow}
+              {SC.openNow}
             </GlossChip>
           )}
           {row.status === "open" &&
@@ -125,7 +127,7 @@ function SessionRow({
               </Link>
             ) : (
               <button type="button" className={LIST_UI.secondary} onClick={() => onJoin(row.id)} disabled={join.joiningId != null}>
-                {busy ? SESSION_LIST_COPY.joining : SESSION_COPY.joinButton}
+                {busy ? SESSION_LIST_COPY.joining : SC.joinButton}
               </button>
             ))}
         </div>
@@ -148,14 +150,15 @@ function SessionRow({
 
 /** The rooms open now. Empty is a sentence, never a blank box. */
 export function OpenSessions({ rows, join, onJoin }: { rows: SessionListRow[]; join: JoinState; onJoin: (id: number) => void }) {
+  const SC = useSessionWords();
   const gloss = useGlossGroup();
   return (
     <section aria-labelledby="sessions-open-heading">
       <h2 id="sessions-open-heading" className={LIST_UI.heading}>
-        {SESSION_COPY.openNow}
+        {SC.openNow}
       </h2>
       {rows.length === 0 ? (
-        <p className={`mt-3 ${LIST_UI.card} ${LIST_UI.hint}`}>{SESSION_COPY.nothingOpen}</p>
+        <p className={`mt-3 ${LIST_UI.card} ${LIST_UI.hint}`}>{SC.nothingOpen}</p>
       ) : (
         <ul className="mt-4 space-y-3">
           {rows.map((row) => (
@@ -169,11 +172,12 @@ export function OpenSessions({ rows, join, onJoin }: { rows: SessionListRow[]; j
 
 /** Closed sessions this member can read: the ones they were in, or every one for an admin. */
 export function RecentSessions({ rows }: { rows: SessionListRow[] }) {
+  const SC = useSessionWords();
   const gloss = useGlossGroup();
   return (
     <section aria-labelledby="sessions-recent-heading">
       <h2 id="sessions-recent-heading" className={LIST_UI.heading}>
-        {SESSION_COPY.recent}
+        {SC.recent}
       </h2>
       {rows.length === 0 ? (
         <p className={`mt-3 ${LIST_UI.card} ${LIST_UI.hint}`}>{SESSION_LIST_COPY.recentEmpty}</p>

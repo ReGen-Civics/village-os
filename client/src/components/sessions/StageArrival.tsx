@@ -24,7 +24,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ARRIVAL_MAX,
   ARRIVAL_MIN,
-  SESSION_COPY,
   SESSION_LIMITS,
   STAGE_DEFS,
   arrivalIsLow,
@@ -52,10 +51,12 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 const NUMBERS = Array.from({ length: ARRIVAL_MAX - ARRIVAL_MIN + 1 }, (_, i) => ARRIVAL_MIN + i);
 
 export default function StageArrival({ view, actions }: StageProps) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   // The facilitator filling in for somebody (0288) gives that person's number here.
   const forNo = view.me.facilitates ? (actions.fillingFor ?? null) : null;
@@ -125,13 +126,13 @@ export default function StageArrival({ view, actions }: StageProps) {
     <div className="space-y-5">
       {arrivalIsLow(summary) && (
         <p role="status" className="rounded-xl border border-notice/50 bg-muted px-4 py-3 text-sm font-medium text-foreground">
-          {SESSION_COPY.arrivalLow}
+          {SC.arrivalLow}
         </p>
       )}
 
       <section className={CARD} aria-labelledby="arrival-mine">
         <h3 id="arrival-mine" className={H3}>
-          {SESSION_COPY.arrivalPrompt}
+          {SC.arrivalPrompt}
         </h3>
         {joined ? (
           <div className="mt-3 space-y-4">
@@ -154,7 +155,7 @@ export default function StageArrival({ view, actions }: StageProps) {
             </div>
             <div>
               <label htmlFor="arrival-wish" className={`${LABEL} mb-1`}>
-                {SESSION_COPY.wishPrompt}
+                {SC.wishPrompt}
               </label>
               <GrowingText
                 id="arrival-wish"
@@ -164,7 +165,7 @@ export default function StageArrival({ view, actions }: StageProps) {
                   setSaved(false);
                 }}
                 onSubmit={() => void give()}
-                label={SESSION_COPY.wishPlaceholder}
+                label={SC.wishPlaceholder}
                 max={SESSION_LIMITS.wish}
                 minRows={1}
                 singleLine
@@ -176,7 +177,7 @@ export default function StageArrival({ view, actions }: StageProps) {
               </button>
               {saved && (
                 <p role="status" className="text-sm text-open">
-                  {SESSION_COPY.arrivalSaved}
+                  {SC.arrivalSaved}
                 </p>
               )}
             </div>

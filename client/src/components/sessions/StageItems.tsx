@@ -11,10 +11,11 @@
  */
 import { useState } from "react";
 import { Play } from "lucide-react";
-import { SESSION_COPY, STAGE_DEFS, type SessionItem } from "@shared/sessions";
+import { STAGE_DEFS, type SessionItem } from "@shared/sessions";
 import ItemPage from "./ItemPage";
 import { BTN_QUIET, CARD, HINT, PANEL, agendaOrder, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { AIM_DEFS } from "./libraryCopy";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -34,6 +35,7 @@ function ItemNumber({ n, on, done }: { n: number; on: boolean; done: boolean }) 
 }
 
 export default function StageItems({ view, now, actions }: StageProps) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [picked, setPicked] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,7 +102,7 @@ export default function StageItems({ view, now, actions }: StageProps) {
           )}
         </nav>
         <div className={`${CARD} py-12 text-center`}>
-          <p className="text-muted-foreground">{SESSION_COPY.itemNone}</p>
+          <p className="text-muted-foreground">{SC.itemNone}</p>
         </div>
       </div>
     );
@@ -134,7 +136,7 @@ export default function StageItems({ view, now, actions }: StageProps) {
 
       {shown.id !== activeId && (
         <div className={`${PANEL} flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm`}>
-          <span className="text-muted-foreground">{activeTitle ? RC.browsing(shown.title, activeTitle) : SESSION_COPY.itemNone}</span>
+          <span className="text-muted-foreground">{activeTitle ? RC.browsing(shown.title, activeTitle) : SC.itemNone}</span>
           <div className="flex gap-2">
             {runs && shown.status !== "done" && (
               <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => void start(shown.id)}>

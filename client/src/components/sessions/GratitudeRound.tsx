@@ -16,7 +16,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Heart } from "lucide-react";
-import { ROOM_GRATITUDE_AMOUNT, SESSION_COPY, SESSION_LIMITS, cleanText, type SessionPerson } from "@shared/sessions";
+import { ROOM_GRATITUDE_AMOUNT, SESSION_LIMITS, cleanText, type SessionPerson } from "@shared/sessions";
 import { gameFetch } from "@/lib/gameApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import GrowingText from "./GrowingText";
@@ -24,6 +24,7 @@ import PersonDisc from "./PersonDisc";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, CARD, H3, HINT, INPUT, LABEL, UNDER_BOX, firstName, type StageProps } from "./roomUi";
 import { refusalSentence } from "./useSessionRoom";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 function ThankRow({ person }: { person: SessionPerson }) {
   const RC = useRoomWords();
@@ -131,6 +132,7 @@ function ThankRow({ person }: { person: SessionPerson }) {
 }
 
 export default function GratitudeRound({ view }: Pick<StageProps, "view">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const on = useModuleOn("gratitude");
   if (!on) return null;
@@ -138,9 +140,9 @@ export default function GratitudeRound({ view }: Pick<StageProps, "view">) {
   return (
     <section className={CARD} aria-labelledby="close-gratitude">
       <h3 id="close-gratitude" className={H3}>
-        {SESSION_COPY.gratitudeTitle}
+        {SC.gratitudeTitle}
       </h3>
-      <p className={`${HINT} mb-3`}>{SESSION_COPY.gratitudeLede}</p>
+      <p className={`${HINT} mb-3`}>{SC.gratitudeLede}</p>
       {others.length > 0 && view.me.joined ? (
         <ul className="space-y-2">
           {others.map((p) => (

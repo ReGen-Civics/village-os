@@ -12,12 +12,13 @@
  * second time. The count line says the news in words either way.
  */
 import { useEffect, useRef, useState } from "react";
-import { SESSION_COPY, unownedActions } from "@shared/sessions";
+import { unownedActions } from "@shared/sessions";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { ActionRow, AddAction } from "./ActionRow";
 import { CARD, H3, HINT, agendaOrder, isHeld, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /**
  * The id of the action just taken up while this screen watched, as a key that
@@ -65,6 +66,7 @@ export default function StageActions({
   /** The refused close's own sentence, said here while those actions still wait. */
   refusal?: string | null;
 }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const taken = useTakenUp(view.entries);
   const seeds = useMomentWindow(taken);
@@ -93,8 +95,8 @@ export default function StageActions({
           {unowned.length === 1
             ? RC.unownedOne
             : unowned.length
-              ? `${unowned.length} ${SESSION_COPY.unownedLeft}`
-              : SESSION_COPY.everyoneHolds}
+              ? `${unowned.length} ${SC.unownedLeft}`
+              : SC.everyoneHolds}
         </p>
         {seeds && taken && <Celebration kind="seeds" intensity="whisper" size={56} seed={Number(taken.split(":")[0])} />}
       </div>

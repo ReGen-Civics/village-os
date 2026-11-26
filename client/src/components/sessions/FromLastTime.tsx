@@ -30,7 +30,6 @@ import { useState } from "react";
 import SendTension from "./SendTension";
 import {
   ROOM_ITEM_MINUTES_DEFAULT,
-  SESSION_COPY,
   SESSION_LIMITS,
   cleanLine,
   type ItemAim,
@@ -40,6 +39,7 @@ import TaskCardView from "@/components/tasks/TaskCard";
 import EntryCard from "./EntryCard";
 import { BTN_QUIET, BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, heldLine, keepsNotes, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { useTaskWords } from "@/components/tasks/taskWords";
 import { AIM_DEFS } from "./libraryCopy";
 
@@ -77,6 +77,7 @@ function newestSource(cards: readonly TaskCard[]): number | null {
 }
 
 export default function FromLastTime({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const TW = useTaskWords();
   const carried = view.carried;
@@ -119,14 +120,14 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
   return (
     <section className={CARD} aria-labelledby="carried-title">
       <h3 id="carried-title" tabIndex={-1} className={`${H3} outline-none`}>
-        {SESSION_COPY.carriedTitle}
+        {SC.carriedTitle}
       </h3>
       {carried && <p className={HINT}>{carried.title}</p>}
 
       {(useTasks || carriedActions.length > 0) && (
         <div className="mt-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className={LABEL_CAPS}>{SESSION_COPY.carriedActions}</h4>
+            <h4 className={LABEL_CAPS}>{SC.carriedActions}</h4>
             {canAdd && source != null && !checkAdded && (
               <button
                 type="button"
@@ -186,7 +187,7 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
 
       {(backlog.length > 0 || parkedItems.length > 0) && (
         <div className="mt-4">
-          <h4 className={LABEL_CAPS}>{SESSION_COPY.carriedBacklog}</h4>
+          <h4 className={LABEL_CAPS}>{SC.carriedBacklog}</h4>
           <ul className="mt-2 space-y-2">
             {parkedItems.map((p, i) => (
               <li key={`p${i}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted px-3.5 py-3 text-sm">

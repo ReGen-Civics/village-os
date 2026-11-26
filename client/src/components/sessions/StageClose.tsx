@@ -22,7 +22,6 @@ import {
   CLOSE_REFUSAL,
   FACILITATION_LABELS,
   FACILITATION_VALUES,
-  SESSION_COPY,
   SESSION_LIMITS,
   cleanLine,
   cleanText,
@@ -51,8 +50,10 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 function WordRound({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const mine = myResponse(view, "word");
   const [word, setWord] = useState(mine?.value ?? "");
@@ -76,7 +77,7 @@ function WordRound({ view, actions }: Omit<StageProps, "now">) {
       <div className={HERO_INNER}>
         <div className={HERO_CONTENT}>
           <h3 id="close-word" className={H3}>
-            {SESSION_COPY.wordPrompt}
+            {SC.wordPrompt}
           </h3>
           {canSay && (
             <form
@@ -122,6 +123,7 @@ function WordRound({ view, actions }: Omit<StageProps, "now">) {
 }
 
 function FacilitationFeedback({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [choice, setChoice] = useState<FacilitationValue | null>(null);
   const [words, setWords] = useState("");
@@ -144,7 +146,7 @@ function FacilitationFeedback({ view, actions }: Omit<StageProps, "now">) {
   return (
     <section className={CARD} aria-labelledby="close-facilitation">
       <h3 id="close-facilitation" className={H3}>
-        {SESSION_COPY.facilitationPrompt}
+        {SC.facilitationPrompt}
       </h3>
       <div role="radiogroup" aria-labelledby="close-facilitation" className="mt-3 grid gap-2 sm:grid-cols-3">
         {FACILITATION_VALUES.map((v) => (
@@ -165,7 +167,7 @@ function FacilitationFeedback({ view, actions }: Omit<StageProps, "now">) {
       </div>
       <div className="mt-3">
         <label htmlFor="close-facilitation-words" className={`${LABEL} mb-1`}>
-          {SESSION_COPY.facilitationMore}
+          {SC.facilitationMore}
         </label>
         <GrowingText
           id="close-facilitation-words"
@@ -175,7 +177,7 @@ function FacilitationFeedback({ view, actions }: Omit<StageProps, "now">) {
             setSent(false);
           }}
           onSubmit={() => void send()}
-          label={SESSION_COPY.facilitationMore}
+          label={SC.facilitationMore}
           max={SESSION_LIMITS.text}
           minRows={3}
           mic
@@ -241,6 +243,7 @@ export function FacilitationReading({ view }: Pick<StageProps, "view">) {
 }
 
 function ToolIdea({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -265,11 +268,11 @@ function ToolIdea({ view, actions }: Omit<StageProps, "now">) {
   return (
     <section className={CARD} aria-labelledby="close-tool">
       <h3 id="close-tool" className={H3}>
-        {SESSION_COPY.toolPrompt}
+        {SC.toolPrompt}
       </h3>
       <div className="mt-3">
         <label htmlFor="close-tool-words" className="sr-only">
-          {SESSION_COPY.toolPrompt}
+          {SC.toolPrompt}
         </label>
         <GrowingText
           id="close-tool-words"
@@ -279,7 +282,7 @@ function ToolIdea({ view, actions }: Omit<StageProps, "now">) {
             setSent(false);
           }}
           onSubmit={() => void send()}
-          label={SESSION_COPY.toolPlaceholder}
+          label={SC.toolPlaceholder}
           max={SESSION_LIMITS.text}
           minRows={3}
           mic
@@ -291,7 +294,7 @@ function ToolIdea({ view, actions }: Omit<StageProps, "now">) {
         </button>
         {sent && (
           <p role="status" className="text-sm text-open">
-            {SESSION_COPY.toolSent}
+            {SC.toolSent}
           </p>
         )}
       </div>
@@ -300,6 +303,7 @@ function ToolIdea({ view, actions }: Omit<StageProps, "now">) {
 }
 
 function CloseButton({ actions, onRefused }: Pick<StageProps, "actions"> & { onRefused: (unowned: number[], sentence: string) => void }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -327,7 +331,7 @@ function CloseButton({ actions, onRefused }: Pick<StageProps, "actions"> & { onR
   return (
     <section id={CLOSE_TARGET} className="rounded-2xl border border-notice/40 bg-card p-5 text-card-foreground shadow-sm">
       {asking ? (
-        <div role="group" aria-label={SESSION_COPY.closeButton}>
+        <div role="group" aria-label={SC.closeButton}>
           <p className="font-medium text-foreground">{RC.closeConfirm}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void close()}>
@@ -340,7 +344,7 @@ function CloseButton({ actions, onRefused }: Pick<StageProps, "actions"> & { onR
         </div>
       ) : (
         <button type="button" className={BTN_PRIMARY} onClick={() => setAsking(true)}>
-          {SESSION_COPY.closeButton}
+          {SC.closeButton}
         </button>
       )}
       {refusal && (

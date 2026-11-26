@@ -33,7 +33,7 @@
  */
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ThumbsDown, ThumbsUp } from "lucide-react";
-import { ITEM_AIMS, SESSION_COPY, SESSION_LIMITS, cleanLine, type ItemAim, type SessionItem } from "@shared/sessions";
+import { ITEM_AIMS, SESSION_LIMITS, cleanLine, type ItemAim, type SessionItem } from "@shared/sessions";
 import { VOTE_COPY, nextVote, voteScore } from "@shared/sessionVotes";
 import GrowingText from "./GrowingText";
 import FilledInNote from "./FilledInNote";
@@ -57,6 +57,7 @@ import {
 } from "./roomUi";
 import type { ItemPatch } from "./useSessionRoom";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 import { AIM_DEFS, LIBRARY_COPY } from "./libraryCopy";
 
 const clampMinutes = (n: number) =>
@@ -86,6 +87,7 @@ function ItemFields({
   onSubmit: () => void;
   onCancel?: () => void;
 }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   return (
     <div className="space-y-3">
@@ -109,7 +111,7 @@ function ItemFields({
         <>
           <div className={UNDER_BOX}>
             <label htmlFor={`${idBase}-aim`} className="block min-w-[10rem]">
-              <span className={LABEL}>{SESSION_COPY.agendaAimLabel}</span>
+              <span className={LABEL}>{SC.agendaAimLabel}</span>
               <select id={`${idBase}-aim`} className={`${INPUT} mt-1`} value={aim} onChange={(e) => onAim(e.target.value as ItemAim)}>
                 {ITEM_AIMS.map((a) => (
                   <option key={a} value={a}>
@@ -119,7 +121,7 @@ function ItemFields({
               </select>
             </label>
             <label htmlFor={`${idBase}-min`} className="block w-28">
-              <span className={LABEL}>{SESSION_COPY.agendaMinutesLabel}</span>
+              <span className={LABEL}>{SC.agendaMinutesLabel}</span>
               <input
                 id={`${idBase}-min`}
                 type="number"
@@ -140,6 +142,7 @@ function ItemFields({
 }
 
 export function AddItem({ view, actions }: Omit<StageProps, "now">) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [title, setTitle] = useState("");
   const [aim, setAim] = useState<ItemAim>("explore");
@@ -170,7 +173,7 @@ export function AddItem({ view, actions }: Omit<StageProps, "now">) {
         void add();
       }}
     >
-      <h4 className={LABEL_CAPS}>{SESSION_COPY.agendaAdd}</h4>
+      <h4 className={LABEL_CAPS}>{SC.agendaAdd}</h4>
       <ItemFields
         idBase="agenda-new"
         title={title}

@@ -24,10 +24,11 @@
  */
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { SESSION_COPY, SESSION_LIMITS, STAGE_DEFS, timebox, type SessionAction, type SessionStage, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, STAGE_DEFS, timebox, type SessionAction, type SessionStage, type SessionView } from "@shared/sessions";
 import { BTN_PRIMARY, BTN_SECONDARY, agendaOrder, leads } from "./roomUi";
 import type { RoomActions } from "./useSessionRoom";
 import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /** What a button does: moves for the room, in order, or a place on the page to go to. */
 type Move = { acts: SessionAction[] } | { focus: string };
@@ -102,6 +103,7 @@ export default function NextStepBar({
   shown: SessionStage;
   onMoved: () => void;
 }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const step = shown === view.state.stage ? nextStep(view, now) : null;
@@ -138,7 +140,7 @@ export default function NextStepBar({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{RC.nextStepLabel}</p>
         <p role="status" aria-live="polite" aria-atomic="true" className="mt-0.5 font-semibold text-foreground">
           {step.line}
-          {step.over && <span className="sr-only"> {SESSION_COPY.overChoices}</span>}
+          {step.over && <span className="sr-only"> {SC.overChoices}</span>}
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
