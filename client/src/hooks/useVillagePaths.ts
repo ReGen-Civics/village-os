@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchConfigCached, useGameConfig, type PublicGameConfig } from "@/lib/gameApi";
 import { pageVarsFrom } from "@shared/pageContent/vars";
+import { usePathsInLanguage } from "@/hooks/usePathWords";
 import { DEFAULT_LADDER_TITLE, defaultVillagePathWords, servedPaths, type ServedPath } from "@shared/villagePaths";
 
 /**
@@ -28,7 +29,8 @@ export function useVillagePaths(): ServedPath[] | null {
       alive = false;
     };
   }, []);
-  return useMemo(() => (answer ? servedPathsFrom(answer.config) : null), [answer]);
+  // In the reader's language where the village has translated its path names (usePathWords.ts).
+  return usePathsInLanguage(useMemo(() => (answer ? servedPathsFrom(answer.config) : null), [answer]));
 }
 
 /**

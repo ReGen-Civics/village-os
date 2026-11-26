@@ -6,6 +6,7 @@
  * key with "The" taken off, which is never empty.
  */
 import { useEffect, useState } from "react";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 
 export interface Root {
   key: string;
@@ -51,7 +52,7 @@ export function useRootCast(): Root[] {
       live = false;
     };
   }, []);
-  return cast;
+  return useArchetypesInLanguage(cast); // the village's class words in the reader's language
 }
 
 /** For tests: forget the cached cast. */

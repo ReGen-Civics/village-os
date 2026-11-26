@@ -27,7 +27,7 @@
  *   role_card_sections   ref_key = org_roles.id
  *                        field   = "aiSupport" | "payNote" | "paySplitNote" (never "aiCompanion": it names the card's animal)
  *                                  | "idealBackground.<n>" | "qualities.<n>" | "payShape.<n>.label"
- *   village_doc          ref_key = "brand" | "visit-config" (shared/villageDocTranslation.ts)
+ *   village_doc          ref_key = "brand" | "visit-config" | "paths" (shared/villageDocTranslation.ts)
  *   page_section         ref_key = "page-<id>"
  *                        field   = "<sectionId>.<fieldKey>"
  *                                  | "<sectionId>.<listKey>.<rowId or index>.<fieldKey>"

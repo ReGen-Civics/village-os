@@ -1,5 +1,7 @@
 import Layout from "@/components/Layout";
 import GlossaryTip from "@/components/GlossaryTip";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
 import CircleName from "@/components/circles/CircleName";
 import { anchorCircleId } from "@shared/circlePicker";
@@ -255,6 +257,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
 }
 
 export default function Circles() {
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   const [expandedCircle, setExpandedCircle] = useState<string | null>(null);
   const [circles, setCircles] = useState<CircleEntry[] | null>(null);
   // The rows as they arrived, kept whole for the mini map and the role card.
@@ -294,7 +297,7 @@ export default function Circles() {
   // Authorization header alone. So this page asked as a stranger however
   // signed in the reader was, and the names never arrived for anybody.
   useEffect(() => {
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data) => {
         if (!data || !Array.isArray(data.circles)) throw new Error("bad shape");
@@ -385,7 +388,7 @@ export default function Circles() {
         );
       })
       .catch(() => setFailed(true));
-  }, []);
+  }, [locale]);
 
   const toggle = (id: string) =>
     setExpandedCircle((prev) => (prev === id ? null : id));

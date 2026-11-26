@@ -28,6 +28,7 @@
  * (components/roleDraft/DraftCarry.tsx).
  */
 import { NextForRoles } from "@/components/openProposal/RoleCardBridge";
+import { useArchetypesInLanguage } from "@/hooks/useArchetypeWords";
 import { termOf, type OpenProposalTerm } from "@shared/openProposalTerm";
 import { civilDayWords } from "@shared/seasonPlans";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -137,7 +138,8 @@ const CHIP =
 
 /** The cast, read live, in the order the village keeps it. */
 function useCast(): CastMember[] {
-  const [cast, setCast] = useState<CastMember[]>([]);
+  const [castServed, setCast] = useState<CastMember[]>([]);
+  const cast = useArchetypesInLanguage(castServed); // the village's class words in the reader's language
   useEffect(() => {
     let live = true;
     fetch("/api/archetypes")
