@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.86 (2026-11-26)
+
+### What changed for your village
+
+- **Pay stays with those who may read terms.** The proposed-changes list showed a role's pay to anyone who could open it. It now shows pay only to people with the right to read terms; everyone else sees that pay changes, with no figure, and nothing they save can erase it.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.85 still works.
+
+---
+
 ## 1.3.85 (2026-11-26)
 
 ### What changed for your village
