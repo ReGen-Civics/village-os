@@ -27,6 +27,7 @@
  */
 import { isVillageDocRef } from "../../shared/villageDocTranslation";
 import { noSharedCache, readerLocale, villageDocTranslation } from "../lib/contentTranslationRead";
+import { villagePaths } from "../lib/villagePaths";
 import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { CONTENT_KINDS, contentTranslationProblem, translatableLocales, type ContentKind } from "../../shared/contentTranslation";
@@ -124,7 +125,9 @@ export async function savePersonTranslation(
 }
 
 export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, deps: ContentTranslationDeps): void {
-  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc: deps.villageDoc });
+  // The village's path names live in their own store (server/lib/villagePaths.ts), so "paths" is read here.
+  const villageDoc = (ref: string): unknown => (ref === "paths" ? { paths: villagePaths() } : deps.villageDoc?.(ref) ?? null);
+  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc });
   const BASE = "/api/admin/content-translations";
 
   /**
@@ -137,8 +140,8 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     const ref = String(req.params.ref ?? "");
     const locale = readerLocale(req);
     noSharedCache(res);
-    if (!locale || !isVillageDocRef(ref) || !deps.villageDoc) return res.json({ translation: null });
-    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, deps.villageDoc(ref), locale) });
+    if (!locale || !isVillageDocRef(ref)) return res.json({ translation: null });
+    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, villageDoc(ref), locale) });
   });
 
   app.get(BASE, async (req, res) => {

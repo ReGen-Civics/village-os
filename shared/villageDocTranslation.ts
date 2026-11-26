@@ -10,11 +10,16 @@
  *
  *   village_doc   ref_key = "brand"         field = "project.heroHeadline" | "project.heroBody" | "project.footerBlurb" | "project.tagline"
  *                 ref_key = "visit-config"  field = "hero_subtitle" | "logistics.<key>" | "visit_types.<id>.<field>"
+ *                 ref_key = "paths"         field = "<pathId>.label" | "<pathId>.role" | "<pathId>.description"
+ *
+ * "paths" is the village's names for its four ways in (Admin, Paths & Stages: a name, a second line and a
+ * sentence each), served as the server reads them (server/lib/villagePaths.ts villagePaths()), as
+ * `{ paths: ServedPath[] }`. The menu, the footer, the bottom bar and the path pages draw them.
  *
  * Links, ids, ordering and prices that are amounts never take one: only the words a reader reads.
  */
 
-export const VILLAGE_DOC_REFS = ["brand", "visit-config"] as const;
+export const VILLAGE_DOC_REFS = ["brand", "visit-config", "paths"] as const;
 export type VillageDocRef = (typeof VILLAGE_DOC_REFS)[number];
 
 export const isVillageDocRef = (v: unknown): v is VillageDocRef => (VILLAGE_DOC_REFS as readonly string[]).includes(String(v));
@@ -22,6 +27,7 @@ export const isVillageDocRef = (v: unknown): v is VillageDocRef => (VILLAGE_DOC_
 const BRAND_FIELDS = ["heroHeadline", "heroBody", "footerBlurb", "tagline"] as const;
 const VISIT_LOGISTICS = ["contact_note", "accommodation", "getting_there", "what_to_bring"] as const;
 const VISIT_TYPE_FIELDS = ["title", "format", "duration", "cost", "cta_label", "description"] as const;
+const PATH_FIELDS = ["label", "role", "description"] as const;
 
 /** The longest translation a field takes: generous, since these are free text the village writes. */
 export const VILLAGE_DOC_FIELD_CHARS = 2000;
@@ -34,6 +40,7 @@ const words = (v: unknown): string | null => (typeof v === "string" && v.trim() 
 export function villageDocFieldOk(ref: string, field: string): boolean {
   const parts = field.split(".");
   if (ref === "brand") return parts.length === 2 && parts[0] === "project" && (BRAND_FIELDS as readonly string[]).includes(parts[1]);
+  if (ref === "paths") return parts.length === 2 && ID.test(parts[0]) && (PATH_FIELDS as readonly string[]).includes(parts[1]);
   if (ref === "visit-config") {
     if (field === "hero_subtitle") return true;
     if (parts.length === 2 && parts[0] === "logistics") return (VISIT_LOGISTICS as readonly string[]).includes(parts[1]);
@@ -48,6 +55,7 @@ export function villageDocEnglishAt(ref: string, doc: unknown, field: string): s
   const d = obj(doc);
   const parts = field.split(".");
   if (ref === "brand") return words(obj(d.project)[parts[1]]);
+  if (ref === "paths") return words((Array.isArray(d.paths) ? d.paths : []).map(obj).find((p) => p.id === parts[0])?.[parts[1]]);
   if (field === "hero_subtitle") return words(d.hero_subtitle);
   if (parts[0] === "logistics") return words(obj(d.logistics)[parts[1]]);
   const types = Array.isArray(d.visit_types) ? d.visit_types : [];
@@ -59,6 +67,7 @@ export function villageDocEnglishAt(ref: string, doc: unknown, field: string): s
 export function villageDocFields(ref: string, doc: unknown): Array<{ field: string; english: string }> {
   const candidates: string[] = [];
   if (ref === "brand") for (const f of BRAND_FIELDS) candidates.push(`project.${f}`);
+  if (ref === "paths") for (const p of (Array.isArray(obj(doc).paths) ? (obj(doc).paths as unknown[]) : []).map(obj)) if (typeof p.id === "string" && ID.test(p.id)) for (const f of PATH_FIELDS) candidates.push(`${p.id}.${f}`);
   if (ref === "visit-config") {
     candidates.push("hero_subtitle");
     for (const k of VISIT_LOGISTICS) candidates.push(`logistics.${k}`);
@@ -81,6 +90,7 @@ export function overlayVillageDoc<T>(ref: string, doc: T, fields: Readonly<Recor
   for (const [field, text] of entries) {
     const parts = field.split(".");
     if (ref === "brand") (out.project = { ...obj(out.project), [parts[1]]: text });
+    else if (ref === "paths") { if (Array.isArray(out.paths)) out.paths = out.paths.map((p) => (obj(p).id === parts[0] ? { ...obj(p), [parts[1]]: text } : p)); }
     else if (field === "hero_subtitle") out.hero_subtitle = text;
     else if (parts[0] === "logistics") out.logistics = { ...obj(out.logistics), [parts[1]]: text };
     else if (Array.isArray(out.visit_types)) out.visit_types = out.visit_types.map((t) => (obj(t).id === parts[1] ? { ...obj(t), [parts[2]]: text } : t));
