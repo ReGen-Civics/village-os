@@ -90,7 +90,7 @@ export default function PurposeStatementPanel({ password }: { password: string }
 
   const words = countWords(statement);
   return (
-    <div className="bg-background text-foreground rounded-lg p-4 mb-4">
+    <div id="setup-step-purpose" className="scroll-mt-20 bg-background text-foreground rounded-lg p-4 mb-4">
       <h4 className="text-sm font-semibold mb-1"><Trans context="PurposeStatementPanel, h4">What this village is for, in one statement</Trans></h4>
       <p className="text-xs text-muted-foreground mb-3">
         <Trans context="PurposeStatementPanel, p">The sentence every later change is judged against. Your village cannot start its Game

@@ -123,7 +123,9 @@ import SecretsKeyBanner, { SealedSaveButton } from "@/components/admin/SecretsKe
 import SigningKeyCard from "@/components/admin/SigningKeyCard";
 import VariablesTab from "@/components/admin/VariablesTab";
 import VotingWeightsPanel from "@/components/admin/VotingWeightsPanel";
-import NeedsPanel, { NeedsSetupStep, useNeedsSetupObservation } from "@/components/admin/NeedsPanel";
+import NeedsPanel, { NeedsSetupStep } from "@/components/admin/NeedsPanel";
+import GuideSetupStep, { useSetupObservations } from "@/components/admin/GuideSetupStep";
+import { useSetupLanding } from "@/components/admin/setupLanding";
 import PurposeStatementPanel from "@/components/admin/PurposeStatementPanel";
 import ProfileImportDoor from "@/components/admin/ProfileImportDoor";
 import { takePrefill, usePrefill } from "@/lib/profilePrefill";
@@ -7047,14 +7049,15 @@ function BrandImageField({
 
 /* Exported for client/src/pages/Admin.setupWizard.test.tsx, which is the only
    caller outside this file. The Admin shell below still renders it directly. */
-export function SetupWizard({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
+export function SetupWizard({ password, onOpenTab, onOpenHelper }: { password: string; onOpenTab: (tab: string) => void; onOpenHelper?: () => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [brand, setBrand] = useState<any>(null);
   const [defaults, setDefaults] = useState<any>(null);
   const [savingSection, setSavingSection] = useState<string | null>(null);
   const [savedBrand, setSavedBrand] = useState<any>(null); // As the server holds it: the save bar counts against this.
   const [savedCurrency, setSavedCurrency] = useState(""); // As last stored, so the picker can say when a choice is not saved yet.
   const wizard = useWizardFacts();
-  const needsSetup = useNeedsSetupObservation(password);
+  const needsSetup = useSetupObservations(password);
+  useSetupLanding(brand ? measureSetup(brand, needsSetup.observations) : null); // One door: the asked-for step, else the first not done (setupLanding.ts).
   const load = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/admin/brand`, { headers: authHeaders(password) });
@@ -7102,8 +7105,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
 
   if (!brand || !defaults) return <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>;
 
-  /* Identity and Pictures are read from `brand`; the other four still come from
-     the flags a founder ticks. See client/src/components/admin/setupProgress.ts. */
+  /* Counted where readable (guide, identity, needs, pictures), ticked where not. See setupProgress.ts. */
   const rows = measureSetup(brand, needsSetup.observations);
   const doneCount = rows.filter((r) => r.done).length;
   const setupComplete = doneCount === rows.length;
@@ -7166,10 +7168,10 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             ? "Your project's identity, pictures, and numbers. Change any of it any time."
             : "Everything you need to turn this into your project's coordination game. Blank fields keep the platform default as the suggestion."}
         </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          <Trans context="Admin, p">Identity and Pictures are counted from what you have saved here, so they go back to
-          unfinished if a field is ever emptied. The other four steps are yours to tick, and say only what you told them.
-        </Trans></p>
+        <ul className="text-xs text-muted-foreground mt-2 list-disc pl-5 space-y-0.5">{/* Short lines, never a paragraph (the lead, 26 Nov 2026). */}
+          <li><Trans context="Admin, setup wizard line">Counted from what is connected and saved: your agent or guide, Identity, What this village is for, Pictures. They reopen if that changes.</Trans></li>
+          <li><Trans context="Admin, setup wizard line">The other four steps are yours to tick.</Trans></li>
+        </ul>
         {!setupComplete ? (
           <div className="flex items-center gap-3 mt-4">
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden max-w-xs">
@@ -7188,9 +7190,10 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
       </div>
 
       {/* A project from ReGen Civics brings its file here. Identity goes into the boxes below, unsaved (ProfileImportDoor.tsx). */}
+      <GuideSetupStep {...step} password={password} status={needsSetup.guide.status} onRead={needsSetup.guide.reread} onOpenHelper={onOpenHelper} />
       <ProfileImportDoor password={password} onOpenTab={onOpenTab} onIdentity={(p) => setBrand((b: any) => ({ ...b, project: { ...b.project, ...p } }))} />
 
-      <SetupSection {...step} id="identity" n={1} title={t({ message: "Identity", context: "Admin, title" })} subtitle="What your project is called.">
+      <SetupSection {...step} id="identity" title={t({ message: "Identity", context: "Admin, title" })} subtitle="What your project is called.">
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           {/* catalystName is a LABEL and not a role: renaming it changes no permission (see client/src/lib/gameApi.ts).
               It is deliberately NOT one of the measured Identity fields in setupProgress.ts, because it ships with a
@@ -7220,11 +7223,8 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
           */}
           <div className="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
             <p className="text-xs font-medium text-muted-foreground mb-0.5"><Trans context="Admin, p">What your tokens are called</Trans></p>
-            <p className="text-xs text-muted-foreground">
-              <Trans context="Admin, p">Every token this village runs is named in one place, including the
-              one members earn for recognition. A rename there follows to every
-              page that says the word.
-            </Trans></p>
+            <ul className="text-xs text-muted-foreground list-disc pl-5"><li><Trans context="Admin, setup wizard line">Every token this village runs is named in one place, including the one members earn for recognition.</Trans></li>
+              <li><Trans context="Admin, setup wizard line">A rename there follows to every page that says the word.</Trans></li></ul>
             <button
               type="button"
               onClick={() => onOpenTab("tokens")}
@@ -7251,7 +7251,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
 
       <NeedsSetupStep {...step} onOpenTab={onOpenTab} summary={needsSetup.summary} />
 
-      <SetupSection {...step} id="images" n={3} title={t({ message: "Pictures", context: "Admin, title" })} subtitle="Hero images across the site. Upload your own (we host and compress them) or point at a URL you already host.">
+      <SetupSection {...step} id="images" title={t({ message: "Pictures", context: "Admin, title" })} subtitle="Hero images across the site. Upload your own (we host and compress them) or point at a URL you already host.">
         <div className="grid md:grid-cols-3 gap-4 mb-4">
           {imageField("hero", "Homepage hero")}
           {imageField("investorHero", "Investor hero")}
@@ -7267,7 +7267,9 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             "A tab icon has no alt text. Browsers name the tab from the page title, so there is nothing here for a screen reader to read.",
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2"><Trans context="Admin, p">The logo, footer mark and tab icon apply live, no deploy. Alt text ships with the pictures and is what a screen reader reads aloud in place of the image. What a shared link shows (its sentence and picture) is set in Make it yours, Pages, Whole site, and falls back to your Tagline and homepage picture.</Trans></p>
+        <ul className="text-xs text-muted-foreground mt-2 list-disc pl-5 space-y-0.5"><li><Trans context="Admin, setup wizard line">The logo, footer mark and tab icon apply live, no deploy.</Trans></li>
+          <li><Trans context="Admin, setup wizard line">Alt text ships with the pictures. A screen reader reads it aloud in place of the image.</Trans></li>
+          <li><Trans context="Admin, setup wizard line">What a shared link shows is set in Make it yours, Pages, Whole site. Until then it uses your Tagline and homepage picture.</Trans></li></ul>
         {/* Typography lives with Pictures: both are "how the village looks".
             Self-contained component — see client/src/components/TypographyPanel.tsx. */}
         <LookPanel password={password} />
@@ -7278,18 +7280,17 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         <NoticeWordsPanel password={password} />
       </SetupSection>
 
-      <SetupSection {...step} id="numbers" n={4} title={t({ message: "Numbers", context: "Admin, title" })} subtitle="The editable figures on your site.">
-        <p className="text-sm text-gray-600 mb-3">
-          <Trans context="Admin, p">Village dues live in the Settings tab, and so do the land and money figures the
-          investor page and the master plan show. Every one of them ships blank. A blank figure
-          means the page shows no figure at all, so your site only ever states what you stated.
-        </Trans></p>
+      <SetupSection {...step} id="numbers" title={t({ message: "Numbers", context: "Admin, title" })} subtitle="The editable figures on your site.">
+        <ul className="text-sm text-gray-600 mb-3 list-disc pl-5 space-y-1">
+          <li><Trans context="Admin, setup wizard line">Village dues, and the land and money figures the investor page and master plan show, live in Settings.</Trans></li>
+          <li><Trans context="Admin, setup wizard line">Every one ships blank, and a blank figure shows nothing: your site only states what you stated.</Trans></li>
+        </ul>
         <button onClick={() => onOpenTab("settings")} className="px-4 py-2 bg-white border border-gray-200 text-teal-deep rounded-lg text-sm font-medium hover:bg-gray-50">
           <Trans context="Admin, button">Open Settings →
         </Trans></button>
       </SetupSection>
 
-      <SetupSection {...step} id="content" n={5} title={t({ message: "Content", context: "Admin, title" })} subtitle="Rewrite the words, questions, milestones, and quests for your project.">
+      <SetupSection {...step} id="content" title={t({ message: "Content", context: "Admin, title" })} subtitle="Rewrite the words, questions, milestones, and quests for your project.">
         <div className="space-y-2">
           {SETUP_CONTENT_EDITORS.map((c) => (
             <div key={c.tab} className="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-2.5">
@@ -7320,12 +7321,11 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         * three). The step stays because a missing step six reads as one
         * somebody forgot.
         */}
-      <SetupSection {...step} id="map" n={6} title={t({ message: "Map & styling", context: "Admin, title" })} subtitle="How the Living Map draws your land. The editors live on the map itself.">
-        <p className="text-sm text-gray-600 mb-4">
-          <Trans context="Admin, p">Your colours, the welcome walk and the village's own words for roads, water and zones are all
-          edited on the map. Open the land and use the Village Settings button on the map's dock: the map
-          repaints as you save, so you see every change where it lands.
-        </Trans></p>
+      <SetupSection {...step} id="map" title={t({ message: "Map & styling", context: "Admin, title" })} subtitle="How the Living Map draws your land. The editors live on the map itself.">
+        <ol className="text-sm text-gray-600 mb-4 list-decimal pl-5 space-y-1">
+          <li><Trans context="Admin, setup wizard step">Open the land.</Trans></li>
+          <li><Trans context="Admin, setup wizard step">Press Village Settings on the map's dock: colours, the welcome walk, your words for roads, water and zones.</Trans></li>
+          <li><Trans context="Admin, setup wizard step">Save. The map repaints, so you see each change where it lands.</Trans></li></ol>
         <Link
           href={wizard.mapOn ? "/map" : "/modules/map"}
           className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-deep"
@@ -7334,7 +7334,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         </Link>
       </SetupSection>
 
-      <SetupSection {...step} id="technical" n={7} title={t({ message: "Go live", context: "Admin, title" })} subtitle="One-time technical setup, for you, your developer or your own AI assistant.">
+      <SetupSection {...step} id="technical" title={t({ message: "Go live", context: "Admin, title" })} subtitle="One-time technical setup, for you, your developer or your own AI assistant.">
         <ol className="space-y-4 text-sm text-gray-700">
           <li>
             <p className="font-medium text-gray-900"><Trans context="Admin, p">1. Run the published image</Trans></p>
@@ -7873,7 +7873,7 @@ export default function Admin() {
   const [moduleLifecycles, setModuleLifecycles] = useState<Record<string, ModuleLifecycle> | null>(null);
 
   // The needs scope, so this rail and the wizard agree about "finished".
-  const needsSetup = useNeedsSetupObservation(password);
+  const needsSetup = useSetupObservations(password);
   // The nav rail's width, remembered. Phones and small tablets start
   // collapsed — 224px of menu on a 390px screen left the settings themselves
   // in a column too narrow to read — and anything laptop-sized starts open,
@@ -7959,24 +7959,23 @@ export default function Admin() {
             padding steps down on small screens, where 32px a side was a
             tenth of the width. */}
         <main className="admin-fit min-w-0 w-full max-w-5xl flex-1 p-4 sm:p-6 lg:p-8">
-          {/* No AI connected yet: asked first, at the very top of Home and Make This Yours (Rye, 2026-11-09). */}
-          {(activeTab === "home" || activeTab === "setup") && (
-            <AiSetupBanner password={password} onOpenTab={setActiveTab} onOpenHelper={() => setHelperOpen(true)} />
-          )}
+          {/* No AI connected yet: asked first, on Home; Make This Yours asks it as its own step 1 (the lead, 26 Nov 2026). */}
+          {activeTab === "home" && <AiSetupBanner password={password} onOpenTab={setActiveTab} onOpenHelper={() => setHelperOpen(true)} />}
           {/* The Go-live card (L1): mounts once, above whichever panel is
               open, keyed by the open tab's module. It also feeds the nav
               filter, so the rail and the card ride one fetch. */}
-          <TourCard wait={activeTab === "home"} />
-          <ProposedChangesLink password={password} always={activeTab === "home"} />
+          {/* Make This Yours keeps only the health strip above its steps (the lead, 26 Nov 2026); the rest stay on Home and the other tabs. */}
+          {activeTab !== "setup" && <TourCard wait={activeTab === "home"} />}
+          {activeTab !== "setup" && <ProposedChangesLink password={password} always={activeTab === "home"} />}
           <HealthStrip password={password} full={activeTab === "home" || activeTab === "integrations"} onOpen={setActiveTab} />
-          <AdminHelp tab={activeTab} />
+          {activeTab !== "setup" && <AdminHelp tab={activeTab} />}
           {activeTab === "home" && <Suspense fallback={null}><HomeBase password={password} onOpenTab={setActiveTab} groups={shownGroups} role={user?.role} /></Suspense>}
           {activeTab === "modules" && <SeraAdminHome />}
           <AdminGoLive token={password} moduleId={TAB_MODULE[activeTab] ?? null}
             onLifecycles={(m) => setModuleLifecycles(m as Record<string, ModuleLifecycle>)} />
           {/* The two facts only this village can state. VillageAnswers.tsx says why it outlives the checklist. */}
-          <VillageAnswers password={password} />
-          {activeTab === "setup" && <SetupWizard password={password} onOpenTab={setActiveTab} />}
+          {activeTab !== "setup" && <VillageAnswers password={password} />}
+          {activeTab === "setup" && <SetupWizard password={password} onOpenTab={setActiveTab} onOpenHelper={() => setHelperOpen(true)} />}
           {activeTab === "events-admin" && <EventsAdminPanel password={password} />}
           {activeTab === "submissions" && <SubmissionsTab password={password} />}
           {CONTENT_SECTIONS.map(({ key, label }) => (activeTab === key ? <ContentEditorTab key={key} password={password} sectionKey={key} sectionLabel={label} /> : null))}

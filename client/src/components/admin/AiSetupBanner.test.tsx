@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
  * "Set up your AI guide first": shown only while no AI can answer, at the top
- * of Admin Home and Make This Yours, and quiet for a village that switched the
- * helper off on purpose.
+ * of Admin Home, and quiet for a village that switched the helper off on
+ * purpose. Its key button opens Make this yours, step 1.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -17,9 +17,12 @@ describe("the AI setup banner", () => {
     const onOpenHelper = vi.fn();
     render(<AiSetupBanner password="pw" onOpenTab={onOpenTab} onOpenHelper={onOpenHelper} initialStatus={{ on: false, guide: "Maia", off: "key", provider: null, available: [], names: {} }} />);
     expect(screen.getByRole("heading", { name: "Set up your AI guide first" })).toBeTruthy();
-    expect(screen.getByText(/Maia helps you through the rest of setup/)).toBeTruthy();
+    expect(screen.getByText(/Maia then helps with the rest of setup/)).toBeTruthy();
+    // The key lives on Make this yours, step 1 now (the lead, 26 Nov 2026).
+    window.history.replaceState({}, "", "/admin?tab=home");
     await userEvent.click(screen.getByRole("button", { name: "Add your Anthropic key" }));
-    expect(onOpenTab).toHaveBeenCalledWith("integrations");
+    expect(onOpenTab).toHaveBeenCalledWith("setup");
+    expect(new URLSearchParams(window.location.search).get("step")).toBe("guide");
     await userEvent.click(screen.getByRole("button", { name: "Show me how" }));
     expect(onOpenHelper).toHaveBeenCalled();
   });
@@ -42,6 +45,6 @@ describe("the AI setup banner", () => {
     render(<AiSetupBanner password="pw" onOpenTab={vi.fn()} onOpenHelper={vi.fn()} />);
     expect(await screen.findByTestId("ai-setup-banner")).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledWith("/api/admin/helper", expect.objectContaining({ headers: { Authorization: "Bearer pw" } }));
-    expect(screen.getByText(/Your village guide helps you/)).toBeTruthy();
+    expect(screen.getByText(/Your village guide then helps with/)).toBeTruthy();
   });
 });

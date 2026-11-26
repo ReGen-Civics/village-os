@@ -333,7 +333,7 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     why: "The project name, tagline and location flow into every page, email and the network handshake. Until they are set, your village introduces itself as a template.",
     severity: "blocking",
     checkKey: "brand-basics",
-    fixAt: "/admin?tab=setup",
+    fixAt: "/admin?tab=setup&step=identity",
     fixLabel: "Open Project Settings",
   },
   {
@@ -374,7 +374,7 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     why: "Every later change is judged against this sentence, so the village writes it before it starts. It says who this village serves, what they are up against, the move it is making, by what means, and what becomes true if it works.",
     severity: "blocking",
     checkKey: "gps-written",
-    fixAt: "/admin?tab=setup",
+    fixAt: "/admin?tab=setup&step=purpose",
     fixLabel: "Open Project Settings",
   },
   {
@@ -568,8 +568,9 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     why: "Your guide welcomes proposals and walks a founder through this launch journey. Without a key the guide is simply absent. Every form still works by hand.",
     severity: "optional",
     checkKey: "assistant-key",
-    fixAt: "/admin?tab=integrations",
-    fixLabel: "Open Integrations",
+    // Step 1 of Make this yours holds the key now (the lead, 26 Nov 2026).
+    fixAt: "/admin?tab=setup&step=guide",
+    fixLabel: "Open Bring your agent or guide",
   },
   {
     id: "assistant-own-key",
@@ -579,8 +580,8 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     why: "This deployment is running the guide on a key the platform lends it. That key can be rotated at any time, and when it is, your guide stops answering. Your own key means nobody else's decision can switch your guide off.",
     severity: "recommended",
     checkKey: "assistant-own-key",
-    fixAt: "/admin?tab=integrations",
-    fixLabel: "Open Integrations",
+    fixAt: "/admin?tab=setup&step=guide",
+    fixLabel: "Open Bring your agent or guide",
   },
 
   // ── Modules: an explicit decision, not a default ──────────────────────────
