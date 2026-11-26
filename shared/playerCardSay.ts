@@ -24,6 +24,8 @@ export const JOIN_KEY = "$join";
 /** The table keys the role health and handover words are noted under (shared/playerCardWords.ts, shared/roleHandover.ts). */
 export const HEALTH_PREFIX = "health";
 export const HANDOVER_PREFIX = "handover";
+/** The key the role proposal words are noted under (shared/playerCardProposals.ts). */
+export const PROPOSAL_PREFIX = "proposal";
 
 /**
  * Another words table read through the recorder while the card is built, its keys noted under `prefix` (the role

@@ -14,6 +14,7 @@ import { cardWordsWith, fixedCardWords, sayCardIn, type PlayerCardWords } from "
 import { CARD_MESSAGES, type CardMessageKey } from "../../shared/playerCardMessages";
 import type { PlayerCardPayload } from "../../shared/playerCardPayload";
 import { HEALTH_MESSAGES, healthWordsWith, type HealthMessageKey } from "../../shared/playerCardHealthMessages";
+import { PROPOSAL_MESSAGES, fixedProposalWords, proposalWordsWith, type ProposalMessageKey } from "../../shared/playerCardProposalMessages";
 import { sayerFor, speakerFor } from "./catalogSpeech";
 import { noSharedCache, readerLocale } from "./contentTranslationRead";
 
@@ -40,5 +41,14 @@ export function cardForReader(req: Parameters<typeof readerLocale>[0], res: Para
   if (!words) return { ...payload, card: plain };
   const i18n = speakerFor(locale, dirs);
   const health = i18n ? healthWordsWith(sayerFor<HealthMessageKey>(i18n, HEALTH_MESSAGES)) : undefined;
-  return { ...payload, card: { ...sayCardIn(payload.card, words, locale, health), words: fixedCardWords(words) } };
+  const proposalSay = i18n ? sayerFor<ProposalMessageKey>(i18n, PROPOSAL_MESSAGES) : undefined;
+  const extras = { ...health, ...(proposalSay ? { proposal: proposalWordsWith(proposalSay) } : {}) };
+  return {
+    ...payload,
+    card: {
+      ...sayCardIn(payload.card, words, locale, extras),
+      words: fixedCardWords(words),
+      ...(proposalSay ? { proposalWords: fixedProposalWords(proposalSay) } : {}),
+    },
+  };
 }
