@@ -1440,6 +1440,11 @@ msgstr "Gift"
 msgid "No address on this application"
 msgstr "No address on this application"
 
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdrawn. It can no longer be published."
+msgstr "Withdrawn. It can no longer be published."
+
 #: client/src/components/admin/MapChipsPanel.tsx
 msgctxt "MapChipsPanel, button"
 msgid "Add a chip"
@@ -23457,6 +23462,11 @@ msgctxt "HomeBase, h2"
 msgid "Today"
 msgstr "Today"
 
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdraw"
+msgstr "Withdraw"
+
 #: client/src/components/CashOwedPanel.tsx
 msgctxt "CashOwedPanel, p"
 msgid "For your taxes or books:"
@@ -37657,6 +37667,11 @@ msgctxt "Admin, title"
 msgid "Content"
 msgstr "Content"
 
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
+msgstr "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "{filedCount} filed. One action renews every filed role for the next moon."
 msgstr "{filedCount} filed. One action renews every filed role for the next moon."
@@ -41880,6 +41895,11 @@ msgstr "We have your application. Our confirmation email didn't go out, so we'll
 msgctxt "ResourcesAdminPanel, button"
 msgid "Edit"
 msgstr "Edit"
+
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, withdraw it"
+msgstr "Yes, withdraw it"
 
 #: client/src/components/proposals/ChangeCard.tsx
 #: client/src/components/reviewInbox/ConflictCard.tsx
@@ -55985,6 +56005,12 @@ msgstr "A batch"
 #~ msgctxt "open proposal review"
 #~ msgid "1 goal for your first moon"
 #~ msgstr "1 goal for your first moon"
+
+#. placeholder {0}: answer.otherOpenDrafts
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{0, plural, one {Another open draft also changes this role. Read both before you publish, and withdraw the one that is out of date.} other {# other open drafts also change this role. Read them before you publish, and withdraw the ones that are out of date.}}"
+msgstr "{0, plural, one {Another open draft also changes this role. Read both before you publish, and withdraw the one that is out of date.} other {# other open drafts also change this role. Read them before you publish, and withdraw the ones that are out of date.}}"
 
 #: client/src/components/roles/OtherWaysTiles.tsx
 msgctxt "roles page, other ways to join"

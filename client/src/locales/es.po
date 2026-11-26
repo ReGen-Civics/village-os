@@ -1686,6 +1686,12 @@ msgstr "Don"
 msgid "No address on this application"
 msgstr "Esta solicitud no tiene dirección"
 
+# needs-native-review: review inbox, org chart draft, 2026-11-26
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdrawn. It can no longer be published."
+msgstr "Retirado. Ya no se puede publicar."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MapChipsPanel.tsx
 msgctxt "MapChipsPanel, button"
@@ -27262,6 +27268,12 @@ msgctxt "HomeBase, h2"
 msgid "Today"
 msgstr "Hoy"
 
+# needs-native-review: review inbox, org chart draft, 2026-11-26
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdraw"
+msgstr "Retirar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/CashOwedPanel.tsx
 msgctxt "CashOwedPanel, p"
@@ -43816,6 +43828,12 @@ msgctxt "Admin, title"
 msgid "Content"
 msgstr "Contenido"
 
+# needs-native-review: review inbox, org chart draft, 2026-11-26
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
+msgstr "¿Retirar este borrador? Queda registrado y ya no se puede publicar. Nada cambia en el organigrama."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "{filedCount} filed. One action renews every filed role for the next moon."
@@ -48713,6 +48731,12 @@ msgstr "Recibimos tu solicitud. Nuestro correo de confirmación no salió, así 
 msgctxt "ResourcesAdminPanel, button"
 msgid "Edit"
 msgstr "Editar"
+
+# needs-native-review: review inbox, org chart draft, 2026-11-26
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "Yes, withdraw it"
+msgstr "Sí, retirarlo"
 
 # needs-native-review: deciding on /admin/review, 25 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx
@@ -65060,6 +65084,13 @@ msgstr "Un lote"
 #~ msgctxt "open proposal review"
 #~ msgid "1 goal for your first moon"
 #~ msgstr "1 meta para tu primera luna"
+
+# needs-native-review: review inbox, org chart draft, 2026-11-26
+#. placeholder {0}: answer.otherOpenDrafts
+#: client/src/components/reviewInbox/OrgDraftRow.tsx
+msgctxt "review inbox: an org chart draft"
+msgid "{0, plural, one {Another open draft also changes this role. Read both before you publish, and withdraw the one that is out of date.} other {# other open drafts also change this role. Read them before you publish, and withdraw the ones that are out of date.}}"
+msgstr "{0, plural, one {Otro borrador abierto también cambia este rol. Lee ambos antes de publicar y retira el que esté desactualizado.} other {Otros # borradores abiertos también cambian este rol. Léelos antes de publicar y retira los que estén desactualizados.}}"
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/roles/OtherWaysTiles.tsx
