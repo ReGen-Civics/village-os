@@ -163,6 +163,54 @@ describe("talking to the outside service", () => {
 });
 
 /**
+ * Their server stopped framing replies as server-sent events on 2026-11-03,
+ * answering plain application/json instead whenever the session was opened
+ * with Accept headers offering both (which we always send) — reaching
+ * production around 2026-11-10. Before this, every real reply came back
+ * "the reply carried no message": readEventStream() found no `data:` line in
+ * a bare JSON body. Measured against their live service 2026-11-26.
+ */
+describe("reading a plain application/json reply", () => {
+  const jsonReply = (payload: unknown, init: { status?: number; sessionId?: string } = {}) =>
+    new Response(JSON.stringify(payload), {
+      status: init.status ?? 200,
+      headers: { "content-type": "application/json", ...(init.sessionId ? { "mcp-session-id": init.sessionId } : {}) },
+    });
+
+  it("reads records from a bare JSON body, not just an SSE-framed one", async () => {
+    const s = spy(() => jsonReply({ result: { records: [{ id: "r-1" }, { id: "r-2" }] } }));
+    const r = await callTool(opts(s.fetchImpl), "s", "list_records", {});
+    expect(r).toEqual({ ok: true, records: [{ id: "r-1" }, { id: "r-2" }], cursor: null });
+  });
+
+  it("reads tools/list from a bare JSON body", async () => {
+    const s = spy(() => jsonReply({ result: { tools: [{ name: "list_records", inputSchema: {} }] } }));
+    const r = await listTools(opts(s.fetchImpl), "s");
+    expect(r).toEqual({ ok: true, tools: [{ name: "list_records", inputSchema: {} }] });
+  });
+
+  it("names a vendor error carried in a bare JSON body", async () => {
+    const s = spy(() => jsonReply({ error: { code: -32000, message: "scope does not permit this tool" } }));
+    const r = await callTool(opts(s.fetchImpl), "s", "list_records", {});
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.why).toBe("vendor-error");
+      expect(r.detail).toContain("scope");
+    }
+  });
+
+  it("reports a body declared application/json that still fails to parse", async () => {
+    const broken: FetchLike = async () => new Response("{not json", { status: 200, headers: { "content-type": "application/json" } });
+    const r = await callTool(opts(broken), "s", "list_records", {});
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.why).toBe("unreadable");
+      expect(r.detail).toContain("application/json");
+    }
+  });
+});
+
+/**
  * A REPLY THIS CANNOT READ IS DESCRIBED BY ITS SHAPE, NEVER BY ITS VALUES.
  *
  * The detail travels into the sync's answer and onto the steward's screen, and
