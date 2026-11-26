@@ -45,6 +45,7 @@ import { listArchetypes } from "../lib/characters";
 import { villageId } from "../lib/economy";
 import type { LapseContext } from "../lib/orgChart";
 import { addChange, createDraft } from "../lib/orgDrafts";
+import { cardForReader } from "../lib/platformSpeech";
 import { buildPlayerCards, cardSeasons, type CardContext, type CardLevel, type CardTier } from "../lib/playerCardData";
 import { hidesFirstNameFromVisitors, resolvePrivacy, userIdForHandle } from "../lib/profile";
 import { villageClock } from "../lib/stewardship";
@@ -176,7 +177,8 @@ export function register(app: Express, deps: Deps): void {
     const cards = await buildPlayerCards(pool, [{ userId: ownerId, tier }], await cardContext(deps, viewerId, admin, member));
     const card = cards.get(ownerId);
     if (!card) return res.status(404).json({ error: "Not found" });
-    res.json(card);
+    // Said in the reader's language when they asked for one (server/lib/platformSpeech.ts).
+    res.json(cardForReader(req, res, card));
   });
 
   app.post("/api/people/me/role-card/roles/:roleId/propose", async (req, res) => {

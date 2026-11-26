@@ -343,7 +343,7 @@ describe.skipIf(!DB_CONFIGURED)("PR 8: the pieces wired onto the live card", () 
     const after = (await card(ownerToken)).json.card;
     expect(after.across.growingEdge.text).toEqual({ kind: "shown", value: "Saying no kindly." });
     expect(after.howIHold.items.value[0].text).toBe("In the open, one moon at a time.");
-    expect(after.across.seasonalGoals.items).toEqual({ kind: "shown", value: [{ title: "Clean water for all", doneWhen: "Done when every house tested" }] });
+    expect(after.across.seasonalGoals.items).toEqual({ kind: "shown", value: [{ title: "Clean water for all", doneWhen: "Done when every house tested", when: "every house tested" }] });
   });
 
   it("proposes the handover words as one update_seat change, and refuses a link that is not https", async () => {

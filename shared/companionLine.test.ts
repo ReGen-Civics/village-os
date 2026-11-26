@@ -58,7 +58,7 @@ describe("one short line, in the reader's language", () => {
     expect(en?.language).toBe("en");
     expect(es?.language).toBe("es");
     expect(en?.short).toBe("Pick a first Quest that suits you.");
-    expect(es?.short).toBe("Elige una primera misión a tu medida.");
+    expect(es?.short).toBe("Elija una primera misión a su medida.");
   });
 
   it("keeps every line within its length, with a long village word put in", () => {

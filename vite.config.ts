@@ -398,6 +398,36 @@ function guardRouteFirstViews(): Plugin {
  *   importer's chunk, so grouping it saves nothing and only grows the group.
  */
 const SMALL_MODULE_BYTES = 12000;
+/*
+ * WHAT A MODULE SHIPS, NOT ITS SOURCE (headroom pass, 26 Nov 2026). The build
+ * moves long English out of every lazy chunk (client/src/i18n/copySplit.ts:
+ * string literals of SHORT_LITERAL_CHARS and up with a space in them), so a
+ * word table such as shared/sessionTasks.ts is 28 KB of source and 3 KB once
+ * built. Measured by its source it stayed out of every group, and so did each
+ * module that imports it, because a member may import only members: on
+ * db159d5 that chain left sessionTasks, applicantOnboarding, openProposalDecide
+ * and their importers as files of 0.5 to 3 KB, a whole block each.
+ * `shippedBytes` is the source without those literals: an estimate, used only
+ * to choose a group, never to measure anything.
+ *
+ * Measured on ea9a3a1 with scripts/check-dist-budget.mjs: 7996 KB of 8000
+ * block-charged before, 7936 after, with main JS 295 to 292 KB and first-page
+ * JS 687 to 682 KB. "smalls" is unchanged (142 KB raw), the new "tables" group
+ * is 140 KB raw and 45 KB gzipped, "smallui" went from 296 to 310 KB raw. Tried
+ * on the way, so nobody has to again: the same rule with the tables inside
+ * "smalls" measured 7932 KB but made "smalls" 282 KB raw (96 KB gzipped) for
+ * every page that imports one helper; admitting only modules that ship under
+ * 4 KB measured 7976 KB, because the padding sat in the tables and in the
+ * chain of importers they held back.
+ */
+const MOVED_LITERAL = /"(?:[^"\\\n]|\\.){20,}"|'(?:[^'\\\n]|\\.){20,}'|`(?:[^`$\\]|\\.){20,}`/g;
+function shippedBytes(code: string): number {
+  let bytes = code.length;
+  for (const lit of code.matchAll(MOVED_LITERAL)) if (lit[0].includes(" ")) bytes -= lit[0].length;
+  return bytes;
+}
+/** A component joins "smallui" by its source as before, or when it ships under this many bytes. */
+const SHIPPED_SMALL_BYTES = 4096;
 /**
  * The modules the entry imports statically, worked out on the first call and
  * kept for the rest of the build. `vite build` is one build per process here;
@@ -446,14 +476,33 @@ const SHOPFRONT_PAGES = /client[\\/]src[\\/]pages[\\/](Team|MasterPlan|Visit|Wor
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
 /**
- * The two merged groups and where their members live. A "smalls" member is a
- * plain module; a "smallui" member is a component. "smallui" may import
- * "smalls" and never the reverse, so the two can never import each other.
+ * The three merged groups and where their members live. A "smalls" or
+ * "tables" member is a plain module; a "smallui" member is a component. Each
+ * may import only the groups listed before it and itself ("smalls", then
+ * "tables", then "smallui"), so no two of them can ever import each other.
  */
 // "smalls" also takes shared/comms/ and client/src/i18n/ since the dist headroom pass (23 Nov 2026): the same plain modules, one folder down.
+const PLAIN_HOME = /[\\/]shared[\\/](?:comms[\\/])?[^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks|i18n)[\\/].+\.ts$/;
+// "tables" also takes the pages' own words (shared/pageContent/), headroom pass 2: the brochure ones keep "page-copy" (PAGE_COPY).
+const TABLE_HOME = new RegExp(`${PLAIN_HOME.source}|[\\\\/]shared[\\\\/]pageContent[\\\\/][^\\\\/]+\\.ts$`);
+/*
+ * "tables" (headroom pass, 26 Nov 2026): a plain module that is big in source
+ * and small once built (see shippedBytes), usually a word or data table, and
+ * any plain module that imports one. They were each a file of their own. In
+ * "smalls" they doubled it, to 282 KB raw and 96 KB gzipped, fetched by every
+ * page that imports any one small helper; in a group of their own they cost a
+ * page only when it uses a table. A module joins the first group it fits, so
+ * "smalls" holds exactly what it held before.
+ */
 const SMALL_GROUPS = [
-  { name: "smalls", home: /[\\/]shared[\\/](?:comms[\\/])?[^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks|i18n)[\\/].+\.ts$/, mayImport: ["smalls"] },
-  { name: "smallui", home: /client[\\/]src[\\/]components[\\/].+\.tsx?$/, mayImport: ["smalls", "smallui"] },
+  { name: "smalls", home: PLAIN_HOME, mayImport: ["smalls"], fits: (code: string) => code.length < SMALL_MODULE_BYTES },
+  { name: "tables", home: TABLE_HOME, mayImport: ["smalls", "tables"], fits: (code: string) => shippedBytes(code) < SMALL_MODULE_BYTES },
+  {
+    name: "smallui",
+    home: /client[\\/]src[\\/]components[\\/].+\.tsx?$/,
+    mayImport: ["smalls", "tables", "smallui"],
+    fits: (code: string) => code.length < SMALL_MODULE_BYTES || shippedBytes(code) < SHIPPED_SMALL_BYTES,
+  },
 ] as const;
 type SmallGroup = (typeof SMALL_GROUPS)[number]["name"];
 /** Each module's group, worked out once per build like `eagerModules`. */
@@ -520,11 +569,10 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
   // Provisionally none, so an import cycle settles as "not small" instead of looping.
   smallVerdicts.set(id, null);
   const m = info(id);
-  const group = SMALL_GROUPS.find((g) => g.home.test(id));
+  const homes = SMALL_GROUPS.filter((g) => g.home.test(id));
   const ok =
-    !!group &&
+    homes.length > 0 &&
     !!m?.code &&
-    m.code.length < SMALL_MODULE_BYTES &&
     !eager.has(id) &&
     !key.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
@@ -532,16 +580,71 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
-    !m.importers.some((by) => NATURAL_KIT.test(by)) &&
-    m.importedIds.every((dep) => {
-      // What a key page reaches is a static closure, so none of it can import this module back.
-      if (dep.includes("node_modules") || eager.has(dep) || key.has(dep)) return true;
-      const of = smallGroupOf(dep, info, eager, key);
-      return of !== null && (group.mayImport as readonly string[]).includes(of);
-    });
-  const verdict = ok ? group.name : null;
+    !m.importers.some((by) => NATURAL_KIT.test(by));
+  // What a key page reaches is a static closure, so none of it can import this module back.
+  const deps = ok ? m.importedIds.filter((dep) => !(dep.includes("node_modules") || eager.has(dep) || key.has(dep))) : [];
+  const verdicts = deps.map((dep) => smallGroupOf(dep, info, eager, key));
+  const importsFirstPage = !!m?.importedIds.some((x) => eager.has(x) && !x.includes("node_modules"));
+  const group = ok
+    ? homes.find(
+        (g) =>
+          g.fits(m.code as string) &&
+          deps.every((dep, i) => {
+            const of = verdicts[i];
+            if (of !== null && (g.mayImport as readonly string[]).includes(of)) return true;
+            // A follower only for a module that imports no first-page module itself: see FOLLOWER_IMPORTERS.
+            return !importsFirstPage && followsInto(dep, id, g.mayImport, info, eager, key);
+          }),
+      )
+    : undefined;
+  const verdict = group ? group.name : null;
   smallVerdicts.set(id, verdict);
   return verdict;
+}
+
+/*
+ * A MODULE ONLY ONE MEMBER IMPORTS FOLLOWS IT IN (headroom pass 2, 26 Nov
+ * 2026). A member may import only members, and a member needs two importers,
+ * so a helper used by exactly one file (shared/comms/contracts.ts by the path
+ * consent box, shared/agreements.ts by ballotSubjects) could never join, and
+ * then held its one importer out too: a chain of files of their own. Such a
+ * helper is loaded exactly when its importer is, so it may ride in its
+ * importer's group. Rule 2 of lazyGroupPlan below puts it there (a module
+ * whose static importers all sit in one named chunk joins that chunk); this
+ * only stops it counting against the importer. It must be small and lazy like
+ * any member, and everything it imports must be a member its importer's
+ * group may import, or a follower in turn.
+ *
+ * FOLLOWER_IMPORTERS: the importer a follower lets in must not itself import a
+ * first-page module. Measured on 7366a88: admitting every importer took the
+ * total to 7896 KB but main JS from 293 to 404 KB, over its 400 KB budget,
+ * because rollup folded the shared first-page chunk (internalPath, about 110
+ * KB) into the entry once a group reached it by a new path. A bisection named
+ * VillageConflictSteps and SeatTermField, both of which import gameApi or
+ * AuthContext directly; this rule keeps both out, and every importer like them.
+ *
+ * Measured on 7366a88 with scripts/check-dist-budget.mjs, together with
+ * "lazy-shell" below and the pages' words in "tables": 7980 KB of 8000
+ * block-charged before, 7936 after; main JS 293 to 291 KB, first-page JS 683 to
+ * 680 KB, index.html still loading the same nine scripts. The price is in the
+ * lazy groups: "smallui" 112 KB gzipped (was 98), "tables" 188 KB raw (was
+ * 140). Each part alone: followers 7936 to 7940 depending on the rule above,
+ * "lazy-shell" 12 KB, the pages' words 0 on their own (they let followers in).
+ */
+function followsInto(dep: string, by: string, mayImport: readonly string[], info: ModuleInfoOf, eager: Set<string>, key: ReadonlySet<string>, seen = new Set<string>()): boolean {
+  if (seen.has(dep)) return false;
+  seen.add(dep);
+  const d = info(dep);
+  if (!d?.code || d.importers.length !== 1 || d.importers[0] !== by) return false;
+  if (!TABLE_HOME.test(dep) && !SMALL_GROUPS.some((g) => g.home.test(dep))) return false;
+  if (eager.has(dep) || key.has(dep) || SMALL_GROUP_NEVER.test(dep) || !mayJoinSharedGroup(dep) || NATURAL_KIT.test(dep) || PAGE_COPY.test(dep)) return false;
+  if (shippedBytes(d.code) >= SMALL_MODULE_BYTES) return false;
+  return d.importedIds
+    .filter((x) => !(x.includes("node_modules") || eager.has(x) || key.has(x)))
+    .every((x) => {
+      const of = smallGroupOf(x, info, eager, key);
+      return (of !== null && mayImport.includes(of)) || followsInto(x, dep, mayImport, info, eager, key, seen);
+    });
 }
 
 /*
@@ -626,7 +729,7 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
       keySet.has(id) &&
       !base.has(id) &&
       !!m?.code &&
-      m.code.length < SMALL_MODULE_BYTES &&
+      shippedBytes(m.code) < SMALL_MODULE_BYTES && // what it ships (see shippedBytes); key routes already load every member
       !id.includes("node_modules") &&
       !id.startsWith("\0") &&
       !eager.has(id) &&
@@ -879,6 +982,17 @@ function lazyGroupPlan(g: {
     extra.set(id, `lazy-pool${poolNo}`);
     poolTotal += w;
   }
+  /*
+   * THE SHELL'S OWN LAZY PIECES SHARE ONE FILE (headroom pass 2, 26 Nov 2026).
+   * The pool above leaves out a piece the shell imports lazily (the tab titles,
+   * the reload quotes, the touch light, the visit counter...), so each was a
+   * file of a few hundred bytes. They go to "lazy-shell" instead, a group of
+   * nothing else, so a page's piece never rides along with them and the same
+   * first-page check (`unfit`, via settle) holds it. The animation engine keeps
+   * its own file (MOTION_FEATURES never seeds).
+   */
+  const shellPieces = Array.from(leftOver).filter((id) => !extra.has(id) && (info(id)?.dynamicImporters ?? []).every((by) => eager.has(by)));
+  if (shellPieces.length >= 2) for (const id of shellPieces) extra.set(id, "lazy-shell");
   leftOver.clear();
   settle();
 

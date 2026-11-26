@@ -31,7 +31,7 @@
 import CircleName from "@/components/circles/CircleName";
 import { useContext, useState, type ReactNode } from "react";
 import { Link } from "wouter";
-import { CARD_WORDS as W, type RoleOut, type Slot } from "@shared/playerCard";
+import { type RoleOut, type Slot } from "@shared/playerCard";
 import type { RoleEditKey } from "@shared/playerCardEdit";
 import type { HealthOut } from "@shared/playerCardHealth";
 import { roleCommitmentPct } from "@shared/playerCardHero";
@@ -46,6 +46,7 @@ import { CardEditContext, ChangedContext, ChangedMark, EditInPlace, Eyebrow, GOL
 import { CardTerm } from "./CcosTerm";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import { useLingui } from "@lingui/react/macro";
+import { useCardWords } from "./cardWords";
 
 /** The hint under each "Holding this role well" line's edit control. */
 const HOLDING_HINTS: Record<HoldingKey, string> = {
@@ -142,6 +143,7 @@ function HealthLine({ health }: { health: HealthOut }) {
 }
 
 export function RoleInFull({ role, health = null }: { role: RoleOut; health?: HealthOut | null }) {
+  const W = useCardWords();
   const { t } = useLingui();
   const { editing } = useContext(CardEditContext);
   /** A CCOS section draws once it is written, or in edit mode so the owner can propose words for it. */

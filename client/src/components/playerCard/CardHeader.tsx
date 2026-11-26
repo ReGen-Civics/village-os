@@ -15,10 +15,12 @@
  */
 import { useState, type ReactNode } from "react";
 import FramelessImg from "@/components/FramelessImg";
-import { CARD_WORDS as W, type HeaderOut, type PlayerCard } from "@shared/playerCard";
+import { type HeaderOut, type PlayerCard } from "@shared/playerCard";
 import { RoleIconSvg } from "./roleIcons";
+import { useCardWords } from "./cardWords";
 
 function Portrait({ header }: { header: HeaderOut }) {
+  const W = useCardWords();
   const [broken, setBroken] = useState(false);
   const p = header.portrait;
   const letter = (Array.from(header.name.trim())[0] ?? "").toUpperCase();

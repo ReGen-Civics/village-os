@@ -46,6 +46,7 @@ import TermsOnOfferField from "./TermsOnOfferField";
 import { AimAssist } from "./SeraDraftFields";
 import { useVillagePresets } from "@/lib/seatPresetsRead";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 export interface MechanicsVariableLite {
   key: string;
@@ -94,6 +95,7 @@ export default function WizardField({
   answers?: Record<string, unknown>;
   setAnswer?: (key: string, value: unknown) => void;
 }) {
+  const ww = useWizardWords();
   const id = useId();
   // The village's own presets, offered after the platform's (PR3). Asked only
   // by a terms field, and a reader without terms.read is answered an empty list.
@@ -104,10 +106,10 @@ export default function WizardField({
 
   const label = (
     <label htmlFor={id} className="block text-sm font-semibold text-foreground">
-      {field.label}
+      {ww(field.label)}
       {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
       {field.required && <span className="sr-only"> <Trans context="WizardField, span">(required)</Trans></span>}
-      {field.tip && <InfoTip tip={field.tip} label={`What ${field.label.toLowerCase()} means`} />}
+      {field.tip && <InfoTip tip={ww(field.tip)} label={`What ${ww(field.label).toLowerCase()} means`} />}
     </label>
   );
 
@@ -115,7 +117,7 @@ export default function WizardField({
     <>
       {field.help && (
         <p id={helpId} className="mt-1 text-xs text-muted-foreground leading-relaxed">
-          {field.help}
+          {ww(field.help)}
         </p>
       )}
       {problem && (
@@ -143,7 +145,7 @@ export default function WizardField({
             {...common}
             rows={field.rows ?? 4}
             maxLength={field.maxLength}
-            placeholder={field.placeholder}
+            placeholder={ww(field.placeholder)}
             value={text}
             onChange={(e) => onChange(e.target.value)}
           />
@@ -171,7 +173,7 @@ export default function WizardField({
               step={5}
               value={safe}
               aria-labelledby={undefined}
-              aria-label={`${field.label}, percent`}
+              aria-label={`${ww(field.label)}, percent`}
               onChange={(e) => onChange(Number(e.target.value))}
               className="h-11 flex-1 accent-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
@@ -203,7 +205,7 @@ export default function WizardField({
             min={field.min}
             max={field.max}
             value={value === undefined || value === null ? "" : String(value)}
-            placeholder={field.placeholder}
+            placeholder={ww(field.placeholder)}
             onChange={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))}
           />
           {footer}
@@ -240,10 +242,10 @@ export default function WizardField({
       // No single control to label: the editor is many, each labelled itself.
       return (
         <div>
-          <p className="block text-sm font-semibold text-foreground">{field.label}</p>
+          <p className="block text-sm font-semibold text-foreground">{ww(field.label)}</p>
           {field.help && (
             <p id={helpId} className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              {field.help}
+              {ww(field.help)}
             </p>
           )}
           <div className="mt-3">
@@ -269,7 +271,7 @@ export default function WizardField({
           <select {...common} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
             {(field.options ?? []).map((o) => (
               <option key={o.value} value={o.value}>
-                {o.label}
+                {ww(o.label)}
               </option>
             ))}
           </select>
@@ -331,7 +333,7 @@ export default function WizardField({
             {...common}
             type="text"
             maxLength={field.maxLength}
-            placeholder={field.placeholder}
+            placeholder={ww(field.placeholder)}
             value={text}
             onChange={(e) => onChange(e.target.value)}
           />

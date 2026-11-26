@@ -20,8 +20,9 @@
  */
 import { PenLine, Star } from "lucide-react";
 import FramelessImg from "@/components/FramelessImg";
-import { ROOM_COPY, type SessionPerson } from "@shared/sessions";
+import { type SessionPerson } from "@shared/sessions";
 import { initialsFrom } from "@/components/power/holderFace";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export type PersonDiscMark = "facilitator" | "notes" | null;
 
@@ -34,6 +35,7 @@ export default function PersonDisc({
   size?: "disc" | "portrait";
   mark?: PersonDiscMark;
 }) {
+  const RC = useRoomWords();
   const shape =
     size === "portrait"
       ? "w-20 aspect-[3/4] rounded-xl border border-border bg-card text-base"
@@ -41,7 +43,7 @@ export default function PersonDisc({
   // Here or away: a gold ring for here, a dashed edge and a fade for away.
   const presence = person.present ? "ring-[1.5px] ring-inset ring-notice" : "border border-dashed border-border opacity-60";
   const Mark = mark === "facilitator" ? Star : mark === "notes" ? PenLine : null;
-  const markWord = mark === "facilitator" ? ROOM_COPY.facilitating : mark === "notes" ? ROOM_COPY.noteTaking : "";
+  const markWord = mark === "facilitator" ? RC.facilitating : mark === "notes" ? RC.noteTaking : "";
 
   return (
     <span className="relative inline-block shrink-0" data-person-disc={size} data-present={person.present ? "true" : "false"}>

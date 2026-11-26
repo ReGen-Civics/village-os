@@ -41,10 +41,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { gameFetch } from "@/lib/gameApi";
-import { ROOM_COPY } from "@shared/sessions";
 import { TASK_REFUSALS, taskBoardLink, taskDoneUrl, taskUrl, type TaskCard } from "@shared/sessionTasks";
 import { tasksChanged } from "./useTaskCount";
 import { bellAnswerFor, forgetBellAnswer, rememberBellAnswer } from "./bellAnswers";
+import { roomWords } from "@/components/sessions/roomWords";
 import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 /** The two notice types that carry the buttons. */
@@ -75,7 +75,7 @@ export function bellRefusal(body: unknown, status: number): string {
   const said = typeof b.error === "string" ? b.error.trim() : "";
   // A machine code ("auth_required") is not a sentence, and is never shown.
   if (said && /\s/.test(said)) return said;
-  if (status === 401) return ROOM_COPY.signedOut;
+  if (status === 401) return roomWords().signedOut;
   if (status === 403) return TASK_REFUSALS.notYours;
   if (status === 404) return TASK_REFUSALS.notFound;
   if (status === 429) return TASK_REFUSALS.tooMany;

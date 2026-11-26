@@ -27,7 +27,6 @@ import { useState } from "react";
 import {
   CONSENT_LABELS,
   CONSENT_VALUES,
-  ROOM_COPY,
   SESSION_LIMITS,
   SLEEP_LIMITS,
   cleanLine,
@@ -56,6 +55,7 @@ import {
   waitingNames,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /**
  * "Waiting for Ana, Luz", in small muted words under a tally, so the
@@ -64,9 +64,10 @@ import {
  * open, so for anybody else, and once everyone has answered, it says nothing.
  */
 export function WaitingLine({ view, target, className = "" }: { view: StageProps["view"]; target: ResponseTarget; className?: string }) {
+  const RC = useRoomWords();
   const names = seesAnswers(view) && view.status === "open" ? waitingNames(view, target) : [];
   if (!names.length) return null;
-  return <p className={`text-sm text-muted-foreground ${className}`}>{ROOM_COPY.waitingFor(names)}</p>;
+  return <p className={`text-sm text-muted-foreground ${className}`}>{RC.waitingFor(names)}</p>;
 }
 
 export interface ConsentRoundProps extends Omit<StageProps, "now"> {
@@ -79,6 +80,7 @@ export interface ConsentRoundProps extends Omit<StageProps, "now"> {
 }
 
 export default function ConsentRound({ view, actions, target, ask, readOnly, now = Date.now() }: ConsentRoundProps) {
+  const RC = useRoomWords();
   const mine = myResponse(view, target);
   const [choice, setChoice] = useState<ConsentValue | null>(mine && isConsentValue(mine.value) ? mine.value : null);
   const draft = useDraft(`${view.id}:${target}:words`, mine?.text ?? "");
@@ -97,12 +99,12 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
     if (!choice || busy) return;
     const sentence = cleanLine(words, SESSION_LIMITS.text);
     if (consentNeedsWords(choice) && !sentence) {
-      setNote(ROOM_COPY.consentNeedsSentence);
+      setNote(RC.consentNeedsSentence);
       return;
     }
     const nightAt = choice === "sleep" && nightEnds ? new Date(nightEnds).getTime() : Number.NaN;
     if (choice === "sleep" && !Number.isFinite(nightAt)) {
-      setNote(ROOM_COPY.nightNeeded);
+      setNote(RC.nightNeeded);
       return;
     }
     setNote(null);
@@ -152,7 +154,7 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
               value={words}
               onValue={draft.set}
               onSubmit={() => void send()}
-              label={ROOM_COPY.consentSentence}
+              label={RC.consentSentence}
               max={SESSION_LIMITS.text}
               minRows={2}
               singleLine
@@ -160,17 +162,17 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
           )}
           {choice === "sleep" && (
             <fieldset className="space-y-2">
-              <legend className={LABEL}>{ROOM_COPY.nightAsk}</legend>
+              <legend className={LABEL}>{RC.nightAsk}</legend>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={BTN_QUIET} onClick={() => setNightEnds(localInputValue(nineAfter(now, 1)))}>
-                  {ROOM_COPY.nightTomorrow}
+                  {RC.nightTomorrow}
                 </button>
                 <button type="button" className={BTN_QUIET} onClick={() => setNightEnds(localInputValue(nineAfter(now, 2)))}>
-                  {ROOM_COPY.nightTwoDays}
+                  {RC.nightTwoDays}
                 </button>
               </div>
               <label htmlFor={`${groupId}-night`} className={`${HINT} block`}>
-                {ROOM_COPY.nightTimeLabel}
+                {RC.nightTimeLabel}
               </label>
               <input
                 id={`${groupId}-night`}
@@ -183,13 +185,13 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
                 aria-describedby={`${groupId}-night-hint`}
               />
               <p id={`${groupId}-night-hint`} className={`${HINT} text-xs`}>
-                {ROOM_COPY.nightHint}
+                {RC.nightHint}
               </p>
             </fieldset>
           )}
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" className={BTN_PRIMARY} disabled={!choice || busy || (choice === "sleep" && !nightEnds)} onClick={() => void send()}>
-              {mine ? ROOM_COPY.consentChange : ROOM_COPY.consentSend}
+              {mine ? RC.consentChange : RC.consentSend}
             </button>
             {note && (
               <p role="alert" className="text-sm font-medium text-destructive">
@@ -197,11 +199,11 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
               </p>
             )}
           </div>
-          {mine && <p className={`${HINT} text-xs`}>{ROOM_COPY.answerAgain}</p>}
+          {mine && <p className={`${HINT} text-xs`}>{RC.answerAgain}</p>}
         </>
       )}
       <p className={HINT} aria-live="polite">
-        {seesAnswers(view) ? ROOM_COPY.tallyLine(tally) : ROOM_COPY.answersHeardInRoom}
+        {seesAnswers(view) ? RC.tallyLine(tally) : RC.answersHeardInRoom}
       </p>
       <WaitingLine view={view} target={target} />
       {nights
@@ -211,12 +213,12 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
           const name = nameOf(view, r.userId) ?? "";
           return (
             <p key={`night-${r.userId}`} className="text-sm text-foreground">
-              {at <= now ? ROOM_COPY.nightOver(name, nightWhen(at, now)) : ROOM_COPY.nightOpen(name, nightWhen(at, now))}
+              {at <= now ? RC.nightOver(name, nightWhen(at, now)) : RC.nightOpen(name, nightWhen(at, now))}
             </p>
           );
         })}
-      {untimedNights > 0 && <p className="text-sm text-foreground">{ROOM_COPY.sleepingOpen}</p>}
-      {seesAnswers(view) && tally.consented && <p className="text-sm font-semibold text-open">{ROOM_COPY.consented}</p>}
+      {untimedNights > 0 && <p className="text-sm text-foreground">{RC.sleepingOpen}</p>}
+      {seesAnswers(view) && tally.consented && <p className="text-sm font-semibold text-open">{RC.consented}</p>}
       {heard.length > 0 && (
         <ul className="space-y-1.5">
           {heard.map((r) => (

@@ -58,9 +58,9 @@ describe("the reviewed status path", () => {
     expect(s.path.map((p) => p.label)).toEqual(["Received", "Our review"]);
     const es = statusView("es", { step: s.step, actsNext: s.actsNext, path: s.path, booking: null, mode: "block", outcome: "declined", reviewFirst: true, notInvited: true });
     expect(es.notInvited).toBe(true);
-    expect(es.heading).toBe("Dónde está tu postulación");
+    expect(es.heading).toBe("Dónde está su postulación");
     expect(es.path.map((p) => p.label)).toEqual(["Recibida", "Nuestra revisión"]);
-    expect(es.move).toBe("No hace falta nada más de tu parte. Ya te escribimos.");
+    expect(es.move).toBe("No hace falta nada más de su parte. Ya le escribimos.");
   });
 
   it("reads the stage from ONE review step's answer", () => {
@@ -92,7 +92,7 @@ describe("the letters", () => {
     expect(l.text).not.toContain("/events");
     const bare = notInvitedLetter({ firstName: null, village: "V", roleNames: [], site: "https://v.test", stayClose: { program: null, quests: false, events: false }, lang: "es" });
     expect(bare.text).not.toContain("caminos abiertos");
-    expect(bare.text).toContain("Gracias por tu tiempo y tu interés.");
+    expect(bare.text).toContain("Gracias por su tiempo y su interés.");
   });
 
   it("a link is made the site's own unless it is https", () => {
