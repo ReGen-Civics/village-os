@@ -26,7 +26,18 @@ export interface SignSheetRow {
   words: string;
   /** Whose row it is, for the host to name at the member tier. Never printed as is. */
   personId: string | null;
+  /**
+   * What a row made from a role's title or a count was made of, so the server can say it again in the reader's
+   * language (shared/roleSignMessages.ts). Absent on a fixed line, which is said again by its English.
+   */
+  said?: SheetSaid;
 }
+
+/** The parts a role's card can be missing, in the words the sheet names them with. */
+export const MISSING_PARTS = { aim: "aim", domain: "domain", answers: "what it answers for", term: "a term" } as const;
+export type MissingPart = keyof typeof MISSING_PARTS;
+
+export type SheetSaid = { k: "fullCard"; a: [string] } | { k: "missing"; a: [string, MissingPart[]] } | { k: "met"; a: [number] };
 
 export const SHEET_WORDS = {
   answered: "Answered within 2 business days",
@@ -183,16 +194,18 @@ export function signSheetRows(key: string | null | undefined, rows: SignRows, w:
       for (const r of rows.org_roles!) {
         if (!(r.active === true || r.active === 1)) continue;
         const title = r.name?.trim() || r.id;
-        const missing = [
+        const parts = [
           r.aim?.trim() ? null : "aim",
           r.domain?.trim() ? null : "domain",
-          listOf(r.accountabilities).length ? null : "what it answers for",
-          termed.has(r.id) ? null : "a term",
-        ].filter((s): s is string => s !== null);
+          listOf(r.accountabilities).length ? null : "answers",
+          termed.has(r.id) ? null : "term",
+        ].filter((p): p is MissingPart => p !== null);
+        const missing = parts.map((p) => MISSING_PARTS[p]);
         out.push({
           at: null,
           words: missing.length ? SHEET_WORDS.missing(title, missing.join(", ")) : SHEET_WORDS.fullCard(title),
           personId: null,
+          said: parts.length ? { k: "missing", a: [title, parts] } : { k: "fullCard", a: [title] },
         });
       }
       break;
@@ -223,7 +236,7 @@ export function signSheetRows(key: string | null | undefined, rows: SignRows, w:
         const n = people.get(s.id)?.size ?? 0;
         if (!inWindow(s.created_at, w) || n < 2) continue;
         if (rows.circle_id !== undefined && s.circle_id !== rows.circle_id) continue;
-        out.push({ at: iso(s.created_at), words: SHEET_WORDS.met(n), personId: null });
+        out.push({ at: iso(s.created_at), words: SHEET_WORDS.met(n), personId: null, said: { k: "met", a: [n] } });
       }
       break;
     }

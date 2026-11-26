@@ -3,6 +3,7 @@
  * that builds it and the client that draws it.
  */
 import type { PlayerCard } from "./playerCard";
+import type { SheetSaid } from "./roleSignRows";
 
 export type CardLevel = "stranger" | "member" | "self";
 
@@ -11,7 +12,7 @@ export interface SignSheetOut {
   title: string;
   countedFrom: string;
   /** `who` is a first name at the member tier, and null below it. */
-  rows: { at: string | null; words: string; who: string | null }[];
+  rows: { at: string | null; words: string; who: string | null; said?: SheetSaid }[];
   note: string;
 }
 

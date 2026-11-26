@@ -697,6 +697,8 @@ export async function buildPlayerCards(
               at: row.at,
               words: row.words,
               who: row.personId ? ctx.firstName(entry.names.get(row.personId) ?? "") || null : null,
+              // What the row was made of, for the reader's language; dropped before the payload leaves (platformSpeech.ts).
+              ...(row.said ? { said: row.said } : {}),
             })),
             note: "First names only. Listed in the order it happened.",
           };
