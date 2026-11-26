@@ -180,7 +180,7 @@ export default function LookPanel({ password }: { password: string }) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
       <h3 className="font-semibold text-gray-900 mb-1"><Trans context="LookPanel, h3">Look</Trans></h3>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-muted-foreground mb-4">
         <Trans context="LookPanel, p">Three decisions; everything else derives. Leave the colour empty to keep the platform's
         neutral look. Every derived pairing is contrast-checked, so your colour keeps its hue,
         legibility is non-negotiable.
@@ -235,7 +235,7 @@ export default function LookPanel({ password }: { password: string }) {
             />
             {theme.accent && (
               <button type="button" onClick={() => setTheme({ ...theme, accent: "" })}
-                className="text-xs text-gray-400 underline underline-offset-2"><Trans context="LookPanel, button">clear</Trans></button>
+                className="text-xs text-muted-foreground underline underline-offset-2"><Trans context="LookPanel, button">clear</Trans></button>
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1 max-w-[16rem]">
@@ -250,7 +250,7 @@ export default function LookPanel({ password }: { password: string }) {
             placeholder={t({ message: "e.g. river valley among old oaks, temperate and misty", context: "LookPanel, placeholder" })}
             className="w-full text-sm border border-gray-200 rounded-lg px-2.5 py-2"
           />
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             <Trans context="LookPanel, p">Used to ground generated imagery when the design agency lands. Never shown publicly.
           </Trans></p>
         </div>
@@ -405,7 +405,7 @@ export default function LookPanel({ password }: { password: string }) {
               </span>
             )}
           </p>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             worst ratio {derived.contrast.worstRatio}:1 ·{" "}
             {derived.contrast.pairs.map((p) => `${p.name} ${p.ratio}${p.verdict === "fail" ? " (fail)" : ""}`).join(" · ")}
           </p>

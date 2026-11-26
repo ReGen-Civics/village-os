@@ -139,7 +139,7 @@ export default function MapSkinPanel() {
     return (
       <div>
         <label className="block text-sm font-medium text-gray-900 mb-1" htmlFor={`skin-${key}`}>
-          {label} <span className="font-normal text-gray-500">{pct}%</span>
+          {label} <span className="font-normal text-muted-foreground">{pct}%</span>
         </label>
         <input
           id={`skin-${key}`}
@@ -150,7 +150,7 @@ export default function MapSkinPanel() {
           onChange={(e) => set({ [key]: Number(e.target.value) / 100 } as Partial<MapSkin>)}
           className="w-full accent-teal-deep"
         />
-        <p className="text-[11px] text-gray-400">{hint}</p>
+        <p className="text-[11px] text-muted-foreground">{hint}</p>
       </div>
     );
   };
@@ -178,7 +178,7 @@ export default function MapSkinPanel() {
       <div>
         <label className="block text-sm font-medium text-gray-900 mb-1" htmlFor={`skin-${key}`}>
           {label}{" "}
-          <span className="font-normal text-gray-500">
+          <span className="font-normal text-muted-foreground">
             {Math.round(shown * 100)}%{value === null ? " (map default)" : ""}
           </span>
         </label>
@@ -194,7 +194,7 @@ export default function MapSkinPanel() {
           />
           {value !== null && (
             <button type="button" onClick={() => setDial(null)}
-              className="text-xs text-gray-400 underline underline-offset-2 shrink-0">
+              className="text-xs text-muted-foreground underline underline-offset-2 shrink-0">
               <Trans context="MapSkinPanel, button">reset
             </Trans></button>
           )}
@@ -222,7 +222,7 @@ export default function MapSkinPanel() {
         />
         {skin[key] && (
           <button type="button" onClick={() => set({ [key]: "" } as Partial<MapSkin>)}
-            className="text-xs text-gray-400 underline underline-offset-2"><Trans context="MapSkinPanel, button">clear</Trans></button>
+            className="text-xs text-muted-foreground underline underline-offset-2"><Trans context="MapSkinPanel, button">clear</Trans></button>
         )}
       </div>
     </div>
@@ -249,7 +249,7 @@ export default function MapSkinPanel() {
       >
         {options.map((m) => <option key={m} value={m}>{m}</option>)}
       </select>
-      <p className="text-[11px] text-gray-400 mt-1">{hint}</p>
+      <p className="text-[11px] text-muted-foreground mt-1">{hint}</p>
     </div>
   );
 
@@ -271,7 +271,7 @@ export default function MapSkinPanel() {
       />
       <span>
         <span className="block text-sm font-medium text-gray-900">{label}</span>
-        <span id={`map-skin-${key}-hint`} className="block text-[11px] text-gray-400">{hint}</span>
+        <span id={`map-skin-${key}-hint`} className="block text-[11px] text-muted-foreground">{hint}</span>
       </span>
     </label>
   );
@@ -301,7 +301,7 @@ export default function MapSkinPanel() {
             placeholder={t({ message: "high desert, red rock and juniper", context: "MapSkinPanel, placeholder" })}
             className="w-full text-sm border border-gray-200 rounded-lg px-2.5 py-2"
           />
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             <Trans context="MapSkinPanel, p">Grows a theme from the words themselves. The map uses this when no theme is picked above.
           </Trans></p>
         </div>
@@ -333,7 +333,7 @@ export default function MapSkinPanel() {
       {/* The caveat that used to live here is gone: the map's applySkinExport
           now drives the repaint from painterly.brush and painterly.palette, so
           both dials are real. */}
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-muted-foreground mb-4">
         <Trans context="MapSkinPanel, p">Saved styling reaches an open map straight away. Everything here travels with the
         map's own export, so you can style inside the map and bring the result back.
       </Trans></p>

@@ -7,7 +7,10 @@
  *     admin panel's publish). The publish names the changes the person read (`expectedChanges`), so a draft that
  *     gained a change since it was drawn is refused, not published.
  *   - Put it to the village: whoever the server says may open the vote, when they may not publish it themselves.
+ *   - Withdraw, for whoever may decide drafts: the draft is kept on record and can no longer be published (the
+ *     coordinator, 26 Nov 2026: stale drafts on one role would have overwritten its live sections).
  *   - Anybody else, and a draft under a vote: the door to read it where it lives.
+ * When another open draft changes the same role, seat or circle, the row says so before anyone publishes.
  * Both POSTs are the doors /review/structure and the role cards already use (client/src/components/review).
  */
 import { useCallback, useEffect, useState } from "react";
@@ -27,6 +30,9 @@ interface DecideAnswer {
   adminMayPublish: boolean;
   youMayPutToVillage: boolean;
   ballot: { id: string; closesAt: string | null } | null;
+  /** Other open drafts changing something this one changes (told to deciders only). */
+  otherOpenDrafts?: number;
+  youMayWithdraw?: boolean;
 }
 
 interface Line {
@@ -47,7 +53,7 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
   const id = draftIdOf(item);
   const [answer, setAnswer] = useState<DecideAnswer | null>(null);
   const [lines, setLines] = useState<Line[] | null>(null);
-  const [step, setStep] = useState<"idle" | "publish" | "put" | "busy">("idle");
+  const [step, setStep] = useState<"idle" | "publish" | "put" | "withdraw" | "busy">("idle");
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
 
   const read = useCallback(async () => {
@@ -134,10 +140,23 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
         </p>
       ) : null}
 
-      {step === "publish" || step === "put" ? (
+      {answer?.otherOpenDrafts ? (
+        <p className="text-sm font-semibold text-destructive" data-testid={`draft-overlap-${id}`}>
+          <Plural
+            context="review inbox: an org chart draft"
+            value={answer.otherOpenDrafts}
+            one="Another open draft also changes this role. Read both before you publish, and withdraw the one that is out of date."
+            other="# other open drafts also change this role. Read them before you publish, and withdraw the ones that are out of date."
+          />
+        </p>
+      ) : null}
+
+      {step === "publish" || step === "put" || step === "withdraw" ? (
         <div className="space-y-3 rounded-xl border border-notice/60 bg-card p-4" role="group" aria-label={t({ context: "review inbox: an org chart draft", message: "Confirm" })}>
           <p className="font-semibold text-card-foreground">
-            {step === "publish" ? (
+            {step === "withdraw" ? (
+              <Trans context="review inbox: an org chart draft">Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes.</Trans>
+            ) : step === "publish" ? (
               <Plural context="review inbox: an org chart draft" value={n} one="Publish this draft? Its one change goes onto the org chart now." other="Publish this draft? Its # changes go onto the org chart now." />
             ) : (
               <Trans context="review inbox: an org chart draft">Put this draft to the village? A vote opens, and the village decides it.</Trans>
@@ -150,13 +169,21 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
               data-testid={`draft-yes-${id}`}
               onClick={() => {
                 const enc = encodeURIComponent(id);
-                if (step === "publish") {
+                if (step === "withdraw") {
+                  void post(`/api/admin/org/drafts/${enc}/withdraw`, {}, t({ context: "review inbox: an org chart draft", message: "Withdrawn. It can no longer be published." }));
+                } else if (step === "publish") {
                   const path = answer!.youMayPublish ? `/api/org/drafts/${enc}/publish-by-power` : `/api/admin/org/drafts/${enc}/publish`;
                   void post(path, lines ? { expectedChanges: lines.map((l) => l.changeId) } : {}, t({ context: "review inbox: an org chart draft", message: "Published. The org chart has changed." }));
                 } else void post(`/api/org/drafts/${enc}/put-to-village`, {}, t({ context: "review inbox: an org chart draft", message: "Put to the village. A vote is open." }));
               }}
             >
-              {step === "publish" ? <Trans context="review inbox: an org chart draft">Yes, publish it</Trans> : <Trans context="review inbox: an org chart draft">Yes, open the vote</Trans>}
+              {step === "withdraw" ? (
+                <Trans context="review inbox: an org chart draft">Yes, withdraw it</Trans>
+              ) : step === "publish" ? (
+                <Trans context="review inbox: an org chart draft">Yes, publish it</Trans>
+              ) : (
+                <Trans context="review inbox: an org chart draft">Yes, open the vote</Trans>
+              )}
             </button>
             <button type="button" className={BTN_SECONDARY} onClick={() => setStep("idle")}>
               <Trans context="review inbox: an org chart draft">Not yet</Trans>
@@ -184,6 +211,11 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
               {words.door}
             </Link>
           )}
+          {answer?.youMayWithdraw && open ? (
+            <button type="button" className={BTN_SECONDARY} disabled={step === "busy"} onClick={() => setStep("withdraw")} data-testid={`draft-withdraw-${id}`}>
+              <Trans context="review inbox: an org chart draft">Withdraw</Trans>
+            </button>
+          ) : null}
         </div>
       )}
 
