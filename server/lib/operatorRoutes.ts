@@ -138,6 +138,7 @@ export const ROUTE_POWERS: Readonly<Record<string, Capability>> = {
   "PUT /api/admin/org/drafts/:id/vision": "org.decide",
   "POST /api/admin/org/drafts/:id/publish": "org.decide",
   "POST /api/admin/org/drafts/:id/revert": "org.decide",
+  "POST /api/admin/org/drafts/:id/withdraw": "org.decide",
   "POST /api/admin/org/relations": "org.declare",
   "DELETE /api/admin/org/relations/:id": "org.declare",
   "POST /api/admin/org/roles": "org.decide",
