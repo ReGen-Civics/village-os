@@ -26,7 +26,7 @@ export const MEMBER_READABLE_ADMIN_GETS: Readonly<Record<string, string>> = {
     "The village's reorganisation drafts. Anyone may propose a change to the structure (Rye, 2026-09-24), so the drafts are the village's business.",
   "/api/admin/org/drafts/:id/preview": "What one reorganisation draft would change, role by role.",
   "/api/admin/org/expiring":
-    "Roles whose holder's term is running out, named by role and first name, which the map already shows every account (map.viewPeople).",
+    "Roles whose holder's term is running out. The holder's first name and focus go only to a reader holding map.viewPeople, the gate the map asks, whatever a village sets that dial to.",
 };
 
 /** Whether this request is a member read the list allows. Pure: the caller answers who the person is. */
