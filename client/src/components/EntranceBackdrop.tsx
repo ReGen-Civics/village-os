@@ -7,7 +7,7 @@
  * that asks for less motion gets the still image and no rise. Every text colour here was measured
  * against the poster and four frames of a real video at AA or better (the PR says how).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EntranceBackdrop as Backdrop } from "@shared/entrance";
 
 /** Whether the device asks for less motion, read once and kept current. */
@@ -52,14 +52,69 @@ export const GLASS =
 /** The form's own panel on the glass: an edge and a lighter wash, so the glass reads through it. */
 export const GLASS_PANEL = "rounded-2xl border-2 border-notice/60 bg-card/50 p-5 sm:p-8";
 
+/**
+ * Start the background video, and keep trying until the browser lets it play.
+ *
+ * Safari decides whether a video may play by itself from the `muted` ATTRIBUTE, and React sets only the `muted`
+ * property (its long-standing gap), so Safari saw a video with sound, refused it, and drew its own play button over
+ * the welcome (a visitor's screen, 26 Nov 2026). This writes the attribute, starts the video from code, and, when a
+ * browser still refuses (Low Power Mode, a "never autoplay" setting), tries again on the visitor's first touch,
+ * scroll or key. Until then the still image shows, never a play button.
+ */
+export function startBackgroundVideo(v: HTMLVideoElement): () => void {
+  v.muted = true;
+  v.defaultMuted = true;
+  v.setAttribute("muted", "");
+  v.setAttribute("playsinline", "");
+  v.setAttribute("webkit-playsinline", "");
+  const events = ["pointerdown", "touchstart", "keydown", "scroll", "visibilitychange"] as const;
+  let done = false;
+  const stop = () => {
+    for (const e of events) (e === "visibilitychange" ? document : window).removeEventListener(e, retry, true);
+  };
+  const tryPlay = () => {
+    if (done) return;
+    let attempt: Promise<void> | undefined;
+    try {
+      attempt = v.play();
+    } catch {
+      attempt = undefined;
+    }
+    if (attempt && typeof attempt.then === "function") {
+      attempt.then(
+        () => {
+          done = true;
+          stop();
+        },
+        () => {},
+      );
+    }
+  };
+  function retry() {
+    if (document.visibilityState === "hidden") return;
+    tryPlay();
+  }
+  for (const e of events) (e === "visibilitychange" ? document : window).addEventListener(e, retry, { capture: true, passive: true });
+  tryPlay();
+  return () => {
+    done = true;
+    stop();
+  };
+}
+
 export default function EntranceBackdrop({ backdrop }: { backdrop: Backdrop }) {
   const reduce = useReducedMotion();
+  const video = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (reduce || !video.current) return;
+    return startBackgroundVideo(video.current);
+  }, [reduce, backdrop.video, backdrop.mobile]);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-clip" aria-hidden="true" data-entrance-backdrop="">
       {reduce ? (
         backdrop.poster ? <img src={backdrop.poster} alt="" className="sticky top-0 h-svh w-full object-cover" /> : null
       ) : (
-        <video className="sticky top-0 h-svh w-full object-cover" autoPlay muted loop playsInline preload="metadata" poster={backdrop.poster || undefined}>
+        <video ref={video} className="entrance-video sticky top-0 h-svh w-full object-cover" autoPlay muted loop playsInline disablePictureInPicture disableRemotePlayback preload="auto" poster={backdrop.poster || undefined} tabIndex={-1}>
           {backdrop.mobile && <source src={backdrop.mobile} media="(max-width: 768px)" />}
           <source src={backdrop.video} />
         </video>
