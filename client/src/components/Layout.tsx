@@ -33,6 +33,8 @@ import FooterBlurb from "@/components/FooterBlurb";
 import MenuIcon from "@/components/nav/MenuIcon";
 import LitRule from "@/components/nav/LitRule";
 import NavDropdown from "@/components/nav/NavDropdown";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 
 interface LayoutProps {
@@ -125,6 +127,7 @@ export default function Layout({ children }: LayoutProps) {
   );
   // Where the page sits in the menu this reader sees, the village's renames and hidden entries included (config/navBearings.ts).
   const lit = litFor(location, visible, menu, (g) => navWord(g, i18n));
+  const leaf = useCrumbLeafValue(); // the page's own name for the breadcrumb (nav/crumbLeaf.tsx)
   const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
@@ -563,6 +566,8 @@ export default function Layout({ children }: LayoutProps) {
           phone. The page ends with room for it, so it never sits on the last
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
       <main id="main" tabIndex={-1} className="flex-1 min-h-svh max-md:pb-[var(--fab-clear)]">
+        {/* Below its menu entry, a page gets the trail back up (nav/Breadcrumbs.tsx); an entry's own page gets none. */}
+        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} item={{ href: lit.href, label: withTokenLabel(lit.item).label }} leaf={leaf} /> : null}
         {children}
         <MachineTranslationNote />
       </main>
