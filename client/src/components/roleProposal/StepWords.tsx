@@ -17,7 +17,7 @@
  */
 import { useId, useState } from "react";
 import { CcosTerm, LABEL_TAP } from "@/components/playerCard/CcosTerm";
-import { CARD_WORDS as W } from "@shared/playerCard";
+import { useCardHeadings } from "@/components/playerCard/cardHeadings";
 import { roleTerm } from "@shared/playerCardCcos";
 import { roleHandover } from "@shared/playerCardHealth";
 import { runbookIsLink } from "@shared/roleHandover";
@@ -60,6 +60,7 @@ const text = (v: WordValue | undefined): string | null => (typeof v === "string"
 
 /** The runbook and the handover meter of a role somebody holds now, as posted. */
 function FromHolder({ role }: { role: WordsRole }) {
+  const W = useCardHeadings();
   const RW = useProposalWords();
   const posted = Object.fromEntries((role.fields ?? []).map((f) => [f.field, f.posted]));
   const handover = roleHandover({
@@ -179,6 +180,7 @@ function WordInput({
 }
 
 export default function StepWords({ roles, typed, frameworkTerms, onType, onReview, ownText }: StepWordsProps) {
+  const W = useCardHeadings();
   const RW = useProposalWords();
   const [current, setCurrent] = useState(0);
   if (!roles.length) return <p className="text-muted-foreground">{RW.pickRoleFirst}</p>;
