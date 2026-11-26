@@ -431,7 +431,10 @@ function Router() {
       <Route path="/budget" component={BudgetPage} />
       <Route path="/review/structure/:batchId" component={StructureReview} />
       <Route path="/approvals" component={Approvals} />
-      <Route path="/review" component={Review} />
+      {/* Governance (the lead, 26 Nov 2026: "Don't call it review, call it governance"). The deciders' queue is Your work
+          under /governance; the old address keeps working, with its query and anchor (#witness). */}
+      <Route path="/governance/work" component={Review} />
+      <Route path="/review">{() => <Redirect to={`/governance/work${window.location.search}${window.location.hash}`} replace />}</Route>
       {/* The treasurer's payout list, for a finance role holding cash.pay without admin */}
       <Route path="/cash-payouts" component={CashPayouts} />
       {/* The hand mint and the pay queues for a holder of token.mint, cash.pay or moon.approve_alone, admin or not */}
@@ -520,13 +523,17 @@ function Router() {
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
       <Route path="/training" component={Training} />
       <Route path="/governance" component={Governance} />
+      <Route path="/governance/how" component={Governance} />
       {/* The live surfaces sit BESIDE the explainer, never inside it: /governance
           says how the village decides, /decisions shows what it is deciding.
           The list route is declared before the detail route for the same reason
           /profile/characters precedes /profile/:handle — wouter takes the first
           match, and a :id above the list would swallow it. */}
-      <Route path="/decisions" component={Decisions} />
-      <Route path="/decisions/:id" component={Decision} />
+      <Route path="/governance/decisions" component={Decisions} />
+      <Route path="/governance/decisions/:id" component={Decision} />
+      {/* The old addresses, in links already sent (notifications, emails), keep working. */}
+      <Route path="/decisions">{() => <Redirect to={`/governance/decisions${window.location.search}${window.location.hash}`} replace />}</Route>
+      <Route path="/decisions/:id">{(p) => <Redirect to={`/governance/decisions/${encodeURIComponent(p.id)}${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/propose" component={Propose} />
       {/* One application to hold roles, on terms. Members only, behind terms.read. */}
       <Route path="/role-applications/:id" component={SeatApplication} />

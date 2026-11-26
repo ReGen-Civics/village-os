@@ -2679,7 +2679,7 @@ function QuestClaimsTab() {
           <Trans context="Admin, p">Finished work waiting for a witness is on the Review page, beside the other things a steward
           decides. Stewards who are not admins can open it there.
         </Trans></p>
-        <a href="/review" className="inline-block mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">
+        <a href="/governance/work" className="inline-block mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">
           <Trans context="Admin, a">Open Review
         </Trans></a>
       </div>
@@ -6464,7 +6464,7 @@ function CyclesTab({ password }: { password: string }) { const { t } = useLingui
                 {proposal.ballotId && (
                   <>
                     {" "}
-                    <a href={`/decisions/${proposal.ballotId}`} className="underline">
+                    <a href={`/governance/decisions/${proposal.ballotId}`} className="underline">
                       <Trans context="Admin, a">Read the decision
                     </Trans></a>
                     .

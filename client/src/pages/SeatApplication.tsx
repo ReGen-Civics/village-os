@@ -140,7 +140,7 @@ function TermsDrawer({ app, namePartner = true }: { app: ServedApplication; name
           holderName: app.adoptedBy,
           // The day in the village's calendar, as the server read it (red team U6).
           on: app.decidedOn ?? app.decidedAt.slice(0, 10),
-          href: app.adoptedVia === "ballot" && app.ballotId ? `/decisions/${app.ballotId}` : null,
+          href: app.adoptedVia === "ballot" && app.ballotId ? `/governance/decisions/${app.ballotId}` : null,
         }
       : null;
   /*
@@ -319,7 +319,7 @@ export default function SeatApplication() {
 
   const back = (
     <Link
-      href="/decisions"
+      href="/governance/decisions"
       className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Trans context="SeatApplication, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -482,7 +482,7 @@ export default function SeatApplication() {
               <section className="rounded-xl border border-border bg-muted p-4">
                 <p className="text-foreground">{app.carried ? `${app.statusWords}.` : APPLICATION_WORDS.votingLine}</p>
                 <Link
-                  href={`/decisions/${app.ballotId}`}
+                  href={`/governance/decisions/${app.ballotId}`}
                   className="mt-2 inline-flex min-h-[44px] items-center font-semibold text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {APPLICATION_WORDS.readTheVote}

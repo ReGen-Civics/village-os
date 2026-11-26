@@ -156,7 +156,7 @@ describe("the door to propose a change", () => {
     };
     render(<ClosingPolicyCard closing={ADOPTED} />);
     const link = await screen.findByRole("link", { name: "Go to the vote" });
-    expect(link.getAttribute("href")).toBe("/decisions/bal-closing");
+    expect(link.getAttribute("href")).toBe("/governance/decisions/bal-closing");
     expect(screen.queryByRole("button", { name: "Propose a change" })).toBeNull();
   });
 });

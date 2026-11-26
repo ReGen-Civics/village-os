@@ -86,7 +86,7 @@ export interface WizardStart {
   answers: Record<string, unknown>;
 }
 
-export default function ProposalWizard({ start = null, leaveTo = "/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
+export default function ProposalWizard({ start = null, leaveTo = "/governance/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
   const { t } = useLingui();
   const [, navigate] = useLocation();
 
@@ -471,7 +471,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
           )}
           <button
             type="button"
-            onClick={() => navigate("/decisions")}
+            onClick={() => navigate("/governance/decisions")}
             className="min-h-[44px] rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Trans context="ProposalWizard, button">See what the village is deciding
@@ -523,7 +523,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             {practiceType ? (
               <PracticeVote
                 about={practiceType}
-                onOpened={(ballotId) => navigate(`/decisions/${ballotId}`)}
+                onOpened={(ballotId) => navigate(`/governance/decisions/${ballotId}`)}
                 onCancel={() => setPracticeType(null)}
               />
             ) : (

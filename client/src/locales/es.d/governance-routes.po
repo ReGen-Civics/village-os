@@ -1,0 +1,16 @@
+# Governance: the deciders' queue is "Your work" (the lead, 26 Nov 2026: call it governance).
+
+# needs-native-review: governance rename, 2026-11-26
+msgctxt "review page"
+msgid "Your work"
+msgstr "Tu trabajo"
+
+# needs-native-review: governance rename, 2026-11-26
+msgctxt "Review, h1"
+msgid "Your work"
+msgstr "Tu trabajo"
+
+# needs-native-review: governance rename, 2026-11-26
+msgctxt "Layout, Link"
+msgid "Your work"
+msgstr "Tu trabajo"
