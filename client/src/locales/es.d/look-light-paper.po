@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, label"
+msgid "Light mode's paper"
+msgstr "El papel del modo claro"
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, description"
+msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
+msgstr "Cómo dibuja el modo claro las páginas de los miembros. Sencillo es la página limpia de Hora Dorada. Carta náutica la convierte en una vieja carta de navegación: papel envejecido y arrugado con el borde quemado, tarjetas de roles en hojas rasgadas y chamuscadas, y títulos en Garamond. El modo oscuro y Admin quedan como están."
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice plain, label"
+msgid "Plain"
+msgstr "Sencillo"
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice plain, hint"
+msgid "The clean Golden Hour page."
+msgstr "La página limpia de Hora Dorada."
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, label"
+msgid "Sea chart"
+msgstr "Carta náutica"
+
+# needs-native-review: the light mode paper dial, 26 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, hint"
+msgid "Aged paper, torn cards and Garamond headings."
+msgstr "Papel envejecido, tarjetas rasgadas y títulos en Garamond."
