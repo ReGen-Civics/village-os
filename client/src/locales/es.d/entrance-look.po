@@ -1,6 +1,0 @@
-# The entrance over the village's video: the first screen's door (26 Nov 2026).
-
-# needs-native-review: entrance video first screen, 2026-11-26
-msgctxt "portal entrance: the first screen's door down to the form, over the village's video"
-msgid "Come in"
-msgstr "Entra"

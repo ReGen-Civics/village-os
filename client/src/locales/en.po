@@ -23263,6 +23263,11 @@ msgstr "Three to five is the usual."
 #~ msgid "The task"
 #~ msgstr "The task"
 
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the first screen's door down to the form, over the village's video"
+msgid "Come in"
+msgstr "Come in"
+
 #: client/src/pages/Login.tsx
 msgctxt "sign in: before the visitor's way in"
 msgid "Visiting us, without a member account?"
@@ -24837,9 +24842,9 @@ msgid "A line for them"
 msgstr "A line for them"
 
 #: client/src/components/admin/MemberAdminView.tsx
-msgctxt "MemberAdminView, p"
-msgid "Nobody has drafted a change yet."
-msgstr "Nobody has drafted a change yet."
+#~ msgctxt "MemberAdminView, p"
+#~ msgid "Nobody has drafted a change yet."
+#~ msgstr "Nobody has drafted a change yet."
 
 #: client/src/components/profile/PrivacyPanel.tsx
 msgctxt "privacy settings: a switch"
@@ -30630,6 +30635,11 @@ msgstr "Try again"
 msgctxt "name your guide note, founders only: the heading"
 msgid "Your village guide has no name yet"
 msgstr "Your village guide has no name yet"
+
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Remove this goal"
+msgstr "Remove this goal"
 
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Set by the village"
@@ -37125,9 +37135,9 @@ msgid "Choose a sitting steward"
 msgstr "Choose a sitting steward"
 
 #: client/src/components/admin/MemberAdminView.tsx
-msgctxt "MemberAdminView, title"
-msgid "Changes to the village's structure"
-msgstr "Changes to the village's structure"
+#~ msgctxt "MemberAdminView, title"
+#~ msgid "Changes to the village's structure"
+#~ msgstr "Changes to the village's structure"
 
 #: client/src/pages/rites/Ceremony.tsx
 msgctxt "rites"
@@ -39516,6 +39526,11 @@ msgctxt "Stay, span"
 msgid "rate coming soon"
 msgstr "rate coming soon"
 
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Move this question up"
+msgstr "Move this question up"
+
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
 msgid "Read it before you publish it. Published, it makes the circles and roles; load the same file again afterwards to tag each role with its needs and say how each circle decides."
@@ -40148,6 +40163,11 @@ msgstr "Book a land tour"
 msgctxt "admin venture accounts"
 msgid "Take off"
 msgstr "Take off"
+
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this milestone"
+msgstr "Delete this milestone"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -45145,6 +45165,11 @@ msgstr "Their card beside the open card"
 msgid "Number {0} on your list."
 msgstr "Number {0} on your list."
 
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this module"
+msgstr "Delete this module"
+
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, li"
 msgid "Name it for your village and choose Full access, so this screen can set up your domain for you."
@@ -45309,6 +45334,11 @@ msgstr "Pair with"
 msgctxt "YourCompanions, p"
 msgid "Anything {0} drafts in chat lands in its card and waits for your yes."
 msgstr "Anything {0} drafts in chat lands in its card and waits for your yes."
+
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Move this question down"
+msgstr "Move this question down"
 
 #: client/src/pages/Decisions.tsx
 msgctxt "Decisions, h3"
@@ -47550,6 +47580,11 @@ msgstr "We'll only write to you about this application."
 #~ msgid "Then the circle reads it, and we write to you by {replyWords}."
 #~ msgstr "Then the circle reads it, and we write to you by {replyWords}."
 
+#: client/src/components/admin/ContentEditorTab.tsx
+msgctxt "ContentEditorTab, aria-label"
+msgid "Load the saved words again"
+msgstr "Load the saved words again"
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "admin org chart, the role that leads a circle"
 msgid "Lead role"
@@ -47773,6 +47808,11 @@ msgstr "Search Admin"
 msgctxt "settings: a group"
 msgid "Connected tools and agents"
 msgstr "Connected tools and agents"
+
+#: client/src/components/admin/WorkWithUsTab.tsx
+msgctxt "WorkWithUsTab, aria-label"
+msgid "Remove this option"
+msgstr "Remove this option"
 
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, what it is"
@@ -53571,6 +53611,11 @@ msgstr "Save to see what the map will show."
 #~ msgctxt "my token pay"
 #~ msgid "Credits"
 #~ msgstr "Credits"
+
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this document"
+msgstr "Delete this document"
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"

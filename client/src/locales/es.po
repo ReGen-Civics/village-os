@@ -27039,6 +27039,12 @@ msgstr "Lo habitual son de tres a cinco."
 #~ msgid "The task"
 #~ msgstr ""
 
+# needs-native-review: entrance video first screen, 2026-11-26
+#: client/src/pages/Entrance.tsx
+msgctxt "portal entrance: the first screen's door down to the form, over the village's video"
+msgid "Come in"
+msgstr "Entra"
+
 # needs-native-review: visitor profile, 2026-11-25
 #: client/src/pages/Login.tsx
 msgctxt "sign in: before the visitor's way in"
@@ -28880,9 +28886,9 @@ msgstr "Una línea para ellos"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/MemberAdminView.tsx
-msgctxt "MemberAdminView, p"
-msgid "Nobody has drafted a change yet."
-msgstr "Nadie ha redactado un cambio todavía."
+#~ msgctxt "MemberAdminView, p"
+#~ msgid "Nobody has drafted a change yet."
+#~ msgstr "Nadie ha redactado un cambio todavía."
 
 # needs-native-review: profile overhaul, the settings page, 25 Nov 2026
 #: client/src/components/profile/PrivacyPanel.tsx
@@ -35609,6 +35615,12 @@ msgstr "Intentar de nuevo"
 msgctxt "name your guide note, founders only: the heading"
 msgid "Your village guide has no name yet"
 msgstr "Tu guía de la aldea todavía no tiene nombre"
+
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Remove this goal"
+msgstr "Quitar este objetivo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/SuggestDial.tsx
@@ -43195,9 +43207,9 @@ msgstr "Elija un custodio en funciones"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/MemberAdminView.tsx
-msgctxt "MemberAdminView, title"
-msgid "Changes to the village's structure"
-msgstr "Cambios en la estructura de la aldea"
+#~ msgctxt "MemberAdminView, title"
+#~ msgid "Changes to the village's structure"
+#~ msgstr "Cambios en la estructura de la aldea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Ceremony.tsx
@@ -45967,6 +45979,12 @@ msgctxt "Stay, span"
 msgid "rate coming soon"
 msgstr "tarifa próximamente"
 
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Move this question up"
+msgstr "Subir esta pregunta"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
@@ -46707,6 +46725,12 @@ msgstr "Reserva una visita al terreno"
 msgctxt "admin venture accounts"
 msgid "Take off"
 msgstr "Quitar"
+
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this milestone"
+msgstr "Eliminar este hito"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Protocols.tsx
@@ -52524,6 +52548,12 @@ msgstr "Su tarjeta al lado de la tarjeta abierta"
 msgid "Number {0} on your list."
 msgstr "Número {0} en su lista."
 
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this module"
+msgstr "Eliminar este módulo"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, li"
@@ -52716,6 +52746,12 @@ msgstr "Emparejar con"
 msgctxt "YourCompanions, p"
 msgid "Anything {0} drafts in chat lands in its card and waits for your yes."
 msgstr "Todo lo que {0} redacte en el chat llega a su tarjeta y espera su sí."
+
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Move this question down"
+msgstr "Bajar esta pregunta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decisions.tsx
@@ -55320,6 +55356,12 @@ msgstr "Solo te escribiremos sobre esta solicitud."
 #~ msgid "Then the circle reads it, and we write to you by {replyWords}."
 #~ msgstr "Después el círculo la lee y te escribimos antes del {replyWords}."
 
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/components/admin/ContentEditorTab.tsx
+msgctxt "ContentEditorTab, aria-label"
+msgid "Load the saved words again"
+msgstr "Volver a cargar las palabras guardadas"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "admin org chart, the role that leads a circle"
@@ -55571,6 +55613,12 @@ msgstr "Buscar en Admin"
 msgctxt "settings: a group"
 msgid "Connected tools and agents"
 msgstr "Herramientas y agentes conectados"
+
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/components/admin/WorkWithUsTab.tsx
+msgctxt "WorkWithUsTab, aria-label"
+msgid "Remove this option"
+msgstr "Quitar esta opción"
 
 # needs-native-review: the rows of /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/sourceWords.ts
@@ -62266,6 +62314,12 @@ msgstr "Guarde para ver lo que mostrará el mapa."
 #~ msgctxt "my token pay"
 #~ msgid "Credits"
 #~ msgstr "Créditos"
+
+# needs-native-review: Admin button names, 2026-11-25
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, aria-label"
+msgid "Delete this document"
+msgstr "Eliminar este documento"
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
