@@ -1,0 +1,274 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, within term"
+msgid "Within term, to {day}"
+msgstr "Dentro del plazo, hasta el {day}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, term ended"
+msgid "Term ended {day}"
+msgstr "El plazo terminó el {day}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, no term"
+msgid "No term set"
+msgstr "Sin plazo definido"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, review due"
+msgid "Review due {day}"
+msgstr "Revisión el {day}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, review date passed"
+msgid "Review date passed {day}"
+msgstr "La fecha de revisión pasó el {day}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, no review date"
+msgid "No review date set"
+msgstr "Sin fecha de revisión"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, signs on track"
+msgid "Signs on track"
+msgstr "Señales en buen camino"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, some signs on track"
+msgid "{n} of {of} signs on track"
+msgstr "{n} de {of} señales en buen camino"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, no target"
+msgid "No target set"
+msgstr "Sin meta definida"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, not counted yet"
+msgid "Not counted yet"
+msgstr "Aún no se ha contado"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, dot steady"
+msgid "Steady"
+msgstr "Estable"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, dot worth a look"
+msgid "Worth a look"
+msgstr "Merece una mirada"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, dot needs attention"
+msgid "Needs attention"
+msgstr "Necesita atención"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, ready to hand over"
+msgid "Ready to hand over"
+msgstr "Listo para entregar"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, n of m ready"
+msgid "{n} of {of} ready"
+msgstr "{n} de {of} listos"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, card complete"
+msgid "Card complete"
+msgstr "Tarjeta completa"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, parts written, some missing"
+msgid "{n} of {of} parts written: {missing} missing"
+msgstr "{n} de {of} partes escritas: falta {missing}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, all parts written"
+msgid "All {of} parts written"
+msgstr "Las {of} partes están escritas"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, runbook"
+msgid "Runbook"
+msgstr "Manual de operación"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, decisions recorded"
+msgid "Decisions recorded in the circle, last 3 moons"
+msgstr "Decisiones registradas en el círculo, últimas 3 lunas"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, n decisions recorded"
+msgid "{n, plural, one {# decision recorded} other {# decisions recorded}}"
+msgstr "{n, plural, one {# decisión registrada} other {# decisiones registradas}}"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, no circle"
+msgid "The role sits in no circle"
+msgstr "El rol no está en ningún círculo"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, someone ready to step in"
+msgid "Someone ready to step in"
+msgstr "Alguien listo para asumirlo"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, a second holder"
+msgid "A second holder holds it too"
+msgstr "Una segunda persona también lo asume"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, deputy or successor written"
+msgid "A deputy or successor is written down"
+msgstr "Hay una suplencia o sucesión escrita"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, nobody named yet"
+msgid "Nobody named yet"
+msgstr "Aún no se nombra a nadie"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check purpose"
+msgid "Purpose"
+msgstr "Propósito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check purpose written"
+msgid "Purpose written"
+msgstr "Propósito escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check no purpose"
+msgid "No purpose written yet"
+msgstr "Aún no hay propósito escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check what it looks after"
+msgid "What it looks after"
+msgstr "De qué se ocupa"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check what it looks after written"
+msgid "What it looks after is written"
+msgstr "De qué se ocupa está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check what it looks after missing"
+msgid "What it looks after is not written yet"
+msgstr "De qué se ocupa aún no está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check count on it"
+msgid "What people can count on it for"
+msgstr "Para qué se puede contar con el rol"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check count on it written"
+msgid "What people can count on it for is written"
+msgstr "Para qué se puede contar con el rol está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check count on it missing"
+msgid "What people can count on it for is not written yet"
+msgstr "Para qué se puede contar con el rol aún no está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check bring me"
+msgid "Bring me"
+msgstr "Tráigame"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check bring me written"
+msgid "Bring me is written"
+msgstr "Tráigame está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check bring me missing"
+msgid "Bring me is not written yet"
+msgstr "Tráigame aún no está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check not mine"
+msgid "Not mine to hold"
+msgstr "No me corresponde sostener"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check not mine written"
+msgid "Not mine to hold is written"
+msgstr "No me corresponde sostener está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check not mine missing"
+msgid "Not mine to hold is not written yet"
+msgstr "No me corresponde sostener aún no está escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check runbook"
+msgid "Runbook"
+msgstr "Manual de operación"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check runbook written"
+msgid "Runbook written"
+msgstr "Manual de operación escrito"
+
+# needs-native-review: player card health, 26 Nov 2026
+#: client/src/components/playerCard/playerCardHealthMessages.ts
+msgctxt "player card health, handover check no runbook"
+msgid "No runbook written yet"
+msgstr "Aún no hay manual de operación escrito"
+
+# needs-native-review: player card count word, now with the "one" plural Spanish needs (check-i18n-catalogs), 26 Nov 2026
+#: client/src/components/playerCard/playerCardMessages.ts
+msgctxt "player card, tagline count of roles"
+msgid "{n, plural, =0 {No} =1 {One} =2 {Two} =3 {Three} =4 {Four} =5 {Five} =6 {Six} =7 {Seven} =8 {Eight} =9 {Nine} =10 {Ten} =11 {Eleven} =12 {Twelve} other {#}}"
+msgstr "{n, plural, =0 {Ningún} =1 {Un} =2 {Dos} =3 {Tres} =4 {Cuatro} =5 {Cinco} =6 {Seis} =7 {Siete} =8 {Ocho} =9 {Nueve} =10 {Diez} =11 {Once} =12 {Doce} one {#} other {#}}"
