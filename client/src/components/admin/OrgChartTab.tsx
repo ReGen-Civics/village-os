@@ -147,8 +147,8 @@ export function OrgChartTab({ password }: { password: string }) {
     return d;
   };
 
-  if (loading) return <div className="text-center py-12 text-gray-400"><Trans context="OrgChartTab, div">Loading…</Trans></div>;
-  if (!org) return <div className="text-center py-12 text-gray-400"><Trans context="OrgChartTab, div">The org chart could not be read.</Trans></div>;
+  if (loading) return <div className="text-center py-12 text-muted-foreground"><Trans context="OrgChartTab, div">Loading…</Trans></div>;
+  if (!org) return <div className="text-center py-12 text-muted-foreground"><Trans context="OrgChartTab, div">The org chart could not be read.</Trans></div>;
 
   const circles: any[] = org.circles ?? [];
   const roles: any[] = org.roles ?? [];
@@ -510,7 +510,7 @@ export function OrgChartTab({ password }: { password: string }) {
                   </select>
                 </label>
               </div>
-              <div className="text-xs text-gray-400 pt-1">
+              <div className="text-xs text-muted-foreground pt-1">
                 {c.grownFromOrgRoleId && <span><Trans context="OrgChartTab, span">Grew from a role. </Trans></span>}
                 {c.isExample && <span className="text-amber-700"><Trans context="OrgChartTab, span">Standing example, publish your own to replace it.</Trans></span>}
               </div>
@@ -614,7 +614,7 @@ export function OrgChartTab({ password }: { password: string }) {
             <p className="text-xs text-gray-500">
               <Trans context="OrgChartTab, p">State<br />
               <span className="font-medium text-gray-800">{STATE_LABEL[r.state] ?? r.state}</span>
-              <span className="text-gray-400"> · {r.holderCount} of {r.seats}</span></Trans>
+              <span className="text-muted-foreground"> · {r.holderCount} of {r.seats}</span></Trans>
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-2 mt-2">
@@ -648,7 +648,7 @@ export function OrgChartTab({ password }: { password: string }) {
                   ...draft,
                   [r.id]: { ...d, accountabilities: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) },
                 })} />
-              <span id={`${r.id}-accountabilities-hint`} className="block text-[11px] text-gray-400 mt-0.5">
+              <span id={`${r.id}-accountabilities-hint`} className="block text-[11px] text-muted-foreground mt-0.5">
                 <Trans context="OrgChartTab, span">The ongoing work the circle counts on this role to keep doing. Listed on /roles.
               </Trans></span>
             </label>
@@ -657,7 +657,7 @@ export function OrgChartTab({ password }: { password: string }) {
                 aria-label={t({ message: "Why this role matters", context: "OrgChartTab, aria-label" })}
                 aria-describedby={`${r.id}-why-hint`}
                 onChange={(e) => setDraft({ ...draft, [r.id]: { ...d, whyItMatters: e.target.value } })} />
-              <span id={`${r.id}-why-hint`} className="block text-[11px] text-gray-400 mt-0.5">
+              <span id={`${r.id}-why-hint`} className="block text-[11px] text-muted-foreground mt-0.5">
                 <Trans context="OrgChartTab, span">Shown on /roles under Why This Role Matters.
               </Trans></span>
             </label>
@@ -685,7 +685,7 @@ export function OrgChartTab({ password }: { password: string }) {
             {(r.holders ?? []).map((h: any) => (
               <span key={h.assignmentId ?? h.userId ?? h.name} className={`text-xs rounded-full pl-3 pr-1 py-1 inline-flex items-center gap-1 ${h.lapsed ? "bg-amber-50 border border-amber-200" : "bg-gray-100"}`}>
                 {h.name}
-                {h.focus && <span className="text-gray-500"> · {h.focus}</span>}
+                {h.focus && <span className="text-gray-600"> · {h.focus}</span>}
                 {h.kind === "documented" && <span className="text-amber-700"> <Trans context="OrgChartTab, span">· no account yet</Trans></span>}
                 {h.lapsed && (
                   <span className="text-amber-700">
@@ -723,7 +723,7 @@ export function OrgChartTab({ password }: { password: string }) {
                 )}
               </span>
             ))}
-            {(r.holders ?? []).length === 0 && <span className="text-xs text-gray-400"><Trans context="OrgChartTab, span">Nobody holds this yet.</Trans></span>}
+            {(r.holders ?? []).length === 0 && <span className="text-xs text-muted-foreground"><Trans context="OrgChartTab, span">Nobody holds this yet.</Trans></span>}
           </div>
 
           {/*
@@ -768,20 +768,20 @@ export function OrgChartTab({ password }: { password: string }) {
           {!r.isExample && <EditRoleButton roleId={r.id} className="mt-2" onSaved={() => void load()} />}
 
           {journal[r.id] === "loading" && (
-            <p className="text-xs text-gray-400 mt-2"><Trans context="OrgChartTab, p">Reading the history…</Trans></p>
+            <p className="text-xs text-muted-foreground mt-2"><Trans context="OrgChartTab, p">Reading the history…</Trans></p>
           )}
           {Array.isArray(journal[r.id]) && (
             <div className="mt-2 border-t border-gray-100 pt-2 space-y-1">
               {(journal[r.id] as any[]).length === 0 && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   <Trans context="OrgChartTab, p">Nothing recorded against this role yet. Changes from here on will show up.
                 </Trans></p>
               )}
               {(journal[r.id] as any[]).map((e) => (
                 <p key={e.id} className="text-xs text-gray-600">
-                  <span className="text-gray-400">{new Date(e.at).toLocaleDateString()}</span>{" "}
+                  <span className="text-muted-foreground">{new Date(e.at).toLocaleDateString()}</span>{" "}
                   {e.text}
-                  {e.by && <span className="text-gray-400"> · {e.by}</span>}
+                  {e.by && <span className="text-muted-foreground"> · {e.by}</span>}
                 </p>
               ))}
             </div>

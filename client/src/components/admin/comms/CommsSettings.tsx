@@ -118,7 +118,7 @@ function ChecklistRow({
       <div className="flex flex-wrap items-start gap-3 p-4">
         <span
           className={`mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 ${
-            item.done ? "bg-green-100 text-green-700" : item.required ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"
+            item.done ? "bg-green-100 text-green-700" : item.required ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-700"
           }`}
           aria-hidden="true"
         >
@@ -212,7 +212,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
             {failed}
           </p>
         ) : (
-          <div className="text-center py-12 text-gray-400"><Trans context="CommsSettings, div">Loading...</Trans></div>
+          <div className="text-center py-12 text-muted-foreground"><Trans context="CommsSettings, div">Loading...</Trans></div>
         )}
       </div>
     );

@@ -59,7 +59,7 @@ export default function SeasonTimezoneField({
         aria-describedby={answered ? undefined : "season-timezone-answer"}
         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
       />
-      <p className="text-[11px] text-gray-400 mt-1"><Trans context="SeasonTimezoneField, p">A season turns at midnight where the village is.</Trans></p>
+      <p className="text-[11px] text-muted-foreground mt-1"><Trans context="SeasonTimezoneField, p">A season turns at midnight where the village is.</Trans></p>
       {!answered && (
         <p
           id="season-timezone-answer"

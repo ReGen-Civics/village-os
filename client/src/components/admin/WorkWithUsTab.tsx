@@ -57,7 +57,7 @@ export default function WorkWithUsTab({ password }: { password: string }) {
     setSaving(false);
   };
 
-  if (!cfg) return <div className="text-center py-12 text-gray-400"><Trans context="WorkWithUsTab, div">Loading...</Trans></div>;
+  if (!cfg) return <div className="text-center py-12 text-muted-foreground"><Trans context="WorkWithUsTab, div">Loading...</Trans></div>;
 
   const opts = cfg.reciprocityOptions ?? [];
   const setOpt = (i: number, patch: any) =>
@@ -99,7 +99,7 @@ export default function WorkWithUsTab({ password }: { password: string }) {
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="WorkWithUsTab, label">Guide's opening greeting</Trans></label>
           <textarea value={cfg.assistantGreeting ?? ""} onChange={(e) => setCfg({ ...cfg, assistantGreeting: e.target.value })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
-          <p className="text-[11px] text-gray-400 mt-0.5"><Trans context="WorkWithUsTab, p">Use {nameToken} where the guide's name should appear.</Trans></p>
+          <p className="text-[11px] text-muted-foreground mt-0.5"><Trans context="WorkWithUsTab, p">Use {nameToken} where the guide's name should appear.</Trans></p>
         </div>
 
         <div>
@@ -113,7 +113,7 @@ export default function WorkWithUsTab({ password }: { password: string }) {
                 <div className="flex gap-2">
                   <input type="text" value={o.title} onChange={(e) => setOpt(i, { title: e.target.value })} placeholder={t({ message: "Title (shown)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
                   <input type="text" value={o.value} onChange={(e) => setOpt(i, { value: e.target.value })} placeholder={t({ message: "Value (stored)", context: "WorkWithUsTab, placeholder" })} className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  <button onClick={() => removeOpt(i)} className="p-2 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removeOpt(i)} aria-label={t({ message: "Remove this option", context: "WorkWithUsTab, aria-label" })} className="p-2 text-muted-foreground hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
                 <textarea value={o.desc} onChange={(e) => setOpt(i, { desc: e.target.value })} rows={2} placeholder={t({ message: "Description", context: "WorkWithUsTab, placeholder" })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
               </div>

@@ -38,7 +38,7 @@ const STATE_STYLE: Record<LetterState, string> = {
   scheduled: "bg-blue-50 text-blue-800",
   sending: "bg-amber-50 text-amber-900",
   sent: "bg-green-50 text-green-800",
-  cancelled: "bg-gray-100 text-gray-500",
+  cancelled: "bg-gray-100 text-gray-700",
 };
 
 function Numbers({ l }: { l: LetterView }) {
@@ -125,7 +125,7 @@ export default function CommsLetters({ password }: { password: string }) {
   }, [load]);
 
   if (error) return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  if (!data) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="CommsLetters, p">Loading...</Trans></p>;
+  if (!data) return <p className="py-12 text-center text-sm text-muted-foreground"><Trans context="CommsLetters, p">Loading...</Trans></p>;
 
   const editing = open && open !== "new" ? data.letters.find((l) => l.id === open) ?? null : null;
   const done = async (line: string, keepOpen: boolean) => {

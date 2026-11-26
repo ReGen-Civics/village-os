@@ -240,7 +240,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
       <VillageTokensWordField password={password} />
       <TokenJobsPanel password={password} />
       <OrgAccountsPanel password={password} />
-      {loading ? <div className="text-center py-12 text-gray-400"><Trans context="TokensTab, div">Loading...</Trans></div> : (
+      {loading ? <div className="text-center py-12 text-muted-foreground"><Trans context="TokensTab, div">Loading...</Trans></div> : (
         <div className="space-y-6">
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
@@ -269,7 +269,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                           />
                           <button onClick={rename} disabled={!renaming.name.trim()}
                             className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"><Trans context="TokensTab, button">Save</Trans></button>
-                          <button onClick={() => setRenaming(null)} className="text-xs text-gray-400"><Trans context="TokensTab, button">Cancel</Trans></button>
+                          <button onClick={() => setRenaming(null)} className="text-xs text-muted-foreground"><Trans context="TokensTab, button">Cancel</Trans></button>
                         </span>
                       ) : (
                         <>
@@ -334,7 +334,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                           {t.transferable ? "yes" : "no"}
                         </button>
                       ) : (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted-foreground">
                           {t.kind === "recognition" ? "never" : "no"}
                         </span>
                       )}
@@ -356,17 +356,17 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                       ) : (
                         // The same two refusals the rename control respects, and
                         // said out loud rather than shown as a dead switch.
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted-foreground">
                           {t.isExample ? "example" : "read-only"}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-2.5 text-gray-600">
                       {Object.entries(t.issuedBy ?? {}).length === 0
-                        ? <span className="text-gray-300">-</span>
+                        ? <span className="text-gray-500">-</span>
                         : Object.entries(t.issuedBy).map(([acct, n]) => (
                             <div key={acct} className="text-xs">
-                              <span className="font-mono text-gray-400">{acct.replace("sys:", "")}</span>: {formatTokenAmount(Number(n), Number(t.decimals ?? 0))}
+                              <span className="font-mono text-muted-foreground">{acct.replace("sys:", "")}</span>: {formatTokenAmount(Number(n), Number(t.decimals ?? 0))}
                             </div>
                           ))}
                     </td>

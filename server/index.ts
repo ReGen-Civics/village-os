@@ -3585,6 +3585,11 @@ async function mayLiveView(user: any): Promise<boolean> {
   return capabilityDecision("qa.live_view", { ...(await capabilityCtx(user)), isAdmin: false, isFounder: false }).allowed;
 }
 
+/** The admin live view (`live.view.admin`): the live view for QA AND the holder's own admin access, asked now. */
+async function mayLiveViewAdmin(user: any): Promise<boolean> {
+  return userIsAdmin(user) && (await mayLiveView(user));
+}
+
 async function guardCapability(
   req: express.Request,
   res: express.Response,
@@ -6717,7 +6722,7 @@ async function startServer() {
 
   app.use(express.json({ limit: "1mb" }));
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
-  app.use(liveViewMiddleware({ verify: (t) => verifyToken(getPool(), t), userById: (id) => members.byId(id), stands: holderStands, mayView: mayLiveView, sessionFor: (u) => encodeToken(AUTH_TOKEN_SECRET, u.id, u.email, u.tokenVersion ?? 0), overLimit })); // ahead of the people lock and the entrance: a live.view token reads as its holder, and only reads (server/lib/liveView.ts)
+  app.use(liveViewMiddleware({ verify: (t) => verifyToken(getPool(), t), userById: (id) => members.byId(id), stands: holderStands, mayView: mayLiveView, mayViewAdmin: mayLiveViewAdmin, auditAdminView: async (u, row) => { await recordEvent(getPool(), { kind: "audit", text: `live-view:admin-read:${row.prefix}`, actorUserId: String(u.id), entityType: "agent_token", entityRef: row.id, audience: "admin" }); }, sessionFor: (u) => encodeToken(AUTH_TOKEN_SECRET, u.id, u.email, u.tokenVersion ?? 0), overLimit })); // ahead of the people lock and the entrance: a live.view token reads as its holder, and only reads (server/lib/liveView.ts)
   registerPeopleLock(app, { authedUser, getPool, boolVar });
   registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name, origin: () => notifyDeps.origin() }, roleNames: async () => new Map((await listOrgRoles(getPool())).map((r) => [String(r.id), String(r.name)])), accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id), add: (m) => members.add(m), makeHandle: (name) => uniqueHandle(slugifyHandle(name)), joined: (u) => void joined(u) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
@@ -7043,6 +7048,7 @@ async function startServer() {
       const user = await me(req, res);
       if (!user) return;
       const liveViewOffered = await mayLiveView(user);
+      const liveViewAdminOffered = liveViewOffered && userIsAdmin(user);
       const origin = (process.env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
       res.json({
         origin,
@@ -7050,7 +7056,7 @@ async function startServer() {
         openapiUrl: `${origin}${AGENT_V1}/openapi.json`,
         tokenEnvVar: "VILLAGE_AGENT_TOKEN",
         // live.view is offered only to a member the gate seats with the live view for QA.
-        scopes: AGENT_SCOPES.filter((s) => s !== "intents.write" || AGENT_INTENT_WRITE).filter((s) => s !== "live.view" || liveViewOffered),
+        scopes: AGENT_SCOPES.filter((s) => s !== "intents.write" || AGENT_INTENT_WRITE).filter((s) => s !== "live.view" || liveViewOffered).filter((s) => s !== "live.view.admin" || liveViewAdminOffered),
         readScopes: READ_SCOPES,
         intentsOpen: AGENT_INTENT_WRITE,
         memberSecrets: memberSecretsConfigured(),
@@ -7076,6 +7082,7 @@ async function startServer() {
         // Sera's agent: an agent account that is not an admin (addendum v6, B7).
         seraAllowed: !holderIsAdmin && (await isAgentAccount(getPool(), String(user.id))),
         liveViewAllowed: await mayLiveView(user), // THE gate, never a role name (server/lib/liveView.ts)
+        liveViewAdminAllowed: await mayLiveViewAdmin(user), // the live view AND the holder's own admin access
       });
       if (!scopes.ok) return res.status(400).json({ error: scopes.error });
       const minted = await mintToken(getPool(), user.id, { name: String(req.body?.name ?? ""), scopes: scopes.scopes, ttlDays: req.body?.ttlDays }, Number(user.tokenVersion ?? 0)); // a session ended since its check answers 401

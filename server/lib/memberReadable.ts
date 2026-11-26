@@ -14,6 +14,10 @@
  * secrets, other people's private data, report queues, cash owed per member,
  * and the full audit trail.
  *
+ * NOT ON IT: org chart drafts (`/api/admin/org/drafts` and its preview). They were listed here from 1.3.27 to
+ * 1.3.75; the lead's standing decision is "org chart drafts shown to admins only" (25 Nov 2026), so they are the
+ * admin's again, and the review list shows a draft only to somebody who may decide it.
+ *
  * Members, not visitors: a guest, a signed-out visitor and a former member
  * read none of it.
  */
@@ -22,11 +26,8 @@
 export const MEMBER_READABLE_ADMIN_GETS: Readonly<Record<string, string>> = {
   "/api/admin/capabilities/holding":
     "Which powers the village holds, which groups carry what and how many hold each. Role-level only: the removal warning, keyed by account, is left out for a member.",
-  "/api/admin/org/drafts":
-    "The village's reorganisation drafts. Anyone may propose a change to the structure (Rye, 2026-09-24), so the drafts are the village's business.",
-  "/api/admin/org/drafts/:id/preview": "What one reorganisation draft would change, role by role.",
   "/api/admin/org/expiring":
-    "Roles whose holder's term is running out, named by role and first name, which the map already shows every account (map.viewPeople).",
+    "Roles whose holder's term is running out. The holder's first name and focus go only to a reader holding map.viewPeople, the gate the map asks, whatever a village sets that dial to.",
 };
 
 /** Whether this request is a member read the list allows. Pure: the caller answers who the person is. */

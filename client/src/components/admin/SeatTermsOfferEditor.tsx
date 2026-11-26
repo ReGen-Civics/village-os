@@ -96,7 +96,7 @@ export default function SeatTermsOfferEditor({
           {OFFER_EDITOR_WORDS.open}
           <span className="ml-2 text-xs font-normal text-gray-500">{hasOffer ? "set" : OFFER_WORDS.none}</span>
         </span>
-        <ChevronDown aria-hidden="true" className={`size-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown aria-hidden="true" className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="border-t border-gray-100 p-3">

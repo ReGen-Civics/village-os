@@ -66,6 +66,7 @@ import { CompanionsDialog, Standing, STANDING, draftsWaiting, useCompanions } fr
 import type { CompanionView } from "@shared/companionItems";
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 import { useLingui } from "@lingui/react/macro";
+import { useEntranceStands } from "@/lib/entranceStatus";
 
 /**
  * The founding team's pages: the steward front door, the roles page that
@@ -144,6 +145,7 @@ export default function MobileFab() {
   const admin = user?.role === "admin" || user?.role === "founder";
   const { name: guideName } = useGuideName();
   const { army, reread } = useCompanions(!!user);
+  const entrance = useEntranceStands(location, !!user);
   const [panel, setPanel] = useState(false);
   const rows = cornerRows({ signedIn: !!user, admin, army, guide: guideName, t });
   const standing = (army ?? []).slice(0, STANDING);
@@ -267,6 +269,9 @@ export default function MobileFab() {
   if (isFoundingRoute(location)) return null;
   // Inside Admin its own Ask button and phone bar hold this corner (the Admin evolution lane).
   if (isAdminRoute(location)) return null;
+  // The portal entrance in front of the page: it is the page then, with its own "I have an account: sign in", and
+  // every row here leads behind it (1.3.75's live check: the corner drew over the entrance).
+  if (entrance) return null;
 
   return (
     <>

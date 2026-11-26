@@ -1869,7 +1869,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --mode-brand: var(--pal-night-brand);
   --mode-brand-hover: var(--pal-night-brand-hover);
   --mode-brand-band: var(--pal-night-brand-band);
-  --mode-ground: var(--night-ground, var(--pal-night-ground));
+  /* No --mode-ground here. The root's --background must stay the light
+     ground in dark mode, because Admin copies its light tokens from the root
+     (--light-background below). A night ground on the root made Admin's
+     "light" background the night while its ink stayed dark: 1.36:1 on Setup
+     and Needs (admin live pass A2, 25 Nov 2026). The night ground already
+     reaches every page through <body> (--background: var(--sheet-ground))
+     and the root's own background-color. */
   --band: var(--night-band, var(--pal-night-band));
   --band-ink: var(--night-ink, var(--pal-night-ink));
   --band-rule: var(--night-rule, var(--pal-night-rule));
@@ -3058,5 +3064,24 @@ html:has(#sera-changes [data-sera-strip-on]) {
   @keyframes follow-sprout {
     from { transform: scale(0); }
     to { transform: scale(1); }
+  }
+}
+
+/*
+ * The entrance's glass card rises into view as a visitor scrolls down to it (client/src/components/EntranceBackdrop.tsx).
+ * Scroll-driven, so it moves only with the visitor's own scrolling; a browser without scroll timelines, or a
+ * device that asks for less motion, shows the card where it rests.
+ */
+@keyframes entrance-rise {
+  from { opacity: 0.4; transform: translateY(48px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .entrance-rise {
+      animation: entrance-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
   }
 }

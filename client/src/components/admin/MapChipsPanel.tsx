@@ -297,7 +297,7 @@ export default function MapChipsPanel() {
                 )}
               </div>
 
-              {src && <p className="text-[11px] text-gray-400 mt-2">{src.how}</p>}
+              {src && <p className="text-[11px] text-muted-foreground mt-2">{src.how}</p>}
               {/* A members-only source says so in every state, saved or not. */}
               {src?.membersOnly && <p className="text-[11px] text-gray-600 mt-1"><Trans context="MapChipsPanel, p">Only members see this chip.</Trans></p>}
               {/* Before a save, the warning; after it, the preview says the same thing once. */}
@@ -324,7 +324,7 @@ export default function MapChipsPanel() {
         </Trans></button>
       </div>
       {chips.length >= MAX_MAP_CHIPS && (
-        <p className="text-[11px] text-gray-400 mt-1">
+        <p className="text-[11px] text-muted-foreground mt-1">
           <Trans context="MapChipsPanel, p">The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone.
         </Trans></p>
       )}

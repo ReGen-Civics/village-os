@@ -120,7 +120,7 @@ export default function CommsOverview({ password }: { password: string }) {
             {failed}
           </p>
         ) : (
-          <div className="text-center py-12 text-gray-400"><Trans context="CommsOverview, div">Loading...</Trans></div>
+          <div className="text-center py-12 text-muted-foreground"><Trans context="CommsOverview, div">Loading...</Trans></div>
         )}
       </div>
     );

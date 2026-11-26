@@ -372,7 +372,7 @@ export default function VotingWeightsPanel({
             {bulkSaving ? "Saving..." : `Set ${picked.size} member(s)`}
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           {picked.size === 0
             ? "Nobody is picked yet."
             : bulkReason.trim()
@@ -493,7 +493,7 @@ export default function VotingWeightsPanel({
                       onChange={(e) => setReason({ ...reason, [m.id]: e.target.value })}
                       className={`${inputCls} w-full mt-1 min-h-[44px] block`}
                     />
-                    <span id={`${m.id}-reason-hint`} className="block text-[11px] text-gray-400 mt-0.5">
+                    <span id={`${m.id}-reason-hint`} className="block text-[11px] text-muted-foreground mt-0.5">
                       <Trans context="VotingWeightsPanel, span">{m.name} reads this sentence on their own page, with your name beside it.
                     </Trans></span>
                   </label>
@@ -530,7 +530,7 @@ export default function VotingWeightsPanel({
                   {h.oldWeight === null ? " set to " : ` ${weightText(h.oldWeight)} to `}
                   {weightText(h.newWeight)}
                 </span>
-                <span className="text-gray-400">
+                <span className="text-muted-foreground">
                   <Trans context="VotingWeightsPanel, span">{" by "}
                   {nameOf(h.actorUserId)} on {new Date(h.at).toLocaleDateString()}</Trans>
                 </span>

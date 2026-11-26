@@ -457,15 +457,21 @@ export function register(app: Express, deps: Deps): void {
     const within = Math.max(1, Math.min(365, Number(req.query.days ?? 30)));
     const rows = await expiringSeatings(getPool(), lapseContext(), within);
     const allMembers = await members.all();
+    // Who holds a role is `map.viewPeople`'s, whatever a village sets that dial to. A member reading this through the
+    // member-readable list (server/lib/memberReadable.ts, no adminUser) without it sees the roles and the dates only.
+    const viewer = await authedUser(req);
+    const seesPeople = !!(req as any).adminUser || (viewer ? hasCapability("map.viewPeople", await capabilityCtx(viewer)) : false);
     res.json(
       rows.map((a) => ({
         assignmentId: a.id,
         orgRoleId: a.orgRoleId,
         roleName: a.roleName,
-        holder: a.holderKind === "member" && a.userId
-          ? firstName((allMembers as any[]).find((u: any) => u.id === a.userId)?.name ?? "Member")
-          : a.displayName,
-        focus: a.focus,
+        holder: !seesPeople
+          ? null
+          : a.holderKind === "member" && a.userId
+            ? firstName((allMembers as any[]).find((u: any) => u.id === a.userId)?.name ?? "Member")
+            : a.displayName,
+        focus: seesPeople ? a.focus : null,
         lapsed: !!a.lapsed,
         reason: a.lapsedReason,
         daysLeft: a.daysLeft,

@@ -280,7 +280,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="font-medium text-stone-800">{r.label || r.structureKey}</span>
-                    <span className="ml-2 text-xs text-stone-400">{r.structureKey}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{r.structureKey}</span>
                   </div>
                   <span
                     className={`text-xs px-2 py-1 rounded ${isSet ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
@@ -351,13 +351,13 @@ export default function HousingAdminPanel({ password }: { password: string }) {
                   on exactly the rows that need the most care.
                 */}
                 {r.takenSource === "reservations" && (
-                  <p className="text-xs text-stone-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     <Trans context="HousingAdminPanel, p">Reservations count {r.reservedCount} right now, and that is the number every
                     visitor sees. Yours comes back if you switch this hamlet over.
                   </Trans></p>
                 )}
                 {busy === r.structureKey ? (
-                  <p className="text-xs text-stone-400 mt-2"><Trans context="HousingAdminPanel, p">Saving.</Trans></p>
+                  <p className="text-xs text-muted-foreground mt-2"><Trans context="HousingAdminPanel, p">Saving.</Trans></p>
                 ) : saved === r.structureKey ? (
                   <p className="text-xs text-emerald-600 mt-2"><Trans context="HousingAdminPanel, p">Saved.</Trans></p>
                 ) : null}
@@ -454,7 +454,7 @@ export default function HousingAdminPanel({ password }: { password: string }) {
         )}
       </div>
 
-      {showsRefreshing(phase) && <p className="text-xs text-stone-400"><Trans context="HousingAdminPanel, p">Refreshing.</Trans></p>}
+      {showsRefreshing(phase) && <p className="text-xs text-muted-foreground"><Trans context="HousingAdminPanel, p">Refreshing.</Trans></p>}
 
       {/* The other half of housing (0131): what a home IS, as opposed to how
           many of them a hamlet has open. Its own file, its own fetch and its

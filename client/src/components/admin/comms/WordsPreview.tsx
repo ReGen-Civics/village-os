@@ -85,7 +85,7 @@ export default function WordsPreview({ preview, loading, error }: { preview: Pre
       </div>
 
       {error && <p className="px-4 py-3 text-sm text-red-700">{error}</p>}
-      {!preview && !error && <p className="px-4 py-8 text-center text-sm text-gray-400">{loading ? "Making the preview..." : ""}</p>}
+      {!preview && !error && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{loading ? "Making the preview..." : ""}</p>}
 
       {preview && (
         <div className="p-3">

@@ -123,12 +123,18 @@ export async function fetchWordsDetail(password: string, key: string): Promise<A
   return read<WordsDetail>(res, "These words could not be read");
 }
 
+/**
+ * The saved words are read with a GET, so opening the editor sends no write-shaped request
+ * (admin live pass A7). Only an unsaved draft goes as a POST, because it travels in the body.
+ */
 export async function previewWords(password: string, key: string, draft: WordsDraft | null): Promise<Answer<WordsPreview>> {
-  const res = await fetch(`${API_BASE}/admin/comms/words/${keyPath(key)}/preview`, {
-    method: "POST",
-    headers: json(password),
-    body: JSON.stringify(draft ? { draft } : {}),
-  });
+  const res = draft
+    ? await fetch(`${API_BASE}/admin/comms/words/${keyPath(key)}/preview`, {
+        method: "POST",
+        headers: json(password),
+        body: JSON.stringify({ draft }),
+      })
+    : await fetch(`${API_BASE}/admin/comms/words/${keyPath(key)}/preview`, { headers: authHeaders(password) });
   return read<WordsPreview>(res, "The preview could not be made");
 }
 

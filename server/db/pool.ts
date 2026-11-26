@@ -13,6 +13,7 @@
  */
 import mysql from "mysql2/promise";
 import { pinSessionZone, zoneProblem } from "./sessionZone";
+import { guardPool } from "./readOnlyRequest";
 
 let _pool: mysql.Pool | null = null;
 
@@ -48,6 +49,9 @@ export function getPool(): mysql.Pool {
    */
   pinSessionZone(_pool, "pool");
   void verifySessionZone(_pool);
+  // A request marked read-only (the admin live view, server/db/readOnlyRequest.ts) can make no write through this
+  // pool, whatever its method says. Outside that mark nothing changes.
+  guardPool(_pool);
   return _pool;
 }
 

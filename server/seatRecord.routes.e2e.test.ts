@@ -458,6 +458,31 @@ describe.skipIf(!DB_CONFIGURED)("the term a seating never carried", () => {
     expect(soon, "and so is the one still running").toBeTruthy();
     expect(soon.daysLeft, "with the number term-watch words its notice with").toBeGreaterThanOrEqual(0);
   });
+
+  it("a member reads who holds an ending term only while they hold map.viewPeople, whatever the village sets that dial to", async () => {
+    const reader = await register("Ines Lowe", `ines-${PORT}@example.test`);
+    expect((await call("PUT", `/api/admin/players/${reader.id}/stage`, { body: { stageId: "member" } })).status).toBe(200);
+    const pastFor = async (token?: string) =>
+      ((await call("GET", "/api/admin/org/expiring?days=30", token ? { token } : undefined)).json ?? []).find((r: any) => r.assignmentId === pastSeating);
+    // The platform default opens map.viewPeople at guest, so a member sees the holder, as the map shows them.
+    expect((await pastFor(reader.token))?.holder).toBe("Wren");
+    expect((await pastFor(reader.token))?.focus).toBe("the well");
+    // A village that raises who may see people above member: the member keeps the role and the dates, never the person.
+    expect((await call("PUT", "/api/admin/variables/progression.unlock.map.viewPeople", { body: { value: "contributor" } })).status).toBe(200);
+    try {
+      const row = await pastFor(reader.token);
+      expect(row, "the role and its term still show").toBeTruthy();
+      expect(row.roleName).toBeTruthy();
+      expect(row.termEndsAt).toBeTruthy();
+      expect(row.holder).toBeNull();
+      expect(row.focus).toBeNull();
+      expect(JSON.stringify(row)).not.toContain("Wren");
+      // Control: the admin still reads the holder.
+      expect((await pastFor())?.holder).toBe("Wren");
+    } finally {
+      await call("PUT", "/api/admin/variables/progression.unlock.map.viewPeople", { body: { value: "guest" } });
+    }
+  });
 });
 
 describe.skipIf(!DB_CONFIGURED)("the seat's own succession, read by a member", () => {

@@ -16,7 +16,7 @@
  * is to that newcomer: they could not open the page either.
  */
 import type { AreaAnswers } from "./areasInUse";
-import { gateHinted, readEntranceStatus } from "./entranceStatus";
+import { pastTheEntrance } from "./entranceStatus";
 
 /** The module that answers each read; `/api/examples` belongs to none. */
 export const READ_MODULE = {
@@ -47,12 +47,6 @@ const listed = (body: any, key: string): boolean => Array.isArray(body?.[key]) &
 
 const NOTHING_KNOWN: AreaAnswers = { exampleModules: null, places: false, campaigns: false, events: false };
 
-/** Whether this device may ask past the portal: no entrance kept, or one it has entered. Unreadable: no. */
-async function pastTheEntrance(): Promise<boolean> {
-  if (!gateHinted()) return true;
-  const status = await readEntranceStatus();
-  return !!status && (!status.required || status.entered);
-}
 
 const answers = new Map<string, Promise<AreaAnswers>>();
 

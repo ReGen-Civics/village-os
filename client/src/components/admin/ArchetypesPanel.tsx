@@ -228,7 +228,7 @@ function Field({
         />
       )}
       {hint ? (
-        <p id={hintId} className="mt-0.5 text-[11px] text-gray-400">
+        <p id={hintId} className="mt-0.5 text-[11px] text-muted-foreground">
           {hint}
         </p>
       ) : null}
@@ -249,7 +249,7 @@ function ExampleBoxes({
   return (
     <fieldset className="border-0 p-0 m-0">
       <legend className="text-xs font-medium text-gray-700"><Trans context="ArchetypesPanel, legend">What this looks like</Trans></legend>
-      <p className="text-[11px] text-gray-400 mb-1">
+      <p className="text-[11px] text-muted-foreground mb-1">
         <Trans context="ArchetypesPanel, p">Four short lines a member reads while choosing. A blank line is dropped when you save.
       </Trans></p>
       <div className="grid sm:grid-cols-2 gap-2">
@@ -454,7 +454,7 @@ export default function ArchetypesPanel({ password }: { password: string }) {
         read while choosing. The platform ships five. Rewrite any of them in your village's own
         language, reorder them, or add one of your own.
       </Trans></p>
-      <p className="text-[11px] text-gray-400 mb-4">
+      <p className="text-[11px] text-muted-foreground mb-4">
         <Trans context="ArchetypesPanel, p">The name you give a class is <span className="font-medium text-gray-500">always</span>{" "}
         yours: it is never replaced, marked or not. A class marked{" "}
         <span className="font-medium text-gray-500">Your words</span> keeps everything else you

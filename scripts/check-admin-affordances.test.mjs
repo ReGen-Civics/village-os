@@ -53,4 +53,12 @@ assert.strictEqual(r.status, 0, r.stdout + r.stderr);
 assert.match(r.stdout, /1 finding\(s\) in 1 file\(s\)/);
 assert.match(r.stdout, /Bad\.tsx:1 {2}clickable-non-control/);
 
+// The real tree: no icon-only button in Admin is nameless (admin live pass A5,
+// 25 Nov 2026). This one rule holds at zero; the other three are still counted
+// down in report mode.
+const live = spawnSync(process.execPath, [SCRIPT, "--json"], { encoding: "utf8" });
+assert.strictEqual(live.status, 0, live.stderr);
+const unnamed = JSON.parse(live.stdout).findings.filter((f) => f.rule === "unnamed-icon-button");
+assert.deepStrictEqual(unnamed.map((f) => `${f.file}:${f.line}`), [], "an Admin icon button has no name: give it an aria-label naming the act and the thing");
+
 console.log("check-admin-affordances: all fixture checks pass");
