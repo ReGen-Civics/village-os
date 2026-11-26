@@ -303,7 +303,7 @@
   --muted-foreground: #525252;
   --accent: #a3a3a3; /* Neutral gray */
   --accent-foreground: #171717;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.505 0.213 27.518); /* red-700: 5.1:1 or more as text on the muted ground and on its own 10% tint, where red-600 read 3.8 (live pass, 26 Nov 2026) */
   --destructive-foreground: oklch(0.985 0 0);
   --border: #d4d4d4;
   --input: #e4e4e4;
