@@ -7,6 +7,8 @@ import { NAV_WORDS, navWord } from "./navWords";
 function menuWords(): string[] {
   const out = new Set<string>();
   const link = (l: NavLink) => {
+    // An entry named after a token reads the village's own name for it (Layout), never a word of ours.
+    if (l.token) return;
     out.add(l.label);
     if (l.subtitle) out.add(l.subtitle);
   };

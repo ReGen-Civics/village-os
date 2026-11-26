@@ -25,7 +25,6 @@ export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   "Introductions": msg({ message: "Introductions", context: "site menu" }),
   "Events": msg({ message: "Events", context: "site menu" }),
   "Live Sessions": msg({ message: "Live Sessions", context: "site menu" }),
-  "Gratitude": msg({ message: "Gratitude", context: "site menu" }),
   "Seasonal Festivals": msg({ message: "Seasonal Festivals", context: "site menu" }),
   "Share Feedback": msg({ message: "Share Feedback", context: "site menu" }),
   "Village": msg({ message: "Village", context: "site menu" }),

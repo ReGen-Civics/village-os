@@ -66,12 +66,6 @@ msgstr "Sesiones en vivo"
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
 msgctxt "site menu"
-msgid "Gratitude"
-msgstr "Gratitud"
-
-# needs-native-review: the site menu, 26 Nov 2026
-#: client/src/config/navWords.ts
-msgctxt "site menu"
 msgid "Seasonal Festivals"
 msgstr "Festivales de temporada"
 
