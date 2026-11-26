@@ -13,7 +13,7 @@ import { act, cleanup, render, screen, waitFor, within } from "@testing-library/
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { resetUnsavedForTests } from "@/lib/unsavedChanges";
-import AdminHelperHost from "./AdminHelperHost";
+import AdminHelperHost, { footCovered } from "./AdminHelperHost";
 import type { NavGroup } from "./adminNavGroups";
 import type { HelperAnswer } from "@shared/adminHelper";
 
@@ -106,5 +106,19 @@ describe("the guide's Review and save", () => {
     render(<Host startOpen={false} />);
     expect(await screen.findByTestId("admin-helper")).toBeTruthy();
     expect(window.location.search).toBe("?tab=home");
+  });
+
+  it("stops the guide above the save bar, so the bar never sits on the question box", () => {
+    expect(footCovered()).toBe(0);
+    const bar = document.createElement("div");
+    bar.setAttribute("data-save-bar", "");
+    bar.style.bottom = "56px";
+    Object.defineProperty(bar, "offsetHeight", { value: 90 });
+    document.body.appendChild(bar);
+    try {
+      expect(footCovered()).toBe(146);
+    } finally {
+      bar.remove();
+    }
   });
 });

@@ -51,12 +51,25 @@ function headerBottom(): number {
   return el ? Math.max(0, Math.round(el.getBoundingClientRect().bottom)) : 0;
 }
 
-/** How much of the window's foot the phone's bottom bar (AdminMobileNav) covers; 0 where it is hidden. */
-function bottomBarHeight(): number {
-  const el = typeof document !== "undefined" ? document.querySelector<HTMLElement>("[data-admin-bottom-bar]") : null;
-  if (!el) return 0;
-  const r = el.getBoundingClientRect();
-  return r.height > 0 && r.top < window.innerHeight ? Math.round(window.innerHeight - r.top) : 0;
+/**
+ * How much of the window's foot is covered: the phone's bottom bar
+ * (AdminMobileNav), or the one save bar while it shows, whichever reaches
+ * higher; 0 where neither is drawn. The panel stops above it, so the save bar
+ * never sits on the guide's question box. The save bar is measured by its own
+ * box and lift, never its on-screen rectangle, so its slide-in does not move
+ * the reading.
+ */
+export function footCovered(): number {
+  if (typeof document === "undefined") return 0;
+  let h = 0;
+  const nav = document.querySelector<HTMLElement>("[data-admin-bottom-bar]");
+  if (nav) {
+    const r = nav.getBoundingClientRect();
+    if (r.height > 0 && r.top < window.innerHeight) h = Math.round(window.innerHeight - r.top);
+  }
+  const bar = document.querySelector<HTMLElement>("[data-save-bar]");
+  if (bar && bar.offsetHeight > 0) h = Math.max(h, Math.round(bar.offsetHeight + (parseFloat(bar.style.bottom) || 0)));
+  return h;
 }
 
 export default function AdminHelperHost({
@@ -122,17 +135,24 @@ export default function AdminHelperHost({
 
   useEffect(() => {
     if (!open) return;
-    const sync = () => setEdges({ top: headerBottom(), bottom: bottomBarHeight() });
+    const sync = () => {
+      const next = { top: headerBottom(), bottom: footCovered() };
+      setEdges((was) => (was.top === next.top && was.bottom === next.bottom ? was : next));
+    };
     sync();
     window.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", sync);
     const el = document.getElementById(ADMIN_HEADER_ID);
     const watch = el && typeof ResizeObserver !== "undefined" ? new ResizeObserver(sync) : null;
     if (el && watch) watch.observe(el);
+    // The save bar comes and goes with any surface's edits, not only the guide's.
+    const comes = typeof MutationObserver !== "undefined" ? new MutationObserver(sync) : null;
+    comes?.observe(document.body, { childList: true, subtree: true });
     return () => {
       window.removeEventListener("scroll", sync);
       window.removeEventListener("resize", sync);
       watch?.disconnect();
+      comes?.disconnect();
     };
   }, [open]);
 
