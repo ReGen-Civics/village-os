@@ -13,7 +13,7 @@ import { NOTICE_KEY_MESSAGES, sayNotice } from "../shared/noticeKeyMessages";
 import { NOTICE_MAIL_WORDS, noticeMailWords } from "../shared/noticeMailWords";
 import type { StoredNoticeWords } from "../shared/noticeKeys";
 import { READ_IN_THE_BELL } from "./lib/notify";
-import { forgetSpeakers, messageId, noticeSayFor } from "./lib/platformSpeech";
+import { forgetSpeakers, messageId, noticeSayFor } from "./lib/catalogSpeech";
 
 beforeEach(() => forgetSpeakers());
 

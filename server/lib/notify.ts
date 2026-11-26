@@ -35,7 +35,7 @@ import { sayNotice } from "../../shared/noticeKeyMessages";
 import { noticeMailWords } from "../../shared/noticeMailWords";
 import type { MailLanguage } from "../../shared/mailLanguage";
 import { languageOfMember } from "./mailLanguage";
-import { noticeSayFor } from "./platformSpeech";
+import { noticeSayFor } from "./catalogSpeech";
 
 /**
  * Fallback only — the live ceiling is the notify.daily_email_cap game

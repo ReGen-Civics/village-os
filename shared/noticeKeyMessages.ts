@@ -8,7 +8,7 @@
  * the village wrote itself, a key it does not know, or a message the language lacks stays as stored.
  */
 import { NOTICE_KEYS, type NoticeKey, type NoticeParams, type NoticeValueKind, type StoredNoticeWords } from "./noticeKeys";
-import { civilDayWords } from "./seasonPlans";
+import { civilDayWords } from "./civilDay";
 
 export interface NoticeMessage {
   message: string;
