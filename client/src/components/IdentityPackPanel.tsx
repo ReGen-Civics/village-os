@@ -207,7 +207,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
       <h3 className="font-semibold text-gray-900 mb-1"><Trans context="IdentityPackPanel, h3">Identity pack</Trans></h3>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-muted-foreground mb-4">
         <Trans context="IdentityPackPanel, p">What your village looks and feels like, for the design agency to stay true to. Base art is
         generated once by the foundation; you regenerate it only with your own image API key.
       </Trans></p>
@@ -299,7 +299,7 @@ export default function IdentityPackPanel({ password }: { password: string }) {
         </label>
       )}
       {pack.rightsAck?.at && (
-        <p className="text-xs text-gray-400 mb-3"><Trans context="IdentityPackPanel, p">Rights confirmed {String(pack.rightsAck.at).slice(0, 10)}.</Trans></p>
+        <p className="text-xs text-muted-foreground mb-3"><Trans context="IdentityPackPanel, p">Rights confirmed {String(pack.rightsAck.at).slice(0, 10)}.</Trans></p>
       )}
       <SaveBar
         count={changedKeys(savedPack, pack).length}

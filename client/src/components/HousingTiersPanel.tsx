@@ -183,7 +183,7 @@ export default function HousingTiersPanel({ password }: { password: string }) {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <div>
                   <span className="font-medium text-stone-800">{heading(r)}</span>
-                  <span className="ml-2 text-xs text-stone-400">{r.homeType}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">{r.homeType}</span>
                 </div>
                 {/* The server decides what published means, once, in
                     publicHomeTypes, and carries the answer on the row. Read

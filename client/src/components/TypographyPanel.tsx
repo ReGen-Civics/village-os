@@ -149,7 +149,7 @@ export default function TypographyPanel({ password }: { password: string }) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
       <h3 className="font-semibold text-gray-900 mb-1"><Trans context="TypographyPanel, h3">Typography</Trans></h3>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-muted-foreground mb-4">
         <Trans context="TypographyPanel, p">Every catalogue font is self-hosted and licensed for the web (SIL Open Font License), so
         choosing one is always safe. Changes apply live, no deploy.
       </Trans></p>
@@ -163,7 +163,7 @@ export default function TypographyPanel({ password }: { password: string }) {
           return (
             <div key={role}>
               <label className="block text-sm font-medium text-gray-900">{ROLE_LABELS[role].title}</label>
-              <p className="text-xs text-gray-400 mb-1.5">{ROLE_LABELS[role].hint}</p>
+              <p className="text-xs text-muted-foreground mb-1.5">{ROLE_LABELS[role].hint}</p>
               <select
                 value={matched?.id ?? (current ? "__custom" : "__default")}
                 onChange={(e) => {
@@ -214,7 +214,7 @@ export default function TypographyPanel({ password }: { password: string }) {
 
       <div className="border-t border-gray-100 mt-6 pt-5">
         <h4 className="text-sm font-medium text-gray-900 mb-1"><Trans context="TypographyPanel, h4">Bring your own font</Trans></h4>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs text-muted-foreground mb-3">
           <Trans context="TypographyPanel, p">For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best;
           .woff, .ttf and .otf also work). It's stored with your deployment and set as the face for the role you pick,
           one face per role.
@@ -232,7 +232,7 @@ export default function TypographyPanel({ password }: { password: string }) {
           <p className="text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg px-3 py-2">
             Active custom face: <span className="font-medium">{theme.fontFaceName}</span>
             {theme.fontLicenceAck && (
-              <span className="text-gray-400"> <Trans context="TypographyPanel, span">· licence confirmed by {theme.fontLicenceAck.by} on {theme.fontLicenceAck.at.slice(0, 10)}</Trans></span>
+              <span className="text-muted-foreground"> <Trans context="TypographyPanel, span">· licence confirmed by {theme.fontLicenceAck.by} on {theme.fontLicenceAck.at.slice(0, 10)}</Trans></span>
             )}
           </p>
         )}
@@ -276,7 +276,7 @@ export default function TypographyPanel({ password }: { password: string }) {
             aria-label={t({ message: "I confirm this project holds a licence to embed this font on the web.", context: "TypographyPanel, aria-label" })}
             aria-describedby="font-licence-hint" />
           <span>
-            <Trans context="TypographyPanel, span">I confirm this project holds a licence to embed this font on the web. <span id="font-licence-hint" className="text-gray-400">
+            <Trans context="TypographyPanel, span">I confirm this project holds a licence to embed this font on the web. <span id="font-licence-hint" className="text-muted-foreground">
             ("Free to download" usually covers desktop use only. Web embedding is a separate right.
             Fonts from Google Fonts / Fontsource are OFL and always fine.)</span></Trans>
           </span>
