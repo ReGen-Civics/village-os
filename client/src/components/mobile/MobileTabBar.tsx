@@ -180,7 +180,11 @@ export function pathTab(claimed: readonly string[] | undefined, signedIn: boolea
   return { href: signedIn ? CHOOSE_PATH_HREF.signedIn : CHOOSE_PATH_HREF.visitor, label: choose, Icon: PATH_SLOT.Icon, pathId: null };
 }
 
-export default function MobileTabBar() {
+/**
+ * `inMenu`: the page sits somewhere in the menu (config/navBearings.ts, read by Layout from the menu the reader sees).
+ * When none of the five slots owns it, More lights, because More is where its branch is.
+ */
+export default function MobileTabBar({ inMenu = false }: { inMenu?: boolean } = {}) {
   const [location] = useLocation();
   // Whether the drawer More opens is open, for More's aria-expanded (lib/mobileMenuState.ts).
   const menuOpen = useMobileMenuOpen();
@@ -240,6 +244,12 @@ export default function MobileTabBar() {
   // See BARE_ROUTES for why bottom padding could not close this.
   if (isBareRoute(location)) return null;
 
+  // The path slot is also lit on the profile, where its door leads (a path's card, or the paths).
+  const slotLit = (s: TabSlot) =>
+    (s.personal === "path" && currentPath === "/profile") ||
+    (!!s.path && (s.path === "/" ? currentPath === "/" : currentPath === s.path || currentPath.startsWith(s.path + "/")));
+  const moreLit = inMenu && !slots.some(slotLit);
+
   const bar = (
     <nav
       data-mobile-tabbar=""
@@ -259,13 +269,7 @@ export default function MobileTabBar() {
           const slot = personal
             ? { ...s, label: mine.label, Icon: mine.Icon }
             : own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? navWord(s.label, i18n) };
-          // The path slot is also lit on the profile, where its door leads (a path's card, or the paths).
-          const active =
-            (personal && currentPath === "/profile") ||
-            (!!slot.path &&
-              (slot.path === "/"
-                ? currentPath === "/"
-                : currentPath === slot.path || currentPath.startsWith(slot.path + "/")));
+          const active = slot.event === "open-mobile-menu" ? moreLit : slotLit(slot);
 
           const inner = (
             <>
@@ -337,7 +341,7 @@ export default function MobileTabBar() {
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(slot.event!))}
               aria-label={slot.label}
-              {...(opensMenu ? { "aria-expanded": menuOpen, "aria-controls": "mobile-menu" } : {})}
+              {...(opensMenu ? { "aria-expanded": menuOpen, "aria-controls": "mobile-menu", "aria-current": moreLit ? ("true" as const) : undefined } : {})}
               className={cls}
             >
               {inner}
