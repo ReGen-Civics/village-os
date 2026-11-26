@@ -10,7 +10,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { MushroomNetwork } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
-import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import CircleScene from "@/components/CircleScene";
 import CirclesMiniMap from "@/components/CirclesMiniMap";
 import { cssColourForCircle } from "@shared/circleView";
@@ -38,7 +38,6 @@ import { CIRCLES_PAGE, COORDINATOR_WORD } from "@shared/pageContent/circles";
 import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
-const LivingNetwork = lazy(() => import("@/components/motion/LivingNetwork"));
 
 /** The link from a circle's panel to its own card (`/circles/:id`). */
 const OPEN_CARD = "Open this circle's card";
@@ -436,18 +435,8 @@ export default function Circles() {
       <section className="overflow-x-clip py-24">
         <div className="container">
           {/* The heading is the first thing on the page, so it is simply there: it no longer waits on the
-              lazy animation engine at opacity 0. The network behind it is what grows. */}
+              lazy animation engine at opacity 0. */}
           <div className="relative isolate text-center mb-16">
-            {raw.circles.length > 0 && (
-              <Suspense fallback={null}>
-                <LivingNetwork
-                  circles={raw.circles.map((c: any) => ({
-                    id: String(c.id),
-                    held: raw.seats.filter((s: any) => s.circleId === c.id).reduce((n: number, s: any) => n + Number(s.holderCount ?? 0), 0),
-                  }))}
-                />
-              </Suspense>
-            )}
             <div className="w-16 h-16 rounded-full bg-notice/10 flex items-center justify-center mx-auto mb-6">
               <MushroomNetwork className="w-8 h-8 text-notice" />
             </div>
