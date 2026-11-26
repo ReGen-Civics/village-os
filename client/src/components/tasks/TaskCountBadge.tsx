@@ -9,8 +9,9 @@
  * sentence stands in for it ("3 tasks wait on you"), so the link reads as
  * "My tasks, 3 tasks wait on you" and never as "My tasks 3".
  */
-import { TASK_COPY } from "@shared/sessionTasks";
+
 import { useTaskCount } from "./useTaskCount";
+import { useTaskWords } from "@/components/tasks/taskWords";
 
 export interface TaskCountBadgeProps {
   /** The signed-in member's id, so a change of member reads afresh. */
@@ -18,6 +19,7 @@ export interface TaskCountBadgeProps {
 }
 
 export default function TaskCountBadge({ who }: TaskCountBadgeProps) {
+  const TW = useTaskWords();
   const count = useTaskCount(true, who);
   const n = count?.waiting ?? 0;
   if (n <= 0) return null;
@@ -30,7 +32,7 @@ export default function TaskCountBadge({ who }: TaskCountBadgeProps) {
       >
         {n > 99 ? "99+" : n}
       </span>
-      <span className="sr-only">, {TASK_COPY.menu.waiting(n)}</span>
+      <span className="sr-only">, {TW.menu.waiting(n)}</span>
     </>
   );
 }

@@ -13,8 +13,9 @@
  * village's zone; the chip is a shortcut to a date, and the date it picks is
  * shown in words before anything is sent.
  */
-import { TASK_COPY, addCivilDays, civilDaysFrom, taskDateWords, taskWeekday, type TaskCard } from "@shared/sessionTasks";
+import { addCivilDays, civilDaysFrom, taskDateWords, taskWeekday, type TaskCard } from "@shared/sessionTasks";
 import { civilDateKey, fullMoonsBetween, newMoonsBetween } from "@shared/lunar";
+import { taskWords } from "@/components/tasks/taskWords";
 
 /** What the due line says, and whether the date has gone by. A date gone by is a question in normal ink, never a red mark. */
 export interface DueWords {
@@ -31,10 +32,10 @@ export interface DueWords {
  */
 export function dueWords(task: Pick<TaskCard, "dueOn" | "status" | "canAnswer">, today: string): DueWords {
   const words = task.dueOn ? taskDateWords(task.dueOn, today) : "";
-  if (!task.dueOn || !words) return { text: TASK_COPY.noDate, passed: false };
+  if (!task.dueOn || !words) return { text: taskWords().noDate, passed: false };
   const passed = task.status === "open" && task.dueOn < today;
-  if (!passed) return { text: TASK_COPY.due(words), passed };
-  return { text: task.canAnswer ? TASK_COPY.duePassed(words) : TASK_COPY.duePast(words), passed };
+  if (!passed) return { text: taskWords().due(words), passed };
+  return { text: task.canAnswer ? taskWords().duePassed(words) : taskWords().duePast(words), passed };
 }
 
 /** The day a task was said, in words. The year shows only when it is not this year. */
@@ -45,7 +46,7 @@ export function saidWords(date: string, today?: string): string {
 /** The second line of a card: where the task came from, and when. */
 export function fromWords(task: Pick<TaskCard, "circleName" | "sessionTitle" | "saidOn">, today: string): string {
   const said = saidWords(task.saidOn, today);
-  return task.circleName ? TASK_COPY.from(task.circleName, said) : TASK_COPY.fromNoCircle(task.sessionTitle, said);
+  return task.circleName ? taskWords().from(task.circleName, said) : taskWords().fromNoCircle(task.sessionTitle, said);
 }
 
 /** The four quick dates the Not yet sheet offers. A chip whose date cannot be found (outside the moon table) is null and not shown. */

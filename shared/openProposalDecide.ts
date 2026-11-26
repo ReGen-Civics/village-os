@@ -94,7 +94,12 @@ export type DoorReason = "village-holds-it" | "a-role-holds-it" | "nobody-holds-
  * (scripts/check-hyphen-dash.mjs) reads raw text under client/src and takes
  * "-it" for a hyphen standing in for a dash.
  */
-export const DOOR = { villageHolds: "village-holds-it", nobodyHolds: "nobody-holds-it", aRoleHolds: "a-role-holds-it" } as const satisfies Record<string, DoorReason>;
+export const DOOR = {
+  villageHolds: "village-holds-it",
+  nobodyHolds: "nobody-holds-it",
+  aRoleHolds: "a-role-holds-it",
+  scaffoldingHolds: "the-scaffolding-holds-it",
+} as const satisfies Record<string, DoorReason>;
 
 export const DECIDE_WORDS = {
   moonEnded: "The moon this was proposed for has ended. You can adopt it for the moon running now; the letter will say so.",

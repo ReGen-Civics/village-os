@@ -965,12 +965,12 @@ export function IntegrationsTab({ password }: { password: string }) {
             <code className="text-xs bg-white border border-gray-200 rounded px-2 py-1 block overflow-x-auto">
               {data?.stripeWebhookUrl}
             </code>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-700 mt-2">
               <Trans context="Admin, p">In Stripe: Developers → Webhooks → Add endpoint → paste this URL,
               subscribe to all five events below, then copy the signing secret
               into the card below.
             </Trans></p>
-            <ul className="text-xs text-gray-500 mt-2 space-y-1">
+            <ul className="text-xs text-gray-700 mt-2 space-y-1">
               <li><code>checkout.session.completed</code>: a purchase is made</li>
               <li><code>checkout.session.async_payment_succeeded</code>: a bank
                 transfer or direct debit clears, days later</li>
@@ -2131,10 +2131,10 @@ function FaqAdminTab({ password }: { password: string }) { const { t } = useLing
               {(
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <button aria-label={t({ message: "Move this question up", context: "Admin, aria-label" })} onClick={() => move(idx, -1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === 0}>
+                    <button aria-label={t({ message: "Move this question up", context: "Admin, aria-label" })} onClick={() => move(idx, -1)} className="text-muted-foreground hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === 0}>
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
-                    <button aria-label={t({ message: "Move this question down", context: "Admin, aria-label" })} onClick={() => move(idx, 1)} className="text-gray-300 hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === items.length - 1}>
+                    <button aria-label={t({ message: "Move this question down", context: "Admin, aria-label" })} onClick={() => move(idx, 1)} className="text-muted-foreground hover:text-gray-600 disabled:opacity-30 pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:inline-flex pointer-coarse:items-center pointer-coarse:justify-center" disabled={idx === items.length - 1}>
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -3487,7 +3487,7 @@ function CirclesMapTab({ password }: { password: string }) { const { t } = useLi
                   {contacts.slice(0, 12).map((ct: any) => (
                     <li key={ct.id}>
                       {ct.from_user_id.slice(-6)} → {ct.to_user_id.slice(-6)}
-                      <span className={`ml-2 ${ct.email_status === "sent" ? "text-emerald-600" : ct.email_status === "failed" ? "text-red-500" : "text-muted-foreground"}`}>
+                      <span className={`ml-2 ${ct.email_status === "sent" ? "text-emerald-600" : ct.email_status === "failed" ? "text-red-700" : "text-muted-foreground"}`}>
                         {ct.email_status}
                       </span>
                     </li>
@@ -3678,7 +3678,7 @@ export function ToolsAdminTab({ password }: { password: string }) { const { t } 
                       <button onClick={() => move(t.id, -1)} disabled={i === 0} className="text-xs text-muted-foreground hover:text-gray-700 disabled:opacity-30 px-1">↑</button>
                       <button onClick={() => move(t.id, 1)} disabled={i === (data?.tools ?? []).length - 1} className="text-xs text-muted-foreground hover:text-gray-700 disabled:opacity-30 px-1">↓</button>
                       <button onClick={() => { setEditingId(t.id); setForm({ ...EMPTY_TOOL, ...t }); }} className="text-xs text-teal-deep font-medium px-2"><Trans context="Admin, button">Edit</Trans></button>
-                      <button onClick={() => remove(t.id)} className="text-xs text-red-500 px-1"><Trans context="Admin, button">Remove</Trans></button>
+                      <button onClick={() => remove(t.id)} className="text-xs text-red-700 px-1"><Trans context="Admin, button">Remove</Trans></button>
                     </td>
                   </tr>
                 ))}
@@ -5833,7 +5833,7 @@ function CallsAdminTab({ password }: { password: string }) { const { t } = useLi
         <p className="text-sm text-gray-500 mb-3 max-w-2xl">
           Point Riverside's webhook at this village and every finished call arrives here on its
           own, ready to transcribe and synthesize. In Riverside, add a webhook with this URL and
-          set the shared secret as the <code className="text-xs bg-gray-100 px-1 rounded">x-riverside-secret</code> header.
+          set the shared secret as the <code className="text-xs bg-gray-100 text-gray-700 px-1 rounded">x-riverside-secret</code> header.
         </p>
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <code className="text-xs bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 select-all">

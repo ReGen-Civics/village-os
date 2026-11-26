@@ -23,7 +23,9 @@
  */
 import { useEffect, useRef } from "react";
 import { gameFetch } from "@/lib/gameApi";
+import { i18n as appI18n } from "@lingui/core";
 import { MAP_CHIPS_REFRESH_MS, MAP_CHIPS_SAVED_EVENT, MAP_CHIPS_SAVED_KEY } from "@shared/mapStatChips";
+import { localizeChips } from "./statChipWords";
 
 /** Ask the village for its chips and hand them to the map in `win`. */
 export async function pushChips(win: Window | null | undefined): Promise<boolean> {
@@ -33,7 +35,8 @@ export async function pushChips(win: Window | null | undefined): Promise<boolean
     if (!res.ok) return false;
     const body = await res.json();
     if (!Array.isArray(body?.chips)) return false;
-    win.postMessage({ type: "chips", chips: body.chips }, window.location.origin);
+    // The platform's words in the reader's language; a founder's own label and every number as sent.
+    win.postMessage({ type: "chips", chips: localizeChips(body.chips, appI18n) }, window.location.origin);
     return true;
   } catch {
     return false;
@@ -80,6 +83,8 @@ export function useChipsCadence(
       if (visible()) push();
     };
     const onSaved = () => push();
+    // A reader who switches language gets the bar in it at once, not at the next minute.
+    const offLocale = appI18n.on("change", onSaved);
     const onStorage = (ev: StorageEvent) => {
       if (ev.key === MAP_CHIPS_SAVED_KEY) push();
     };
@@ -91,6 +96,7 @@ export function useChipsCadence(
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener(MAP_CHIPS_SAVED_EVENT, onSaved);
       window.removeEventListener("storage", onStorage);
+      offLocale();
     };
   }, [push, active, everyMs]);
 }

@@ -35,10 +35,11 @@ import { saveProposal, type ProposalOut, type ProposalUpdate } from "./proposalA
 import { importRoleFile, importRoleText, type ImportOut } from "./roleCardApi";
 import type { OrgView } from "./StepRoles";
 import { copyText, promptFor } from "./OwnAiPrompt";
-import { RP_WORDS } from "./proposalWords";
+
 import { RC_WORDS } from "./roleCardWords";
 import { FOCUS, INPUT, LEDE, PANEL, PRIMARY, QUIET, SECONDARY } from "./parts";
 import { useLingui } from "@lingui/react/macro";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 type Mode = "file" | "paste" | "link";
 
@@ -89,6 +90,7 @@ export default function BringInRole({
   /** The draft the PUT answered, once the member has filled it. */
   onFilled: (p: ProposalOut) => void;
 }) {
+  const RW = useProposalWords();
   const { t } = useLingui();
   const village = useVillageName("This village");
   const [mode, setMode] = useState<Mode>("file");
@@ -136,7 +138,7 @@ export default function BringInRole({
     const saved = await beforeImport();
     if (!saved) {
       setBusy(false);
-      setError(RP_WORDS.notSaved);
+      setError(RW.notSaved);
       return;
     }
     const r = await send();

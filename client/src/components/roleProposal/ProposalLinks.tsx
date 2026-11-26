@@ -11,12 +11,14 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { authToken } from "@/lib/gameApi";
 import { fetchMine, type ProposalOut } from "./proposalApi";
-import { ADOPTED_HEADING, RP_WORDS, STATE_HEADINGS } from "./proposalWords";
+import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
+import { proposalWords, useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 const stateOf = (p: ProposalOut): string =>
-  p.status === "draft" ? RP_WORDS.draftWords : p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : "";
+  p.status === "draft" ? proposalWords().draftWords : p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : "";
 
 export default function ProposalLinks() {
+  const RW = useProposalWords();
   const [list, setList] = useState<ProposalOut[] | null>(null);
   const [draftOpen, setDraftOpen] = useState(false);
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function ProposalLinks() {
   if (!list) return null;
   return (
     <div className="grid gap-2 rounded-xl border border-border/70 p-4" data-proposal-links="">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{RP_WORDS.myProposals}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{RW.myProposals}</p>
       {list.length > 0 && (
         <ul className="grid gap-2">
           {list.map((p) => (
@@ -44,7 +46,7 @@ export default function ProposalLinks() {
                 href={`/role-proposals/${encodeURIComponent(p.id)}`}
                 className="flex min-h-11 flex-wrap items-center justify-between gap-x-3 rounded-lg border border-border/60 px-3 py-2 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <span className="font-semibold">{p.target ? RP_WORDS.proposalFor(p.target.name) : RP_WORDS.proposalNoSeason}</span>
+                <span className="font-semibold">{p.target ? RW.proposalFor(p.target.name) : RW.proposalNoSeason}</span>
                 <span className="text-sm text-notice">{stateOf(p)}</span>
               </Link>
             </li>
@@ -53,7 +55,7 @@ export default function ProposalLinks() {
       )}
       {!draftOpen && (
         <Link href="/role-proposals/new" className="inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring">
-          {RP_WORDS.propose}
+          {RW.propose}
         </Link>
       )}
     </div>

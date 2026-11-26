@@ -19,9 +19,6 @@ import { useEffect, useState } from "react";
 import { looksLikePaymentDetails } from "@shared/seatSettings";
 import {
   INVOICING_ROUTES,
-  LINE_BASIS_WORDS,
-  MOON_WORDS,
-  MY_MOON_WORDS,
   NO_TAX_FORM,
   PAYMENT_DETAILS_REFUSED,
   SUPPORT_LINE,
@@ -41,6 +38,7 @@ import { AccomplishedBlock, AdjustBreakdown } from "./AccomplishedBlock";
 import { authToken } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
 import { InvoiceTrack, type TrackRow } from "../TreasurySync";
+import { moonWords, useMoonWords } from "@/components/myMoon/moonWords";
 
 /** The member's invoice tracks and whether a send emails Sera's inbox (invoice rails). Reloads when `key` changes. */
 function useInvoiceRails(key: string): { tracks: TrackRow[]; seraInbox: string | null; loaded: boolean } {
@@ -56,22 +54,25 @@ function useInvoiceRails(key: string): { tracks: TrackRow[]; seraInbox: string |
 }
 
 function CopyLine({ label, text }: { label: string; text: string }) {
+  const MW = useMoonWords();
   const [done, setDone] = useState(false);
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
       <span className="font-medium">{label}:</span>
       <span className="min-w-0 break-all">{text}</span>
-      <button type="button" className={SMALL_BTN} onClick={async () => setDone(await api.copyText(text))}>{done ? MY_MOON_WORDS.copied : MY_MOON_WORDS.copy}</button>
+      <button type="button" className={SMALL_BTN} onClick={async () => setDone(await api.copyText(text))}>{done ? MW.myMoon.copied : MW.myMoon.copy}</button>
     </div>
   );
 }
 
 function CopyButton({ label, text }: { label: string; text: string }) {
+  const MW = useMoonWords();
   const [done, setDone] = useState(false);
-  return <button type="button" className={SMALL_BTN} onClick={async () => setDone(await api.copyText(text))}>{done ? MY_MOON_WORDS.copied : label}</button>;
+  return <button type="button" className={SMALL_BTN} onClick={async () => setDone(await api.copyText(text))}>{done ? MW.myMoon.copied : label}</button>;
 }
 
 function PayRouteForm({ data, reload }: { data: MyMoonData; reload: () => Promise<unknown> }) {
+  const MW = useMoonWords();
   const r = data.payRoute;
   const [form, setForm] = useState({
     route: (r?.route ?? "pending") as PayRoute,
@@ -100,16 +101,16 @@ function PayRouteForm({ data, reload }: { data: MyMoonData; reload: () => Promis
       taxFormFiledWhere: r?.taxFormFiledWhere ?? null,
     });
     if (!out.ok) return setError(out.error);
-    setLine(MY_MOON_WORDS.routeSaved);
+    setLine(MW.myMoon.routeSaved);
     await reload();
   };
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-3" data-testid="pay-route">
-      <h4 className="m-0 text-base font-semibold text-foreground">{MY_MOON_WORDS.routeHeading}</h4>
-      <p className={MUTED}>{r?.confirmedAt ? MY_MOON_WORDS.routeConfirmed : MY_MOON_WORDS.routeNotConfirmed}</p>
+      <h4 className="m-0 text-base font-semibold text-foreground">{MW.myMoon.routeHeading}</h4>
+      <p className={MUTED}>{r?.confirmedAt ? MW.myMoon.routeConfirmed : MW.myMoon.routeNotConfirmed}</p>
       <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-        <legend className={LABEL}>{MY_MOON_WORDS.routeChoice}</legend>
+        <legend className={LABEL}>{MW.myMoon.routeChoice}</legend>
         {data.routeChoices.map((c) => (
           <label key={c.route} className="flex items-start gap-2 text-sm text-foreground">
             <input type="radio" name="pay-route" value={c.route} checked={form.route === c.route} onChange={(e) => isPayRoute(e.target.value) && set({ route: e.target.value })} className="mt-1" />
@@ -119,17 +120,17 @@ function PayRouteForm({ data, reload }: { data: MyMoonData; reload: () => Promis
       </fieldset>
       {INVOICING_ROUTES.includes(form.route) ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className={LABEL}>{MY_MOON_WORDS.legalName}<input value={form.legalName} autoComplete="name" onChange={(e) => set({ legalName: e.target.value })} className={INPUT} /></label>
-          <label className={LABEL}>{MY_MOON_WORDS.currency}<input value={form.currency} maxLength={3} onChange={(e) => set({ currency: e.target.value })} className={INPUT} /></label>
-          <label className={`${LABEL} sm:col-span-2`}>{MY_MOON_WORDS.address}<textarea value={form.address} rows={2} autoComplete="street-address" onChange={(e) => set({ address: e.target.value })} className={INPUT} /></label>
+          <label className={LABEL}>{MW.myMoon.legalName}<input value={form.legalName} autoComplete="name" onChange={(e) => set({ legalName: e.target.value })} className={INPUT} /></label>
+          <label className={LABEL}>{MW.myMoon.currency}<input value={form.currency} maxLength={3} onChange={(e) => set({ currency: e.target.value })} className={INPUT} /></label>
+          <label className={`${LABEL} sm:col-span-2`}>{MW.myMoon.address}<textarea value={form.address} rows={2} autoComplete="street-address" onChange={(e) => set({ address: e.target.value })} className={INPUT} /></label>
           {form.route === "nomad" ? (
-            <label className={LABEL}>{MY_MOON_WORDS.statusValidUntil}<input type="date" value={form.statusValidUntil} onChange={(e) => set({ statusValidUntil: e.target.value })} className={INPUT} /></label>
+            <label className={LABEL}>{MW.myMoon.statusValidUntil}<input type="date" value={form.statusValidUntil} onChange={(e) => set({ statusValidUntil: e.target.value })} className={INPUT} /></label>
           ) : null}
         </div>
       ) : null}
-      <p className={MUTED}>{MOON_WORDS.paymentDetails}</p>
-      <p className={MUTED}>{MOON_WORDS.whoReads}: {data.cashPayHolders.join(", ") || MY_MOON_WORDS.none}</p>
-      <button type="button" className={`${SMALL_BTN} self-start`} onClick={save}>{MY_MOON_WORDS.saveRoute}</button>
+      <p className={MUTED}>{MW.moon.paymentDetails}</p>
+      <p className={MUTED}>{MW.moon.whoReads}: {data.cashPayHolders.join(", ") || MW.myMoon.none}</p>
+      <button type="button" className={`${SMALL_BTN} self-start`} onClick={save}>{MW.myMoon.saveRoute}</button>
       {line ? <p className={MUTED} aria-live="polite">{line}</p> : null}
       {error ? <p role="alert" className={ERROR}>{error}</p> : null}
     </div>
@@ -137,12 +138,13 @@ function PayRouteForm({ data, reload }: { data: MyMoonData; reload: () => Promis
 }
 
 function emailText(inv: InvoiceView): string {
-  const to = inv.billTo ? `${MOON_WORDS.to}: ${inv.billTo.invoiceTo}` : "";
-  const cc = inv.billTo && inv.billTo.invoiceCc.length > 0 ? `${MOON_WORDS.cc}: ${inv.billTo.invoiceCc.join(", ")}` : "";
+  const to = inv.billTo ? `${moonWords().moon.to}: ${inv.billTo.invoiceTo}` : "";
+  const cc = inv.billTo && inv.billTo.invoiceCc.length > 0 ? `${moonWords().moon.cc}: ${inv.billTo.invoiceCc.join(", ")}` : "";
   return [to, cc, "", inv.workSummary ?? ""].filter((l, i) => l || i === 2).join("\n");
 }
 
 export default function InvoicePanel({ data, cycleId, editable, reload }: { data: MyMoonData; cycleId: string; editable: boolean; reload: () => Promise<unknown> }) {
+  const MW = useMoonWords();
   const room = useRoomView();
   const shareNames = useShareNames();
   const inv = data.invoice;
@@ -203,15 +205,15 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
 
   const unsent = !inv || inv.status === "draft" || inv.status === "returned";
   return (
-    <Section title={MOON_WORDS.invoice}>
-      {room ? <p className={MUTED}>{MOON_WORDS.roomViewLine}</p> : null}
+    <Section title={MW.moon.invoice}>
+      {room ? <p className={MUTED}>{MW.moon.roomViewLine}</p> : null}
       {data.setupGaps.length > 0 ? <ul className="m-0 list-disc pl-5 text-sm text-muted-foreground">{data.setupGaps.map((g) => <li key={g}>{g}</li>)}</ul> : null}
 
       {ack && ackPending ? (
         <div className="flex flex-col gap-2 rounded-lg border border-border p-3" data-testid="pilot-ack">
-          <h4 className="m-0 text-base font-semibold text-foreground">{MY_MOON_WORDS.pilotHeading}</h4>
+          <h4 className="m-0 text-base font-semibold text-foreground">{MW.myMoon.pilotHeading}</h4>
           <p className="m-0 whitespace-pre-line text-sm text-foreground">{ack.text}</p>
-          <button type="button" className={`${SMALL_BTN} self-start`} onClick={acceptPilot}>{MY_MOON_WORDS.pilotAccept}</button>
+          <button type="button" className={`${SMALL_BTN} self-start`} onClick={acceptPilot}>{MW.myMoon.pilotAccept}</button>
         </div>
       ) : null}
 
@@ -224,13 +226,13 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
           <p className={MUTED}>{inv.supportLine || SUPPORT_LINE}</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <p className={LABEL}>{MOON_WORDS.billTo}</p>
+              <p className={LABEL}>{MW.moon.billTo}</p>
               {inv.billTo ? (
                 <p className="m-0 whitespace-pre-line text-sm text-foreground">{[inv.billTo.legalName, inv.billTo.address, inv.billTo.taxId].filter(Boolean).join("\n")}</p>
-              ) : <p className={MUTED}>{MY_MOON_WORDS.noPayerYet}</p>}
+              ) : <p className={MUTED}>{MW.myMoon.noPayerYet}</p>}
             </div>
             <div>
-              <p className={LABEL}>{MOON_WORDS.period}</p>
+              <p className={LABEL}>{MW.moon.period}</p>
               <p className="m-0 text-sm text-foreground">{inv.period}</p>
             </div>
           </div>
@@ -242,28 +244,28 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                   <span className="text-sm font-medium text-foreground">{l.roleNames.join(", ")}</span>
                   <span className="text-sm font-semibold text-foreground"><Amount minor={l.amountMinor} currency={l.currency} /></span>
                 </div>
-                <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
+                <p className="m-0 text-xs text-muted-foreground">{MW.myMoon.basis}: {MW.lineBasis[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
                 {l.priceNote && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-price-note">{l.priceNote}</p> : null}
                 {l.reward && l.currency && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-reward-parts"><TokenText text={rewardShareLine(l.reward, l.currency, shareNames)} /></p> : null}
                 {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
                 {l.adjust && !room ? <AdjustBreakdown adjust={l.adjust} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (
                   <label className={LABEL}>
-                    {MY_MOON_WORDS.proposeAmount}
+                    {MW.myMoon.proposeAmount}
                     <input inputMode="numeric" value={proposals[l.applicationId] ?? (l.proposedMinor ?? "").toString()} onChange={(e) => setProposals({ ...proposals, [l.applicationId]: e.target.value })} className={INPUT} />
                   </label>
                 ) : null}
                 {l.basis === "range" && l.finalMinor !== null && inv.status === "returned" && !room ? (
                   <div className="flex flex-wrap gap-2">
-                    <button type="button" className={SMALL_BTN} onClick={() => void answerRange(l.applicationId, "accept")}>{MOON_WORDS.acceptRange}</button>
-                    <button type="button" className={SMALL_BTN} onClick={() => void answerRange(l.applicationId, "talk")}>{MOON_WORDS.talkRange}</button>
+                    <button type="button" className={SMALL_BTN} onClick={() => void answerRange(l.applicationId, "accept")}>{MW.moon.acceptRange}</button>
+                    <button type="button" className={SMALL_BTN} onClick={() => void answerRange(l.applicationId, "talk")}>{MW.moon.talkRange}</button>
                   </div>
                 ) : null}
               </li>
             ))}
           </ul>
           <p className="m-0 flex justify-between text-sm font-semibold text-foreground">
-            <span>{MOON_WORDS.total}</span>
+            <span>{MW.moon.total}</span>
             <span><Amount minor={inv.totalMinor} currency={inv.currency} /></span>
           </p>
           {inv.accomplished ? <AccomplishedBlock view={inv.accomplished} level={4} /> : null}
@@ -278,34 +280,34 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
 
           {unsent && editable && !room ? (
             <div className="flex flex-col gap-3 rounded-lg border border-border p-3" data-testid="attestation">
-              <h4 className="m-0 text-base font-semibold text-foreground">{MOON_WORDS.attestation}</h4>
-              <label className={LABEL}>{words.workCountries}<input value={att.countries} placeholder={MY_MOON_WORDS.countriesHint} onChange={(e) => setAtt({ ...att, countries: e.target.value })} className={INPUT} /></label>
+              <h4 className="m-0 text-base font-semibold text-foreground">{MW.moon.attestation}</h4>
+              <label className={LABEL}>{words.workCountries}<input value={att.countries} placeholder={MW.myMoon.countriesHint} onChange={(e) => setAtt({ ...att, countries: e.target.value })} className={INPUT} /></label>
               <label className={LABEL}>{words.daysIn}<input inputMode="numeric" value={att.days} onChange={(e) => setAtt({ ...att, days: e.target.value })} className={INPUT} /></label>
               <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={att.unchanged} onChange={(e) => setAtt({ ...att, unchanged: e.target.checked })} />{words.statusUnchanged}</label>
               {route === "nomad" ? <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={att.servedAbroad} onChange={(e) => setAtt({ ...att, servedAbroad: e.target.checked })} />{words.servedAbroad}</label> : null}
               <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={att.visitor} onChange={(e) => setAtt({ ...att, visitor: e.target.checked })} />{words.visitorEntryWork}</label>
-              <label className={LABEL}>{MOON_WORDS.memberNumber}<input value={number} maxLength={40} onChange={(e) => setNumber(e.target.value)} className={INPUT} /></label>
-              {route === "local_contractor" ? <label className={LABEL}>{MOON_WORDS.externalKey}<input inputMode="numeric" value={key} maxLength={64} onChange={(e) => setKey(e.target.value)} className={INPUT} /></label> : null}
+              <label className={LABEL}>{MW.moon.memberNumber}<input value={number} maxLength={40} onChange={(e) => setNumber(e.target.value)} className={INPUT} /></label>
+              {route === "local_contractor" ? <label className={LABEL}>{MW.moon.externalKey}<input inputMode="numeric" value={key} maxLength={64} onChange={(e) => setKey(e.target.value)} className={INPUT} /></label> : null}
               {inv.sendRefusal ? <p className={MUTED}>{inv.sendRefusal}</p> : null}
               {seraInbox ? <p className="m-0 text-sm text-foreground" data-testid="emails-sera"><Trans>Sending also emails this invoice as a PDF to Sera, the village's record keeper, at <span className="break-all font-medium text-foreground">{seraInbox}</span>. It names you by your village name and code name. Your legal name and address stay private.</Trans></p> : null}
-              <button type="button" className={`${SMALL_BTN} self-start`} disabled={busy || ackPending || !number.trim() || !rails.loaded} onClick={send}>{MOON_WORDS.sendInvoice}</button>
+              <button type="button" className={`${SMALL_BTN} self-start`} disabled={busy || ackPending || !number.trim() || !rails.loaded} onClick={send}>{MW.moon.sendInvoice}</button>
             </div>
           ) : null}
 
           {inv.billTo ? (
             <div className="flex flex-col gap-2">
               <p className={MUTED}>{sendYourInvoiceTo(inv.billTo.invoiceTo)}</p>
-              <CopyLine label={MOON_WORDS.to} text={inv.billTo.invoiceTo} />
-              {inv.billTo.invoiceCc.length > 0 ? <CopyLine label={MOON_WORDS.cc} text={inv.billTo.invoiceCc.join(", ")} /> : null}
+              <CopyLine label={MW.moon.to} text={inv.billTo.invoiceTo} />
+              {inv.billTo.invoiceCc.length > 0 ? <CopyLine label={MW.moon.cc} text={inv.billTo.invoiceCc.join(", ")} /> : null}
             </div>
           ) : null}
 
           {room ? null : inv.workSummary ? (
             <div className="flex flex-wrap gap-2">
-              <CopyButton label={MOON_WORDS.copySummary} text={inv.workSummary} />
-              <CopyButton label={MOON_WORDS.copyEmail} text={emailText(inv)} />
+              <CopyButton label={MW.moon.copySummary} text={inv.workSummary} />
+              <CopyButton label={MW.moon.copyEmail} text={emailText(inv)} />
             </div>
-          ) : <p className={MUTED}>{MY_MOON_WORDS.invoiceAfterApproval}</p>}
+          ) : <p className={MUTED}>{MW.myMoon.invoiceAfterApproval}</p>}
         </div>
       ) : null}
 

@@ -583,3 +583,61 @@ describe.skipIf(!DB_CONFIGURED)("an everyday power's stage, once the village set
     expect(r.status, r.text).toBe(200);
   });
 });
+
+describe.skipIf(!DB_CONFIGURED)("withdrawing an org chart draft, and the warning when two open drafts change one role", () => {
+  // The coordinator, 26 Nov 2026: three open drafts on one role, two of them stale, and no door that took a draft down.
+  const ROLE = "withdraw-steward";
+  const draftOn = async (title: string, name: string) => {
+    const made = await call("POST", "/api/admin/org/drafts", { title });
+    expect(made.status, made.text).toBe(200);
+    const id = String(made.json.id);
+    const ch = await call("POST", `/api/admin/org/drafts/${id}/changes`, { op: "update_seat", orgRoleId: ROLE, payload: { name } });
+    expect(ch.status, ch.text).toBe(200);
+    return id;
+  };
+  let stale = "";
+  let fresh = "";
+
+  it("tells whoever may decide that another open draft changes the same role, and tells a member nothing", async () => {
+    expect((await call("POST", "/api/admin/org/roles", { id: ROLE, name: "Withdraw Steward", seats: 1 })).status).toBe(200);
+    stale = await draftOn("Proposed change to Withdraw Steward", "Old words");
+    fresh = await draftOn("Proposed change to Withdraw Steward", "New words");
+    const other = await draftOn("Something else", "Other words");
+    await call("POST", `/api/admin/org/drafts/${other}/changes`, { op: "update_seat", orgRoleId: `${ROLE}-x`, payload: { name: "x" } });
+    expect((await call("GET", `/api/org/drafts/${fresh}/decide`)).json.otherOpenDrafts).toBe(2);
+    expect((await call("GET", `/api/org/drafts/${fresh}/decide`)).json.youMayWithdraw).toBe(true);
+    const member = (await call("GET", `/api/org/drafts/${fresh}/decide`, undefined, ottoToken)).json;
+    expect(member.otherOpenDrafts).toBe(0);
+    expect(member.youMayWithdraw).toBe(false);
+    await call("POST", `/api/admin/org/drafts/${other}/withdraw`, {});
+  });
+
+  it("a plain member may not withdraw a draft", async () => {
+    expect((await call("POST", `/api/admin/org/drafts/${stale}/withdraw`, {}, ottoToken)).status).toBe(401);
+    expect((await call("GET", `/api/org/drafts/${stale}/decide`)).json.status).toBe("open");
+  });
+
+  it("an admin withdraws the stale draft: kept on record, never publishable, recorded, and the warning clears", async () => {
+    const w = await call("POST", `/api/admin/org/drafts/${stale}/withdraw`, {});
+    expect(w.status, w.text).toBe(200);
+    const after = (await call("GET", `/api/org/drafts/${stale}/decide`)).json;
+    expect(after.status).toBe("withdrawn");
+    expect(after.youMayWithdraw).toBe(false);
+    expect((await call("POST", `/api/admin/org/drafts/${stale}/publish`, {})).status).toBe(409);
+    expect((await call("GET", "/api/org")).json.roles.find((r: any) => r.id === ROLE).name).toBe("Withdraw Steward");
+    expect((await adminTrail()).some((t) => t.startsWith("a proposed reorganisation was withdrawn"))).toBe(true);
+    expect((await call("GET", `/api/org/drafts/${fresh}/decide`)).json.otherOpenDrafts).toBe(0);
+  });
+
+  it("refuses a draft that is not open, and one that does not exist", async () => {
+    const again = await call("POST", `/api/admin/org/drafts/${stale}/withdraw`, {});
+    expect(again.status).toBe(409);
+    expect(again.json.draftStatus).toBe("withdrawn");
+    expect((await call("POST", "/api/admin/org/drafts/draft-nope/withdraw", {})).status).toBe(404);
+  });
+
+  it("control: the fresh draft still publishes", async () => {
+    expect((await call("POST", `/api/admin/org/drafts/${fresh}/publish`, {})).status).toBe(200);
+    expect((await call("GET", "/api/org")).json.roles.find((r: any) => r.id === ROLE).name).toBe("New words");
+  });
+});

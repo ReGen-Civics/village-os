@@ -14,17 +14,13 @@
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import {
-  MOON_WORDS,
-  MY_MOON_WORDS,
-  PACK_SKIP_WORDS,
-  PACK_WORDS,
-  SERA_STATE_WORDS,
   SERA_TIMEOUT_MS,
   type PackPreview,
   type SeraState,
 } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import { ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section } from "./moonUi";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export interface GatherPanelProps {
   cycleId: string;
@@ -37,6 +33,7 @@ export interface GatherPanelProps {
 const POLL_MS = 3000;
 
 export default function GatherPanel({ cycleId, editable, sera, reload }: GatherPanelProps) {
+  const MW = useMoonWords();
   const [line, setLine] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"gather" | "sera" | "import" | "add" | null>(null);
@@ -56,7 +53,7 @@ export default function GatherPanel({ cycleId, editable, sera, reload }: GatherP
     const r = await api.gather(cycleId);
     setBusy(null);
     if (!r.ok) return setError(r.error);
-    setLine(MY_MOON_WORDS.gathered(r.data.added));
+    setLine(MW.myMoon.gathered(r.data.added));
     await reload();
   };
 
@@ -79,7 +76,7 @@ export default function GatherPanel({ cycleId, editable, sera, reload }: GatherP
     const r = await api.askSera(cycleId);
     setBusy(null);
     if (!r.ok) {
-      setError(r.code === "not_offered" || r.status === 404 ? MY_MOON_WORDS.askSeraNotOffered : r.error);
+      setError(r.code === "not_offered" || r.status === 404 ? MW.myMoon.askSeraNotOffered : r.error);
       return;
     }
     setSeraNow(r.data.sera);
@@ -111,7 +108,7 @@ export default function GatherPanel({ cycleId, editable, sera, reload }: GatherP
     const r = await api.importPack(cycleId, preview.parsed, { previewHash: preview.hash });
     setBusy(null);
     if (!r.ok) return setError(r.error);
-    if (r.data.written) setLine(MY_MOON_WORDS.imported(r.data.added, r.data.merged, r.data.skipped));
+    if (r.data.written) setLine(MW.myMoon.imported(r.data.added, r.data.merged, r.data.skipped));
     setPreview(null);
     setPack("");
     setPasting(false);
@@ -131,45 +128,45 @@ export default function GatherPanel({ cycleId, editable, sera, reload }: GatherP
 
   const s = seraNow;
   return (
-    <Section title={MY_MOON_WORDS.gatherHeading}>
+    <Section title={MW.myMoon.gatherHeading}>
       <div className="flex flex-wrap gap-2">
-        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null} onClick={bringIn}>{MOON_WORDS.gather}</button>
-        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null || polling} onClick={ask}>{MOON_WORDS.askSera}</button>
-        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null} aria-expanded={pasting} onClick={() => setPasting((v) => !v)}>{PACK_WORDS.button}</button>
+        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null} onClick={bringIn}>{MW.moon.gather}</button>
+        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null || polling} onClick={ask}>{MW.moon.askSera}</button>
+        <button type="button" className={SMALL_BTN} disabled={!editable || busy !== null} aria-expanded={pasting} onClick={() => setPasting((v) => !v)}>{MW.pack.button}</button>
       </div>
       <AskSeraDataLine />
 
       {s && s.state !== "idle" ? (
         <p className={MUTED} aria-live="polite" data-testid="sera-progress">
-          {SERA_STATE_WORDS[s.state]}
-          {s.state === "running" || s.added > 0 ? ` ${MY_MOON_WORDS.seraAdded(s.added)}` : ""}
-          {s.line && s.line !== SERA_STATE_WORDS[s.state] ? ` ${s.line}` : ""}
+          {MW.seraState[s.state]}
+          {s.state === "running" || s.added > 0 ? ` ${MW.myMoon.seraAdded(s.added)}` : ""}
+          {s.line && s.line !== MW.seraState[s.state] ? ` ${s.line}` : ""}
         </p>
       ) : null}
 
       {pasting ? (
         <div className="flex flex-col gap-2">
           <label className={LABEL}>
-            {MY_MOON_WORDS.pastePack}
+            {MW.myMoon.pastePack}
             <textarea value={pack} rows={6} onChange={(e) => { setPack(e.target.value); setPreview(null); }} className={`${INPUT} font-mono text-xs`} />
           </label>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={SMALL_BTN} disabled={!pack.trim() || busy !== null} onClick={previewPack}>{PACK_WORDS.preview}</button>
-            <button type="button" className={SMALL_BTN} onClick={() => { setPasting(false); setPreview(null); }}>{MY_MOON_WORDS.cancel}</button>
+            <button type="button" className={SMALL_BTN} disabled={!pack.trim() || busy !== null} onClick={previewPack}>{MW.pack.preview}</button>
+            <button type="button" className={SMALL_BTN} onClick={() => { setPasting(false); setPreview(null); }}>{MW.myMoon.cancel}</button>
           </div>
           {preview ? (
             <div className="flex flex-col gap-2 rounded-lg border border-border p-3" data-testid="pack-preview">
               <ul className="m-0 list-none p-0 text-sm text-foreground">
-                <li>{PACK_WORDS.added(preview.preview.add.length)}</li>
-                <li>{PACK_WORDS.merged(preview.preview.merge.length)}</li>
-                <li>{PACK_WORDS.skipped(preview.preview.skip.length)}</li>
+                <li>{MW.pack.added(preview.preview.add.length)}</li>
+                <li>{MW.pack.merged(preview.preview.merge.length)}</li>
+                <li>{MW.pack.skipped(preview.preview.skip.length)}</li>
               </ul>
               {preview.preview.skip.length > 0 ? (
                 <ul className="m-0 list-disc pl-5 text-xs text-muted-foreground">
-                  {preview.preview.skip.map((k) => <li key={k.index}>{MY_MOON_WORDS.skippedItem(k.index)}: {PACK_SKIP_WORDS[k.reason]}</li>)}
+                  {preview.preview.skip.map((k) => <li key={k.index}>{MW.myMoon.skippedItem(k.index)}: {MW.packSkip[k.reason]}</li>)}
                 </ul>
               ) : null}
-              <button type="button" className={SMALL_BTN} disabled={busy !== null} onClick={confirmImport}>{PACK_WORDS.confirm}</button>
+              <button type="button" className={SMALL_BTN} disabled={busy !== null} onClick={confirmImport}>{MW.pack.confirm}</button>
             </div>
           ) : null}
         </div>
@@ -177,10 +174,10 @@ export default function GatherPanel({ cycleId, editable, sera, reload }: GatherP
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className={`${LABEL} flex-1`}>
-          {MOON_WORDS.addItem}
-          <input value={newText} disabled={!editable} placeholder={MY_MOON_WORDS.newItemPlaceholder} onChange={(e) => setNewText(e.target.value)} className={INPUT} />
+          {MW.moon.addItem}
+          <input value={newText} disabled={!editable} placeholder={MW.myMoon.newItemPlaceholder} onChange={(e) => setNewText(e.target.value)} className={INPUT} />
         </label>
-        <button type="button" className={SMALL_BTN} disabled={!editable || !newText.trim() || busy !== null} onClick={addByHand}>{MOON_WORDS.addItem}</button>
+        <button type="button" className={SMALL_BTN} disabled={!editable || !newText.trim() || busy !== null} onClick={addByHand}>{MW.moon.addItem}</button>
       </div>
 
       {line ? <p className={MUTED} aria-live="polite">{line}</p> : null}

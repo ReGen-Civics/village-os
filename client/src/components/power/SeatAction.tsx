@@ -32,7 +32,7 @@ import { Link, useLocation } from "wouter";
 import { Hand, Mail } from "lucide-react";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
-import { SHEET_WORDS } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { openProposalHref } from "@shared/openProposals";
 import SeatTermField, { MAP_TERM_LOOK, type SeatTermLook } from "./SeatTermField";
 import { useSeatCardSlot } from "./seatCardSlot";
@@ -74,6 +74,8 @@ export default function SeatAction({
    */
   applyHref?: string | null;
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const slot = useSeatCardSlot();
   const { t } = useLingui();
   const [location] = useLocation();

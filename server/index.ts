@@ -1,4 +1,5 @@
 import { anonymizeMember, backfillFinishedErasures, erasureBackfillJob } from "./lib/erasure";
+import { circlesForReader } from "./lib/circleWords";
 import { readsAsPlainMember } from "./lib/readAsMember";
 import { backfillSeasonGoalIds, SEASON_GOAL_ID_BACKFILL } from "./lib/seasonGoalIds";
 import { backfillConnectorOutcomes, CONNECTOR_OUTCOME_BACKFILL } from "./lib/suggestionOutcome";
@@ -9848,7 +9849,7 @@ async function startServer() {
     const admin = await isAdmin(req);
     const capCtx = viewer ? await capabilityCtx(viewer) : null;
     const [roles, assignments] = await Promise.all([listOrgRoles(getPool()), listOrgAssignments(getPool(), lapseContext())]);
-    res.json(circlesToShow(circlesRepo.all() as Array<{ id: string; parentCircleId?: string | null }>, roles, listingViewerFor({ admin, capCtx, userId: viewer?.id, assignments })));
+    res.json(await circlesForReader(getPool(), req, res, circlesToShow(circlesRepo.all() as Array<{ id: string; parentCircleId?: string | null }>, roles, listingViewerFor({ admin, capCtx, userId: viewer?.id, assignments })))); // translated after the filter
   });
 
   /**
@@ -10967,7 +10968,7 @@ async function startServer() {
   app.use("/api/admin/events", requireModule("events"));
   registerApprovalInboxRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10), today: () => villageDayKey(new Date(), getSeasonConfig().timezone), filing: () => ({ variable: (key) => { const v = allVariables().find((x) => x.key === key); return v ? { key: v.key, label: v.label, value: String(v.value) } : null; }, module: (id) => { const d = MODULES_BY_ID[id]; return d ? { id: d.id, name: d.name, core: !!d.core, lifecycle: d.core ? "public" : storedLifecycle(d.id), sellsToken: !!d.sellsToken } : null; }, openTerm: async () => { const d = dbDocument(getPool(), "open-proposals", {} as any); await d.load(); const t = (d.get() as any)?.term; return t === "moon" ? "moon" : "season"; }, content: (section) => contentRepo.get()[section], contentVersion, pageProblem: pageContentProblem }) }); // role journey L13: the one-tap approval inbox and the filing routes behind the connector's propose tools (server/routes/approvalInbox.ts)
   registerProposedChangesRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, contentRepo, faqsRepo, seasonState, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10) }); // proposed changes, reviewed on /admin/proposals (server/routes/proposedChanges.ts)
-  registerReviewInboxRoutes(app, { authedUser, overLimit, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10) }); // the deciders' one list, each queue read as the person (server/routes/reviewInbox.ts)
+  registerReviewInboxRoutes(app, { authedUser, overLimit, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10), isMember: async (u) => stageIndex(await stageOf(u)) >= stageIndex("member") && !(await leftTheVillage(getPool(), u)) }); // the deciders' one list and the members' governance reads, each read as the person (server/routes/reviewInbox.ts)
   registerLetterDraftsRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, escapeHtml, postEmail: (email) => postToOffice(commsPostOffice, email) }); // role journey L13: a person reads, edits and sends a drafted letter (server/routes/letterDrafts.ts)
   registerCommsEventRoutes(app, { authedUser, overLimit, clientIp, isAdmin, guardCapability, mayStillSee, capabilityCtx, getPool, commsPostOffice, members, deploymentOrigin, isPresent: (m: any) => isPresentMember(m, AUTH_TOKEN_SECRET), notify });
 
@@ -18319,6 +18320,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       replyWindowMoons: replyMoonsNow(), // what every proposer is told once they have sent, application included: within one moon cycle (the lead, 24 Nov 2026; server/lib/foundingFirst.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
       offeredLocales: villageLocaleTags((tag) => boolVar(offerLocaleKey(tag))), // the languages this village offers: one switch each (shared/i18nLocales.ts)
+      lightPaper: String(stringVar("look.light_paper")), // light mode's paper: "plain" or "sea-chart" (client/src/lib/paperLook.ts)
     });
   });
 
@@ -24683,7 +24685,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // cards page could not draw a circle's colour however carefully the
     // admin form had set it.
     const orgListing = listingViewerFor({ admin, capCtx: viewerCtx, userId: viewer?.id, assignments });
-    const circles = circlesToShow(circleViews(circlesRepo.all()), roles, orgListing);
+    const circles = await circlesForReader(getPool(), req, res, circlesToShow(circleViews(circlesRepo.all()), roles, orgListing)); // in the reader's language, after the filter (server/lib/circleWords.ts)
 
     res.json({
       /*

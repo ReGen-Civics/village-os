@@ -12,6 +12,7 @@
  *
  * A blank field hides its line rather than printing a placeholder.
  */
+import { useVillageDocFields } from "@/hooks/useVillageDocTranslation";
 import { lazy, Suspense, useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { useModules } from "@/modules/ModuleProvider";
@@ -25,26 +26,28 @@ import { useVillageLocation, useVillageName } from "@/hooks/useVillageName";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useClaimOpen } from "@/lib/claimLink";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The wall is named after the village's own recognition token, as the footer names it. */
-const doors = (tokenName: string) => [
+type T = ReturnType<typeof useLingui>["t"];
+const doors = (tokenName: string, t: T) => [
   {
     href: "/quests",
-    title: "Quests",
-    body: "The work this village needs, open for anyone.",
+    title: t({ message: "Quests", context: "village welcome: a door card" }),
+    body: t({ message: "The work this village needs, open for anyone.", context: "village welcome: a door card" }),
     // The quests' one mark, as the tab bar draws it (the leaf compass; the lead, 25 Nov 2026).
     Icon: LeafCompass,
   },
   {
     href: "/gratitude",
-    title: `${tokenName} Wall`,
-    body: "Who has helped whom.",
+    title: t({ message: `${tokenName} Wall`, context: "village welcome: a door card, the recognition token's wall" }),
+    body: t({ message: "Who has helped whom.", context: "village welcome: a door card" }),
     Icon: Heart,
   },
   {
     href: "/governance",
-    title: "How we decide",
-    body: "Who holds which power, and how a proposal becomes a decision.",
+    title: t({ message: "How we decide", context: "village welcome: a door card" }),
+    body: t({ message: "Who holds which power, and how a proposal becomes a decision.", context: "village welcome: a door card" }),
     Icon: CouncilCircle,
   },
 ];
@@ -88,10 +91,14 @@ function NeutralWelcome() {
   const name = useVillageName();
   const location = useVillageLocation();
   const brand = useBrandImages();
-  const tagline = String(useGameConfig()?.project?.tagline ?? "").trim();
+  // The tagline in the reader's language where the village has translated it (village_doc "brand").
+  const taglineWords = useVillageDocFields("brand")["project.tagline"];
+  const ownTagline = useGameConfig()?.project?.tagline;
+  const tagline = String(taglineWords || ownTagline || "").trim();
   const { user } = useAuth();
   const claimOpen = useClaimOpen();
   const tokenName = useTokenName("Recognition");
+  const { t } = useLingui();
 
   return (
     <Layout>
@@ -100,7 +107,7 @@ function NeutralWelcome() {
           <div className="absolute inset-0 z-0">
             <Image
               src={brand.hero}
-              alt={altOr(brand.heroAlt, "The village and the land around it")}
+              alt={altOr(brand.heroAlt, t({ message: "The village and the land around it", context: "village welcome: the hero photograph" }))}
               priority
               className="w-full h-full"
             />
@@ -128,7 +135,7 @@ function NeutralWelcome() {
                   href="/quests"
                   className="min-h-[44px] px-6 py-3 bg-white text-teal-band rounded-lg font-semibold hover:bg-cream"
                 >
-                  See the open quests
+                  <Trans context="village welcome: a button">See the open quests</Trans>
                 </Link>
               ) : (
                 <>
@@ -136,13 +143,13 @@ function NeutralWelcome() {
                     href="/login"
                     className="min-h-[44px] px-6 py-3 bg-white text-teal-band rounded-lg font-semibold hover:bg-cream"
                   >
-                    Sign in
+                    <Trans context="village welcome: a button">Sign in</Trans>
                   </Link>
                   <Link
                     href="/request-membership"
                     className="min-h-[44px] px-6 py-3 border border-white text-white rounded-lg font-semibold hover:bg-white/10"
                   >
-                    Ask to join
+                    <Trans context="village welcome: a button">Ask to join</Trans>
                   </Link>
                 </>
               )}
@@ -153,7 +160,7 @@ function NeutralWelcome() {
                   href="/claim"
                   className="min-h-[44px] px-6 py-3 border border-white text-white rounded-lg font-semibold hover:bg-white/10"
                 >
-                  Founders: claim this village
+                  <Trans context="village welcome: a button, only while no founder holds the village">Founders: claim this village</Trans>
                 </Link>
               ) : null}
             </div>
@@ -165,7 +172,7 @@ function NeutralWelcome() {
 
       <section className="container py-12 md:py-16">
         <ul className="grid gap-6 md:grid-cols-3">
-          {doors(tokenName).map(({ href, title, body, Icon }) => (
+          {doors(tokenName, t).map(({ href, title, body, Icon }) => (
             <li key={href}>
               <Link
                 href={href}

@@ -16,6 +16,8 @@
  * the needs it carries and what a connected service holds about it.
  */
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { Link, useLocation, useRoute } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -69,9 +71,10 @@ export default function RoleShare() {
   const slug = params?.slug ?? "";
   const [org, setOrg] = useState<OrgRead | null | "failed">(null);
   const [founding, setFounding] = useState<FoundingTeamAnswer | null>(null);
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   useEffect(() => {
     let live = true;
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d) => live && setOrg({ roles: Array.isArray(d?.roles) ? d.roles.filter((r: any) => r && !r.isExample && typeof r.id === "string") : [], circles: Array.isArray(d?.circles) ? d.circles : [], people: d?.people ?? null, allRoles: Array.isArray(d?.roles) ? d.roles : [] }))
       .catch(() => live && setOrg("failed"));
@@ -79,7 +82,7 @@ export default function RoleShare() {
     return () => {
       live = false;
     };
-  }, []);
+  }, [locale]);
 
   const roles = org && org !== "failed" ? org.roles : [];
   const role = org && org !== "failed" ? roleForSlug(slug, roles) : null;

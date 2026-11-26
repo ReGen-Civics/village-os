@@ -92,7 +92,7 @@ export default function PurposeStatementPanel({ password }: { password: string }
   return (
     <div className="bg-background text-foreground rounded-lg p-4 mb-4">
       <h4 className="text-sm font-semibold mb-1"><Trans context="PurposeStatementPanel, h4">What this village is for, in one statement</Trans></h4>
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-muted-foreground mb-3">
         <Trans context="PurposeStatementPanel, p">The sentence every later change is judged against. Your village cannot start its Game
         without one.
       </Trans></p>
@@ -131,7 +131,7 @@ export default function PurposeStatementPanel({ password }: { password: string }
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white"
           placeholder={t({ message: "This village exists for the people who...", context: "PurposeStatementPanel, placeholder" })}
         />
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           <Trans context="PurposeStatementPanel, p">{words} word{words === 1 ? "" : "s"}. It takes at least {PURPOSE_MIN_WORDS} to answer all
           five parts.
         </Trans></p>
@@ -141,7 +141,7 @@ export default function PurposeStatementPanel({ password }: { password: string }
             something. This sentence says what happens next as a fact, with no
             suggestion that anything here is unfinished. */}
         {founderHoldsPen && (
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             <Trans>
               You write this. Any member who can open a proposal can also put a new statement to
               a vote of the whole village, at its highest bar. Once the village holds every one of

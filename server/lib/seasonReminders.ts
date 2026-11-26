@@ -63,6 +63,7 @@
 import crypto from "node:crypto";
 import type { PresenceTest } from "./memberPresence";
 import { SEASON_PLAN_MINE } from "../../shared/seasonPlanLinks";
+import type { NoticeWordsRef } from "../../shared/noticeKeys";
 
 export const SEASON_REMINDER_DAYS = [14, 7, 3, 1] as const;
 export type SeasonReminderMark = (typeof SEASON_REMINDER_DAYS)[number];
@@ -191,6 +192,7 @@ export interface SeasonReminderDeps {
     body?: string | null;
     link?: string | null;
     dedupeKey: string;
+    words?: NoticeWordsRef | null;
   }): Promise<{ fresh: boolean }>;
 }
 
@@ -211,7 +213,8 @@ export async function runSeasonReminders(deps: SeasonReminderDeps): Promise<Seas
     if (!seasonReminderRecipient(member, deps.isPresent)) continue;
     report.recipients += 1;
     const userId = String(member.id);
-    const copy = seasonReminderCopy(due, deps.isAdmin(member) ? "admin" : "member");
+    const audience = deps.isAdmin(member) ? "admin" : "member";
+    const copy = seasonReminderCopy(due, audience);
     try {
       const r = await deps.notify({
         userId,
@@ -220,6 +223,8 @@ export async function runSeasonReminders(deps: SeasonReminderDeps): Promise<Seas
         body: copy.body,
         link: copy.link,
         dedupeKey: seasonReminderKey(due, userId),
+        // The same words as a key, for the bell to draw in the reader's language (shared/noticeKeys.ts).
+        words: { key: `season_ending.${audience}`, params: { season: due.seasonName, daysLeft: due.daysLeft, endsOn: due.endsOn } },
       });
       if (r.fresh) report.told += 1;
     } catch (e) {

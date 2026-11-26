@@ -18,10 +18,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
-import { FOLLOWUP_NOTE_MAX, ONBOARDING_WORDS, TRACK_WORDS, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
+import { FOLLOWUP_NOTE_MAX, TRACK_WORDS, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import type { GuideView } from "@shared/conversationGuide";
 import { GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, type GutAnswer, type InterviewState, type ScoreLevel } from "@shared/applicationReview";
+import { onboardingWords, useOnboardingWords } from "@/components/openProposal/onboardingWords";
 
 /** A conversation's state in the review panel's own words. */
 const IV_STATE: Record<InterviewState, string> = { waiting: PANEL_WORDS.waiting, open: PANEL_WORDS.open, scored: PANEL_WORDS.scored, skipped: PANEL_WORDS.skipped };
@@ -81,6 +82,7 @@ export interface WalkthroughProps {
 }
 
 export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel" }: WalkthroughProps) {
+  const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
@@ -111,13 +113,13 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   /** The one obvious act for the stage: a button where this reader may act here, a link to the panel that holds it otherwise. */
   const primary = (() => {
-    const label = ONBOARDING_WORDS.primary[t.primary];
+    const label = OW.primary[t.primary];
     switch (t.primary) {
       case "shortlist":
         return w.you.mayShortlist ? (
           <div className="flex flex-wrap gap-2">
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("/shortlist", { answer: "yes" })} data-walk-shortlist="yes">{label}</button>
-            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act("/shortlist", { answer: "no" })} data-walk-shortlist="no">{ONBOARDING_WORDS.notShortlist}</button>
+            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act("/shortlist", { answer: "no" })} data-walk-shortlist="no">{OW.notShortlist}</button>
           </div>
         ) : null;
       case "ask_references":
@@ -142,8 +144,8 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
   return (
     <section id="walkthrough" aria-labelledby="walk-heading" className={`scroll-mt-24 ${CARD}`} data-walkthrough={t.now}>
       <p className={EYEBROW}>{TRACK_WORDS[t.now]}</p>
-      <h2 id="walk-heading" className={H2}>{ONBOARDING_WORDS.heading}</h2>
-      <p className={`mt-1 ${HINT}`}>{ONBOARDING_WORDS.intro}</p>
+      <h2 id="walk-heading" className={H2}>{OW.heading}</h2>
+      <p className={`mt-1 ${HINT}`}>{OW.intro}</p>
 
       {/* The stage track: one row each on a phone, wrapping across on a wide screen. */}
       <ol className="mt-4 grid gap-2 sm:flex sm:flex-wrap" data-walk-track="">
@@ -151,15 +153,15 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
           <li key={s.key} className={`flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-sm ${STATE_CLASS[s.state]}`} data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
             <span aria-hidden="true" className="tabular-nums">{i + 1}</span>
             <span>{s.label}</span>
-            <span className="sr-only">{ONBOARDING_WORDS.stateWords[s.state]}</span>
+            <span className="sr-only">{OW.stateWords[s.state]}</span>
           </li>
         ))}
       </ol>
 
       <div className={`mt-4 ${TILE}`} data-walk-next="">
-        <p className={LABEL}>{ONBOARDING_WORDS.whoActs}</p>
+        <p className={LABEL}>{OW.whoActs}</p>
         <p className="text-foreground" data-walk-who="">{t.who}</p>
-        <p className={`mt-2 ${LABEL}`}>{ONBOARDING_WORDS.whatNext}</p>
+        <p className={`mt-2 ${LABEL}`}>{OW.whatNext}</p>
         <p className="text-foreground">{t.next}</p>
         {primary && <div className="mt-3">{primary}</div>}
         {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
@@ -176,12 +178,13 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 }
 
 function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
+  const OW = useOnboardingWords();
   return (
     <div id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="">
-      <h3 className="font-display text-xl font-bold text-foreground">{ONBOARDING_WORDS.referencesHeading}</h3>
-      <p className={`mt-1 ${HINT}`}>{ONBOARDING_WORDS.referencesPrivate}</p>
-      {!w.references.given && <p className="mt-2 text-foreground">{ONBOARDING_WORDS.referencesAsked}</p>}
-      {w.references.given && w.references.list.length === 0 && <p className="mt-2 text-foreground">{ONBOARDING_WORDS.referencesNone}</p>}
+      <h3 className="font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>
+      <p className={`mt-1 ${HINT}`}>{OW.referencesPrivate}</p>
+      {!w.references.given && <p className="mt-2 text-foreground">{OW.referencesAsked}</p>}
+      {w.references.given && w.references.list.length === 0 && <p className="mt-2 text-foreground">{OW.referencesNone}</p>}
       <ul className="mt-3 grid gap-3">
         {w.references.list.map((r) => (
           <ReferenceTile key={r.id} r={r} w={w} busy={busy} act={act} />
@@ -192,12 +195,13 @@ function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act
 }
 
 function ownerWords(r: ServedReference): string {
-  if (r.owner.userId) return r.owner.userName ?? ONBOARDING_WORDS.ownerMember;
-  if (r.owner.roleName) return r.owner.isDefault ? ONBOARDING_WORDS.ownerDefault(r.owner.roleName) : r.owner.roleName;
-  return ONBOARDING_WORDS.ownerNobody;
+  if (r.owner.userId) return r.owner.userName ?? onboardingWords().ownerMember;
+  if (r.owner.roleName) return r.owner.isDefault ? onboardingWords().ownerDefault(r.owner.roleName) : r.owner.roleName;
+  return onboardingWords().ownerNobody;
 }
 
 function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
+  const OW = useOnboardingWords();
   const [notes, setNotes] = useState(r.notes ?? "");
   const [done, setDone] = useState(r.followedUp);
   const [pick, setPick] = useState("");
@@ -205,24 +209,24 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
     <li className={TILE} data-walk-reference={r.position}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-foreground">{r.name}</p>
-        <span className={CHIP_SOFT}>{r.followedUp ? ONBOARDING_WORDS.followedUp : ONBOARDING_WORDS.notFollowedUp}</span>
+        <span className={CHIP_SOFT}>{r.followedUp ? OW.followedUp : OW.notFollowedUp}</span>
       </div>
       <dl className="mt-2 grid gap-1 text-sm">
-        <div><dt className="inline font-semibold text-foreground">{ONBOARDING_WORDS.contact}: </dt><dd className="inline break-words text-foreground">{r.contact}</dd></div>
-        <div><dt className="inline font-semibold text-foreground">{ONBOARDING_WORDS.howKnown}: </dt><dd className="inline break-words text-foreground">{r.how}</dd></div>
-        {r.ally && <div><dt className="inline font-semibold text-foreground">{ONBOARDING_WORDS.ally}: </dt><dd className="inline break-words text-foreground">{r.ally}</dd></div>}
-        <div><dt className="inline font-semibold text-foreground">{ONBOARDING_WORDS.owner}: </dt><dd className="inline text-foreground" data-walk-owner="">{ownerWords(r)}</dd></div>
+        <div><dt className="inline font-semibold text-foreground">{OW.contact}: </dt><dd className="inline break-words text-foreground">{r.contact}</dd></div>
+        <div><dt className="inline font-semibold text-foreground">{OW.howKnown}: </dt><dd className="inline break-words text-foreground">{r.how}</dd></div>
+        {r.ally && <div><dt className="inline font-semibold text-foreground">{OW.ally}: </dt><dd className="inline break-words text-foreground">{r.ally}</dd></div>}
+        <div><dt className="inline font-semibold text-foreground">{OW.owner}: </dt><dd className="inline text-foreground" data-walk-owner="">{ownerWords(r)}</dd></div>
       </dl>
       {w.references.mayAssign && (
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <label className="grow">
-            <span className={LABEL}>{ONBOARDING_WORDS.ownerPick}</span>
+            <span className={LABEL}>{OW.ownerPick}</span>
             <select className={`mt-1 min-h-11 ${FIELD}`} value={pick} onChange={(e) => setPick(e.target.value)} data-walk-owner-pick="">
-              <option value="">{ONBOARDING_WORDS.ownerPick}</option>
-              <optgroup label={ONBOARDING_WORDS.ownerRole}>
+              <option value="">{OW.ownerPick}</option>
+              <optgroup label={OW.ownerRole}>
                 {w.roles.map((role) => <option key={`r:${role.id}`} value={`r:${role.id}`}>{role.name}</option>)}
               </optgroup>
-              <optgroup label={ONBOARDING_WORDS.ownerMember}>
+              <optgroup label={OW.ownerMember}>
                 {w.members.map((m) => <option key={`u:${m.id}`} value={`u:${m.id}`}>{m.name}</option>)}
               </optgroup>
             </select>
@@ -233,28 +237,28 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
             disabled={busy || !pick}
             onClick={() => void act(`/references/${r.id}/owner`, pick.startsWith("r:") ? { roleId: pick.slice(2) } : { userId: pick.slice(2) }).then((ok) => ok && setPick(""))}
           >
-            {ONBOARDING_WORDS.ownerGive}
+            {OW.ownerGive}
           </button>
         </div>
       )}
       {r.mine ? (
         <div className="mt-3">
           <label className="block">
-            <span className={LABEL}>{ONBOARDING_WORDS.notes}</span>
+            <span className={LABEL}>{OW.notes}</span>
             <textarea rows={3} className={`mt-1 ${FIELD}`} value={notes} maxLength={FOLLOWUP_NOTE_MAX} onChange={(e) => setNotes(e.target.value)} data-walk-notes="" />
           </label>
           <label className="mt-2 flex min-h-11 items-center gap-2 text-foreground">
             <input type="checkbox" className="size-5" checked={done} onChange={(e) => setDone(e.target.checked)} />
-            {ONBOARDING_WORDS.followedUp}
+            {OW.followedUp}
           </label>
           <button type="button" className={`mt-2 ${BTN_PRIMARY}`} disabled={busy} onClick={() => void act(`/references/${r.id}/notes`, { notes, followedUp: done })} data-walk-notes-save="">
-            {ONBOARDING_WORDS.notesSave}
+            {OW.notesSave}
           </button>
         </div>
       ) : (
         r.notes && (
           <div className="mt-3">
-            <p className={LABEL}>{ONBOARDING_WORDS.notes}{r.notesOn ? ` (${r.notesOn})` : ""}</p>
+            <p className={LABEL}>{OW.notes}{r.notesOn ? ` (${r.notesOn})` : ""}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">{r.notes}</p>
           </div>
         )
@@ -265,26 +269,27 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
 
 /** Everything the final call reads, in one place: each reference's notes and each conversation's scorecard, as written. */
 function Gathered({ w }: { w: ServedWalkthrough }) {
+  const OW = useOnboardingWords();
   const role = w.roleNames.finalCall ?? "the role that makes the final call";
   const cards = w.scorecards;
   const criterion = (id: string) => cards?.criteria.find((c) => c.id === id)?.text ?? id;
   return (
     <div className="mt-6" data-walk-gathered="">
-      <h3 className="font-display text-xl font-bold text-foreground">{ONBOARDING_WORDS.gatheredHeading}</h3>
-      <p className={`mt-1 ${HINT}`}>{ONBOARDING_WORDS.gatheredIntro(role)}</p>
+      <h3 className="font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</h3>
+      <p className={`mt-1 ${HINT}`}>{OW.gatheredIntro(role)}</p>
       {w.references.list.length > 0 && (
         <ul className="mt-3 grid gap-2">
           {w.references.list.map((r) => (
             <li key={r.id} className={TILE}>
               <p className="font-semibold text-foreground">{r.name} <span className="font-normal text-muted-foreground">· {ownerWords(r)}</span></p>
-              <p className="mt-1 whitespace-pre-wrap break-words text-foreground">{r.notes || ONBOARDING_WORDS.notFollowedUp}</p>
+              <p className="mt-1 whitespace-pre-wrap break-words text-foreground">{r.notes || OW.notFollowedUp}</p>
             </li>
           ))}
         </ul>
       )}
       {cards && (
         <div className="mt-3 grid gap-2">
-          {!cards.mayRead && <p className={HINT}>{ONBOARDING_WORDS.scorecardsHidden}</p>}
+          {!cards.mayRead && <p className={HINT}>{OW.scorecardsHidden}</p>}
           {cards.interviews.map((iv) => (
             <div key={iv.position} className={TILE} data-walk-card={iv.position}>
               <p className="font-semibold text-foreground">

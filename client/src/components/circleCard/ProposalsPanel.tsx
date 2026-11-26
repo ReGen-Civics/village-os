@@ -21,10 +21,11 @@
 import DecideDoors, { type DecideDoorWords } from "@/components/review/DecideDoors";
 import { BOX, EYEBROW, SECTION } from "@/components/playerCard/cardParts";
 import type { ProposalOut } from "@shared/circleCard";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
+import { useMemo } from "react";
+import { useCircleWords, type CircleWords } from "./circleWords";
 
-/** The circle card's words for the doors every org draft has. */
-const DOOR_WORDS: DecideDoorWords = {
+/** The circle card's words for the doors every org draft has, in the reader's language. */
+const doorWords = (W: CircleWords): DecideDoorWords => ({
   adopt: W.adopt,
   adoptConfirm: W.adoptConfirm,
   adoptYes: W.adoptYes,
@@ -39,7 +40,7 @@ const DOOR_WORDS: DecideDoorWords = {
   putDone: W.putDone,
   cancel: W.cancel,
   failed: W.proposeFailed,
-};
+});
 
 export default function ProposalsPanel({
   proposals,
@@ -51,6 +52,8 @@ export default function ProposalsPanel({
   /** Hears a door's confirmation, which the card keeps once this panel empties. */
   onDone?: (said: string) => void;
 }) {
+  const W = useCircleWords();
+  const DOOR_WORDS = useMemo(() => doorWords(W), [W]);
   if (!proposals.length) return null;
   return (
     <section aria-label={W.pending} className={`${SECTION} grid gap-4`} data-circle-proposals="">

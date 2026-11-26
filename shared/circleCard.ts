@@ -28,7 +28,8 @@
  *      hover, or `null` where the village turned the terms off.
  */
 import { CHARTER_LIST_LIMITS, type CharterListField, type CircleCharter, type CircleValue } from "./circleCharter";
-import { CCOS_TERMS, CIRCLE_CARD_WORDS as W, CIRCLE_HEADINGS, termLabel, type CircleSectionKey } from "./circleCardWords";
+import { CCOS_TERMS, CIRCLE_CARD_WORDS, CIRCLE_HEADINGS, termLabel, type CircleSectionKey } from "./circleCardWords";
+import { pruneSaid, sayRecorder, type Said } from "./saidWords";
 import { circleWordLabel, CIRCLE_WORD_KEYS, type CircleWordKey, type CircleWordsPayload } from "./circleCharterParse";
 import type { Slot } from "./playerCard";
 import { formatDay, type Read } from "./roleSheet";
@@ -256,6 +257,11 @@ export interface CircleCard {
   pendingWords: string;
   /** The open proposals, oldest first. Empty when none, or below the member tier. */
   proposals: ProposalOut[];
+  /**
+   * What the English above was made from, so the client can say it in the reader's language
+   * (shared/saidWords.ts). Absent from an older server; the English is drawn as sent either way.
+   */
+  said?: Said;
 }
 
 // ── The pieces ──────────────────────────────────────────────────────────────
@@ -328,7 +334,7 @@ function adoptionSection(adoptions: Read<AdoptionIn[]>, timeZone: string, terms:
   const b = base("adoption", terms);
   if (adoptions === undefined) return { ...b, kind: "adoption", slot: UNREAD };
   const dated = adoptions
-    .map((a) => ({ a, t: Date.parse(a.publishedAt), day: formatDay(a.publishedAt, true, timeZone) }))
+    .map((a) => ({ a, t: Date.parse(a.publishedAt), day: noteDay(formatDay(a.publishedAt, true, timeZone), a.publishedAt, timeZone, true) }))
     .filter((x): x is { a: AdoptionIn; t: number; day: string } => !Number.isNaN(x.t) && !!x.day)
     .sort((x, y) => y.t - x.t);
   if (!dated.length) return { ...b, kind: "adoption", slot: empty(W.noAdoption) };
@@ -351,7 +357,7 @@ function proposalOut(p: { draftId: string; proposedAt: string; words: CircleWord
     const lines = v === null || v === undefined ? [] : typeof v === "string" ? [v] : (v as Array<string | CircleValue>).map((x) => (typeof x === "string" ? x : W.valueLine(x.value, x.practice)));
     return { key, label: circleWordLabel(key), lines };
   });
-  return { draftId: p.draftId, proposedOn: W.proposedOn(formatDay(p.proposedAt, true, timeZone) ?? ""), fields };
+  return { draftId: p.draftId, proposedOn: W.proposedOn(noteDay(formatDay(p.proposedAt, true, timeZone), p.proposedAt, timeZone, true) ?? ""), fields };
 }
 
 /** Where Live Sessions lives, for the meeting sections' links. */
@@ -375,7 +381,7 @@ function signOut(r: SignReading): SignOut {
 
 function liveSections(input: CircleCardIn, terms: boolean): CircleSection[] {
   const live = input.live;
-  const day = (iso: string | null) => (iso ? formatDay(iso, true, input.timeZone) : null);
+  const day = (iso: string | null) => (iso ? noteDay(formatDay(iso, true, input.timeZone), iso, input.timeZone, true) : null);
   const signs: CircleSection =
     live === undefined
       ? { ...base("signs", terms), kind: "signs", slot: UNREAD }
@@ -421,20 +427,42 @@ function liveSections(input: CircleCardIn, terms: boolean): CircleSection[] {
 
 function reviewSection(input: CircleCardIn, terms: boolean): CircleSection {
   if (input.reviewOn === undefined) return { ...base("review", terms), kind: "facts", slot: UNREAD };
-  const due = input.reviewOn ? formatDay(input.reviewOn, true, input.timeZone) : null;
+  const due = input.reviewOn ? noteDay(formatDay(input.reviewOn, true, input.timeZone), input.reviewOn, input.timeZone, true) : null;
   const latest = (input.adoptions ?? [])
     .map((a) => ({ iso: a.publishedAt, t: Date.parse(a.publishedAt) }))
     .filter((x) => !Number.isNaN(x.t))
     .sort((a, b) => a.t - b.t)
     .pop();
-  const changed = latest ? formatDay(latest.iso, true, input.timeZone) : null;
+  const changed = latest ? noteDay(formatDay(latest.iso, true, input.timeZone), latest.iso, input.timeZone, true) : null;
   const lines = [due ? W.reviewDue(due) : W.noReviewDate, ...(changed ? [W.lastChanged(changed)] : [])];
   return { ...base("review", terms), kind: "facts", slot: shown({ lines, links: [] }) };
 }
 
 // ── The card ────────────────────────────────────────────────────────────────
 
+/**
+ * The words the builders below read. Outside a build it is the plain table; during one it is the same table read
+ * through a recorder (shared/saidWords.ts), so the card carries what each sentence was made from. The build is
+ * synchronous, so one module-level slot is safe, and it is put back whatever happens.
+ */
+let W: typeof CIRCLE_CARD_WORDS = CIRCLE_CARD_WORDS;
+let noteDay = (formatted: string | null, _iso: string | null | undefined, _tz: string | null | undefined, _year: boolean): string | null => formatted;
+
 export function buildCircleCard(input: CircleCardIn): CircleCard {
+  const rec = sayRecorder(CIRCLE_CARD_WORDS);
+  const was = { W, noteDay };
+  W = rec.W;
+  noteDay = rec.day;
+  try {
+    const card = buildCard(input);
+    return { ...card, said: pruneSaid(rec.said, card) };
+  } finally {
+    W = was.W;
+    noteDay = was.noteDay;
+  }
+}
+
+function buildCard(input: CircleCardIn): CircleCard {
   const { circle, charter, roles, adoptions, timeZone, frameworkTerms: terms } = input;
   const existsWhile: Slot<string> =
     charter === undefined ? UNREAD : clean(charter?.existsWhile) ? shown(clean(charter!.existsWhile)!) : empty(W.existsWhileEmpty);
@@ -509,5 +537,6 @@ export function writtenOnly(card: CircleCard): CircleCard {
     else if (s.kind === "values") sections.push({ ...s, slot: quiet(s.slot) });
     else sections.push(s);
   }
-  return { ...card, header: { ...card.header, existsWhile }, sections };
+  const next = { ...card, header: { ...card.header, existsWhile }, sections };
+  return { ...next, said: pruneSaid(card.said, next) };
 }

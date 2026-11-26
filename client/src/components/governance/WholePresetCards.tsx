@@ -7,6 +7,8 @@
 import { useId } from "react";
 import { WHOLE_PRESETS, type WholeSeatPreset } from "@shared/seatPresets";
 import { MONEY_PROMISE, NOT_SURE_YET, SUGGESTED_TAG, fillTogetherTag, unsureLine, wholeCardCopy, wholeCardTag } from "@shared/termCards";
+import { useLingui } from "@lingui/react/macro";
+import { presetWords } from "@/components/governance/seatPresetWords";
 
 const tag = "rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide";
 
@@ -22,6 +24,7 @@ export default function WholePresetCards({
   onPick: (whole: WholeSeatPreset) => void;
   onUnsure: () => void;
 }) {
+  const { i18n } = useLingui();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   return (
     <ul className="mt-2 grid gap-2 sm:grid-cols-2" data-whole-presets="">
@@ -40,11 +43,11 @@ export default function WholePresetCards({
                 )}
               </span>
               <span id={labelId} className="break-words text-base font-semibold text-foreground">
-                {w.label}
+                {presetWords(w, i18n).label}
               </span>
               <span className="break-words text-[13px] font-semibold uppercase tracking-wide text-foreground">{copy.official}</span>
               <span id={descId} className="grid gap-1">
-                <span className="break-words text-[13px] leading-snug text-foreground">{w.blurb}</span>
+                <span className="break-words text-[13px] leading-snug text-foreground">{presetWords(w, i18n).blurb}</span>
                 <span className="break-words text-[13px] leading-snug text-foreground">{copy.rhythm}</span>
                 <span className="break-words text-[13px] font-medium leading-snug text-foreground">{copy.example}</span>
                 <span className="break-words text-[13px] font-medium leading-snug text-foreground">{MONEY_PROMISE}</span>

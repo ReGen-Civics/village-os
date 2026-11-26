@@ -10,8 +10,9 @@
  * stage (RoomBrought). Words come from shared/sessionLibrary.ts.
  */
 import { useLayoutEffect, useRef, useState } from "react";
-import { LIBRARY_COPY } from "@shared/sessionLibrary";
+
 import { BTN_QUIET } from "./roomUi";
+import { LIBRARY_COPY } from "./libraryCopy";
 
 export default function ClampedNote({ text }: { text: string }) {
   const [whole, setWhole] = useState(false);

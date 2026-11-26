@@ -3,8 +3,9 @@
  * The editor beside the aim and domain: three inputs, the parser's sentence
  * under a bad one, and Save goes through a one-change `update_seat` draft.
  */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { resetUnsavedForTests } from "@/lib/unsavedChanges";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -27,6 +28,18 @@ function setup() {
   return { calls, onSaved };
 }
 
+afterEach(() => {
+  cleanup();
+  resetUnsavedForTests();
+});
+
+/** The page's one save bar (components/SaveBar.tsx): the editor has no Save of its own. */
+const barSave = async () => {
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  });
+};
+
 describe("RoleHandoverEditor", () => {
   it("says how many of the three are written, and opens to three labelled inputs", () => {
     setup();
@@ -36,18 +49,20 @@ describe("RoleHandoverEditor", () => {
     expect(screen.getByLabelText(W.runbook)).toBeTruthy();
   });
 
-  it("shows the parser's sentence under a bad runbook and holds the save", () => {
-    setup();
+  it("shows the parser's sentence under a bad runbook, and the bar refuses without sending", async () => {
+    const { calls } = setup();
     fireEvent.change(screen.getByLabelText(W.runbook), { target: { value: "http://example.org" } });
     expect(screen.getByRole("alert").textContent).toBe(W.httpsOnly);
-    expect(screen.getByRole("button", { name: "Save through a draft" })).toBeDisabled();
+    await barSave();
+    expect(await screen.findByText(/Fix the handover words marked above first\./)).toBeTruthy();
+    expect(calls).toEqual([]);
   });
 
   it("saves through a one-change update_seat draft, then publishes it", async () => {
     const { calls, onSaved } = setup();
     fireEvent.change(screen.getByLabelText(W.notMine), { target: { value: "Bookkeeping\nThe kitchen rota" } });
     fireEvent.change(screen.getByLabelText(W.runbook), { target: { value: "https://example.org/water" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save through a draft" }));
+    await barSave();
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(calls.map((c) => c.path)).toEqual([
       "/admin/org/drafts",

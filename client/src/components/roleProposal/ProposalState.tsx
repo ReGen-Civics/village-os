@@ -13,17 +13,19 @@ import { Link } from "wouter";
 import { civilDayWords } from "@shared/seasonPlans";
 import type { ProposalOut } from "./proposalApi";
 import { ConsentTally } from "./CircleConsent";
-import { ADOPTED_HEADING, RP_WORDS, STATE_HEADINGS } from "./proposalWords";
+import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
 import { LEDE, PANEL, QUIET } from "./parts";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export default function ProposalState({ proposal }: { proposal: ProposalOut }) {
+  const RW = useProposalWords();
   const consent = proposal.consent;
   const adopted = !!proposal.decided;
   const heading = adopted ? ADOPTED_HEADING : consent ? STATE_HEADINGS[consent.state] : null;
   return (
     <section aria-labelledby="rp-state" className={`${PANEL} grid gap-2`} data-proposal-state={adopted ? "adopted" : consent?.state ?? "submitted"}>
       <h2 id="rp-state" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {RP_WORDS.stateHeading}
+        {RW.stateHeading}
       </h2>
       {heading && <p className="font-display text-2xl font-bold text-foreground">{heading}</p>}
       {adopted ? (
@@ -44,16 +46,16 @@ export default function ProposalState({ proposal }: { proposal: ProposalOut }) {
           )}
         </>
       ) : null}
-      {proposal.submittedAt && <p className={LEDE}>{RP_WORDS.submittedOn(civilDayWords(proposal.submittedAt.slice(0, 10)))}</p>}
+      {proposal.submittedAt && <p className={LEDE}>{RW.submittedOn(civilDayWords(proposal.submittedAt.slice(0, 10)))}</p>}
       {proposal.application && (
         <Link href={proposal.application.href} className={`${QUIET} w-fit px-0`}>
-          {RP_WORDS.seeApplication}
+          {RW.seeApplication}
         </Link>
       )}
       {/* The share link outlives the draft: the owner can still open what readers see. */}
       {proposal.share?.on && proposal.share.token && (
         <Link href={`/role-proposals/shared/${encodeURIComponent(proposal.share.token)}`} className={`${QUIET} w-fit px-0`}>
-          {RP_WORDS.openShared}
+          {RW.openShared}
         </Link>
       )}
     </section>
