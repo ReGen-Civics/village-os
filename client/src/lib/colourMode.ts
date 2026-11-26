@@ -26,8 +26,8 @@ export const MODE_KEY = "village-mode";
 /** The window event applyMode sends, so every control showing the mode stays in step. */
 export const MODE_CHANGED = "village-mode-changed";
 
-/** The platform default when nobody has chosen and the device says nothing (the lead, 24 Nov 2026: light). */
-export const DEFAULT_MODE: Mode = "light";
+/** The platform default when nobody has chosen and the device says nothing (the lead, 24 Nov 2026: light; 26 Nov 2026: dark). */
+export const DEFAULT_MODE: Mode = "dark";
 
 /**
  * Whether modes are switched on for everybody: the header shows the switch,
@@ -40,9 +40,9 @@ export const MODES_LIVE = true;
 
 /**
  * Whether a first visit follows the device's light or dark setting. Off: the
- * lead asked for light as the default, so a first visit opens in light
- * whatever the device says, and the visitor's own choice is the only thing
- * that changes it (coordinator, 24 Nov 2026). One line to turn on; the
+ * lead asked for one default (light on 24 Nov 2026, dark since 26 Nov 2026),
+ * so a first visit opens in DEFAULT_MODE whatever the device says, and the
+ * visitor's own choice is the only thing that changes it. One line to turn on; the
  * first-paint script carries the same flag as `device`.
  */
 export const FOLLOW_DEVICE = false;

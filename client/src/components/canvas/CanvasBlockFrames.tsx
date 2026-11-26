@@ -29,7 +29,7 @@
  * phone. The Sense form and the See facts carry no number but a date and the
  * server's own sentences: client/src/lib/canvasCopy.test.ts reads this file.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ExternalLink, Printer } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -139,8 +139,14 @@ export default function CanvasBlockFrames({
    * under the reader's finger. Focus moves to the sentence and it is scrolled
    * into view, or a sighted pen on a phone sees the suggestion vanish and the
    * next block's buttons slide under the thumb (audit of Wave 3b, 2026-09-28).
+   *
+   * A layout effect, so focus lands in the same commit that shows the sentence.
+   * As a passive effect it ran a scheduler tick later, after the reply that set
+   * the notice had arrived outside React's act: for that tick the sentence was on
+   * screen with focus still on the card being removed, and a test reading the
+   * two together failed one cold run in three (CI, 26 Nov 2026).
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = noticeRef.current;
     if (!notice || !el) return;
     el.focus({ preventScroll: true });
