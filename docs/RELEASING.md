@@ -144,7 +144,8 @@ workflows do the procedure below without a person, and the gates stay where
 they were:
 
 1. `.github/workflows/daily-release.yml`, at 05:17 UTC. If main has commits
-   since the last release tag and ci concluded success on main's tip, it
+   since the last release tag and ci concluded success on main's tip (on the
+   newest commit that is not the docs bot's, which gets no ci run), it
    opens a pull request on `release/vX.Y.Z` that does steps 3 and 4: it moves
    the version in every place and rolls `## Unreleased` into the new section,
    adding the migrations the release carries and the merged pull requests.
@@ -197,7 +198,7 @@ tags.
 
 ```sh
 gh workflow run tag-release.yml --ref main -f version=1.3.21
-# or a commit other than main's tip:
+# or a commit other than the default:
 gh workflow run tag-release.yml --ref main -f version=1.3.21 -f sha=<commit>
 ```
 
@@ -208,6 +209,12 @@ fails: the version is a plain X.Y.Z, the commit is on main, `package.json`,
 image in `docker-compose.yml` all say that version at that commit, the tag
 does not exist yet, and ci concluded success on a push run at exactly that
 commit. `server/tagRelease.test.ts` holds each guard.
+
+With no `sha`, the commit is main's newest commit that is NOT the docs bot's
+(`Regenerate the generated docs and catalogs`). That commit gets no ci run
+since 26 Nov 2026 (`ci.yml`'s push `paths-ignore`), so the commit tagged is
+the merge commit under it, whose own push run judged the landing. A `sha`
+naming the bot's commit is refused, and the refusal names the merge commit.
 
 Then it pushes the annotated tag and makes `release.yml` run. With the secret
 `RELEASE_BOT_TOKEN` set, the tag is pushed with it and `release.yml` starts on

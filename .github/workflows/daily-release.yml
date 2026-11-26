@@ -5,7 +5,8 @@
 # THREE WORKFLOWS, ONE GATE. This file only OPENS a release pull request:
 #
 #   1. daily-release.yml (this file), once a day: if main has commits since
-#      the last release tag and ci on main's tip concluded success, it opens a
+#      the last release tag and ci on main's tip concluded success (below the
+#      docs bot's commit, which has no ci run), it opens a
 #      pull request on release/vX.Y.Z that moves the version (package.json,
 #      PLATFORM_VERSION, docker-compose.yml, START_HERE.md) and rolls
 #      CHANGELOG.md, with the merged pull requests and the migrations listed.
@@ -129,8 +130,12 @@ jobs:
           done | jq -s . > prs.json
           # ci's verdict on main's tip: the newest completed push run of ci
           # on exactly this commit. No run, an unfinished run, a cancelled run
-          # and a red run all read as not green.
-          ci=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&branch=main&per_page=20" \
+          # and a red run all read as not green. The tip is usually the docs
+          # bot's commit, which gets no ci run (ci.yml, paths-ignore), so the
+          # commit asked about is the newest one below it that is not the bot's.
+          judged=$(node scripts/tag-release-check.mjs --untold-target "$sha")
+          [ "$judged" = "$sha" ] || echo "main's tip ${sha} is the docs bot's commit; ci is read at ${judged}."
+          ci=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${judged}&event=push&branch=main&per_page=20" \
                  --jq '[.workflow_runs[] | select(.status == "completed")] | sort_by(.created_at) | last | .conclusion // ""')
           open=$(gh pr list --state open --base main --json number,headRefName \
                    --jq '[.[] | select(.headRefName | startswith("release/v"))][0].number // empty')

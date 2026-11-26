@@ -24,6 +24,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error plain ESM script without type declarations
 import * as guard from "../scripts/tag-release-check.mjs";
+import { isBotCommit } from "../scripts/lib/generatedDocs.mjs";
 
 const SHA = "a".repeat(40);
 const OTHER = "b".repeat(40);
@@ -210,6 +211,28 @@ describe("evaluate reports every refusal at once", () => {
   });
 });
 
+describe("which commit is the docs bot's (isBotCommit, the list ci.yml's paths-ignore holds)", () => {
+  const subject = "Regenerate the generated docs and catalogs";
+  it.each([
+    ["the catalogs and a generated doc", { subject, parents: 1, paths: ["client/src/locales/en.po", "docs/GOVERNANCE.md"] }, true],
+    ["a fold, which deletes the fragments", { subject, parents: 1, paths: ["client/src/locales/es.po", "client/src/locales/es.d/menu.po"] }, true],
+    ["one other file beside them", { subject, parents: 1, paths: ["client/src/locales/en.po", "client/src/App.tsx"] }, false],
+    ["a doc that is not generated", { subject, parents: 1, paths: ["docs/RELEASING.md"] }, false],
+    ["another subject", { subject: "Fix the menu", parents: 1, paths: ["client/src/locales/en.po"] }, false],
+    ["a merge commit", { subject, parents: 2, paths: [] }, false],
+    ["no paths at all", { subject, parents: 1, paths: [] }, false],
+  ])("%s", (_name, c, want) => {
+    expect(isBotCommit(c)).toBe(want);
+  });
+
+  it("refuses the bot's commit by name in guard 5, in place of the ci message", () => {
+    const v = guard.evaluate(facts({ ciRuns: [], botParent: OTHER }));
+    expect(v.ok).toBe(false);
+    expect(v.problems.join("\n")).toContain(`Tag the commit under it, ${OTHER}`);
+    expect(v.problems.join("\n")).not.toContain("ci has not concluded success");
+  });
+});
+
 describe("the command line, against a real git repository", () => {
   const SCRIPT = path.resolve(import.meta.dirname, "../scripts/tag-release-check.mjs");
 
@@ -354,6 +377,61 @@ describe("the command line, against a real git repository", () => {
     const r = run(dir, ["--version", "1.3.21", "--sha", "c".repeat(40)], []);
     expect(r.status).toBe(1);
     expect(r.text).toContain("is not a commit in this repository.");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  // THE DOCS BOT'S COMMIT (26 Nov 2026): it gets no ci run (ci.yml's
+  // paths-ignore), so the commit to tag is the merge commit under it.
+  function botCommit(dir: string, change: (dir: string) => void, subject = "Regenerate the generated docs and catalogs") {
+    const g = (...a: string[]) => execFileSync("git", a, { cwd: dir, encoding: "utf8" }).trim();
+    change(dir);
+    g("add", "-A");
+    g("-c", "user.name=github-actions[bot]", "-c", "user.email=bot@example.invalid", "commit", "-qm", `${subject}\n\nWritten by .github/workflows/generated-docs.yml.`);
+    return g("rev-parse", "HEAD");
+  }
+  const regenerate = (dir: string) => {
+    fs.mkdirSync(path.join(dir, "client/src/locales/es.d"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "client/src/locales/en.po"), `msgid "a"\nmsgstr "${Math.random()}"\n`);
+    fs.mkdirSync(path.join(dir, "docs"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "docs/GOVERNANCE.md"), `# ${Math.random()}\n`);
+  };
+
+  it("with no --sha, tags the commit under the docs bot's commits, which have no ci run", () => {
+    const { dir, tip } = repo();
+    const bot1 = botCommit(dir, regenerate);
+    const bot2 = botCommit(dir, regenerate);
+    const r = run(dir, ["--version", "1.3.21"], green(tip));
+    expect(r.text).toContain(`main's tip ${bot2} is the docs bot's commit, which gets no ci run; the commit to tag is ${tip}.`);
+    expect(r.status).toBe(0);
+    expect(r.output).toBe(`sha=${tip}\ntag=v1.3.21\nversion=1.3.21\n`);
+    expect(bot1).not.toBe(tip);
+    // tag-release.yml's shell asks the same question through --untold-target.
+    const t = spawnSync(process.execPath, [SCRIPT, "--untold-target", "main"], { cwd: dir, encoding: "utf8" });
+    expect(t.status).toBe(0);
+    expect(t.stdout.trim()).toBe(tip);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("refuses a --sha that names the docs bot's commit, and names the commit to tag", () => {
+    const { dir, tip } = repo();
+    const bot = botCommit(dir, regenerate);
+    // Even a green run on it does not make it the tested image: en.po is compiled into dist.
+    const r = run(dir, ["--version", "1.3.21", "--sha", bot], green(bot));
+    expect(r.status).toBe(1);
+    expect(r.text).toContain(`${bot} is the docs bot's commit`);
+    expect(r.text).toContain(`dispatch again with sha=${tip}`);
+    expect(r.output).toBe("");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("does not walk past a commit with the bot's subject that changed anything else", () => {
+    const { dir } = repo();
+    const odd = botCommit(dir, (d) => {
+      regenerate(d);
+      fs.writeFileSync(path.join(d, "server/lib/other.ts"), "export const x = 1;\n");
+    });
+    const t = spawnSync(process.execPath, [SCRIPT, "--untold-target", "main"], { cwd: dir, encoding: "utf8" });
+    expect(t.stdout.trim()).toBe(odd);
     fs.rmSync(dir, { recursive: true, force: true });
   });
 

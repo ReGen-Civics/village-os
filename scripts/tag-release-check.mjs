@@ -35,7 +35,12 @@
 //      NOT accepted: a docs-bot commit on top of a tested one. Its files look
 //      like documentation, but client/src/locales/en.po is compiled into
 //      dist/public (lingui.config.ts), so the image built from it is not the
-//      image that was tested.
+//      image that was tested. Since 26 Nov it has no ci run at all (ci.yml's
+//      paths-ignore; isBotCommit in scripts/lib/generatedDocs.mjs), so:
+//        - with no --sha, the commit is main's newest commit that is NOT the
+//          bot's: the merge commit whose own push run judged the landing;
+//        - a --sha naming the bot's commit is refused, and the refusal names
+//          the commit to tag instead.
 //
 // THIS FILE NEVER TAGS. It prints its verdict and exits 1 on any refusal.
 //
@@ -45,10 +50,12 @@
 //
 //   --ci-runs      the JSON body of GET .../actions/workflows/ci.yml/runs?head_sha=<sha>
 //   --remote-tags  the output of `git ls-remote --tags origin`
-//   --sha          defaults to main's tip
+//   --sha          defaults to main's tip, or below it past the docs bot's commits
 //   --twin-runs    optional: ci's runs at <sha>^2 (same API, head_sha=<sha>^2)
 //   --twin-jobs    optional: {"<run id>": jobs[]} for those runs, from
 //                  GET .../actions/runs/<id>/jobs?filter=latest
+//   --untold-target <ref>  print the commit to tag when no sha was given:
+//                  <ref>, or below it past the docs bot's commits, and exit
 //   --twin-only    answer guard 5's tested-twin branch alone (release.yml asks
 //                  it after its own any-green-run check found none). No
 //                  version, tags or ci-runs needed.
@@ -58,6 +65,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
+import { BOT_COMMIT_SUBJECT, isBotCommit } from "./lib/generatedDocs.mjs";
 
 /** A plain release number. The tag is `v` followed by this. */
 export const RELEASE_VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
@@ -221,15 +229,28 @@ export function checkOnMain(onMain, sha) {
  * facts: { version, sha, onMain, files, remoteTags, ciRuns, twin? }
  * Returns { ok, tag, problems }.
  */
+/**
+ * Guard 5, before any run is read: the docs bot's commit has no ci run to read
+ * (ci.yml's paths-ignore). `botParent` is its parent's sha, or null when the
+ * commit is not the bot's.
+ */
+export function checkNotBotCommit(sha, botParent) {
+  if (!botParent) return [];
+  return [
+    `${sha} is the docs bot's commit ("${BOT_COMMIT_SUBJECT}"), which gets no ci run since 26 Nov 2026 (ci.yml, paths-ignore). Tag the commit under it, ${botParent}, whose own push run judged this landing: dispatch again with sha=${botParent}, or with no sha at all.`,
+  ];
+}
+
 export function evaluate(facts) {
   const versionProblems = checkVersionInput(facts.version);
   if (versionProblems.length) return { ok: false, tag: null, problems: versionProblems };
   const tag = `v${facts.version}`;
+  const botProblems = checkNotBotCommit(facts.sha, facts.botParent ?? null);
   const problems = [
     ...checkOnMain(facts.onMain, facts.sha),
     ...checkVersionSites(facts.version, facts.files),
     ...checkTagFree(facts.remoteTags, tag),
-    ...checkCiGreen(facts.ciRuns, facts.sha, facts.twin ?? null),
+    ...(botProblems.length ? botProblems : checkCiGreen(facts.ciRuns, facts.sha, facts.twin ?? null)),
   ];
   return { ok: problems.length === 0, tag, problems };
 }
@@ -269,6 +290,23 @@ function readJson(file, fallback) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
+/** isBotCommit's facts about one commit, from git. */
+export function commitFacts(sha) {
+  const parents = git(["rev-list", "--parents", "-n", "1", sha]).split(/\s+/).length - 1;
+  return {
+    subject: git(["log", "-1", "--format=%s", sha]),
+    parents,
+    paths: parents === 1 ? git(["diff-tree", "--no-commit-id", "--name-only", "-r", sha]).split("\n").filter(Boolean) : [],
+  };
+}
+
+/** The commit to tag when no sha was given: `tip`, or below it past the docs bot's commits. */
+export function untoldTarget(tip, isBot = (c) => isBotCommit(commitFacts(c))) {
+  let sha = tip;
+  while (isBot(sha)) sha = git(["rev-parse", `${sha}^1`]);
+  return sha;
+}
+
 /** The facts for the tested-twin branch: null when the commit has no second parent. */
 export function gatherTwin(sha, argv) {
   let parent = "";
@@ -289,6 +327,11 @@ export function gatherTwin(sha, argv) {
 
 export function main(argv) {
   if (argv.includes("--twin-only")) return twinOnly(argv);
+  if (argv.includes("--untold-target")) {
+    // tag-release.yml's shell, given no sha: print the commit to tag instead of main's tip.
+    console.log(untoldTarget(git(["rev-parse", "--verify", `${arg(argv, "--untold-target")}^{commit}`])));
+    return 0;
+  }
   const version = (arg(argv, "--version") ?? "").trim();
   const mainRef = arg(argv, "--main-ref") ?? "origin/main";
   const wantSha = (arg(argv, "--sha") ?? "").trim() || mainRef;
@@ -315,6 +358,18 @@ export function main(argv) {
     return 1;
   }
 
+  // An untold sha means main's tip, and the tip is usually the docs bot's
+  // commit, which has no run: walk down to the merge commit that has one.
+  // A told sha is taken as given, and guard 5 refuses it if it is the bot's.
+  let botParent = null;
+  if (!arg(argv, "--sha")?.trim()) {
+    const tip = sha;
+    sha = untoldTarget(tip);
+    if (sha !== tip) console.log(`main's tip ${tip} is the docs bot's commit, which gets no ci run; the commit to tag is ${sha}.`);
+  } else if (isBotCommit(commitFacts(sha))) {
+    botParent = git(["rev-parse", `${sha}^1`]);
+  }
+
   let ciRuns = [];
   try {
     ciRuns = JSON.parse(fs.readFileSync(runsFile, "utf8")).workflow_runs ?? [];
@@ -335,6 +390,7 @@ export function main(argv) {
     version,
     sha,
     twin,
+    botParent,
     onMain: gitOk(["merge-base", "--is-ancestor", sha, mainRef]),
     files: {
       packageJson: showAt(sha, "package.json"),
