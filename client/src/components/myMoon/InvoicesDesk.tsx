@@ -23,13 +23,6 @@ import { rewardShareLine } from "@shared/rewardShare";
 import { Trans } from "@lingui/react/macro";
 import { InvoiceTrack, type TrackRow } from "../TreasurySync";
 import {
-  INVOICE_STATUS_WORDS,
-  LINE_BASIS_WORDS,
-  MOON_WORDS,
-  MY_MOON_WORDS,
-  QUEUE_WORDS,
-  SELF_APPROVED_WORDS,
-  SPLIT_PAY_WORDS,
   seenAmountsOf,
   splitUnconfirmed,
   type BulkApproveResponse,
@@ -40,6 +33,7 @@ import { RowHead } from "./ReviewQueue";
 import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, SMALL_BTN_ON, SplitBreakdown } from "./moonUi";
 import { ACCOMPLISHED_WORDS, adjustUnconfirmed } from "@shared/accomplishedReview";
 import { AccomplishedBlock, AdjustBreakdown, ProposeAmount } from "./AccomplishedBlock";
+import { moonWords, useMoonWords } from "@/components/myMoon/moonWords";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -50,6 +44,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
   init: RequestInit;
   onDone: () => Promise<unknown>;
 }) {
+  const MW = useMoonWords();
   const inv = row.invoice;
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
@@ -80,20 +75,20 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
     <li className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4" data-testid="invoice-row">
       <div className="flex items-start gap-3">
         {waiting ? (
-          <input type="checkbox" className="mt-1" aria-label={`${QUEUE_WORDS.approve} ${row.name}`} checked={picked} disabled={!inv.hash} onChange={(e) => onPick(e.target.checked)} />
+          <input type="checkbox" className="mt-1" aria-label={`${MW.queue.approve} ${row.name}`} checked={picked} disabled={!inv.hash} onChange={(e) => onPick(e.target.checked)} />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <RowHead row={row} />
-          {inv.selfApproved && !row.selfApproved ? <p className="m-0 text-xs font-semibold text-destructive">{SELF_APPROVED_WORDS}</p> : null}
+          {inv.selfApproved && !row.selfApproved ? <p className="m-0 text-xs font-semibold text-destructive">{MW.selfApproved}</p> : null}
           <p className="m-0 text-sm text-foreground">{inv.statusLine}</p>
           <p className="m-0 flex justify-between text-sm font-semibold text-foreground">
-            <span>{MOON_WORDS.total}</span>
+            <span>{MW.moon.total}</span>
             <span><Amount minor={inv.totalMinor} currency={inv.currency} /></span>
           </p>
           {inv.accomplished ? <AccomplishedBlock view={inv.accomplished} /> : null}
           {splitToConfirm || adjustToConfirm ? (
             <div className="flex flex-col gap-2 rounded-lg border border-border p-2" data-testid="split-confirm">
-              {splitToConfirm ? <p className="m-0 text-xs text-muted-foreground">{SPLIT_PAY_WORDS.confirmHint}</p> : null}
+              {splitToConfirm ? <p className="m-0 text-xs text-muted-foreground">{MW.splitPay.confirmHint}</p> : null}
               {adjustToConfirm ? <p className="m-0 text-xs text-muted-foreground">{ACCOMPLISHED_WORDS.confirmHint}</p> : null}
               <ul className="m-0 flex list-none flex-col gap-2 p-0">
                 {inv.lines.filter((l) => l.split || l.adjust).map((l) => (
@@ -104,19 +99,19 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
                   </li>
                 ))}
               </ul>
-              <button type="button" className={`${SMALL_BTN} self-start`} onClick={confirmIt}>{splitToConfirm ? SPLIT_PAY_WORDS.confirm : ACCOMPLISHED_WORDS.confirm}</button>
+              <button type="button" className={`${SMALL_BTN} self-start`} onClick={confirmIt}>{splitToConfirm ? MW.splitPay.confirm : ACCOMPLISHED_WORDS.confirm}</button>
             </div>
           ) : null}
           {waiting && inv.id ? <ProposeAmount invoiceId={inv.id} lines={inv.lines} init={init} onDone={onDone} /> : null}
         </div>
       </div>
-      <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? QUEUE_WORDS.close : QUEUE_WORDS.open}</button>
+      <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? MW.queue.close : MW.queue.open}</button>
       {open ? (
         <div className="flex flex-col gap-2 text-sm text-foreground">
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {inv.lines.map((l) => (
               <li key={l.key} className="flex flex-wrap justify-between gap-2 border-b border-border py-1">
-                <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{LINE_BASIS_WORDS[l.basis]}. {l.basisLine}{l.priceNote ? ` ${l.priceNote}` : ""}</span></span>
+                <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{MW.lineBasis[l.basis]}. {l.basisLine}{l.priceNote ? ` ${l.priceNote}` : ""}</span></span>
                 <Amount minor={l.amountMinor} currency={l.currency} />
                 {l.reward && l.currency ? <p className="m-0 w-full text-xs text-muted-foreground" data-testid="desk-reward-parts">{rewardShareLine(l.reward, l.currency)}</p> : null}
                 {l.split ? <div className="w-full"><SplitBreakdown split={l.split} currency={l.currency} /></div> : null}
@@ -124,22 +119,22 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
               </li>
             ))}
           </ul>
-          {inv.billTo ? <p className="m-0"><span className="font-medium">{MOON_WORDS.billTo}:</span> {inv.billTo.legalName}</p> : null}
-          {inv.memberNumber ? <p className="m-0"><span className="font-medium">{MOON_WORDS.memberNumber}:</span> {inv.memberNumber}</p> : null}
-          {inv.externalInvoiceKey ? <p className="m-0"><span className="font-medium">{MOON_WORDS.externalKey}:</span> {inv.externalInvoiceKey}</p> : null}
-          {inv.routeCheck ? <p className="m-0"><span className="font-medium">{QUEUE_WORDS.routeCheck}:</span> {inv.routeCheck}</p> : null}
-          <p className="m-0">{inv.taxFormValid ? QUEUE_WORDS.taxFormValid : QUEUE_WORDS.taxFormMissing}</p>
-          {inv.authorityNote ? <p className="m-0"><span className="font-medium">{QUEUE_WORDS.authority}:</span> {inv.authorityNote}</p> : null}
+          {inv.billTo ? <p className="m-0"><span className="font-medium">{MW.moon.billTo}:</span> {inv.billTo.legalName}</p> : null}
+          {inv.memberNumber ? <p className="m-0"><span className="font-medium">{MW.moon.memberNumber}:</span> {inv.memberNumber}</p> : null}
+          {inv.externalInvoiceKey ? <p className="m-0"><span className="font-medium">{MW.moon.externalKey}:</span> {inv.externalInvoiceKey}</p> : null}
+          {inv.routeCheck ? <p className="m-0"><span className="font-medium">{MW.queue.routeCheck}:</span> {inv.routeCheck}</p> : null}
+          <p className="m-0">{inv.taxFormValid ? MW.queue.taxFormValid : MW.queue.taxFormMissing}</p>
+          {inv.authorityNote ? <p className="m-0"><span className="font-medium">{MW.queue.authority}:</span> {inv.authorityNote}</p> : null}
           {inv.queueNote ? <p className="m-0 text-muted-foreground">{inv.queueNote}</p> : null}
           {inv.workSummary ? <pre className="m-0 whitespace-pre-wrap rounded-lg bg-muted p-2 text-xs text-foreground">{inv.workSummary}</pre> : null}
-          <p className="m-0 text-xs text-muted-foreground">{QUEUE_WORDS.approvers(row.invoiceApprovers)}</p>
+          <p className="m-0 text-xs text-muted-foreground">{MW.queue.approvers(row.invoiceApprovers)}</p>
           {waiting ? (
             <>
               <label className={LABEL}>
-                {QUEUE_WORDS.note}
+                {MW.queue.note}
                 <textarea value={note} rows={2} onChange={(e) => setNote(e.target.value)} className={INPUT} />
               </label>
-              <button type="button" className={`${SMALL_BTN} self-start`} disabled={!note.trim()} onClick={returnIt}>{QUEUE_WORDS.returnIt}</button>
+              <button type="button" className={`${SMALL_BTN} self-start`} disabled={!note.trim()} onClick={returnIt}>{MW.queue.returnIt}</button>
             </>
           ) : null}
           {error ? <p role="alert" className={ERROR}>{error}</p> : null}
@@ -150,6 +145,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
 }
 
 export function InvoicesDeskView({ data, init, reload }: { data: QueueData; init: RequestInit; reload: () => Promise<unknown> }) {
+  const MW = useMoonWords();
   const rows = data.rows.filter((r) => r.invoice);
   const ready = rows.filter((r) => r.waitingOn === "invoice" && r.invoice?.hash);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -180,23 +176,23 @@ export function InvoicesDeskView({ data, init, reload }: { data: QueueData; init
 
   return (
     <div className="flex flex-col gap-4" data-testid="invoices-desk">
-      {rows.length === 0 ? <p className={MUTED}>{QUEUE_WORDS.empty}</p> : null}
+      {rows.length === 0 ? <p className={MUTED}>{MW.queue.empty}</p> : null}
       {ready.length > 0 ? (
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex items-center gap-2 text-sm text-foreground">
             <input type="checkbox" checked={picked.size === ready.length} onChange={(e) => setPicked(e.target.checked ? new Set(ready.map((r) => r.recapId)) : new Set())} />
-            {QUEUE_WORDS.selectAll}
+            {MW.queue.selectAll}
           </label>
           <label className={LABEL}>
-            {QUEUE_WORDS.expectedOn}
+            {MW.queue.expectedOn}
             <input type="date" value={expectedOn} min={todayIso()} onChange={(e) => setExpectedOn(e.target.value)} className={INPUT} />
           </label>
-          <button type="button" className={SMALL_BTN_ON} disabled={busy || picked.size === 0 || !expectedOn} onClick={approve}>{QUEUE_WORDS.approveSelected}</button>
+          <button type="button" className={SMALL_BTN_ON} disabled={busy || picked.size === 0 || !expectedOn} onClick={approve}>{MW.queue.approveSelected}</button>
         </div>
       ) : null}
       {result ? (
         <div className="flex flex-col gap-1 text-sm text-foreground" aria-live="polite">
-          <p className="m-0 font-medium">{QUEUE_WORDS.result(result.approved.length, result.refused.length, result.held.length)}</p>
+          <p className="m-0 font-medium">{MW.queue.result(result.approved.length, result.refused.length, result.held.length)}</p>
           {[...result.refused, ...result.held].map((x) => <p key={x.id} className="m-0 text-muted-foreground">{nameOf(x.id)}: {x.reason}</p>)}
         </div>
       ) : null}
@@ -224,7 +220,7 @@ export interface RailsData {
 export function flagFigure(kind: FlagKind, raw: string): string {
   const money = /^(-?\d+) ([A-Z]{3})$/.exec(raw);
   if (kind === "sera_amount_differs" && money) return formatMoney(Number(money[1]), money[2]);
-  if (kind === "sera_status_differs") return (INVOICE_STATUS_WORDS as Record<string, string>)[raw] ?? (SERA_STATUS_WORDS as Record<string, string>)[raw] ?? raw;
+  if (kind === "sera_status_differs") return (moonWords().invoiceStatus as Record<string, string>)[raw] ?? (SERA_STATUS_WORDS as Record<string, string>)[raw] ?? raw;
   if (kind === "chain_differs") return groupDecimal(raw);
   return raw;
 }
@@ -285,6 +281,7 @@ export function RailsPanel({ data, nameOf }: { data: RailsData; nameOf: (userId:
 
 /** The loader, with the admin desk's session header. Draws the refusal's sentence, never a code. */
 function InvoicesDeskLoader({ password }: { password: string }) {
+  const MW = useMoonWords();
   const [data, setData] = useState<QueueData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const init: RequestInit = { headers: { Authorization: `Bearer ${password}` } };
@@ -295,7 +292,7 @@ function InvoicesDeskLoader({ password }: { password: string }) {
       setError(null);
     } else {
       setData(null);
-      setError(r.status === 404 ? MY_MOON_WORDS.notOn : r.error);
+      setError(r.status === 404 ? MW.myMoon.notOn : r.error);
     }
   }, [password]);
   useEffect(() => { void load(); }, [load]);
@@ -307,7 +304,7 @@ function InvoicesDeskLoader({ password }: { password: string }) {
       .catch(() => setRails("failed"));
   }, [password, data]);
   if (error) return <p role="alert" className={ERROR}>{error}</p>;
-  if (!data) return <p className={MUTED}>{QUEUE_WORDS.loading}</p>;
+  if (!data) return <p className={MUTED}>{MW.queue.loading}</p>;
   const nameOf = (userId: string | null) => data.rows.find((r) => r.userId === userId)?.name ?? "a member";
   return (
     <>
@@ -321,12 +318,13 @@ function InvoicesDeskLoader({ password }: { password: string }) {
 
 /** The Invoices view on the desk: closed until opened, so the desk reads no queue it was not asked for. */
 export default function InvoicesDesk({ password }: { password: string }) {
+  const MW = useMoonWords();
   const [open, setOpen] = useState(false);
   return (
-    <section aria-label={QUEUE_WORDS.invoicesView} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+    <section aria-label={MW.queue.invoicesView} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="m-0 text-lg font-semibold text-foreground">{QUEUE_WORDS.invoicesView}</h3>
-        <button type="button" className={SMALL_BTN} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? QUEUE_WORDS.close : QUEUE_WORDS.open}</button>
+        <h3 className="m-0 text-lg font-semibold text-foreground">{MW.queue.invoicesView}</h3>
+        <button type="button" className={SMALL_BTN} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? MW.queue.close : MW.queue.open}</button>
       </div>
       {open ? <InvoicesDeskLoader password={password} /> : null}
     </section>

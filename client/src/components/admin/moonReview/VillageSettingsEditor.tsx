@@ -9,12 +9,12 @@
  * Light-only, like the rest of this folder.
  */
 import { useEffect, useState } from "react";
-import { ADMIN_WORDS, INVOICING_ROUTES, PAY_ROUTE_SHORT_WORDS, type MoonReviewSettings, type PayRoute } from "@shared/moonRecap";
+import { INVOICING_ROUTES, type MoonReviewSettings, type PayRoute } from "@shared/moonRecap";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
 import { buttonClass, inputClass, labelClass, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
-const W = ADMIN_WORDS.settings;
 
 interface Draft {
   hostCode: string;
@@ -59,6 +59,8 @@ export const fromDraft = (d: Draft): Record<string, unknown> => ({
 });
 
 export default function VillageSettingsEditor({ password }: { password: string }) {
+  const W = useMoonWords().admin.settings;
+  const MW = useMoonWords();
   const { state, save, saving, message, decideInbox } = useSettingsDocument<MoonReviewSettings>("settings", password);
   const [d, setD] = useState<Draft | null>(null);
 
@@ -118,7 +120,7 @@ export default function VillageSettingsEditor({ password }: { password: string }
           {INVOICING_ROUTES.map((r) => (
             <label key={r} className="flex items-center gap-2 text-sm text-foreground">
               <input type="checkbox" checked={d.taxFormRoutes.includes(r)} onChange={() => toggleRoute(r)} />
-              {PAY_ROUTE_SHORT_WORDS[r]}
+              {MW.payRouteShort[r]}
             </label>
           ))}
         </div>
