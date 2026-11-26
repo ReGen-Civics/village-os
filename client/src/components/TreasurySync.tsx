@@ -29,7 +29,7 @@ import { RefreshCw } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
 import { formatMoney } from "@shared/money";
-import { INVOICE_STATUS_WORDS, type InvoiceStatus } from "@shared/moonRecap";
+import { type InvoiceStatus } from "@shared/moonRecap";
 import {
   SERA_STATE_WORDS,
   SERA_STATUS_WORDS,
@@ -44,6 +44,7 @@ import {
   type SyncSourceName,
   type TrackStep,
 } from "@shared/invoiceTrack";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export interface TrackRow {
   invoiceId: string;
@@ -183,6 +184,7 @@ function InvoiceName({ ref_ }: { ref_: string }) {
 }
 
 export default function TreasurySync({ tracks }: { tracks: TrackRow[] }) {
+  const MW = useMoonWords();
   const { t } = useLingui();
   const [view, setView] = useState<View | null>(null);
   const [load, setLoad] = useState<Load>("loading");
@@ -339,7 +341,7 @@ export default function TreasurySync({ tracks }: { tracks: TrackRow[] }) {
                 {view.invoices.map((i) => (
                   <div key={i.ref} className={`rounded-lg border p-3 ${i.disagree ? "border-l-4 border-amber-400" : "border-border"}`}>
                     <p className="font-medium text-card-foreground"><InvoiceName ref_={i.ref} /></p>
-                    <Pair label={SOURCE_SHORT_WORDS.village} value={`${formatMoney(i.villageMinor, i.currency)}, ${INVOICE_STATUS_WORDS[i.status as InvoiceStatus] ?? i.status}`} />
+                    <Pair label={SOURCE_SHORT_WORDS.village} value={`${formatMoney(i.villageMinor, i.currency)}, ${MW.invoiceStatus[i.status as InvoiceStatus] ?? i.status}`} />
                     <Pair
                       label={SOURCE_SHORT_WORDS.sera}
                       value={!seraRead ? "Not read" : i.seraMinor === null ? "No record" : `${formatMoney(i.seraMinor, i.seraCurrency ?? i.currency)}, ${i.seraStatus ? SERA_STATUS_WORDS[i.seraStatus] : ""}`}
