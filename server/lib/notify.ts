@@ -30,7 +30,12 @@ import { emailAccent, NEUTRAL_ACCENT } from "./emailAccent";
 import { wordsInAppOnly } from "../../shared/notificationKinds";
 import { manyLine } from "../../shared/notificationKindWords";
 import { noticeTitle, type NoticeWords } from "../../shared/noticeWords";
-import { noticeWordsJson, readNoticeWords, type NoticePart, type NoticeWordsRef } from "../../shared/noticeKeys";
+import { noticeWordsJson, readNoticeWords, type NoticePart, type NoticeWordsRef, type StoredNoticeWords } from "../../shared/noticeKeys";
+import { sayNotice } from "../../shared/noticeKeyMessages";
+import { noticeMailWords } from "../../shared/noticeMailWords";
+import type { MailLanguage } from "../../shared/mailLanguage";
+import { languageOfMember } from "./mailLanguage";
+import { noticeSayFor } from "./platformSpeech";
 
 /**
  * Fallback only — the live ceiling is the notify.daily_email_cap game
@@ -573,7 +578,7 @@ export async function insertNotification(deps: NotifyDeps, input: NotifyInput): 
 
   // Explicit dispatch — a failure here never un-inserts the row.
   try {
-    await maybeEmailImmediate(deps, { ...input, id });
+    await maybeEmailImmediate(deps, { ...input, id }, words ? readNoticeWords(words, storedTitle, input.type) : null);
   } catch (e) {
     console.error("[notify] immediate email dispatch failed", e);
   }
@@ -597,10 +602,22 @@ export function emailShell(projectName: string, inner: string, accent: string = 
   return `<!doctype html><html><body style="font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;padding:24px;color:#1f2937"><div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb"><div style="background:${emailAccent(accent)};color:#fff;padding:18px 24px"><div style="font-size:16px;font-weight:700">${projectName}</div></div><div style="padding:22px 24px;line-height:1.6">${inner}</div></div></body></html>`;
 }
 
+/**
+ * A stored notice in a language for its email (mail PR 3): said from its key through the compiled catalog
+ * (server/lib/platformSpeech.ts), the same words the bell shows. English, a language with no catalog, a notice with
+ * no key, and a part the village wrote itself all read as stored.
+ */
+function noticeIn(lang: MailLanguage, stored: { title: string; body?: string | null; words?: StoredNoticeWords | null }): { title: string; body: string | null } {
+  const plain = { title: stored.title, body: stored.body ?? null };
+  if (lang === "en" || !stored.words) return plain;
+  const say = noticeSayFor(lang);
+  return say ? sayNotice(stored, say, lang) : plain;
+}
+
 /** The colour a notice email wears: the village's brand colour, else the neutral. */
 const accentOf = (deps: Pick<NotifyDeps, "brandColour">): string => emailAccent(deps.brandColour?.());
 
-async function maybeEmailImmediate(deps: NotifyDeps, n: NotifyInput & { id: string }) {
+async function maybeEmailImmediate(deps: NotifyDeps, n: NotifyInput & { id: string }, stored: StoredNoticeWords | null = null) {
   const user = await deps.memberById(n.userId);
   if (!user?.email || !deps.isPresent(user)) return; // tombstones and unclaimed accounts get no email
   const prefs = resolveNotifyPrefs(user.prefs);
@@ -624,19 +641,23 @@ async function maybeEmailImmediate(deps: NotifyDeps, n: NotifyInput & { id: stri
 
   const url = deps.origin() + (n.link ?? "/profile");
   const accent = accentOf(deps);
+  // In the member's language (shared/mailLanguage.ts): the notice said from its key, the frame from its table.
+  const lang = languageOfMember(user);
+  const W = noticeMailWords(lang);
+  const said = noticeIn(lang, { title: n.title, body: n.body ?? null, words: stored });
   const mail = await deps.sendEmail({
     to: [user.email],
-    subject: n.title,
+    subject: said.title,
     html: emailShell(
       deps.projectName(),
-      `<h2 style="margin:0 0 8px;font-size:17px">${escapeHtml(n.title)}</h2>` +
+      `<h2 style="margin:0 0 8px;font-size:17px">${escapeHtml(said.title)}</h2>` +
         (!emailCarriesBody(n.type)
-          ? `<p style="margin:0 0 14px;color:#4b5563">${escapeHtml(READ_IN_THE_BELL)}</p>`
-          : n.body
-            ? `<p style="margin:0 0 14px;color:#4b5563;border-left:3px solid ${accent};padding-left:10px">${escapeHtml(n.body)}</p>`
+          ? `<p style="margin:0 0 14px;color:#4b5563">${escapeHtml(W.readInBell)}</p>`
+          : said.body
+            ? `<p style="margin:0 0 14px;color:#4b5563;border-left:3px solid ${accent};padding-left:10px">${escapeHtml(said.body)}</p>`
             : "") +
-        `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:${accent};color:#fff;border-radius:8px;padding:9px 16px;text-decoration:none;font-weight:600">See it on your profile</a></p>` +
-        `<p style="color:#9ca3af;font-size:12px;margin-top:18px">Choose which emails you get on your profile page.</p>`,
+        `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:${accent};color:#fff;border-radius:8px;padding:9px 16px;text-decoration:none;font-weight:600">${W.seeIt}</a></p>` +
+        `<p style="color:#9ca3af;font-size:12px;margin-top:18px">${W.choose}</p>`,
       accent,
     ),
     idempotencyKey: `notify:${n.id}`,
@@ -690,7 +711,7 @@ function digestLines(rows: RowDataPacket[]): Array<{ title: string; link: string
  */
 export async function runNotificationDigest(deps: NotifyDeps): Promise<{ users: number; rows: number }> {
   const [rows] = await deps.pool.query<RowDataPacket[]>(
-    "SELECT id, user_id, type, title, link FROM notifications " +
+    "SELECT id, user_id, type, title, link, words FROM notifications " +
       "WHERE emailed_at IS NULL AND is_read = 0 AND created_at >= (NOW() - INTERVAL ? DAY) " +
       "ORDER BY user_id, created_at",
     [DIGEST_LOOKBACK_DAYS],
@@ -716,18 +737,25 @@ export async function runNotificationDigest(deps: NotifyDeps): Promise<{ users: 
 
     // The subject and the cut count LINES, and a line is not always a row
     // (`digestLines`): one key moment is one thing that happened.
-    const lines = digestLines(daily);
-    const subject = lines.length === 1 ? lines[0].title : `${lines.length} things happened while you were away`;
+    // In the member's language: each notice said from its key where it has one, the frame from its table.
+    const lang = languageOfMember(user);
+    const W = noticeMailWords(lang);
+    const lines = digestLines(
+      lang === "en"
+        ? daily
+        : daily.map((r) => ({ ...r, title: noticeIn(lang, { title: String(r.title), words: readNoticeWords(r.words, String(r.title), String(r.type)) }).title }) as RowDataPacket),
+    );
+    const subject = lines.length === 1 ? lines[0].title : W.digest.subjectMany(lines.length);
     const accent = accentOf(deps);
     const items = lines
       .slice(0, 10)
       .map((r) => `<li style="margin:4px 0"><a href="${escapeHtml(deps.origin() + (r.link ?? "/profile"))}" style="color:${accent}">${escapeHtml(r.title)}</a></li>`)
       .join("");
-    const more = lines.length > 10 ? `<p style="color:#6b7280">…and ${lines.length - 10} more.</p>` : "";
+    const more = lines.length > 10 ? `<p style="color:#6b7280">${W.digest.more(lines.length - 10)}</p>` : "";
     const mail = await deps.sendEmail({
       to: [user.email],
       subject,
-      html: emailShell(deps.projectName(), `<h2 style="margin:0 0 10px;font-size:17px">While you were away</h2><ul style="padding-left:18px;margin:0 0 10px">${items}</ul>${more}<p><a href="${escapeHtml(deps.origin() + "/profile")}" style="color:${accent};font-weight:600">See everything</a></p>`, accent),
+      html: emailShell(deps.projectName(), `<h2 style="margin:0 0 10px;font-size:17px">${W.digest.heading}</h2><ul style="padding-left:18px;margin:0 0 10px">${items}</ul>${more}<p><a href="${escapeHtml(deps.origin() + "/profile")}" style="color:${accent};font-weight:600">${W.digest.seeEverything}</a></p>`, accent),
       idempotencyKey: `digest:${userId}:${day}`,
       origin: "notify.digest",
       userId,
