@@ -13,6 +13,7 @@
 import { cardWordsWith, fixedCardWords, sayCardIn, type PlayerCardWords } from "../../shared/playerCardSpeak";
 import { CARD_MESSAGES, type CardMessageKey } from "../../shared/playerCardMessages";
 import type { PlayerCardPayload } from "../../shared/playerCardPayload";
+import { HEALTH_MESSAGES, healthWordsWith, type HealthMessageKey } from "../../shared/playerCardHealthMessages";
 import { sayerFor, speakerFor } from "./catalogSpeech";
 import { noSharedCache, readerLocale } from "./contentTranslationRead";
 
@@ -37,5 +38,7 @@ export function cardForReader(req: Parameters<typeof readerLocale>[0], res: Para
   noSharedCache(res);
   const words = playerCardWordsFor(locale, dirs);
   if (!words) return { ...payload, card: plain };
-  return { ...payload, card: { ...sayCardIn(payload.card, words, locale), words: fixedCardWords(words) } };
+  const i18n = speakerFor(locale, dirs);
+  const health = i18n ? healthWordsWith(sayerFor<HealthMessageKey>(i18n, HEALTH_MESSAGES)) : undefined;
+  return { ...payload, card: { ...sayCardIn(payload.card, words, locale, health), words: fixedCardWords(words) } };
 }

@@ -14,7 +14,8 @@
 import { CARD_WORDS, WEEKDAYS, type PlayerCard } from "./playerCard";
 import type { CardMessageKey } from "./playerCardMessages";
 import { MONTH_NAMES } from "./playerCardHero";
-import { LIST_KEY } from "./playerCardSay";
+import { HANDOVER_PREFIX, HEALTH_PREFIX, JOIN_KEY, LIST_KEY } from "./playerCardSay";
+import type { HealthWordsIn } from "./playerCardHealthMessages";
 import type { SaidArg, SaidDay } from "./saidWords";
 
 type English = typeof CARD_WORDS;
@@ -488,9 +489,10 @@ const has = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k)
 
 /**
  * The card the server built, said in the reader's language, with no record left on it. An English reader's card,
- * or a card with no record, is returned as built.
+ * or a card with no record, is returned as built. `health` says the role health and handover lines
+ * (shared/playerCardHealthMessages.ts); without it they stay as built.
  */
-export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: string): PlayerCard {
+export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: string, health?: HealthWordsIn): PlayerCard {
   const said = card.said;
   if (!locale || locale === "en" || !said) return card;
   const known = (s: string) => has(said.words, s) || has(said.days, s);
@@ -503,9 +505,18 @@ export function sayCardIn(card: PlayerCard, words: PlayerCardWords, locale: stri
       const items = w.a?.[0];
       return Array.isArray(items) ? listIn(items.map((x) => say(x)), locale) : null;
     }
-    let entry: unknown = words;
+    if (w.k === JOIN_KEY) {
+      const [items, sep] = w.a ?? [];
+      return Array.isArray(items) && typeof sep === "string" ? items.map((x) => say(x)).join(sep) : null;
+    }
+    // The health and handover lines are looked up in their own table, the rest in the card's.
+    const [head, ...tail] = w.k.split(".");
+    const own = head === HEALTH_PREFIX ? health?.health : head === HANDOVER_PREFIX ? health?.handover : undefined;
+    if ((head === HEALTH_PREFIX || head === HANDOVER_PREFIX) && !own) return null;
+    let entry: unknown = own ?? words;
+    const path = own ? tail : w.k.split(".");
     try {
-      for (const part of w.k.split(".")) entry = entry && typeof entry === "object" && has(entry, part) ? (entry as Record<string, unknown>)[part] : undefined;
+      for (const part of path) entry = entry && typeof entry === "object" && has(entry, part) ? (entry as Record<string, unknown>)[part] : undefined;
       if (typeof entry === "string") return entry;
       if (typeof entry === "function") {
         const out = (entry as (...a: SaidArg[]) => unknown)(...(w.a ?? []).map(arg));
