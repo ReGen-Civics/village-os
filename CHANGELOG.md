@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.78 (2026-11-26)
+
+### What changed for your village
+
+- **Withdraw an org chart draft.** Admin's review list gains a Withdraw button on each org chart draft row, with a confirm. A withdrawn draft can never be published, a vote running on it is called off, and the withdrawal is recorded. When two open drafts change the same role, seat or circle, the row says so, so nobody publishes the out-of-date one. Only those who decide drafts see either.
+- **Admin reads clearly, round two.** Hints, codes, lists and "Remove" text in seven more Admin panels now meet contrast in light and dark, and the FAQ editor's arrows read clearly.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.77 still works.
+
+---
+
 ## 1.3.77 (2026-11-26)
 
 ### What changed for your village
