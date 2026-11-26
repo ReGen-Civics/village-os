@@ -529,15 +529,15 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     statusButton: "Follow your application",
   },
   es: {
-    subject: (v) => `Confirma tu solicitud a ${v}`,
-    applied: (roles, v, when) => `Postulaste a ${roles} en ${v}${when ? ` para ${when}` : ""}.`,
-    ask: "Confirma que eres tú, y tu solicitud nos llega:",
-    keptAsk: "Ya tenemos tu solicitud. Nuestro primer correo no salió, así que confirma que esta dirección es tuya:", // check: "correo" for email
-    keptValidFor: (h) => `El enlace funciona durante ${h} horas. Si no postulaste, puedes ignorar este correo.`,
-    statusSubject: "Dónde está tu solicitud",
-    statusText: (link, promise) => `Tu solicitud está con nosotros. Sigue dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarda este enlace para ti: es la forma en que sabemos que eres tú.`,
+    subject: (v) => `Confirme su solicitud a ${v}`,
+    applied: (roles, v, when) => `Usted se postuló a ${roles} en ${v}${when ? ` para ${when}` : ""}.`,
+    ask: "Confirme que es usted, y su solicitud nos llega:",
+    keptAsk: "Ya tenemos su solicitud. Nuestro primer correo no salió, así que confirme que esta dirección es suya:", // check: "correo" for email
+    keptValidFor: (h) => `El enlace funciona durante ${h} horas. Si no se postuló, puede ignorar este correo.`,
+    statusSubject: "Dónde está su solicitud",
+    statusText: (link, promise) => `Su solicitud está con nosotros. Siga dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarde este enlace para usted: es la forma en que sabemos que es usted.`,
     confirmButton: "Confirmar que soy yo", // needs-native-review
-    statusButton: "Seguir tu solicitud", // needs-native-review
+    statusButton: "Seguir su solicitud", // needs-native-review
   },
 };
 

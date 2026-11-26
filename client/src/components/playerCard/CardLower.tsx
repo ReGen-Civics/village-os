@@ -9,17 +9,18 @@
  */
 import { createContext, useContext } from "react";
 import { Link } from "wouter";
-import { CARD_WORDS as W, type AgreementRow, type ApplicationOut, type PlayerCard, type Slot } from "@shared/playerCard";
+import { type AgreementRow, type ApplicationOut, type PlayerCard, type Slot } from "@shared/playerCard";
 import type { TrackMarkKind } from "@shared/playerCardHero";
 import { EDIT_WORDS } from "@shared/playerCardEdit";
-import { countWord } from "@shared/playerCardHero";
 import { CardEditContext, EditInPlace, Eyebrow, SlotView, useShows } from "./cardParts";
 import ProposalLinks from "@/components/roleProposal/ProposalLinks";
+import { useCardWords } from "./cardWords";
 
 const MARK_CLASS: Record<TrackMarkKind, string> = { new: "pc-new", full: "pc-full", invoice: "pc-inv" };
-const LEGEND: Record<TrackMarkKind, string> = { new: W.newMoon, full: W.fullMoon, invoice: W.invoiceDue };
 
 function Track({ track }: { track: NonNullable<PlayerCard["timeline"]["track"]> }) {
+  const W = useCardWords();
+  const LEGEND: Record<TrackMarkKind, string> = { new: W.newMoon, full: W.fullMoon, invoice: W.invoiceDue };
   return (
     <>
       <div className="pc-track" aria-hidden="true" data-moon-track>
@@ -52,6 +53,7 @@ function Track({ track }: { track: NonNullable<PlayerCard["timeline"]["track"]> 
 }
 
 export function MoonTimeline({ timeline }: { timeline: PlayerCard["timeline"] }) {
+  const W = useCardWords();
   return (
     <section aria-labelledby="pc-moons-h" className="pc-panel">
       <div className="pc-headgroup">
@@ -165,6 +167,7 @@ function AppGroup({ heading, slot, now = false }: { heading: string; slot: Slot<
 export const FirstDaysContext = createContext(false);
 
 export function MyApplications({ applications }: { applications: PlayerCard["applications"] }) {
+  const W = useCardWords();
   const { owner } = useContext(CardEditContext);
   const firstDays = useContext(FirstDaysContext);
   const shows = useShows();
@@ -210,6 +213,7 @@ function Rows({ rows }: { rows: AgreementRow[] }) {
 }
 
 export function Agreements({ agreements, newApplicationHref }: { agreements: PlayerCard["agreements"]; newApplicationHref?: string }) {
+  const W = useCardWords();
   const { editing } = useContext(CardEditContext);
   const shows = useShows();
   const shown = agreements.roles.filter((r) => shows(r.rows));
@@ -222,7 +226,7 @@ export function Agreements({ agreements, newApplicationHref }: { agreements: Pla
       <summary>
         <span className="pc-headgroup" style={{ gap: 2 }}>
           <span className="pc-eyebrow">{W.agreementsEyebrow}</span>
-          <span className="pc-termstitle">{once ? W.termsOnce(countWord(shown.length).toLowerCase()) : agreements.heading}</span>
+          <span className="pc-termstitle">{once ? W.termsOnce(W.count(shown.length).toLocaleLowerCase()) : agreements.heading}</span>
         </span>
         <span className="pc-gold" aria-hidden="true">
           ▾

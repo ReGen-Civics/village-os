@@ -27,6 +27,9 @@
 import type { Express, Request, Response } from "express";
 import { makeSetPasswordToken } from "../lib/memberTokens";
 import { maySendSetPasswordLink } from "../lib/oauthAccounts";
+import { languageOfMember } from "../lib/mailLanguage";
+import type { MailLanguage } from "../../shared/mailLanguage";
+import { passwordMailWords } from "../../shared/passwordMailWords";
 
 /** What this module reaches. The complete list. */
 export interface RecoveryDeps {
@@ -115,6 +118,48 @@ export async function sendRecoveryLetter(
   }
 }
 
+/** Which set-password letter. Each says a different fact, so each has its own first line. */
+export type PasswordLetterKind = "reset" | "first_password" | "founder_claim" | "founder_created" | "admin_link";
+
+const PASSWORD_LETTER_ORIGIN: Record<PasswordLetterKind, string> = {
+  reset: "auth.reset",
+  first_password: "auth.first_password",
+  founder_claim: "auth.founder_claim",
+  founder_created: "auth.founder_claim",
+  admin_link: "auth.admin_password_link",
+};
+
+/**
+ * EVERY LETTER THAT CARRIES A SET-PASSWORD LINK, built in one place (the coordinator, 26 Nov 2026: "one builder,
+ * not four"): the member's reset and first password here, and the founder's claim, a new founder account and an
+ * administrator's link in server/index.ts. In the reader's language (shared/passwordMailWords.ts); English is
+ * exactly what each letter said before. `village` and `url` arrive as plain text and are escaped here.
+ */
+export function passwordLetter(
+  kind: PasswordLetterKind,
+  i: { escapeHtml(s: string): string; village: string; url: string; lang?: MailLanguage },
+): { origin: string; subject: string; html: string } {
+  const W = passwordMailWords(i.lang);
+  const village = i.escapeHtml(i.village);
+  const url = i.escapeHtml(i.url);
+  const link = (words: string, expiry: string) => `<p><a href="${url}">${words}</a> ${expiry}.</p>`;
+  const paste = `<p>${W.paste(url)}</p>`;
+  const notYou = `<p>${W.notYou}</p>`;
+  const origin = PASSWORD_LETTER_ORIGIN[kind];
+  switch (kind) {
+    case "reset":
+      return { origin, subject: W.reset.subject, html: [`<p>${W.reset.asked(village)}</p>`, link(W.setNew, W.expiresOnce), paste, notYou].join("\n") };
+    case "first_password":
+      return { origin, subject: W.first.subject, html: [`<p>${W.first.none(village)}</p>`, link(W.setYours, W.expiresOnce), paste, notYou].join("\n") };
+    case "founder_claim":
+      return { origin, subject: W.founderClaim.subject, html: [link(W.setYours, W.expires), paste].join("\n") };
+    case "founder_created":
+      return { origin, subject: W.founderMade.subject, html: [`<p>${W.founderMade.made(village)}</p>`, link(W.setYours, W.expires), paste].join("\n") };
+    case "admin_link":
+      return { origin, subject: W.adminLink.subject, html: [`<p>${W.adminLink.sent(village)}</p>`, link(W.setNew, W.expiresOnce), paste].join("\n") };
+  }
+}
+
 export function register(app: Express, deps: RecoveryDeps): void {
   app.get("/api/auth/claim-status", async (_req: Request, res: Response) => {
     res.json({ open: claimOpen(await deps.members.all()) });
@@ -143,30 +188,16 @@ export function register(app: Express, deps: RecoveryDeps): void {
       // reset. Nothing derived from the password rides in it.
       const claim = makeSetPasswordToken(deps.authSecret, user.id, user.tokenVersion ?? 0);
       const claimUrl = `${deps.origin()}/set-password?token=${encodeURIComponent(claim)}`;
-      const village = deps.escapeHtml(deps.projectName());
-      const safeUrl = deps.escapeHtml(claimUrl);
       // Two letters, because the two states are different facts and a member
       // who never had a password should not be told somebody asked to change
       // it. Which one arrives is visible only inside the mailbox, so this
-      // says nothing to an anonymous caller.
-      const letter =
-        verdict.kind === "reset"
-          ? {
-              origin: "auth.reset",
-              subject: "Set a new password",
-              html: `<p>Someone asked to set a new password for your account on ${village}.</p>
-<p><a href="${safeUrl}">Set a new password</a> (link expires in 60 minutes, and works once).</p>
-<p>If the button does nothing, paste this into your browser:<br>${safeUrl}</p>
-<p>If this wasn't you, nothing has changed. You can ignore this message.</p>`,
-            }
-          : {
-              origin: "auth.first_password",
-              subject: "Set your password",
-              html: `<p>Your account on ${village} does not have a password yet, so there is nothing to reset. This link sets your first one.</p>
-<p><a href="${safeUrl}">Set your password</a> (link expires in 60 minutes, and works once).</p>
-<p>If the button does nothing, paste this into your browser:<br>${safeUrl}</p>
-<p>If this wasn't you, nothing has changed. You can ignore this message.</p>`,
-            };
+      // says nothing to an anonymous caller. In the member's own language.
+      const letter = passwordLetter(verdict.kind === "reset" ? "reset" : "first_password", {
+        escapeHtml: deps.escapeHtml,
+        village: deps.projectName(),
+        url: claimUrl,
+        lang: languageOfMember(user),
+      });
       // IN THE BACKGROUND, never awaited (R110). Awaiting the provider made a
       // real account's answer slower than an unknown address's by one email
       // round trip, which told a stranger which addresses are members. The

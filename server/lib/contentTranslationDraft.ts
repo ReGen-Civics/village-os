@@ -11,7 +11,7 @@ import { parseJsonReply } from "./assistant";
 export function translationSystemPrompt(locale: string, village: string): string {
   return [
     `You translate the words of ${village}, a regenerative village, from English into ${autonym(locale)} (${locale}).`,
-    "Write as the village writes: warm, plain and direct, addressing the reader as a friend (in Spanish, use tú).",
+    "Write as the village writes: warm, plain and direct. In Spanish, address every reader as usted, members included (the lead, 26 Nov 2026), never tú.",
     "In Spanish the village says aldea for village, ficha de rol for role card, luna for moon, and keeps Steward as it is.",
     "Keep every word in braces, such as {village}, exactly as it is. Keep **bold** markers around the same words. Add no markup, notes or quotation marks.",
     "Translate meaning, not word for word, and keep each translation about as long as its English.",

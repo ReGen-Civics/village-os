@@ -55,6 +55,7 @@ import { INVITE_DAYS, invitePath } from "../lib/invites";
 import { deletePortalEntriesFor, insertPortalEntry, insertPortalView, journeysFor, listPortalEntries, markPortalSync, portalEmailsFor, portalEntryById, portalEntryExists, setUpdatesAnswer, sweepPortalViews, unsyncedOptedIn, viewsFor } from "../repos/portalEntries";
 import { brevoOn, removeFromBrevo, syncToBrevo, type BrevoDeps } from "../lib/portalSync";
 import { csvCell } from "./commsPeople";
+import { languageForAddress } from "../lib/mailLanguage";
 
 export { ENTRANCE_PASS_CARD } from "../lib/entrance";
 // Re-exported so server/index.ts takes the Integrations card and the page test (for the sitemap) on the same line as `register`.
@@ -238,7 +239,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     res.setHeader("Set-Cookie", entryCookieHeader(signEntry(deps.secret, id, now()), secureOf(req)));
     let code: { sentTo: string } | null = null;
     if (wantsCode) {
-      const sent = await sendNewCode(id, v.email);
+      const sent = await sendNewCode(id, v.email, locale);
       // A letter the provider would not take is no reason to stop a person at the door: the entry
       // stands, and the code step offers to send again.
       code = { sentTo: v.email };
@@ -248,7 +249,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
   });
 
   /** A fresh code for an entry, to its address: hashed, kept, sent. Answers whether the letter went. */
-  async function sendNewCode(entryId: string, email: string): Promise<boolean> {
+  async function sendNewCode(entryId: string, email: string, requestLocale: string | null = null): Promise<boolean> {
     const pool = deps.getPool();
     const existing = await deps.accounts.byEmail(email).catch(() => null);
     const account = existing && sameAddress(existing.email, email) && !isUnclaimable(existing) ? existing : null;
@@ -262,7 +263,9 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
       expiresAt: new Date(now() + CODE_TTL_MS),
       at: new Date(now()),
     });
-    const mail = await sendCodeLetter(deps.mail, email, code, !!account);
+    // In the reader's language: theirs if they are a member, the address book's, the site's as they asked, the village's.
+    const lang = await languageForAddress(pool, email, { member: account, request: requestLocale });
+    const mail = await sendCodeLetter(deps.mail, email, code, !!account, lang);
     return mail.sent;
   }
 
@@ -357,7 +360,7 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     ) {
       return res.status(429).json({ error: "slow_down", message: "That is a lot of codes for one hour. Try again later." });
     }
-    const sent = await sendNewCode(id, e.email);
+    const sent = await sendNewCode(id, e.email, e.locale);
     res.json({ ok: true, sent });
   });
 
