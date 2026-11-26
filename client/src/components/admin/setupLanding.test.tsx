@@ -23,8 +23,10 @@ afterEach(() => {
 });
 
 describe("where the setup page lands", () => {
-  it("goes where a door asked, at once", () => {
-    expect(landingStep(null, "purpose")).toEqual({ step: "purpose", wait: false });
+  it("goes where a door asked as soon as the steps are drawn, even before the readings", () => {
+    // Before the record arrives there are no steps on the page to land on.
+    expect(landingStep(null, "purpose").wait).toBe(true);
+    expect(landingStep(rows({ guide: "unknown" }), "purpose")).toEqual({ step: "purpose", wait: false });
   });
 
   it("waits while the guide or the needs reading has not answered", () => {
@@ -74,6 +76,21 @@ describe("the landing itself", () => {
     expect(seen).toEqual([]);
     rerender(<Page given={rows({ images: "todo" })} />);
     expect(seen).toEqual(["setup-step-images"]);
+  });
+
+  it("keeps the step in view while the page above it grows, until the person scrolls", () => {
+    const seen = scrolled();
+    let grew: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class { constructor(cb: () => void) { grew = cb; } observe() {} disconnect() { grew = () => {}; } });
+    window.history.replaceState({}, "", "/admin?tab=setup&step=map");
+    render(<Page given={rows({})} />);
+    expect(seen).toEqual(["setup-step-map"]);
+    grew(); // a panel above finished loading
+    expect(seen).toEqual(["setup-step-map", "setup-step-map"]);
+    window.dispatchEvent(new Event("wheel"));
+    grew();
+    expect(seen).toHaveLength(2);
+    vi.unstubAllGlobals();
   });
 
   it("opens a step from inside Admin", () => {

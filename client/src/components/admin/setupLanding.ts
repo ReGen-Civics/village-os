@@ -16,7 +16,9 @@
  * endpoints, and before those answer they read `unknown`. Landing on the first
  * unknown row would put a village whose guide is connected on step 1 for the
  * half second before the read lands, so with no `step` asked for, the landing
- * waits until both have answered. An asked-for step lands at once.
+ * waits until both have answered. An asked-for step lands as soon as the steps
+ * are drawn: before the brand record arrives the page is only "Loading...",
+ * and there is no step to scroll to.
  */
 import { useEffect, useRef } from "react";
 import type { SetupRow, SetupStepKey } from "./setupProgress";
@@ -32,8 +34,9 @@ const READ_ELSEWHERE: readonly SetupStepKey[] = ["guide", "needs"];
  * at all (every step done and none asked for).
  */
 export function landingStep(rows: readonly SetupRow[] | null, asked: string | null): { step: string | null; wait: boolean } {
-  if (asked) return { step: asked, wait: false };
+  // Nothing is drawn until the record arrives, so even an asked-for step waits for it.
   if (!rows) return { step: null, wait: true };
+  if (asked) return { step: asked, wait: false };
   if (rows.some((r) => READ_ELSEWHERE.includes(r.key) && r.state === "unknown")) return { step: null, wait: true };
   return { step: rows.find((r) => r.state !== "done")?.key ?? null, wait: false };
 }
@@ -58,17 +61,42 @@ export function useSetupLanding(rows: readonly SetupRow[] | null): void {
     landed.current = true;
     dropStepParam();
     if (!step) return;
-    const go = () => {
+    const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const go = (smooth: boolean) => {
       const el = document.getElementById(setupStepId(step));
-      if (!el) return;
-      const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-      el.scrollIntoView?.({ block: "start", behavior: still ? "auto" : "smooth" });
+      el?.scrollIntoView?.({ block: "start", behavior: smooth && !still ? "smooth" : "auto" });
     };
     // After the tab change's own scroll to the top, and after the step has drawn.
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(go);
-    else go();
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => go(true));
+    else go(true);
+    holdWhileSettling(() => go(false));
   });
 }
+
+/** How long the landing keeps its step in view while panels above it finish loading. */
+export const SETTLE_MS = 2000;
+
+/**
+ * THE PAGE GROWS AFTER THE LANDING. The panels above a late step (the look,
+ * typography, sounds) load their own data and get taller after the scroll, so
+ * a landing on Map ended inside Pictures. For a short while, each time the page
+ * changes size the step is brought back into view, and the hold lets go the
+ * moment the person scrolls, taps or types: their hand always wins.
+ */
+function holdWhileSettling(again: () => void): void {
+  if (typeof ResizeObserver === "undefined") return;
+  const grow = new ResizeObserver(() => again());
+  const stop = () => {
+    grow.disconnect();
+    for (const e of HANDS) window.removeEventListener(e, stop);
+  };
+  grow.observe(document.body);
+  for (const e of HANDS) window.addEventListener(e, stop, { once: true, passive: true });
+  setTimeout(stop, SETTLE_MS);
+}
+
+/** What counts as the person taking over the scroll. */
+const HANDS = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
 
 /** Opens the setup page on one step, for a door inside Admin. */
 export function openSetupStep(onOpenTab: (tab: string) => void, step: string): void {
