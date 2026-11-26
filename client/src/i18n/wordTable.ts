@@ -24,11 +24,11 @@ import type { Widened } from "@shared/wordTableTypes";
 export type Drawn<T> = Widened<T>;
 
 /**
- * What a function entry returns in the mirror: one descriptor, or for a sentence built from optional parts, a
- * list of descriptors drawn one by one and joined (a null or false part is left out). A function the shared
- * table lets return null may return null here too.
+ * What a function entry returns in the mirror: one descriptor, or for a sentence built from parts, a list drawn
+ * part by part and joined: a descriptor is translated, a plain string (a name, a list the village wrote) is kept
+ * as it is, and a null or false part is left out. A function the shared table lets return null may return null.
  */
-export type MirrorLine = MessageDescriptor | readonly (MessageDescriptor | null | false)[];
+export type MirrorLine = MessageDescriptor | readonly (MessageDescriptor | string | null | false)[];
 
 /**
  * The mirror of a shared table: a descriptor for each string, a function returning one for each function, and
@@ -53,7 +53,7 @@ function isDescriptor(v: unknown): v is MessageDescriptor {
 /** One function entry's result in `i18n`'s language: a list of parts is drawn part by part and joined. */
 function drawLine(line: MirrorLine | null | undefined, i18n: I18n): string | null | undefined {
   if (line === null || line === undefined) return line;
-  if (Array.isArray(line)) return line.map((d) => (d ? i18n._(d) : "")).join("");
+  if (Array.isArray(line)) return line.map((d) => (typeof d === "string" ? d : d ? i18n._(d) : "")).join("");
   return i18n._(line as MessageDescriptor);
 }
 

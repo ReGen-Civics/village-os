@@ -15,7 +15,7 @@ import { drawWords, type MirrorLine, type WordMirror } from "./wordTable";
 /** Every id a function entry's result carries: one descriptor, or each part of a list. */
 function idsOf(line: MirrorLine | null): string[] {
   if (!line) return [];
-  return Array.isArray(line) ? line.flatMap((d) => (d ? [d.id] : [])) : [(line as MessageDescriptor).id];
+  return Array.isArray(line) ? line.flatMap((d) => (d && typeof d !== "string" ? [d.id] : [])) : [(line as MessageDescriptor).id];
 }
 
 /** For each function entry, by its dotted path, the argument lists to try it with. */
@@ -75,7 +75,7 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
       const want = (l.english as (...a: unknown[]) => unknown)(...args);
       expect((pick(en, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) in English`).toBe(want);
       if (want !== null && want !== undefined) {
-        expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toMatch(/^(XX)+$/);
+        expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toContain("XX");
       }
     }
   }
