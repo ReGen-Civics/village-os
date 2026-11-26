@@ -93,4 +93,14 @@ check("--dry-run prints the plan and changes nothing; an unknown flag is refused
   assert.strictEqual(bad.status, 2);
 });
 
-console.log(`check-post-fold.test: ${passed}/7 checks passed`);
+check("generated-docs.yml runs this BEFORE it pushes to main, and pushes only when it passed", () => {
+  const wf = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", ".github", "workflows", "generated-docs.yml"), "utf8");
+  const gate = wf.indexOf("node scripts/check-post-fold.mjs");
+  const push = wf.indexOf("git push origin HEAD:refs/heads/main");
+  assert.ok(gate > 0 && push > 0, "the gate or the push to main is gone from generated-docs.yml");
+  assert.ok(gate < push, "the post-fold check runs after the push to main again");
+  const commitStep = wf.slice(wf.indexOf("- name: Commit"), push);
+  assert.match(commitStep, /if: steps\.gate\.outcome == 'success'/, "the push to main no longer waits for the gate");
+});
+
+console.log(`check-post-fold.test: ${passed}/8 checks passed`);

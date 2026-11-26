@@ -29,6 +29,20 @@
 # IF A GENERATOR FAILS the job goes red and ONE issue titled "Generated docs failed
 # on main" is opened or updated, naming the generator. A bad document never goes
 # out silently. Nothing is committed unless every generator ran.
+#
+# CHECK FIRST, PUSH SECOND (26 Nov 2026). This used to push to main and run its
+# strict checks AFTER the push, and it never ran a test on what it pushed. That
+# day main went red twice on this bot's commit and not on the release before it:
+# 7366a88, where a test reading es.po met the folded Spanish, and a187ce0, where
+# check-i18n-catalogs in strict mode met a folded plural with no `one` case. Every
+# open pull request merges main into its run, so each one inherited the red.
+# Now the gate below runs the strict checks and scripts/check-post-fold.mjs (the
+# catalog check plus every test that reads a catalog) on the regenerated tree
+# BEFORE anything reaches main. If it fails, main is left as it was (green, with
+# stale docs), the tree is pushed to the branch bot/generated-docs for whoever
+# fixes it, and the one issue says which check failed. The same script runs in
+# ci.yml with --fold on every pull request, so this gate should never be the
+# first to see a red.
 name: generated-docs
 
 on:
@@ -129,8 +143,53 @@ jobs:
             exit 1
           fi
 
+      - name: Main stays green on this tree
+        # Every check main's own run would make on what this job is about to
+        # push, run BEFORE the push. All of them run; the file names each
+        # failure for the issue below. A failure here holds the push back.
+        id: gate
+        continue-on-error: true
+        env:
+          GENERATED_DOCS_MODE: strict
+        run: |
+          : > "$RUNNER_TEMP/gate-failed.txt"
+          gate() {
+            local name="$1"; shift
+            echo "::group::$name"
+            if "$@"; then echo "ok: $name"; else echo "::error::held back: $name failed on the regenerated tree"; echo "$name" >> "$RUNNER_TEMP/gate-failed.txt"; fi
+            echo "::endgroup::"
+          }
+          gate governance-doc   node scripts/check-governance-doc.mjs
+          gate economics-doc    node scripts/check-economics-doc.mjs
+          gate token-doc        node scripts/check-token-doc.mjs
+          gate variables-doc    node scripts/check-variables-doc.mjs
+          gate modules-doc      node scripts/check-modules-doc.mjs
+          gate capabilities-doc node scripts/check-capabilities-doc.mjs
+          # The catalogs in strict mode, and every test that reads a catalog.
+          gate post-fold        node scripts/check-post-fold.mjs
+          [ ! -s "$RUNNER_TEMP/gate-failed.txt" ]
+
+      - name: Hold back, and leave the tree where it can be fixed
+        # main keeps its last green commit; its docs are stale until the cause
+        # is fixed. The regenerated tree goes to ONE branch, overwritten on each
+        # held-back run, so a lane can check it out and see the failure.
+        # bot/generated-docs is outside ci.yml's push branches, so this starts
+        # no run. Then the job fails, and the step after updates the one issue.
+        if: steps.gate.outcome == 'failure'
+        run: |
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q --allow-empty -m "Regenerate the generated docs and catalogs (held back)
+
+          Written by .github/workflows/generated-docs.yml from main at $(git rev-parse --short HEAD).
+          Not pushed to main: $(paste -sd, "$RUNNER_TEMP/gate-failed.txt") failed on this tree."
+          git push --force origin HEAD:refs/heads/bot/generated-docs
+          echo "::error::Held back from main: $(paste -sd, "$RUNNER_TEMP/gate-failed.txt") failed on the regenerated tree. It is on the branch bot/generated-docs."
+          exit 1
+
       - name: Commit
         id: commit
+        if: steps.gate.outcome == 'success'
         run: |
           if git diff --cached --quiet; then
             echo "Generated files already match main. No commit."
@@ -153,22 +212,6 @@ jobs:
           fi
           git push origin HEAD:refs/heads/main
 
-      - name: Strict check
-        # After the commit, and only now, "main's docs equal the code" is a claim
-        # worth making. GENERATED_DOCS_MODE=strict turns every guard back into the
-        # byte comparison. Skipped when a newer run owns the regeneration.
-        if: steps.commit.outputs.moved != 'true'
-        env:
-          GENERATED_DOCS_MODE: strict
-        run: |
-          node scripts/check-governance-doc.mjs
-          node scripts/check-economics-doc.mjs
-          node scripts/check-token-doc.mjs
-          node scripts/check-variables-doc.mjs
-          node scripts/check-modules-doc.mjs
-          node scripts/check-capabilities-doc.mjs
-          node scripts/check-i18n-catalogs.mjs
-
       - name: Open or update the issue
         if: failure()
         env:
@@ -177,12 +220,19 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           title="Generated docs failed on main"
-          what="${FAILED:-the check after generating (see the run)}"
+          held="$(paste -sd, "$RUNNER_TEMP/gate-failed.txt" 2>/dev/null || true)"
+          if [ -n "$FAILED" ]; then
+            what="generator(s) ${FAILED}"
+          elif [ -n "$held" ]; then
+            what="${held}, on the regenerated tree, so it was held back from main and pushed to the branch bot/generated-docs"
+          else
+            what="a step after generating (see the run)"
+          fi
           body="The generated-docs workflow failed on main at $(git rev-parse --short HEAD). Failed: ${what}.
 
-          Nothing was committed, so the docs on main are stale. Run: ${RUN_URL}
+          Nothing reached main, so main stays green and its docs are stale. Run: ${RUN_URL}
 
-          Fix the generator or the code it reads. Close this issue when a run is green."
+          Fix the generator, the catalog or the code it reads. Close this issue when a run is green."
           n="$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
           if [ -n "$n" ]; then
             gh issue comment "$n" --body "$body"
