@@ -118,12 +118,13 @@ export function tableCell(text) {
   return String(text).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/`/g, "'").replace(/[\r\n]+/g, " ");
 }
 
-export function markdown(ranked, { days, runs, attempts, events, unkeyed }) {
+export function markdown(ranked, { days, runs, attempts, events, unkeyed, unread = 0 }) {
   const lines = [
     `## Flaky CI, last ${days} day(s)`,
     "",
     `${runs} ci.yml run(s), ${attempts} attempt(s) with a verdict, ${events} flake event(s): a failed attempt on code that also went fully green.`,
   ];
+  if (unread) lines.push(`${unread} attempt(s) could not be read from the API after retries and are left out.`);
   if (unkeyed) lines.push(`${unkeyed} pull_request run(s) had no base sha in the API and were keyed on their head alone.`);
   lines.push("");
   if (!ranked.length) {
@@ -140,18 +141,32 @@ export function markdown(ranked, { days, runs, attempts, events, unkeyed }) {
 // Gathering, from the GitHub REST API.
 // ---------------------------------------------------------------------------
 
+/**
+ * A GET that survives GitHub's transient answers: 502, 503, 504 and 429 are
+ * retried up to `tries` times with a growing wait. The first live run died on
+ * one 502 out of several hundred calls (26 Nov 2026). Anything else, or the
+ * same transient answer `tries` times over, is thrown to the caller.
+ */
+export async function withRetry(call, { tries = 4, wait = (n) => 2000 * n, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  for (let n = 1; ; n += 1) {
+    const r = await call();
+    if (![429, 502, 503, 504].includes(r.status) || n >= tries) return r;
+    await sleep(wait(n));
+  }
+}
+
 function client(token) {
   const headers = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "flake-report" };
   if (token) headers.Authorization = `Bearer ${token}`;
   const base = "https://api.github.com";
   return {
     async json(p) {
-      const r = await fetch(`${base}${p}`, { headers });
+      const r = await withRetry(() => fetch(`${base}${p}`, { headers }));
       if (!r.ok) throw new Error(`GET ${p}: ${r.status} ${r.statusText}`);
       return r.json();
     },
     async text(p) {
-      const r = await fetch(`${base}${p}`, { headers, redirect: "follow" });
+      const r = await withRetry(() => fetch(`${base}${p}`, { headers, redirect: "follow" }));
       if (r.status === 410 || r.status === 404) return "";
       if (!r.ok) throw new Error(`GET ${p}: ${r.status} ${r.statusText}`);
       return r.text();
@@ -168,14 +183,23 @@ export async function gather(api, repo, days) {
     if (body.workflow_runs.length < 100) break;
   }
   const attempts = [];
+  let unread = 0;
   for (const run of runs) {
     if (run.status !== "completed") continue;
     for (let n = 1; n <= (run.run_attempt ?? 1); n += 1) {
-      const body = await api.json(`/repos/${repo}/actions/runs/${run.id}/attempts/${n}/jobs?per_page=100`);
+      let body;
+      try {
+        body = await api.json(`/repos/${repo}/actions/runs/${run.id}/attempts/${n}/jobs?per_page=100`);
+      } catch (err) {
+        // One attempt GitHub would not serve is one attempt with no verdict, not a dead report.
+        console.error(`::warning::flake-report: skipped run ${run.id} attempt ${n}: ${err.message}`);
+        unread += 1;
+        continue;
+      }
       attempts.push({ key: keyOf(run), runId: run.id, attempt: n, url: `${run.html_url}/attempts/${n}`, outcome: outcomeOf(body.jobs ?? []) });
     }
   }
-  return { runs, attempts, unkeyed: runs.filter((r) => keyOf(r).endsWith("@?")).length };
+  return { runs, attempts, unread, unkeyed: runs.filter((r) => keyOf(r).endsWith("@?")).length };
 }
 
 export async function attribute(api, repo, events) {
@@ -207,13 +231,13 @@ export async function main(argv) {
     return 2;
   }
   const api = client(process.env.GITHUB_TOKEN || process.env.GH_TOKEN);
-  const { runs, attempts, unkeyed } = await gather(api, repo, days);
+  const { runs, attempts, unkeyed, unread } = await gather(api, repo, days);
   const events = findFlakeEvents(attempts);
   const ranked = rank(await attribute(api, repo, events));
   if (argv.includes("--json")) {
-    console.log(JSON.stringify({ days, runs: runs.length, attempts: attempts.filter((a) => a.outcome).length, events: events.length, unkeyed, ranked }, null, 2));
+    console.log(JSON.stringify({ days, runs: runs.length, attempts: attempts.filter((a) => a.outcome).length, events: events.length, unkeyed, unread, ranked }, null, 2));
   } else {
-    const md = markdown(ranked, { days, runs: runs.length, attempts: attempts.filter((a) => a.outcome).length, events: events.length, unkeyed });
+    const md = markdown(ranked, { days, runs: runs.length, attempts: attempts.filter((a) => a.outcome).length, events: events.length, unkeyed, unread });
     console.log(md);
     if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${md}\n`);
   }

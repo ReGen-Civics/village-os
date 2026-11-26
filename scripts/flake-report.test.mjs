@@ -10,7 +10,7 @@
  * Run: node scripts/flake-report.test.mjs
  */
 import assert from "node:assert";
-import { attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank, tableCell } from "./flake-report.mjs";
+import { attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank, tableCell, withRetry } from "./flake-report.mjs";
 
 let passed = 0;
 async function check(name, fn) {
@@ -121,4 +121,15 @@ await check("a test name from a log cannot break out of its table cell", () => {
   assert.strictEqual(row.split(/(?<!\\)\|/).length, 7, `the row has extra cells: ${row}`);
 });
 
-console.log(`flake-report.test: ${passed}/9 checks passed`);
+await check("GitHub's transient answers are retried a bounded number of times, and nothing else is", async () => {
+  const seq = (codes) => {
+    let i = 0;
+    return async () => ({ status: codes[Math.min(i++, codes.length - 1)] });
+  };
+  const opts = { sleep: async () => {} };
+  assert.strictEqual((await withRetry(seq([502, 503, 200]), opts)).status, 200);
+  assert.strictEqual((await withRetry(seq([502, 502, 502, 502, 200]), opts)).status, 502, "gives up after 4 tries");
+  assert.strictEqual((await withRetry(seq([404, 200]), opts)).status, 404, "a 404 is an answer, not retried");
+});
+
+console.log(`flake-report.test: ${passed}/10 checks passed`);
