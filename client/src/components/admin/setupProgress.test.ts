@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { GAME_CONFIG } from "@shared/gameConfig";
 import {
   SETUP_STEPS,
+  guideObservation,
   measureSetup,
   needsObservation,
   setupCounts,
@@ -28,7 +29,10 @@ const ALL_TICKED = { identity: true, needs: true, images: true, numbers: true, c
  * `needsObservation` always answers `measured`, so the box that carries the
  * other four is never rendered for this one.
  */
-const NEEDS_IN_SCOPE: SetupObservations = needsObservation({ answered: true, adopted: 4, customAdopted: 0 });
+const CONNECTED = { on: true, guide: "Guide", off: null, provider: "anthropic", available: ["anthropic"], names: {} } as const;
+const GUIDE_CONNECTED: SetupObservations = guideObservation({ ...CONNECTED, available: ["anthropic"] });
+/** The two read steps both answered: the needs scope and the guide (step 1, read the same way). */
+const NEEDS_IN_SCOPE: SetupObservations = { ...needsObservation({ answered: true, adopted: 4, customAdopted: 0 }), ...GUIDE_CONNECTED };
 
 /** The shape `GET /api/admin/brand` returns for a village that has saved nothing. */
 function emptyBrand(): BrandLike {
@@ -148,7 +152,7 @@ describe("measureSetup", () => {
       // Seven, and the needs row is one of them EVEN WITH a reading passed
       // in: an observation of one step cannot make the screen knowledgeable
       // about a record that never arrived.
-      expect(setupCounts(brand, NEEDS_IN_SCOPE)).toMatchObject({ done: 0, todo: 0, unknown: 7 });
+      expect(setupCounts(brand, NEEDS_IN_SCOPE)).toMatchObject({ done: 0, todo: 0, unknown: 8 });
     }
   });
 
@@ -222,11 +226,11 @@ describe("setupCounts", () => {
     // Two counted rows sit empty; the four boxes are all ticked; the needs
     // row is read from the scope and is done, and is never one of the four
     // declared rows because it has a reading of its own.
-    expect(counts).toEqual({ done: 5, todo: 2, unknown: 0, declared: 4, total: 7 });
+    expect(counts).toEqual({ done: 6, todo: 2, unknown: 0, declared: 4, total: 8 });
   });
 
   it("counts a finished village as finished", () => {
-    expect(setupCounts(filledBrand(), NEEDS_IN_SCOPE)).toMatchObject({ done: 7, todo: 0, unknown: 0 });
+    expect(setupCounts(filledBrand(), NEEDS_IN_SCOPE)).toMatchObject({ done: 8, todo: 0, unknown: 0 });
     expect(setupIsComplete(filledBrand(), NEEDS_IN_SCOPE)).toBe(true);
   });
 });
@@ -237,7 +241,7 @@ describe("the needs step reads the scope", () => {
 
   it("ticks when one need is in scope and unticks when every one is retired", () => {
     const brand = filledBrand();
-    const inScope = needsObservation({ answered: true, adopted: 1, customAdopted: 0 });
+    const inScope = { ...needsObservation({ answered: true, adopted: 1, customAdopted: 0 }), ...GUIDE_CONNECTED };
     expect(measureSetup(brand, inScope).find((r) => r.key === "needs")).toMatchObject({
       state: "done",
       done: true,
@@ -249,7 +253,7 @@ describe("the needs step reads the scope", () => {
     });
     expect(setupIsComplete(brand, inScope)).toBe(true);
 
-    const allRetired = needsObservation({ answered: true, adopted: 0, customAdopted: 0 });
+    const allRetired = { ...needsObservation({ answered: true, adopted: 0, customAdopted: 0 }), ...GUIDE_CONNECTED };
     expect(measureSetup(brand, allRetired).find((r) => r.key === "needs")).toMatchObject({
       state: "todo",
       done: false,
@@ -303,10 +307,12 @@ describe("the needs step reads the scope", () => {
 });
 
 describe("the step list", () => {
-  it("keeps the seven steps in the order a founder works", () => {
-    // What the village is FOR sits second, ahead of what it looks like and
-    // ahead of its numbers, because the scope orients the scale (R1).
+  it("keeps the eight steps in the order a founder works", () => {
+    // The guide comes first, so it can walk the rest (the lead, 26 Nov 2026).
+    // What the village is FOR sits ahead of what it looks like and ahead of
+    // its numbers, because the scope orients the scale (R1).
     expect(SETUP_STEPS.map((s) => s.key)).toEqual([
+      "guide",
       "identity",
       "needs",
       "images",
@@ -346,5 +352,37 @@ describe("the step list", () => {
         expect(field.group, `${step.key}.${field.key}`).not.toBe("currency");
       }
     }
+  });
+});
+
+describe("step 1, bring your agent or guide, reads the guide's own status", () => {
+  const guideRow = (status: Parameters<typeof guideObservation>[0]) =>
+    measureSetup(filledBrand(), { ...needsObservation({ answered: true, adopted: 4, customAdopted: 0 }), ...guideObservation(status) }).find(
+      (r) => r.key === "guide",
+    )!;
+
+  it("is done on the village's own Anthropic key", () => {
+    expect(guideRow({ ...CONNECTED, available: ["anthropic"] })).toMatchObject({ state: "done", source: "measured", declaredDone: false });
+  });
+
+  it("is done on a Sera connection alone (the lead, 26 Nov 2026)", () => {
+    expect(guideRow({ ...CONNECTED, provider: "sera", available: ["sera"] })).toMatchObject({ state: "done", source: "measured" });
+  });
+
+  it("counts a guide switched off on purpose as an answer", () => {
+    expect(guideRow({ ...CONNECTED, on: false, off: "switch", provider: null, available: [] }).state).toBe("done");
+  });
+
+  it("is to-do with nothing connected, and a tick cannot carry it", () => {
+    const brand = filledBrand();
+    brand.setup = { ...ALL_TICKED, guide: true };
+    const off = guideObservation({ ...CONNECTED, on: false, off: "key", provider: null, available: [] });
+    const rows = measureSetup(brand, { ...needsObservation({ answered: true, adopted: 4, customAdopted: 0 }), ...off });
+    expect(rows.find((r) => r.key === "guide")).toMatchObject({ state: "todo", declaredDone: false });
+    expect(setupIsComplete(brand, { ...needsObservation({ answered: true, adopted: 4, customAdopted: 0 }), ...off })).toBe(false);
+  });
+
+  it("says nothing either way before the status is read", () => {
+    expect(guideRow(null).state).toBe("unknown");
   });
 });

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, CircleDashed, PenLine } from "lucide-react";
-import type { SetupRow, SetupStepKey } from "./setupProgress";
+import { SETUP_STEPS, type SetupRow, type SetupStepKey } from "./setupProgress";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
@@ -60,8 +60,12 @@ export default function SetupSection({
   children,
 }: {
   id: SetupStepKey;
-  /** The step number a founder reads, 1 through 6. */
-  n: number;
+  /**
+   * The step number a founder reads. Leave it out: it comes from the step's
+   * place in SETUP_STEPS, so adding a step renumbers every step after it
+   * instead of leaving two steps called 2.
+   */
+  n?: number;
   title: string;
   subtitle: string;
   /** Every step's row, as `measureSetup` returned it. This step finds its own. */
@@ -138,7 +142,7 @@ export default function SetupSection({
     <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
       <div className="flex items-center justify-between gap-3 bg-gray-50 px-5 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <span className="w-7 h-7 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center">{n}</span>
+          <span className="w-7 h-7 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center">{n ?? SETUP_STEPS.findIndex((s) => s.key === id) + 1}</span>
           <div>
             <h3 className="font-semibold text-gray-900 leading-tight">{title}</h3>
             <p className="text-xs text-gray-500">{subtitle}</p>
