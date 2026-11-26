@@ -524,14 +524,30 @@ describe.skipIf(!DB_CONFIGURED)("the ring becomes a floor as well as a ceiling",
 });
 
 describe.skipIf(!DB_CONFIGURED)("Q5: every member may READ the admin routes the allow-list names, and change nothing", () => {
-  it("a member reads the power holdings and the reorganisation drafts", async () => {
+  it("a member reads the power holdings and the expiring terms", async () => {
     const holding = await call("GET", "/api/admin/capabilities/holding", undefined, ottoToken);
     expect(holding.status, holding.text).toBe(200);
     expect(Array.isArray(holding.json.powers)).toBe(true);
     // The removal warning names accounts, so a member reader gets none of it; the admin still does.
     expect(holding.json.leftEmptyByRemoval).toEqual({});
-    expect((await call("GET", "/api/admin/org/drafts", undefined, ottoToken)).status).toBe(200);
     expect((await call("GET", "/api/admin/org/expiring", undefined, ottoToken)).status).toBe(200);
+  });
+
+  it("org chart drafts are shown to admins only: a plain member reads none, on the route or on the review list", async () => {
+    // The lead's standing decision (25 Nov 2026), relayed by the coordinator: "org chart drafts shown to admins only".
+    const made = await call("POST", "/api/admin/org/drafts", { title: "A draft only admins read" });
+    expect(made.status, made.text).toBe(200);
+    const id = String(made.json.id);
+    expect((await call("GET", "/api/admin/org/drafts", undefined, ottoToken)).status).toBe(401);
+    expect((await call("GET", `/api/admin/org/drafts/${id}/preview`, undefined, ottoToken)).status).toBe(401);
+    const inbox = await call("GET", "/api/admin/review/inbox", undefined, ottoToken);
+    expect(inbox.status, inbox.text).toBe(200);
+    expect((inbox.json.items ?? []).filter((i: any) => i.key === `structure:${id}`)).toEqual([]);
+    expect(JSON.stringify(inbox.json)).not.toContain("A draft only admins read");
+    // Control: the admin who may decide it still reads it, on the route and on the list.
+    expect(((await call("GET", "/api/admin/org/drafts")).json ?? []).some((d: any) => String(d.id) === id)).toBe(true);
+    expect(((await call("GET", "/api/admin/review/inbox")).json.items ?? []).some((i: any) => i.key === `structure:${id}`)).toBe(true);
+    await call("POST", `/api/admin/org/drafts/${id}/revert`, {});
   });
 
   it("control: an admin read the list does not name stays the admin's", async () => {

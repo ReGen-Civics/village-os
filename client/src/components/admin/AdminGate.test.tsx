@@ -103,7 +103,8 @@ describe("AdminGate", () => {
       expect(screen.queryByRole("heading", { name: "Not an admin" })).not.toBeInTheDocument();
       expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
       // Only the reads the server allows members, and every one a GET.
-      expect(fetched.sort()).toEqual(["/api/admin/capabilities/holding", "/api/admin/org/drafts", "/api/admin/org/expiring"]);
+      // Org chart drafts are not among them: they are shown to admins only (the lead, 25 Nov 2026).
+      expect(fetched.sort()).toEqual(["/api/admin/capabilities/holding", "/api/admin/org/expiring"]);
       // Nothing to press but signing out, and the reader's own language (spec
       // i18n US2), which changes how this page reads and nothing in the village.
       expect(screen.getAllByRole("button").map((b) => b.getAttribute("aria-label") ?? b.textContent)).toEqual([

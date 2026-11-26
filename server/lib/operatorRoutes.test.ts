@@ -24,6 +24,12 @@ describe("ROUTE_POWERS: which power opens each admin-only route", () => {
     for (const [route, cap] of Object.entries(ROUTE_POWERS)) expect(STAGE_UNLOCKS[cap], `${route} -> ${cap}`).toBeUndefined();
   });
 
+  it("lets whoever may decide org chart drafts read them, and nobody else (the lead, 25 Nov 2026: admins only)", () => {
+    expect(routePower("GET", "/api/admin/org/drafts")).toBe("org.decide");
+    expect(routePower("GET", "/api/admin/org/drafts/:id/preview")).toBe("org.decide");
+    expect(routePower("POST", "/api/admin/org/drafts/:id/publish")).toBe("org.decide");
+  });
+
   it("names only routes that exist, method and path as Express registers them", () => {
     for (const route of [...Object.keys(ROUTE_POWERS), ...Object.keys(ADMIN_ONLY_ROUTES)]) {
       const [method, p] = route.split(" ");
