@@ -37692,6 +37692,11 @@ msgid "Time zone (leave empty for the season's own)"
 msgstr "Time zone (leave empty for the season's own)"
 
 #: client/src/pages/Admin.tsx
+msgctxt "Admin, title"
+msgid "never checked"
+msgstr "never checked"
+
+#: client/src/pages/Admin.tsx
 msgctxt "Admin, label"
 msgid "Reading the lunations"
 msgstr "Reading the lunations"

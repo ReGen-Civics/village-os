@@ -43856,6 +43856,11 @@ msgctxt "SeatSettingsFields, label"
 msgid "Time zone (leave empty for the season's own)"
 msgstr "Zona horaria (déjela vacía para usar la de la temporada)"
 
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, title"
+msgid "never checked"
+msgstr ""
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, label"
