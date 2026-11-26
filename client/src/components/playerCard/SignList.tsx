@@ -12,11 +12,12 @@
  */
 import { useState } from "react";
 import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
-import { CARD_WORDS as W, type SignOut } from "@shared/playerCard";
+import { type SignOut } from "@shared/playerCard";
 import { formatDay } from "@shared/roleSheet";
 import type { SignSheetOut } from "@shared/playerCardPayload";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Trans } from "@lingui/react/macro";
+import { useCardWords } from "./cardWords";
 
 /** How full the sign's meter is, 0 to 100. */
 export function meterOf(sign: SignOut): number {
@@ -28,6 +29,7 @@ export function meterOf(sign: SignOut): number {
 }
 
 function TrendLine({ sign }: { sign: SignOut }) {
+  const W = useCardWords();
   if (sign.reading.kind !== "counted" || !sign.reading.trend) return null;
   const t = sign.reading.trend;
   if (t.kind === "later") return <span className="pc-trend">{W.trendLater}</span>;
@@ -41,6 +43,7 @@ function TrendLine({ sign }: { sign: SignOut }) {
 }
 
 function SignBody({ sign }: { sign: SignOut }) {
+  const W = useCardWords();
   return (
     <>
       {/* A count in the design's large gold; a sign not counted yet says so quietly, never as a number. */}
@@ -57,6 +60,7 @@ function SignBody({ sign }: { sign: SignOut }) {
 }
 
 export function SignList({ signs, sheets, timeZone }: { signs: SignOut[]; sheets: Record<string, SignSheetOut>; timeZone: string }) {
+  const W = useCardWords();
   const [open, setOpen] = useState<string | null>(null);
   const sheet = open ? sheets[open] : undefined;
   return (

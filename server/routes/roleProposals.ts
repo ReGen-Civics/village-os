@@ -116,6 +116,7 @@ import {
 import { registerJob } from "../lib/scheduler";
 import { villageClock } from "../lib/stewardship";
 import { buildPlayerCards, type CardLevel, type CardProposal } from "../lib/playerCardData";
+import { cardForReader } from "../lib/platformSpeech";
 import * as store from "../repos/roleProposals";
 import { readApplications } from "../repos/seatApplications";
 import { insertPlanVersion, latestCardWords, planToStore, planVersions, plansOfMember } from "../repos/seasonPlans";
@@ -326,7 +327,7 @@ export function register(app: Express, deps: Deps): void {
    * next season the way `targetFor` would, without writing it; and a proposal
    * with no season to be for draws none, never the running one.
    */
-  async function cardOf(req: any, viewer: any, p: store.StoredProposal, k: Known, level: CardLevel) {
+  async function cardOf(req: any, res: any, viewer: any, p: store.StoredProposal, k: Known, level: CardLevel) {
     const pool = getPool();
     const viewerId = viewer ? String(viewer.id) : null;
     const seat = await cardSeatTier(deps, req, viewer, { terms: level !== "stranger", isSelf: level === "self" });
@@ -345,7 +346,9 @@ export function register(app: Express, deps: Deps): void {
       },
     };
     const cards = await buildPlayerCards(pool, [{ userId: p.userId, tier: { level, seat }, proposal }], await cardContext(deps, viewerId, false, level !== "stranger"));
-    return cards.get(p.userId) ?? null;
+    const card = cards.get(p.userId);
+    // Said in the reader's language when they asked for one (server/lib/platformSpeech.ts).
+    return card ? cardForReader(req, res, card) : null;
   }
 
   // ── Who is asking ─────────────────────────────────────────────────────────
@@ -553,7 +556,7 @@ export function register(app: Express, deps: Deps): void {
     const asks = reader !== "anyone" && p.status === "submitted" ? ((await store.asksFor(getPool(), [p.id])).get(p.id) ?? []) : [];
     res.set("Cache-Control", "no-store").json({
       proposal: proposalOut(p, target, k, reader === "owner" ? "member" : reader, asks, viewer ? String(viewer.id) : null, await askRolesFor(getPool(), asks)),
-      card: await cardOf(req, viewer, p, k, level),
+      card: await cardOf(req, res, viewer, p, k, level),
       you: { isOwner, mayComment: isMember && p.status === "draft", tier: reader === "anyone" ? "public" : "member" },
     });
   });
@@ -652,7 +655,7 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return;
     const p = await owned(req, res, user);
     if (!p) return;
-    const card = await cardOf(req, user, p, await known(getPool()), "self");
+    const card = await cardOf(req, res, user, p, await known(getPool()), "self");
     if (!card) return res.status(404).json({ error: "not_found", message: PROPOSAL_WORDS.notYours });
     res.set("Cache-Control", "no-store").json(card);
   });
