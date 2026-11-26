@@ -1,0 +1,47 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--band:#ead7b4;--band-ink:#2b2720;--ground:#f3ebdd;--panel:#fffaf1;--ink:#2b2720;--dim:#5f584a;--edge:#8b785a;--accent:#0e5b60;--gold:#8a5a12}
+body.dark{--band:#0c241c;--band-ink:#f3ede0;--ground:#14362b;--panel:#0f2c23;--ink:#f3ede0;--dim:#c4d6cc;--edge:#7fa393;--accent:#e0c79a;--gold:#e0c79a}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--ground);color:var(--ink)}
+header{background:var(--band);color:var(--band-ink);display:flex;align-items:center;justify-content:space-between;padding:18px 40px}
+.name{font:600 24px Georgia,serif}
+nav.bar{display:flex;gap:26px;font-size:14px;align-items:center}
+nav.bar span{position:relative;padding:6px 0}
+nav.bar .lit{font-weight:700}
+nav.bar .lit:after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:3px;border-radius:9px;background:var(--gold)}
+.dd{position:absolute;top:66px;left:640px;width:240px;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:6px 0;font-size:14px}
+.dd div{padding:9px 16px}.dd .cur{border-left:3px solid var(--gold);font-weight:700;background:rgba(176,129,60,.12)}
+.crumbs{padding:18px 40px 0;font-size:14px;color:var(--dim)}
+.crumbs a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.crumbs .sep{margin:0 8px;opacity:.7}
+.crumbs .here{color:var(--ink);font-weight:600}
+main{padding:10px 40px}.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-top:18px}
+h1{font:600 40px Georgia,serif;margin:6px 0 14px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:24px;max-width:760px;height:180px}
+.tag{position:fixed;right:12px;bottom:12px;background:#000a;color:#fff;font-size:12px;padding:4px 8px;border-radius:6px}
+/* phone */
+body.phone header{padding:14px 16px}body.phone .crumbs{padding:14px 16px 0}body.phone main{padding:6px 16px}
+body.phone h1{font-size:30px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--band);color:var(--band-ink);display:grid;grid-template-columns:repeat(5,1fr);font-size:12px;border-top:1px solid #0002}
+.tabbar div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative}
+.tabbar i{width:24px;height:24px;border:2px solid currentColor;border-radius:50%}
+.tabbar .lit{font-weight:700}.tabbar .lit i{background:rgba(255,255,255,.18)}
+.tabbar .lit:before{content:"";position:absolute;top:0;width:32px;height:3px;border-radius:9px;background:var(--gold)}
+.sheet{position:fixed;left:0;right:0;bottom:64px;background:var(--panel);border-radius:16px 16px 0 0;border-top:1px solid var(--edge);padding:16px;font-size:15px;max-height:360px}
+.sheet .g{padding:10px 0;border-bottom:1px solid #0001;display:flex;align-items:center}
+.sheet .g.lit{font-weight:700}
+.sheet .g.lit:before{content:"";width:8px;height:8px;border-radius:9px;background:var(--gold);margin-right:8px}
+.sheet .item{padding:8px 0 8px 16px}.sheet .item.cur{border-left:3px solid var(--gold);font-weight:700}
+.scrim{position:fixed;inset:0;background:#0006}
+</style></head>
+<body class="__MODE__ __DEV__">
+<header><span class="name">Village</span>
+__NAV__
+</header>
+__DD__
+<div class="crumbs" aria-label="Breadcrumb">__CRUMBS__</div>
+<main><div class="eyebrow">A decision</div><h1>__H1__</h1><div class="card"></div></main>
+__PHONE__
+<div class="tag">MOCKUP · __LABEL__</div>
+</body></html>
