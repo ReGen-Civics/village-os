@@ -413,8 +413,8 @@ export const KIND_WORDS_MSG: Readonly<Record<string, Pair>> = {
     many: msg({ message: "{n} people joined the village.", context: "the bell: several notices of one kind batched into a line, kind arrival" }),
   },
   "gratitude": {
-    blurb: msg({ message: "Somebody said thank you, and put their name to it.", context: "the bell: why a notice of this kind matters, kind gratitude" }),
-    many: msg({ message: "{n} people sent you appreciation.", context: "the bell: several notices of one kind batched into a line, kind gratitude" }),
+    blurb: msg({ message: "Somebody said thank you, and put their name to it.", context: "the bell: why a notice of this kind matters, kind gratitude" }), // village-ok: the notice kind id in a translator context, not copy
+    many: msg({ message: "{n} people sent you appreciation.", context: "the bell: several notices of one kind batched into a line, kind gratitude" }), // village-ok: the notice kind id in a translator context, not copy
   },
   "comms_path_handoff": {
     blurb: msg({ message: "Somebody has been on a path for three weeks. A note from a person is the next step.", context: "the bell: why a notice of this kind matters, kind comms_path_handoff" }),
