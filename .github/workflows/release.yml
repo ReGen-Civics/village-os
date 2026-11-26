@@ -457,6 +457,19 @@ jobs:
           # only thing that lets /health say which commit is serving.
           build-args: |
             GIT_SHA=${{ needs.plan.outputs.sha }}
+          # Set HERE, on the image the smoke tests run, because the Push step
+          # below pushes this exact image and does not build again.
+          labels: |
+            org.opencontainers.image.title=village-os
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.plan.outputs.sha }}
+            org.opencontainers.image.version=${{ needs.plan.outputs.version }}
+            org.opencontainers.image.licenses=AGPL-3.0-or-later
+          # No attestation manifests on the image that gets pushed: they turn it
+          # into an index with an unknown/unknown entry, which older
+          # self-hosted docker and some mirrors refuse. Provenance is published
+          # separately by the attest step below (R044).
+          provenance: false
           # linux/amd64 only, deliberately. arm64 would have to cross-build
           # bcrypt and sharp under emulation, which is slow and is exactly the
           # kind of thing that half-works. Add it when a village needs it, and
@@ -566,32 +579,58 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push
+      - name: Push the image that was smoke-tested
+        # PUSH WHAT WAS TESTED, AND DO NOT BUILD AGAIN (26 Nov 2026). This used
+        # to be a second build-push-action run, which rebuilt the app layer
+        # (`pnpm run build`, 69 s on 1.3.82 and 1.3.83) instead of reusing it.
+        # Besides the minute, that meant the image on the registry was a
+        # rebuild of the one the three smoke steps above had booted. Now the
+        # loaded village-os:candidate is tagged with every published name and
+        # pushed as it is, so the registry holds the tested image, byte for byte.
+        #
+        # Then the registry is asked what it holds: every tag must resolve to
+        # ONE digest, and that manifest must not be an index carrying an
+        # unknown/unknown entry (the shape older docker refuses). The digest
+        # comes from the registry, not from the local store, and it is what
+        # gets signed and attested below.
         id: push
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          push: true
-          tags: ${{ needs.plan.outputs.tags }}
-          build-args: |
-            GIT_SHA=${{ needs.plan.outputs.sha }}
-          labels: |
-            org.opencontainers.image.title=village-os
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ needs.plan.outputs.sha }}
-            org.opencontainers.image.version=${{ needs.plan.outputs.version }}
-            org.opencontainers.image.licenses=AGPL-3.0-or-later
-          platforms: linux/amd64
-          # Attestations turn the image into a multi-platform index carrying an
-          # unknown/unknown entry. GHCR is fine with it; older self-hosted
-          # docker and some mirrors are not, and this image is meant to be
-          # pullable by thirteen operators we do not control. Provenance is
-          # still published (R044), by the attest step below, as a separate
-          # referrer in the registry that leaves this image's manifest alone.
-          provenance: false
-          # Every layer is already in this scope from the Build step above, so
-          # this is an upload and not a second build.
-          cache-from: type=gha,scope=release
+        env:
+          TAGS: ${{ needs.plan.outputs.tags }}
+        run: |
+          set -euo pipefail
+          mapfile -t tags < <(printf '%s\n' "$TAGS" | sed '/^$/d')
+          if [ "${#tags[@]}" -eq 0 ]; then
+            echo "::error::plan named no tags, so nothing was pushed"
+            exit 1
+          fi
+          # The FIRST tag is the immutable one (the version, or :edge alone).
+          # Push it and check what the registry holds BEFORE any moving tag
+          # (:stable) points anywhere, so a bad push stops at a tag nobody
+          # pulls by default.
+          first="${tags[0]}"
+          docker tag village-os:candidate "$first"
+          docker push "$first"
+          raw=$(docker buildx imagetools inspect --raw "$first")
+          if jq -e '(.manifests // []) | map(select(.platform.os == "unknown")) | length > 0' <<< "$raw" > /dev/null; then
+            echo "::error::${first} was pushed as an index with an unknown/unknown entry, which older docker refuses. No other tag was moved."
+            exit 1
+          fi
+          digest=$(docker buildx imagetools inspect "$first" --format '{{json .Manifest}}' | jq -r '.digest')
+          case "$digest" in
+            sha256:*) ;;
+            *) echo "::error::the registry reported no digest for ${first} ('${digest}')"; exit 1 ;;
+          esac
+          for tag in "${tags[@]:1}"; do
+            docker tag village-os:candidate "$tag"
+            docker push "$tag"
+            other=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ "$other" != "$digest" ]; then
+              echo "::error::${tag} resolves to ${other}, not ${digest}; the tags do not name one image"
+              exit 1
+            fi
+          done
+          echo "Pushed ${digest} as: ${tags[*]}"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       # R044: sign what was pushed, by digest and never by tag, because a tag
       # can be moved after the signature is made and a digest cannot. Keyless:
