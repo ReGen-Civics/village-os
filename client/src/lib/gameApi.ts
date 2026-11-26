@@ -1,5 +1,6 @@
 // Platform game API client. All project-specific naming comes from /api/game/config.
 import { useEffect, useState } from "react";
+import { useSeasonInLanguage } from "@/hooks/useSeasonWords";
 import { writeStored } from "./safeStorage";
 // Both type-only, so neither module reaches the bundle. The server serves
 // these two unions verbatim, and re-typing their members here would be the
@@ -77,6 +78,8 @@ export function altOr(value: string | undefined, fallback: string): string {
 }
 
 export interface PublicGameConfig {
+  /** Light mode's paper, dial `look.light_paper`: "plain" or "sea-chart" (lib/paperLook.ts). Absent from an older server: plain. */
+  lightPaper?: string;
   /** The village's default language, dial `village.default_locale` (spec i18n US3). */
   defaultLocale?: string;
   /** The languages this village offers (its per-language switches); absent from an older server, which offers them all. */
@@ -518,14 +521,19 @@ export function fetchSeasonCached(): Promise<SeasonState | null> {
   return _seasonCache;
 }
 
-export function useSeason(): SeasonState | null {
+/**
+ * The live season, its name, theme and focus in the reader's language where the village has translated them
+ * (client/src/hooks/useSeasonWords.ts). `goals: true` translates the goals' words too, for a page that reads
+ * goals by id; the default keeps them in the words the village wrote, which a season plan matches on.
+ */
+export function useSeason(opts: { goals?: boolean } = {}): SeasonState | null {
   const [season, setSeason] = useState<SeasonState | null>(null);
   useEffect(() => {
     let alive = true;
     fetchSeasonCached().then((s) => { if (alive) setSeason(s); });
     return () => { alive = false; };
   }, []);
-  return season;
+  return useSeasonInLanguage(season, opts);
 }
 
 export function authToken(): string | null {

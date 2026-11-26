@@ -6,7 +6,8 @@
  * sends nothing, and a fourth root is refused before it is ever sent.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { resetUnsavedForTests } from "@/lib/unsavedChanges";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn() } }));
 import RoleCharacterTags, { forgetCastForTests } from "./RoleCharacterTags";
@@ -20,6 +21,7 @@ const CAST = [
 
 afterEach(() => {
   cleanup();
+  resetUnsavedForTests();
   forgetCastForTests();
   vi.unstubAllGlobals();
 });
@@ -32,12 +34,14 @@ describe("RoleCharacterTags", () => {
     render(<RoleCharacterTags role={{ id: "lfs", name: "Lead Financial Steward", archetypes: ["building"] }} call={call} onSaved={saved} />);
     const builder = (await screen.findByLabelText("Builder")) as HTMLInputElement;
     expect(builder.checked).toBe(true);
-    const save = screen.getByRole("button", { name: "Save roots" }) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
+    // No save bar until a tick moves (the one bar, components/SaveBar.tsx).
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
     fireEvent.click(builder);
     fireEvent.click(screen.getByLabelText("Catalyst"));
     fireEvent.click(screen.getByLabelText("Spaceholder"));
-    fireEvent.click(save);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    });
     await waitFor(() => expect(call).toHaveBeenCalledWith("/admin/org/roles/lfs", { archetypes: ["catalyzing", "facilitating"] }, "PUT"));
     await waitFor(() => expect(saved).toHaveBeenCalled());
   });
@@ -50,7 +54,8 @@ describe("RoleCharacterTags", () => {
     fireEvent.click(fourth);
     expect(fourth.checked).toBe(false);
     expect(screen.getByText("Up to 3 roots. Take one off first.")).toBeTruthy();
-    expect((screen.getByRole("button", { name: "Save roots" }) as HTMLButtonElement).disabled).toBe(true);
+    // The refused tick changed nothing, so no save bar rises.
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
     expect(call).not.toHaveBeenCalled();
   });
 

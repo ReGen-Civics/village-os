@@ -18,7 +18,7 @@
  */
 import { useId } from "react";
 import { KeyRound } from "lucide-react";
-import { SHEET_WORDS } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { permissionSheet, type RoleInput } from "@shared/permissionSheet";
 import { ExampleChip } from "@/components/ExamplesBanner";
 import Figure from "@/components/sheet/Figure";
@@ -34,7 +34,9 @@ export default function PermissionRoleCard({
   ctx: { stages: Array<{ id: string; name: string }> | null; roleWord: string; now: Date };
   className?: string;
 }) {
-  const view = permissionSheet(input, ctx);
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
+  const view = permissionSheet(input, { ...ctx, words: RS });
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const nameId = `${uid}-name`;
 

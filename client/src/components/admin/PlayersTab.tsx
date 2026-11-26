@@ -20,6 +20,7 @@ const AgentsPanel = lazy(() => import("./AgentsPanel"));
 const ErasePrepPanel = lazy(() => import("@/components/yourList/ErasePrepPanel"));
 import { NO_FILTER, PlayerCard, PlayersFilters, PlayersKey, filterPlayers, type LadderStage, type PathOption, type Player, type PlayerDetail } from "./PlayerCard";
 import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 
 export default function PlayersTab({ password }: { password: string }) {
   const { t } = useLingui();
@@ -45,6 +46,12 @@ export default function PlayersTab({ password }: { password: string }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [picked, setPicked] = useState<string[]>([]);
+  /**
+   * Access and stage picked on a card, waiting on the page's one save bar
+   * (components/SaveBar.tsx). Picking used to act at once; a slip on a select
+   * could make somebody an admin. The confirm questions still ask, at Save.
+   */
+  const [drafts, setDrafts] = useState<Record<string, { role?: Player["role"]; stage?: string | null }>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,17 +78,17 @@ export default function PlayersTab({ password }: { password: string }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const grant = async (id: string, stageId: string) => {
+  /** Null when it landed, the reason when it did not. */
+  const grant = async (id: string, stageId: string): Promise<string | null> => {
     try {
       const res = await fetch(`${API_BASE}/admin/players/${id}/stage`, {
         method: "PUT",
         headers: authHeaders(password, { "Content-Type": "application/json" }),
         body: JSON.stringify({ stageId: stageId || null }),
       });
-      if (!res.ok) throw new Error();
-      toast.success(t({ message: "Stage updated", context: "PlayersTab, toast" }));
-      load();
-    } catch { toast.error(t({ message: "Update failed", context: "PlayersTab, toast" })); }
+      if (!res.ok) return refusal(await res.json().catch(() => ({})), t({ message: "Update failed", context: "PlayersTab, toast" }));
+      return null;
+    } catch { return t({ message: "Update failed", context: "PlayersTab, toast" }); }
   };
 
   const [erasing, setErasing] = useState<{ id: string; email: string } | null>(null);
@@ -103,8 +110,10 @@ export default function PlayersTab({ password }: { password: string }) {
     } catch { toast.error(t({ message: "Delete failed", context: "PlayersTab, toast" })); }
   };
 
-  const setRole = async (id: string, role: string, name: string) => {
-    if (role === "founder" && !confirm(`Make ${name} a FOUNDER? Founders manage admins and can only be demoted by another founder.`)) return;
+  /** Null when it landed, the reason when it did not. A "no" to a question is a reason too, so the change stays on the bar. */
+  const setRole = async (id: string, role: string, name: string): Promise<string | null> => {
+    const declined = t({ message: "Not changed: you answered no.", context: "PlayersTab, access declined" });
+    if (role === "founder" && !confirm(`Make ${name} a FOUNDER? Founders manage admins and can only be demoted by another founder.`)) return declined;
     try {
       const put = (body: object) => fetch(`${API_BASE}/admin/users/${id}/role`, {
         method: "PUT",
@@ -115,15 +124,40 @@ export default function PlayersTab({ password }: { password: string }) {
       let data = await res.json();
       // The server asks before raising an account whose address nobody proved (R104).
       if (res.status === 409 && data?.code === "address_unproved") {
-        if (!confirm(`${data.error}\n\nGive ${name} ${role} access anyway?`)) return;
+        if (!confirm(`${data.error}\n\nGive ${name} ${role} access anyway?`)) return declined;
         res = await put({ role, addressUnprovedOk: true });
         data = await res.json();
       }
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success(`${name} now has ${role} access`);
-      load();
-    } catch (e: any) { toast.error(e?.message || "Role change failed"); }
+      if (!res.ok) return refusal(data, t({ message: "Role change failed", context: "PlayersTab, access refused" }));
+      return null;
+    } catch { return t({ message: "Role change failed", context: "PlayersTab, access refused" }); }
   };
+
+  /** Every picked access or stage that differs from what the player has now. */
+  const pending = players.flatMap((p) => {
+    const d = drafts[p.id];
+    if (!d) return [];
+    const out: { key: string; label: string; run: () => Promise<string | null> }[] = [];
+    if (d.role !== undefined && d.role !== p.role) out.push({ key: `${p.id}:role`, label: t({ message: `${p.name}'s access`, context: "PlayersTab, save bar item" }), run: () => setRole(p.id, d.role!, p.name) });
+    if (d.stage !== undefined && d.stage !== (p.stageGranted ?? null)) out.push({ key: `${p.id}:stage`, label: t({ message: `${p.name}'s stage`, context: "PlayersTab, save bar item" }), run: () => grant(p.id, d.stage ?? "") });
+    return out;
+  });
+  const saveDrafts = async (): Promise<SaveResult> => {
+    const { result, failedKeys } = await saveEach(pending);
+    // What landed leaves the bar; what did not stays, by name.
+    setDrafts((all) => {
+      const next: typeof all = {};
+      for (const [id, d] of Object.entries(all)) {
+        const kept = { ...(failedKeys.has(`${id}:role`) ? { role: d.role } : {}), ...(failedKeys.has(`${id}:stage`) ? { stage: d.stage } : {}) };
+        if (Object.keys(kept).length) next[id] = kept;
+      }
+      return next;
+    });
+    await load();
+    return result;
+  };
+  const draftOf = (id: string, patch: { role?: Player["role"]; stage?: string | null }) =>
+    setDrafts((all) => ({ ...all, [id]: { ...all[id], ...patch } }));
 
   const revokeSessions = async (id: string, name: string) => {
     if (!confirm(`Sign ${name} out everywhere? They keep their account and password. Every active session ends, and so do their agent tokens, agent inbox, own model key and private calendar address.`)) return;
@@ -149,6 +183,12 @@ export default function PlayersTab({ password }: { password: string }) {
 
   return (
     <div>
+      <SaveBar
+        count={pending.length}
+        onSave={saveDrafts}
+        onDiscard={() => setDrafts({})}
+        what={t({ message: "access and stages", context: "PlayersTab, what the save bar saves" })}
+      />
       {erasing && (
         <div ref={eraseSheet} className="mb-4 rounded-lg border border-border bg-card p-4">
           <Suspense fallback={<p className="text-sm text-muted-foreground"><Trans context="PlayersTab, p">Loading...</Trans></p>}>
@@ -182,7 +222,7 @@ export default function PlayersTab({ password }: { password: string }) {
             {filterPlayers(players, filter).map((p) => (
               <PlayerCard
                 key={p.id}
-                player={p}
+                player={drafts[p.id] ? { ...p, role: drafts[p.id].role ?? p.role, stageGranted: drafts[p.id].stage !== undefined ? drafts[p.id].stage ?? null : p.stageGranted } : p}
                 detail={detailFor(p.id)}
                 stages={stages}
                 paths={paths}
@@ -190,8 +230,8 @@ export default function PlayersTab({ password }: { password: string }) {
                 gameStarted={gameStarted}
                 picked={picked.includes(p.id)}
                 onPick={(on) => setPicked((s) => (on ? [...s, p.id] : s.filter((x) => x !== p.id)))}
-                onAccess={(role) => setRole(p.id, role, p.name)}
-                onStage={(id) => grant(p.id, id ?? "")}
+                onAccess={(role) => draftOf(p.id, { role })}
+                onStage={(id) => draftOf(p.id, { stage: id ?? null })}
                 onSignOut={() => revokeSessions(p.id, p.name)}
                 onDelete={() => setErasing({ id: p.id, email: p.email })}
                 footerExtra={

@@ -25,6 +25,9 @@ import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/jo
 import { ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import { Image } from "@/components/Image";
 import { usePageContent, usePageLang } from "@/hooks/usePageContent";
+import { useVillageDocFields } from "@/hooks/useVillageDocTranslation";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { fallbackLangOf } from "@shared/contentTranslationOverlay";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { HOME_PAGE } from "@shared/pageContent/home";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
@@ -173,9 +176,22 @@ export default function Home() {
    * used to follow the sentence was not the village's to change, so it is gone: the founding team has its own card in
    * the four ways at the foot of the page.
    */
+  // Those two words in the reader's language where the village has translated them (Admin, Translations,
+  // village_doc "brand"); a word with no translation keeps its English and says so with lang="en".
+  const brandWords = useVillageDocFields("brand");
+  const { locale } = useLocale();
+  const ownHeadline = project?.heroHeadline?.trim();
+  const ownSubline = project?.heroBody?.trim();
+  const brandLang = (field: string) => (fallbackLangOf(null, locale, field) && !brandWords[field] ? "en" : undefined);
   const hero: Record<string, string> | undefined = heroFields
-    ? { ...heroFields, headline: project?.heroHeadline?.trim() || heroFields.headline, subline: project?.heroBody?.trim() || heroFields.subline }
+    ? {
+        ...heroFields,
+        headline: ownHeadline ? brandWords["project.heroHeadline"] || ownHeadline : heroFields.headline,
+        subline: ownSubline ? brandWords["project.heroBody"] || ownSubline : heroFields.subline,
+      }
     : undefined;
+  const headlineLang = ownHeadline ? brandLang("project.heroHeadline") : langOf("hero.headline");
+  const sublineLang = ownSubline ? brandLang("project.heroBody") : langOf("hero.subline");
   const journey = page?.journey;
   const paths = page?.paths;
   // A journey switched off on its own in Admin, Pages takes its card with it,
@@ -263,6 +279,7 @@ export default function Home() {
               <p className={`relative mb-5 ${EYEBROW}`}>{hero.badge}</p>
             ) : null}
             <h1
+              lang={headlineLang}
               style={{ animationDelay: "0.05s" }}
               className={`hero-rise relative font-display ${headlineSize(hero?.headline ?? "")} leading-[1.08] text-foreground text-balance mb-6 break-words${ready ? "" : " invisible"}`}
             >
@@ -274,6 +291,7 @@ export default function Home() {
             </h1>
 
             <p
+              lang={sublineLang}
               style={{ animationDelay: "0.1s" }}
               className={`hero-rise relative max-w-[34em] text-lg sm:text-xl text-foreground/90 leading-relaxed mb-8${ready ? "" : " invisible"}`}
             >

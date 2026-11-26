@@ -54,6 +54,7 @@ import { Suspense, lazy, useCallback, useEffect, useId, useMemo, useRef, useStat
 import { Bell, ChevronDown, Settings2 } from "lucide-react";
 import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { groupTitle } from "@/lib/noticeGroupWords";
 import { buildFeed, unreadIdsOf, type FeedRow } from "@/lib/notificationFeed";
 import { loadNoticeKindWords, useNoticeKindWords } from "@/lib/noticeKindWords";
 import { useGameConfig } from "@/lib/gameApi";
@@ -124,7 +125,7 @@ export interface NotificationBellProps {
 }
 
 export default function NotificationBell({ memberId = null }: NotificationBellProps = {}) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const state = useSyncExternalStore(subscribeNotifications, getNotifyState, getNotifyState);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string[]>([]);
@@ -153,7 +154,8 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
   const words = useNoticeKindWords(open);
   const groups = useMemo(
     () => buildFeed(state.items, (type, platform) => (blurbs && typeof blurbs[type] === "string" && blurbs[type]) || platform, words),
-    [state.items, blurbs, words],
+    // The locale is a dependency: the words are read in the reader's language as the feed is built.
+    [state.items, blurbs, words, i18n.locale],
   );
   const unread = state.unread;
   // The badge counts UNSEEN, not unread. Opening the panel quiets it without
@@ -313,7 +315,7 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
                   id={`${uid}-${g.id}`}
                   className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
                 >
-                  {g.title}
+                  {groupTitle(g.id, g.title, i18n)}
                   {g.unread > 0 && <span className="ml-1.5 font-semibold normal-case tracking-normal text-teal-deep"><Trans context="NotificationBell, span">{g.unread} unread</Trans></span>}
                 </h3>
                 <ul>

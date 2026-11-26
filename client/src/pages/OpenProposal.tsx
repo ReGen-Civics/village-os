@@ -60,10 +60,11 @@ import Walkthrough from "@/components/openProposal/Walkthrough";
 import { WayInNote } from "@/components/openProposal/WayInNote";
 import type { ConsentAnswerOut, ConsentOut } from "@/components/roleProposal/proposalApi";
 import { gameFetch } from "@/lib/gameApi";
-import { DECIDE_WORDS, DOOR, type DoorReason } from "@shared/openProposalDecide";
+import { DOOR, type DoorReason } from "@shared/openProposalDecide";
 import { CONSENT_WORDS, type ConsentAnswer } from "@shared/roleProposalConsent";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, BTN_SECONDARY, WORLD } from "@/components/journey/look";
+import { decideWords, useDecideWords } from "@/components/openProposal/decideWords";
 
 /** One proposal as the page reads it (`GET /api/governance/open-proposals/:id`). */
 export interface ServedOpenProposal {
@@ -196,10 +197,10 @@ async function ask<T>(path: string, method: "GET" | "POST" = "GET", body?: unkno
   try {
     const res = await gameFetch(path, { method, cache: "no-store", ...(method === "POST" ? { body: JSON.stringify(body ?? {}) } : {}) });
     const data = await res.json().catch(() => null);
-    if (!res.ok) return { ok: false, status: res.status, error: String(data?.message ?? data?.error ?? DECIDE_WORDS.failed) };
+    if (!res.ok) return { ok: false, status: res.status, error: String(data?.message ?? data?.error ?? decideWords().failed) };
     return { ok: true, data: data as T };
   } catch {
-    return { ok: false, status: 0, error: DECIDE_WORDS.failed };
+    return { ok: false, status: 0, error: decideWords().failed };
   }
 }
 
@@ -216,6 +217,7 @@ interface Said {
 }
 
 export default function OpenProposal() {
+  const DW = useDecideWords();
   const { t } = useLingui();
   const params = useParams<{ id: string }>();
   const id = String(params.id ?? "");
@@ -297,8 +299,8 @@ export default function OpenProposal() {
         <div className="container max-w-3xl px-4 py-8">
           {back}
           <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
-            <h1 className="font-display text-2xl font-bold text-foreground">{DECIDE_WORDS.membersOnly}</h1>
-            <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted-foreground">{DECIDE_WORDS.membersOnlyLine}</p>
+            <h1 className="font-display text-2xl font-bold text-foreground">{DW.membersOnly}</h1>
+            <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted-foreground">{DW.membersOnlyLine}</p>
             {!user && (
               <div className="mt-5">
                 <SignInDoors next={`/open-proposals/${encodeURIComponent(id)}`} />
@@ -325,13 +327,13 @@ export default function OpenProposal() {
         {back}
         {state === "loading" && (
           <div className="flex justify-center py-16">
-            <BreathingLoader label={DECIDE_WORDS.loading} />
+            <BreathingLoader label={DW.loading} />
           </div>
         )}
-        {state === "missing" && <p className="mt-6 text-foreground">{DECIDE_WORDS.missing}</p>}
+        {state === "missing" && <p className="mt-6 text-foreground">{DW.missing}</p>}
         {state === "error" && (
           <p role="alert" className="mt-6 text-destructive">
-            {error || DECIDE_WORDS.loadFailed}
+            {error || DW.loadFailed}
           </p>
         )}
         {state === "ready" && p && (
@@ -345,24 +347,24 @@ export default function OpenProposal() {
                   {p.addressUnconfirmed.account ? ` ${p.addressUnconfirmed.account}` : ""}
                 </p>
               )}
-              <WayInNote id={p.id} conversation={p.kind === "conversation"} early={p.roles.filter((r) => r.early).map((r) => r.name ?? DECIDE_WORDS.roleGone)} mayInvite={p.status === "confirmed" && p.you.mayDecline} />
+              <WayInNote id={p.id} conversation={p.kind === "conversation"} early={p.roles.filter((r) => r.early).map((r) => r.name ?? DW.roleGone)} mayInvite={p.status === "confirmed" && p.you.mayDecline} />
               <h1 className="mt-1 font-display text-3xl font-bold text-foreground">
                 {p.agent
-                  ? <AgentHeading name={p.agent.name} roles={p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone).join(", ")} />
+                  ? <AgentHeading name={p.agent.name} roles={p.roles.map((r) => r.name ?? DW.roleGone).join(", ")} />
                   : founding
-                    ? DECIDE_WORDS.applies(p.proposer, p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone))
-                    : DECIDE_WORDS.heading(p.proposer, p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone), !!p.term)}
+                    ? DW.applies(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone))
+                    : DW.heading(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone), !!p.term)}
               </h1>
               <p className="mt-2 leading-relaxed text-muted-foreground">
                 {p.agent ? (
                   t({ message: "An agent, proposed by the member who keeps it. Adopted, it is seated on these roles at once, marked as an agent, with its keeper beside it.", context: "open proposal: an agent's proposal" })
                 ) : founding ? (
-                  DECIDE_WORDS.appliedFromOutside
+                  DW.appliedFromOutside
                 ) : p.term ? (
-                  DECIDE_WORDS.fromOutsideMoon(civilDayWords(p.term.startsOn), civilDayWords(p.term.endsOn))
+                  DW.fromOutsideMoon(civilDayWords(p.term.startsOn), civilDayWords(p.term.endsOn))
                 ) : (
                   <>
-                    {DECIDE_WORDS.fromOutside}
+                    {DW.fromOutside}
                     {p.season ? ` ${p.season.name ?? "The season"} starts on ${civilDayWords(p.season.startsOn)}.` : ""}
                   </>
                 )}
@@ -377,13 +379,13 @@ export default function OpenProposal() {
 
             <section aria-labelledby="op-roles">
               <h2 id="op-roles" className="text-lg font-bold text-foreground">
-                {DECIDE_WORDS.rolesHeading}
+                {DW.rolesHeading}
               </h2>
               <ul className="mt-3 space-y-3">
                 {p.roles.map((r) => (
                   <li key={r.id} className="rounded-xl border border-border bg-card p-4">
                     <p className="font-semibold text-foreground">
-                      {r.name ?? DECIDE_WORDS.roleGone}
+                      {r.name ?? DW.roleGone}
                       {r.circle && <span className="font-normal text-muted-foreground"> · {r.circle}</span>}
                     </p>
                     {r.note && <p className="mt-1 whitespace-pre-wrap break-words text-foreground">{r.note}</p>}
@@ -412,16 +414,16 @@ export default function OpenProposal() {
 
             <section aria-labelledby="op-words">
               <h2 id="op-words" className="text-lg font-bold text-foreground">
-                {DECIDE_WORDS.wordsHeading}
+                {DW.wordsHeading}
               </h2>
               <dl className="mt-3 space-y-4">
                 <div>
-                  <dt className="text-sm font-semibold text-foreground">{p.agent ? t({ message: "Why this agent, in its keeper's words", context: "open proposal: an agent's proposal" }) : DECIDE_WORDS.why}</dt>
+                  <dt className="text-sm font-semibold text-foreground">{p.agent ? t({ message: "Why this agent, in its keeper's words", context: "open proposal: an agent's proposal" }) : DW.why}</dt>
                   <dd className="mt-1 whitespace-pre-wrap break-words text-foreground">{p.why}</dd>
                 </div>
                 {p.aim && (
                   <div>
-                    <dt className="text-sm font-semibold text-foreground">{DECIDE_WORDS.aim}</dt>
+                    <dt className="text-sm font-semibold text-foreground">{DW.aim}</dt>
                     <dd className="mt-1 whitespace-pre-wrap break-words text-foreground">{p.aim}</dd>
                   </div>
                 )}
@@ -489,7 +491,7 @@ export default function OpenProposal() {
 
             {side && (
             <aside
-              aria-label={DECIDE_WORDS.deciderHeading}
+              aria-label={DW.deciderHeading}
               className="mt-8 space-y-6 lg:sticky lg:top-28 lg:mt-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pb-1"
               id="op-decide-panel"
               data-decide-panel=""
@@ -498,13 +500,13 @@ export default function OpenProposal() {
             {p.status === "confirmed" && (
               <section aria-labelledby="op-decide" className="rounded-xl border-2 border-notice/40 bg-card p-5" data-decider-card="">
                 <h2 id="op-decide" className="text-lg font-bold text-foreground">
-                  {DECIDE_WORDS.deciderHeading}
+                  {DW.deciderHeading}
                 </h2>
                 {/* Beside the read on a wide screen: who and which roles, so the panel stands on its own once the heading has scrolled away. */}
                 <p className="hidden text-sm text-muted-foreground lg:block" data-decide-summary="">
                   <span className="font-semibold text-foreground">{p.agent ? p.agent.name : (p.proposer ?? t({ message: "Somebody from outside the village", context: "open proposal: the side panel when the proposer has no name" }))}</span>
                   {" · "}
-                  {p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone).join(", ")}
+                  {p.roles.map((r) => r.name ?? DW.roleGone).join(", ")}
                 </p>
                 {p.you.mayReview && p.review ? (
                   <OurReview
@@ -522,7 +524,7 @@ export default function OpenProposal() {
                   />
                 ) : p.you.mayAdopt || p.you.mayDecline ? (
                   <>
-                    <p className="mt-1 text-foreground">{p.you.formerMember ? DECIDE_WORDS.formerMember : record ? CONSENT_WORDS.recordLine : DECIDE_WORDS.deciderLine}</p>
+                    <p className="mt-1 text-foreground">{p.you.formerMember ? DW.formerMember : record ? CONSENT_WORDS.recordLine : DW.deciderLine}</p>
                     <div className="mt-4" data-applicant-note-field="">
                       <label htmlFor="op-note" className="mb-2 block text-sm font-semibold text-card-foreground">
                         {t`A note for the applicant (they will see this)`}
@@ -547,7 +549,7 @@ export default function OpenProposal() {
                       // On a wide screen the row stays at the foot of the side panel while its note and checks scroll above it.
                       <div className="mt-4 lg:sticky lg:bottom-0 lg:-mx-5 lg:-mb-5 lg:rounded-b-xl lg:bg-card lg:px-5 lg:py-4">
                       <DecideDock
-                        label={DECIDE_WORDS.deciderHeading}
+                        label={DW.deciderHeading}
                         note={adoptWaits ? t({ message: "Something waits before you can adopt. It is in the card further down.", context: "open proposal: the floating decision row on a phone" }) : undefined}
                       >
                       <div className="flex flex-wrap gap-2">
@@ -560,7 +562,7 @@ export default function OpenProposal() {
                             className={PRIMARY}
                           >
                             <Check className="h-4 w-4" aria-hidden="true" />
-                            {p.beforeAdopt?.seatsFull.length ? DECIDE_WORDS.adoptWhenASeatOpens : (record ?? DECIDE_WORDS.adopt)}
+                            {p.beforeAdopt?.seatsFull.length ? DW.adoptWhenASeatOpens : (record ?? DW.adopt)}
                           </button>
                         )}
                         {p.you.mayDecline && (
@@ -575,15 +577,15 @@ export default function OpenProposal() {
                             className={SECONDARY}
                           >
                             <X className="h-4 w-4" aria-hidden="true" />
-                            {DECIDE_WORDS.decline}
+                            {DW.decline}
                           </button>
                         )}
                       </div>
                       </DecideDock>
                       </div>
                     ) : (
-                      <div role="group" aria-label={DECIDE_WORDS.decline} className="mt-4 rounded-xl border border-border bg-card p-4">
-                        <p className="text-foreground">{DECIDE_WORDS.declineAsk}</p>
+                      <div role="group" aria-label={DW.decline} className="mt-4 rounded-xl border border-border bg-card p-4">
+                        <p className="text-foreground">{DW.declineAsk}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
                             type="button"
@@ -594,10 +596,10 @@ export default function OpenProposal() {
                             }}
                             className="inline-flex min-h-[44px] items-center rounded-lg bg-destructive px-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                           >
-                            {DECIDE_WORDS.declineYes}
+                            {DW.declineYes}
                           </button>
                           <button type="button" onClick={() => setDeclining(false)} className={SECONDARY}>
-                            {DECIDE_WORDS.declineNo}
+                            {DW.declineNo}
                           </button>
                         </div>
                       </div>
@@ -608,7 +610,7 @@ export default function OpenProposal() {
                     {p.you.own
                       ? p.agent
                         ? t({ message: "You keep this agent, so another holder of the power to place people in roles decides it.", context: "open proposal: the keeper reads their own agent's proposal" })
-                        : DECIDE_WORDS.ownProposal
+                        : DW.ownProposal
                       : p.door.words}
                   </p>
                 )}
@@ -618,7 +620,7 @@ export default function OpenProposal() {
             {(p.status === "declined" || (p.status === "adopted" && !p.invitation)) && (
               <section aria-labelledby="op-outcome" className="rounded-xl border border-border bg-card p-5" data-decision-outcome={p.status}>
                 <h2 id="op-outcome" className="text-lg font-bold text-foreground">
-                  {DECIDE_WORDS.deciderHeading}
+                  {DW.deciderHeading}
                 </h2>
                 <p className="mt-1 text-foreground">{p.statusWords}</p>
               </section>
@@ -627,27 +629,27 @@ export default function OpenProposal() {
             {p.status === "adopted" && p.invitation && (
               <section aria-labelledby="op-invitation" className="rounded-xl border border-border bg-card p-5" data-invitation={p.invitation.state}>
                 <h2 id="op-invitation" className="text-lg font-bold text-foreground">
-                  {DECIDE_WORDS.deciderHeading}
+                  {DW.deciderHeading}
                 </h2>
                 {p.invitation.state === "used" ? (
-                  <p className="mt-1 text-foreground">{DECIDE_WORDS.invitationUsed}</p>
+                  <p className="mt-1 text-foreground">{DW.invitationUsed}</p>
                 ) : (
                   <>
                     {p.invitation.sentAt && (
                       <p className="mt-1 text-foreground" data-invitation-sent="">
-                        {DECIDE_WORDS.invitationSent(new Date(p.invitation.sentAt).toLocaleString(), p.invitation.emailed !== false)}
+                        {DW.invitationSent(new Date(p.invitation.sentAt).toLocaleString(), p.invitation.emailed !== false)}
                       </p>
                     )}
                     {p.invitation.askedAt && (
                       <p className="mt-1 font-medium text-foreground" data-new-invitation-asked="">
-                        {DECIDE_WORDS.newInvitationAsked}
+                        {DW.newInvitationAsked}
                       </p>
                     )}
-                    <p className="mt-1 text-foreground">{DECIDE_WORDS.reissueLine}</p>
+                    <p className="mt-1 text-foreground">{DW.reissueLine}</p>
                     {p.you.mayReissue && (
                       <button type="button" disabled={busy} onClick={() => void act(`${base(p.id)}/invitation`)} className={`${SECONDARY} mt-3`}>
                         <Mail className="h-4 w-4" aria-hidden="true" />
-                        {DECIDE_WORDS.reissue}
+                        {DW.reissue}
                       </button>
                     )}
                   </>
@@ -666,13 +668,13 @@ export default function OpenProposal() {
                       className={SECONDARY}
                       onClick={() =>
                         void navigator.clipboard?.writeText(said.link as string).then(
-                          () => toast.success(DECIDE_WORDS.copied),
-                          () => toast.error(DECIDE_WORDS.failed),
+                          () => toast.success(DW.copied),
+                          () => toast.error(DW.failed),
                         )
                       }
                     >
                       <Copy className="h-4 w-4" aria-hidden="true" />
-                      {DECIDE_WORDS.copy}
+                      {DW.copy}
                     </button>
                   </div>
                 )}
@@ -703,14 +705,15 @@ function OurReview({ review, note, onNote, busy, asking, onAsk, onInvite, onNotI
   onInvite: () => void;
   onNotInvite: () => void;
 }) {
+  const DW = useDecideWords();
   const { t } = useLingui();
   const total = review.conversations.reduce((n, c) => n + c.minutes, 0);
   return (
     <div className="mt-3 space-y-5" data-our-review={review.stage}>
-      <p className="font-display text-xl leading-snug text-foreground">{DECIDE_WORDS.review.heading}</p>
-      <p className="leading-relaxed text-muted-foreground">{DECIDE_WORDS.review.line}</p>
+      <p className="font-display text-xl leading-snug text-foreground">{DW.review.heading}</p>
+      <p className="leading-relaxed text-muted-foreground">{DW.review.line}</p>
       <div className="border-t border-notice/40 pt-4">
-        <p className="text-sm font-semibold text-foreground">{DECIDE_WORDS.review.conversations}</p>
+        <p className="text-sm font-semibold text-foreground">{DW.review.conversations}</p>
         {review.conversations.length ? (
           <ol className="mt-2 grid gap-1.5 text-foreground" data-review-conversations="">
             {review.conversations.map((c, i) => (
@@ -722,7 +725,7 @@ function OurReview({ review, note, onNote, busy, asking, onAsk, onInvite, onNotI
             <li className="text-sm text-muted-foreground">{t({ message: `${total} minutes in all`, context: "open proposal: our review, the conversations' total" })}</li>
           </ol>
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">{DECIDE_WORDS.review.noConversations}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{DW.review.noConversations}</p>
         )}
       </div>
       <div className="border-t border-notice/40 pt-4" data-applicant-note-field="">
@@ -742,21 +745,21 @@ function OurReview({ review, note, onNote, busy, asking, onAsk, onInvite, onNotI
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={busy} onClick={onInvite} className={BTN_PRIMARY} data-review-invite="">
             <Mail className="h-4 w-4" aria-hidden="true" />
-            {DECIDE_WORDS.review.invite}
+            {DW.review.invite}
           </button>
           <button type="button" disabled={busy} onClick={() => onAsk(true)} className={BTN_SECONDARY} data-review-not-invite="">
-            {DECIDE_WORDS.review.notInvite}
+            {DW.review.notInvite}
           </button>
         </div>
       ) : (
-        <div role="group" aria-label={DECIDE_WORDS.review.notInvite} className="rounded-xl border border-border bg-card p-4">
-          <p className="text-foreground">{DECIDE_WORDS.review.notInviteAsk}</p>
+        <div role="group" aria-label={DW.review.notInvite} className="rounded-xl border border-border bg-card p-4">
+          <p className="text-foreground">{DW.review.notInviteAsk}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" disabled={busy} onClick={onNotInvite} className={PRIMARY} data-review-not-invite-yes="">
-              {DECIDE_WORDS.review.notInviteYes}
+              {DW.review.notInviteYes}
             </button>
             <button type="button" onClick={() => onAsk(false)} className={SECONDARY}>
-              {DECIDE_WORDS.review.notInviteNo}
+              {DW.review.notInviteNo}
             </button>
           </div>
         </div>
@@ -772,11 +775,12 @@ function OurReview({ review, note, onNote, busy, asking, onAsk, onInvite, onNotI
  * Adopt stays disabled until the list is clear, so it never answers a refusal the page could have shown.
  */
 function BeforeAdopt({ left, forASeat, onForASeat }: { left: ServedOpenProposal["beforeAdopt"] | null; forASeat: boolean; onForASeat: (v: boolean) => void }) {
+  const DW = useDecideWords();
   const { t } = useLingui();
   if (!left || (!left.conversations.length && !left.seatsFull.length)) return null;
   return (
     <div id="op-before-adopt" className="mt-3 rounded-xl border-2 border-notice/60 bg-card p-4" data-before-adopt="">
-      <p className="font-semibold text-foreground">{DECIDE_WORDS.leftHeading}</p>
+      <p className="font-semibold text-foreground">{DW.leftHeading}</p>
       {left.conversations.length > 0 && (
         <ul className="mt-2 grid gap-2 text-sm text-foreground">
           {left.conversations.map((c) => (
@@ -786,7 +790,7 @@ function BeforeAdopt({ left, forASeat, onForASeat }: { left: ServedOpenProposal[
                 <>
                   {" "}
                   <Link href="/map/circles" className="font-semibold text-notice underline underline-offset-2">
-                    {DECIDE_WORDS.chartLink}
+                    {DW.chartLink}
                   </Link>
                 </>
               )}

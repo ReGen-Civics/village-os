@@ -4,6 +4,8 @@
  * longer lists it. The read carries the member's token where there is one, as the Roles page's does.
  */
 import { useEffect, useState } from "react";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { gameFetch } from "@/lib/gameApi";
 
 export type OrgSeat = { seat: Record<string, any>; circleName: string | null } | "missing" | null;
@@ -11,10 +13,11 @@ export type OrgSeat = { seat: Record<string, any>; circleName: string | null } |
 export function useOrgSeats(roleIds: readonly string[]): Record<string, OrgSeat> {
   const key = roleIds.join("|");
   const [seats, setSeats] = useState<Record<string, OrgSeat>>({});
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   useEffect(() => {
     let live = true;
     if (!key) return;
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!live) return;
@@ -31,6 +34,6 @@ export function useOrgSeats(roleIds: readonly string[]): Record<string, OrgSeat>
     return () => {
       live = false;
     };
-  }, [key]);
+  }, [key, locale]);
   return seats;
 }

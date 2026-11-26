@@ -1,5 +1,7 @@
 import Layout from "@/components/Layout";
 import GlossaryTip from "@/components/GlossaryTip";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
 import CircleName from "@/components/circles/CircleName";
 import { anchorCircleId } from "@shared/circlePicker";
@@ -26,6 +28,7 @@ import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
 import { useUserOrVisitor } from "@/lib/newcomer";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
+import { roleSheetWords } from "@/components/power/roleSheetMirror";
 import CircleLines, { type CircleHolder } from "@/components/geneKeys/CircleLines";
 import { coordinatingCircle } from "@shared/coordinatingCircle";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -254,6 +257,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
 }
 
 export default function Circles() {
+  const { locale } = useLocale(); // circle names come in the reader's language (lib/readerLanguage.ts)
   const [expandedCircle, setExpandedCircle] = useState<string | null>(null);
   const [circles, setCircles] = useState<CircleEntry[] | null>(null);
   // The rows as they arrived, kept whole for the mini map and the role card.
@@ -293,7 +297,7 @@ export default function Circles() {
   // Authorization header alone. So this page asked as a stranger however
   // signed in the reader was, and the names never arrived for anybody.
   useEffect(() => {
-    gameFetch("/api/org")
+    gameFetch("/api/org", readerLanguage(locale))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data) => {
         if (!data || !Array.isArray(data.circles)) throw new Error("bad shape");
@@ -316,7 +320,7 @@ export default function Circles() {
             // An agent's member row carries a vendor's name, so it is listed
             // as "An agent", the words the card and the public tier use.
             const heldBy = seats
-              .flatMap((s: any) => (s.holders ?? []).map(orgHolderName))
+              .flatMap((s: any) => (s.holders ?? []).map((h: any) => orgHolderName(h, roleSheetWords().words.agent)))
               .filter(Boolean);
             /*
              * A LIE THIS PAGE HAS BEEN TELLING SINCE THE NAMES WERE TIERED.
@@ -339,7 +343,7 @@ export default function Circles() {
                 seats
                   .flatMap((s: any) => s.holders ?? [])
                   .filter((h: any) => h?.userId && !h?.lapsed)
-                  .map((h: any) => [String(h.userId), { id: String(h.userId), name: orgHolderName(h) || "A member" }] as const),
+                  .map((h: any) => [String(h.userId), { id: String(h.userId), name: orgHolderName(h, roleSheetWords().words.agent) || "A member" }] as const),
               ).values(),
             );
             const heldSeats = seats.reduce(
@@ -384,7 +388,7 @@ export default function Circles() {
         );
       })
       .catch(() => setFailed(true));
-  }, []);
+  }, [locale]);
 
   const toggle = (id: string) =>
     setExpandedCircle((prev) => (prev === id ? null : id));

@@ -2,10 +2,12 @@
 /**
  * The admin's switch for another member's operations report email: it starts
  * from what the roster says, PUTs `{opsEmail}` to the member's own route, and
- * goes back to where it was when the server refuses.
+ * keeps the change on the page's one save bar, in the server's words, when
+ * the server refuses.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { resetUnsavedForTests } from "@/lib/unsavedChanges";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -19,7 +21,17 @@ beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  cleanup();
+  resetUnsavedForTests();
+  vi.unstubAllGlobals();
+});
+
+const barSave = async () => {
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  });
+};
 
 describe("OpsEmailSwitch", () => {
   it("starts daily, and off PUTs to the member's ops-email route", async () => {
@@ -28,6 +40,10 @@ describe("OpsEmailSwitch", () => {
     const select = screen.getByLabelText("Operations report email") as HTMLSelectElement;
     expect(select.value).toBe("daily");
     fireEvent.change(select, { target: { value: "off" } });
+    // Nothing is sent until the one save bar's Save.
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await screen.findByText("1 change not saved yet")).toBeTruthy();
+    await barSave();
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toMatch(/\/admin\/players\/m-1\/ops-email$/);
@@ -36,14 +52,17 @@ describe("OpsEmailSwitch", () => {
     await waitFor(() => expect(select.value).toBe("off"));
   });
 
-  it("stays where it was when the server refuses", async () => {
+  it("keeps the change on the bar, in the server's words, when the server refuses", async () => {
     fetchMock.mockResolvedValue(reply(400, { error: "opsEmail is daily or off." }));
     render(<OpsEmailSwitch userId="m-1" initial="off" password="" />);
     const select = screen.getByLabelText("Operations report email") as HTMLSelectElement;
     expect(select.value).toBe("off");
     fireEvent.change(select, { target: { value: "daily" } });
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    await waitFor(() => expect(select.disabled).toBe(false));
-    expect(select.value).toBe("off");
+    await barSave();
+    expect(await screen.findByText(/opsEmail is daily or off\./)).toBeTruthy();
+    expect(screen.getByText("1 change not saved yet")).toBeTruthy();
+    // Discard puts the stored value back.
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    await waitFor(() => expect(select.value).toBe("off"));
   });
 });

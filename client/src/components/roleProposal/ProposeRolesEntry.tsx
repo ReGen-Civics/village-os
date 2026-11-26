@@ -18,13 +18,15 @@ import { authToken } from "@/lib/gameApi";
 import { draftFill } from "@shared/roleProposalProgress";
 import { BTN_GOLD, KICKER, PANEL } from "@/components/profileDash/dashUi";
 import { fetchMine, type MineOut, type ProposalOut } from "./proposalApi";
-import { ADOPTED_HEADING, RP_WORDS, STATE_HEADINGS } from "./proposalWords";
+import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
 import DownloadCardText from "./DownloadCardText";
 import { MY_CARD_TEXT_URL } from "./roleCardApi";
+import { proposalWords, useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
-const standingLine = (p: ProposalOut): string => (p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : RP_WORDS.submitted);
+const standingLine = (p: ProposalOut): string => (p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : proposalWords().submitted);
 
 export default function ProposeRolesEntry() {
+  const RW = useProposalWords();
   const [mine, setMine] = useState<MineOut | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -45,9 +47,9 @@ export default function ProposeRolesEntry() {
   if (failed && !mine) {
     return (
       <article className={`${PANEL} p-5 sm:p-6`} data-propose-entry="failed">
-        <p className="text-sm text-foreground">{RP_WORDS.profileFailed}</p>
+        <p className="text-sm text-foreground">{RW.profileFailed}</p>
         <button type="button" className={`${BTN_GOLD} mt-3`} onClick={() => setAttempt((n) => n + 1)}>
-          {RP_WORDS.tryAgain}
+          {RW.tryAgain}
         </button>
       </article>
     );
@@ -71,15 +73,15 @@ export default function ProposeRolesEntry() {
         goalCount: draft?.season?.seasonalGoals?.length ?? 0,
       })
     : null;
-  const title = draftId ? RP_WORDS.profileContinue : standing ? RP_WORDS.profileSubmitted : RP_WORDS.profilePropose;
-  const line = fill ? fill.line : standing ? standingLine(standing) : RP_WORDS.profileProposeLine;
-  const action = draftId ? RP_WORDS.profileContinue : standing ? RP_WORDS.profileSee : RP_WORDS.profilePropose;
+  const title = draftId ? RW.profileContinue : standing ? RW.profileSubmitted : RW.profilePropose;
+  const line = fill ? fill.line : standing ? standingLine(standing) : RW.profileProposeLine;
+  const action = draftId ? RW.profileContinue : standing ? RW.profileSee : RW.profilePropose;
   const kind = draftId ? "continue" : standing ? "submitted" : "propose";
   const width = fill ? Math.round((fill.done / fill.total) * 100) : 0;
 
   return (
     <article className={`${PANEL} p-5 sm:p-6`} data-propose-entry={kind} aria-labelledby="propose-role-title">
-      <p className={KICKER}>{RP_WORDS.profileKicker}</p>
+      <p className={KICKER}>{RW.profileKicker}</p>
       <h2 id="propose-role-title" className="mt-1 font-display text-xl font-bold text-foreground">
         {title}
       </h2>
@@ -113,7 +115,7 @@ export default function ProposeRolesEntry() {
         </Link>
         {submitted && !standing && (
           <Link href={`/role-proposals/${encodeURIComponent(submitted.id)}`} className="inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2">
-            {RP_WORDS.profileSee}
+            {RW.profileSee}
           </Link>
         )}
         <DownloadCardText url={MY_CARD_TEXT_URL} />

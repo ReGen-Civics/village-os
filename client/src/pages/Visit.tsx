@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { SeedPin } from "@/components/sacred/living";
 import VoiceArea from "@/components/voice/VoiceArea";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useVillageDoc } from "@/hooks/useVillageDocTranslation";
 
 interface VisitType {
@@ -50,6 +50,7 @@ export default function Visit() {
   const [form, setForm] = useState({ name: "", email: "", visitType: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLingui();
   const [error, setError] = useState("");
   const [cfgFailed, setCfgFailed] = useState(false);
   // The headline and the after-sending line are the village's own, from
@@ -79,9 +80,9 @@ export default function Visit() {
   const visitTypes = Array.isArray(cfg?.visit_types) ? [...cfg.visit_types].sort((a, b) => a.order - b.order) : [];
   const logistics = cfg
     ? [
-        { Icon: Plane, title: "Getting there", body: cfg.logistics?.getting_there },
-        { Icon: HomeIcon, title: "Accommodation", body: cfg.logistics?.accommodation },
-        { Icon: Backpack, title: "What to bring", body: cfg.logistics?.what_to_bring },
+        { Icon: Plane, title: t({ message: "Getting there", context: "Visit, logistics card" }), body: cfg.logistics?.getting_there },
+        { Icon: HomeIcon, title: t({ message: "Accommodation", context: "Visit, logistics card" }), body: cfg.logistics?.accommodation },
+        { Icon: Backpack, title: t({ message: "What to bring", context: "Visit, logistics card" }), body: cfg.logistics?.what_to_bring },
       ].filter((l) => String(l.body ?? "").trim())
     : [];
 

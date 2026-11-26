@@ -19,13 +19,15 @@ import { PlayerRoleCardView } from "@/components/playerCard/PlayerRoleCard";
 import { COMMENT_MAX } from "@shared/roleProposals";
 import { civilDayWords } from "@shared/seasonPlans";
 import { fetchSharedComments, postSharedComment, type CommentOut, type SharedOut } from "./proposalApi";
-import { RP_WORDS } from "./proposalWords";
+
 import { changedSections } from "./roleWords";
 import { FeedbackList } from "./StepShare";
 import { ConsentSummary } from "./CircleConsent";
 import { INPUT, LEDE, PANEL, PRIMARY, QUIET } from "./parts";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export default function SharedProposal({ token, shared }: { token: string; shared: SharedOut }) {
+  const RW = useProposalWords();
   const { proposal, card, you } = shared;
   const [comments, setComments] = useState<CommentOut[] | null>(null);
   const [text, setText] = useState("");
@@ -52,7 +54,7 @@ export default function SharedProposal({ token, shared }: { token: string; share
     if (r.ok) {
       setComments(r.data.comments);
       setText("");
-      setSaid({ ok: true, text: RP_WORDS.feedbackSent });
+      setSaid({ ok: true, text: RW.feedbackSent });
     } else setSaid({ ok: false, text: r.error });
   };
 
@@ -60,13 +62,13 @@ export default function SharedProposal({ token, shared }: { token: string; share
   return (
     <div className="grid gap-5" data-shared-tier={you.tier}>
       <header className="grid gap-1">
-        <h1 className="font-display text-3xl font-bold text-foreground">{RP_WORDS.sharedTitle}</h1>
-        <p className={LEDE}>{target ? RP_WORDS.forSeason(target.name, civilDayWords(target.startsOn)) : proposal.targetWords}</p>
+        <h1 className="font-display text-3xl font-bold text-foreground">{RW.sharedTitle}</h1>
+        <p className={LEDE}>{target ? RW.forSeason(target.name, civilDayWords(target.startsOn)) : proposal.targetWords}</p>
         {you.isOwner && (
           <p className="text-sm text-foreground">
-            {RP_WORDS.yourOwn}{" "}
+            {RW.yourOwn}{" "}
             <Link href={`/role-proposals/${encodeURIComponent(proposal.id)}`} className={`${QUIET} px-0`}>
-              {proposal.status === "draft" ? RP_WORDS.editYourOwn : RP_WORDS.profileSee}
+              {proposal.status === "draft" ? RW.editYourOwn : RW.profileSee}
             </Link>
           </p>
         )}
@@ -77,20 +79,20 @@ export default function SharedProposal({ token, shared }: { token: string; share
       {/* Where a submitted proposal stands, for a member reading it by its link (PR D). The public tier gets no consent. */}
       {readsFeedback && proposal.status === "submitted" && proposal.consent && <ConsentSummary consent={proposal.consent} decided={proposal.decided} />}
 
-      {you.tier === "public" && <p className={LEDE}>{RP_WORDS.readOnly}</p>}
+      {you.tier === "public" && <p className={LEDE}>{RW.readOnly}</p>}
 
       {you.mayComment && !you.isOwner && (
         <section aria-labelledby="rp-shared-feedback" className={`${PANEL} grid gap-2`} data-comment-box="">
           <h2 id="rp-shared-feedback" className="font-semibold text-foreground">
-            {RP_WORDS.feedbackLabel}
+            {RW.feedbackLabel}
           </h2>
           <label className="grid gap-1 text-sm text-muted-foreground">
-            {RP_WORDS.feedbackHelp}
-            <textarea rows={4} maxLength={COMMENT_MAX} value={text} onChange={(e) => setText(e.target.value)} className={INPUT} aria-label={RP_WORDS.feedbackLabel} />
+            {RW.feedbackHelp}
+            <textarea rows={4} maxLength={COMMENT_MAX} value={text} onChange={(e) => setText(e.target.value)} className={INPUT} aria-label={RW.feedbackLabel} />
           </label>
           <div>
             <button type="button" disabled={busy || !text.trim()} onClick={() => void send()} className={PRIMARY}>
-              {RP_WORDS.sendFeedback}
+              {RW.sendFeedback}
             </button>
           </div>
           {said && (
@@ -100,17 +102,18 @@ export default function SharedProposal({ token, shared }: { token: string; share
           )}
         </section>
       )}
-      {readsFeedback && !you.mayComment && proposal.status === "submitted" && <p className={LEDE}>{RP_WORDS.submittedNoFeedback}</p>}
+      {readsFeedback && !you.mayComment && proposal.status === "submitted" && <p className={LEDE}>{RW.submittedNoFeedback}</p>}
       {readsFeedback && (you.isOwner ? <FeedbackList comments={comments} /> : comments && comments.length > 0 ? <OwnFeedback comments={comments} /> : null)}
     </div>
   );
 }
 
 function OwnFeedback({ comments }: { comments: readonly CommentOut[] }) {
+  const RW = useProposalWords();
   return (
     <section aria-labelledby="rp-own-feedback" className={`${PANEL} grid gap-2`}>
       <h2 id="rp-own-feedback" className="font-semibold text-foreground">
-        {RP_WORDS.yourFeedback}
+        {RW.yourFeedback}
       </h2>
       <ul className="grid gap-2">
         {comments.map((c) => (

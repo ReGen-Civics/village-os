@@ -37,7 +37,8 @@
  */
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { m, useAnimate } from "framer-motion";
-import { SHEET_WORDS, seatSheet, type SeatInput, type SheetContext } from "@shared/roleSheet";
+import { seatSheet, type SeatInput, type SheetContext } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { useGlossGroup } from "@/components/sheet/GlossChip";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatCardFront from "./SeatCardFront";
@@ -95,7 +96,9 @@ export default function SeatTradingCard({
   faces?: "flip" | "stacked";
   className?: string;
 }) {
-  const view = seatSheet(input, ctx);
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
+  const view = seatSheet(input, { ...ctx, words: RS });
   const stacked = faces === "stacked";
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const nameId = `${uid}-name`;

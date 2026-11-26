@@ -27,9 +27,13 @@ export function useReducedMotion(): boolean {
 /** The world around the video: `flow-root` keeps the card's margin inside it, so no plain band opens under the header. */
 export const VIDEO_WORLD = "flow-root";
 
-/** The first screen: the video, and a shade that deepens toward the words at the bottom. */
+/**
+ * The first screen: the video, and a shade that deepens toward the words at the bottom. Its foot clears the phone's
+ * tab bar (`--tabbar-h`, 0 on a wide screen), or "Come in" sits under the bar and a tap on it lands on the bar
+ * (iPhone 13, 1.3.77: the door at 580 to 624 of 664 and the bar from 599).
+ */
 export const HERO =
-  "relative z-10 flex min-h-[calc(100svh-6rem)] flex-col justify-end pb-[12svh] pt-24 bg-[linear-gradient(to_top,rgba(10,22,20,0.86)_0%,rgba(10,22,20,0.76)_50%,rgba(10,22,20,0.5)_76%,rgba(10,22,20,0)_100%)]"; // theme-ok: a shade over the village's own video, dark in every palette so the white words on it hold AA
+  "relative z-10 flex min-h-[calc(100svh-6rem)] flex-col justify-end pb-[calc(var(--tabbar-h,0px)+8svh)] pt-8 sm:pt-24 bg-[linear-gradient(to_top,rgba(10,22,20,0.86)_0%,rgba(10,22,20,0.76)_50%,rgba(10,22,20,0.5)_76%,rgba(10,22,20,0)_100%)]"; // theme-ok: a shade over the village's own video, dark in every palette so the white words on it hold AA
 
 /** The words on the first screen, white on the shade. */
 export const ON_VIDEO = {
@@ -43,7 +47,7 @@ export const ON_VIDEO = {
 
 /** The glass card the form sits on: the video shows through it, softened, and it rises into view. */
 export const GLASS =
-  "entrance-rise relative z-10 mx-3 mb-[10svh] w-auto rounded-2xl border border-border bg-card/80 px-5 shadow-sm backdrop-blur-xl sm:mx-auto sm:w-full sm:px-10";
+  "entrance-rise entrance-card relative z-10 mx-3 mb-[10svh] w-auto rounded-2xl border border-border bg-card/80 px-5 shadow-sm backdrop-blur-xl sm:mx-auto sm:w-full sm:px-10";
 
 /** The form's own panel on the glass: an edge and a lighter wash, so the glass reads through it. */
 export const GLASS_PANEL = "rounded-2xl border-2 border-notice/60 bg-card/50 p-5 sm:p-8";
