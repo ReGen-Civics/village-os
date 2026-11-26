@@ -14,15 +14,15 @@
  * Light-only, like the rest of this folder.
  */
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 export default function VillageTokensWordField({ password }: { password: string }) {
+  const { t } = useLingui();
   const [saved, setSaved] = useState<string | null>(null);
   const [fallback, setFallback] = useState("Village Tokens");
   const [value, setValue] = useState("");
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -42,8 +42,8 @@ export default function VillageTokensWordField({ password }: { password: string 
 
   const changed = saved !== null && value.trim() !== saved;
 
-  const save = async () => {
-    setSaving(true);
+  /** Saved from the page's one save bar (components/SaveBar.tsx). */
+  const save = async (): Promise<SaveResult> => {
     try {
       const res = await fetch(`${API_BASE}/admin/brand`, {
         method: "PUT",
@@ -51,15 +51,14 @@ export default function VillageTokensWordField({ password }: { password: string 
         body: JSON.stringify({ currency: { collectiveName: value.trim().slice(0, 60) } }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
+      if (!res.ok) return { ok: false, reason: refusal(data, t({ message: "Could not save that", context: "VillageTokensWordField, refused" })) };
       const word = String(data.brand?.currency?.collectiveName ?? "").trim();
       setSaved(word);
       setValue(word);
-      toast.success(`Your tokens are called ${word || fallback} together`);
-    } catch (e: any) {
-      toast.error(e?.message || "Could not save that");
+      return { ok: true };
+    } catch {
+      return { ok: false, reason: t({ message: "Could not save that", context: "VillageTokensWordField, refused" }) };
     }
-    setSaving(false);
   };
 
   return (
@@ -77,19 +76,16 @@ export default function VillageTokensWordField({ password }: { password: string 
           value={value}
           maxLength={60}
           onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && changed) save(); }}
           placeholder={fallback}
           className="text-sm border border-border rounded-lg px-2 py-1 w-56"
         />
-        <button
-          type="button"
-          onClick={save}
-          disabled={!changed || saving}
-          className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"
-        >
-          <Trans context="VillageTokensWordField, button">Save
-        </Trans></button>
       </div>
+      <SaveBar
+        count={changed ? 1 : 0}
+        onSave={save}
+        onDiscard={() => setValue(saved ?? "")}
+        what={t({ message: "what your tokens are called together", context: "VillageTokensWordField, what the save bar saves" })}
+      />
     </div>
   );
 }
