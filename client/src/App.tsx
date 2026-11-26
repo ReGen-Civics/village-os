@@ -244,6 +244,7 @@ const StewardRights = brochurePage(() => import("./pages/StewardRights"));
 const ResidentRights = brochurePage(() => import("./pages/ResidentRights"));
 const Training = lazyPage(() => import("./pages/Training"));
 const Governance = lazyPage(() => import("./pages/Governance"));
+const GovernanceNow = lazyPage(() => import("./pages/GovernanceNow"));
 const Decisions = lazyPage(() => import("./pages/Decisions"));
 const Decision = lazyPage(() => import("./pages/Decision"));
 const Propose = lazyPage(() => import("./pages/Propose"));
@@ -522,7 +523,8 @@ function Router() {
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
       <Route path="/training" component={Training} />
-      <Route path="/governance" component={Governance} />
+      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we decide at /governance/how. */}
+      <Route path="/governance" component={GovernanceNow} />
       <Route path="/governance/how" component={Governance} />
       {/* The live surfaces sit BESIDE the explainer, never inside it: /governance
           says how the village decides, /decisions shows what it is deciding.
