@@ -79,7 +79,7 @@ describe.skipIf(!configured)("a notice's words, stored beside its English", () =
     const rows = await bell("u-bea");
     expect(rows).toHaveLength(2);
     expect(rows.map((n) => n.words)).toEqual([null, null]);
-    const [[raw]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM notifications WHERE user_id = 'u-bea' AND words IS NOT NULL");
+    const [[raw]] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM notifications WHERE user_id = 'u-bea' AND words IS NOT NULL"); // module-review-ok: a fixture read against the S5 scratch schema, never a production table
     expect(Number(raw.n)).toBe(0);
   });
 
@@ -105,7 +105,7 @@ describe.skipIf(!configured)("a notice's words, stored beside its English", () =
     await insertNotification(deps(), reminder("u-eli", "nw:6", { actorUserId: "u-wren" }));
     const counts = await forgetNoticesOf(pool, { userId: "u-wren" });
     expect(counts.rewritten).toBeGreaterThanOrEqual(1);
-    const [[row]] = await pool.query<any[]>("SELECT title, body, words FROM notifications WHERE dedupe_key = 'nw:6'");
+    const [[row]] = await pool.query<any[]>("SELECT title, body, words FROM notifications WHERE dedupe_key = 'nw:6'"); // module-review-ok: a fixture read against the S5 scratch schema, never a production table
     expect(row.title).toBe(DEPARTED_NOTICE_TITLE);
     expect(row.body).toBeNull();
     expect(row.words).toBeNull();
