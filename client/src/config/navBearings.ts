@@ -86,3 +86,20 @@ export function currentFor(lit: Lit | null, href: string): "page" | "true" | und
   if (!lit || lit.href !== href) return undefined;
   return lit.exact ? "page" : "true";
 }
+
+/**
+ * The lit branch for the menu a reader sees: `visible` is the shell's own gate (modules, roles, the front door, the
+ * village's hidden entries), `menu` the village's menu document, `word` the platform's group name in the reader's
+ * language. The group is returned as it is DRAWN, the village's rename first.
+ */
+export function litFor(
+  location: string,
+  visible: (link: NavLink) => boolean,
+  menu: { hidden: readonly string[]; groups: Readonly<Record<string, string>> },
+  word: (group: string) => string,
+): Lit | null {
+  const seen = NAV.flatMap((e): NavEntry[] => (isGroup(e) ? [{ ...e, items: e.items.filter(visible) }] : visible(e) ? [e] : []));
+  const b = bearingsFor(location, seen, menu.hidden);
+  if (!b) return null;
+  return { group: b.group ? menu.groups[b.group] || word(b.group) : null, href: b.item.href, exact: b.exact };
+}
