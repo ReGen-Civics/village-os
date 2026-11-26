@@ -1,4 +1,5 @@
 import { anonymizeMember, backfillFinishedErasures, erasureBackfillJob } from "./lib/erasure";
+import { circlesForReader } from "./lib/circleWords";
 import { readsAsPlainMember } from "./lib/readAsMember";
 import { backfillSeasonGoalIds, SEASON_GOAL_ID_BACKFILL } from "./lib/seasonGoalIds";
 import { backfillConnectorOutcomes, CONNECTOR_OUTCOME_BACKFILL } from "./lib/suggestionOutcome";
@@ -9848,7 +9849,7 @@ async function startServer() {
     const admin = await isAdmin(req);
     const capCtx = viewer ? await capabilityCtx(viewer) : null;
     const [roles, assignments] = await Promise.all([listOrgRoles(getPool()), listOrgAssignments(getPool(), lapseContext())]);
-    res.json(circlesToShow(circlesRepo.all() as Array<{ id: string; parentCircleId?: string | null }>, roles, listingViewerFor({ admin, capCtx, userId: viewer?.id, assignments })));
+    res.json(await circlesForReader(getPool(), req, res, circlesToShow(circlesRepo.all() as Array<{ id: string; parentCircleId?: string | null }>, roles, listingViewerFor({ admin, capCtx, userId: viewer?.id, assignments })))); // translated after the filter
   });
 
   /**
@@ -24683,7 +24684,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // cards page could not draw a circle's colour however carefully the
     // admin form had set it.
     const orgListing = listingViewerFor({ admin, capCtx: viewerCtx, userId: viewer?.id, assignments });
-    const circles = circlesToShow(circleViews(circlesRepo.all()), roles, orgListing);
+    const circles = await circlesForReader(getPool(), req, res, circlesToShow(circleViews(circlesRepo.all()), roles, orgListing)); // in the reader's language, after the filter (server/lib/circleWords.ts)
 
     res.json({
       /*

@@ -328,6 +328,39 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect((asAdmin.json as any[]).map((c) => c.id)).toEqual(expect.arrayContaining(["anchor", "back-office"]));
   });
 
+  it("A CIRCLE'S TRANSLATION NEVER OUTRUNS WHO MAY SEE THE CIRCLE (the coordinator's ruling (A), 26 Nov 2026): a visitor reading in Spanish gets the Spanish name of a circle it can see, and nothing of one it cannot, through /api/circles and /api/org", async () => {
+    const F = state.founder;
+    // The circles and the listing are the ones the test above left: "anchor" is shown to a visitor, "back-office" is not.
+    const put = (field: string, text: string) =>
+      call("PUT", "/api/admin/content-translations", { kind: "village_doc", ref: "circles", field, locale: "es", text }, F);
+    const shownSaved = await put("anchor.name", "Círculo Ancla");
+    expect(shownSaved.status, JSON.stringify(shownSaved.json)).toBe(200);
+    const hiddenSaved = await put("back-office.name", "Círculo de Trastienda");
+    expect(hiddenSaved.status, JSON.stringify(hiddenSaved.json)).toBe(200);
+
+    const inSpanish = async (route: string, token?: string) => {
+      const res = await fetch(BASE + route, { // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
+        headers: { "x-village-locale": "es", ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      });
+      return { status: res.status, text: await res.text() };
+    };
+    for (const route of ["/api/circles", "/api/org"]) {
+      const visitor = await inSpanish(route);
+      expect(visitor.status, route).toBe(200);
+      // CONTROL: the circle the visitor may see arrives in Spanish, so the overlay is running on this route.
+      expect(visitor.text, route).toContain("Círculo Ancla");
+      // The circle it may not see sends neither its English nor its Spanish name.
+      expect(visitor.text, route).not.toContain("Trastienda");
+      expect(visitor.text, route).not.toContain("Back Office Circle");
+      // CONTROL: an admin may see the hidden circle, and reads its accepted Spanish.
+      expect((await inSpanish(route, F)).text, route).toContain("Círculo de Trastienda");
+    }
+    // The translation is never served on its own, to anybody.
+    expect((await inSpanish("/api/village-doc/circles/translation")).text).not.toContain("Trastienda");
+    // A read that names no language, which is every editor's, keeps the village's own words.
+    expect(JSON.stringify((await call("GET", "/api/org", undefined, F)).json)).not.toContain("Círculo");
+  });
+
   it("COMING SOON (Rye, 16 Nov 2026): an admin shows an unlisted role as coming soon; its circle and the role reach a visitor, the form offers it early, and the circle can be renamed, led and emptied by a move", async () => {
     const F = state.founder;
     expect((await call("POST", "/api/admin/circles", { id: "regen-community", name: "Regenerative Community Building" }, F)).status).toBe(200);

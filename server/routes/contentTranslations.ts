@@ -25,7 +25,8 @@
  * is a production write a person decides to make (coordinator, 15 Nov). Pay
  * words and binding pages are never drafted, whatever the switch says.
  */
-import { isVillageDocRef } from "../../shared/villageDocTranslation";
+import { PRIVATE_VILLAGE_DOCS, isVillageDocRef } from "../../shared/villageDocTranslation";
+import { circleWordRows } from "../repos/circles";
 import { noSharedCache, readerLocale, villageDocTranslation } from "../lib/contentTranslationRead";
 import { villagePaths } from "../lib/villagePaths";
 import { listArchetypes } from "../lib/characters";
@@ -136,6 +137,7 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     if (ref === "paths") return { paths: villagePaths() };
     if (ref === "season") return { seasons: normalizeSeasonConfig((await readConfigDocument(deps.getPool(), "season")) ?? GAME_CONFIG.season).seasons };
     if (ref === "archetypes") return { archetypes: await listArchetypes(deps.getPool(), villageId()) };
+    if (ref === "circles") return { circles: await circleWordRows(deps.getPool()) }; // admin routes only: see below
     return deps.villageDoc?.(ref) ?? null;
   };
   const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc });
@@ -151,7 +153,8 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     const ref = String(req.params.ref ?? "");
     const locale = readerLocale(req);
     noSharedCache(res);
-    if (!locale || !isVillageDocRef(ref)) return res.json({ translation: null });
+    // A private document is laid only by the routes that choose who may read it (PRIVATE_VILLAGE_DOCS).
+    if (!locale || !isVillageDocRef(ref) || PRIVATE_VILLAGE_DOCS.includes(ref)) return res.json({ translation: null });
     res.json({ translation: await villageDocTranslation(deps.getPool(), ref, await villageDoc(ref), locale) });
   });
 

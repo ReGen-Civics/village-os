@@ -103,3 +103,13 @@ describe("the season calendar and the five classes take a translation (the lead'
     expect(out.archetypes[0]).toMatchObject({ key: "the-builder", name: "La Constructora", examples: ["Levantar un techo"], blurb: "Makes things." });
   });
 });
+
+describe("the circles take a translation, but are never served whole", () => {
+  it("addresses a circle's name and purpose, and is private", async () => {
+    const { PRIVATE_VILLAGE_DOCS } = await import("./villageDocTranslation");
+    expect(villageDocFieldOk("circles", "anchor.name")).toBe(true);
+    expect(villageDocFieldOk("circles", "anchor.purpose")).toBe(true);
+    expect(villageDocFieldOk("circles", "anchor.color")).toBe(false);
+    expect(PRIVATE_VILLAGE_DOCS).toContain("circles");
+  });
+});
