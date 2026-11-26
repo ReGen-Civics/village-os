@@ -425,7 +425,8 @@ export default function MobileFab() {
             </>
           ) : (
             <span className="flex items-center justify-center">
-              {open ? <X className="size-8 text-cream" /> : <FabTriggerIcon className="size-8 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />}
+              {/* The macaw at 40px in the 56px circle, its ink about 34px across (the lead, 26 Nov 2026: "a bit bigger"). */}
+              {open ? <X className="size-8 text-cream" /> : <FabTriggerIcon className="size-10 text-cream drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]" />}
             </span>
           )}
         </button>
