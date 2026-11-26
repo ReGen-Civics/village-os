@@ -12,11 +12,12 @@
  * second time. The count line says the news in words either way.
  */
 import { useEffect, useRef, useState } from "react";
-import { ROOM_COPY, SESSION_COPY, unownedActions } from "@shared/sessions";
+import { SESSION_COPY, unownedActions } from "@shared/sessions";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { ActionRow, AddAction } from "./ActionRow";
 import { CARD, H3, HINT, agendaOrder, isHeld, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /**
  * The id of the action just taken up while this screen watched, as a key that
@@ -64,6 +65,7 @@ export default function StageActions({
   /** The refused close's own sentence, said here while those actions still wait. */
   refusal?: string | null;
 }) {
+  const RC = useRoomWords();
   const taken = useTakenUp(view.entries);
   const seeds = useMomentWindow(taken);
   const all = view.entries.filter((e) => e.kind === "action");
@@ -71,7 +73,7 @@ export default function StageActions({
   const stillRefused = refusal && unowned.some((id) => highlight.includes(id));
   const groups = [
     ...agendaOrder(view.items).map((item) => ({ key: `i${item.id}`, title: item.title, list: all.filter((e) => e.itemId === item.id) })),
-    { key: "loose", title: ROOM_COPY.outsideAgenda, list: all.filter((e) => e.itemId == null || !view.items.some((i) => i.id === e.itemId)) },
+    { key: "loose", title: RC.outsideAgenda, list: all.filter((e) => e.itemId == null || !view.items.some((i) => i.id === e.itemId)) },
   ].filter((g) => g.list.length > 0);
 
   return (
@@ -89,7 +91,7 @@ export default function StageActions({
           }`}
         >
           {unowned.length === 1
-            ? ROOM_COPY.unownedOne
+            ? RC.unownedOne
             : unowned.length
               ? `${unowned.length} ${SESSION_COPY.unownedLeft}`
               : SESSION_COPY.everyoneHolds}
@@ -97,7 +99,7 @@ export default function StageActions({
         {seeds && taken && <Celebration kind="seeds" intensity="whisper" size={56} seed={Number(taken.split(":")[0])} />}
       </div>
 
-      {groups.length === 0 && <p className={HINT}>{ROOM_COPY.nothingYet}</p>}
+      {groups.length === 0 && <p className={HINT}>{RC.nothingYet}</p>}
 
       {groups.map((g) => (
         <section key={g.key} className={CARD} aria-labelledby={`actions-${g.key}`}>

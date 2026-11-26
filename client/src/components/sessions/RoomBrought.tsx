@@ -20,10 +20,11 @@
  * Words come from shared/sessionLibrary.ts, the contract.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AIM_DEFS, ROOM_COPY } from "@shared/sessions";
+import { AIM_DEFS } from "@shared/sessions";
 import { LIBRARY_COPY, LIBRARY_MINUTES, LIBRARY_SOURCE_LINE, agendaAimFor, broughtFor, type LibraryCard } from "@shared/sessionLibrary";
 import ClampedNote from "./ClampedNote";
 import { BTN_SECONDARY, CARD, CHIP, H3, HINT, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /** "14 October", in the reader's own locale. */
 function shortDay(iso: string): string {
@@ -44,6 +45,7 @@ function BroughtRow({
   onAdd: () => void;
   noCircleTag: boolean;
 }) {
+  const RC = useRoomWords();
   const aim = agendaAimFor(card.aim);
   const when = shortDay(card.broughtAt);
   return (
@@ -53,7 +55,7 @@ function BroughtRow({
           <p className="text-base text-foreground">{card.title}</p>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-muted-foreground">
             <span className={CHIP}>
-              {card.aim ? AIM_DEFS[aim].label : LIBRARY_COPY.aimNotSure} · {LIBRARY_MINUTES[aim]} {ROOM_COPY.minutesShort}
+              {card.aim ? AIM_DEFS[aim].label : LIBRARY_COPY.aimNotSure} · {LIBRARY_MINUTES[aim]} {RC.minutesShort}
             </span>
             {noCircleTag && <span className={CHIP}>{LIBRARY_COPY.roomNoCircle}</span>}
             <span>{card.mine ? LIBRARY_COPY.broughtByYou(when) : LIBRARY_COPY.broughtBy(card.broughtBy, when)}</span>
@@ -72,6 +74,7 @@ function BroughtRow({
 }
 
 export default function RoomBrought({ view, actions }: Omit<StageProps, "now">) {
+  const RC = useRoomWords();
   const [cards, setCards] = useState<LibraryCard[] | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
   const open = view.status === "open";
@@ -119,7 +122,7 @@ export default function RoomBrought({ view, actions }: Omit<StageProps, "now">) 
       <h3 ref={heading} tabIndex={-1} id="brought-title" className={`${H3} outline-none`}>
         {broughtFor(view.circleName)}
       </h3>
-      {!canAdd && <p className={`${HINT} mt-1`}>{ROOM_COPY.joinFirst}</p>}
+      {!canAdd && <p className={`${HINT} mt-1`}>{RC.joinFirst}</p>}
       <ul className="mt-3 space-y-2">
         {shown.map((c) => (
           <BroughtRow

@@ -39,7 +39,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { m } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { ROOM_COPY, SESSION_COPY, SESSION_DISCARD_COPY, STAGE_DEFS, type SessionStage } from "@shared/sessions";
+import { SESSION_COPY, SESSION_DISCARD_COPY, STAGE_DEFS, type SessionStage } from "@shared/sessions";
 import Layout from "@/components/Layout";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
@@ -65,6 +65,7 @@ import { leaveRoomGone } from "@/components/sessions/roomGone";
 import { BTN_QUIET, H2, STAGE_LEDE } from "@/components/sessions/roomUi";
 import { useRoomNow, useSessionRoom } from "@/components/sessions/useSessionRoom";
 import CardInvite from "@/components/sessionCard/CardInvite";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const NAME = SESSION_COPY.listTitle;
 
@@ -75,6 +76,7 @@ function roomId(raw: string | undefined): number | null {
 
 /** A quiet card that says one thing: loading, refused, gone. Anything but loading offers the way back. */
 function Notice({ children, busy = false }: { children: string; busy?: boolean }) {
+  const RC = useRoomWords();
   return (
     <Layout>
       <div className="container flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-4 py-12 text-center">
@@ -82,7 +84,7 @@ function Notice({ children, busy = false }: { children: string; busy?: boolean }
         {!busy && (
           <Link href="/sessions" className={BTN_QUIET}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            {ROOM_COPY.allSessions}
+            {RC.allSessions}
           </Link>
         )}
       </div>
@@ -91,6 +93,7 @@ function Notice({ children, busy = false }: { children: string; busy?: boolean }
 }
 
 export default function SessionRoom() {
+  const RC = useRoomWords();
   const params = useParams<{ id: string }>();
   const id = roomId(params.id);
   const { user } = useAuth();
@@ -134,7 +137,7 @@ export default function SessionRoom() {
     const prev = lastStage.current;
     lastStage.current = liveStage;
     if (prev == null || prev === liveStage) return;
-    setMoved(ROOM_COPY.roomMovedTo(STAGE_DEFS[liveStage].title));
+    setMoved(RC.roomMovedTo(STAGE_DEFS[liveStage].title));
     if (browsing != null) return;
     const at = document.activeElement;
     if (!at || at === document.body || !at.isConnected) stageHeading.current?.focus();
@@ -152,15 +155,15 @@ export default function SessionRoom() {
     [actions],
   );
 
-  if (!modules.loaded) return <Notice busy>{ROOM_COPY.opening}</Notice>;
+  if (!modules.loaded) return <Notice busy>{RC.opening}</Notice>;
   if (!on) return <ModuleGate moduleId="sessions" name={NAME} />;
   if (!user) return <SignInToSee moduleId="sessions" name={NAME} />;
-  if (id == null || room.status === "missing") return <Notice>{ROOM_COPY.missing}</Notice>;
+  if (id == null || room.status === "missing") return <Notice>{RC.missing}</Notice>;
   if (room.status === "gone") return <Notice>{goneSentence}</Notice>;
   if (room.status === "refused") return <Notice>{SESSION_COPY.closedNoAccess}</Notice>;
-  if (room.status === "signed-out") return <Notice>{ROOM_COPY.signedOut}</Notice>;
-  if (room.status === "failed" && !room.view) return <Notice>{ROOM_COPY.failed}</Notice>;
-  if (!room.view) return <Notice busy>{ROOM_COPY.opening}</Notice>;
+  if (room.status === "signed-out") return <Notice>{RC.signedOut}</Notice>;
+  if (room.status === "failed" && !room.view) return <Notice>{RC.failed}</Notice>;
+  if (!room.view) return <Notice busy>{RC.opening}</Notice>;
 
   const view = room.view;
   const roomStage = view.state.stage;
@@ -201,7 +204,7 @@ export default function SessionRoom() {
               <>
                 {room.lagging && (
                   <p role="status" className="rounded-xl border border-border bg-muted px-4 py-2 text-sm text-muted-foreground">
-                    {ROOM_COPY.failed}
+                    {RC.failed}
                   </p>
                 )}
 
@@ -213,7 +216,7 @@ export default function SessionRoom() {
 
                 {!view.me.facilitates && view.me.admin && view.me.joined && view.status === "open" && (
                   <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted px-4 py-2 text-sm">
-                    <span className="text-muted-foreground">{ROOM_COPY.takeOverHint}</span>
+                    <span className="text-muted-foreground">{RC.takeOverHint}</span>
                     <div className="flex flex-wrap items-center gap-2">
                       {discard}
                       <button
@@ -221,7 +224,7 @@ export default function SessionRoom() {
                         className="min-h-11 rounded-xl border border-notice/55 bg-card px-3 font-medium text-foreground hover:border-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => void actions.hosts({ facilitatorUserId: view.me.userId })}
                       >
-                        {ROOM_COPY.takeOver}
+                        {RC.takeOver}
                       </button>
                     </div>
                   </div>
@@ -232,9 +235,9 @@ export default function SessionRoom() {
 
                 {shown !== roomStage && !view.me.facilitates && (
                   <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted px-4 py-2 text-sm">
-                    <span className="text-muted-foreground">{ROOM_COPY.browsing(def.short, STAGE_DEFS[roomStage].short)}</span>
+                    <span className="text-muted-foreground">{RC.browsing(def.short, STAGE_DEFS[roomStage].short)}</span>
                     <button type="button" onClick={() => setBrowsing(null)} className={BTN_QUIET}>
-                      {ROOM_COPY.backToRoom}
+                      {RC.backToRoom}
                     </button>
                   </div>
                 )}

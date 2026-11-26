@@ -17,11 +17,12 @@
  * address and no per-person number is ever shown.
  */
 import { useState } from "react";
-import { ROOM_COPY, SESSION_SOMEONE } from "@shared/sessions";
+import { SESSION_SOMEONE } from "@shared/sessions";
 import { TASK_COPY, splitMailSkips, taskDateWords, taskEmailsUrl, type TaskMailResult, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
 import { BTN_QUIET, BTN_SECONDARY, HINT } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 type LastSend = TaskRecordPayload["mail"]["lastSend"];
 
@@ -52,6 +53,7 @@ export default function TaskMailButton({
   /** The send landed: the record reads its tasks and its last send again. */
   onSent?: (result: TaskMailResult) => void;
 }) {
+  const RC = useRoomWords();
   const [asking, setAsking] = useState(false);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -66,14 +68,14 @@ export default function TaskMailButton({
       const res = await gameFetch(taskEmailsUrl(sessionId), { method: "POST", body: "{}" });
       const body = (await res.json().catch(() => null)) as (TaskMailResult & { error?: string }) | null;
       if (!res.ok || !body || typeof body.queued !== "number") {
-        setError(typeof body?.error === "string" ? body.error : ROOM_COPY.writeFailed);
+        setError(typeof body?.error === "string" ? body.error : RC.writeFailed);
         return;
       }
       setResult(TASK_COPY.mail.result(body.queued, body.people, splitMailSkips(body.skipped ?? {})));
       setAsking(false);
       onSent?.(body);
     } catch {
-      setError(ROOM_COPY.offline);
+      setError(RC.offline);
     } finally {
       setSending(false);
     }

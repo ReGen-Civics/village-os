@@ -40,7 +40,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { Copy } from "lucide-react";
-import { AIM_DEFS, ENTRY_LABELS, ROOM_COPY, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
+import { AIM_DEFS, ENTRY_LABELS, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
 import { TASK_COPY, taskDateWords, taskRecordUrl, type TaskCard, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
@@ -49,6 +49,7 @@ import { FacilitationReading } from "./StageClose";
 import TaskMailButton from "./TaskMailButton";
 import NightAfterCall from "./NightAfterCall";
 import type { RoomActions } from "./useSessionRoom";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 
 /** What the record may do: answer a night, and mark a round decided after it. */
 type RecordActions = Pick<RoomActions, "answerNight" | "decideAfterNight">;
@@ -57,9 +58,9 @@ type RecordActions = Pick<RoomActions, "answerNight" | "decideAfterNight">;
 const JUST_CLOSED_MS = 2 * 60 * 1000;
 
 function itemOutcome(item: SessionItem): string {
-  if (item.status === "parked") return ROOM_COPY.parkedNext;
-  if (item.status === "waiting") return ROOM_COPY.notReached;
-  return ROOM_COPY.itemStatus[item.status];
+  if (item.status === "parked") return roomWords().parkedNext;
+  if (item.status === "waiting") return roomWords().notReached;
+  return roomWords().itemStatus[item.status];
 }
 
 /** Each task the record knows, by the entry it came from. */
@@ -110,6 +111,7 @@ function EntryLines({
   now?: number;
   onNightDone?: (entryId: number, words: string) => void;
 }) {
+  const RC = useRoomWords();
   const decisions = list.filter((e) => e.kind === "decision");
   const seeds = list.filter((e) => e.kind === "seed");
   const acts = list.filter((e) => e.kind === "action" && e.status !== "parked");
@@ -127,16 +129,16 @@ function EntryLines({
             tabIndex={-1}
             className={`rounded-xl border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${d.status === "done" ? "border-open/50 bg-card" : "border-border bg-muted"}`}
           >
-            <span className="font-semibold text-foreground">{d.status === "done" ? ROOM_COPY.decide : ROOM_COPY.proposalOpen}:</span>{" "}
+            <span className="font-semibold text-foreground">{d.status === "done" ? RC.decide : RC.proposalOpen}:</span>{" "}
             <span className="whitespace-pre-line text-foreground">{d.text}</span>
-            {answered > 0 && <span className="block text-xs text-muted-foreground">{ROOM_COPY.talliedLine(tally)}</span>}
+            {answered > 0 && <span className="block text-xs text-muted-foreground">{RC.talliedLine(tally)}</span>}
             {round && <NightAfterCall view={view} entryId={d.id} round={round} actions={actions} now={now} onDone={(words) => onNightDone?.(d.id, words)} />}
           </li>
         );
       })}
       {seeds.length > 0 && (
         <li className="space-y-2 py-1">
-          <p className={LABEL_CAPS}>{ROOM_COPY.seedsHeading}</p>
+          <p className={LABEL_CAPS}>{RC.seedsHeading}</p>
           <ul className="space-y-2">
             {seeds.map((s) => (
               <li key={s.id}>
@@ -150,14 +152,14 @@ function EntryLines({
           they never read as part of what we learned just above them. */}
       {acts.length > 0 && (
         <li className="space-y-2 py-1">
-          <p className={LABEL_CAPS}>{ROOM_COPY.actionsHere}</p>
+          <p className={LABEL_CAPS}>{RC.actionsHere}</p>
           <ul className="space-y-2">
             {acts.map((a) => (
               <li key={a.id} className="rounded-xl border border-border px-3 py-2 text-sm">
                 <span className="text-foreground">{a.text}</span>
                 <span className="block text-muted-foreground">
                   {heldLine(a)}
-                  {a.dueOn ? ` · ${ROOM_COPY.dueLabel} ${a.dueOn}` : ""}
+                  {a.dueOn ? ` · ${RC.dueLabel} ${a.dueOn}` : ""}
                 </span>
                 {tasks.get(a.id) && <TaskStanding task={tasks.get(a.id)!} said={a} today={today} />}
               </li>
@@ -170,6 +172,7 @@ function EntryLines({
 }
 
 function ShareableMinutes({ view }: { view: SessionView }) {
+  const RC = useRoomWords();
   const [text, setText] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "failed">("idle");
   const [copied, setCopied] = useState<string | null>(null);
@@ -193,9 +196,9 @@ function ShareableMinutes({ view }: { view: SessionView }) {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(ROOM_COPY.copied);
+      setCopied(RC.copied);
     } catch {
-      setCopied(ROOM_COPY.copyFailed);
+      setCopied(RC.copyFailed);
     }
   };
 
@@ -208,11 +211,11 @@ function ShareableMinutes({ view }: { view: SessionView }) {
       {text == null ? (
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button type="button" className={BTN_SECONDARY} disabled={state === "loading"} onClick={() => void load()}>
-            {state === "loading" ? ROOM_COPY.minutesLoading : ROOM_COPY.showMinutes}
+            {state === "loading" ? RC.minutesLoading : RC.showMinutes}
           </button>
           {state === "failed" && (
             <p role="alert" className="text-sm font-medium text-destructive">
-              {ROOM_COPY.minutesFailed}
+              {RC.minutesFailed}
             </p>
           )}
         </div>
@@ -248,6 +251,7 @@ export default function ClosedRecord({
   /** The room's own clock, for a round that outlived its call. */
   now?: number;
 }) {
+  const RC = useRoomWords();
   // What a round's write landed, read out from a line that outlives the round,
   // with the focus on the proposal it landed on.
   const [nightSaid, setNightSaid] = useState("");
@@ -305,14 +309,14 @@ export default function ClosedRecord({
             {SESSION_COPY.closeDone}
           </p>
           <p className="mt-1 font-accent text-3xl text-notice" data-signoff="">
-            {ROOM_COPY.signoff}
+            {RC.signoff}
           </p>
         </div>
       </section>
 
       <section className={CARD} aria-labelledby="record-arrival">
         <h3 id="record-arrival" className={H3}>
-          {ROOM_COPY.arrivalHeading}
+          {RC.arrivalHeading}
         </h3>
         {view.arrival && view.arrival.count > 0 ? (
           <div className="mt-3 flex flex-wrap items-end gap-6">
@@ -320,16 +324,16 @@ export default function ClosedRecord({
               <span className="font-body text-4xl font-semibold tabular-nums text-foreground">{view.arrival.median}</span>
               <span className="text-muted-foreground"> / 11</span>
             </p>
-            <p className={HINT}>{ROOM_COPY.arrivalNumbers(view.arrival)}</p>
+            <p className={HINT}>{RC.arrivalNumbers(view.arrival)}</p>
           </div>
         ) : (
-          <p className={`${HINT} mt-2`}>{ROOM_COPY.noArrival}</p>
+          <p className={`${HINT} mt-2`}>{RC.noArrival}</p>
         )}
       </section>
 
       <section className={CARD} aria-labelledby="record-agenda">
         <h3 id="record-agenda" className={H3}>
-          {ROOM_COPY.agendaHeading}
+          {RC.agendaHeading}
         </h3>
         {items.length ? (
           <ol className="mt-3 space-y-4">
@@ -340,8 +344,8 @@ export default function ClosedRecord({
                   <span className={CHIP}>{AIM_DEFS[item.aim].label}</span>
                   <span>
                     {item.usedSeconds
-                      ? ROOM_COPY.usedOf(Math.round(item.usedSeconds / 60), item.minutes)
-                      : `${item.minutes} ${ROOM_COPY.minutesShort}`}
+                      ? RC.usedOf(Math.round(item.usedSeconds / 60), item.minutes)
+                      : `${item.minutes} ${RC.minutesShort}`}
                   </span>
                   <span>· {itemOutcome(item)}</span>
                 </p>
@@ -358,14 +362,14 @@ export default function ClosedRecord({
             ))}
           </ol>
         ) : (
-          <p className={`${HINT} mt-2`}>{ROOM_COPY.nothingYet}</p>
+          <p className={`${HINT} mt-2`}>{RC.nothingYet}</p>
         )}
       </section>
 
       {loose.some((e) => e.kind !== "tension") && (
         <section className={CARD} aria-labelledby="record-loose">
           <h3 id="record-loose" className={H3}>
-            {ROOM_COPY.outsideAgenda}
+            {RC.outsideAgenda}
           </h3>
           <EntryLines view={view} list={loose.filter((e) => e.kind !== "tension")} tasks={tasks} today={today} actions={actions} now={now} onNightDone={nightDone} />
         </section>
@@ -380,7 +384,7 @@ export default function ClosedRecord({
       {(backlog.length > 0 || waitingItems.length > 0) && (
         <section className={CARD} aria-labelledby="record-backlog">
           <h3 id="record-backlog" className={H3}>
-            {ROOM_COPY.backlogHeading}
+            {RC.backlogHeading}
           </h3>
           <ul className="mt-3 space-y-1.5">
             {waitingItems.map((i) => (

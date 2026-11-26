@@ -35,7 +35,6 @@ import {
   BREATH_PATTERNS,
   BREATH_ROUNDS,
   BREATH_WORDS,
-  ROOM_COPY,
   breathAt,
   type BreathKey,
   type BreathMoment,
@@ -46,6 +45,7 @@ import { radioArrows } from "@/lib/radioArrows";
 import { BTN_PRIMARY, BTN_SECONDARY, H3, HINT, LABEL, tile } from "./roomUi";
 import { useRoomNow, type RoomActions } from "./useSessionRoom";
 import GatheringFlower, { FLOWER_R } from "./GatheringFlower";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 
 /** How full the circle is at this moment of the breath, from 0.55 to 1. */
 export function breathScale(m: BreathMoment): number {
@@ -76,8 +76,8 @@ export function breathEndsAt(b: SessionState["breath"]): number | null {
  * live region holding it speaks twice a breath and is quiet in between.
  */
 export function breathAnnouncement(m: BreathMoment, rounds: number): string {
-  if (m.state === "breathing") return ROOM_COPY.breathStartedSay(rounds);
-  if (m.state === "done") return ROOM_COPY.breathDone;
+  if (m.state === "breathing") return roomWords().breathStartedSay(rounds);
+  if (m.state === "done") return roomWords().breathDone;
   return "";
 }
 
@@ -91,6 +91,7 @@ export interface SharedBreathProps {
 }
 
 export default function SharedBreath({ breath, offset, facilitates, actions, here }: SharedBreathProps) {
+  const RC = useRoomWords();
   const reduced = useReducedMotion();
   const { t } = useLingui();
   // Five beats a second while the room breathes, so the seed moves softly;
@@ -127,12 +128,12 @@ export default function SharedBreath({ breath, offset, facilitates, actions, her
       <div className="h-2/5 w-2/5 rounded-full bg-notice shadow-sm" style={{ transform: `scale(${scale})`, transition: motion }} />
     </>
   );
-  const word = moment.state === "breathing" ? BREATH_WORDS[moment.kind] : moment.state === "done" ? ROOM_COPY.breathDone : null;
+  const word = moment.state === "breathing" ? BREATH_WORDS[moment.kind] : moment.state === "done" ? RC.breathDone : null;
 
   return (
     <section aria-labelledby="breath-title" className="space-y-4">
       <h3 id="breath-title" className={H3}>
-        {ROOM_COPY.breathTitle}
+        {RC.breathTitle}
       </h3>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {breathAnnouncement(moment, breath.rounds)}
@@ -163,17 +164,17 @@ export default function SharedBreath({ breath, offset, facilitates, actions, her
         {word && <p className="text-center font-display text-3xl text-foreground">{word}</p>}
         {moment.state === "breathing" && (
           <p className={`${HINT} tabular-nums`}>
-            {ROOM_COPY.breathStepLine(moment.secondsLeft, moment.round, breath.rounds)}
+            {RC.breathStepLine(moment.secondsLeft, moment.round, breath.rounds)}
           </p>
         )}
-        {moment.state === "idle" && <p className={`${HINT} max-w-sm text-center`}>{ROOM_COPY.breathIdle}</p>}
+        {moment.state === "idle" && <p className={`${HINT} max-w-sm text-center`}>{RC.breathIdle}</p>}
       </div>
 
       {facilitates && (
         <div className="flex flex-wrap items-end justify-center gap-4">
           <div>
             <p id="breath-pattern" className={LABEL}>
-              {ROOM_COPY.breathPattern}
+              {RC.breathPattern}
             </p>
             <div role="radiogroup" aria-labelledby="breath-pattern" className="mt-1 flex flex-wrap gap-2">
               {BREATH_KEYS.map((k) => (
@@ -193,7 +194,7 @@ export default function SharedBreath({ breath, offset, facilitates, actions, her
                       ground on the gold, and any fade lowers a pair that was
                       measured whole. The lighter weight sets it apart. */}
                   <span className="ml-1 font-normal tabular-nums">
-                    {ROOM_COPY.breathCounts(BREATH_PATTERNS[k].steps.map((s) => s.secs))}
+                    {RC.breathCounts(BREATH_PATTERNS[k].steps.map((s) => s.secs))}
                   </span>
                 </button>
               ))}
@@ -201,7 +202,7 @@ export default function SharedBreath({ breath, offset, facilitates, actions, her
           </div>
           <div>
             <p id="breath-rounds" className={LABEL}>
-              {ROOM_COPY.breathRounds}
+              {RC.breathRounds}
             </p>
             <div role="radiogroup" aria-labelledby="breath-rounds" className="mt-1 flex gap-2">
               {BREATH_ROUNDS.map((r) => (
@@ -223,11 +224,11 @@ export default function SharedBreath({ breath, offset, facilitates, actions, her
           </div>
           {moment.state === "breathing" ? (
             <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void run(false)}>
-              {ROOM_COPY.breathStop}
+              {RC.breathStop}
             </button>
           ) : (
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void run(true)}>
-              {moment.state === "done" ? ROOM_COPY.breathAgain : ROOM_COPY.breathStart}
+              {moment.state === "done" ? RC.breathAgain : RC.breathStart}
             </button>
           )}
         </div>

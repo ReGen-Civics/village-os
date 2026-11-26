@@ -24,7 +24,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ARRIVAL_MAX,
   ARRIVAL_MIN,
-  ROOM_COPY,
   SESSION_COPY,
   SESSION_LIMITS,
   STAGE_DEFS,
@@ -52,10 +51,12 @@ import {
   tile,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const NUMBERS = Array.from({ length: ARRIVAL_MAX - ARRIVAL_MIN + 1 }, (_, i) => ARRIVAL_MIN + i);
 
 export default function StageArrival({ view, actions }: StageProps) {
+  const RC = useRoomWords();
   // The facilitator filling in for somebody (0288) gives that person's number here.
   const forNo = view.me.facilitates ? (actions.fillingFor ?? null) : null;
   const whom = forNo ?? view.me.userId;
@@ -171,7 +172,7 @@ export default function StageArrival({ view, actions }: StageProps) {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button type="button" className={BTN_PRIMARY} disabled={score == null || busy} onClick={() => void give()}>
-                {me?.arrival != null ? ROOM_COPY.changeNumber : ROOM_COPY.giveNumber}
+                {me?.arrival != null ? RC.changeNumber : RC.giveNumber}
               </button>
               {saved && (
                 <p role="status" className="text-sm text-open">
@@ -179,10 +180,10 @@ export default function StageArrival({ view, actions }: StageProps) {
                 </p>
               )}
             </div>
-            {me?.arrival != null && <p className={`${HINT} text-xs`}>{ROOM_COPY.answerAgain}</p>}
+            {me?.arrival != null && <p className={`${HINT} text-xs`}>{RC.answerAgain}</p>}
           </div>
         ) : (
-          <p className={`${HINT} mt-2`}>{ROOM_COPY.joinFirst}</p>
+          <p className={`${HINT} mt-2`}>{RC.joinFirst}</p>
         )}
       </section>
 
@@ -191,24 +192,24 @@ export default function StageArrival({ view, actions }: StageProps) {
           <div className={HERO_CONTENT}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 id="arrival-room" className={H3}>
-                {ROOM_COPY.theRoom}
+                {RC.theRoom}
               </h3>
               {view.me.facilitates && (
                 <div className="flex flex-wrap gap-2">
                   {!roundOn ? (
                     <button type="button" className={BTN_SECONDARY} disabled={roundBusy} onClick={() => void roundAct("start")}>
-                      {ROOM_COPY.roundStart}
+                      {RC.roundStart}
                     </button>
                   ) : (
                     <>
                       <button type="button" className={BTN_SECONDARY} disabled={roundBusy || speakers.done} onClick={() => void roundAct("next")}>
-                        {ROOM_COPY.roundNext}
+                        {RC.roundNext}
                       </button>
                       <button type="button" className={BTN_SECONDARY} disabled={roundBusy || view.state.round.at === 0} onClick={() => void roundAct("previous")}>
-                        {ROOM_COPY.roundBack}
+                        {RC.roundBack}
                       </button>
                       <button type="button" className={BTN_SECONDARY} disabled={roundBusy} onClick={() => void roundAct("end")}>
-                        {ROOM_COPY.roundEnd}
+                        {RC.roundEnd}
                       </button>
                     </>
                   )}
@@ -216,21 +217,21 @@ export default function StageArrival({ view, actions }: StageProps) {
               )}
             </div>
 
-            {!joined && <p className={HINT}>{ROOM_COPY.arrivalHeardInRoom}</p>}
+            {!joined && <p className={HINT}>{RC.arrivalHeardInRoom}</p>}
 
             {roundOn && (
               <div className="flex flex-wrap gap-3" aria-live="polite">
                 {speakers.done ? (
-                  <p className="text-sm font-semibold text-open">{ROOM_COPY.roundDone}</p>
+                  <p className="text-sm font-semibold text-open">{RC.roundDone}</p>
                 ) : (
                   <>
                     <p className="rounded-xl border border-notice/60 bg-muted px-4 py-2 text-sm">
-                      <span className="text-muted-foreground">{ROOM_COPY.speakingNow}</span>{" "}
+                      <span className="text-muted-foreground">{RC.speakingNow}</span>{" "}
                       <span className="font-semibold text-foreground">{nameOf(view, speakers.now) ?? ""}</span>
                     </p>
                     {speakers.next != null && (
                       <p className="rounded-xl border border-border bg-muted px-4 py-2 text-sm">
-                        <span className="text-muted-foreground">{ROOM_COPY.readyNext}</span>{" "}
+                        <span className="text-muted-foreground">{RC.readyNext}</span>{" "}
                         <span className="font-semibold text-foreground">{nameOf(view, speakers.next) ?? ""}</span>
                       </p>
                     )}
@@ -265,7 +266,7 @@ export default function StageArrival({ view, actions }: StageProps) {
                       ) : (
                         <p className="font-semibold text-foreground">{p.name}</p>
                       )}
-                      {joined && <p className="mt-2 text-sm text-muted-foreground">{p.wish ?? (p.arrival == null ? ROOM_COPY.notYet : "")}</p>}
+                      {joined && <p className="mt-2 text-sm text-muted-foreground">{p.wish ?? (p.arrival == null ? RC.notYet : "")}</p>}
                       {joined && <FilledInNote filled={p.arrivalFilledIn} actions={actions} />}
                     </div>
                   </li>

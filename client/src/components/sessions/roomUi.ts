@@ -23,7 +23,6 @@ import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Feather, Hammer, Handshake, Lightbulb, PartyPopper, Sprout, StickyNote } from "lucide-react";
 import {
-  ROOM_COPY,
   SESSION_SOMEONE,
   consentTally,
   isConsentValue,
@@ -39,6 +38,7 @@ import {
 } from "@shared/sessions";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import type { RoomActions } from "./useSessionRoom";
+import { roomWords } from "@/components/sessions/roomWords";
 
 /* The focus ring is the theme's own `--ring`, which the night sets to the
    earned gold and the light page sets to the village's seed. The offset takes
@@ -295,12 +295,12 @@ export function ownerLine(e: Pick<SessionEntry, "ownerSeatName" | "ownerName" | 
     return roleWithHolders(e.ownerSeatName, taker ?? e.ownerSeatHolders);
   }
   if (e.ownerName) return e.ownerName;
-  return ROOM_COPY.nobodyHolds;
+  return roomWords().nobodyHolds;
 }
 
 /** "Held by Water steward", or "Nobody holds this yet". */
 export function heldLine(e: Pick<SessionEntry, "ownerSeatName" | "ownerName" | "ownerUserId" | "ownerSeatId" | "ownerSeatHolders">): string {
-  return isHeld(e) || e.ownerSeatName || e.ownerName ? `${ROOM_COPY.heldBy} ${ownerLine(e)}` : ROOM_COPY.nobodyHolds;
+  return isHeld(e) || e.ownerSeatName || e.ownerName ? `${roomWords().heldBy} ${ownerLine(e)}` : roomWords().nobodyHolds;
 }
 
 /**

@@ -11,9 +11,10 @@
  */
 import { useState } from "react";
 import { Play } from "lucide-react";
-import { AIM_DEFS, ROOM_COPY, SESSION_COPY, STAGE_DEFS, type SessionItem } from "@shared/sessions";
+import { AIM_DEFS, SESSION_COPY, STAGE_DEFS, type SessionItem } from "@shared/sessions";
 import ItemPage from "./ItemPage";
 import { BTN_QUIET, CARD, HINT, PANEL, agendaOrder, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -32,6 +33,7 @@ function ItemNumber({ n, on, done }: { n: number; on: boolean; done: boolean }) 
 }
 
 export default function StageItems({ view, now, actions }: StageProps) {
+  const RC = useRoomWords();
   const [picked, setPicked] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const items = agendaOrder(view.items).filter((i) => i.status !== "parked");
@@ -73,7 +75,7 @@ export default function StageItems({ view, now, actions }: StageProps) {
                     <span className="min-w-0 flex-1">
                       <span className={`block truncate font-medium ${titleClass(item)}`}>{item.title}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {AIM_DEFS[item.aim].label} · {item.minutes} {ROOM_COPY.minutesShort} · {ROOM_COPY.itemStatus[item.status]}
+                        {AIM_DEFS[item.aim].label} · {item.minutes} {RC.minutesShort} · {RC.itemStatus[item.status]}
                       </span>
                     </span>
                   </button>
@@ -83,8 +85,8 @@ export default function StageItems({ view, now, actions }: StageProps) {
                       className={`${BTN_QUIET} no-underline`}
                       disabled={busy}
                       onClick={() => void start(item.id)}
-                      aria-label={`${ROOM_COPY.startItem}: ${item.title}`}
-                      title={ROOM_COPY.startItem}
+                      aria-label={`${RC.startItem}: ${item.title}`}
+                      title={RC.startItem}
                     >
                       <Play className="h-4 w-4" aria-hidden="true" />
                     </button>
@@ -93,7 +95,7 @@ export default function StageItems({ view, now, actions }: StageProps) {
               ))}
             </ol>
           ) : (
-            <p className={`${HINT} p-2`}>{ROOM_COPY.agendaEmpty}</p>
+            <p className={`${HINT} p-2`}>{RC.agendaEmpty}</p>
           )}
         </nav>
         <div className={`${CARD} py-12 text-center`}>
@@ -115,7 +117,7 @@ export default function StageItems({ view, now, actions }: StageProps) {
                   type="button"
                   aria-current={open ? "page" : undefined}
                   onClick={() => pick(item)}
-                  title={`${AIM_DEFS[item.aim].label} · ${item.minutes} ${ROOM_COPY.minutesShort} · ${ROOM_COPY.itemStatus[item.status]}`}
+                  title={`${AIM_DEFS[item.aim].label} · ${item.minutes} ${RC.minutesShort} · ${RC.itemStatus[item.status]}`}
                   className={`flex min-h-11 max-w-full items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-left text-sm text-foreground ${FOCUS} ${
                     open ? "border-notice bg-muted" : "border-border bg-card hover:border-notice"
                   }`}
@@ -131,16 +133,16 @@ export default function StageItems({ view, now, actions }: StageProps) {
 
       {shown.id !== activeId && (
         <div className={`${PANEL} flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm`}>
-          <span className="text-muted-foreground">{activeTitle ? ROOM_COPY.browsing(shown.title, activeTitle) : SESSION_COPY.itemNone}</span>
+          <span className="text-muted-foreground">{activeTitle ? RC.browsing(shown.title, activeTitle) : SESSION_COPY.itemNone}</span>
           <div className="flex gap-2">
             {runs && shown.status !== "done" && (
               <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => void start(shown.id)}>
-                {ROOM_COPY.startItem}
+                {RC.startItem}
               </button>
             )}
             {activeId && (
               <button type="button" className={BTN_QUIET} onClick={() => setPicked(null)}>
-                {ROOM_COPY.backToRoom}
+                {RC.backToRoom}
               </button>
             )}
           </div>

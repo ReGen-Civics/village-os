@@ -28,8 +28,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
-import { ROOM_COPY } from "@shared/sessions";
+
 import { COUNTER, TEXTBOX, TEXTBOX_MAX } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export interface GrowingTextProps {
   value: string;
@@ -78,6 +79,7 @@ export default function GrowingText({
   disabled = false,
   describedBy,
 }: GrowingTextProps) {
+  const RC = useRoomWords();
   const ref = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
 
@@ -146,7 +148,7 @@ export default function GrowingText({
       />
       {showCount && (
         <p className={`${COUNTER} mt-1 text-right`} aria-hidden={!focused}>
-          {ROOM_COPY.countOf(value.length, max)}
+          {RC.countOf(value.length, max)}
         </p>
       )}
     </div>

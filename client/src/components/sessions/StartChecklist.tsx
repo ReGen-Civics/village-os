@@ -16,9 +16,10 @@
  *
  * Nothing is offered: the checklist draws nothing.
  */
-import { AIM_DEFS, ROOM_COPY } from "@shared/sessions";
+import { AIM_DEFS } from "@shared/sessions";
 import { LIBRARY_COPY, LIBRARY_MINUTES, agendaAimFor, broughtFor, offeredFor, type LibraryCard } from "@shared/sessionLibrary";
 import { CHIP, HINT, LABEL } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /** "14 October", in the reader's own locale. */
 function shortDay(iso: string): string {
@@ -46,6 +47,7 @@ export default function StartChecklist({
   onPicked(next: number[]): void;
   durationMin: number | null;
 }) {
+  const RC = useRoomWords();
   const offered = offeredFor(items, circleId);
   if (!offered.length) return null;
   const planned = plannedMinutes(offered, picked);
@@ -74,7 +76,7 @@ export default function StartChecklist({
                   <span className="block text-foreground">{c.title}</span>
                   <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <span className={CHIP}>
-                      {c.aim ? AIM_DEFS[aim].label : LIBRARY_COPY.aimNotSure} · {LIBRARY_MINUTES[aim]} {ROOM_COPY.minutesShort}
+                      {c.aim ? AIM_DEFS[aim].label : LIBRARY_COPY.aimNotSure} · {LIBRARY_MINUTES[aim]} {RC.minutesShort}
                     </span>
                     {circleId != null && c.circleId == null && <span className={CHIP}>{LIBRARY_COPY.roomNoCircle}</span>}
                     <span>{c.mine ? LIBRARY_COPY.broughtByYou(shortDay(c.broughtAt)) : LIBRARY_COPY.broughtBy(c.broughtBy, shortDay(c.broughtAt))}</span>
@@ -87,7 +89,7 @@ export default function StartChecklist({
       </ul>
       {picked.length > 0 && durationMin != null && (
         <p className={`text-sm tabular-nums ${planned > durationMin ? "font-semibold text-notice" : "text-muted-foreground"}`}>
-          {ROOM_COPY.agendaFitLine(planned, Math.max(0, durationMin - planned))}
+          {RC.agendaFitLine(planned, Math.max(0, durationMin - planned))}
         </p>
       )}
     </fieldset>
