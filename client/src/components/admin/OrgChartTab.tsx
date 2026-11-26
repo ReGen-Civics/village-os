@@ -685,7 +685,7 @@ export function OrgChartTab({ password }: { password: string }) {
             {(r.holders ?? []).map((h: any) => (
               <span key={h.assignmentId ?? h.userId ?? h.name} className={`text-xs rounded-full pl-3 pr-1 py-1 inline-flex items-center gap-1 ${h.lapsed ? "bg-amber-50 border border-amber-200" : "bg-gray-100"}`}>
                 {h.name}
-                {h.focus && <span className="text-gray-500"> · {h.focus}</span>}
+                {h.focus && <span className="text-gray-600"> · {h.focus}</span>}
                 {h.kind === "documented" && <span className="text-amber-700"> <Trans context="OrgChartTab, span">· no account yet</Trans></span>}
                 {h.lapsed && (
                   <span className="text-amber-700">
