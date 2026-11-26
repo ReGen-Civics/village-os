@@ -25,10 +25,10 @@ export const AGAIN_WORDS: Record<ApplicantLanguage, { subject: string; body(role
       "The email we sent when it came in has the link to see where it is. If you didn't send it again, you can ignore this email.",
   },
   es: {
-    subject: "Ya tenemos tu solicitud",
+    subject: "Ya tenemos su solicitud",
     body: (roles) =>
-      `Ya tenemos tu solicitud para ${roles}, y está esperando a la aldea. No necesitas enviarla otra vez. ` +
-      "El correo que te enviamos cuando llegó tiene el enlace para ver dónde está. Si no la enviaste otra vez, puedes ignorar este correo.",
+      `Ya tenemos su solicitud para ${roles}, y está esperando a la aldea. No necesita enviarla otra vez. ` +
+      "El correo que le enviamos cuando llegó tiene el enlace para ver dónde está. Si no la envió otra vez, puede ignorar este correo.",
   },
 };
 

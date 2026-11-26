@@ -123,7 +123,8 @@ import { register as registerInviteRoutes } from "./routes/invites";
 import { register as registerJoinAnswerRoutes } from "./routes/joinAnswers";
 import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } from "./routes/rites";
 import { makeInviteDoor } from "./lib/inviteDoor";
-import { register as registerRecoveryRoutes } from "./routes/authRecovery";
+import { passwordLetter, register as registerRecoveryRoutes } from "./routes/authRecovery";
+import { languageOfMember } from "./lib/mailLanguage";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
 import { register as registerMemberEmailRoutes } from "./routes/memberEmails";
 import { ownerOfAddress } from "./repos/memberEmails";
@@ -8185,10 +8186,8 @@ async function startServer() {
         claimUrl = `${(process.env.FRONTEND_URL || "").replace(/\/$/, "")}/set-password?token=${encodeURIComponent(claim)}`;
         try {
           const mail = await sendResendEmail({
-            to: [normEmail], origin: "auth.founder_claim",
-            subject: `Set your password`,
-            html: `<p><a href="${escapeHtml(claimUrl)}">Set your password</a> (link expires in 60 minutes).</p>
-<p>If the button does nothing, paste this into your browser:<br>${escapeHtml(claimUrl)}</p>`,
+            to: [normEmail],
+            ...passwordLetter("founder_claim", { escapeHtml, village: mergedConfig().project.name, url: claimUrl, lang: languageOfMember(user) }),
           });
           emailed = mail.sent;
           emailNote = noteForMail(mail);
@@ -8218,11 +8217,8 @@ async function startServer() {
       claimUrl = `${(process.env.FRONTEND_URL || "").replace(/\/$/, "")}/set-password?token=${encodeURIComponent(claim)}`;
       try {
         const mail = await sendResendEmail({
-          to: [normEmail], origin: "auth.founder_claim",
-          subject: `You are the founder admin. Set your password`,
-          html: `<p>Your founder admin account was just created on ${escapeHtml(mergedConfig().project.name)}.</p>
-<p><a href="${escapeHtml(claimUrl)}">Set your password</a> (link expires in 60 minutes).</p>
-<p>If the button does nothing, paste this into your browser:<br>${escapeHtml(claimUrl)}</p>`,
+          to: [normEmail],
+          ...passwordLetter("founder_created", { escapeHtml, village: mergedConfig().project.name, url: claimUrl, lang: languageOfMember(user) }),
         });
         emailed = mail.sent;
         emailNote = noteForMail(mail);
@@ -8394,11 +8390,8 @@ async function startServer() {
     let emailed = false; // what the post office did, never "it did not throw"
     try {
       const mail = await sendResendEmail({
-        to: [target.email], origin: "auth.admin_password_link",
-        subject: "Set a new password",
-        html: `<p>An administrator of ${escapeHtml(mergedConfig().project.name)} sent you a link to set a new password.</p>
-<p><a href="${escapeHtml(claimUrl)}">Set a new password</a> (link expires in 60 minutes, and works once).</p>
-<p>If the button does nothing, paste this into your browser:<br>${escapeHtml(claimUrl)}</p>`,
+        to: [target.email],
+        ...passwordLetter("admin_link", { escapeHtml, village: mergedConfig().project.name, url: claimUrl, lang: languageOfMember(target) }),
       });
       emailed = mail.sent;
       if (!mail.sent) console.error(`[auth] admin password link NOT SENT for ${target.id}: reason=${mail.reason ?? "unknown"}`);

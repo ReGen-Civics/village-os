@@ -38,6 +38,7 @@ import type { Express } from "express";
 import { APPLICATION_ID } from "../../shared/seatApplications";
 import type { AppDeps } from "../lib/appDeps";
 import { buildPlayerCards } from "../lib/playerCardData";
+import { cardForReader } from "../lib/platformSpeech";
 import { readApplication } from "../repos/seatApplications";
 import { cardContext, cardSeatTier, type CardDeps } from "./playerCard";
 
@@ -97,6 +98,6 @@ export function register(app: Express, deps: Deps): void {
     const card = cards.get(a.candidateUserId);
     // A candidate whose account is gone has no card; the page keeps its own list.
     if (!card) return res.status(404).json({ error: "This application has no card to show." });
-    res.set("Cache-Control", "no-store").json(card);
+    res.set("Cache-Control", "no-store").json(cardForReader(req, res, card));
   });
 }

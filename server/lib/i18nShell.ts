@@ -35,6 +35,11 @@ export function parseAcceptLanguage(header: string | undefined): string[] {
   return out.sort((a, b) => b.q - a.q || a.i - b.i).map((e) => e.tag);
 }
 
+/** The language this browser saved on the site (the `vos_locale` cookie), or null. */
+export function savedSiteLocale(cookie: string | undefined): string | null {
+  return cookieValue(cookie, LOCALE_COOKIE);
+}
+
 function cookieValue(header: string | undefined, name: string): string | null {
   for (const pair of String(header ?? "").split(";")) {
     const [k, ...v] = pair.trim().split("=");
