@@ -28,6 +28,8 @@ if (!configured) console.warn("[proposedChanges] TEST_DATABASE_URL not set - DB 
 const ADMIN = { id: "u-admin", name: "Fern Oak", email: "fern@example.test" };
 const AGENT = { id: "u-agent", name: "Helper Agent", email: "agent@example.test" };
 const STRANGER = { id: "u-str", name: "Sam Field", email: "sam@example.test" };
+/** A storyteller: opens the review page (story.tell) and may not read a role's terms. */
+const STORY = { id: "u-story", name: "Rowan Tale", email: "rowan@example.test" };
 
 describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   let db: TestDb;
@@ -54,7 +56,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 8 });
     const users = usersRepo(pool);
-    for (const p of [ADMIN, AGENT, STRANGER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [ADMIN, AGENT, STRANGER, STORY]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
     await q("UPDATE users SET is_agent = 1 WHERE id = ?", [AGENT.id]);
 
     // A stand-in for the target routes: it records who called, and refuses where the person lacks the power.
@@ -101,7 +103,9 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
       contentRepo: { get: () => content } as any,
       faqsRepo: { get: () => faqs } as any,
       seasonState: () => ({ current: null, seasons: [], timezone: "UTC" }),
-      liveHoldersOf: async () => [],
+      liveHoldersOf: async (cap: string) => (cap === "story.tell" ? [STORY.id] : []),
+      // The one gate, as it answers terms.read: an admin may, the storyteller sits below every stage and may not.
+      capabilityCtx: async (u: any) => ({ stageIndex: String(u?.id) === STORY.id ? -1 : 0, stageIndexOf: () => 0, roleCapabilities: [], isAdmin: [ADMIN.id, AGENT.id].includes(String(u?.id)), villageHeld: [] }),
       port: () => targetPort,
       clientIp: () => "203.0.113.9",
     } as any);
@@ -330,6 +334,45 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     const fixed = await call("POST", "/api/admin/proposals/accept", { items: [{ id: dialId, body: { value: "12" } }] });
     expect(fixed.body.results).toEqual([{ id: dialId, ok: true }]);
     expect(hits.at(-1)!.body).toEqual({ value: "12" });
+  });
+
+  it("PAY FOLLOWS THE RIGHT TO READ TERMS, for a setting on the role routes too: its pay fields are cut, and kept from the store", async () => {
+    const { keepStoredPay, payKeysOf, withoutPay } = await import("./proposedChanges");
+    const keys = payKeysOf("setting", { method: "PUT", path: "/api/admin/org/roles/r-1" });
+    const body = { name: "Bookkeeper", valueMinor: 177777, termsOffer: { v: 1, pay: { kind: "fixed", amountMinor: 177777 } } };
+    expect(withoutPay(keys, body)).toEqual({ value: { name: "Bookkeeper" }, had: true });
+    expect(keepStoredPay(keys, { name: "Book keeper", valueMinor: 1 }, body)).toEqual({ name: "Book keeper", valueMinor: 177777, termsOffer: body.termsOffer });
+    // Any other setting, and any other kind but a role card, carries no pay keys.
+    expect(payKeysOf("setting", { method: "PUT", path: "/api/admin/brand" })).toEqual([]);
+    expect(payKeysOf("page_content", { section: "page-home" })).toEqual([]);
+  });
+
+  it("PAY FOLLOWS THE RIGHT TO READ TERMS: a storyteller sees that a role's pay changes and no figure, and cannot drop or set it (the coordinator, 26 Nov 2026)", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-pay'");
+    await q("INSERT INTO org_roles (id, name, seats, active, terms_offer) VALUES ('rc-pay', 'Pay role', 1, 1, ?)", [JSON.stringify({ v: 1, pay: { kind: "range", currency: "USD", minMinor: 101111, maxMinor: 122222, per: "month" } })]);
+    const PAY = { kind: "range", currency: "USD", minMinor: 155555, maxMinor: 188888, per: "month" };
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Pay", items: [{ kind: "role_card", target: { roleId: "rc-pay" }, body: { pay: PAY, words: { aim: "Hold the pay role well." } }, summary: "Raise the pay." }] }, AGENT.id);
+    expect(filed.status, JSON.stringify(filed.body)).toBe(200);
+    const id = filed.body.ids[0];
+
+    const story = await call("GET", "/api/admin/proposals", undefined, STORY.id);
+    expect(story.status).toBe(200);
+    const mine = story.body.changes.find((c: any) => c.id === id);
+    expect(mine.payHidden).toBe(true);
+    expect(mine.body).toEqual({ words: { aim: "Hold the pay role well." } });
+    expect(JSON.stringify(story.body)).not.toMatch(/101111|122222|155555|188888/);
+
+    // An admin reads terms, and sees both the live pay and the proposed one.
+    const admin = await call("GET", "/api/admin/proposals");
+    const full = admin.body.changes.find((c: any) => c.id === id);
+    expect(full.payHidden).toBe(false);
+    expect(full.body.pay).toEqual(PAY);
+    expect(full.live.pay).toMatchObject({ minMinor: 101111 });
+
+    // The storyteller edits the words and sends a pay of their own: the stored pay is what is kept.
+    expect((await call("PUT", `/api/admin/proposals/${id}/draft`, { body: { words: { aim: "Hold it gently." }, pay: { kind: "honorary" } } }, STORY.id)).status).toBe(200);
+    const after = (await call("GET", "/api/admin/proposals")).body.changes.find((c: any) => c.id === id);
+    expect(after.draft).toEqual({ words: { aim: "Hold it gently." }, pay: PAY });
   });
 
   it("an edited text is accepted exactly as edited, and the lesson records the difference", async () => {

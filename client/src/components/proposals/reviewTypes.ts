@@ -38,6 +38,8 @@ export interface Proposal {
   reverts?: string | null;
   /** Accepts made since it was proposed that wrote what it writes; older servers sent none. */
   stale?: StaleBy[];
+  /** Its pay changes, and this reader may not read terms: no figure was sent. */
+  payHidden?: boolean;
 }
 
 export interface Batch {
