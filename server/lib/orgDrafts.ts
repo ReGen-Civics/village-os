@@ -88,6 +88,13 @@ export interface DraftChange {
   orgRoleId: string;
   payload: any;
   beforeJson: any;
+  /**
+   * What the target held when this change was added (0436), in the shape `before_json` takes. Null for a
+   * change added before 0436, for one that makes something new, and for a change about who holds a role,
+   * which is never captured so that erasing a person (`forgetMemberInDrafts`) has nothing more to rewrite.
+   * A picture for the draft page; never revert data.
+   */
+  baseJson?: any;
   order: number;
 }
 
@@ -413,7 +420,7 @@ function asJson(v: unknown): any {
 function rowToChange(r: any): DraftChange {
   return {
     id: r.id, draftId: r.draft_id, op: r.op, orgRoleId: r.org_role_id,
-    payload: asJson(r.payload), beforeJson: asJson(r.before_json),
+    payload: asJson(r.payload), beforeJson: asJson(r.before_json), baseJson: asJson(r.base_json ?? null),
     order: Number(r.sort_order ?? 0),
   };
 }
@@ -655,6 +662,15 @@ export async function createDraft(
 }
 
 /** Why an open draft cannot be edited while the village is voting on it. */
+/** The changes whose base is captured: words and places of roles and circles, never who holds a role. */
+const BASE_OPS: ReadonlySet<DraftOp> = new Set<DraftOp>(["update_seat", "rest_seat", "update_circle", "move_circle", "rest_circle", "set_circle_standing"]);
+
+/** A base never holds a person: who last set the terms is a member id, and the page has no use for it. */
+function withoutPeople(row: Record<string, unknown>): Record<string, unknown> {
+  const { terms_offer_by: _by, ...rest } = row;
+  return rest;
+}
+
 const UNDER_A_VOTE =
   "The village is voting on this draft, so it cannot be changed until the vote closes. Withdraw the draft to stop the vote.";
 
@@ -695,9 +711,13 @@ export async function addChange(
     "SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM org_draft_changes WHERE draft_id = ?", [draftId],
   );
   const id = newId("dch");
+  // What the draft is written against (0436), read in this transaction so it is the card the change was added to.
+  const base = BASE_OPS.has(body.op)
+    ? await captureBefore(pool, { id, draftId, op: body.op, orgRoleId: body.orgRoleId, payload: body.payload ?? {}, beforeJson: null, order: 0 })
+    : null;
   await pool.query(
-    "INSERT INTO org_draft_changes (id, draft_id, op, org_role_id, payload, sort_order) VALUES (?,?,?,?,?,?)",
-    [id, draftId, body.op, body.orgRoleId, JSON.stringify(body.payload ?? {}), Number(n?.next ?? 1)],
+    "INSERT INTO org_draft_changes (id, draft_id, op, org_role_id, payload, sort_order, base_json) VALUES (?,?,?,?,?,?,?)",
+    [id, draftId, body.op, body.orgRoleId, JSON.stringify(body.payload ?? {}), Number(n?.next ?? 1), base ? JSON.stringify(withoutPeople(base)) : null],
   );
   return { ok: true, id };
 }
