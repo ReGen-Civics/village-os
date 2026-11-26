@@ -10,7 +10,7 @@
  * Run: node scripts/flake-report.test.mjs
  */
 import assert from "node:assert";
-import { attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank } from "./flake-report.mjs";
+import { attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank, tableCell } from "./flake-report.mjs";
 
 let passed = 0;
 async function check(name, fn) {
@@ -111,4 +111,14 @@ await check("ranked worst first, by events then by distinct code", () => {
   assert.match(md, /A retry, a skip or a looser assertion is not a fix/);
 });
 
-console.log(`flake-report.test: ${passed}/8 checks passed`);
+await check("a test name from a log cannot break out of its table cell", () => {
+  assert.strictEqual(tableCell("a\\|b"), "a\\\\\\|b", "a backslash before a pipe must not unescape it");
+  assert.strictEqual(tableCell("x | y"), "x \\| y");
+  assert.strictEqual(tableCell("say `hi`"), "say 'hi'");
+  assert.strictEqual(tableCell("one\ntwo"), "one two");
+  const md = markdown([{ culprit: "t.test.ts > a\\|b", events: 1, codes: 1, example: "u" }], { days: 1, runs: 1, attempts: 1, events: 1, unkeyed: 0 });
+  const row = md.split("\n").find((l) => l.startsWith("| 1 |"));
+  assert.strictEqual(row.split(/(?<!\\)\|/).length, 7, `the row has extra cells: ${row}`);
+});
+
+console.log(`flake-report.test: ${passed}/9 checks passed`);
