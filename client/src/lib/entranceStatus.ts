@@ -1,11 +1,12 @@
 /**
  * THE PORTAL ENTRANCE'S STATUS ON THIS DEVICE, asked once per page load and shared by everyone who needs it: the
- * gate that draws the portal (components/EntranceGate.tsx) and the front door's "in use" reads
- * (lib/areasInUseReads.ts), which must not ask the server anything the entrance would refuse. Entering reloads the
+ * gate that draws the portal (components/EntranceGate.tsx), the front door's "in use" reads
+ * (lib/areasInUseReads.ts) and the guide's name (hooks/useGuideName.ts), which must not ask the server anything the
+ * entrance would refuse. Entering reloads the
  * page, which asks again.
  */
 import { useEffect, useState } from "react";
-import { GATE_HINT_COOKIE, type EntranceStatus } from "@shared/entrance";
+import { GATE_HINT_COOKIE, pageBehindEntrance, type EntranceStatus } from "@shared/entrance";
 
 let statusRead: Promise<EntranceStatus | null> | null = null;
 
@@ -26,6 +27,35 @@ export function gateHinted(): boolean {
   } catch {
     return true;
   }
+}
+
+/**
+ * Whether this device may ask past the portal: no entrance kept, or one it has entered. Unreadable: no. A signed-in
+ * member is always past it; callers ask only for a visitor.
+ */
+export async function pastTheEntrance(): Promise<boolean> {
+  if (!gateHinted()) return true;
+  const status = await readEntranceStatus();
+  return !!status && (!status.required || status.entered);
+}
+
+/**
+ * Whether the portal entrance stands in front of this page for this visitor (or may, while its status is read), so
+ * a piece of the shell that leads behind it can step aside: the entrance is the page then, and it carries its own
+ * way in. False for a member, on a page in front of the entrance, and wherever the village keeps none.
+ */
+export function useEntranceStands(location: string, signedIn: boolean): boolean {
+  const behind = !signedIn && pageBehindEntrance(location) && gateHinted();
+  const [past, setPast] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (!behind) return;
+    let live = true;
+    void pastTheEntrance().then((p) => live && setPast(p));
+    return () => {
+      live = false;
+    };
+  }, [behind]);
+  return behind && past !== true;
 }
 
 /** For tests: forget the status. */
