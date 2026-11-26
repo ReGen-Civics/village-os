@@ -11,6 +11,8 @@ import type { ReactNode } from "react";
 let token: string | null = "t";
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/lib/gameApi", () => ({ authToken: () => token, useGameConfig: () => ({ stages: [{ id: "co-creator", name: "Co-creator" }] }) }));
+let guestLine: { hidden: boolean; fields: { line: string } } = { hidden: false, fields: { line: "This village is held by the people who live and work here." } };
+vi.mock("@/hooks/usePageContent", () => ({ usePageContent: () => ({ guests: guestLine }) }));
 
 import GovernanceNow from "./GovernanceNow";
 
@@ -35,6 +37,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   token = "t";
+  guestLine = { hidden: false, fields: { line: "This village is held by the people who live and work here." } };
 });
 
 describe("/governance, the Now view", () => {
@@ -47,6 +50,12 @@ describe("/governance, the Now view", () => {
     expect(within(box).getByRole("link", { name: "How we decide" }).getAttribute("href")).toBe("/governance/how");
     expect(f).not.toHaveBeenCalled();
     expect(screen.queryByRole("link", { name: "Your work" })).toBeNull();
+  });
+
+  it("a guest reads the village's own line first", async () => {
+    answer(403, { error: "members_only" });
+    render(<GovernanceNow />);
+    expect((await screen.findByTestId("governance-guest-line")).textContent).toBe("This village is held by the people who live and work here.");
   });
 
   it("a guest sees the door to membership, and nothing that is for members", async () => {

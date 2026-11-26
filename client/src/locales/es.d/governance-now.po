@@ -329,3 +329,13 @@ msgstr "Alzar la mano para asumir un poder"
 msgctxt "governance now"
 msgid "Try again"
 msgstr "Inténtalo de nuevo"
+
+# needs-native-review: Governance step 3, the lead's bullets rule, 26 Nov 2026
+msgctxt "governance now: newcomer"
+msgid "Members vote on village decisions, and each vote counts the same."
+msgstr "Los miembros votan las decisiones de la aldea, y cada voto cuenta lo mismo."
+
+# needs-native-review: Governance step 3, the lead's bullets rule, 26 Nov 2026
+msgctxt "governance now: newcomer"
+msgid "Until you are a member, you can read how the village decides."
+msgstr "Mientras no sea miembro, puede leer cómo decide la aldea."

@@ -5,6 +5,8 @@
  * and nothing that is for members. How we decide (the explainer) is /governance/how.
  */
 import Layout from "@/components/Layout";
+import { usePageContent } from "@/hooks/usePageContent";
+import { GOVERNANCE_NOW_PAGE } from "@shared/pageContent/governanceNow";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, EYEBROW, H1, HINT, LEDE, NOTE, STATEMENT, WORLD } from "@/components/journey/look";
@@ -15,16 +17,29 @@ import { useGameConfig } from "@/lib/gameApi";
 import { authToken } from "@/lib/gameApi";
 
 function Newcomer({ signedOut }: { signedOut: boolean }) {
+  // The village's own line for guests (Admin, Pages, Governance: Now).
+  const page = usePageContent(GOVERNANCE_NOW_PAGE);
+  const line = page?.guests?.fields.line ?? "";
   return (
     <div className="grid gap-6" data-testid="governance-newcomer">
       <section className={`${CARD_FEATURED} space-y-3`}>
         <p className={EYEBROW}>{signedOut ? <Trans context="governance now: newcomer">Signed out</Trans> : <Trans context="governance now: newcomer">You are a guest</Trans>}</p>
-        <p className={STATEMENT}>
-          <Trans context="governance now: newcomer">Members decide together here.</Trans>
-        </p>
-        <p className={NOTE}>
-          <Trans context="governance now: newcomer">Members vote on village decisions, and each vote counts the same. Until you are a member, you can read how the village decides.</Trans>
-        </p>
+        {line ? (
+          <p className={STATEMENT} data-testid="governance-guest-line">
+            {line}
+          </p>
+        ) : null}
+        <ul className={`${NOTE} list-disc space-y-1 pl-5`}>
+          <li>
+            <Trans context="governance now: newcomer">Members decide together here.</Trans>
+          </li>
+          <li>
+            <Trans context="governance now: newcomer">Members vote on village decisions, and each vote counts the same.</Trans>
+          </li>
+          <li>
+            <Trans context="governance now: newcomer">Until you are a member, you can read how the village decides.</Trans>
+          </li>
+        </ul>
         <div className="flex flex-wrap gap-2">
           {signedOut ? (
             <Link href="/login" className={BTN_PRIMARY}>
