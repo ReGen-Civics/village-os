@@ -213,22 +213,22 @@ const en: ComeAndPlayWords = {
 
 // needs-native-review: the come-and-play words, 16 Nov 2026
 const es: ComeAndPlayWords = {
-  heading: "¡Ven a jugar!",
-  intro: "Nuestra app y nuestro juego siguen creciendo. Ven a ver lo nuevo y encuentra tu propia forma de jugar.",
-  button: "Ven a explorar",
+  heading: "¡Venga a jugar!",
+  intro: "Nuestra app y nuestro juego siguen creciendo. Venga a ver lo nuevo y encuentre su propia forma de jugar.",
+  button: "Venga a explorar",
   cards: {
-    stayClose: { title: "", line: "Nuestra forma abierta de quedarte cerca de la aldea y su gente.", alt: "Un portal florido en un sendero de la aldea" },
-    roles: { title: "Únete al equipo", line: "Mira los roles abiertos ahora y encuentra el que va contigo.", alt: "Un círculo de sillas talladas alrededor del fuego" },
-    quests: { title: "Toma una misión", line: "Pequeñas aventuras que ayudan a la aldea. Cualquiera puede jugar.", alt: "Un tablero de misiones de madera en un prado verde" },
-    explore: { title: "Explora la aldea", line: "Recorre el mapa vivo y conoce los lugares y la gente.", alt: "Casas redondas con techo verde alrededor de una fogata" },
-    events: { title: "Ven a un encuentro", line: "Encuentra una llamada, un círculo o una celebración en el calendario.", alt: "Un prado de la aldea con faroles al atardecer" },
-    gratitude: { title: "Agradecimientos y gratitud", line: "Lee los agradecimientos que comparte la gente, y suma el tuyo.", alt: "Una mesa de regalos bajo un techo de hojas" },
-    pooling: { title: "Juntando Recursos", line: "Mira lo que hacemos crecer juntos y cómo puedes aportar.", alt: "Canastas y jarras reunidas bajo un techo compartido" },
-    newsletter: { title: "Lee nuestro boletín", line: "Entérate primero de roles nuevos, misiones y noticias de la aldea.", alt: "Una casita con un buzón en el techo" },
+    stayClose: { title: "", line: "Nuestra forma abierta de quedarse cerca de la aldea y su gente.", alt: "Un portal florido en un sendero de la aldea" },
+    roles: { title: "Únase al equipo", line: "Mire los roles abiertos ahora y encuentre el que va con usted.", alt: "Un círculo de sillas talladas alrededor del fuego" },
+    quests: { title: "Tome una misión", line: "Pequeñas aventuras que ayudan a la aldea. Cualquiera puede jugar.", alt: "Un tablero de misiones de madera en un prado verde" },
+    explore: { title: "Explore la aldea", line: "Recorra el mapa vivo y conozca los lugares y la gente.", alt: "Casas redondas con techo verde alrededor de una fogata" },
+    events: { title: "Venga a un encuentro", line: "Encuentre una llamada, un círculo o una celebración en el calendario.", alt: "Un prado de la aldea con faroles al atardecer" },
+    gratitude: { title: "Agradecimientos y gratitud", line: "Lea los agradecimientos que comparte la gente, y sume el suyo.", alt: "Una mesa de regalos bajo un techo de hojas" },
+    pooling: { title: "Juntando Recursos", line: "Mire lo que hacemos crecer juntos y cómo puede aportar.", alt: "Canastas y jarras reunidas bajo un techo compartido" },
+    newsletter: { title: "Lea nuestro boletín", line: "Entérese primero de roles nuevos, misiones y noticias de la aldea.", alt: "Una casita con un buzón en el techo" },
   },
   signOff: "Con cariño,",
   team: (v) => `El equipo de ${v}`,
-  why: (v) => `Recibes esto porque escribiste a ${v}.`,
+  why: (v) => `Recibe esto porque escribió a ${v}.`,
 };
 
 export const COME_AND_PLAY_WORDS: Record<ApplicantLanguage, ComeAndPlayWords> = { en, es };

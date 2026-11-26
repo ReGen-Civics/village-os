@@ -345,11 +345,11 @@ export const ADOPT_MORE: Record<ApplicantLanguage, {
   },
   es: {
     nextHeading: "Lo que sigue:",
-    stepCreate: "1. Crea tu perfil con el botón de arriba.",
-    stepSignIn: "1. Inicia sesión con este correo.",
-    stepAgreements: "2. Tu perfil muestra los acuerdos con los que te pedimos alinear antes de que empiece tu rol, como nuestro acuerdo de confidencialidad y los términos de tu rol. Cada uno tiene allí su propia puerta.", // check: "alinear", "puerta"
-    stepFirstDays: "3. Cuando empiece tu rol, tu perfil muestra tus primeros días con nosotros, paso a paso.",
-    seatOpens: (roles) => `Todos los lugares de ${roles} están ocupados ahora, así que tu rol empieza cuando se abra un lugar. Te avisaremos el día que eso pase.`, // check: "lugar" for a place in a role
+    stepCreate: "1. Cree su perfil con el botón de arriba.",
+    stepSignIn: "1. Inicie sesión con este correo.",
+    stepAgreements: "2. Su perfil muestra los acuerdos con los que le pedimos alinearse antes de que empiece su rol, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su propia puerta.", // check: "alinear", "puerta"
+    stepFirstDays: "3. Cuando empiece su rol, su perfil muestra sus primeros días con nosotros, paso a paso.",
+    seatOpens: (roles) => `Todos los lugares de ${roles} están ocupados ahora, así que su rol empieza cuando se abra un lugar. Le avisaremos el día que eso pase.`, // check: "lugar" for a place in a role
     forAPlace: "para cuando se abra un lugar",
   },
 };
