@@ -19,7 +19,8 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { gameFetch } from "@/lib/gameApi";
 import { ROOM_COPY } from "@shared/sessions";
-import { TASK_COPY, TASK_REFUSALS, taskUrl, type TaskAnswer, type TaskCard, type TaskOp } from "@shared/sessionTasks";
+import { TASK_REFUSALS, taskUrl, type TaskAnswer, type TaskCard, type TaskOp } from "@shared/sessionTasks";
+import { useTaskWords } from "@/components/tasks/taskWords";
 
 /** What happened to one answer. `moved` and `ok` both hand back a card to show. */
 export type TaskAnswerOutcome =
@@ -54,6 +55,7 @@ export interface TaskAnswerFields {
  * place.
  */
 export function useTaskAnswer(onCard?: (t: TaskCard) => void) {
+  const TW = useTaskWords();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // A second tap while the first is in flight sends nothing.
@@ -87,7 +89,7 @@ export function useTaskAnswer(onCard?: (t: TaskCard) => void) {
         setBusy(false);
       }
       if (outcome.kind === "ok") {
-        toast.success(TASK_COPY.sheets[op].toast);
+        toast.success(TW.sheets[op].toast);
         onCard?.(outcome.task);
       } else if (outcome.kind === "moved") {
         toast.message(TASK_REFUSALS.moved);
