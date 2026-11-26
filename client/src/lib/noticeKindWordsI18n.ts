@@ -10,8 +10,11 @@
  * A village's own blurb for a kind (Admin, noticeBlurbs) is its own content and still wins over these.
  */
 // A value import of the runtime: precompileEnglish compiles the messages of a file that imports it.
-import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
+import { i18n as appI18n, setupI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+
+/** Reads a descriptor's own English when no language has been started (a test, or a read before the app starts one). */
+const ENGLISH = setupI18n({ locale: "en", messages: { en: {} } });
 
 type Pair = { blurb: MessageDescriptor; many: MessageDescriptor };
 
@@ -570,6 +573,8 @@ const PLAIN: Pair = {
 export function kindWordsIn(i18n: I18n = appI18n) {
   return (type: string): { blurb: string; many: string } => {
     const w = KIND_WORDS_MSG[type] ?? PLAIN;
-    return { blurb: i18n._(w.blurb), many: i18n._({ ...w.many, values: { n: "{n}" } }) };
+    // No language yet (a test, or a read before the app has started one): the English, as written.
+    const by = i18n.locale ? i18n : ENGLISH;
+    return { blurb: by._(w.blurb), many: by._({ ...w.many, values: { n: "{n}" } }) };
   };
 }

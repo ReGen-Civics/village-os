@@ -18,5 +18,5 @@ export const GROUP_TITLE_MSG: Readonly<Record<string, MessageDescriptor>> = {
 /** A section heading in the reader's language; a group this file does not know keeps its English. */
 export function groupTitle(id: string, english: string, i18n: I18n = appI18n): string {
   const d = GROUP_TITLE_MSG[id];
-  return d ? i18n._(d) : english;
+  return d && i18n.locale ? i18n._(d) : english; // no language started yet: the shared English
 }
