@@ -33,7 +33,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseFailLines } from "./flake-report.mjs";
+import { parseFailLines, withRetry } from "./flake-report.mjs";
 
 export const TITLE = "main is red";
 export const LABEL = "main-red";
@@ -166,7 +166,10 @@ function client(token, repo) {
   if (token) headers.Authorization = `Bearer ${token}`;
   const url = (p) => `https://api.github.com${p.startsWith("/repos") ? p : `/repos/${repo}${p}`}`;
   const call = async (method, p, body) => {
-    const r = await fetch(url(p), { method, headers, body: body ? JSON.stringify(body) : undefined, redirect: "follow" });
+    // Reads retry GitHub's transient 5xx and 429; writes are sent once, so a
+    // retried POST can never post a comment twice.
+    const send = () => fetch(url(p), { method, headers, body: body ? JSON.stringify(body) : undefined, redirect: "follow" });
+    const r = method === "GET" ? await withRetry(send) : await send();
     if (method === "GET" && (r.status === 404 || r.status === 410) && p.endsWith("/logs")) return "";
     if (!r.ok && !(method === "POST" && p.endsWith("/labels") && r.status === 422)) throw new Error(`${method} ${p}: ${r.status} ${r.statusText}`);
     return p.endsWith("/logs") ? r.text() : r.status === 204 ? null : r.json();
