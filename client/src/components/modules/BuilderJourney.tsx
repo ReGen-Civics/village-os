@@ -12,11 +12,13 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { BookOpen, Check, ClipboardCopy } from "lucide-react";
 import { Firefly } from "@/components/sacred/living";
 import { BUILDER_EXAMPLES, BUILDER_STEPS, agentHandoffText } from "@shared/builderJourney";
+import { builderWord } from "./builderWords";
 
 export const BUILDER_JOURNEY_ID = "build-a-module";
 
 export default function BuilderJourney() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const bw = (english: string) => builderWord(english, i18n);
   const text = agentHandoffText();
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const copy = async () => {
@@ -46,14 +48,14 @@ export default function BuilderJourney() {
           return (
           <li key={s.title} className="min-w-0 rounded-xl border border-border bg-background p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-notice"><Trans context="module library, builder step number">Step {n}</Trans></p>
-            <h3 className="mt-1 font-semibold text-foreground">{s.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{s.line}</p>
+            <h3 className="mt-1 font-semibold text-foreground">{bw(s.title)}</h3>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{bw(s.line)}</p>
             {s.command ? (
               <code className="mt-2 block break-all rounded bg-muted px-2 py-1 text-xs text-foreground">{s.command}</code>
             ) : null}
             {s.link ? (
               <a href={s.link.href} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-[44px] items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground">
-                {s.link.label} ↗
+                {bw(s.link.label)} ↗
               </a>
             ) : null}
           </li>
@@ -69,9 +71,9 @@ export default function BuilderJourney() {
         {BUILDER_EXAMPLES.map((e) => (
           <li key={e.title} className="min-w-0 rounded-xl border border-border bg-background p-4">
             <a href={e.href} target="_blank" rel="noopener noreferrer" className="font-semibold text-notice underline underline-offset-2 hover:text-foreground">
-              {e.title} ↗
+              {bw(e.title)} ↗
             </a>
-            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{e.line}</p>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{bw(e.line)}</p>
           </li>
         ))}
       </ul>

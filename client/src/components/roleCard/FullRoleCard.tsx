@@ -70,6 +70,7 @@ import { ShareLabel, TokenText, shareLabelFor, useShareNames } from "@/component
 import { useVillageName } from "@/hooks/useVillageName";
 import { NO_SHARED, onboardingFor } from "@shared/roleCardShared";
 import { LabelledBullets, VillageGoalBanner } from "./FoundingRoleCard";
+import { cardViewWords } from "@/components/power/cardViewWords";
 
 const todayIso = () => {
   const d = new Date();
@@ -351,7 +352,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     ) : founding && payTbd ? (
       payTbdLine(i18n)
     ) : null,
-    where: roleCardView(params).rows.find((r) => r.id === "where")?.lines.join(", ") ?? "",
+    where: roleCardView(params, undefined, cardViewWords(i18n)).rows.find((r) => r.id === "where")?.lines.join(", ") ?? "",
   };
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
