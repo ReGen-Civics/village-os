@@ -10,6 +10,7 @@ import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { formatter } from "@lingui/format-po";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
+// @ts-expect-error - scripts/ is untyped JavaScript, deliberately outside tsconfig
 import { mergedPoText } from "../../../scripts/lib/poFragments.mjs";
 
 const cfg: { current: Record<string, unknown> } = { current: {} };

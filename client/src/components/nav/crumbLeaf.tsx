@@ -17,7 +17,7 @@ const listeners = new Set<() => void>();
 function set(name: string | null): void {
   if (name === current) return;
   current = name;
-  for (const l of listeners) l();
+  listeners.forEach((l) => l());
 }
 
 function subscribe(l: () => void): () => void {
