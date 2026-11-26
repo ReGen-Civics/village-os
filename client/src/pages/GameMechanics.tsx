@@ -56,6 +56,7 @@ import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdopt
 import { useAuth } from "@/contexts/AuthContext";
 import { useFocusTarget } from "@/lib/useFocusTarget";
 import { dialFromSearch } from "@shared/comms/memberView";
+import { localizeConstitution } from "./gameMechanicsConstitutionWords";
 import InfoTip, { DialFact } from "@/components/InfoTip";
 import LongText from "@/components/LongText";
 import PurposeAlignmentField, { usePurposeAlignment } from "@/components/governance/PurposeAlignmentField";
@@ -825,7 +826,8 @@ export default function GameMechanics() {
                   admin, or founder. Everything below them is tunable <em>because</em> these are not.
                 </Trans></p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {snapshot.constitution.map((law) => (
+                  {/* The laws arrive in English; the platform's own words are drawn in the reader's language. */}
+                  {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                     <div
                       key={law.title}
                       className="m-germ bg-white rounded-xl border border-stone-200 p-4"
