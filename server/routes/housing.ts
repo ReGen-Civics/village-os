@@ -71,6 +71,9 @@ import {
   setReservationStatus,
   teamAlertSubject,
 } from "../lib/housing";
+import { welcomeMailWords } from "../../shared/welcomeMailWords";
+import { languageForAddress } from "../lib/mailLanguage";
+import { savedSiteLocale } from "../lib/i18nShell";
 
 type Deps = Pick<
   AppDeps,
@@ -468,20 +471,23 @@ export function register(app: Express, deps: Deps): void {
         });
       }
       // The person who asked. No deposit link and no promise of a date: this
-      // step records an intent, and the next move is a human one.
+      // step records an intent, and the next move is a human one. In their
+      // language: theirs if they are a member, the address book's, the site's
+      // as they asked (shared/mailLanguage.ts).
+      const R = welcomeMailWords(await languageForAddress(getPool(), email, { member: user, request: savedSiteLocale(req.headers.cookie) })).reservation;
       await sendResendEmail({
         to: [email],
         origin: "housing.ack",
-        subject: "We have your reservation request",
+        subject: R.subject,
         html:
           `<!doctype html><html><body style="font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;padding:24px;color:#1f2937">` +
           `<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">` +
-          `<div style="background:${accent()};color:#fff;padding:22px 24px"><div style="font-size:20px;font-weight:700">Your reservation request is in</div></div>` +
+          `<div style="background:${accent()};color:#fff;padding:22px 24px"><div style="font-size:20px;font-weight:700">${R.heading}</div></div>` +
           `<div style="padding:22px 24px;line-height:1.6">` +
-          `<p>Hi ${escapeHtml(name)},</p>` +
-          `<p>We have your request for a ${escapeHtml(homeType)}${hamlet ? ` in ${escapeHtml(hamlet)}` : ""}. Someone from the founding team will read it and get in touch about the deposit and what happens next.</p>` +
-          `<p>No payment has been taken, and nothing is held against your name yet.</p>` +
-          `<p style="color:#6b7280;font-size:13px;margin-top:20px">The team</p>` +
+          `<p>${R.hi(escapeHtml(name))}</p>` +
+          `<p>${R.asked(escapeHtml(R.homeType(homeType)), hamlet ? escapeHtml(hamlet) : null)}</p>` +
+          `<p>${R.noPayment}</p>` +
+          `<p style="color:#6b7280;font-size:13px;margin-top:20px">${R.team}</p>` +
           `</div></div></body></html>`,
       });
     })().catch((err) => console.error("[housing] reservation notification failed", err));
