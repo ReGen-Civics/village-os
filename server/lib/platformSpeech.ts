@@ -14,7 +14,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { setupI18n, type I18n } from "@lingui/core";
-import type { Request, Response } from "express";
 import { cardWordsWith, fixedCardWords, sayCardIn, type PlayerCardWords } from "../../shared/playerCardSpeak";
 import { CARD_MESSAGES, type CardMessageKey } from "../../shared/playerCardMessages";
 import type { PlayerCardPayload } from "../../shared/playerCardPayload";
@@ -86,7 +85,7 @@ export function playerCardWordsFor(locale: string, dirs?: string[]): PlayerCardW
  * lines the components draw beside it. An English reader, or a language with no catalog, gets the payload as built,
  * minus the record of what it was made from, which only this step reads.
  */
-export function cardForReader(req: Pick<Request, "get" | "headers">, res: Pick<Response, "set">, payload: PlayerCardPayload, dirs?: string[]): PlayerCardPayload {
+export function cardForReader(req: Parameters<typeof readerLocale>[0], res: Parameters<typeof noSharedCache>[0], payload: PlayerCardPayload, dirs?: string[]): PlayerCardPayload {
   const { said: _said, ...plain } = payload.card;
   const locale = readerLocale(req);
   if (!locale) return { ...payload, card: plain };
