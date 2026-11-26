@@ -64,7 +64,15 @@ export function shellLocale(input: { cookie: string | undefined; acceptLanguage:
   });
 }
 
-/** Set `lang` and `dir` on the shell's `<html>` element. */
+/**
+ * Set `lang` and `dir` on the shell's `<html>` element, and keep every other
+ * attribute on it. It runs last on every page, after the splices that mark the
+ * tag (withScheme's data-scheme, withVillageLook's data-village-mode and
+ * data-village-paper); rebuilding the whole tag dropped them all.
+ */
 export function setShellLang(shell: string, locale: string): string {
-  return shell.replace(/<html\b[^>]*>/i, () => `<html lang="${locale.replace(/[^A-Za-z0-9-]/g, "")}" dir="${directionOf(locale)}">`);
+  return shell.replace(/<html\b([^>]*)>/i, (_tag, attrs: string) => {
+    const rest = attrs.replace(/\s(?:lang|dir)="[^"]*"/gi, "");
+    return `<html lang="${locale.replace(/[^A-Za-z0-9-]/g, "")}" dir="${directionOf(locale)}"${rest}>`;
+  });
 }
