@@ -1,0 +1,1666 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_opened"
+msgid "The village opened a vote and you are on the roll for it. Your answer counts toward the outcome."
+msgstr "La aldea abrió una votación y usted está en el padrón. Su respuesta cuenta para el resultado."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_opened"
+msgid "{n} votes opened, and you are on the roll for each one."
+msgstr "Se abrieron {n} votaciones y usted está en el padrón de cada una."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind agent_full_access"
+msgid "Full access for one role's agent was turned on or off. With it on, that role's agent can make admin changes and accept proposals for the role holder, each one carrying their approval."
+msgstr "Se activó o desactivó el acceso total del agente de un rol. Activado, ese agente puede hacer cambios de administración y aceptar propuestas por quien tiene el rol, cada uno con su aprobación."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind agent_full_access"
+msgid "{n} changes to the full access an agent holds."
+msgstr "{n} cambios al acceso total de un agente."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind time_poll_open"
+msgid "Pick the times you can make. The time with the most picks becomes the gathering's time."
+msgstr "Elija los horarios en que puede asistir. El horario con más votos será la hora del encuentro."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind time_poll_open"
+msgid "{n} gatherings are choosing a time."
+msgstr "{n} encuentros están eligiendo horario."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind change_request_review"
+msgid "A change request touches what your role looks after. Ask, raise a concern or an objection, suggest an edit, or say you can live with it."
+msgstr "Una solicitud de cambio toca lo que cuida su rol. Pregunte, plantee una inquietud o una objeción, sugiera una edición, o diga que puede vivir con ella."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind change_request_review"
+msgid "{n} change requests are asking for your review."
+msgstr "{n} solicitudes de cambio piden su revisión."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind change_request"
+msgid "Something new on a change request you are part of. Open it to read and answer."
+msgstr "Hay algo nuevo en una solicitud de cambio en la que usted participa. Ábrala para leer y responder."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind change_request"
+msgid "{n} updates on change requests you are part of."
+msgstr "{n} novedades en solicitudes de cambio en las que participa."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_closing"
+msgid "The window is closing and your vote is still owed. Quorum is measured against everyone on the roll."
+msgstr "El plazo está por cerrar y su voto sigue pendiente. El quórum se mide contra todo el padrón."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_closing"
+msgid "{n} votes close soon and are still waiting on your answer."
+msgstr "{n} votaciones cierran pronto y siguen esperando su respuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_carried"
+msgid "The village said yes. What was voted on now applies, and the closer wrote down why."
+msgstr "La aldea dijo que sí. Lo votado ya aplica, y quien cerró la votación dejó escrito por qué."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_carried"
+msgid "{n} votes carried."
+msgstr "{n} votaciones aprobadas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_not_yet_in_effect"
+msgid "The village said yes and the decision has not taken effect yet. The decision page says what happens next."
+msgstr "La aldea dijo que sí y la decisión todavía no entra en vigor. La página de la decisión explica qué sigue."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_not_yet_in_effect"
+msgid "{n} carried votes have not taken effect yet."
+msgstr "{n} votaciones aprobadas todavía no entran en vigor."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_failed"
+msgid "The village said no. The closer wrote down the reasoning, and it stands on the record."
+msgstr "La aldea dijo que no. Quien cerró la votación dejó escrito el razonamiento, y queda en el registro."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_failed"
+msgid "{n} votes closed without passing."
+msgstr "{n} votaciones cerraron sin aprobarse."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_no_quorum"
+msgid "Too few of the roll answered for this to settle anything. The question stands, and it can be asked again."
+msgstr "Respondieron muy pocas personas del padrón para resolver algo. La pregunta sigue en pie y se puede volver a hacer."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_no_quorum"
+msgid "{n} votes closed with too few answering to settle them."
+msgstr "{n} votaciones cerraron con muy pocas respuestas para resolverse."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_rerun_opened"
+msgid "Too few answered a vote you are on the roll for, so it is open again for as long as before, and half as many voices are enough this time."
+msgstr "Muy pocas personas respondieron una votación en cuyo padrón usted está, así que se abre de nuevo por el mismo tiempo, y esta vez basta con la mitad de las voces."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_rerun_opened"
+msgid "{n} votes are open again with too few having answered."
+msgstr "{n} votaciones se abrieron de nuevo por falta de respuestas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_withdrawn"
+msgid "A vote you were on the roll for was called off before it closed. Nothing was decided, and the reason is on the record."
+msgstr "Una votación en cuyo padrón usted estaba se canceló antes de cerrar. No se decidió nada, y el motivo queda en el registro."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_withdrawn"
+msgid "{n} votes were called off."
+msgstr "Se cancelaron {n} votaciones."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_advisory_closed"
+msgid "An advisory vote closed. It records what the village would decide, and nothing changed on its own."
+msgstr "Cerró una votación consultiva. Registra lo que la aldea decidiría, y nada cambió por sí solo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_advisory_closed"
+msgid "{n} advisory votes closed."
+msgstr "Cerraron {n} votaciones consultivas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_vetoed"
+msgid "A steward stopped a decision the village carried, inside its window, and said why."
+msgstr "Una persona custodia detuvo una decisión que la aldea aprobó, dentro de su plazo, y explicó por qué."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_vetoed"
+msgid "{n} decisions were stopped, each with a reason."
+msgstr "Se detuvieron {n} decisiones, cada una con su motivo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind veto_window_opened"
+msgid "The village carried a decision and your window to stop it is open. The page names the instant it lands."
+msgstr "La aldea aprobó una decisión y su plazo para detenerla está abierto. La página indica el momento exacto en que entra en vigor."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind veto_window_opened"
+msgid "{n} carried decisions are inside their window."
+msgstr "{n} decisiones aprobadas están dentro de su plazo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind veto_window_halfway"
+msgid "Half of your window to stop a carried decision has gone. It lands at its instant unless somebody stops it."
+msgstr "Ya pasó la mitad de su plazo para detener una decisión aprobada. Entra en vigor a su hora salvo que alguien la detenga."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind veto_window_halfway"
+msgid "{n} windows are half gone."
+msgstr "{n} plazos ya van por la mitad."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind veto_window_closing"
+msgid "Two hours left to stop a carried decision. After that it lands and the door is closed."
+msgstr "Quedan dos horas para detener una decisión aprobada. Después entra en vigor y ya no hay vuelta atrás."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind veto_window_closing"
+msgid "{n} windows close within two hours."
+msgstr "{n} plazos cierran en menos de dos horas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ballot_expired"
+msgid "A voting window ran out with nobody closing it. Closing is a human act, so the ballot waits for one."
+msgstr "El plazo de una votación venció sin que nadie la cerrara. Cerrarla es un acto humano, así que la votación espera a una persona."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ballot_expired"
+msgid "{n} votes are past their window and waiting for someone to close them."
+msgstr "{n} votaciones vencieron y esperan que alguien las cierre."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind governance"
+msgid "A proposal you raised, or one the village is carrying, moved a step."
+msgstr "Una propuesta que usted planteó, o una que la aldea está llevando, avanzó un paso."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind governance"
+msgid "{n} proposals moved."
+msgstr "{n} propuestas avanzaron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind seat_application_reminder"
+msgid "An application for a role still waits on a role holder, and you hold that power."
+msgstr "Una solicitud para un rol todavía espera a quien tiene el rol, y usted tiene esa facultad."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind seat_application_reminder"
+msgid "{n} applications still wait on a role holder."
+msgstr "{n} solicitudes todavía esperan a quien tiene el rol."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind ask"
+msgid "Someone asked you to do something, or answered something you asked."
+msgstr "Alguien le pidió hacer algo, o respondió algo que usted pidió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind ask"
+msgid "{n} asks moved."
+msgstr "{n} pedidos avanzaron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind weight_changed"
+msgid "How much your vote weighs was changed, and whoever changed it said why."
+msgstr "Cambió el peso de su voto, y quien lo cambió explicó por qué."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind weight_changed"
+msgid "{n} changes to how much your vote weighs."
+msgstr "{n} cambios en el peso de su voto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_appointed"
+msgid "A role is yours to hold. The role page says what it is accountable for."
+msgstr "Ahora usted tiene un rol. La página del rol dice de qué responde."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_appointed"
+msgid "{n} roles came to you."
+msgstr "Le asignaron {n} roles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season"
+msgid "No season is running, so the calendar every term is measured against has stopped. Every mandate in the village hangs on it, the steward role included, so it says so until somebody starts the next one."
+msgstr "No hay ninguna temporada en curso, así que se detuvo el calendario con que se mide cada periodo. Todos los mandatos de la aldea dependen de él, incluido el rol de custodio, y este aviso sigue hasta que alguien inicie la próxima."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season"
+msgid "The calendar has been stopped for {n} sweeps."
+msgstr "El calendario lleva {n} revisiones detenido."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_ending"
+msgid "The season turns soon. Before it does, the village records what this season did and seats people for the next one, so the reminders start two weeks out."
+msgstr "La temporada cambia pronto. Antes, la aldea registra lo que hizo esta temporada y asigna puestos para la próxima, por eso los recordatorios empiezan dos semanas antes."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_ending"
+msgid "{n} reminders that the season is turning."
+msgstr "{n} recordatorios de que la temporada está por cambiar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_plan_open"
+msgid "Planning is open for the season. Choose the roles you keep, hand back or apply for, and what you will do."
+msgstr "La planificación de la temporada está abierta. Elija los roles que mantiene, devuelve o solicita, y lo que va a hacer."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_plan_open"
+msgid "{n} notices that planning is open."
+msgstr "{n} avisos de que la planificación está abierta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_plan_reminder"
+msgid "Your season plan is not filed yet. Filing takes a few minutes, and the village sees it by name."
+msgstr "Su plan de temporada todavía no está presentado. Toma unos minutos, y la aldea lo ve con su nombre."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_plan_reminder"
+msgid "{n} reminders to file your season."
+msgstr "{n} recordatorios para presentar su plan de temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_feedback"
+msgid "A member who has the link to your role proposal left feedback on it. Open the draft to read it."
+msgstr "Una persona con el enlace a su propuesta de rol dejó comentarios. Abra el borrador para leerlos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_feedback"
+msgid "{n} pieces of feedback on your role proposal."
+msgstr "{n} comentarios sobre su propuesta de rol."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_consent_ask"
+msgid "A member proposes roles in a circle you hold a role in. Consent or object within 2 business days."
+msgstr "Alguien propone roles en un círculo donde usted tiene un rol. Dé su consentimiento u objete en 2 días hábiles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_consent_ask"
+msgid "{n} role proposals ask your circle to consent."
+msgstr "{n} propuestas de rol piden el consentimiento de su círculo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_objection"
+msgid "A member of the circle objected to your role proposal, so it goes to the circle's next meeting."
+msgstr "Alguien del círculo objetó su propuesta de rol, así que pasa a la próxima reunión del círculo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_objection"
+msgid "{n} objections to your role proposals."
+msgstr "{n} objeciones a sus propuestas de rol."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind open_role_proposal_consent_ask"
+msgid "Somebody from outside the village proposes to hold roles in a circle you hold a role in. Consent or object within 2 business days."
+msgstr "Una persona de fuera de la aldea propone asumir roles en un círculo donde usted tiene un rol. Dé su consentimiento u objete en 2 días hábiles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind open_role_proposal_consent_ask"
+msgid "{n} role proposals from outside the village ask your circle to consent."
+msgstr "{n} propuestas de rol de fuera de la aldea piden el consentimiento de su círculo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind open_role_proposal_decided"
+msgid "The village answered a proposal for an agent you keep: seated on its roles, or declined."
+msgstr "La aldea respondió una propuesta para un agente a su cargo: asignado a sus roles, o rechazado."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind open_role_proposal_decided"
+msgid "{n} answers on proposals for agents you keep."
+msgstr "{n} respuestas sobre propuestas para agentes a su cargo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind applicant_update"
+msgid "An update about a role you proposed to hold: a reply, a conversation, the circle weighing it, or the answer."
+msgstr "Novedades sobre un rol que usted propuso asumir: una respuesta, una conversación, el círculo valorándolo, o la decisión."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind applicant_update"
+msgid "{n} updates about your role proposals."
+msgstr "{n} novedades sobre sus propuestas de rol."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind open_role_proposal_waiting"
+msgid "Somebody from outside the village proposes to hold roles. You hold the power to place people in roles, so it is yours to adopt or decline."
+msgstr "Una persona de fuera de la aldea propone asumir roles. Usted tiene la facultad de asignar roles, así que le toca aceptarla o rechazarla."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind open_role_proposal_waiting"
+msgid "{n} role proposals from outside the village wait on you."
+msgstr "{n} propuestas de rol de fuera de la aldea esperan su respuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_interview_turn"
+msgid "An applicant is waiting to talk with a role you hold. Book the conversation, then write your scorecard alone."
+msgstr "Una persona solicitante espera conversar con un rol que usted tiene. Agende la conversación y luego llene su evaluación por su cuenta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_interview_turn"
+msgid "{n} applicants wait to talk with you."
+msgstr "{n} solicitantes esperan conversar con usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_arrived"
+msgid "An application arrived for a role in a circle you hold a role in. You are asked to consent after the conversations."
+msgstr "Llegó una solicitud para un rol en un círculo donde usted tiene un rol. Se le pedirá su consentimiento después de las conversaciones."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_arrived"
+msgid "{n} applications arrived in your circles."
+msgstr "Llegaron {n} solicitudes a sus círculos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_first_reply_due"
+msgid "An applicant is owed a first reply within 3 business days."
+msgstr "Una persona solicitante debe recibir una primera respuesta en 3 días hábiles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_first_reply_due"
+msgid "{n} applicants are owed a first reply."
+msgstr "{n} solicitantes esperan una primera respuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_stale"
+msgid "An application has not moved for ten days. A person decides what happens next."
+msgstr "Una solicitud lleva diez días sin moverse. Una persona decide qué sigue."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_stale"
+msgid "{n} applications have not moved for ten days."
+msgstr "{n} solicitudes llevan diez días sin moverse."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_references_in"
+msgid "An applicant sent their references. Pick who follows up with each one."
+msgstr "Una persona solicitante envió sus referencias. Elija quién da seguimiento a cada una."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_references_in"
+msgid "{n} applications have references waiting for follow-up owners."
+msgstr "{n} solicitudes tienen referencias esperando a quien les dé seguimiento."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_reference_owner"
+msgid "You follow up with a reference for an applicant. Read how to reach them on the application, then write your notes."
+msgstr "A usted le toca dar seguimiento a una referencia. En la solicitud verá cómo contactarla; luego escriba sus notas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_reference_owner"
+msgid "{n} references wait for your follow-up."
+msgstr "{n} referencias esperan su seguimiento."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_references_asked"
+msgid "Your application is for your first long-term role, so references are asked. Add them on your application's page."
+msgstr "Su solicitud es para su primer rol a largo plazo, así que se piden referencias. Agréguelas en la página de su solicitud."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_references_asked"
+msgid "{n} of your applications ask for references."
+msgstr "{n} de sus solicitudes piden referencias."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_new_invitation_asked"
+msgid "An applicant's invitation to join the team expired, and they asked for a new one. You can make it on their proposal's page."
+msgstr "La invitación de una persona solicitante para unirse al equipo venció y pidió una nueva. Puede crearla en la página de su propuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_new_invitation_asked"
+msgid "{n} applicants asked for a new invitation."
+msgstr "{n} solicitantes pidieron una nueva invitación."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_window_open"
+msgid "Planning for next season is open. Propose the roles you will hold."
+msgstr "La planificación de la próxima temporada está abierta. Proponga los roles que va a asumir."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_window_open"
+msgid "{n} notices that you can propose your roles."
+msgstr "{n} avisos de que puede proponer sus roles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_review_due"
+msgid "One of your roles is due its review. Propose how you will hold it next season."
+msgstr "A uno de sus roles le toca revisión. Proponga cómo lo va a llevar la próxima temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_review_due"
+msgid "{n} roles due their review."
+msgstr "A {n} roles les toca revisión."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_proposal_window_closing"
+msgid "Your role proposal is still a draft, and the window closes in 2 business days."
+msgstr "Su propuesta de rol sigue en borrador, y el plazo cierra en 2 días hábiles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_window_closing"
+msgid "{n} reminders that the window closes soon."
+msgstr "{n} recordatorios de que el plazo cierra pronto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_access"
+msgid "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself."
+msgstr "Accesos que dar o retirar para un rol: una unidad compartida, un portal, una lista. Abra la tarea y márquela como hecha cuando lo haya hecho en la herramienta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_access"
+msgid "{n} access tasks are waiting for you."
+msgstr "{n} tareas de acceso le esperan."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind term_expiring"
+msgid "The agreement to keep holding your role is running out. In a role that carries permissions those end with the term (0171), so it is the moment to renew or hand it on."
+msgstr "El acuerdo para seguir en su rol está por vencer. En un rol con permisos, estos terminan con el periodo (0171), así que es momento de renovarlo o pasarlo a alguien más."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind term_expiring"
+msgid "{n} of your terms are running out."
+msgstr "{n} de sus periodos están por vencer."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind submission"
+msgid "Somebody raised a hand for a role or a power, and the village owes them an answer."
+msgstr "Alguien levantó la mano para un rol o una facultad, y la aldea le debe una respuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind submission"
+msgid "{n} people raised a hand for a role or a power."
+msgstr "{n} personas levantaron la mano para un rol o una facultad."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind submission_status"
+msgid "An answer came back on something you applied for, offered, or raised a hand for."
+msgstr "Llegó una respuesta sobre algo que usted solicitó, ofreció o para lo que levantó la mano."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind submission_status"
+msgid "{n} answers came back on things you put forward."
+msgstr "Llegaron {n} respuestas sobre cosas que usted presentó."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind cycle_settled"
+msgid "A lunation closed, and its pool was split by the recognition people sent you inside it."
+msgstr "Cerró una lunación, y su fondo se repartió según el reconocimiento que le enviaron durante ella."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind cycle_settled"
+msgid "{n} cycles settled with a share for you."
+msgstr "{n} ciclos se liquidaron con una parte para usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind wallet"
+msgid "Somebody sent you credits, and they are in your balance now."
+msgstr "Alguien le envió créditos, y ya están en su saldo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind wallet"
+msgid "{n} people sent you credits."
+msgstr "{n} personas le enviaron créditos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind redemption_confirmed"
+msgid "A steward confirmed your redemption, and those tokens are gone from your balance."
+msgstr "Una persona custodia confirmó su canje, y esos tokens ya salieron de su saldo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind redemption_confirmed"
+msgid "{n} of your redemptions were confirmed."
+msgstr "Se confirmaron {n} de sus canjes."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind redemption_refused"
+msgid "A redemption was not confirmed, and the tokens it held are back in your wallet."
+msgstr "Un canje no se confirmó, y los tokens que retenía volvieron a su billetera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind redemption_refused"
+msgid "{n} of your redemptions were not confirmed."
+msgstr "{n} de sus canjes no se confirmaron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind venture_redemption"
+msgid "A venture asked to redeem credits, or the Treasury answered a venture's request."
+msgstr "Un emprendimiento pidió canjear créditos, o la Tesorería respondió la solicitud de un emprendimiento."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind venture_redemption"
+msgid "{n} updates on venture redemptions."
+msgstr "{n} novedades sobre canjes de emprendimientos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind moon_review"
+msgid "Your moon recap moved: returned, approved, or paid."
+msgstr "Su resumen de luna avanzó: devuelto, aprobado o pagado."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind moon_review"
+msgid "{n} updates on moon recaps."
+msgstr "{n} novedades sobre resúmenes de luna."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind sera_agent_digest"
+msgid "What Sera's agent changed since the last summary, each one undoable for 30 days."
+msgstr "Lo que el agente de Sera cambió desde el último resumen, cada cosa reversible por 30 días."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind sera_agent_digest"
+msgid "{n} summaries of what Sera's agent did."
+msgstr "{n} resúmenes de lo que hizo el agente de Sera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind cash_paid"
+msgid "The village marked cash it owed you as paid."
+msgstr "La aldea marcó como pagado el efectivo que le debía."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind cash_paid"
+msgid "{n} cash payments were marked paid."
+msgstr "Se marcaron como pagados {n} pagos en efectivo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind exchange"
+msgid "An exchange order settled, and what you bought is in your wallet."
+msgstr "Se liquidó una orden de intercambio, y lo que compró ya está en su billetera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind exchange"
+msgid "{n} exchange orders settled."
+msgstr "Se liquidaron {n} órdenes de intercambio."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind payment"
+msgid "A receipt for something bought, renewed, or reversed."
+msgstr "Un recibo por algo comprado, renovado o revertido."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind payment"
+msgid "{n} receipts landed."
+msgstr "Llegaron {n} recibos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind payments_alert"
+msgid "Something about money needs a person: a hold lifted, a signature refused, a charge disputed."
+msgstr "Algo de dinero necesita a una persona: una retención liberada, una firma rechazada, un cargo disputado."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind payments_alert"
+msgid "{n} money matters need a look."
+msgstr "{n} asuntos de dinero necesitan revisión."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind crash_alert"
+msgid "Something broke in the village's software, and the people who look after it are told."
+msgstr "Algo falló en el software de la aldea, y ya se avisó a quienes lo cuidan."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind crash_alert"
+msgid "{n} things broke in the village's software."
+msgstr "{n} fallas en el software de la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind failed_action"
+msgid "Something in the village keeps failing, and the report says what to do about it."
+msgstr "Algo en la aldea sigue fallando, y el reporte dice qué hacer al respecto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind failed_action"
+msgid "{n} reports of things failing in the village."
+msgstr "{n} reportes de cosas que fallan en la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind stays"
+msgid "Your stay: nights posting, credits arriving, or a balance running low."
+msgstr "Su estadía: noches registradas, créditos que llegan o un saldo que se agota."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind stays"
+msgid "{n} things moved on your stay."
+msgstr "{n} novedades en su estadía."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind library"
+msgid "A borrowed thing: due back, settled, or credits released for what you gave."
+msgstr "Algo prestado: por devolver, saldado, o créditos liberados por lo que usted dio."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind library"
+msgid "{n} library items moved."
+msgstr "{n} artículos de la biblioteca avanzaron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_claimed"
+msgid "You took on a quest. The quest shows who to talk to, your first task, your crew link and the date."
+msgstr "Usted asumió una misión. La misión indica con quién hablar, su primera tarea, el enlace de su grupo y la fecha."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_claimed"
+msgid "You took on {n} quests."
+msgstr "Usted asumió {n} misiones."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_submitted"
+msgid "Somebody finished work and it is waiting to be read. Value moves when a steward says so."
+msgstr "Alguien terminó un trabajo y espera que lo lean. El valor se mueve cuando una persona custodia lo indica."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_submitted"
+msgid "{n} pieces of finished work are waiting to be read."
+msgstr "{n} trabajos terminados esperan que los lean."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_consented"
+msgid "A steward read your work and released what it was worth."
+msgstr "Una persona custodia leyó su trabajo y liberó lo que valía."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_consented"
+msgid "{n} of your quests were consented."
+msgstr "{n} de sus misiones recibieron consentimiento."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_declined"
+msgid "A claim was released, and the quest is open again for whoever wants it next."
+msgstr "Se liberó una misión tomada, y queda abierta de nuevo para quien la quiera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_declined"
+msgid "{n} claims were released."
+msgstr "Se liberaron {n} misiones tomadas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_idea_on_board"
+msgid "A steward put the quest you proposed on the board, where anyone can take it on."
+msgstr "Un custodio puso en el tablero la misión que usted propuso, para que cualquiera la tome."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_idea_on_board"
+msgid "{n} of your quest ideas went on the board."
+msgstr "{n} de sus ideas de misión pasaron al tablero."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_idea_declined"
+msgid "A steward read the quest you proposed and left it off the board. You are welcome to propose another."
+msgstr "Un custodio leyó la misión que usted propuso y la dejó fuera del tablero. Puede proponer otra cuando guste."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_idea_declined"
+msgid "{n} of your quest ideas were left off the board."
+msgstr "{n} de sus ideas de misión quedaron fuera del tablero."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_help"
+msgid "Somebody flagged that they are stuck or wobbling on work they took on."
+msgstr "Alguien avisó que se trabó o tiene dudas con un trabajo que asumió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_help"
+msgid "{n} people asked for a hand on work they took on."
+msgstr "{n} personas pidieron una mano con trabajo que asumieron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind call_task_suggested"
+msgid "A call turned into a suggested task with your name on it. Accept or decline on the thread; nothing happens on its own."
+msgstr "Una llamada se convirtió en una tarea sugerida a su nombre. Acéptela o rechácela en el hilo; nada pasa por sí solo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind call_task_suggested"
+msgid "{n} tasks were suggested to you from calls."
+msgstr "Le sugirieron {n} tareas desde llamadas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_action_held"
+msgid "A live session closed with an action held by you or by a role you sit in. The notice says what it is and by when."
+msgstr "Una sesión en vivo cerró con una acción a cargo suyo o de un rol que usted ocupa. El aviso dice cuál es y para cuándo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_action_held"
+msgid "{n} actions from live sessions are held by you or your roles."
+msgstr "{n} acciones de sesiones en vivo están a cargo suyo o de sus roles."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind my_task_due"
+msgid "A task on your own list is due soon. Open your list to see it."
+msgstr "Una tarea de su propia lista vence pronto. Abra su lista para verla."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind my_task_due"
+msgid "{n} tasks on your list are due soon."
+msgstr "{n} tareas de su lista vencen pronto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind my_task_asked"
+msgid "Someone asked you for a task on your own list. Open your list to see who."
+msgstr "Alguien le pidió una tarea de su propia lista. Abra su lista para ver quién."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind my_task_asked"
+msgid "{n} tasks on your list are waiting on you."
+msgstr "{n} tareas de su lista esperan por usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_action_due"
+msgid "A task you hold from a live session is near its date, or its date just passed. Answer it on your task board."
+msgstr "Una tarea suya de una sesión en vivo está cerca de su fecha, o la fecha acaba de pasar. Respóndala en su tablero de tareas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_action_due"
+msgid "{n} tasks you hold are near their dates."
+msgstr "{n} tareas suyas están cerca de su fecha."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_task_back"
+msgid "A task from a session you facilitated was handed back. It comes up at the circle's next action check."
+msgstr "Se devolvió una tarea de una sesión que usted facilitó. Saldrá en la próxima revisión de acciones del círculo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_task_back"
+msgid "{n} tasks came back to their circles."
+msgstr "{n} tareas volvieron a sus círculos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_task_unheld"
+msgid "A task from a live session sits with a role nobody holds now. Give it to someone at the next call."
+msgstr "Una tarea de una sesión en vivo quedó con un rol que hoy nadie ocupa. Asígnela a alguien en la próxima llamada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_task_unheld"
+msgid "{n} tasks sit with roles nobody holds."
+msgstr "{n} tareas quedaron con roles que nadie ocupa."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_tension_raised"
+msgid "A member raised a tension with a role you hold. Only the role's holders and whoever raised it can read it."
+msgstr "Alguien de la aldea planteó una tensión con un rol que usted ocupa. Solo quienes ocupan el rol y quien la planteó pueden leerla."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_tension_raised"
+msgid "{n} tensions were raised with roles you hold."
+msgstr "Se plantearon {n} tensiones con roles que usted ocupa."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_tension_reminder"
+msgid "A tension raised with a role you hold has waited 2 business days. Take it, answer it, or bring it to the circle."
+msgstr "Una tensión con un rol que usted ocupa lleva 2 días hábiles esperando. Tómela, respóndala o llévela al círculo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_tension_reminder"
+msgid "{n} tensions with your roles have waited 2 business days."
+msgstr "{n} tensiones con sus roles llevan 2 días hábiles esperando."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_task_handed"
+msgid "A task was handed to a role you hold. Accept it, suggest a change, or decline it under Waiting on you."
+msgstr "Le pasaron una tarea a un rol que usted ocupa. Acéptela, sugiera un cambio o rechácela en Esperando por usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_task_handed"
+msgid "{n} tasks were handed to roles you hold."
+msgstr "Le pasaron {n} tareas a roles que usted ocupa."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_task_accepted"
+msgid "A role accepted a task you handed it. It sits on their list now."
+msgstr "Un rol aceptó una tarea que usted le pasó. Ya está en la lista de ese rol."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_task_accepted"
+msgid "{n} tasks you handed on were accepted."
+msgstr "Se aceptaron {n} tareas que usted pasó."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_task_edited"
+msgid "A role suggested a change to a task you handed it. See it under Sent on your list."
+msgstr "Un rol sugirió un cambio a una tarea que usted le pasó. Véalo en Enviadas, en su lista."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_task_edited"
+msgid "{n} tasks you handed on have a suggested change."
+msgstr "{n} tareas que usted pasó tienen un cambio sugerido."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_task_declined"
+msgid "A role declined a task you handed it. The reason is under Sent on your list."
+msgstr "Un rol rechazó una tarea que usted le pasó. El motivo está en Enviadas, en su lista."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_task_declined"
+msgid "{n} tasks you handed on were declined."
+msgstr "Se rechazaron {n} tareas que usted pasó."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind role_task_done"
+msgid "A task you handed to a role is done."
+msgstr "Una tarea que usted pasó a un rol está lista."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind role_task_done"
+msgid "{n} tasks you handed on are done."
+msgstr "{n} tareas que usted pasó están listas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_item_taken"
+msgid "An agenda item you added is on a session's agenda now."
+msgstr "Un punto que usted agregó ya está en la agenda de una sesión."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_item_taken"
+msgid "{n} agenda items you added are on an agenda."
+msgstr "{n} puntos que usted agregó ya están en una agenda."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_coming_up"
+msgid "A circle you are part of meets soon. The notice says when, and what is on the agenda."
+msgstr "Un círculo del que usted es parte se reúne pronto. El aviso dice cuándo y qué hay en la agenda."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_coming_up"
+msgid "{n} of your circles meet soon."
+msgstr "{n} de sus círculos se reúnen pronto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_advice_asked"
+msgid "Somebody asks a circle you are part of for advice before they decide. The notice says what they mean to decide."
+msgstr "Alguien pide consejo a un círculo del que usted es parte antes de decidir. El aviso dice qué piensa decidir."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_advice_asked"
+msgid "{n} requests for your advice."
+msgstr "{n} pedidos de consejo para usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_advice_given"
+msgid "Somebody you asked for advice gave it."
+msgstr "Alguien a quien usted pidió consejo se lo dio."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_advice_given"
+msgid "{n} people gave advice on what you mean to decide."
+msgstr "{n} personas le aconsejaron sobre lo que usted piensa decidir."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_advice_decided"
+msgid "Somebody who asked for your advice decided. The notice says what they decided."
+msgstr "Alguien que le pidió consejo ya decidió. El aviso dice qué decidió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_advice_decided"
+msgid "{n} decisions made after asking for your advice."
+msgstr "{n} decisiones tomadas después de pedirle consejo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_filled_in"
+msgid "The Facilitator filled something in for you during a session. You can change it or undo it there."
+msgstr "Facilitator completó algo por usted durante una sesión. Puede cambiarlo o deshacerlo ahí."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_filled_in"
+msgid "{n} things the Facilitator filled in for you."
+msgstr "{n} cosas que Facilitator completó por usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_night_open"
+msgid "You asked for a night on a proposal and the call has closed. The notice says where to answer, and by when."
+msgstr "Usted pidió una noche para una propuesta y la llamada ya cerró. El aviso dice dónde responder y para cuándo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_night_open"
+msgid "{n} proposals wait for your answer after a night."
+msgstr "{n} propuestas esperan su respuesta después de una noche."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_night_settled"
+msgid "A proposal from a session you facilitated waited for a night, and the night is over. The notice says how the round went."
+msgstr "Una propuesta de una sesión que usted facilitó esperó una noche, y la noche ya pasó. El aviso dice cómo fue la ronda."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_night_settled"
+msgid "{n} rounds you facilitated are settled after a night."
+msgstr "{n} rondas que usted facilitó se resolvieron tras una noche."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_item_settled"
+msgid "A session that took up an agenda item you added has closed. The item says whether it was taken up or waits for next time."
+msgstr "Cerró una sesión que tomó un punto que usted agregó. El punto dice si se trató o si espera a la próxima."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_item_settled"
+msgid "{n} sessions closed with agenda items you added."
+msgstr "{n} sesiones cerraron con puntos que usted agregó."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind rite_witness_asked"
+msgid "A newcomer is ready for a rite, and you're asked to witness it from your phone."
+msgstr "Una persona recién llegada está lista para un rito, y le piden atestiguarlo desde su teléfono."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind rite_witness_asked"
+msgid "{n} rites are waiting for a witness."
+msgstr "{n} ritos esperan a alguien que los atestigüe."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind rite_stamped"
+msgid "A rite was stamped on a member's card."
+msgstr "Se selló un rito en la tarjeta de alguien de la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind rite_stamped"
+msgid "{n} rites were stamped."
+msgstr "Se sellaron {n} ritos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind rite_buddy_paired"
+msgid "You were paired with a newcomer, to walk beside them through their first moon and their rites."
+msgstr "Le asignaron acompañar a una persona recién llegada en su primera luna y en sus ritos."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind rite_buddy_paired"
+msgid "{n} newcomers were paired with you."
+msgstr "Le asignaron {n} personas recién llegadas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind rite_door_request"
+msgid "Somebody asked to join through your printed code, and waits for your answer."
+msgstr "Alguien pidió unirse con su código impreso y espera su respuesta."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind rite_door_request"
+msgid "{n} people asked to join through your code."
+msgstr "{n} personas pidieron unirse con su código."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind arrival"
+msgid "Somebody joined the village. Greeting a new arrival is the first thing anybody here does for them."
+msgstr "Alguien se unió a la aldea. Darle la bienvenida es lo primero que cualquiera aquí hace por quien llega."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind arrival"
+msgid "{n} people joined the village."
+msgstr "{n} personas se unieron a la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind gratitude"
+msgid "Somebody said thank you, and put their name to it."
+msgstr "Alguien dio las gracias, y firmó con su nombre."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind gratitude"
+msgid "{n} people sent you appreciation."
+msgstr "{n} personas le enviaron agradecimiento."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind comms_path_handoff"
+msgid "Somebody has been on a path for three weeks. A note from a person is the next step."
+msgstr "Alguien lleva tres semanas en un camino. El siguiente paso es una nota de una persona."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind comms_path_handoff"
+msgid "{n} people on a path are ready to hear from a person."
+msgstr "{n} personas en un camino están listas para una nota personal."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind message"
+msgid "Somebody wrote to you."
+msgstr "Alguien le escribió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind message"
+msgid "{n} conversations have something new in them."
+msgstr "{n} conversaciones tienen algo nuevo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind mention"
+msgid "Somebody used your name in a thread and meant you to see it."
+msgstr "Alguien usó su nombre en un hilo para que usted lo viera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind mention"
+msgid "{n} threads name you."
+msgstr "{n} hilos mencionan su nombre."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind forum_reply"
+msgid "Somebody answered you in a thread you are part of."
+msgstr "Alguien le respondió en un hilo del que usted es parte."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind forum_reply"
+msgid "{n} replies landed in threads you are part of."
+msgstr "Llegaron {n} respuestas a hilos de los que usted es parte."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind thread_activity"
+msgid "A thread you follow moved. Nothing in it needs you."
+msgstr "Hubo movimiento en un hilo que usted sigue. Nada ahí requiere su atención."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind thread_activity"
+msgid "{n} threads you follow moved."
+msgstr "Hubo movimiento en {n} hilos que usted sigue."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind introduction"
+msgid "The village thinks two of you may be worth knowing. Yes or not now, both are whole answers."
+msgstr "La aldea cree que valdría la pena que ustedes dos se conozcan. Sí o ahora no, las dos son respuestas completas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind introduction"
+msgid "{n} introductions are waiting on you."
+msgstr "{n} presentaciones esperan por usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind contact_request"
+msgid "Somebody wants to reach you about a role you hold. They see a relay, never your address."
+msgstr "Alguien quiere escribirle por un rol que usted ocupa. Esa persona ve un canal intermedio, nunca su dirección."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind contact_request"
+msgid "{n} people want to reach you."
+msgstr "{n} personas quieren escribirle."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind stage_advanced"
+msgid "A door opened for you, and the notice names what you can now do."
+msgstr "Se le abrió una puerta, y el aviso dice lo que ahora puede hacer."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind stage_advanced"
+msgid "{n} doors opened."
+msgstr "Se abrieron {n} puertas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind hidden_map_opened"
+msgid "Enough of your places are vouched for, and the whole map is open to you."
+msgstr "Ya hay suficientes de sus lugares avalados, y el mapa completo está abierto para usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind hidden_map_opened"
+msgid "{n} maps opened."
+msgstr "Se abrieron {n} mapas."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind badge"
+msgid "A mark on your profile, earned or placed, with what it means beside it."
+msgstr "Una marca en su perfil, ganada o asignada, con su significado al lado."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind badge"
+msgid "{n} marks on your profile changed."
+msgstr "Cambiaron {n} marcas de su perfil."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind badge_definition_changed"
+msgid "A badge you hold carries something different now, and the line says what changed."
+msgstr "Una insignia que usted tiene significa algo distinto ahora, y la línea dice qué cambió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind badge_definition_changed"
+msgid "{n} badges you hold were changed."
+msgstr "Cambiaron {n} insignias que usted tiene."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind capability_override"
+msgid "An admin acted on a power you hold. It is on the village's own record, with their name on it."
+msgstr "La administración actuó sobre un poder que usted tiene. Queda en el registro de la aldea, con el nombre de quien lo hizo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind capability_override"
+msgid "{n} powers you hold were acted on from the admin panel."
+msgstr "Desde el panel de administración se actuó sobre {n} poderes que usted tiene."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_place_waiting"
+msgid "A circle proposes to take part in a season, and you hold the power that says yes or puts it to the village."
+msgstr "Un círculo propone participar en una temporada, y usted tiene el poder de aprobarlo o llevarlo a votación de la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_place_waiting"
+msgid "{n} season proposals wait on you."
+msgstr "{n} propuestas de temporada esperan por usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_crew_applied"
+msgid "Somebody applied to take part this season with a circle you pick for."
+msgstr "Alguien se postuló para participar esta temporada con un círculo donde usted elige al equipo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_crew_applied"
+msgid "{n} people applied to take part with a circle you pick for."
+msgstr "{n} personas se postularon con un círculo donde usted elige al equipo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_crew_picked"
+msgid "A circle picked you for its team this season."
+msgstr "Un círculo le eligió para su equipo esta temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_crew_picked"
+msgid "{n} circles picked you this season."
+msgstr "{n} círculos le eligieron esta temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_crew_released"
+msgid "A circle released your place this season. Your application stands for any circle to pick."
+msgstr "Un círculo liberó su lugar esta temporada. Su postulación sigue abierta para que cualquier círculo la elija."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_crew_released"
+msgid "{n} circles released your place."
+msgstr "{n} círculos liberaron su lugar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_place_placed"
+msgid "A circle you are in has a place in a season."
+msgstr "Un círculo en el que usted está tiene lugar en una temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_place_placed"
+msgid "{n} season places were confirmed."
+msgstr "Se confirmaron {n} lugares de temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_place_waitlisted"
+msgid "The season is full, so a circle you are in waits in line, and you will hear the moment a place opens."
+msgstr "La temporada está llena, así que un círculo en el que usted está espera en fila, y sabrá apenas se abra un lugar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_place_waitlisted"
+msgid "{n} circles you are in are on a season's waitlist."
+msgstr "{n} círculos en los que usted está esperan en la fila de una temporada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_place_opened"
+msgid "A place opened in a season, and the line reached a circle you are in."
+msgstr "Se abrió un lugar en una temporada, y la fila llegó a un círculo en el que usted está."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_place_opened"
+msgid "{n} season places opened for circles you are in."
+msgstr "Se abrieron {n} lugares de temporada para círculos en los que usted está."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind season_place_declined"
+msgid "A circle you are in does not take part in a season it proposed for."
+msgstr "Un círculo en el que usted está no participará en una temporada a la que se propuso."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind season_place_declined"
+msgid "{n} season proposals were not adopted."
+msgstr "{n} propuestas de temporada no se adoptaron."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind circle_place_going"
+msgid "A circle you are in is going to a gathering."
+msgstr "Un círculo en el que usted está va a un encuentro."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind circle_place_going"
+msgid "{n} gatherings have a circle you are in going."
+msgstr "Círculos en los que usted está van a {n} encuentros."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind circle_place_waiting"
+msgid "A gathering is full for circles, so a circle you are in waits in line, and you will hear the moment a place opens."
+msgstr "Un encuentro ya no tiene lugar para círculos, así que un círculo en el que usted está espera en fila, y sabrá apenas se abra un lugar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind circle_place_waiting"
+msgid "{n} gatherings have a circle you are in on the waitlist."
+msgstr "En {n} encuentros, un círculo suyo está en la fila de espera."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind circle_place_opened"
+msgid "A place opened at a gathering, and the line reached a circle you are in."
+msgstr "Se abrió un lugar en un encuentro, y la fila llegó a un círculo en el que usted está."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind circle_place_opened"
+msgid "{n} gatherings found a place for a circle you are in."
+msgstr "Hubo lugar en {n} encuentros para un círculo suyo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind waitlist_promoted"
+msgid "A seat opened at a gathering you queued for, and the line reached you."
+msgstr "Se abrió un lugar en un encuentro para el que usted hizo fila, y la fila llegó a usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind waitlist_promoted"
+msgid "{n} gatherings found you a seat."
+msgstr "Hubo lugar para usted en {n} encuentros."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind weekly_brief"
+msgid "What the week ahead holds, gathered once."
+msgstr "Lo que trae la semana, reunido en un solo lugar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind weekly_brief"
+msgid "{n} weekly briefs are waiting."
+msgstr "{n} boletines semanales esperan."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind feedback"
+msgid "A bug or an idea you sent in was triaged, and this is where it landed."
+msgstr "Se revisó un error o una idea que usted envió, y aquí verá a dónde fue a parar."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind feedback"
+msgid "{n} things you sent in were triaged."
+msgstr "Se revisaron {n} cosas que usted envió."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind session_record_ready"
+msgid "A live session closed and its record is kept: the agenda, what was decided, who holds each action, and the backlog."
+msgstr "Una sesión en vivo cerró y su registro quedó guardado: la agenda, lo decidido, quién tiene cada acción y lo pendiente."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind session_record_ready"
+msgid "{n} live session records are ready to read."
+msgstr "{n} registros de sesiones en vivo están listos para leer."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind moderation"
+msgid "Something was flagged for a steward to read, or a report you filed was closed."
+msgstr "Se marcó algo para que un custodio lo lea, o se cerró un reporte que usted hizo."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind moderation"
+msgid "{n} reports moved."
+msgstr "Hubo movimiento en {n} reportes."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind comms_host_recap"
+msgid "A gathering you hosted has ended. The people who came will hear from you once you write the recap."
+msgstr "Terminó un encuentro que usted organizó. Quienes asistieron sabrán de usted cuando escriba el resumen."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind comms_host_recap"
+msgid "{n} gatherings you hosted are waiting for a recap."
+msgstr "{n} encuentros que usted organizó esperan un resumen."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind restorative_intake"
+msgid "Somebody reached out privately about a rupture. Same day matters for these."
+msgstr "Alguien le buscó en privado por una ruptura. En estos casos importa responder el mismo día."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind restorative_intake"
+msgid "{n} private intakes are waiting."
+msgstr "{n} consultas privadas esperan."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind canvas_revisit"
+msgid "A key moment came round, and the canvas asks whether one of the village's answers still holds."
+msgstr "Llegó un momento clave, y el lienzo pregunta si una de las respuestas de la aldea sigue en pie."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind canvas_revisit"
+msgid "{n} canvas answers are worth another look."
+msgstr "{n} respuestas del lienzo merecen otra mirada."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind exit_opened"
+msgid "A departure process opened. The published exit policy describes every step of it."
+msgstr "Se abrió un proceso de salida. La política de salida publicada describe cada paso."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind exit_opened"
+msgid "{n} departure processes opened."
+msgstr "Se abrieron {n} procesos de salida."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind health"
+msgid "A number the village watches moved further than the stewards asked to be told about."
+msgstr "Una cifra que la aldea vigila se movió más allá del límite que fijaron quienes custodian."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind health"
+msgid "{n} health readings moved."
+msgstr "Cambiaron {n} lecturas de salud."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind tools"
+msgid "Links the village depends on stopped answering."
+msgstr "Dejaron de responder enlaces de los que depende la aldea."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind tools"
+msgid "{n} link sweeps found something broken."
+msgstr "{n} revisiones de enlaces encontraron algo roto."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind agent_inbox"
+msgid "Your agent inbox stopped answering, so deliveries to it were switched off."
+msgstr "La bandeja de su agente dejó de responder, así que se apagaron los envíos a ella."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind agent_inbox"
+msgid "{n} notices about your agent inbox."
+msgstr "{n} avisos sobre la bandeja de su agente."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of an unknown kind matters"
+msgid "Something the village keeps for you moved."
+msgstr "Se movió algo que la aldea guarda para usted."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of an unknown kind batched into a line"
+msgid "{n} more notices."
+msgstr "{n} avisos más."
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeGroupWords.ts
+msgctxt "the bell: a section heading"
+msgid "Decisions"
+msgstr "Decisiones"
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeGroupWords.ts
+msgctxt "the bell: a section heading"
+msgid "Economy"
+msgstr "Economía"
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeGroupWords.ts
+msgctxt "the bell: a section heading"
+msgid "Work"
+msgstr "Trabajo"
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeGroupWords.ts
+msgctxt "the bell: a section heading"
+msgid "People"
+msgstr "Personas"
+
+# needs-native-review: the bell, 26 Nov 2026
+#: client/src/lib/noticeGroupWords.ts
+msgctxt "the bell: a section heading"
+msgid "The village"
+msgstr "La aldea"
