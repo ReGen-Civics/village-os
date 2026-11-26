@@ -61,6 +61,7 @@ import LongText from "@/components/LongText";
 import PurposeAlignmentField, { usePurposeAlignment } from "@/components/governance/PurposeAlignmentField";
 import { AskVillageButton, mayAskVillageOn } from "./gameMechanicsAskVillage";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { localizeConstitution } from "./gameMechanicsConstitutionWords";
 
 interface MechanicsVariable {
   key: string;
@@ -469,7 +470,7 @@ function DialEditor({
 }
 
 export default function GameMechanics() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const cfg = useGameConfig();
   // A LABEL. Who may withdraw is unchanged: the route still checks
   // proposal.decide and isAdmin, and this only says the village's word for it.
@@ -822,7 +823,8 @@ export default function GameMechanics() {
                   admin, or founder. Everything below them is tunable <em>because</em> these are not.
                 </Trans></p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {snapshot.constitution.map((law) => (
+                  {/* The laws arrive in English; the platform's own words are drawn in the reader's language. */}
+                  {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                     <div
                       key={law.title}
                       className="m-germ bg-white rounded-xl border border-stone-200 p-4"
