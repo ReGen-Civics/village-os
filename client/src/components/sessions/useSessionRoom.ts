@@ -51,7 +51,6 @@ import { toast } from "sonner";
 import { gameFetch } from "@/lib/gameApi";
 import {
   HERE_EVERY_MS,
-  ROOM_COPY,
   ROOM_POLL_MS,
   SESSIONS_API,
   type ItemAim,
@@ -68,6 +67,7 @@ import { LIBRARY_TENSION_API, type LibraryCard } from "@shared/sessionLibrary";
 import { onBehalfUndoPath } from "@shared/sessionOnBehalf";
 import { agendaOrderPath, itemVotePath, type AgendaVote } from "@shared/sessionVotes";
 import { entryCheckPath } from "@shared/sessionCheck";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 
 export type RoomStatus = "loading" | "ready" | "signed-out" | "refused" | "missing" | "gone" | "failed";
 
@@ -202,8 +202,8 @@ export function refusalSentence(body: unknown, status: number): string {
     const v = b[key];
     if (typeof v === "string" && /\s/.test(v.trim())) return v.trim();
   }
-  if (status === 401) return ROOM_COPY.signedOut;
-  return ROOM_COPY.writeFailed;
+  if (status === 401) return roomWords().signedOut;
+  return roomWords().writeFailed;
 }
 
 const isView = (v: unknown): v is SessionView =>
@@ -213,6 +213,7 @@ export function useSessionRoom(
   id: number | null,
   { enabled = true, pollMs = ROOM_POLL_MS, hereMs = HERE_EVERY_MS }: { enabled?: boolean; pollMs?: number; hereMs?: number } = {},
 ): SessionRoom {
+  const RC = useRoomWords();
   const [view, setView] = useState<SessionView | null>(null);
   const [status, setStatus] = useState<RoomStatus>("loading");
   const [lagging, setLagging] = useState(false);
@@ -406,7 +407,7 @@ export function useSessionRoom(
 
   const write = useCallback(
     async <T,>(method: string, path: string, payload: unknown, opts?: WriteOptions, url?: string): Promise<WriteResult<T>> => {
-      if (!base) return { ok: false, status: 0, error: ROOM_COPY.writeFailed, body: {}, room: null };
+      if (!base) return { ok: false, status: 0, error: RC.writeFailed, body: {}, room: null };
       let result: WriteResult<T>;
       try {
         const res = await gameFetch(url ?? `${base}${path}`, {
@@ -418,7 +419,7 @@ export function useSessionRoom(
           ? { ok: true, body: body as T, room: null }
           : { ok: false, status: res.status, error: refusalSentence(body, res.status), body, room: null };
       } catch {
-        result = { ok: false, status: 0, error: ROOM_COPY.offline, body: {}, room: null };
+        result = { ok: false, status: 0, error: RC.offline, body: {}, room: null };
       }
       if (!result.ok && !opts?.quiet) toast.error(result.error);
       // Whatever happened, show what the server now holds, and hand it back.

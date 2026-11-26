@@ -17,10 +17,11 @@
  *            by the disc's mark to a screen reader, so the visible word is
  *            not read twice.
  */
-import { ROOM_COPY, type SessionPerson, type SessionView } from "@shared/sessions";
+import { type SessionPerson, type SessionView } from "@shared/sessions";
 import Figure from "@/components/sheet/Figure";
 import PersonDisc, { type PersonDiscMark } from "./PersonDisc";
 import { EYEBROW, HINT } from "./roomUi";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 
 function markOf(view: SessionView, p: SessionPerson): PersonDiscMark {
   if (p.userId === view.facilitatorUserId) return "facilitator";
@@ -29,38 +30,39 @@ function markOf(view: SessionView, p: SessionPerson): PersonDiscMark {
 }
 
 function roleOf(view: SessionView, p: SessionPerson): string | null {
-  if (p.userId === view.facilitatorUserId) return ROOM_COPY.facilitating;
-  if (p.userId === view.secretaryUserId) return ROOM_COPY.takingNotes;
+  if (p.userId === view.facilitatorUserId) return roomWords().facilitating;
+  if (p.userId === view.secretaryUserId) return roomWords().takingNotes;
   return null;
 }
 
 export default function PeopleHere({ view, compact = false }: { view: SessionView; compact?: boolean }) {
+  const RC = useRoomWords();
   const people = [...view.people].sort((a, b) => Number(b.present) - Number(a.present) || a.name.localeCompare(b.name));
-  if (!people.length) return <p className={HINT}>{ROOM_COPY.nobodyHere}</p>;
+  if (!people.length) return <p className={HINT}>{RC.nobodyHere}</p>;
   const here = people.filter((p) => p.present).length;
 
   if (compact) {
     return (
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-        <p className={EYEBROW}>{ROOM_COPY.holding}</p>
-        <ul className="flex -space-x-2" aria-label={ROOM_COPY.whoIsHere}>
+        <p className={EYEBROW}>{RC.holding}</p>
+        <ul className="flex -space-x-2" aria-label={RC.whoIsHere}>
           {people.map((p) => (
             <li key={p.userId} title={p.name} className={`relative rounded-full ring-2 ring-background ${markOf(view, p) ? "z-[1]" : ""}`}>
               <span className="sr-only">{p.name}</span>
               <PersonDisc person={p} mark={markOf(view, p)} />
-              {!p.present && <span className="sr-only">{ROOM_COPY.away}</span>}
+              {!p.present && <span className="sr-only">{RC.away}</span>}
             </li>
           ))}
         </ul>
         <dl className="flex">
-          <Figure layout="seat" face="body" tone={here > 0 ? "gold" : null} value={String(here)} label={ROOM_COPY.here} />
+          <Figure layout="seat" face="body" tone={here > 0 ? "gold" : null} value={String(here)} label={RC.here} />
         </dl>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-wrap gap-x-5 gap-y-3" aria-label={ROOM_COPY.whoIsHere}>
+    <ul className="flex flex-wrap gap-x-5 gap-y-3" aria-label={RC.whoIsHere}>
       {people.map((p) => {
         const role = roleOf(view, p);
         return (
@@ -73,7 +75,7 @@ export default function PeopleHere({ view, compact = false }: { view: SessionVie
                   {role}
                 </span>
               )}
-              {!p.present && <span className="text-xs text-muted-foreground">{ROOM_COPY.away}</span>}
+              {!p.present && <span className="text-xs text-muted-foreground">{RC.away}</span>}
             </span>
           </li>
         );

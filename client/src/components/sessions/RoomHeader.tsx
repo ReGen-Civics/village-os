@@ -26,13 +26,15 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import { ROOM_COPY, SESSION_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, type SessionStage, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, SESSION_REFUSALS, cleanLine, type SessionStage, type SessionView } from "@shared/sessions";
 import Figure from "@/components/sheet/Figure";
 import EditableText from "./EditableText";
 import PeopleHere from "./PeopleHere";
 import RoomMoon from "./RoomMoon";
 import { BTN_PRIMARY, BTN_QUIET, EYEBROW, dayLabel, mayRenameSession, nameOf } from "./roomUi";
 import type { RoomActions } from "./useSessionRoom";
+import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /** The session's name: the room's largest words. */
 const SESSION_TITLE = "font-display text-4xl font-normal leading-[1.08] lining-nums text-balance break-words text-foreground sm:text-6xl";
@@ -49,6 +51,8 @@ export default function RoomHeader({
   /** The stage on this screen; Drop in shows the people itself. */
   shown?: SessionStage;
 }) {
+  const SC = useSessionWords();
+  const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const open = view.status === "open";
   const started = view.state.startedAt != null;
@@ -56,7 +60,7 @@ export default function RoomHeader({
   const share = started ? Math.min(1, elapsedMin / Math.max(1, view.durationMin)) : 0;
   const facilitator = nameOf(view, view.facilitatorUserId);
   // "0 of 60 min" as a figure: the count, and the rest of the same sentence as its label.
-  const clock = ROOM_COPY.clockLine(elapsedMin, view.durationMin);
+  const clock = RC.clockLine(elapsedMin, view.durationMin);
   const clockRest = clock.slice(String(elapsedMin).length).trim();
 
   const join = async () => {
@@ -80,7 +84,7 @@ export default function RoomHeader({
     <header className="space-y-5">
       <Link href="/sessions" className={`${BTN_QUIET} -ml-2 no-underline`}>
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        {ROOM_COPY.allSessions}
+        {RC.allSessions}
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
         <div className="min-w-0 flex-1 basis-[22rem]">
@@ -92,7 +96,7 @@ export default function RoomHeader({
             <EditableText
               value={view.title}
               may={mayRenameSession(view)}
-              label={ROOM_COPY.sessionTitleLabel}
+              label={RC.sessionTitleLabel}
               max={SESSION_LIMITS.title}
               singleLine
               draftKey={`session:${view.id}:title`}
@@ -100,8 +104,8 @@ export default function RoomHeader({
               render={(text) => <h1 className={SESSION_TITLE}>{text}</h1>}
             />
           </div>
-          {facilitator && <p className="mt-2 text-sm text-muted-foreground">{ROOM_COPY.facilitatedBy(facilitator)}</p>}
-          {!open && view.closedAt && <p className="mt-1 text-sm text-muted-foreground">{ROOM_COPY.closedOn(dayLabel(view.closedAt))}</p>}
+          {facilitator && <p className="mt-2 text-sm text-muted-foreground">{RC.facilitatedBy(facilitator)}</p>}
+          {!open && view.closedAt && <p className="mt-1 text-sm text-muted-foreground">{RC.closedOn(dayLabel(view.closedAt))}</p>}
         </div>
         {open && (
           <div className="w-full sm:w-auto sm:min-w-[12rem]">
@@ -120,7 +124,7 @@ export default function RoomHeader({
               </>
             ) : (
               <p className="max-w-xs text-sm text-muted-foreground sm:ml-auto sm:text-right">
-                {view.me.facilitates ? ROOM_COPY.clockWaitingYou : ROOM_COPY.clockWaiting}
+                {view.me.facilitates ? RC.clockWaitingYou : RC.clockWaiting}
               </p>
             )}
           </div>
@@ -131,9 +135,9 @@ export default function RoomHeader({
 
       {open && !view.me.joined && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-notice/55 bg-card px-5 py-4">
-          <p className="text-sm text-foreground">{ROOM_COPY.joinLede}</p>
+          <p className="text-sm text-foreground">{RC.joinLede}</p>
           <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void join()}>
-            {SESSION_COPY.joinButton}
+            {SC.joinButton}
           </button>
         </div>
       )}

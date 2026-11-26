@@ -23,6 +23,7 @@ import { termsChoiceOf } from "./roleApplicationType";
 import { publicTermsOf } from "@shared/seatTermsOffer";
 import { writtenKeys } from "@shared/termsWords";
 import TermsEight, { type TermsStepValue } from "./TermsEight";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /** No terms written: the village agrees a role's terms with its holder (the open form sends the same). */
 export const NO_TERMS_YET = { v: 1 } as const;
@@ -49,6 +50,7 @@ export default function TermsOnOfferField({
   answers: Record<string, unknown>;
   problem?: string | null;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const ids = pickedSeats(answers.seatIds ?? answers.seatId);
   const key = ids.join(",");
@@ -80,7 +82,7 @@ export default function TermsOnOfferField({
 
   return (
     <div className="grid gap-3" data-terms-on-offer="">
-      <p className="text-sm font-semibold text-foreground">{field.label}</p>
+      <p className="text-sm font-semibold text-foreground">{ww(field.label)}</p>
       {roles === null ? (
         <p className="text-sm text-muted-foreground">{t`Loading the terms on offer…`}</p>
       ) : (

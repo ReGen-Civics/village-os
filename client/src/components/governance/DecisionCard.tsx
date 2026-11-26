@@ -14,11 +14,11 @@
 import { Link } from "wouter";
 import { ArrowRight, CircleCheck, CircleMinus, CircleX } from "lucide-react";
 import type { VoteChoice } from "@shared/governanceEngine";
-import { subjectNoun } from "./wizardConfig";
 import { VoteResultMini } from "./VoteResult";
 import VoteClock from "./VoteClock";
 import type { BallotCard as BallotCardData } from "./governanceApi";
 import { Trans } from "@lingui/react/macro";
+import { useDecisionNoun } from "@/components/governance/decisionNounWords";
 
 const MINE: Record<VoteChoice, { label: string; icon: typeof CircleCheck; tone: string }> = {
   yes: { label: "You voted yes", icon: CircleCheck, tone: "text-open" },
@@ -35,6 +35,7 @@ const CLOSED_WORD: Record<string, string> = {
 };
 
 export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
+  const noun = useDecisionNoun();
   const open = ballot.status === "open";
   // A DELEGATED ROW ON A LIVE VOTE HAS NO CHOICE TO SHOW (0175). It was cast,
   // and what it said belongs to the member who decided it until the vote
@@ -51,7 +52,7 @@ export default function DecisionCard({ ballot }: { ballot: BallotCardData }) {
     <article className="rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-          {subjectNoun(ballot.subjectType)}
+          {noun(ballot.subjectType)}
         </span>
         {open ? (
           expired ? (

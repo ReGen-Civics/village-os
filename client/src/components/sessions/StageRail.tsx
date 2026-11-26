@@ -27,9 +27,10 @@
  */
 import type { LucideIcon } from "lucide-react";
 import { CheckCircle, HandHeart, ListOrdered, Moon, Sprout, Sunrise, Wind } from "lucide-react";
-import { SESSION_STAGES, STAGE_DEFS, ROOM_COPY, type SessionStage, type StageGlyph } from "@shared/sessions";
+import { SESSION_STAGES, STAGE_DEFS, type SessionStage, type StageGlyph } from "@shared/sessions";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import { GLYPH_STROKE, LABEL_CAPS } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 const STAGE_GLYPH: Record<StageGlyph, LucideIcon> = {
   wind: Wind,
@@ -49,10 +50,11 @@ export default function StageRail({
   shown: SessionStage;
   onShow: (stage: SessionStage) => void;
 }) {
+  const RC = useRoomWords();
   const reduced = useReducedMotion();
   const roomAt = SESSION_STAGES.indexOf(roomStage);
   return (
-    <nav aria-label={ROOM_COPY.stagesLabel} className="min-w-0">
+    <nav aria-label={RC.stagesLabel} className="min-w-0">
       <ol className="grid grid-cols-3 gap-y-4 sm:flex sm:items-start">
         {SESSION_STAGES.map((s, i) => {
           const isRoom = s === roomStage;
@@ -83,7 +85,7 @@ export default function StageRail({
                   <span className={`${LABEL_CAPS} ${isShown || isRoom ? "!text-foreground" : ""}`}>{STAGE_DEFS[s].short}</span>
                 </button>
                 {isRoom && (
-                  <span className="rounded-full bg-notice/15 px-2 py-0.5 text-xs font-semibold text-notice">{ROOM_COPY.liveBadge}</span>
+                  <span className="rounded-full bg-notice/15 px-2 py-0.5 text-xs font-semibold text-notice">{RC.liveBadge}</span>
                 )}
               </div>
               {i < SESSION_STAGES.length - 1 && <span aria-hidden="true" className="mt-[22px] hidden h-px min-w-3 flex-1 bg-border sm:block" />}

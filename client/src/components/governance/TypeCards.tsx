@@ -54,6 +54,7 @@
 import { Check, Lock, MessageCircleQuestion } from "lucide-react";
 import { TYPE_GROUPS, WIZARD_TYPE_CONFIGS, type WizardType } from "./wizardConfig";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 export default function TypeCards({
   chosen,
@@ -76,6 +77,7 @@ export default function TypeCards({
   onChoose: (id: WizardType) => void;
   onPractice: (id: WizardType) => void;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   return (
     <div role="group" aria-label={t({ message: "What kind of decision", context: "TypeCards, aria-label" })} className="space-y-6">
@@ -84,7 +86,7 @@ export default function TypeCards({
         if (types.length === 0) return null;
         return (
           <div key={group}>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">{group}</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">{ww(group)}</h3>
             <div className="mt-2 grid gap-3 sm:grid-cols-2">
               {types.map((t) => {
                 const Icon = t.icon;
@@ -130,10 +132,10 @@ export default function TypeCards({
                     </span>
                     <span className="min-w-0">
                       <span className="flex items-center gap-1.5 text-sm font-bold text-stone-900">
-                        {t.title}
+                        {ww(t.title)}
                         {available && isChosen && <Check className="w-4 h-4 text-teal-deep" aria-hidden="true" />}
                       </span>
-                      <span className="mt-0.5 block text-sm text-stone-600 leading-relaxed">{t.description}</span>
+                      <span className="mt-0.5 block text-sm text-stone-600 leading-relaxed">{ww(t.description)}</span>
                       {practice && (
                         <span className="mt-1.5 block text-xs font-medium text-teal-deep">
                           <Trans context="TypeCards, span">Ask the village about this one. A real vote, on the real roll, and nothing changes until the
