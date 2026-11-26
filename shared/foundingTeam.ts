@@ -120,6 +120,11 @@ export interface FilledTeamRole {
   id: string;
   name: string;
   holders: string[];
+  /**
+   * Each holder's face, by position in `holders`: the portrait they have PUBLISHED, or null (the lead, 26 Nov
+   * 2026: "I like humans"). Absent where the village shows no names, so a face never travels without one.
+   */
+  faces?: (string | null)[];
 }
 
 /**
@@ -138,6 +143,8 @@ export function foundingTeamFilled(
   roles: readonly TeamCandidate[],
   seatings: readonly TeamSeating[],
   firstNameOf: (s: TeamSeating) => string | null,
+  /** The holder's published portrait, when the caller read faces; omitted, the team carries none. */
+  faceOf?: (s: TeamSeating) => string | null,
 ): FilledTeamRole[] {
   const circles = new Set(featured.map((f) => f.circleId).filter((c): c is string => !!c));
   const featuredIds = new Set(featured.map((f) => f.id));
@@ -148,11 +155,15 @@ export function foundingTeamFilled(
     const people = live.filter((s) => s.orgRoleId === r.id && !s.isAgent);
     if (people.length === 0) continue;
     const holders: string[] = [];
+    const faces: (string | null)[] = [];
     for (const s of people) {
       const n = firstNameOf(s);
-      if (n && !holders.includes(n)) holders.push(n);
+      if (n && !holders.includes(n)) {
+        holders.push(n);
+        faces.push(faceOf ? faceOf(s) : null);
+      }
     }
-    out.push({ id: r.id, name: r.name, holders });
+    out.push(faceOf && faces.some((f) => f) ? { id: r.id, name: r.name, holders, faces } : { id: r.id, name: r.name, holders });
   }
   return out;
 }
