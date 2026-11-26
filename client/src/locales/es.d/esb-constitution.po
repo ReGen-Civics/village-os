@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every token is accounted for, always\", title"
+msgid "Every token is accounted for, always"
+msgstr "Cada ficha está registrada, siempre"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every token is accounted for, always\", plain"
+msgid "All value in the village lives on one ledger where every movement has a source and a destination, and the books must balance to zero at every boot. If they ever don't, the village refuses to open until a human looks. Balances are recomputed from the record, never adjusted by hand."
+msgstr "Todo el valor de la aldea vive en un solo libro mayor donde cada movimiento tiene un origen y un destino, y las cuentas deben sumar cero en cada arranque. Si alguna vez no cuadran, la aldea se niega a abrir hasta que una persona lo revise. Los saldos se recalculan a partir del registro, nunca se ajustan a mano."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every token is accounted for, always\", enforcedBy"
+msgid "server/lib/ledger.ts: conservation invariant, checked at every boot"
+msgstr "server/lib/ledger.ts: invariante de conservación, revisada en cada arranque"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Money flows in, never out\", title"
+msgid "Money flows in, never out"
+msgstr "El dinero entra, nunca sale"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Money flows in, never out\", plain"
+msgid "Real money can buy the village's credit tokens, but no token can ever be sold back for money. There is no cash-out path, and adding one is not a setting: it is what keeps village credits from becoming securities."
+msgstr "Con dinero real se pueden comprar las fichas de crédito de la aldea, pero ninguna ficha se puede volver a vender por dinero. No existe un camino para retirar efectivo, y agregar uno no es un ajuste: es lo que evita que los créditos de la aldea se vuelvan valores bursátiles."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Money flows in, never out\", enforcedBy"
+msgid "No such code path exists; exchange is buy-only (server/lib/exchange.ts)"
+msgstr "Ese camino de código no existe; el intercambio es solo de compra (server/lib/exchange.ts)"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Money flows in, never out\", whenModuleOff"
+msgid "No token can ever be sold back for money. There is no cash-out path, and adding one is not a setting."
+msgstr "Ninguna ficha se puede volver a vender por dinero. No existe un camino para retirar efectivo, y agregar uno no es un ajuste."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Recognition cannot be bought\", title"
+msgid "Recognition cannot be bought"
+msgstr "El reconocimiento no se puede comprar"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Recognition cannot be bought\", plain"
+msgid "The recognition token exists only as a record of appreciation between people. It is never for sale, never tradeable, and never granted by anything except a human act. Appreciation with a price would just be a price."
+msgstr "La ficha de reconocimiento existe solo como registro del aprecio entre personas. Nunca está a la venta, nunca se intercambia, y nunca la otorga otra cosa que un acto humano. Un aprecio con precio sería solo un precio."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Recognition cannot be bought\", enforcedBy"
+msgid "server/lib/exchange.ts: recognition is refused from every listing and swap"
+msgstr "server/lib/exchange.ts: el reconocimiento se rechaza en todo listado e intercambio"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"What the village can conjure can never claim what people paid for\", title"
+msgid "What the village can conjure can never claim what people paid for"
+msgstr "Lo que la aldea puede crear de la nada nunca puede reclamar lo que la gente pagó"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"What the village can conjure can never claim what people paid for\", plain"
+msgid "Tokens the village issues freely (rewards, comps) can never be swapped into tokens that people bought with real money. The test is structural: it is about where tokens came from, and no privilege level overrides it."
+msgstr "Las fichas que la aldea emite libremente (recompensas, cortesías) nunca se pueden intercambiar por fichas que la gente compró con dinero real. La prueba es estructural: trata de dónde vienen las fichas, y ningún nivel de privilegio la anula."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"What the village can conjure can never claim what people paid for\", enforcedBy"
+msgid "server/lib/exchange.ts: faucet-issued tokens are permanently unswappable"
+msgstr "server/lib/exchange.ts: las fichas emitidas por el grifo nunca se pueden intercambiar"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Your record is yours, and you choose how it becomes formal\", title"
+msgid "Your record is yours, and you choose how it becomes formal"
+msgstr "Su registro es suyo, y usted elige cómo se vuelve formal"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Your record is yours, and you choose how it becomes formal\", plain"
+msgid "Every village keeps its own record here: what was decided, who decided it, and when. How that record becomes formal is the village's choice: a blockchain, legal documents, or both. Tokens governed on a chain live on that chain, and this platform reads them, displays them, and links you out to them. It never mints, moves, or prices them."
+msgstr "Cada aldea guarda aquí su propio registro: qué se decidió, quién lo decidió y cuándo. Cómo se vuelve formal ese registro lo elige la aldea: una cadena de bloques, documentos legales, o ambos. Las fichas gobernadas en una cadena viven en esa cadena, y esta plataforma las lee, las muestra y le enlaza a ellas. Nunca las acuña, las mueve ni les pone precio."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Your record is yours, and you choose how it becomes formal\", enforcedBy"
+msgid "server/lib/ledger.ts: chain-governed tokens are refused from the ledger entirely"
+msgstr "server/lib/ledger.ts: las fichas gobernadas en cadena se rechazan del libro mayor por completo"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The village decides where its decisions bind\", title"
+msgid "The village decides where its decisions bind"
+msgstr "La aldea decide dónde obligan sus decisiones"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The village decides where its decisions bind\", plain"
+msgid "A village can hold its votes here, or keep its formal record somewhere else. A vote held here binds here and stays on the record, with the count and the reasoning kept. A village that keeps its record elsewhere gets a game that prepares the decision and carries it there, and never one that claims to have made it."
+msgstr "Una aldea puede hacer sus votaciones aquí, o llevar su registro formal en otro lugar. Una votación hecha aquí obliga aquí y queda en el registro, con el conteo y las razones guardados. Una aldea que lleva su registro en otro lugar recibe un juego que prepara la decisión y la lleva allá, y nunca uno que diga haberla tomado."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The village decides where its decisions bind\", enforcedBy"
+msgid "server/lib/ballots.ts: a ballot freezes its rule at open and closes by a human act; shared/modules.ts: the governance module ships off, so a village that never turns it on keeps its record where it always was"
+msgstr "server/lib/ballots.ts: una votación congela su regla al abrirse y se cierra por un acto humano; shared/modules.ts: el módulo de gobernanza viene apagado, así una aldea que nunca lo enciende guarda su registro donde siempre estuvo"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"A vote is counted against the day it opened\", title"
+msgid "A vote is counted against the day it opened"
+msgstr "Una votación se cuenta según el día en que se abrió"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"A vote is counted against the day it opened\", plain"
+msgid "When a ballot opens, its thresholds, its electorate and every voter's weight freeze inside it. No later change to any setting, allocation or balance rewrites a vote, open or closed. What you were asked, and what your voice weighed, is permanent from the moment the asking began."
+msgstr "Cuando se abre una votación, sus umbrales, su padrón y el peso de cada votante se congelan dentro de ella. Ningún cambio posterior a un ajuste, una asignación o un saldo reescribe una votación, abierta o cerrada. Lo que se le preguntó, y cuánto pesó su voz, es permanente desde el momento en que empezó la pregunta."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"A vote is counted against the day it opened\", enforcedBy"
+msgid "the ballots snapshot columns (drizzle/0089) + server/lib/ballots.test.ts"
+msgstr "las columnas de fotografía de las votaciones (drizzle/0089) + server/lib/ballots.test.ts"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Voting weight is on the record\", title"
+msgid "Voting weight is on the record"
+msgstr "El peso del voto queda en el registro"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Voting weight is on the record\", plain"
+msgid "Whatever weight mode the village runs, every member can see how voting weight is assigned, and every change to an assigned weight is a permanent record carrying who changed it and why. Weight is power, and this game holds no hidden power."
+msgstr "Sea cual sea el modo de peso que use la aldea, cada miembro puede ver cómo se asigna el peso del voto, y cada cambio a un peso asignado es un registro permanente que dice quién lo cambió y por qué. El peso es poder, y este juego no guarda ningún poder oculto."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Voting weight is on the record\", enforcedBy"
+msgid "governance_weight_changes (drizzle/0089), append-only, member-readable"
+msgstr "governance_weight_changes (drizzle/0089), solo se agrega, y los miembros pueden leerlo"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"One gate decides every permission\", title"
+msgid "One gate decides every permission"
+msgstr "Una sola puerta decide cada permiso"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"One gate decides every permission\", plain"
+msgid "Whether you can do something is decided by exactly one rule, in one place, in a fixed order: admins can always act; a standing warning overrides roles and stages; then roles, then badges, then your stage on the ladder. No feature may invent its own side-door."
+msgstr "Si usted puede hacer algo lo decide exactamente una regla, en un solo lugar, en un orden fijo: las personas administradoras siempre pueden actuar; una advertencia vigente pesa más que los roles y las etapas; luego los roles, luego las insignias, luego su etapa en la escalera. Ninguna función puede inventar su propia puerta lateral."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"One gate decides every permission\", enforcedBy"
+msgid "shared/capabilities.ts: hasCapability(), the one gate"
+msgstr "shared/capabilities.ts: hasCapability(), la única puerta"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Value is released by human consent, never by a timer\", title"
+msgid "Value is released by human consent, never by a timer"
+msgstr "El valor se libera por consentimiento humano, nunca por un reloj"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Value is released by human consent, never by a timer\", plain"
+msgid "Recognition lands when a person consents to someone's work, and cycles close when a human closes them. No scheduled job ever releases value or closes a cycle on its own."
+msgstr "El reconocimiento llega cuando una persona da su consentimiento al trabajo de alguien, y los ciclos cierran cuando una persona los cierra. Ninguna tarea programada libera valor ni cierra un ciclo por su cuenta."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Value is released by human consent, never by a timer\", enforcedBy"
+msgid "server/lib/scheduler.ts: the scheduler's charter, in code and comments"
+msgstr "server/lib/scheduler.ts: el estatuto del programador de tareas, en el código y en los comentarios"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Nobody witnesses their own work (once the village is grown)\", title"
+msgid "Nobody witnesses their own work (once the village is grown)"
+msgstr "Nadie atestigua su propio trabajo (cuando la aldea ya creció)"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Nobody witnesses their own work (once the village is grown)\", plain"
+msgid "You cannot consent to your own claim: someone else must witness the work. A founder building alone is exempt only before the village starts its Game and while it is smaller than the solo-founder window, and every such use is recorded."
+msgstr "Usted no puede dar consentimiento a su propia toma: otra persona debe atestiguar el trabajo. Quien funda en solitario queda exento solo antes de que la aldea empiece su Juego y mientras sea más pequeña que la ventana de fundación en solitario, y cada uso así queda registrado."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Nobody witnesses their own work (once the village is grown)\", enforcedBy"
+msgid "server/index.ts: the consent route's self-consent guard"
+msgstr "server/index.ts: la protección contra el autoconsentimiento en la ruta de consentimiento"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The record of value is never deleted\", title"
+msgid "The record of value is never deleted"
+msgstr "El registro del valor nunca se borra"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The record of value is never deleted\", plain"
+msgid "Ledger rows, settlements and measured facts are never erased. Leaving the village anonymizes who you were; it does not rewrite what happened, because the books must stay explicable forever."
+msgstr "Las filas del libro mayor, las liquidaciones y los hechos medidos nunca se borran. Salir de la aldea vuelve anónimo quién fue usted; no reescribe lo que pasó, porque las cuentas deben poder explicarse para siempre."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"The record of value is never deleted\", enforcedBy"
+msgid "anonymizeMember and the retract-don't-delete contract (drizzle/0040)"
+msgstr "anonymizeMember y el contrato de retractar sin borrar (drizzle/0040)"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every mechanic is bounded\", title"
+msgid "Every mechanic is bounded"
+msgstr "Cada mecánica tiene límites"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every mechanic is bounded\", plain"
+msgid "Every tunable dial has a floor and a ceiling set by the platform. Governance can move a dial anywhere within its bounds; nothing can move the bounds themselves. The bounds are the safety envelope this constitution draws around the game."
+msgstr "Cada dial ajustable tiene un piso y un techo que fija la plataforma. La gobernanza puede mover un dial a cualquier punto dentro de sus límites; nada puede mover los límites mismos. Los límites son la envoltura de seguridad que esta constitución dibuja alrededor del juego."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every mechanic is bounded\", enforcedBy"
+msgid "shared/gameVariables.ts: min/max on every def, validated before every write"
+msgstr "shared/gameVariables.ts: mínimo y máximo en cada definición, validados antes de cada escritura"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every change to the rules is on the record\", title"
+msgid "Every change to the rules is on the record"
+msgstr "Cada cambio a las reglas queda en el registro"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every change to the rules is on the record\", plain"
+msgid "Any change to any mechanic, by an admin or by a passed proposal, is written to a permanent amendment ledger: what changed, from what to what, by whom, under which decision. The history is public."
+msgstr "Cualquier cambio a cualquier mecánica, hecho por una persona administradora o por una propuesta aprobada, se escribe en un libro de enmiendas permanente: qué cambió, de qué a qué, quién lo hizo y bajo qué decisión. La historia es pública."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Every change to the rules is on the record\", enforcedBy"
+msgid "mechanics_changes table (drizzle/0042) + the variables write path"
+msgstr "la tabla mechanics_changes (drizzle/0042) + el camino de escritura de las variables"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Caps fail closed\", title"
+msgid "Caps fail closed"
+msgstr "Los topes fallan cerrados"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Caps fail closed\", plain"
+msgid "Where a limit protects members' value (swap caps above all), an unset or zero limit means ZERO, never unlimited. A missing rule is a closed tap, not an open one."
+msgstr "Donde un límite protege el valor de los miembros (los topes de intercambio por encima de todo), un límite sin definir o en cero significa CERO, nunca ilimitado. Una regla que falta es una llave cerrada, nunca una abierta."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Caps fail closed\", enforcedBy"
+msgid "server/lib/exchange.ts: fail-closed swap caps"
+msgstr "server/lib/exchange.ts: topes de intercambio que fallan cerrados"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Trading requires an informed, versioned yes\", title"
+msgid "Trading requires an informed, versioned yes"
+msgstr "Intercambiar requiere un sí informado y con versión"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Trading requires an informed, versioned yes\", plain"
+msgid "Token trading is off until this village's founder reads and accepts the current legal terms, and it closes again automatically if the terms change. A village run on a shared password cannot enable it at all: money needs accountable humans."
+msgstr "El intercambio de fichas está apagado hasta que quien fundó esta aldea lee y acepta los términos legales vigentes, y se vuelve a cerrar solo si los términos cambian. Una aldea que funciona con una contraseña compartida no puede encenderlo de ninguna manera: el dinero necesita personas que respondan por él."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Trading requires an informed, versioned yes\", enforcedBy"
+msgid "server/lib/exchange.ts + shared/modules.ts: the version-stamped legal card"
+msgstr "server/lib/exchange.ts + shared/modules.ts: la tarjeta legal con sello de versión"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Leaving well is guaranteed\", title"
+msgid "Leaving well is guaranteed"
+msgstr "Salir bien está garantizado"
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Leaving well is guaranteed\", plain"
+msgid "Any member can see everything the village holds about them, take a copy, settle what is open, and leave. Their name is scrubbed everywhere while the village's shared record keeps its numbers. Departure is a supported path, not an escape."
+msgstr "Cualquier miembro puede ver todo lo que la aldea guarda sobre él, llevarse una copia, cerrar lo pendiente, y salir. Su nombre se borra en todas partes mientras el registro compartido de la aldea conserva sus números. Irse es un camino con apoyo, y nunca una huida."
+
+# needs-native-review: the constitution's laws, 26 Nov 2026
+#: client/src/pages/gameMechanicsConstitutionWords.ts
+msgctxt "constitution law \"Leaving well is guaranteed\", enforcedBy"
+msgid "server/lib/exit.ts + /api/profile/export + anonymizeMember"
+msgstr "server/lib/exit.ts + /api/profile/export + anonymizeMember"

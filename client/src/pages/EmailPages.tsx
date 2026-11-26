@@ -26,7 +26,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
 import { BTN_PRIMARY, LINK, WORLD } from "@/components/journey/look";
 import {
-  ESSENTIAL_NOTE,
   KIND_WORDS,
   PAUSE_DAYS,
   type ActionDescription,
@@ -36,6 +35,9 @@ import {
   type UnsubscribeView,
 } from "@shared/comms/preferences";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
+import type { PermissionKind, SuppressionReason } from "@shared/comms/kinds";
 
 /** The signed link from the address bar, or "". */
 const tokenFromUrl = (): string => new URLSearchParams(window.location.search).get("t") ?? "";
@@ -106,8 +108,43 @@ function Problem({ text }: { text: string }) {
 
 // ── Preferences ─────────────────────────────────────────────────────────────
 
+/**
+ * The words beside each switch in the reader's language. shared/comms/preferences.ts keeps them in English for
+ * the server; EmailPages.kindWords.test.ts holds these to the same English, kind for kind.
+ */
+export const KIND_WORDS_MSG: Record<PermissionKind, { label: MessageDescriptor; description: MessageDescriptor }> = {
+  events: {
+    label: msg({ message: "Gathering reminders", context: "email preferences: a switch" }),
+    description: msg({ message: "Reminders and changes for the gatherings you said yes to.", context: "email preferences: a switch's line" }),
+  },
+  paths: {
+    label: msg({ message: "Path emails", context: "email preferences: a switch" }),
+    description: msg({ message: "A few emails that walk you along a path you chose, and the welcome for new members.", context: "email preferences: a switch's line" }),
+  },
+  letters: {
+    label: msg({ message: "Letters", context: "email preferences: a switch" }),
+    description: msg({ message: "News from the village, sent only to the people who asked for it.", context: "email preferences: a switch's line" }),
+  },
+  notices: {
+    label: msg({ message: "Your notifications by email", context: "email preferences: a switch" }),
+    description: msg({ message: "Quests, roles, votes and messages. Your notification settings choose which ones.", context: "email preferences: a switch's line" }),
+  },
+};
+
+/** The page's standing note and the reasons an address receives nothing, mirroring shared/comms/preferences.ts. */
+export const ESSENTIAL_NOTE_MSG = msg({ message: "Some email always goes, because you asked for it just then: a password link, or a confirmation of something you did.", context: "email preferences: the note at the foot" });
+export const BLOCKED_MSG: Record<SuppressionReason, MessageDescriptor> = {
+  bounced: msg({ message: "Email to this address stopped because messages to it bounced. Ask a person at the village to start it again.", context: "email preferences: why this address receives nothing" }),
+  complained: msg({ message: "Email to this address stopped after one of our emails was marked as spam. Ask a person at the village if you want it back.", context: "email preferences: why this address receives nothing" }),
+  unsubscribed_all: msg({ message: "You asked us to stop every email to this address.", context: "email preferences: why this address receives nothing" }),
+  manual: msg({ message: "A person at the village stopped email to this address. Ask them if you want it back.", context: "email preferences: why this address receives nothing" }),
+  erased: msg({ message: "This address was erased from the village, so no email goes to it.", context: "email preferences: why this address receives nothing" }),
+};
+
 function KindSwitch({ k, busy, onChange }: { k: KindView; busy: boolean; onChange: (on: boolean) => void }) {
-  const words = KIND_WORDS[k.kind];
+  const { i18n } = useLingui();
+  const own = KIND_WORDS_MSG[k.kind];
+  const words = own ? { label: i18n._(own.label), description: i18n._(own.description) } : KIND_WORDS[k.kind];
   return (
     <li>
       <button
@@ -140,7 +177,7 @@ function KindSwitch({ k, busy, onChange }: { k: KindView; busy: boolean; onChang
  * page, which opens it for a link signed for preferences.
  */
 export function PreferencesPanel({ token, onVillage }: { token: string; onVillage?: (name: string) => void }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [view, setView] = useState<PreferencesView | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -187,7 +224,7 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
       {error && <Problem text={error} />}
 
       {view.blocked ? (
-        <p className="text-sm text-card-foreground mb-4">{view.blocked.sentence}</p>
+        <p className="text-sm text-card-foreground mb-4">{BLOCKED_MSG[view.blocked.reason as SuppressionReason] ? i18n._(BLOCKED_MSG[view.blocked.reason as SuppressionReason]) : view.blocked.sentence}</p>
       ) : view.stopped ? (
         <div className="space-y-3 mb-4">
           <p className="text-sm text-card-foreground">
@@ -253,7 +290,7 @@ export function PreferencesPanel({ token, onVillage }: { token: string; onVillag
           </div>
         </>
       )}
-      <p className="text-xs text-muted-foreground border-t border-border pt-4">{ESSENTIAL_NOTE}</p>
+      <p className="text-xs text-muted-foreground border-t border-border pt-4">{i18n._(ESSENTIAL_NOTE_MSG)}</p>
     </div>
   );
 }

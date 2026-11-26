@@ -9,6 +9,8 @@
  * `CommitmentKey`, so an eighth commitment cannot render an empty chip.
  */
 
+import type { Widened } from "./wordTableTypes";
+
 export type CommitmentKey = "aim" | "domain" | "accountabilities" | "why" | "term" | "nextHolder" | "decides";
 
 /** Every fixed string the card prints, so the component holds no copy of its own. */
@@ -113,3 +115,80 @@ export const COMMITMENT_PHRASES: Record<CommitmentKey, string> = {
 
 /** Under an agent on the roster: the member who keeps it (0374, shared/agentHolders.ts). */
 export const keptByLine = (keeper: string): string => `Kept by ${keeper}`;
+
+// ── The view model's own lines (shared/roleSheet.ts, shared/permissionSheet.ts) ──
+
+/**
+ * Every line the role card's view model builds, moved here from inline English so the card can be drawn in
+ * the reader's language (lane ES-A, 26 Nov 2026). The client passes its translated copy as
+ * `SheetContext.words`; anything that passes none, the server among them, reads this English.
+ */
+export const SHEET_LINES = {
+  listOf: (head: string, last: string): string => `${head} and ${last}`,
+  stillToWrite: (phrases: string): string => `Still to be written down: ${phrases}.`,
+  alsoStillToWrite: (phrases: string): string => `Also still to be written down: ${phrases}.`,
+  notCarried: (phrases: string): string => `This page does not carry ${phrases}.`,
+  readyCount: (n: number, of: number): string => `${n} of ${of} team members ${n === 1 ? "is" : "are"} ready to be re-chosen.`,
+  personTermEnds: (day: string): string => `term ends ${day}`,
+  applyAria: (role: string): string => `Apply for this role: ${role}`,
+  contact: (name: string): string => `Contact ${name}`,
+  stockArtFor: (className: string): string => `Stock art for ${className}, a class suggested for this role`,
+  stockArt: "Stock art for a class suggested for this role",
+  chipAtStart: "set at the start",
+  chipVillages: "the village's",
+  srWritten: ", written down",
+  srVillages: ", the village's way",
+  srAtSeating: ", set when someone takes the role",
+  srUnwritten: ", still to be written down",
+  daysLeftInTerm: (n: number): string => (n === 1 ? "Day left in term" : "Days left in term"),
+  daysLeftInSeason: (n: number): string => (n === 1 ? "Day left in the season" : "Days left in the season"),
+  termEnds: (day: string): string => `Term ends ${day}`,
+  namedSeasonEnds: (season: string, day: string): string => `${season} ends ${day}`,
+  seasonEnds: (day: string): string => `The season ends ${day}`,
+  places: (n: number): string => (n === 1 ? "Place" : "Places"),
+  heldNow: "Held now",
+  taken: "Taken",
+  openPlaces: (n: number): string => (n === 1 ? "Open place" : "Open places"),
+  answersFor: "Answers for",
+  term: "Term",
+  endsOn: (day: string): string => `Ends ${day}`,
+  reachedOn: (day: string): string => `Reached its date on ${day}`,
+  nextHolder: "Next holder",
+  wayOfDeciding: "Way of deciding",
+  circlesOwnWay: (circle: string): string => `${circle}'s own way.`,
+  villagesWayNotCircles: (circle: string): string => `The village's way. ${circle} has not set one of its own.`,
+  flipSubWork: (written: number, of: number): string => `What it decides on and answers for. ${written} of ${of} written down.`,
+  flipSub: (written: number, of: number): string => `Its commitments. ${written} of ${of} written down.`,
+  powers: (n: number): string => (n === 1 ? "Power" : "Powers"),
+  withPowers: (roleWord: string): string => `A ${roleWord} with powers`,
+  srBelowRung: ", below the rung it asks for",
+  srAtRung: ", the rung it asks for",
+  srAlsoQualifies: ", also qualifies",
+  state: {
+    open: "Open",
+    partial: "Partly held",
+    filled: "Held",
+    forming: "Forming",
+    expired: "Ready to be re-chosen",
+  },
+} as const;
+
+/** All of the role card's words in one object: the shape the client mirrors and passes back as `SheetContext.words`. */
+export const ROLE_SHEET_WORDS = {
+  words: SHEET_WORDS,
+  lines: SHEET_LINES,
+  labels: COMMITMENT_LABELS,
+  phrases: COMMITMENT_PHRASES,
+  seatPreviewSub,
+  suitsLabel,
+  speaksForLabel,
+  speaksForGloss,
+  moreOpenLine,
+  notReadLine,
+  rungLine,
+  keptByLine,
+};
+
+/** The role card's words with every literal widened, so a translated copy fits the same slot. */
+export type RoleSheetWords = Widened<typeof ROLE_SHEET_WORDS>;
+

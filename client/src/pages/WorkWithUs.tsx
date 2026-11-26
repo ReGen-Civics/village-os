@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui, Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import type { I18n, MessageDescriptor } from "@lingui/core";
 import { useReplyPromise } from "@/components/ContributorRoutes";
 import { useSearch } from "wouter";
 import { isVentureQuery, VENTURE_KIND } from "@shared/contributorRoutes";
@@ -64,16 +66,20 @@ const EMPTY: Proposal = {
   attachment: "", attachmentName: "",
 };
 
-const PROPOSAL_FIELDS: { key: keyof Proposal; label: string; hint: string; required: boolean; rows?: number }[] = [
-  { key: "work", label: "The work", hint: "Describe what you're proposing, in plain terms. What is it?", required: true, rows: 3 },
-  { key: "serves", label: "How it serves the community", hint: "How would this serve the community, the land, the guests, the ecosystem, or the mission?", required: true, rows: 3 },
-  { key: "materialsCost", label: "Cost of materials", hint: "What materials, supplies, or inputs are required, and what do they cost? Note anything the village may already have.", required: true, rows: 3 },
-  { key: "timeToImplement", label: "Time to implement", hint: "How long from approval to completion? Note any phases, seasonality, or dependencies.", required: true, rows: 2 },
-  { key: "needsFromUs", label: "What you'd need from us", hint: "Information or access, decisions and by when, meeting time, site access, utilities, equipment, or labor.", required: true, rows: 3 },
-  { key: "maintenance", label: "Maintenance & longevity", hint: "What keeps it alive and well? Ongoing care, who's responsible, cost over time, expected lifespan.", required: true, rows: 3 },
+type ProposalField = { key: keyof Proposal; label: string; hint: string; required: boolean; rows?: number };
+/** The questions in the reader's language. */
+const PROPOSAL_FIELDS_MSG: { key: keyof Proposal; label: MessageDescriptor; hint: MessageDescriptor; required: boolean; rows?: number }[] = [
+  { key: "work", label: msg({ message: "The work", context: "work with us: a question" }), hint: msg({ message: "Describe what you're proposing, in plain terms. What is it?", context: "work with us: help under a question" }), required: true, rows: 3 },
+  { key: "serves", label: msg({ message: "How it serves the community", context: "work with us: a question" }), hint: msg({ message: "How would this serve the community, the land, the guests, the ecosystem, or the mission?", context: "work with us: help under a question" }), required: true, rows: 3 },
+  { key: "materialsCost", label: msg({ message: "Cost of materials", context: "work with us: a question" }), hint: msg({ message: "What materials, supplies, or inputs are required, and what do they cost? Note anything the village may already have.", context: "work with us: help under a question" }), required: true, rows: 3 },
+  { key: "timeToImplement", label: msg({ message: "Time to implement", context: "work with us: a question" }), hint: msg({ message: "How long from approval to completion? Note any phases, seasonality, or dependencies.", context: "work with us: help under a question" }), required: true, rows: 2 },
+  { key: "needsFromUs", label: msg({ message: "What you'd need from us", context: "work with us: a question" }), hint: msg({ message: "Information or access, decisions and by when, meeting time, site access, utilities, equipment, or labor.", context: "work with us: help under a question" }), required: true, rows: 3 },
+  { key: "maintenance", label: msg({ message: "Maintenance & longevity", context: "work with us: a question" }), hint: msg({ message: "What keeps it alive and well? Ongoing care, who's responsible, cost over time, expected lifespan.", context: "work with us: help under a question" }), required: true, rows: 3 },
 ];
+function proposalFields(i18n: I18n): ProposalField[] {
+  return PROPOSAL_FIELDS_MSG.map((f) => ({ ...f, label: i18n._(f.label), hint: i18n._(f.hint) }));
+}
 
-type ProposalField = (typeof PROPOSAL_FIELDS)[number];
 
 /*
  * SET UP FOR A VENTURE (the lead, 24 Nov 2026): /work-with-us?kind=venture, where every Start a venture link lands
@@ -85,7 +91,7 @@ type ProposalField = (typeof PROPOSAL_FIELDS)[number];
 const VENTURE_FIRST: (keyof Proposal)[] = ["work", "needsFromUs", "serves"];
 
 function useVentureFields(): ProposalField[] {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const first: ProposalField[] = [
     {
       key: "work",
@@ -109,7 +115,7 @@ function useVentureFields(): ProposalField[] {
       rows: 3,
     },
   ];
-  return [...first, ...PROPOSAL_FIELDS.filter((f) => !VENTURE_FIRST.includes(f.key))];
+  return [...first, ...proposalFields(i18n).filter((f) => !VENTURE_FIRST.includes(f.key))];
 }
 
 /*
@@ -322,9 +328,9 @@ function ProposalForm({
   setForm: (p: Proposal) => void;
   onSubmitted: () => void;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const ventureFields = useVentureFields();
-  const fields = venture ? ventureFields : PROPOSAL_FIELDS;
+  const fields = venture ? ventureFields : proposalFields(i18n);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [hp, setHp] = useState(""); // honeypot: real people never fill this
@@ -348,24 +354,24 @@ function ProposalForm({
       if (!res.ok) setError(data.message ?? data.error ?? "That file didn't attach. Try again.");
       else setForm({ ...form, attachment: data.filename, attachmentName: data.originalName || file.name });
     } catch {
-      setError("That file didn't attach. Try again.");
+      setError(t({ message: "That file didn't attach. Try again.", context: "work with us: an error" }));
     }
     setUploading(false);
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) { setError("Add your name and email so we know who we're speaking with."); return; }
-    for (const f of fields) if (f.required && !String(form[f.key]).trim()) { setError(`Answer this to continue: ${f.label}.`); return; }
+    if (!form.name.trim() || !form.email.trim()) { setError(t({ message: "Add your name and email so we know who we're speaking with.", context: "work with us: an error" })); return; }
+    for (const f of fields) if (f.required && !String(form[f.key]).trim()) { setError(t({ message: `Answer this to continue: ${f.label}.`, context: "work with us: an error naming the question left blank" })); return; }
     // Only a village that offers options can ask for one. With none listed
     // the person describes the exchange in their own words below.
-    if (reciprocityOptions.length > 0 && form.reciprocity.length === 0) { setError("Choose at least one form of reciprocity that fits."); return; }
+    if (reciprocityOptions.length > 0 && form.reciprocity.length === 0) { setError(t({ message: "Choose at least one form of reciprocity that fits.", context: "work with us: an error" })); return; }
     setError("");
     setSubmitting(true);
     // A venture keeps the type the inbox already reads and says what it is beside it (shared/contributorRoutes.ts).
     const ok = await submitProposal("work-with-us", { ...form, ...(venture ? { kind: VENTURE_KIND } : {}), [FORM_CONSENT_FIELD]: consent }, hp);
     setSubmitting(false);
-    if (ok) onSubmitted(); else setError("That didn't send. Try again.");
+    if (ok) onSubmitted(); else setError(t({ message: "That didn't send. Try again.", context: "work with us: an error" }));
   };
 
   // The field key doubles as the control's id, so the label this helper

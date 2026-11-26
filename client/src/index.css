@@ -303,7 +303,7 @@
   --muted-foreground: #525252;
   --accent: #a3a3a3; /* Neutral gray */
   --accent-foreground: #171717;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.505 0.213 27.518); /* red-700: 5.1:1 or more as text on the muted ground and on its own 10% tint, where red-600 read 3.8 (live pass, 26 Nov 2026) */
   --destructive-foreground: oklch(0.985 0 0);
   --border: #d4d4d4;
   --input: #e4e4e4;
@@ -3084,4 +3084,15 @@ html:has(#sera-changes [data-sera-strip-on]) {
       animation-range: entry 0% entry 70%;
     }
   }
+}
+
+/*
+ * "Come in" brings the card, and the first field in it, to the top of the page, and the sticky header sits there:
+ * without a margin the focused field scrolls up under it (iPhone 13, 1.3.77). The header is 6rem at most; the card
+ * and every field keep that and a little more clear above them, and the tab bar's height below.
+ */
+.entrance-card,
+.entrance-card :is(input, select, textarea, button) {
+  scroll-margin-top: 7rem;
+  scroll-margin-bottom: calc(var(--tabbar-h, 0px) + 1rem);
 }

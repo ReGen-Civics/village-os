@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set hosting-guests, name"
+msgid "Hosting guests"
+msgstr "Recibir huéspedes"
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set hosting-guests, gloss"
+msgid "Rooms people can book, a way to take payment, and a calendar for what is on."
+msgstr "Habitaciones que la gente puede reservar, una forma de recibir pagos, y un calendario de lo que viene."
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set village-voice, name"
+msgid "Village voice"
+msgstr "La voz de la aldea"
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set village-voice, gloss"
+msgid "Somewhere to talk in the open, write to each other, and keep a shared journal."
+msgstr "Un lugar para conversar a la vista, escribirse, y llevar un diario compartido."
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set sharing-things, name"
+msgid "Sharing what we own"
+msgstr "Compartir lo que tenemos"
+
+# needs-native-review: module starter sets, 26 Nov 2026
+#: client/src/components/modules/starterSetWords.ts
+msgctxt "module starter set sharing-things, gloss"
+msgid "A tool library and a shared library, so things get used more than once."
+msgstr "Una biblioteca de herramientas y una biblioteca compartida, para que las cosas se usen más de una vez."

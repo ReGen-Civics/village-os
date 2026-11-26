@@ -329,7 +329,7 @@ export const LIGHT_STATUS_INKS: Record<string, string> = {
 };
 /** index.css `:root`'s destructive pair, which Admin's light zone keeps. */
 export const LIGHT_DESTRUCTIVE: Record<string, string> = {
-  "--destructive": "oklch(0.577 0.245 27.325)",
+  "--destructive": "oklch(0.505 0.213 27.518)",
   "--destructive-foreground": "oklch(0.985 0 0)",
 };
 

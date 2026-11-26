@@ -1,0 +1,2464 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf coordinate, label"
+msgid "Coordinate"
+msgstr "Coordinar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf coordinate, gloss"
+msgid "Plan the work and the days: quests, the calendar, calls, tools."
+msgstr "Planear el trabajo y los días: misiones, el calendario, las llamadas, las herramientas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf recognise, label"
+msgid "Recognise"
+msgstr "Reconocer"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf recognise, gloss"
+msgid "See people: gratitude, the path from guest to co-creator, badges."
+msgstr "Ver a las personas: la gratitud, el camino de invitado a cocreador, las insignias."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf host-and-earn, label"
+msgid "Host and earn"
+msgstr "Hospedar y ganar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf host-and-earn, gloss"
+msgid "Value moving with care: stays, the shelves, the exchange, payments."
+msgstr "El valor que se mueve con cuidado: estadías, los estantes, el intercambio, los pagos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf know-and-decide, label"
+msgid "Know and decide"
+msgstr "Saber y decidir"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf know-and-decide, gloss"
+msgid "How the village understands itself: conversations, decisions, power, health."
+msgstr "Cómo la aldea se entiende a sí misma: conversaciones, decisiones, poder, salud."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf connect, label"
+msgid "Connect"
+msgstr "Conectar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module shelf connect, gloss"
+msgid "People finding people: profiles, messages, the feed, other villages."
+msgstr "Personas que encuentran personas: perfiles, mensajes, las novedades, otras aldeas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, name"
+msgid "Quests"
+msgstr "Misiones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, description"
+msgid "The contribution board: post work, claim it, submit it, consent to release recognition."
+msgstr "El tablero de contribución: publicar trabajo, tomarlo, entregarlo y dar consentimiento para liberar el reconocimiento."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, promise"
+msgid "Work you can pick up and finish: the board where contribution starts."
+msgstr "Trabajo que usted puede tomar y terminar: el tablero donde empieza la contribución."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, benefit 1"
+msgid "Post work as quests anyone can claim"
+msgstr "Publique trabajo como misiones que cualquiera puede tomar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, benefit 2"
+msgid "Submission and consent keep the release of recognition honest"
+msgstr "La entrega y el consentimiento mantienen honesta la liberación del reconocimiento"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, benefit 3"
+msgid "Crews form around the bigger quests"
+msgstr "Se forman equipos alrededor de las misiones más grandes"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, benefit 4"
+msgid "Finished work feeds progression, so contribution moves people forward"
+msgstr "El trabajo terminado alimenta la progresión, así la contribución hace avanzar a las personas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, for whom"
+msgid "Villages that run on visible, shared work."
+msgstr "Aldeas que funcionan con trabajo visible y compartido."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, setup"
+msgid "Nothing to set up. Core, on from the first day."
+msgstr "Nada que configurar. Es parte del núcleo, encendido desde el primer día."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module quests, data"
+msgid "Quests, claims and submissions, tied to the named members who made them."
+msgstr "Misiones, tomas y entregas, ligadas a los miembros con nombre que las hicieron."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, name"
+msgid "Gratitude"
+msgstr "Gratitud"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, description"
+msgid "Recognition sends, lunar cycles, and the value pool distributed at each close."
+msgstr "Envíos de reconocimiento, ciclos lunares y el fondo de valor que se reparte en cada cierre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, promise"
+msgid "Appreciation that carries value, cycle by lunar cycle."
+msgstr "Aprecio que lleva valor, ciclo lunar tras ciclo lunar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, benefit 1"
+msgid "Send gratitude with a message, from your own cycle budget"
+msgstr "Envíe gratitud con un mensaje, desde su propio presupuesto del ciclo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, benefit 2"
+msgid "Lunar cycles close and share out the value pool"
+msgstr "Los ciclos lunares cierran y reparten el fondo de valor"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, benefit 3"
+msgid "A public wall shows appreciation moving through the village"
+msgstr "Un muro público muestra el aprecio que se mueve por la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, benefit 4"
+msgid "Every send lands in the recipient's own ledger"
+msgstr "Cada envío llega al propio libro mayor de quien lo recibe"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, for whom"
+msgid "Villages that want recognition to be a habit, and to count."
+msgstr "Aldeas que quieren que el reconocimiento sea un hábito, y que cuente."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, setup"
+msgid "Nothing to set up. Core, on from the first day."
+msgstr "Nada que configurar. Es parte del núcleo, encendido desde el primer día."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gratitude, data"
+msgid "Who appreciated whom, when, and the balances that followed."
+msgstr "Quién apreció a quién, cuándo, y los saldos que siguieron."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, name"
+msgid "Stages & Roles"
+msgstr "Etapas y roles"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, description"
+msgid "The path from guest to co-creator: stages, capabilities, and appointed roles."
+msgstr "El camino de invitado a cocreador: etapas, capacidades y roles designados."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, promise"
+msgid "The path from guest to co-creator, walked in the open."
+msgstr "El camino de invitado a cocreador, recorrido a la vista de todos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, benefit 1"
+msgid "Stages mark how deep someone is in"
+msgstr "Las etapas marcan qué tan adentro está alguien"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, benefit 2"
+msgid "Capabilities unlock as people grow"
+msgstr "Las capacidades se abren a medida que las personas crecen"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, benefit 3"
+msgid "Appointed roles carry real permissions"
+msgstr "Los roles designados llevan permisos reales"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, benefit 4"
+msgid "Proposals open, get decided, and stay on the record"
+msgstr "Las propuestas se abren, se deciden y quedan en el registro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, for whom"
+msgid "Villages where trust grows in steps and everyone can see the stairs."
+msgstr "Aldeas donde la confianza crece por pasos y todos pueden ver la escalera."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, setup"
+msgid "Nothing to set up. Core, on from the first day."
+msgstr "Nada que configurar. Es parte del núcleo, encendido desde el primer día."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module progression, data"
+msgid "Each member's stage, roles and capability grants."
+msgstr "La etapa, los roles y las capacidades otorgadas de cada miembro."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, name"
+msgid "Profiles"
+msgstr "Perfiles"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, description"
+msgid "Member identity: handles, journeys, balances, and each member's own ledger."
+msgstr "La identidad de cada miembro: nombres de usuario, recorridos, saldos y el propio libro mayor de cada miembro."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, promise"
+msgid "Who is here: handles, journeys, and each member's own ledger."
+msgstr "Quién está aquí: nombres de usuario, recorridos y el propio libro mayor de cada miembro."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, benefit 1"
+msgid "A profile for every member, with a handle of their own"
+msgstr "Un perfil para cada miembro, con un nombre de usuario propio"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, benefit 2"
+msgid "Journeys record how someone arrived and where they are headed"
+msgstr "Los recorridos registran cómo llegó alguien y hacia dónde va"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, benefit 3"
+msgid "Balances and a personal ledger in one place"
+msgstr "Saldos y un libro mayor personal en un solo lugar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, benefit 4"
+msgid "Members choose what their profile shows"
+msgstr "Cada miembro elige lo que muestra su perfil"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, for whom"
+msgid "Every village. People have to be findable to be met."
+msgstr "Toda aldea. Para conocer a las personas, primero hay que poder encontrarlas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, setup"
+msgid "Nothing to set up. Core, on from the first day."
+msgstr "Nada que configurar. Es parte del núcleo, encendido desde el primer día."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module profiles, data"
+msgid "Names, handles, journeys and balances: the most personal data the platform holds."
+msgstr "Nombres, nombres de usuario, recorridos y saldos: los datos más personales que guarda la plataforma."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, name"
+msgid "How Power Is Held"
+msgstr "Cómo se sostiene el poder"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, description"
+msgid "The living org chart: circles, the roles that orbit them, who holds each role, which roles are open calls, plus a concierge that routes 'I want to help with X' to the right person."
+msgstr "El organigrama vivo: los círculos, los roles que giran a su alrededor, quién sostiene cada rol, qué roles son convocatorias abiertas, y un conserje que dirige \"quiero ayudar con X\" a la persona indicada."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, promise"
+msgid "Circles, roles and the people holding them. Includes the Living Map of the land."
+msgstr "Círculos, roles y las personas que los sostienen. Incluye el Mapa vivo de la tierra."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, benefit 1"
+msgid "Nested circles show how the village organises itself"
+msgstr "Los círculos anidados muestran cómo se organiza la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, benefit 2"
+msgid "Every role names its holder, or stands as an open call"
+msgstr "Cada rol nombra a quien lo sostiene, o queda como convocatoria abierta"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, benefit 3"
+msgid "A concierge routes offers of help to the right person"
+msgstr "Un conserje dirige las ofertas de ayuda a la persona indicada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, benefit 4"
+msgid "The Living Map draws the land the village stands on"
+msgstr "El Mapa vivo dibuja la tierra donde está la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, for whom"
+msgid "Villages ready to show where power sits and where help is needed."
+msgstr "Aldeas listas para mostrar dónde está el poder y dónde se necesita ayuda."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, setup"
+msgid "Draw your circles and name the first roles. Examples stand in while you do."
+msgstr "Dibuje sus círculos y nombre los primeros roles. Unos ejemplos ocupan el lugar mientras tanto."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module map, data"
+msgid "Circles, roles, holders and contact requests, tied to named members."
+msgstr "Círculos, roles, quienes los sostienen y solicitudes de contacto, ligados a miembros con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, name"
+msgid "How Resources Flow"
+msgstr "Cómo fluyen los recursos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, description"
+msgid "A declared map of how money and resources are governed: who may spend what, with whose approval, paid from where, and where the money comes from; it describes the flow and moves nothing."
+msgstr "Un mapa declarado de cómo se gobiernan el dinero y los recursos: quién puede gastar qué, con la aprobación de quién, pagado desde dónde, y de dónde viene el dinero. Describe el flujo y no mueve nada."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, promise"
+msgid "Who may spend what, with whose yes, and where the money comes from, drawn on the map."
+msgstr "Quién puede gastar qué, con el sí de quién, y de dónde viene el dinero, dibujado en el mapa."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, benefit 1"
+msgid "Spending rules per circle or role: what moves alone, what needs a yes"
+msgstr "Reglas de gasto por círculo o rol: qué se mueve solo y qué necesita un sí"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, benefit 2"
+msgid "Funding sources and season budgets, declared in the village's own currency"
+msgstr "Fuentes de fondos y presupuestos de temporada, declarados en la propia moneda de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, benefit 3"
+msgid "Request approval opens a forum decision pre-filled from the rule"
+msgstr "Pedir aprobación abre una decisión en el foro, ya llena a partir de la regla"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, benefit 4"
+msgid "Declared beside measured: the ledger's own counts and totals, never a member's balance"
+msgstr "Lo declarado junto a lo medido: los conteos y totales del propio libro mayor, nunca el saldo de un miembro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, for whom"
+msgid "Villages that want the money questions answered before anyone has to ask."
+msgstr "Aldeas que quieren responder las preguntas de dinero antes de que alguien tenga que hacerlas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, setup"
+msgid "Declare one rule, one source and one budget; the map draws the rest."
+msgstr "Declare una regla, una fuente y un presupuesto; el mapa dibuja el resto."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module resources, data"
+msgid "Rules, sources and budgets the village declares. Counts and totals from the ledger, no names."
+msgstr "Reglas, fuentes y presupuestos que declara la aldea. Conteos y totales del libro mayor, sin nombres."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, name"
+msgid "Forum & Decisions"
+msgstr "Foro y decisiones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, description"
+msgid "Village conversations: threads by circle-of-life category, @mentions, thread follows, community moderation, and the decision primitive, where proposals are opened and outcomes recorded."
+msgstr "Las conversaciones de la aldea: hilos por categoría del círculo de la vida, @menciones, seguimiento de hilos, moderación comunitaria, y la decisión como pieza básica, donde se abren propuestas y se registran resultados."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, promise"
+msgid "Conversations that can end in a decision."
+msgstr "Conversaciones que pueden terminar en una decisión."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, benefit 1"
+msgid "Threads by circle-of-life category"
+msgstr "Hilos por categoría del círculo de la vida"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, benefit 2"
+msgid "Mentions and follows keep the right people in the room"
+msgstr "Las menciones y el seguimiento mantienen en la sala a las personas indicadas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, benefit 3"
+msgid "Proposals open, get decided, and stay on the record"
+msgstr "Las propuestas se abren, se deciden y quedan en el registro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, benefit 4"
+msgid "Community moderation with a clear report path"
+msgstr "Moderación comunitaria con un camino claro para reportar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, for whom"
+msgid "Villages that want decisions made in the open, where anyone can read how they went."
+msgstr "Aldeas que quieren decidir a la vista, donde cualquiera puede leer cómo se decidió."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, setup"
+msgid "Nothing to set up. Four starter categories are seeded and yours to rename."
+msgstr "Nada que configurar. Vienen sembradas cuatro categorías iniciales que usted puede renombrar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module forum, data"
+msgid "Threads, replies and recorded decisions, under each author's name."
+msgstr "Hilos, respuestas y decisiones registradas, bajo el nombre de cada autor."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, name"
+msgid "Village Feed"
+msgstr "Novedades de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, description"
+msgid "The everyday stream: microposts, events and announcements from one forum category, woven with the village's own milestones, where a tap of appreciation is a real gift from your cycle budget."
+msgstr "El flujo de cada día: publicaciones breves, eventos y anuncios de una categoría del foro, entretejidos con los propios hitos de la aldea, donde un toque de aprecio es un regalo real desde su presupuesto del ciclo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, promise"
+msgid "The everyday stream: small posts, milestones, and hearts that are real gifts."
+msgstr "El flujo de cada día: publicaciones pequeñas, hitos y corazones que son regalos reales."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, benefit 1"
+msgid "Microposts, events and announcements from one forum category"
+msgstr "Publicaciones breves, eventos y anuncios de una categoría del foro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, benefit 2"
+msgid "The village's own milestones weave into the stream"
+msgstr "Los propios hitos de la aldea se entretejen en el flujo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, benefit 3"
+msgid "A heart is a real gratitude send from your cycle budget"
+msgstr "Un corazón es un envío real de gratitud desde su presupuesto del ciclo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, benefit 4"
+msgid "Light enough to read well on a phone over a slow link"
+msgstr "Lo bastante liviano para leerse bien en un teléfono con conexión lenta"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, for whom"
+msgid "Villages that want a daily pulse without another app."
+msgstr "Aldeas que quieren un pulso diario sin otra aplicación más."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, setup"
+msgid "Nothing to set up. It reads one forum category from the day it is on."
+msgstr "Nada que configurar. Lee una categoría del foro desde el día en que se enciende."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module feed, data"
+msgid "Posts and hearts, under each author's name."
+msgstr "Publicaciones y corazones, bajo el nombre de cada autor."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, name"
+msgid "Messages"
+msgstr "Mensajes"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, description"
+msgid "Private conversations between members: one to one, or a named group carrying its own membership and read state. A direct message is the two-party case of the same thread, so every conversation in the village has one home, one report path, and one place to moderate."
+msgstr "Conversaciones privadas entre miembros: de uno a uno, o en un grupo con nombre que lleva sus propios miembros y su estado de lectura. Un mensaje directo es el caso de dos personas del mismo hilo, así cada conversación de la aldea tiene un solo hogar, un camino para reportar y un lugar para moderar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, promise"
+msgid "Private conversations, one to one or in a named group."
+msgstr "Conversaciones privadas, de uno a uno o en un grupo con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, benefit 1"
+msgid "Direct messages and group threads are one thing with one home"
+msgstr "Los mensajes directos y los hilos de grupo son una misma cosa con un solo hogar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, benefit 2"
+msgid "Read state follows you between devices"
+msgstr "El estado de lectura lo sigue entre dispositivos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, benefit 3"
+msgid "One report path and one place to moderate"
+msgstr "Un camino para reportar y un lugar para moderar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, benefit 4"
+msgid "Conversations keep their history when the module rests"
+msgstr "Las conversaciones conservan su historial cuando el módulo descansa"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, for whom"
+msgid "Villages whose coordination outgrew a group chat somewhere else."
+msgstr "Aldeas cuya coordinación ya no cabe en un chat de grupo en otro lado."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, setup"
+msgid "Nothing to set up. On means people can write to each other."
+msgstr "Nada que configurar. Encendido significa que las personas pueden escribirse."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module messaging, data"
+msgid "Private messages between named members: the village's most private table."
+msgstr "Mensajes privados entre miembros con nombre: la tabla más privada de la aldea."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, name"
+msgid "Stays"
+msgstr "Estadías"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, description"
+msgid "Accommodation on stay credits: rooms post credit (and optional USD) prices per audience, credits are bought or earned through work-exchange quests, and one credit hosts one night. Funds-bearing: read the legal card before enabling."
+msgstr "Hospedaje con créditos de estadía: las habitaciones publican precios en créditos (y si se quiere en USD) por público, los créditos se compran o se ganan con misiones de intercambio de trabajo, y un crédito hospeda una noche. Maneja fondos: lea la tarjeta legal antes de encenderlo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, promise"
+msgid "Rooms on stay credits, where one credit hosts one night."
+msgstr "Habitaciones con créditos de estadía, donde un crédito hospeda una noche."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, benefit 1"
+msgid "Rooms carry credit and optional USD prices, per audience"
+msgstr "Las habitaciones llevan precios en créditos y si se quiere en USD, por público"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, benefit 2"
+msgid "Credits are bought, or earned through work-exchange quests"
+msgstr "Los créditos se compran, o se ganan con misiones de intercambio de trabajo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, benefit 3"
+msgid "Autopay posts each night and warns before a balance runs low"
+msgstr "El pago automático registra cada noche y avisa antes de que el saldo se acabe"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, benefit 4"
+msgid "Every movement lands on the one ledger"
+msgstr "Cada movimiento queda en el único libro mayor"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, for whom"
+msgid "Villages hosting guests, arriving residents, or work-exchangers."
+msgstr "Aldeas que reciben huéspedes, residentes que llegan o personas en intercambio de trabajo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, setup"
+msgid "Post at least one room and a price before going live. The legal card comes first."
+msgstr "Publique al menos una habitación y un precio antes de abrir. Primero va la tarjeta legal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module stays, data"
+msgid "Bookings, balances and payment records, tied to named guests and members."
+msgstr "Reservas, saldos y registros de pago, ligados a huéspedes y miembros con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, name"
+msgid "Call Automation"
+msgstr "Automatización de llamadas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, description"
+msgid "The weekly call becomes assigned work, not content distribution: recordings in, transcripts kept, an AI synthesis whose every task suggestion carries a verbatim quote and timestamp (or is dropped), published to the forum by a human, with suggestions routed to the roles they name. Nothing publishes or applies itself."
+msgstr "La llamada semanal se vuelve trabajo asignado, sin quedarse en contenido para repartir: entran las grabaciones, se guardan las transcripciones, y una síntesis con IA donde cada tarea sugerida lleva una cita textual y su marca de tiempo (o se descarta), que una persona publica en el foro, con las sugerencias dirigidas a los roles que nombran. Nada se publica ni se aplica solo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, promise"
+msgid "The weekly call becomes assigned work."
+msgstr "La llamada semanal se vuelve trabajo asignado."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, benefit 1"
+msgid "Recordings in, transcripts kept"
+msgstr "Entran las grabaciones, se guardan las transcripciones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, benefit 2"
+msgid "Every suggested task carries a verbatim quote and timestamp, or is dropped"
+msgstr "Cada tarea sugerida lleva una cita textual y su marca de tiempo, o se descarta"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, benefit 3"
+msgid "A human publishes the synthesis to the forum; nothing publishes itself"
+msgstr "Una persona publica la síntesis en el foro; nada se publica solo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, benefit 4"
+msgid "Suggestions route to the roles they name"
+msgstr "Las sugerencias van a los roles que nombran"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, for whom"
+msgid "Villages whose calls are rich and whose follow-through is thin."
+msgstr "Aldeas con llamadas ricas y poco seguimiento después."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, setup"
+msgid "Point it at your call recordings. It works from the first one you feed it."
+msgstr "Apúntelo a las grabaciones de sus llamadas. Funciona desde la primera que le dé."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module automation, data"
+msgid "Recordings, transcripts and the tasks drawn from them. Voices are personal data."
+msgstr "Grabaciones, transcripciones y las tareas que salen de ellas. Las voces son datos personales."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, name"
+msgid "Village Health"
+msgstr "Salud de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, description"
+msgid "The village's vital signs: per-lunation snapshots frozen at each cycle close, the land's own regeneration ledger (trees, water, hectares: absolute counts, never leaderboards), and season goals. Snapshot COLLECTION runs from the day this ships; turn the dashboard on once a few lunations of history exist."
+msgstr "Los signos vitales de la aldea: fotografías por lunación congeladas en cada cierre de ciclo, el propio libro de regeneración de la tierra (árboles, agua, hectáreas: conteos absolutos, nunca tablas de posiciones), y las metas de temporada. La RECOLECCIÓN de fotografías corre desde el día en que esto se publica; encienda el tablero cuando ya existan unas cuantas lunaciones de historia."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, promise"
+msgid "The village's vital signs, frozen at each cycle close."
+msgstr "Los signos vitales de la aldea, congelados en cada cierre de ciclo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, benefit 1"
+msgid "Per-lunation snapshots of participation, recognition and contribution"
+msgstr "Fotografías por lunación de la participación, el reconocimiento y la contribución"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, benefit 2"
+msgid "The land's own ledger: trees, water, hectares, as absolute counts"
+msgstr "El propio libro de la tierra: árboles, agua, hectáreas, en conteos absolutos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, benefit 3"
+msgid "Season goals sit over the numbers as the steering layer"
+msgstr "Las metas de temporada se colocan sobre los números como la capa que da rumbo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, benefit 4"
+msgid "No leaderboards, by design"
+msgstr "Sin tablas de posiciones, a propósito"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, for whom"
+msgid "Villages that steer by evidence and want the land counted too."
+msgstr "Aldeas que se guían por la evidencia y quieren que la tierra también cuente."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, setup"
+msgid "Snapshots collect on their own. Record the land's first measurements when ready."
+msgstr "Las fotografías se recogen solas. Registre las primeras mediciones de la tierra cuando esté listo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module health, data"
+msgid "Village-level numbers and land measurements. No personal records."
+msgstr "Números de la aldea y mediciones de la tierra. Sin registros personales."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, name"
+msgid "Material Library"
+msgstr "Biblioteca de materiales"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, description"
+msgid "The village's shared tools and goods: donate an item and earn library credits (appraised, capped, dual-signed above a threshold), then borrow against an escrowed deposit. Credits are backed by the shelves; they never swap, and selling them for fiat is a separate caution-card opt-in (L9)."
+msgstr "Las herramientas y los bienes compartidos de la aldea: done un objeto y gane créditos de biblioteca (tasados, con tope, y con doble firma por encima de un umbral), luego pida prestado contra un depósito en garantía. Los créditos están respaldados por los estantes; nunca se intercambian, y venderlos por dinero es una opción aparte detrás de una tarjeta de precaución (L9)."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, promise"
+msgid "The village's shared tools and goods, backed by the shelves."
+msgstr "Las herramientas y los bienes compartidos de la aldea, respaldados por los estantes."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, benefit 1"
+msgid "Donate an item and earn library credits, appraised and capped"
+msgstr "Done un objeto y gane créditos de biblioteca, tasados y con tope"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, benefit 2"
+msgid "Borrow against an escrowed deposit"
+msgstr "Pida prestado contra un depósito en garantía"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, benefit 3"
+msgid "Every item carries its own history"
+msgstr "Cada objeto lleva su propia historia"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, benefit 4"
+msgid "Selling credits for fiat stays off unless a village opts in past the caution card"
+msgstr "Vender créditos por dinero queda apagado salvo que una aldea lo elija tras la tarjeta de precaución"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, for whom"
+msgid "Villages with one good drill and eleven people who need it."
+msgstr "Aldeas con un buen taladro y once personas que lo necesitan."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, setup"
+msgid "Put the first items on the shelves and set your categories before going live."
+msgstr "Ponga los primeros objetos en los estantes y defina sus categorías antes de abrir."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module library, data"
+msgid "Items, loans and credit balances, tied to named members."
+msgstr "Objetos, préstamos y saldos de crédito, ligados a miembros con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, name"
+msgid "Badges & Skills"
+msgstr "Insignias y habilidades"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, description"
+msgid "Recognition of who people are and what they can do: self-declared skills, badges earned from settled contribution, granted honors, and warning badges that suspend specific capabilities until resolved. Earned badges never ride applause metrics into permissions."
+msgstr "Reconocer quiénes son las personas y qué saben hacer: habilidades que cada quien declara, insignias ganadas con contribución liquidada, honores otorgados, e insignias de advertencia que suspenden capacidades específicas hasta que se resuelvan. Las insignias ganadas nunca convierten aplausos en permisos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, promise"
+msgid "Who people are and what they can do, said out loud."
+msgstr "Quiénes son las personas y qué saben hacer, dicho en voz alta."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, benefit 1"
+msgid "Self-declared skills anyone can browse"
+msgstr "Habilidades que cada quien declara y que cualquiera puede consultar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, benefit 2"
+msgid "Badges earn from settled contribution, never from applause"
+msgstr "Las insignias se ganan con contribución liquidada, nunca con aplausos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, benefit 3"
+msgid "Honors are granted and say who granted them"
+msgstr "Los honores se otorgan y dicen quién los otorgó"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, benefit 4"
+msgid "Warning badges suspend specific capabilities until resolved"
+msgstr "Las insignias de advertencia suspenden capacidades específicas hasta que se resuelvan"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, for whom"
+msgid "Villages that want skills findable and recognition earned."
+msgstr "Aldeas que quieren habilidades fáciles de encontrar y un reconocimiento ganado."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, setup"
+msgid "Works from the start. Add your own badges when the defaults run thin."
+msgstr "Funciona desde el inicio. Agregue sus propias insignias cuando las de serie se queden cortas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module badges, data"
+msgid "Skills, awards and any standing warnings, per named member."
+msgstr "Habilidades, premios y cualquier advertencia vigente, por miembro con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, name"
+msgid "Exchange"
+msgstr "Intercambio"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, description"
+msgid "Buy the village's own platform tokens for fiat, out of a stocked treasury, buy-only in v1. Recognition and Hypha-governed tokens can never be listed; a token another module sells can't be listed twice. Funds-bearing: read the legal card before enabling."
+msgstr "Compre con dinero las fichas propias de la plataforma de la aldea, desde una tesorería con existencias, solo compra en la v1. Las fichas de reconocimiento y las gobernadas por Hypha nunca se pueden listar; una ficha que ya vende otro módulo no se puede listar dos veces. Maneja fondos: lea la tarjeta legal antes de encenderlo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, promise"
+msgid "The village's own tokens, bought from a stocked treasury."
+msgstr "Las fichas propias de la aldea, compradas de una tesorería con existencias."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, benefit 1"
+msgid "Buy-only in v1: fiat in, credits out, from treasury stock"
+msgstr "Solo compra en la v1: entra dinero, salen créditos, de las existencias de la tesorería"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, benefit 2"
+msgid "Posted prices with a change cap, never a market"
+msgstr "Precios publicados con un tope de cambio, nunca un mercado"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, benefit 3"
+msgid "Recognition and Hypha-governed tokens can never be listed"
+msgstr "Las fichas de reconocimiento y las gobernadas por Hypha nunca se pueden listar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, benefit 4"
+msgid "Internal trading stays off until the caution card is read and accepted"
+msgstr "El intercambio interno queda apagado hasta leer y aceptar la tarjeta de precaución"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, for whom"
+msgid "Villages whose internal economy needs a front door."
+msgstr "Aldeas cuya economía interna necesita una puerta de entrada."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, setup"
+msgid "Stock the treasury and post prices before going live. The legal card comes first."
+msgstr "Llene la tesorería y publique precios antes de abrir. Primero va la tarjeta legal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module exchange, data"
+msgid "Orders and balances, tied to named members and their payment records."
+msgstr "Pedidos y saldos, ligados a miembros con nombre y a sus registros de pago."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, name"
+msgid "Redemption"
+msgstr "Canje"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, description"
+msgid "A member asks for tokens they hold to become something real off the platform: cash, a service, a share. Asking holds the tokens, a steward confirms once the village has paid, and only then are the tokens destroyed; a refusal, a withdrawal or an expiry gives them back in full. Funds-bearing: read the legal card before enabling."
+msgstr "Un miembro pide que las fichas que tiene se vuelvan algo real fuera de la plataforma: dinero, un servicio, una participación. Al pedirlo, las fichas quedan retenidas, una persona custodia confirma cuando la aldea ya pagó, y solo entonces se destruyen las fichas; un rechazo, un retiro o un vencimiento las devuelve completas. Maneja fondos: lea la tarjeta legal antes de encenderlo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, promise"
+msgid "A member turns tokens they hold into something real, and the village says when it happened."
+msgstr "Un miembro convierte las fichas que tiene en algo real, y la aldea dice cuándo sucedió."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, benefit 1"
+msgid "Asking holds the tokens, so nothing is spent twice while the village pays"
+msgstr "Al pedir, las fichas quedan retenidas, así nada se gasta dos veces mientras la aldea paga"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, benefit 2"
+msgid "Tokens are destroyed only after a steward confirms the member was paid"
+msgstr "Las fichas se destruyen solo después de que una persona custodia confirma que se le pagó al miembro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, benefit 3"
+msgid "A refusal, a withdrawal or an expiry gives every token back"
+msgstr "Un rechazo, un retiro o un vencimiento devuelve cada ficha"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, benefit 4"
+msgid "The confirming key can be handed to a named role"
+msgstr "La llave para confirmar se puede entregar a un rol con nombre"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, for whom"
+msgid "Villages that will pay members back, in cash, services or shares, for tokens they earned."
+msgstr "Aldeas que les pagarán a sus miembros, en dinero, servicios o participaciones, por las fichas que ganaron."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, setup"
+msgid "Write how a member actually gets paid, pick the currency, follow the exchange's price or set your own, and set the limits before going live. The legal card comes first."
+msgstr "Escriba cómo recibe el pago un miembro, elija la moneda, siga el precio del intercambio o defina el suyo, y ponga los límites antes de abrir. Primero va la tarjeta legal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module redemption, data"
+msgid "Each member's requests, what they asked for, and who decided, tied to named members."
+msgstr "Las solicitudes de cada miembro, lo que pidió y quién decidió, ligado a miembros con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, name"
+msgid "Payments & Donations"
+msgstr "Pagos y donaciones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, description"
+msgid "Every payment your project issues or receives, as products you define: application fees, donations, deposits and down payments, waitlist seats, recurring memberships, and token packs granted from treasury stock. Rides the same verified Stripe spine as stays and the exchange; Zeffy and manual payment paths for fee-free giving. Money flows IN only, always."
+msgstr "Cada pago que su proyecto emite o recibe, como productos que usted define: cuotas de solicitud, donaciones, depósitos y adelantos, lugares en lista de espera, membresías recurrentes, y paquetes de fichas otorgados desde las existencias de la tesorería. Usa la misma columna verificada de Stripe que las estadías y el intercambio; Zeffy y caminos de pago manual para donar sin comisiones. El dinero solo ENTRA, siempre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, promise"
+msgid "Every payment your project receives, as products you define."
+msgstr "Cada pago que recibe su proyecto, como productos que usted define."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, benefit 1"
+msgid "Application fees, donations, deposits, memberships and token packs"
+msgstr "Cuotas de solicitud, donaciones, depósitos, membresías y paquetes de fichas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, benefit 2"
+msgid "Rides the same verified Stripe spine as stays and the exchange"
+msgstr "Usa la misma columna verificada de Stripe que las estadías y el intercambio"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, benefit 3"
+msgid "Zeffy and manual paths for fee-free giving"
+msgstr "Zeffy y caminos manuales para donar sin comisiones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, benefit 4"
+msgid "Money flows in only, always"
+msgstr "El dinero solo entra, siempre"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, for whom"
+msgid "Villages taking applications, gifts or memberships without a second system."
+msgstr "Aldeas que reciben solicitudes, regalos o membresías sin un segundo sistema."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, setup"
+msgid "Create your first product before going live. The legal card comes first."
+msgstr "Cree su primer producto antes de abrir. Primero va la tarjeta legal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module commerce, data"
+msgid "Orders and payer details, held with the care payment records need."
+msgstr "Pedidos y datos de quien paga, guardados con el cuidado que piden los registros de pago."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, name"
+msgid "Village Network"
+msgstr "Red de aldeas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, description"
+msgid "Federation with other villages running this platform: publish your needs and offers to the network, and read what peer villages share. Foundations for co-hiring, shared events and resource pooling. You choose exactly which villages to listen to; publishing an item is an explicit act, and nothing about individual members is ever shared."
+msgstr "Federación con otras aldeas que usan esta plataforma: publique sus necesidades y ofertas en la red, y lea lo que comparten las aldeas hermanas. Bases para contratar en conjunto, compartir eventos y reunir recursos. Usted elige exactamente qué aldeas escuchar; publicar algo es un acto explícito, y nunca se comparte nada sobre miembros individuales."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, promise"
+msgid "Villages sharing needs and offers, on purpose."
+msgstr "Aldeas que comparten necesidades y ofertas, a propósito."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, benefit 1"
+msgid "Publish a need or an offer to the villages you choose"
+msgstr "Publique una necesidad o una oferta para las aldeas que usted elija"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, benefit 2"
+msgid "Read what peer villages share, and nothing else"
+msgstr "Lea lo que comparten las aldeas hermanas, y nada más"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, benefit 3"
+msgid "Nothing about individual members ever travels"
+msgstr "Nunca viaja nada sobre miembros individuales"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, benefit 4"
+msgid "Foundations for co-hiring, shared events and resource pooling"
+msgstr "Bases para contratar en conjunto, compartir eventos y reunir recursos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, for whom"
+msgid "Villages that know their neighbours and want pipes between them."
+msgstr "Aldeas que conocen a sus vecinas y quieren canales entre ellas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, setup"
+msgid "Nothing to set up. Choose your peers and publish when ready."
+msgstr "Nada que configurar. Elija sus aldeas hermanas y publique cuando esté listo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module network, data"
+msgid "What this village chose to publish. Never member data."
+msgstr "Lo que esta aldea eligió publicar. Nunca datos de miembros."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, name"
+msgid "Crowdpool"
+msgstr "Fondo colectivo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, description"
+msgid "The village's hub crowdpool, told in the living map's own language: a gold funding ring, a star lantern counting toward build day, a needs shelf with claim links to the hub, partner funders, and a ledger of arrivals. The game server reads the hub's public data and shows aggregates; every pledge happens on the hub itself."
+msgstr "El fondo colectivo de la aldea en el hub, contado en el propio lenguaje del mapa vivo: un anillo dorado de fondos, una linterna de estrellas que cuenta hacia el día de construcción, un estante de necesidades con enlaces al hub para tomarlas, financiadores aliados, y un libro de llegadas. El servidor del juego lee los datos públicos del hub y muestra totales; cada promesa de aporte sucede en el propio hub."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, promise"
+msgid "Watch the pool your village is gathering become walls."
+msgstr "Vea cómo el fondo que reúne su aldea se convierte en paredes."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, benefit 1"
+msgid "The hub campaign as a living page: gold ring, star lantern, needs shelf"
+msgstr "La campaña del hub como una página viva: anillo dorado, linterna de estrellas, estante de necesidades"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, benefit 2"
+msgid "A ledger of arrivals in the map's own voice, aggregates only"
+msgstr "Un libro de llegadas con la propia voz del mapa, solo totales"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, benefit 3"
+msgid "Every claim links to the hub page where the pledge itself happens"
+msgstr "Cada toma enlaza a la página del hub donde sucede el aporte"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, benefit 4"
+msgid "Partner funder cards carry the hub's own cached numbers"
+msgstr "Las tarjetas de financiadores aliados llevan las propias cifras guardadas del hub"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, benefit 5"
+msgid "Hub outages degrade to the last snapshot with its age named"
+msgstr "Si el hub se cae, se muestra la última fotografía con su antigüedad indicada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, for whom"
+msgid "Villages raising something real through the hub's crowdpool."
+msgstr "Aldeas que reúnen algo real con el fondo colectivo del hub."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, setup"
+msgid "Link at least one hub campaign by id or slug in the module config."
+msgstr "Enlace al menos una campaña del hub por id o slug en la configuración del módulo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module crowdpool, data"
+msgid "A cached copy of hub-public campaign data. Never member data."
+msgstr "Una copia guardada de los datos públicos de la campaña en el hub. Nunca datos de miembros."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, name"
+msgid "Tools Hub"
+msgstr "Centro de herramientas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, description"
+msgid "An audience-aware registry of the village's tools: one place to find the chat, the documents, the governance space, with a pinned card that deep-links to your Hypha DHO."
+msgstr "Un registro de las herramientas de la aldea que sabe quién lo mira: un solo lugar para encontrar el chat, los documentos, el espacio de gobernanza, con una tarjeta fija que enlaza directo a su DHO de Hypha."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, promise"
+msgid "One place to find every tool the village uses."
+msgstr "Un solo lugar para encontrar cada herramienta que usa la aldea."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, benefit 1"
+msgid "An audience-aware registry: guests, members and roles each see their own view"
+msgstr "Un registro que sabe quién lo mira: invitados, miembros y roles ven cada uno lo suyo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, benefit 2"
+msgid "A pinned card deep-links your Hypha DHO"
+msgstr "Una tarjeta fija enlaza directo a su DHO de Hypha"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, benefit 3"
+msgid "Link checking says when a tool went dark"
+msgstr "La revisión de enlaces avisa cuando una herramienta dejó de responder"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, benefit 4"
+msgid "Click counts show what is actually used"
+msgstr "Los conteos de clics muestran lo que de verdad se usa"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, for whom"
+msgid "Villages whose tools live in eleven tabs somebody has to remember."
+msgstr "Aldeas cuyas herramientas viven en once pestañas que alguien tiene que recordar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, setup"
+msgid "Add your first tools, or start from the examples."
+msgstr "Agregue sus primeras herramientas, o empiece con los ejemplos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module tools, data"
+msgid "Tool links and click counts. Little here is personal."
+msgstr "Enlaces a herramientas y conteos de clics. Poco aquí es personal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, name"
+msgid "Village Calendar"
+msgstr "Calendario de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, description"
+msgid "The village's calendar: gatherings with a time, a place, a capacity and an RSVP. Other surfaces read it, so the map can light the building something is happening in."
+msgstr "El calendario de la aldea: encuentros con hora, lugar, cupo y confirmación de asistencia. Otras partes lo leen, así el mapa puede iluminar el edificio donde algo está pasando."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, promise"
+msgid "The village's one calendar: twelve months and thirteen moons, with equal weight."
+msgstr "El único calendario de la aldea: doce meses y trece lunas, con el mismo peso."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, benefit 1"
+msgid "Gatherings with a time, a place, a capacity and an RSVP"
+msgstr "Encuentros con hora, lugar, cupo y confirmación de asistencia"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, benefit 2"
+msgid "Village time: the lunar clock and the year wheel beside the civic date"
+msgstr "El tiempo de la aldea: el reloj lunar y la rueda del año junto a la fecha civil"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, benefit 3"
+msgid "Subscribe from any calendar app with one address"
+msgstr "Suscríbase desde cualquier aplicación de calendario con una sola dirección"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, benefit 4"
+msgid "Other surfaces read it, so the map lights the building something is in"
+msgstr "Otras partes lo leen, así el mapa ilumina el edificio donde algo sucede"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, for whom"
+msgid "Villages that live by more than one clock."
+msgstr "Aldeas que viven con más de un reloj."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, setup"
+msgid "Say which hemisphere the village is in, so the seasons turn the right way round, then post the first gathering when it is time."
+msgstr "Diga en qué hemisferio está la aldea, para que las estaciones giren en el sentido correcto, y luego publique el primer encuentro cuando llegue el momento."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module events, data"
+msgid "Events and RSVPs, tied to named members."
+msgstr "Eventos y confirmaciones, ligados a miembros con nombre."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, name"
+msgid "Introductions"
+msgstr "Presentaciones"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, description"
+msgid "Members say in plain words what they seek, confirm offers the village already knows about them, and receive a few good introductions a week. A match is a proposal with its reasoning attached; both people say yes separately before one conversation opens."
+msgstr "Los miembros dicen con palabras sencillas lo que buscan, confirman las ofertas que la aldea ya conoce de ellos, y reciben unas pocas buenas presentaciones por semana. Una coincidencia es una propuesta con sus razones adjuntas; ambas personas dicen que sí por separado antes de que se abra una conversación."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, promise"
+msgid "A few good introductions a week, and both people say yes first."
+msgstr "Unas pocas buenas presentaciones por semana, y ambas personas dicen que sí primero."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, benefit 1"
+msgid "Say what you seek in your own words, with a privacy tier you choose"
+msgstr "Diga lo que busca con sus propias palabras, con el nivel de privacidad que usted elija"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, benefit 2"
+msgid "Offers are suggested from what the village already knows, and only you confirm them"
+msgstr "Las ofertas se sugieren a partir de lo que la aldea ya sabe, y solo usted las confirma"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, benefit 3"
+msgid "Every match shows its reasons, and you can correct any sentence about you"
+msgstr "Cada coincidencia muestra sus razones, y usted puede corregir cualquier frase sobre usted"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, benefit 4"
+msgid "A mutual yes opens one Messages thread; nothing is accepted for anyone"
+msgstr "Un sí mutuo abre un hilo de Mensajes; nada se acepta por nadie"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, for whom"
+msgid "Villages where the right two people have not met yet."
+msgstr "Aldeas donde las dos personas indicadas todavía no se han conocido."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, setup"
+msgid "Nothing to set up. It works from the first intent someone posts."
+msgstr "Nada que configurar. Funciona desde la primera intención que alguien publica."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module introductions, data"
+msgid "What members seek and offer, in their own words, plus who was introduced to whom."
+msgstr "Lo que los miembros buscan y ofrecen, con sus propias palabras, y quién fue presentado a quién."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, name"
+msgid "Journal"
+msgstr "Diario"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, description"
+msgid "A journal for each member: morning and evening practices, a weekly pulse, a debrief after calls and an open page, with a guide that asks one question at a time and reflects back what it heard. Inside the village an entry is its author's alone; it is shared with organisational memory under code-names unless the member keeps it private. The village reads the pulse as numbers, and members who say yes can receive unsigned feedback in a weekly batch."
+msgstr "Un diario para cada miembro: prácticas de mañana y de noche, un pulso semanal, una reflexión después de las llamadas y una página libre, con una guía que hace una pregunta a la vez y devuelve lo que escuchó. Dentro de la aldea, una entrada es solo de quien la escribe; se comparte con la memoria organizacional bajo seudónimos salvo que el miembro la mantenga privada. La aldea lee el pulso como números, y los miembros que dicen que sí pueden recibir retroalimentación sin firma en un lote semanal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, promise"
+msgid "A practice for each member, and what a village learns from it."
+msgstr "Una práctica para cada miembro, y lo que una aldea aprende de ella."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, benefit 1"
+msgid "Morning and evening practices, light or deep, plus a debrief after calls and an open page"
+msgstr "Prácticas de mañana y de noche, ligeras o profundas, más una reflexión después de las llamadas y una página libre"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, benefit 2"
+msgid "A weekly pulse: five numbers, the tensions in each role, the work between roles, and missed opportunities"
+msgstr "Un pulso semanal: cinco números, las tensiones en cada rol, el trabajo entre roles y las oportunidades perdidas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, benefit 3"
+msgid "A guide that asks one question at a time and checks it heard you right"
+msgstr "Una guía que hace una pregunta a la vez y verifica que le entendió bien"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, benefit 4"
+msgid "Entries shared with organisational memory under code-names, unless a member keeps one private"
+msgstr "Entradas compartidas con la memoria organizacional bajo seudónimos, salvo que un miembro mantenga una privada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, benefit 5"
+msgid "Feedback that arrives unsigned, in a weekly batch, only to people who asked for it"
+msgstr "Retroalimentación que llega sin firma, en un lote semanal, solo a quienes la pidieron"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, for whom"
+msgid "Teams that want to notice how people are really doing before it becomes a crisis."
+msgstr "Equipos que quieren notar cómo están de verdad las personas antes de que se vuelva una crisis."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, setup"
+msgid "Nothing to set up. The pulse shows from the first answer, and the village can raise that floor."
+msgstr "Nada que configurar. El pulso se muestra desde la primera respuesta, y la aldea puede subir ese mínimo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module journal, data"
+msgid "Each member's own entries, readable by nobody else in the village, admins included, and shared with organisational memory under code-names unless marked private; pulse numbers; and feedback between members who opted in."
+msgstr "Las propias entradas de cada miembro, que nadie más en la aldea puede leer, incluidas las personas administradoras, y que se comparten con la memoria organizacional bajo seudónimos salvo que se marquen privadas; los números del pulso; y la retroalimentación entre miembros que aceptaron."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, name"
+msgid "Gene Keys"
+msgstr "Gene Keys"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, description"
+msgid "Each member can find their Gene Keys lines and Human Design type from their birth details, read on their own device so the details never leave it. The lines show as a seal on their portrait unless they hide them, a circle sees which of the six lines it holds, and the village guide can shape suggestions to how a member works best when they say yes."
+msgstr "Cada miembro puede encontrar sus líneas de Gene Keys y su tipo de Diseño Humano a partir de sus datos de nacimiento, leídos en su propio dispositivo para que esos datos nunca salgan de él. Las líneas se muestran como un sello en su retrato salvo que las oculte, un círculo ve cuáles de las seis líneas tiene, y la guía de la aldea puede ajustar sus sugerencias a cómo trabaja mejor un miembro cuando este dice que sí."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, promise"
+msgid "Each member's lines and how they work best, so roles and teams fit the people in them."
+msgstr "Las líneas de cada miembro y cómo trabaja mejor, para que roles y equipos encajen con las personas que los ocupan."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, benefit 1"
+msgid "Gene Keys lines and Human Design type, read from a member's birth details on their own device"
+msgstr "Líneas de Gene Keys y tipo de Diseño Humano, leídos de los datos de nacimiento de un miembro en su propio dispositivo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, benefit 2"
+msgid "A seal on the portrait, two words and two numbers, which a member can hide at any time"
+msgstr "Un sello en el retrato, dos palabras y dos números, que un miembro puede ocultar en cualquier momento"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, benefit 3"
+msgid "A circle sees which of the six lines it holds, and a gap becomes an invitation to hold one"
+msgstr "Un círculo ve cuáles de las seis líneas tiene, y un vacío se vuelve una invitación a sostener una"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, benefit 4"
+msgid "Role suggestions say why they fit, and the village guide shapes its offers to each member's type when they say yes"
+msgstr "Las sugerencias de roles dicen por qué encajan, y la guía de la aldea ajusta sus ofertas al tipo de cada miembro cuando este dice que sí"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, for whom"
+msgid "Villages forming teams and roles that want to understand the people who fill them."
+msgstr "Aldeas que forman equipos y roles y quieren entender a las personas que los ocupan."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, setup"
+msgid "Nothing to set up. Members find their lines from their character page."
+msgstr "Nada que configurar. Los miembros encuentran sus líneas desde su página de personaje."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module gene-keys, data"
+msgid "Each member's saved result: their lines, keys and type. Birth details are never sent to the village or kept."
+msgstr "El resultado guardado de cada miembro: sus líneas, llaves y tipo. Los datos de nacimiento nunca se envían a la aldea ni se guardan."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, name"
+msgid "Rites"
+msgstr "Ritos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, description"
+msgid "The steps of passage a village names, stamped on each member's card when another member witnesses them. A spoken rite is held as a ceremony: the newcomer speaks each line from their phone, draws their own mark, and witnesses confirm on theirs, in person or on a live call. One rite can admit a member. Each newcomer is paired with a member who walks beside them, an invitation can carry its maker's own line, each member can print a lasting code that asks to join through them, and a public welcome shows the village's own words and counts with no place attached."
+msgstr "Los pasos de paso que una aldea nombra, sellados en la tarjeta de cada miembro cuando otro miembro los atestigua. Un rito hablado se vive como una ceremonia: la persona que llega dice cada línea desde su teléfono, dibuja su propia marca, y los testigos confirman desde los suyos, en persona o en una llamada en vivo. Un rito puede admitir a un miembro. Cada persona que llega camina junto a un miembro que la acompaña, una invitación puede llevar la propia línea de quien la hace, cada miembro puede imprimir un código duradero que pide unirse a través de esa persona, y una bienvenida pública muestra las propias palabras y cifras de la aldea sin ningún lugar indicado."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, promise"
+msgid "A newcomer goes from an invitation to a member through rites the village names, each witnessed by somebody already in."
+msgstr "Una persona pasa de una invitación a ser miembro por ritos que la aldea nombra, cada uno atestiguado por alguien que ya está adentro."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, benefit 1"
+msgid "The village names its rites, and each member's card shows them waiting, then stamped when witnessed"
+msgstr "La aldea nombra sus ritos, y la tarjeta de cada miembro los muestra pendientes, y luego sellados cuando se atestiguan"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, benefit 2"
+msgid "A spoken rite is a ceremony: one line at a time on the newcomer's phone, witnesses confirming on theirs, in person or on a call"
+msgstr "Un rito hablado es una ceremonia: una línea a la vez en el teléfono de quien llega, con los testigos confirmando en los suyos, en persona o en una llamada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, benefit 3"
+msgid "A drawn mark joins a ring of every member's mark, where no name comes first"
+msgstr "Una marca dibujada se une a un anillo con la marca de cada miembro, donde ningún nombre va primero"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, benefit 4"
+msgid "Every newcomer walks with a member beside them, the one who invited them first"
+msgstr "Cada persona que llega camina con un miembro a su lado, quien la invitó primero"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, benefit 5"
+msgid "Invitations carry their maker's own line, and a printed code asks to join through the member who handed it over"
+msgstr "Las invitaciones llevan la propia línea de quien las hace, y un código impreso pide unirse a través del miembro que lo entregó"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, for whom"
+msgid "Villages where joining is a passage people do together, and somebody already in vouches for each newcomer."
+msgstr "Aldeas donde unirse es un paso que se vive en conjunto, y alguien que ya está adentro responde por cada persona que llega."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, setup"
+msgid "Paste the village's rites document in the module card: the rites, their lines, the words and the look."
+msgstr "Pegue el documento de ritos de la aldea en la tarjeta del módulo: los ritos, sus líneas, las palabras y el aspecto."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module rites, data"
+msgid "Which rites each member holds and who witnessed them, each member's drawn mark, who walks beside whom, a newcomer's own line, and names left at a door that is not open yet."
+msgstr "Qué ritos tiene cada miembro y quién los atestiguó, la marca dibujada de cada miembro, quién acompaña a quién, la propia línea de quien llega, y los nombres dejados en una puerta que todavía no está abierta."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, name"
+msgid "Protocols"
+msgstr "Protocolos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, description"
+msgid "Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen."
+msgstr "Listas de verificación con nombre que la aldea recorre en conjunto: abrir, cerrar, cualquier cosa que se hace con el mismo cuidado cada vez. Cualquier miembro empieza un recorrido y marca los pasos, un paso puede reservarse para un rol, y un recorrido con un paso obligatorio pendiente no se puede dar por terminado. Cada recorrido registra quién marcó qué y cuándo. Funciona en un teléfono sin señal y ofrece agregarse a la pantalla de inicio."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, promise"
+msgid "The village's careful routines as checklists anyone can walk, even with no signal."
+msgstr "Las rutinas cuidadosas de la aldea como listas que cualquiera puede recorrer, incluso sin señal."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, benefit 1"
+msgid "Named checklists, each step required or optional, and a step can be kept for one role"
+msgstr "Listas con nombre, cada paso obligatorio u opcional, y un paso puede reservarse para un rol"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, benefit 2"
+msgid "Any member starts a run and ticks the steps; a run with a required step open cannot be completed"
+msgstr "Cualquier miembro empieza un recorrido y marca los pasos; un recorrido con un paso obligatorio pendiente no se puede terminar"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, benefit 3"
+msgid "Every run records who ticked what and when, and several people can tick the same run"
+msgstr "Cada recorrido registra quién marcó qué y cuándo, y varias personas pueden marcar el mismo recorrido"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, benefit 4"
+msgid "Works on a phone with no signal, and sends what was ticked when the signal returns"
+msgstr "Funciona en un teléfono sin señal, y envía lo marcado cuando vuelve la señal"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, benefit 5"
+msgid "Offers to add itself to a phone's home screen"
+msgstr "Ofrece agregarse a la pantalla de inicio del teléfono"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, for whom"
+msgid "Villages with routines that must be done the same careful way every time."
+msgstr "Aldeas con rutinas que deben hacerse con el mismo cuidado cada vez."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, setup"
+msgid "Write the checklists on this card, or import a file of them, then switch the module on for members."
+msgstr "Escriba las listas en esta tarjeta, o importe un archivo con ellas, y luego encienda el módulo para los miembros."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module protocols, data"
+msgid "The checklists, and for each run who ticked each step and when."
+msgstr "Las listas, y por cada recorrido quién marcó cada paso y cuándo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, name"
+msgid "Funding rounds"
+msgstr "Rondas de fondos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, description"
+msgid "The village chooses together which quests the season funds, within a pot. Members share rough ideas, shape them into quests, tick the ones they would fund, and the count shows both what Voice chose and what one member, one vote chose. Funded quests hold their share of the pot and are paid when the work is done."
+msgstr "La aldea elige en conjunto qué misiones financia la temporada, dentro de un fondo. Los miembros comparten ideas en bruto, las convierten en misiones, marcan las que financiarían, y el conteo muestra tanto lo que eligió la Voz como lo que eligió un miembro, un voto. Las misiones financiadas reservan su parte del fondo y se pagan cuando el trabajo está hecho."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, promise"
+msgid "Choose together which quests the season funds, within a pot."
+msgstr "Elegir en conjunto qué misiones financia la temporada, dentro de un fondo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, benefit 1"
+msgid "Members share rough ideas, by name or without one, and each idea opens its own forum thread"
+msgstr "Los miembros comparten ideas en bruto, con su nombre o sin él, y cada idea abre su propio hilo en el foro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, benefit 2"
+msgid "Ideas are shaped into quests with a price, then members tick every one they would fund"
+msgstr "Las ideas se convierten en misiones con un precio, y luego los miembros marcan cada una que financiarían"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, benefit 3"
+msgid "The count shows what Voice chose beside what one member, one vote chose, and says where they differ"
+msgstr "El conteo muestra lo que eligió la Voz junto a lo que eligió un miembro, un voto, y dice dónde difieren"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, benefit 4"
+msgid "Funded quests hold their share of the pot and are paid when the work is done, so the pot is never spent twice"
+msgstr "Las misiones financiadas reservan su parte del fondo y se pagan cuando el trabajo está hecho, así el fondo nunca se gasta dos veces"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, for whom"
+msgid "Villages with a budget to share that want the people doing the work to choose where it goes."
+msgstr "Aldeas con un presupuesto para compartir que quieren que quienes hacen el trabajo elijan a dónde va."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, setup"
+msgid "Seat someone who holds the pots, by default the Treasury role, then open a pot and a round."
+msgstr "Asigne a alguien que sostenga los fondos, por defecto el rol de Tesorería, y luego abra un fondo y una ronda."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module funding-rounds, data"
+msgid "Each idea and who shared it, kept private when they share it without a name; members' ticks; and a record of each act for later rewards."
+msgstr "Cada idea y quién la compartió, que se mantiene privado cuando se comparte sin nombre; las marcas de los miembros; y un registro de cada acto para reconocimientos futuros."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, name"
+msgid "Living places"
+msgstr "Lugares vivos"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, description"
+msgid "Every place on the land as a living invitation: what it is, which stage it has reached from idea to built, which permits it waits on, the roles that care for it, and how to step forward as its steward."
+msgstr "Cada lugar de la tierra como una invitación viva: qué es, a qué etapa ha llegado desde la idea hasta lo construido, qué permisos espera, los roles que lo cuidan, y cómo dar un paso al frente como su custodio."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, promise"
+msgid "Every place on the land as a living invitation, from the first idea to a building that needs care."
+msgstr "Cada lugar de la tierra como una invitación viva, desde la primera idea hasta un edificio que necesita cuidado."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, benefit 1"
+msgid "One list of every place, by zone, with the stage it has reached and how ready it is"
+msgstr "Una sola lista de cada lugar, por zona, con la etapa a la que ha llegado y qué tan listo está"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, benefit 2"
+msgid "Each place shows the roles that care for it, its open quests and what it waits on"
+msgstr "Cada lugar muestra los roles que lo cuidan, sus misiones abiertas y lo que espera"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, benefit 3"
+msgid "A place reaches building only with its permits complete and a steward in place, or by the village's highest vote"
+msgstr "Un lugar llega a construcción solo con sus permisos completos y un custodio asignado, o por el voto más alto de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, benefit 4"
+msgid "Anyone can step forward to steward a place, with what they would build, with whom and by when"
+msgstr "Cualquiera puede dar un paso al frente para custodiar un lugar, diciendo qué construiría, con quién y para cuándo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, for whom"
+msgid "Villages building on their land that want every place to say what it needs and who it is waiting for."
+msgstr "Aldeas que construyen en su tierra y quieren que cada lugar diga lo que necesita y a quién está esperando."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, setup"
+msgid "Seat someone who keeps the registry, then load the village's places from its seed."
+msgstr "Asigne a alguien que lleve el registro, y luego cargue los lugares de la aldea desde su semilla."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module places, data"
+msgid "Each place's name, zone, stage, permits and words. Who holds its roles is read from the org chart, never copied."
+msgstr "El nombre, la zona, la etapa, los permisos y las palabras de cada lugar. Quién sostiene sus roles se lee del organigrama, nunca se copia."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, name"
+msgid "Hidden map"
+msgstr "Mapa oculto"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, description"
+msgid "A members-only map of the places your members log, with photos, growth over time and return visits. Each member sees only their own pins until enough of them are vouched for by others, and then the whole map opens."
+msgstr "Un mapa solo para miembros de los lugares que registran sus miembros, con fotos, el crecimiento en el tiempo y visitas de regreso. Cada miembro ve solo sus propios puntos hasta que otros respalden suficientes, y entonces se abre el mapa completo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, promise"
+msgid "A members-only map of the places your members log, which opens to each member once others have vouched for their own."
+msgstr "Un mapa solo para miembros de los lugares que registran sus miembros, que se abre a cada miembro cuando otros han respaldado los suyos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, benefit 1"
+msgid "Log a place from a phone, with its location read from the photo and then removed from it"
+msgstr "Registre un lugar desde un teléfono, con su ubicación leída de la foto y luego borrada de ella"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, benefit 2"
+msgid "Each member sees only their own pins until enough of them are vouched for, then the whole map opens"
+msgstr "Cada miembro ve solo sus propios puntos hasta que suficientes estén respaldados, y entonces se abre el mapa completo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, benefit 3"
+msgid "Return visits add photos, so a planting is seen growing from seed to tree"
+msgstr "Las visitas de regreso suman fotos, así se ve una siembra crecer de semilla a árbol"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, benefit 4"
+msgid "No names beside pins, two people for any copy of the map, and a record of who looked"
+msgstr "Ningún nombre junto a los puntos, dos personas para cualquier copia del mapa, y un registro de quién lo miró"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, for whom"
+msgid "Villages whose members tend places spread far apart and want a record of them that stays inside the membership."
+msgstr "Aldeas cuyos miembros cuidan lugares muy separados y quieren un registro de ellos que se quede dentro de la membresía."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, setup"
+msgid "Seat someone who keeps the map, so the first members can be vouched for, and choose what it is drawn on."
+msgstr "Asigne a alguien que cuide el mapa, para que los primeros miembros puedan ser respaldados, y elija sobre qué se dibuja."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hidden-map, data"
+msgid "Each pin's place, kind, words and photos, tied to the member who logged it and never shown with their name. Photos are stripped of every hidden detail. A record of who read the map, with no places in it."
+msgstr "El lugar, el tipo, las palabras y las fotos de cada punto, ligados al miembro que lo registró y nunca mostrados con su nombre. A las fotos se les quita todo detalle oculto. Un registro de quién leyó el mapa, sin lugares en él."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, name"
+msgid "Season places"
+msgstr "Lugares de temporada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, description"
+msgid "Every season starts fresh: members apply, and each circle's picker chooses that season's team from everyone who applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order, and each gathering can take circles up to a cap its host sets."
+msgstr "Cada temporada empieza de nuevo: los miembros aplican, y quien elige en cada círculo escoge el equipo de esa temporada entre todos los que aplicaron. Los círculos proponen participar, una temporada puede tener un número fijo de lugares con una lista de espera en orden, y cada encuentro puede recibir círculos hasta un tope que fija quien lo organiza."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, promise"
+msgid "Circles take part season by season, with places that fill in order and a waitlist that tells people when a place opens."
+msgstr "Los círculos participan temporada por temporada, con lugares que se llenan en orden y una lista de espera que avisa cuando se abre un lugar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, benefit 1"
+msgid "Each circle proposes to take part in a season, and the power that places people in roles, or the village, says yes"
+msgstr "Cada círculo propone participar en una temporada, y el poder que asigna personas a roles, o la aldea, dice que sí"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, benefit 2"
+msgid "After a set number of seasons a circle takes part without asking"
+msgstr "Después de un número fijo de temporadas un círculo participa sin pedirlo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, benefit 3"
+msgid "A season can hold a set number of places, and a full season keeps a waitlist in order"
+msgstr "Una temporada puede tener un número fijo de lugares, y una temporada llena lleva una lista de espera en orden"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, benefit 4"
+msgid "Each gathering can take circles up to a cap its own host sets"
+msgstr "Cada encuentro puede recibir círculos hasta un tope que fija quien lo organiza"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, for whom"
+msgid "Villages whose circles come and go with the seasons, such as a travelling gathering or a rotating team."
+msgstr "Aldeas cuyos círculos van y vienen con las temporadas, como un encuentro itinerante o un equipo que rota."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, setup"
+msgid "Date the village's seasons, then set the places in a season and the seasons a circle serves before it needs no proposal."
+msgstr "Ponga fechas a las temporadas de la aldea, y luego defina los lugares por temporada y las temporadas que sirve un círculo antes de no necesitar propuesta."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module season-places, data"
+msgid "Which circle took part in which season, the words its people wrote with the proposal, and the order of the waitlist."
+msgstr "Qué círculo participó en qué temporada, las palabras que escribió su gente con la propuesta, y el orden de la lista de espera."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, name"
+msgid "Session Card"
+msgstr "Carta de sesión"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, description"
+msgid "An optional card anyone in a live session can pull at the start, as often as they like. It reads today's sky in both Human Design and Western astrology, weaves in the Gene Keys of the people present who said yes, names each person, and offers the room a few ways to hold the session. Each person's own line stays private until they share it, and the cards are deleted when the session closes."
+msgstr "Una carta opcional que cualquiera en una sesión en vivo puede sacar al inicio, cuantas veces quiera. Lee el cielo de hoy en Diseño Humano y en astrología occidental, entreteje las Gene Keys de las personas presentes que dijeron que sí, nombra a cada persona, y ofrece a la sala unas cuantas maneras de sostener la sesión. La propia línea de cada persona se mantiene privada hasta que la comparta, y las cartas se borran cuando cierra la sesión."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, promise"
+msgid "A card to pull as a session opens, so the room starts present with each other and the day."
+msgstr "Una carta para sacar al abrir una sesión, así la sala empieza presente entre sí y con el día."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, benefit 1"
+msgid "Anyone in the room can pull a card, and pull again whenever they like"
+msgstr "Cualquiera en la sala puede sacar una carta, y volver a sacar cuando quiera"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, benefit 2"
+msgid "Today's sky in Human Design and in Western astrology, each line labelled with its system"
+msgstr "El cielo de hoy en Diseño Humano y en astrología occidental, cada línea marcada con su sistema"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, benefit 3"
+msgid "A collective reading that names everyone present, and a line for each person who said yes"
+msgstr "Una lectura colectiva que nombra a todas las personas presentes, y una línea para cada persona que dijo que sí"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, benefit 4"
+msgid "Ways to hold the session today: a longer arrival round, sleeping on a big proposal, a tension given its own session"
+msgstr "Maneras de sostener la sesión hoy: una ronda de llegada más larga, dormir sobre una propuesta grande, una tensión con su propia sesión"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, for whom"
+msgid "Circles that like to open a working call by tuning in to each other first."
+msgstr "Círculos a los que les gusta abrir una llamada de trabajo sintonizándose primero entre sí."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, setup"
+msgid "Nothing to set up. Turn on Live Sessions and Gene Keys first; the card appears at drop in."
+msgstr "Nada que configurar. Encienda primero Sesiones en vivo y Gene Keys; la carta aparece al llegar."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module session-card, data"
+msgid "While a session is open: its cards and the line for each person read, private until they share it. A card is deleted within an hour of its session closing or being discarded, at once when someone it read withdraws, and on erasure. With an assistant key, facts without names go to the assistant provider (Anthropic by default)."
+msgstr "Mientras una sesión está abierta: sus cartas y la línea de cada persona leída, privada hasta que la comparta. Una carta se borra a más tardar una hora después de que su sesión cierre o se descarte, de inmediato cuando alguien a quien leyó se retira, y al borrar sus datos. Con una llave de asistente, datos sin nombres van al proveedor del asistente (Anthropic por defecto)."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, name"
+msgid "End-of-Moon Review"
+msgstr "Revisión de fin de luna"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, description"
+msgid "Once a moon, each member who holds a role gathers what they delivered, checks it against their role cards and the season goals, does a role audit and sends a recap. When their role's adopted terms carry money they also send a draft invoice. One person approves the work and a different person approves the invoice, neither of them the member. Pay is recorded here and paid outside the platform."
+msgstr "Una vez por luna, cada miembro que sostiene un rol reúne lo que entregó, lo compara con sus tarjetas de rol y las metas de la temporada, hace una revisión de su rol y envía un resumen. Cuando los términos adoptados de su rol incluyen dinero, también envía un borrador de factura. Una persona aprueba el trabajo y otra distinta aprueba la factura, ninguna de ellas el miembro. El pago se registra aquí y se paga fuera de la plataforma."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, promise"
+msgid "Once a moon, each member says what they delivered for their roles, and the village approves it and records the pay."
+msgstr "Una vez por luna, cada miembro dice lo que entregó por sus roles, y la aldea lo aprueba y registra el pago."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, benefit 1"
+msgid "Tasks from the profile and the rooms come in on their own, and Sera drafts the rest"
+msgstr "Las tareas del perfil y de las salas llegan solas, y Sera redacta el resto"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, benefit 2"
+msgid "Each item is read against the role card and the season goals, so unseen work shows up"
+msgstr "Cada punto se lee contra la tarjeta del rol y las metas de la temporada, así sale a la luz el trabajo que no se veía"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, benefit 3"
+msgid "A role audit sends each role that should grow, shrink or exist to its circle"
+msgstr "Una revisión de roles envía a su círculo cada rol que debería crecer, achicarse o existir"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, benefit 4"
+msgid "Two different people approve, neither of them the member, and amounts stay with the member and Finance"
+msgstr "Aprueban dos personas distintas, ninguna de ellas el miembro, y los montos quedan solo con el miembro y Finanzas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, for whom"
+msgid "Villages that pay their core team for deliverables and want one honest record of the moon's work."
+msgstr "Aldeas que pagan a su equipo central por entregables y quieren un registro honesto del trabajo de la luna."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, setup"
+msgid "Seat someone in a power group that approves the work, choose who holds the cash power, and fill in the payers document before the first invoice."
+msgstr "Asigne a alguien en un grupo de poder que apruebe el trabajo, elija quién sostiene el poder de caja, y llene el documento de pagadores antes de la primera factura."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module moon-review, data"
+msgid "Each member's recap and items; their pay route, legal name and address; their invoices and every approval. Amounts, routes and invoices are read by the member and the cash power holders only. Erasure clears the words and keeps amounts, dates, numbers and events."
+msgstr "El resumen y los puntos de cada miembro; su vía de pago, nombre legal y dirección; sus facturas y cada aprobación. Los montos, las vías y las facturas los leen solo el miembro y quienes sostienen el poder de caja. Al borrar sus datos se borran las palabras y se conservan montos, fechas, números y eventos."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, name"
+msgid "Live Sessions"
+msgstr "Sesiones en vivo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, description"
+msgid "A circle holds a working call together in real time: drop in with a shared breath, say how each person is arriving, build the agenda and consent to it, give every item its own page and clock, and leave with every action held by a person or a role. The record stays with the people who were there and the village's admins, and arrival words are erased when the session closes."
+msgstr "Un círculo sostiene una llamada de trabajo en conjunto y en tiempo real: llegar con una respiración compartida, decir cómo está llegando cada persona, armar la agenda y dar consentimiento, darle a cada punto su propia página y su reloj, y salir con cada acción en manos de una persona o un rol. El registro queda con las personas que estuvieron ahí y con quienes administran la aldea, y las palabras de llegada se borran cuando cierra la sesión."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, promise"
+msgid "A circle's working call, held together live, from the first breath to the last action claimed."
+msgstr "La llamada de trabajo de un círculo, sostenida en vivo, desde la primera respiración hasta la última acción asumida."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, benefit 1"
+msgid "Six stages the facilitator moves the room through: drop in, arrival, agenda, items, actions and close"
+msgstr "Seis etapas por las que quien facilita lleva a la sala: llegar, ronda de llegada, agenda, puntos, acciones y cierre"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, benefit 2"
+msgid "An agenda built together, every item with an aim and its own clock, consented to before the work starts"
+msgstr "Una agenda armada en conjunto, cada punto con un propósito y su propio reloj, con consentimiento antes de empezar el trabajo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, benefit 3"
+msgid "Proposals decided in a consent round the whole room can see"
+msgstr "Propuestas decididas en una ronda de consentimiento que toda la sala puede ver"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, benefit 4"
+msgid "Every action leaves with a person or a role on it, and what nobody can hold waits in the backlog for next time"
+msgstr "Cada acción sale con una persona o un rol a cargo, y lo que nadie puede sostener espera en la lista pendiente para la próxima vez"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, benefit 5"
+msgid "Feedback on the facilitation reaches the facilitator unsigned, and ideas for the tool land in your feedback inbox"
+msgstr "La retroalimentación sobre la facilitación le llega sin firma a quien facilita, y las ideas para la herramienta llegan a su bandeja de comentarios"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, for whom"
+msgid "Circles that meet often and want each call to end with clear decisions and actions somebody holds."
+msgstr "Círculos que se reúnen seguido y quieren que cada llamada termine con decisiones claras y acciones que alguien sostiene."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, setup"
+msgid "Nothing to set up. Write your village's place line and choose a usual length when you want your own words and rhythm."
+msgstr "Nada que configurar. Escriba la línea de lugar de su aldea y elija una duración habitual cuando quiera sus propias palabras y su ritmo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module sessions, data"
+msgid "Who took part, the agenda, notes, decisions and who holds each action. Arrival words and numbers are erased at close, and the record is read by the people who were there and your admins."
+msgstr "Quién participó, la agenda, las notas, las decisiones y quién sostiene cada acción. Las palabras y los números de llegada se borran al cierre, y el registro lo leen las personas que estuvieron ahí y quienes administran."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, name"
+msgid "Governance"
+msgstr "Gobernanza"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, description"
+msgid "The village decides on-site: staged proposals go to weighted ballots with frozen electorates, votes stay changeable until a human closes with a stated outcome, and passed mechanics changes apply through the one amendment ledger. Off keeps the shipped Hypha loop exactly as it is."
+msgstr "La aldea decide en el lugar: las propuestas por etapas pasan a votaciones ponderadas con padrones congelados, los votos se pueden cambiar hasta que una persona cierra con un resultado declarado, y los cambios de mecánica aprobados se aplican por el único libro de enmiendas. Apagado mantiene el ciclo de Hypha tal como viene."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, promise"
+msgid "The village decides on-site: weighted ballots, frozen the day they open."
+msgstr "La aldea decide en el lugar: votaciones ponderadas, congeladas el día en que se abren."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, benefit 1"
+msgid "Staged proposals go to a real vote once support gathers"
+msgstr "Las propuestas por etapas pasan a una votación real cuando reúnen apoyo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, benefit 2"
+msgid "Thresholds, electorate and weights freeze when a ballot opens"
+msgstr "Los umbrales, el padrón y los pesos se congelan cuando se abre una votación"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, benefit 3"
+msgid "Votes stay changeable until a human closes with a stated outcome"
+msgstr "Los votos se pueden cambiar hasta que una persona cierra con un resultado declarado"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, benefit 4"
+msgid "Passed mechanics changes apply through the one amendment ledger"
+msgstr "Los cambios de mecánica aprobados se aplican por el único libro de enmiendas"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, benefit 5"
+msgid "Voting weight and every change to it sit on a member-readable record"
+msgstr "El peso del voto y cada cambio en él quedan en un registro que los miembros pueden leer"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, for whom"
+msgid "Villages ready to conduct their own decisions where the sensing already happens."
+msgstr "Aldeas listas para llevar sus propias decisiones donde ya sucede la escucha."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, setup"
+msgid "Nothing to set up. Pick a weight mode and the dials when you want more than the defaults."
+msgstr "Nada que configurar. Elija un modo de peso y los diales cuando quiera más que lo de serie."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module governance, data"
+msgid "Ballots, who voted what and with what weight, objections and their rulings."
+msgstr "Votaciones, quién votó qué y con qué peso, objeciones y sus resoluciones."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, name"
+msgid "Governance Canvas"
+msgstr "Lienzo de gobernanza"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, description"
+msgid "The village reads how it governs itself, block by block, on the twelve blocks of the Governance Canvas: a reading per block, the season map, five frames to walk each block in, a Decision Matrix, one public line per block, a printable workbook and a companion that answers from the village's own record. While it is on, every block must be on record before the village is asked to start its Game."
+msgstr "La aldea lee cómo se gobierna a sí misma, bloque por bloque, en los doce bloques del Lienzo de gobernanza: una lectura por bloque, el mapa de la temporada, cinco marcos para recorrer cada bloque, una Matriz de decisiones, una línea pública por bloque, un cuaderno de trabajo para imprimir y un acompañante que responde desde el propio registro de la aldea. Mientras está encendido, cada bloque debe estar en el registro antes de pedirle a la aldea que empiece su Juego."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, promise"
+msgid "How the village governs itself, read block by block on the Governance Canvas."
+msgstr "Cómo se gobierna la aldea, leído bloque por bloque en el Lienzo de gobernanza."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, benefit 1"
+msgid "A reading for each of the twelve blocks: a level and one sentence, with who recorded it and when"
+msgstr "Una lectura para cada uno de los doce bloques: un nivel y una frase, con quién la registró y cuándo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, benefit 2"
+msgid "Five frames for each block: sense it, see what the village already runs, learn, say the village's answer, adopt a change"
+msgstr "Cinco marcos para cada bloque: sentirlo, ver lo que la aldea ya hace, aprender, decir la respuesta de la aldea, adoptar un cambio"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, benefit 3"
+msgid "Anybody in the village suggests a change, and whoever holds the power adopts it"
+msgstr "Cualquiera en la aldea sugiere un cambio, y quien sostiene el poder lo adopta"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, benefit 4"
+msgid "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
+msgstr "Una Matriz de decisiones de quién aprueba, a quién se consulta y a quién se informa, y una línea pública por bloque"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, benefit 5"
+msgid "A printable workbook of the canvas, and a guide that answers from the village's own record first"
+msgstr "Un cuaderno de trabajo del lienzo para imprimir, y una guía que responde primero desde el propio registro de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, for whom"
+msgid "Villages that want to see where their governance stands before they ask members to start."
+msgstr "Aldeas que quieren ver dónde está su gobernanza antes de pedir a los miembros que empiecen."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, setup"
+msgid "Nothing to set up. Record the first reading when you are ready; while it is on, every block needs one before the Game starts."
+msgstr "Nada que configurar. Registre la primera lectura cuando esté listo; mientras esté encendido, cada bloque necesita una antes de que empiece el Juego."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module canvas, data"
+msgid "Each block's readings with who recorded them, suggestions with their author, the Decision Matrix rows the village wrote, and the public lines."
+msgstr "Las lecturas de cada bloque con quién las registró, las sugerencias con su autor, las filas de la Matriz de decisiones que escribió la aldea, y las líneas públicas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, name"
+msgid "Conflict Evolution"
+msgstr "Evolución del conflicto"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, description"
+msgid "A conflict agreement the village writes and changes by vote: where a conflict goes, who takes it and who covers, how soon a member hears back, a contact outside the village, and a private ask to the ombuds. While it is on, the village names a working conflict door before it is asked to start its Game."
+msgstr "Un acuerdo de conflictos que la aldea escribe y cambia por votación: a dónde va un conflicto, quién lo recibe y quién cubre, en cuánto tiempo recibe respuesta un miembro, un contacto fuera de la aldea, y una petición privada a la defensoría. Mientras está encendido, la aldea nombra una puerta de conflictos que funcione antes de pedirle que empiece su Juego."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, promise"
+msgid "Somewhere for a conflict to go, written by the village and changed by its vote."
+msgstr "Un lugar a donde puede ir un conflicto, escrito por la aldea y cambiado por su voto."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, benefit 1"
+msgid "A conflict agreement: the steps, who takes a conflict and who covers when they cannot"
+msgstr "Un acuerdo de conflictos: los pasos, quién recibe un conflicto y quién cubre cuando esa persona no puede"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, benefit 2"
+msgid "A reply time in hours the village chose, and a contact outside the village"
+msgstr "Un tiempo de respuesta en horas que eligió la aldea, y un contacto fuera de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, benefit 3"
+msgid "A private ask to the outside contact that carries no words and sends nothing"
+msgstr "Una petición privada al contacto externo que no lleva palabras y no envía nada"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, benefit 4"
+msgid "The founders write it before the Game starts, and after that a change is a vote"
+msgstr "Quienes fundaron lo escriben antes de que empiece el Juego, y después de eso un cambio es una votación"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, for whom"
+msgid "Villages that want a conflict door every member can find before they need it."
+msgstr "Aldeas que quieren una puerta para los conflictos que todo miembro pueda encontrar antes de necesitarla."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, setup"
+msgid "Nothing to set up first. The agreement starts from your exit policy's restorative steps; while it is on, the launch checklist asks for a working door."
+msgstr "Nada que configurar primero. El acuerdo parte de los pasos restaurativos de su política de salida; mientras esté encendido, la lista de lanzamiento pide una puerta que funcione."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module conflict-evolution, data"
+msgid "The agreement, which names the people in its care and cover roles and an outside contact, and a record of who asked the outside contact to talk, and when."
+msgstr "El acuerdo, que nombra a las personas en sus roles de cuidado y cobertura y a un contacto externo, y un registro de quién pidió hablar con el contacto externo, y cuándo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, name"
+msgid "Hypha Bridge"
+msgstr "Puente Hypha"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, description"
+msgid "Your DAO on Hypha, read from Base and shown here: the contracts this village actually holds, total supply and treasury balance as the chain reports them, and governance outcomes that find their way back to the proposal they came from. Read only, always. Needs a Base endpoint somebody pays for, and it says which of the two listener paths this village is on."
+msgstr "Su DAO en Hypha, leída desde Base y mostrada aquí: los contratos que esta aldea realmente tiene, el suministro total y el saldo de la tesorería tal como los reporta la cadena, y los resultados de gobernanza que vuelven a la propuesta de la que salieron. Solo lectura, siempre. Necesita un punto de acceso a Base que alguien pague, y dice en cuál de los dos caminos de escucha está esta aldea."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, promise"
+msgid "Your DAO's real numbers from Base, on your own pages."
+msgstr "Las cifras reales de su DAO desde Base, en sus propias páginas."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, benefit 1"
+msgid "Find your token contracts from your founder account, then confirm each one yourself"
+msgstr "Encuentre sus contratos de fichas desde su cuenta fundadora, y luego confirme cada uno usted mismo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, benefit 2"
+msgid "The name on screen is the one the contract answers to, read from the chain and dated"
+msgstr "El nombre en pantalla es el que responde el contrato, leído de la cadena y con fecha"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, benefit 3"
+msgid "Total supply and treasury balance as facts about the village, not one member's holding"
+msgstr "Suministro total y saldo de la tesorería como hechos de la aldea, nunca lo que tiene un miembro"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, benefit 4"
+msgid "A failed chain read shows the last true figure with when it was true, and never a zero"
+msgstr "Una lectura fallida de la cadena muestra la última cifra verdadera con la fecha en que lo fue, y nunca un cero"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, benefit 5"
+msgid "Outcomes that match no proposal are listed for a steward instead of dropped"
+msgstr "Los resultados que no coinciden con ninguna propuesta se listan para una persona custodia en vez de descartarse"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, for whom"
+msgid "Villages whose equity and governance already live on a Hypha DAO on Base."
+msgstr "Aldeas cuya participación y gobernanza ya viven en una DAO de Hypha en Base."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, setup"
+msgid "Set your DHO address and founder Base account, look your tokens up, and confirm each contract. Reading the chain needs a Base endpoint somebody pays for."
+msgstr "Defina la dirección de su DHO y su cuenta fundadora en Base, busque sus fichas, y confirme cada contrato. Leer la cadena necesita un punto de acceso a Base que alguien pague."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module hypha, data"
+msgid "Contract addresses, what those contracts call themselves, village-level supply and treasury figures, and a log of outcomes that arrived."
+msgstr "Direcciones de contratos, cómo se llaman esos contratos a sí mismos, cifras de suministro y tesorería de la aldea, y un registro de los resultados que llegaron."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, name"
+msgid "Village Comms"
+msgstr "Comunicaciones de la aldea"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, description"
+msgid "The village's email in one place: reminders for the gatherings people said yes to, a few emails that walk somebody along the path they chose, guest RSVPs, a live vote on a session time, and letters to the people who agreed to get them. Every email is recorded before it goes, and anybody can stop any kind of email with one click."
+msgstr "El correo de la aldea en un solo lugar: recordatorios de los encuentros a los que las personas dijeron que sí, unos pocos correos que acompañan a alguien por el camino que eligió, confirmaciones de invitados, una votación en vivo sobre la hora de una sesión, y cartas para las personas que aceptaron recibirlas. Cada correo se registra antes de salir, y cualquiera puede detener cualquier tipo de correo con un clic."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, promise"
+msgid "The village's email in one place: every email recorded, and every person able to say stop."
+msgstr "El correo de la aldea en un solo lugar: cada correo registrado, y cada persona capaz de decir basta."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, benefit 1"
+msgid "Reminders and changes for the gatherings people said yes to"
+msgstr "Recordatorios y cambios de los encuentros a los que las personas dijeron que sí"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, benefit 2"
+msgid "A few emails that walk somebody along the path they chose"
+msgstr "Unos pocos correos que acompañan a alguien por el camino que eligió"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, benefit 3"
+msgid "Guests with no account can say they are coming, and confirm by email"
+msgstr "Los invitados sin cuenta pueden decir que vienen, y confirmarlo por correo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, benefit 4"
+msgid "A live vote on a session time, where the time that is winning is the time"
+msgstr "Una votación en vivo sobre la hora de una sesión, donde la hora que va ganando es la hora"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, benefit 5"
+msgid "Letters to the people who agreed to get them, with a record of each one"
+msgstr "Cartas para las personas que aceptaron recibirlas, con un registro de cada una"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, for whom"
+msgid "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
+msgstr "Aldeas que quieren mantenerse en contacto por correo con todas las personas que conocen, desde la propia plataforma de la aldea."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, setup"
+msgid "Add your email provider key, your sending domain, a sender, delivery reports and a postal address in Comms Settings, then send yourself a test."
+msgstr "Agregue la llave de su proveedor de correo, su dominio de envío, un remitente, los reportes de entrega y una dirección postal en Ajustes de comunicaciones, y luego envíese una prueba."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module comms, data"
+msgid "Email addresses, what each person agreed to receive, and a record of every email sent to them."
+msgstr "Direcciones de correo, lo que cada persona aceptó recibir, y un registro de cada correo que se le envió."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, name"
+msgid "Organisational Memory"
+msgstr "Memoria organizacional"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, description"
+msgid "An outside service reads your meetings and records, and suggests changes to your circles and roles. Every suggestion is reviewed before anything changes."
+msgstr "Un servicio externo lee sus reuniones y registros, y sugiere cambios a sus círculos y roles. Cada sugerencia se revisa antes de que algo cambie."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, promise"
+msgid "An outside reading of how your village is organised, offered back as suggestions you decide on."
+msgstr "Una lectura externa de cómo está organizada su aldea, devuelta como sugerencias que usted decide."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, benefit 1"
+msgid "A service that keeps your organisational record proposes circles and roles"
+msgstr "Un servicio que guarda su registro organizacional propone círculos y roles"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, benefit 2"
+msgid "Every suggestion goes to your review queue, so nothing changes until somebody agrees"
+msgstr "Cada sugerencia va a su cola de revisión, así nada cambia hasta que alguien esté de acuerdo"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, benefit 3"
+msgid "Roles carry what the service knows about them, so a member can see what a role involves before putting their hand up"
+msgstr "Los roles llevan lo que el servicio sabe de ellos, así un miembro puede ver lo que implica un rol antes de ofrecerse"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, benefit 4"
+msgid "Circles and roles it holds are stored beside yours, in its own words"
+msgstr "Los círculos y roles que guarda se almacenan junto a los suyos, con sus propias palabras"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, benefit 5"
+msgid "Tensions and risks it is tracking reach your stewards"
+msgstr "Las tensiones y los riesgos que sigue llegan a sus personas custodias"
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, for whom"
+msgid "Villages that already keep their organisational memory with an outside service."
+msgstr "Aldeas que ya guardan su memoria organizacional con un servicio externo."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, setup"
+msgid "You hold your own connection: a subdomain at the service and your own token."
+msgstr "Usted maneja su propia conexión: un subdominio en el servicio y su propio token."
+
+# needs-native-review: module library, 26 Nov 2026
+#: client/src/components/modules/moduleWords.ts
+msgctxt "module saberra, data"
+msgid "Circles, roles and their state, under the service's own field names. No member is named."
+msgstr "Círculos, roles y su estado, con los nombres de campo del propio servicio. No se nombra a ningún miembro."
