@@ -9,15 +9,17 @@
  * agenda becomes the circle's, so it wears the same frame the item page and
  * the role card wear.
  */
-import { SESSION_COPY, STAGE_DEFS, agendaFit } from "@shared/sessions";
+import { STAGE_DEFS, agendaFit } from "@shared/sessions";
 import AgendaList, { AddItem } from "./AgendaList";
 import ConsentRound from "./ConsentRound";
 import FromLastTime from "./FromLastTime";
 import RoomBrought from "./RoomBrought";
 import { CARD, H3, HERO_CONTENT, HERO_INNER, HERO_SHELL, HINT, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 export default function StageAgenda({ view, now, actions }: StageProps) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const fit = agendaFit(view.items, view.durationMin, view.state.startedAt, now);
   return (
@@ -37,7 +39,7 @@ export default function StageAgenda({ view, now, actions }: StageProps) {
         </div>
         {fit.over && (
           <p role="status" className="mt-2 rounded-lg border border-notice/50 bg-muted px-3 py-2 text-sm text-foreground">
-            {SESSION_COPY.agendaOver}
+            {SC.agendaOver}
           </p>
         )}
         <div className="mt-4">
@@ -57,7 +59,7 @@ export default function StageAgenda({ view, now, actions }: StageProps) {
               actions={actions}
               now={now}
               target="agenda"
-              ask={SESSION_COPY.agendaConsentAsk}
+              ask={SC.agendaConsentAsk}
               readOnly={!view.me.joined || view.status !== "open"}
             />
           </div>

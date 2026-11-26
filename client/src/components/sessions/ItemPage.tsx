@@ -37,7 +37,6 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import {
   AIM_DEFS,
-  SESSION_COPY,
   SESSION_LIMITS,
   SESSION_REFUSALS,
   cleanLine,
@@ -72,6 +71,7 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /**
  * A box to add one thing to the item: the proposal, a line on what we
@@ -137,6 +137,7 @@ function AddBox({
 }
 
 export default function ItemPage({ view, now, actions, item }: StageProps & { item: SessionItem }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const live = view.state.activeItemId === item.id;
@@ -214,14 +215,14 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
 
           {live && box.phase === "over" && (
             <div role="status" className="rounded-xl border border-destructive/50 bg-muted px-4 py-3">
-              <p className="text-sm font-medium text-foreground">{SESSION_COPY.overChoices}</p>
+              <p className="text-sm font-medium text-foreground">{SC.overChoices}</p>
               {leads(view) && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void choose("extend")}>
                     {RC.extendFive}
                   </button>
                   <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void choose("park")}>
-                    {SESSION_COPY.park}
+                    {SC.park}
                   </button>
                   <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void choose("wrap")}>
                     {nextItem ? RC.wrapNext : RC.wrapUp}
@@ -234,10 +235,10 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
           {(on.has("notes") || on.has("ideas")) && (
             <div className={ITEM_STREAMS}>
               {on.has("notes") && (
-                <EntryStream view={view} actions={actions} kind="note" itemId={item.id} title={RC.notes} addLabel={SESSION_COPY.addNote} />
+                <EntryStream view={view} actions={actions} kind="note" itemId={item.id} title={RC.notes} addLabel={SC.addNote} />
               )}
               {on.has("ideas") && (
-                <EntryStream view={view} actions={actions} kind="idea" itemId={item.id} title={RC.ideas} addLabel={SESSION_COPY.addIdea} />
+                <EntryStream view={view} actions={actions} kind="idea" itemId={item.id} title={RC.ideas} addLabel={SC.addIdea} />
               )}
             </div>
           )}
@@ -249,7 +250,7 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               kind="win"
               itemId={item.id}
               title={RC.wins}
-              addLabel={SESSION_COPY.addWin}
+              addLabel={SC.addWin}
               help={RC.winsHelp}
             />
           )}
@@ -265,7 +266,7 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               {canAdd && (proposals.length === 0 || item.aim === "decide") && (
                 <AddBox
                   draftKey={`${view.id}:${item.id}:decision`}
-                  label={SESSION_COPY.addDecision}
+                  label={SC.addDecision}
                   button={RC.add}
                   minRows={3}
                   onSend={async (text) => (await actions.addEntry({ kind: "decision", text, itemId: item.id })).ok}
@@ -296,7 +297,7 @@ export default function ItemPage({ view, now, actions, item }: StageProps & { it
               {canAdd && (
                 <AddBox
                   draftKey={`${view.id}:${item.id}:seed`}
-                  label={SESSION_COPY.itemSeedPrompt}
+                  label={SC.itemSeedPrompt}
                   button={RC.seedSave}
                   singleLine
                   minRows={2}

@@ -26,7 +26,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import { SESSION_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, type SessionStage, type SessionView } from "@shared/sessions";
+import { SESSION_LIMITS, SESSION_REFUSALS, cleanLine, type SessionStage, type SessionView } from "@shared/sessions";
 import Figure from "@/components/sheet/Figure";
 import EditableText from "./EditableText";
 import PeopleHere from "./PeopleHere";
@@ -34,6 +34,7 @@ import RoomMoon from "./RoomMoon";
 import { BTN_PRIMARY, BTN_QUIET, EYEBROW, dayLabel, mayRenameSession, nameOf } from "./roomUi";
 import type { RoomActions } from "./useSessionRoom";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /** The session's name: the room's largest words. */
 const SESSION_TITLE = "font-display text-4xl font-normal leading-[1.08] lining-nums text-balance break-words text-foreground sm:text-6xl";
@@ -50,6 +51,7 @@ export default function RoomHeader({
   /** The stage on this screen; Drop in shows the people itself. */
   shown?: SessionStage;
 }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const open = view.status === "open";
@@ -135,7 +137,7 @@ export default function RoomHeader({
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-notice/55 bg-card px-5 py-4">
           <p className="text-sm text-foreground">{RC.joinLede}</p>
           <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void join()}>
-            {SESSION_COPY.joinButton}
+            {SC.joinButton}
           </button>
         </div>
       )}

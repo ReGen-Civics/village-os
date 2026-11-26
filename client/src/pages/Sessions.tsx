@@ -61,7 +61,6 @@ import type { PickerCircle } from "@shared/circlePicker";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import {
-  SESSION_COPY,
   SESSION_LIMITS,
   SESSION_LIST_COPY,
   SESSION_REFUSALS,
@@ -70,7 +69,7 @@ import {
   type SessionListRow,
 } from "@shared/sessions";
 import { LIBRARY_COPY, LIBRARY_REFUSALS, offeredFor, waitsForMeeting, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
-import { RHYTHM_COPY, type ComingUpPayload, type ComingUpRow } from "@shared/sessionRhythm";
+import { type ComingUpPayload, type ComingUpRow } from "@shared/sessionRhythm";
 import { TEMPLATES_API, type SessionTemplate, type TemplatesPayload } from "@shared/sessionTemplates";
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
@@ -91,6 +90,8 @@ import { STAGE_LEDE, STAGE_TITLE } from "@/components/sessions/roomUi";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { useModules } from "@/modules/ModuleProvider";
+import { useSessionWords } from "@/components/sessions/sessionWords";
+import { useRhythmWords } from "@/components/sessions/rhythmWords";
 
 /** How often the list asks whether a room opened or closed, while the tab is visible. */
 const LIST_POLL_MS = 30_000;
@@ -177,6 +178,8 @@ async function refusal(res: Response, fallback: string): Promise<string> {
 }
 
 export default function Sessions() {
+  const RY = useRhythmWords();
+  const SC = useSessionWords();
   const { user } = useAuth();
   const modules = useModules();
   const [, navigate] = useLocation();
@@ -347,7 +350,7 @@ export default function Sessions() {
    */
   const getReady = (row: ComingUpRow) => {
     const day = new Date(row.next.at).toLocaleDateString(undefined, { day: "numeric", month: "long", timeZone: load.kind === "ready" ? load.data.comingUp.zone : undefined });
-    setTitle(RHYTHM_COPY.roomTitle(row.circleName, day));
+    setTitle(RY.roomTitle(row.circleName, day));
     setCircleId(row.circleId);
     setDuration(String(row.durationMin));
     setDurationTouched(true);
@@ -447,8 +450,8 @@ export default function Sessions() {
       <div className={WORLD} data-world="night">
       <section className="py-8 md:py-12">
         <div className="container max-w-6xl">
-          <h1 className={STAGE_TITLE}>{SESSION_COPY.listTitle}</h1>
-          <p className={STAGE_LEDE}>{SESSION_COPY.listLede}</p>
+          <h1 className={STAGE_TITLE}>{SC.listTitle}</h1>
+          <p className={STAGE_LEDE}>{SC.listLede}</p>
         </div>
       </section>
 
@@ -517,7 +520,7 @@ export default function Sessions() {
             className={`${LIST_UI.card} md:sticky md:top-24 md:max-h-[calc(100dvh-7rem)] md:overflow-y-auto`}
           >
             <h2 id="sessions-start-heading" className={LIST_UI.heading}>
-              {SESSION_COPY.startTitle}
+              {SC.startTitle}
             </h2>
             <form ref={startForm} className="mt-4 space-y-4" onSubmit={(e) => void onStart(e)} noValidate>
               <MeetingTypePicker templates={templates.templates} value={templateId} onPick={pickTemplate} />
@@ -531,7 +534,7 @@ export default function Sessions() {
                     value={title}
                     onValue={setTitle}
                     onSubmit={() => startForm.current?.requestSubmit()}
-                    label={SESSION_COPY.titlePlaceholder}
+                    label={SC.titlePlaceholder}
                     max={SESSION_LIMITS.title}
                     minRows={1}
                     singleLine
@@ -540,7 +543,7 @@ export default function Sessions() {
               </div>
               <div>
                 <label htmlFor="sessions-start-circle" className={LIST_UI.label}>
-                  {SESSION_COPY.circleLabel}
+                  {SC.circleLabel}
                 </label>
                 <select
                   id="sessions-start-circle"
@@ -548,7 +551,7 @@ export default function Sessions() {
                   value={circleId}
                   onChange={(e) => setCircleId(e.target.value)}
                 >
-                  <option value="">{SESSION_COPY.noCircle}</option>
+                  <option value="">{SC.noCircle}</option>
                   {circles.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -558,7 +561,7 @@ export default function Sessions() {
               </div>
               <div>
                 <label htmlFor="sessions-start-duration" className={LIST_UI.label}>
-                  {SESSION_COPY.durationLabel}
+                  {SC.durationLabel}
                 </label>
                 <input
                   id="sessions-start-duration"
@@ -591,7 +594,7 @@ export default function Sessions() {
                 </p>
               )}
               <button type="submit" className={`w-full ${LIST_UI.primary}`} disabled={starting}>
-                {starting ? SESSION_LIST_COPY.opening : picked.length ? LIBRARY_COPY.startWith(picked.length) : SESSION_COPY.startButton}
+                {starting ? SESSION_LIST_COPY.opening : picked.length ? LIBRARY_COPY.startWith(picked.length) : SC.startButton}
               </button>
             </form>
           </section>

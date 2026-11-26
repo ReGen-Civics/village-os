@@ -34,7 +34,6 @@ import { useEffect, useRef, useState } from "react";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import { ON_BEHALF_COPY } from "@shared/sessionOnBehalf";
 import {
-  SESSION_COPY,
   SESSION_LIMITS,
   cleanDueOn,
   cleanLine,
@@ -59,6 +58,7 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useSessionWords } from "@/components/sessions/sessionWords";
 
 /** A date field as wide as its date, so it sits beside the holder and never takes the row. */
 const DATE_INPUT = INPUT.replace("w-full", "w-auto");
@@ -69,6 +69,7 @@ export function ActionRow({
   entry,
   highlight = false,
 }: Omit<StageProps, "now"> & { entry: SessionEntry; highlight?: boolean }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const [seatSaving, setSeatSaving] = useState<string | null>(null);
@@ -138,7 +139,7 @@ export function ActionRow({
         <div className={`${UNDER_BOX} mt-2`}>
           {may.claim && !parked && (
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void run(() => actions.patchEntry(entry.id, { claim: true }))}>
-              {SESSION_COPY.claim}
+              {SC.claim}
             </button>
           )}
           {handable.length > 0 && (
@@ -165,12 +166,12 @@ export function ActionRow({
           )}
           {may.release && !parked && (
             <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void run(() => actions.patchEntry(entry.id, { release: true }))}>
-              {SESSION_COPY.release}
+              {SC.release}
             </button>
           )}
           {may.seat && !parked && seats.length > 0 && (
             <label htmlFor={`${fieldBase}-seat`} className="block min-w-0">
-              <span className={`${LABEL} text-xs`}>{SESSION_COPY.nameSeat}</span>
+              <span className={`${LABEL} text-xs`}>{SC.nameSeat}</span>
               <select
                 id={`${fieldBase}-seat`}
                 className={`${SELECT_CAPPED} mt-1`}
@@ -213,7 +214,7 @@ export function ActionRow({
               disabled={busy}
               onClick={() => void run(() => actions.patchEntry(entry.id, { status: parked ? "open" : "parked" }))}
             >
-              {parked ? RC.bringBack : SESSION_COPY.park}
+              {parked ? RC.bringBack : SC.park}
             </button>
           )}
         </div>
@@ -231,6 +232,7 @@ export function ActionRow({
 
 /** Catch an action as it comes: what, and if the room knows it, which seat and by when. */
 export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & { itemId: number | null }) {
+  const SC = useSessionWords();
   const RC = useRoomWords();
   const draftBase = `${view.id}:${itemId ?? "loose"}:action`;
   const textDraft = useDraft(`${draftBase}:text`);
@@ -270,7 +272,7 @@ export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & {
       {/* Row one: the sentence, on the whole width of the card. */}
       <div data-action-text="">
         <label htmlFor={`${base}-text`} className={`${LABEL} mb-1.5`}>
-          {SESSION_COPY.addAction}
+          {SC.addAction}
         </label>
         <GrowingText
           id={`${base}-text`}
