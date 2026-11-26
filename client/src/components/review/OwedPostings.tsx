@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameMap } from "@/hooks/useTokenNameFor";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { mayAsk } from "@/lib/myCapabilities";
 
 /** One row of `GET /api/admin/quest-claims/owed`. */
 export interface OwedPostingView {
@@ -98,6 +99,13 @@ export function useOwedPostings(headers: () => Record<string, string>) {
   const [refused, setRefused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const load = useCallback(async () => {
+    // Same door as the consent queue (quest.consent): not theirs, so not asked.
+    if (!(await mayAsk("quest.consent"))) {
+      setRefused(true);
+      setError(null);
+      setRows(null);
+      return;
+    }
     try {
       const r = await fetch("/api/admin/quest-claims/owed", { headers: headers() });
       if (r.status === 401 || r.status === 403 || r.status === 409) {

@@ -69,7 +69,7 @@ let posts: Array<Record<string, any>> = [];
 let served: () => unknown;
 
 beforeEach(() => {
-  config = { project: { name: "Fernhollow", commitmentName: "Love Letter" }, currency: { name: "Seeds" } };
+  config = { project: { name: "Fernhollow", commitmentName: "Love Letter" }, currency: { name: "Seeds" }, brochurePages: true };
   storedPage = null;
   legal = { membership: { entityLabel: "Fernhollow Commons" } };
   posts = [];
@@ -197,6 +197,14 @@ describe("the page with no words of its own", () => {
     for (const label of ["Investor / Capital Contributor", "Village Steward / Co-Creator", "Resident / Future Villager", "Prosperity Creator / Business Builder"]) {
       expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
     }
+  });
+
+  it("keeps the standards' name and draws no link while the village serves no story pages", async () => {
+    config = { project: { name: "Fernhollow", commitmentName: "Love Letter" }, currency: { name: "Seeds" }, brochurePages: false };
+    render(<LoveLetter />);
+    await screen.findByText(starter("letter", "greeting"));
+    expect(screen.queryByRole("link", { name: "Good Neighbor Criteria" })).toBeNull();
+    expect(screen.getByText("Good Neighbor Criteria")).toBeInTheDocument();
   });
 
   it("says the village's own name for the letter where it said Love Letter", async () => {

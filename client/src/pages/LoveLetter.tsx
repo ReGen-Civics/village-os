@@ -21,7 +21,7 @@ import { LETTER_PATH_IDS, LOVE_LETTER_PAGE } from "@shared/pageContent/loveLette
 import { resolvePage } from "@shared/pageContent/resolve";
 import { withPathNames } from "@shared/pageContent/pathNames";
 import { servedPathsFrom } from "@/hooks/useVillagePaths";
-import { useStoryPageOffAlone } from "@/lib/brochure";
+import { useStoryPageShown } from "@/lib/brochure";
 import { Celebration, scrollBehavior, useReducedMotion } from "@/components/natural";
 import Leaf from "@/components/journey/Leaf";
 import { useAppWords } from "@/hooks/useAppWords";
@@ -264,7 +264,9 @@ export default function LoveLetter() {
   // early rather than inventing a recipient.
   const { contactEmail } = useVillageLinks();
   // A link to a story page switched off on its own in Admin, Pages is left out.
-  const pageOff = useStoryPageOffAlone();
+  // The letter is a member's door, drawn even while the story pages are off (shared/brochure.ts, MEMBER_DOORS),
+  // so it asks whether the village serves a page at all, not only whether that page was switched off alone.
+  const pageShown = useStoryPageShown();
   const emailFallback = contactEmail ? ` or email ${contactEmail}` : "";
 
   // The thank-you replaces a long form, so it opens at its own top; on a phone it used to open at the footer.
@@ -677,9 +679,9 @@ export default function LoveLetter() {
                   />
                   <span className="text-sm text-muted-foreground">
                     I have read and agree to the{" "}
-                    {/* With the Good Neighbor page switched off on its own,
-                        the standards keep their name here and lose the link. */}
-                    {pageOff("/good-neighbor") ? (
+                    {/* With the Good Neighbor page not served (the story pages off,
+                        or that page off on its own), the standards keep their name here and lose the link. */}
+                    {!pageShown("/good-neighbor") ? (
                       <span className="text-foreground">{words.fields.standardsLabel}</span>
                     ) : (
                       <a href="/good-neighbor" className="text-notice underline" target="_blank">
