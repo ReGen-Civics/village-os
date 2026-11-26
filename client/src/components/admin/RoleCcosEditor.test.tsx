@@ -4,8 +4,9 @@
  * inputs, the parser's sentence under a bad one, and Save goes through a
  * one-change `update_seat` draft carrying only the words that changed.
  */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { resetUnsavedForTests } from "@/lib/unsavedChanges";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -28,6 +29,18 @@ function setup() {
   return { calls, onSaved };
 }
 
+afterEach(() => {
+  cleanup();
+  resetUnsavedForTests();
+});
+
+/** The page's one save bar (components/SaveBar.tsx): the editor has no Save of its own. */
+const barSave = async () => {
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  });
+};
+
 describe("RoleCcosEditor", () => {
   it("says how many of the seven are written, and opens to seven labelled inputs", () => {
     setup();
@@ -45,12 +58,22 @@ describe("RoleCcosEditor", () => {
       target: { value: Array.from({ length: 9 }, (_, i) => `Task ${i + 1}`).join("\n") },
     });
     expect(screen.getByRole("alert").textContent).toBe(W.tooMany);
-    expect(screen.getByRole("button", { name: CCOS_EDITOR_WORDS.save })).toBeDisabled();
   });
 
-  it("holds the save until something changed", () => {
+  it("refuses on the bar while a field is wrong, and sends nothing", async () => {
+    const { calls } = setup();
+    fireEvent.change(screen.getByLabelText(W.responsibilities), {
+      target: { value: Array.from({ length: 9 }, (_, i) => `Task ${i + 1}`).join("\n") },
+    });
+    await barSave();
+    expect(await screen.findByText(new RegExp(CCOS_EDITOR_WORDS.fix))).toBeTruthy();
+    expect(calls).toEqual([]);
+  });
+
+  it("raises no save bar until something changed", () => {
     setup();
-    expect(screen.getByRole("button", { name: CCOS_EDITOR_WORDS.save })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+    expect(screen.queryByRole("button", { name: CCOS_EDITOR_WORDS.save })).toBeNull();
   });
 
   it("saves only the changed words through a one-change update_seat draft, then publishes it", async () => {
@@ -58,7 +81,7 @@ describe("RoleCcosEditor", () => {
     fireEvent.change(screen.getByLabelText(W.responsibilities), { target: { value: "Run onboarding calls\n\nAnswer applications" } });
     fireEvent.change(screen.getByLabelText(W.timeCommitment), { target: { value: "Part of a full-time season" } });
     fireEvent.change(screen.getByLabelText(W.existsWhile), { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: CCOS_EDITOR_WORDS.save }));
+    await barSave();
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(calls.map((c) => c.path)).toEqual([
       "/admin/org/drafts",

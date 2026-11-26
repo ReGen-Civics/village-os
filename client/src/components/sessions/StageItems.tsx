@@ -11,9 +11,10 @@
  */
 import { useState } from "react";
 import { Play } from "lucide-react";
-import { AIM_DEFS, ROOM_COPY, SESSION_COPY, STAGE_DEFS, type SessionItem } from "@shared/sessions";
+import { ROOM_COPY, SESSION_COPY, STAGE_DEFS, type SessionItem } from "@shared/sessions";
 import ItemPage from "./ItemPage";
 import { BTN_QUIET, CARD, HINT, PANEL, agendaOrder, type StageProps } from "./roomUi";
+import { AIM_DEFS } from "./libraryCopy";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 

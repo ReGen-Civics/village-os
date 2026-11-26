@@ -27,7 +27,9 @@
  * never makes the textarea lag.
  */
 import { useDeferredValue, useMemo } from "react";
-import { SHEET_WORDS, notReadLine, type SheetContext } from "@shared/roleSheet";
+import type { SheetContext } from "@shared/roleSheet";
+import type { RoleSheetWords } from "@shared/roleSheetWords";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { fromProposedSeat } from "@shared/roleSheetInputs";
 import { readProposedSeats, type NormalisedSeat } from "@shared/proposedSeats";
 import { parseSeatSettings } from "@shared/seatSettings";
@@ -42,7 +44,7 @@ type Reading = { ok: false } | { ok: true; seats: NormalisedSeat[]; notRead: str
  * takes the draft's title and rationale from it, so those two keys are read
  * and never reported.
  */
-function readProposalText(text: string): Reading {
+function readProposalText(text: string, w: RoleSheetWords): Reading {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
@@ -51,7 +53,7 @@ function readProposalText(text: string): Reading {
   }
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ok: false };
   const read = readProposedSeats(raw as Record<string, unknown>, [], { readsTitle: true, readsRationale: true });
-  return { ok: true, seats: read.seats, notRead: notReadLine(read.ignored) };
+  return { ok: true, seats: read.seats, notRead: w.notReadLine(read.ignored) };
 }
 
 /** No clock and no class names: a proposal has neither a term nor a tag yet. */
@@ -80,8 +82,10 @@ export default function ProposedSeatPreview({
   /** A member-written offer for the seat, and the offer it would replace. */
   terms?: { offer: unknown; base?: unknown } | null;
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const deferred = useDeferredValue(text);
-  const reading = useMemo(() => readProposalText(deferred), [deferred]);
+  const reading = useMemo(() => readProposalText(deferred, RS), [deferred, RS]);
 
   if (!reading.ok) {
     return <p className="mt-3 text-xs text-muted-foreground">{SHEET_WORDS.proposalInvalid}</p>;
@@ -92,7 +96,7 @@ export default function ProposedSeatPreview({
       {reading.seats.map((seat, i) => (
         <SeatTradingCard
           key={i}
-          input={fromProposedSeat(seat)}
+          input={fromProposedSeat(seat, { unnamed: SHEET_WORDS.seatNeedsAName })}
           ctx={{ ...PROPOSAL_CTX, now: new Date() }}
           faces="stacked"
           settings={terms && terms.offer !== undefined ? termsDrawer(terms) : undefined}

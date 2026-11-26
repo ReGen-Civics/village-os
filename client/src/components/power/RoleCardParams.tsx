@@ -13,6 +13,7 @@ import { roleCardView } from "@shared/roleCardView";
 import { lazy, Suspense } from "react";
 import type { CardBooking } from "@shared/cardBooking";
 import { payTbdLine } from "@/lib/payTbdWords";
+import { cardViewWords } from "@/components/power/cardViewWords";
 
 // How each conversation is booked (the lead, 19 Nov 2026), loaded only by a card whose conversations carry a booking.
 const CardBookingLink = lazy(() => import("./CardBookingLink"));
@@ -31,7 +32,7 @@ export function roleCardParamsShown(seat: Record<string, any>): boolean {
 
 export default function RoleCardParams({ seat }: { seat: Record<string, any> }) {
   const { t, i18n } = useLingui();
-  const view = roleCardView(seat);
+  const view = roleCardView(seat, undefined, cardViewWords(i18n));
   const readsTerms = "termsOffer" in seat;
   const showPay = !!view.pay && !readsTerms;
   if (!roleCardParamsShown(seat)) return null;

@@ -31,6 +31,7 @@
  * the links.
  */
 import { NOTIFICATION_GROUPS, PLAIN_WORDS, kindOf, wordsInAppOnly, type NotificationGroupId } from "@shared/notificationKinds";
+import type { StoredNoticeWords } from "@shared/noticeKeys";
 
 export interface FeedItem {
   id: string;
@@ -40,6 +41,8 @@ export interface FeedItem {
   link?: string | null;
   isRead: boolean;
   at: string;
+  /** The same words as a key and its values, for the reader's language (shared/noticeKeys.ts). */
+  words?: StoredNoticeWords | null;
 }
 
 export interface FeedRow {

@@ -40,6 +40,64 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.81 (2026-11-26)
+
+### What changed for your village
+
+- **More Spanish:** a role card's parameter rows, the module builder's steps, and the moon recap.
+- **A lighter download.** Words that already ship in English are no longer sent a second time.
+- **Fix:** the macaw in the corner button sits in the centre of its circle.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.80 still works.
+
+---
+
+## 1.3.80 (2026-11-26)
+
+### What changed for your village
+
+- **The menu and the village's own words in Spanish.** The whole menu, the footer and the account menu follow the reader's language. The village's path names, their lines and sentences, season and character names, and circle names and purposes can now carry Spanish translations the village accepts. A circle's Spanish name only reaches people who can already see that circle.
+- **More Spanish:** the circle card and the meeting agenda library.
+- **Notices in the reader's language.** A new notice can carry a stable label beside its English, so the bell can show it in Spanish; the first are the season plan reminders. Older notices keep their English. When a member's record is anonymised, the label is cleared with it.
+- **Sea chart**, an optional old-map look for light mode, as a village setting that is off by default.
+- **Fixes:** the meeting page no longer runs off a phone screen; the paid-role label wraps; the threads between cards on the roles page stay in the gaps once the page's font has loaded.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+One new optional column, `notifications.words`, added on the way up (migration 0435). Nothing is removed or changed, so going back to 1.3.79 still works.
+
+---
+
+## 1.3.79 (2026-11-26)
+
+### What changed for your village
+
+- **Much more of the site in Spanish.** The notification bell, the visitor pages, role cards, task boards, role proposals and decisions, onboarding, the module library, health measures, constitution laws, role term presets, the game rules page and the living map's labels now follow the reader's language. Spanish drafts are marked for a native speaker's review.
+- **One save bar across Admin.** Tokens, the org chart's role editors and Players/Members now wait for Save; changing someone's access no longer happens on a single tap.
+- **Admin's night look reads clearly**, and warning red is a shade deeper so it reads on grey and on its own tint.
+- **The entrance on iPhone.** "Come in" sits above the tab bar, and the name field stays below the header after it.
+- **Governance, groundwork.** The data behind the coming Governance page (what waits for your voice, your voice and rights), with nothing visible yet.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.78 still works.
+
+---
+
 ## 1.3.78 (2026-11-26)
 
 ### What changed for your village

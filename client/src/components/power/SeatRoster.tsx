@@ -24,7 +24,8 @@ import { useId, type ReactNode } from "react";
 import FramelessImg from "@/components/FramelessImg";
 import { ChevronRight, Hourglass, Plus, UserRound } from "lucide-react";
 import { Firefly } from "@/components/sacred/living";
-import { SHEET_WORDS, type Spot } from "@shared/roleSheet";
+import type { Spot } from "@shared/roleSheet";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { initialsFrom } from "./holderFace";
 import HolderGeneKeys from "@/components/geneKeys/HolderGeneKeys";
 
@@ -140,6 +141,8 @@ export default function SeatRoster({
   belowHeader?: ReactNode;
   onPickPerson?: (holderKey: string, name: string | null) => void;
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const headingId = useId();
   if (!spots.length && !rosterNote) return null;
   return (

@@ -33,7 +33,7 @@
 import { ARCHETYPE_KEYS } from "./archetypes";
 import { cssColourForCircle } from "./circleView";
 import { decidesByById, howChosenById } from "./power";
-import { COMMITMENT_LABELS, COMMITMENT_PHRASES, SHEET_WORDS, moreOpenLine, keptByLine, type CommitmentKey } from "./roleSheetWords";
+import { ROLE_SHEET_WORDS, SHEET_LINES, type CommitmentKey, type RoleSheetWords } from "./roleSheetWords";
 
 // The copy deck lives in its own file and is read from here, so a host imports
 // every word the card prints from one place.
@@ -49,13 +49,7 @@ export type SeatStateWord = (typeof SEAT_STATES)[number];
  * render an empty badge. "Ready to be re-chosen" is the succession model's
  * word for a term that reached its date: nothing was taken from anyone.
  */
-export const STATE_WORDS: Record<SeatStateWord, string> = {
-  open: "Open",
-  partial: "Partly held",
-  filled: "Held",
-  forming: "Forming",
-  expired: "Ready to be re-chosen",
-};
+export const STATE_WORDS: Record<SeatStateWord, string> = SHEET_LINES.state;
 
 export function isSeatState(v: unknown): v is SeatStateWord {
   return typeof v === "string" && (SEAT_STATES as readonly string[]).includes(v);
@@ -133,6 +127,8 @@ export interface SheetContext {
   season: { name: string | null; endsOn: string | null; daysLeft: number | null; timezone?: string | null } | null;
   /** The village's own class names from /api/archetypes; null = unread. */
   classNames: Record<string, string> | null;
+  /** The card's words in the reader's language (the client's translated copy); absent = the English original. */
+  words?: RoleSheetWords;
 }
 
 // ── The clock and the words about a term ────────────────────────────────────
@@ -222,9 +218,9 @@ function zonedParts(t: Date, timeZone: string): { y: number; m: number; d: numbe
 }
 
 /** "a", "a and b", "a, b and c". */
-export function joinList(items: string[]): string {
+export function joinList(items: string[], w: RoleSheetWords = ROLE_SHEET_WORDS): string {
   if (items.length <= 1) return items[0] ?? "";
-  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+  return w.lines.listOf(items.slice(0, -1).join(", "), items[items.length - 1]);
 }
 
 // ── The portrait ────────────────────────────────────────────────────────────
@@ -259,6 +255,7 @@ export function portraitFor(
   seat: { id: string; name: string },
   archetypes: Read<string[]>,
   classNames: Record<string, string> | null = null,
+  w: RoleSheetWords = ROLE_SHEET_WORDS,
 ): Portrait {
   const key = archetypes?.[0];
   if (key && ARCHETYPE_KEYS.includes(key)) {
@@ -271,9 +268,7 @@ export function portraitFor(
       kind: "class",
       key,
       src: `/images/avatars/${file}.webp`,
-      alt: className
-        ? `Stock art for ${className}, a class suggested for this role`
-        : "Stock art for a class suggested for this role",
+      alt: className ? w.lines.stockArtFor(className) : w.lines.stockArt,
     };
   }
   return { kind: "sigil", letter: (Array.from(seat.name.trim())[0] ?? "").toUpperCase() };
@@ -395,10 +390,6 @@ export interface SeatSheetView {
 
 const COMMITMENT_ORDER: CommitmentKey[] = ["aim", "domain", "accountabilities", "why", "term", "nextHolder", "decides"];
 
-const SR_WRITTEN = ", written down";
-const SR_VILLAGES = ", the village's way";
-const SR_AT_SEATING = ", set when someone takes the role";
-const SR_UNWRITTEN = ", still to be written down";
 
 /** A commitment's look, or "unread" when the payload does not carry it. */
 function commitmentLook(key: CommitmentKey, input: SeatInput): CommitmentLook | "unread" {
@@ -430,16 +421,17 @@ function commitmentLook(key: CommitmentKey, input: SeatInput): CommitmentLook | 
   }
 }
 
-function commitmentsFor(input: SeatInput): Commitment[] {
+function commitmentsFor(input: SeatInput, w: RoleSheetWords): Commitment[] {
   const out: Commitment[] = [];
+  const l = w.lines;
   for (const key of COMMITMENT_ORDER) {
     const look = commitmentLook(key, input);
     if (look === "unread") continue;
-    const label = COMMITMENT_LABELS[key];
-    if (look === "gilded") out.push({ key, label, look, srWords: SR_WRITTEN });
-    else if (look === "dashed") out.push({ key, label, look, srWords: SR_UNWRITTEN });
-    else if (key === "term") out.push({ key, label, look, suffix: "set at the start", srWords: SR_AT_SEATING });
-    else out.push({ key, label, look, suffix: "the village's", srWords: SR_VILLAGES });
+    const label = w.labels[key];
+    if (look === "gilded") out.push({ key, label, look, srWords: l.srWritten });
+    else if (look === "dashed") out.push({ key, label, look, srWords: l.srUnwritten });
+    else if (key === "term") out.push({ key, label, look, suffix: l.chipAtStart, srWords: l.srAtSeating });
+    else out.push({ key, label, look, suffix: l.chipVillages, srWords: l.srVillages });
   }
   return out;
 }
@@ -453,16 +445,16 @@ const FOUR: CommitmentKey[] = ["aim", "domain", "accountabilities", "why"];
  * the box names what is missing, once, and says who writes it. Silent on a
  * seat with nothing dashed, which is a village that has done the work.
  */
-export function stillToWriteLine(commitments: Commitment[]): string | null {
+export function stillToWriteLine(commitments: Commitment[], w: RoleSheetWords = ROLE_SHEET_WORDS): string | null {
   const dashed = commitments.filter((c) => c.look === "dashed").map((c) => c.key);
   if (!dashed.length) return null;
-  const close = ` ${SHEET_WORDS.foundingTeamWrites}`;
+  const close = ` ${w.words.foundingTeamWrites}`;
   if (FOUR.every((k) => dashed.includes(k))) {
-    const rest = dashed.filter((k) => !FOUR.includes(k)).map((k) => COMMITMENT_PHRASES[k]);
-    const also = rest.length ? ` Also still to be written down: ${joinList(rest)}.` : "";
-    return `${SHEET_WORDS.nobodyWroteThisSeat}${also}${close}`;
+    const rest = dashed.filter((k) => !FOUR.includes(k)).map((k) => w.phrases[k]);
+    const also = rest.length ? ` ${w.lines.alsoStillToWrite(joinList(rest, w))}` : "";
+    return `${w.words.nobodyWroteThisSeat}${also}${close}`;
   }
-  return `Still to be written down: ${joinList(dashed.map((k) => COMMITMENT_PHRASES[k]))}.${close}`;
+  return `${w.lines.stillToWrite(joinList(dashed.map((k) => w.phrases[k]), w))}${close}`;
 }
 
 // ── The seat face ───────────────────────────────────────────────────────────
@@ -521,12 +513,13 @@ function termForClock(input: SeatInput, lapse: { read: boolean; lapsed: number }
  */
 function clockFor(input: SeatInput, lapse: { read: boolean; lapsed: number }, ctx: SheetContext): SheetClock | null {
   if (input.mode === "proposal") return null;
+  const l = (ctx.words ?? ROLE_SHEET_WORDS).lines;
   const term = termForClock(input, lapse, ctx.now);
   if (term) {
     const date = formatDay(term.iso);
     const days = daysUntil(term.iso, ctx.now);
     if (date && days !== null) {
-      return { key: "termDays", label: countLabel(days, "Day left in term", "Days left in term"), value: days, tone: null, source: term.source, sub: `Term ends ${date}` };
+      return { key: "termDays", label: l.daysLeftInTerm(days), value: days, tone: null, source: term.source, sub: l.termEnds(date) };
     }
   }
   const s = ctx.season;
@@ -538,11 +531,11 @@ function clockFor(input: SeatInput, lapse: { read: boolean; lapsed: number }, ct
       const name = s.name && s.name.trim() ? s.name.trim() : null;
       return {
         key: "seasonDays",
-        label: countLabel(days, "Day left in the season", "Days left in the season"),
+        label: l.daysLeftInSeason(days),
         value: days,
         tone: null,
         source: "season.endsOn",
-        sub: name ? `${name} ends ${date}` : `The season ends ${date}`,
+        sub: name ? l.namedSeasonEnds(name, date) : l.seasonEnds(date),
       };
     }
   }
@@ -557,20 +550,21 @@ export function countLabel(n: number, one: string, many: string): string {
   return n === 1 ? one : many;
 }
 
-function figuresFor(input: SeatInput, lapse: { read: boolean; lapsed: number }): SheetFigure[] {
-  const out: SheetFigure[] = [{ key: "places", label: countLabel(input.seats, "Place", "Places"), value: input.seats, tone: null, source: "seats" }];
+function figuresFor(input: SeatInput, lapse: { read: boolean; lapsed: number }, w: RoleSheetWords): SheetFigure[] {
+  const l = w.lines;
+  const out: SheetFigure[] = [{ key: "places", label: l.places(input.seats), value: input.seats, tone: null, source: "seats" }];
   const hc = input.holderCount;
   if (input.mode === "seat" && hc !== null) {
     if (lapse.read) {
       const now = hc - lapse.lapsed;
-      out.push({ key: "heldNow", label: "Held now", value: now, tone: now > 0 ? "gold" : null, source: "holderCount - holders[].lapsed" });
+      out.push({ key: "heldNow", label: l.heldNow, value: now, tone: now > 0 ? "gold" : null, source: "holderCount - holders[].lapsed" });
     } else {
-      out.push({ key: "seated", label: "Taken", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" });
+      out.push({ key: "seated", label: l.taken, value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" });
     }
     const open = Math.max(0, input.seats - hc);
     out.push({
       key: "open",
-      label: countLabel(open, "Open place", "Open places"),
+      label: l.openPlaces(open),
       value: open,
       // A forming place is not an open call, so it never reads as one.
       tone: open > 0 && input.state !== "forming" ? "living" : null,
@@ -580,7 +574,7 @@ function figuresFor(input: SeatInput, lapse: { read: boolean; lapsed: number }):
   if (input.accountabilities.length > 0) {
     out.push({
       key: "answersFor",
-      label: "Answers for",
+      label: l.answersFor,
       value: input.accountabilities.length,
       tone: null,
       source: "accountabilities.length",
@@ -599,28 +593,29 @@ function figuresFor(input: SeatInput, lapse: { read: boolean; lapsed: number }):
  * holder's lapse flag, which is a stranger with no names and also a public
  * tier that serves first names and nothing else.
  */
-function stateLineFor(input: SeatInput, lapse: { read: boolean; lapsed: number }): string | null {
+function stateLineFor(input: SeatInput, lapse: { read: boolean; lapsed: number }, w: RoleSheetWords): string | null {
+  const W = w.words;
   if (input.mode === "proposal") return null;
   const hc = input.holderCount ?? 0;
   if (lapse.read && hc > 0 && lapse.lapsed > 0) {
-    if (lapse.lapsed === hc) return SHEET_WORDS.everyoneReady;
-    return `${lapse.lapsed} of ${hc} team members ${lapse.lapsed === 1 ? "is" : "are"} ready to be re-chosen.`;
+    if (lapse.lapsed === hc) return W.everyoneReady;
+    return w.lines.readyCount(lapse.lapsed, hc);
   }
-  if (input.stateSource === "declared") return SHEET_WORDS.setByHand;
+  if (input.stateSource === "declared") return W.setByHand;
   if (input.stateSource === "derived" && !lapse.read) {
-    if (input.state === "expired") return SHEET_WORDS.everyoneReady;
-    if (input.state === "partial" && Math.max(0, input.seats - hc) === 0) return SHEET_WORDS.atLeastOneReady;
+    if (input.state === "expired") return W.everyoneReady;
+    if (input.state === "partial" && Math.max(0, input.seats - hc) === 0) return W.atLeastOneReady;
   }
   return null;
 }
 
-function personSub(h: SeatHolderIn, now: Date): { sub: string | null; isDate: boolean } {
-  if (h.lapsed) return { sub: SHEET_WORDS.readyToBeRechosen, isDate: false };
+function personSub(h: SeatHolderIn, now: Date, w: RoleSheetWords): { sub: string | null; isDate: boolean } {
+  if (h.lapsed) return { sub: w.words.readyToBeRechosen, isDate: false };
   const focus = h.focus && h.focus.trim() ? h.focus.trim() : null;
   if (focus) return { sub: focus, isDate: false };
   const d = daysUntil(h.termEndsAt ?? null, now);
   const day = formatDay(h.termEndsAt ?? null, false);
-  if (d !== null && d >= 0 && day) return { sub: `term ends ${day}`, isDate: true };
+  if (d !== null && d >= 0 && day) return { sub: w.lines.personTermEnds(day), isDate: true };
   return { sub: null, isDate: false };
 }
 
@@ -634,8 +629,10 @@ export function rosterFor(
   holders: SeatHolderIn[],
   holderCount: number,
   seats: number,
-  opts: { now: Date; forming: boolean; openSub: (holderCount: number) => string },
+  opts: { now: Date; forming: boolean; openSub: (holderCount: number) => string; words?: RoleSheetWords },
 ): { spots: Spot[]; moreOpen: number } {
+  const w = opts.words ?? ROLE_SHEET_WORDS;
+  const W = w.words;
   const spots: Spot[] = [];
   const ordered = [...holders.filter((h) => !h.lapsed), ...holders.filter((h) => h.lapsed)];
   ordered.forEach((h, i) => {
@@ -643,15 +640,15 @@ export function rosterFor(
     const base = { key: `holder-${i}`, ready, avatar: null, pickKey: null, subIsDate: false };
     if (h.isAgent) {
       const keeper = h.keeper && h.keeper.trim() ? h.keeper.trim() : null;
-      spots.push({ ...base, kind: "agent", title: SHEET_WORDS.agent, sub: ready ? SHEET_WORDS.readyToBeRechosen : keeper ? keptByLine(keeper) : null });
+      spots.push({ ...base, kind: "agent", title: W.agent, sub: ready ? W.readyToBeRechosen : keeper ? w.keptByLine(keeper) : null });
       return;
     }
     const name = h.name && h.name.trim() ? h.name.trim() : null;
     if (!name) {
-      spots.push({ ...base, kind: "nameless", title: SHEET_WORDS.seated, sub: ready ? SHEET_WORDS.readyToBeRechosen : null });
+      spots.push({ ...base, kind: "nameless", title: W.seated, sub: ready ? W.readyToBeRechosen : null });
       return;
     }
-    const { sub, isDate } = personSub(h, opts.now);
+    const { sub, isDate } = personSub(h, opts.now, w);
     spots.push({
       ...base,
       kind: "person",
@@ -664,15 +661,15 @@ export function rosterFor(
     });
   });
   for (let i = 0; i < Math.max(0, holderCount - holders.length); i++) {
-    spots.push({ key: `nameless-${i}`, kind: "nameless", ready: false, title: SHEET_WORDS.seated, sub: null, subIsDate: false, avatar: null, pickKey: null });
+    spots.push({ key: `nameless-${i}`, kind: "nameless", ready: false, title: W.seated, sub: null, subIsDate: false, avatar: null, pickKey: null });
   }
   const open = Math.max(0, seats - holderCount);
   const shown = Math.min(3, open);
   for (let i = 0; i < shown; i++) {
     spots.push(
       opts.forming
-        ? { key: `open-${i}`, kind: "forming", ready: false, title: SHEET_WORDS.formingPlace, sub: null, subIsDate: false, avatar: null, pickKey: null }
-        : { key: `open-${i}`, kind: "open", ready: false, title: SHEET_WORDS.openPlace, sub: opts.openSub(holderCount), subIsDate: false, avatar: null, pickKey: null },
+        ? { key: `open-${i}`, kind: "forming", ready: false, title: W.formingPlace, sub: null, subIsDate: false, avatar: null, pickKey: null }
+        : { key: `open-${i}`, kind: "open", ready: false, title: W.openPlace, sub: opts.openSub(holderCount), subIsDate: false, avatar: null, pickKey: null },
     );
   }
   return { spots, moreOpen: open - shown };
@@ -686,7 +683,8 @@ export function rosterFor(
  * because the raise-hand route does not check vacancy: a seat that says
  * "Recruiting" or "Open" and offers no way in is a door drawn on a wall.
  */
-function actionFor(input: SeatInput): SeatActionView {
+function actionFor(input: SeatInput, w: RoleSheetWords): SeatActionView {
+  const W = w.words;
   const none: SeatActionView = { kind: "none", seatName: input.name, label: null, ariaLabel: null, consequence: null };
   if (input.isExample || input.mode === "proposal") return none;
   const hc = input.holderCount ?? 0;
@@ -702,11 +700,11 @@ function actionFor(input: SeatInput): SeatActionView {
       ? {
           kind: "raise",
           seatName: input.name,
-          label: SHEET_WORDS.raise,
-          ariaLabel: `Apply for this role: ${input.name}`,
-          consequence: SHEET_WORDS.raiseConsequence,
+          label: W.raise,
+          ariaLabel: w.lines.applyAria(input.name),
+          consequence: W.raiseConsequence,
         }
-      : { kind: "signIn", seatName: input.name, label: SHEET_WORDS.signInToRaise, ariaLabel: null, consequence: null };
+      : { kind: "signIn", seatName: input.name, label: W.signInToRaise, ariaLabel: null, consequence: null };
   }
   if (input.offers.contact && input.namesServed) {
     // An agent is seated as a documented holder, so `kind` already excludes it.
@@ -716,7 +714,7 @@ function actionFor(input: SeatInput): SeatActionView {
       return {
         kind: "contact",
         seatName: input.name,
-        label: `Contact ${name}`,
+        label: w.lines.contact(name),
         ariaLabel: null,
         consequence: null,
         contactName: name,
@@ -740,7 +738,9 @@ function wayWords(id: string, gloss: string | null | undefined): string | null {
   return id === "other" ? (textOrNull(gloss) ?? def.label) : def.label;
 }
 
-function factsFor(input: SeatInput, now: Date, timeZone?: string | null): SeatSheetView["facts"] {
+function factsFor(input: SeatInput, now: Date, timeZone: string | null | undefined, w: RoleSheetWords): SeatSheetView["facts"] {
+  const W = w.words;
+  const l = w.lines;
   // The date is the earliest term on the seat, lapsed seatings included. It
   // says only that: whether anyone is ready to be re-chosen is the state
   // line's to say, from the holders themselves, so a fact about one date can
@@ -752,11 +752,11 @@ function factsFor(input: SeatInput, now: Date, timeZone?: string | null): SeatSh
     if (date && d !== null) {
       term =
         d >= 0
-          ? { label: "Term", value: `Ends ${date}`, sub: SHEET_WORDS.termSub, isDate: true }
-          : { label: "Term", value: `Reached its date on ${date}`, sub: SHEET_WORDS.termSub, isDate: true };
+          ? { label: l.term, value: l.endsOn(date), sub: W.termSub, isDate: true }
+          : { label: l.term, value: l.reachedOn(date), sub: W.termSub, isDate: true };
     }
   } else if (input.termEnds === null && input.holderCount === 0) {
-    term = { label: "Term", value: SHEET_WORDS.termAtSeating, sub: SHEET_WORDS.termAtSeatingSub, isDate: false };
+    term = { label: l.term, value: W.termAtSeating, sub: W.termAtSeatingSub, isDate: false };
   }
 
   let nextHolder: Fact | null = null;
@@ -764,7 +764,7 @@ function factsFor(input: SeatInput, now: Date, timeZone?: string | null): SeatSh
     const def = howChosenById(input.howChosen);
     const gloss = input.howChosenGloss && input.howChosenGloss.trim() ? input.howChosenGloss.trim() : null;
     const value = input.howChosen === "other" ? (gloss ?? def?.label ?? null) : (def?.label ?? null);
-    if (value) nextHolder = { label: "Next holder", value, sub: null, isDate: false };
+    if (value) nextHolder = { label: l.nextHolder, value, sub: null, isDate: false };
   }
 
   let wayOfDeciding: Fact | null = null;
@@ -772,16 +772,14 @@ function factsFor(input: SeatInput, now: Date, timeZone?: string | null): SeatSh
     // The circle's own way, even when this page cannot name it: falling back
     // to the village's here would say the circle has none of its own.
     const own = wayWords(input.circle.decidesBy, input.circle.decidesByGloss);
-    if (own) wayOfDeciding = { label: "Way of deciding", value: own, sub: `${input.circle.name}'s own way.`, isDate: false };
+    if (own) wayOfDeciding = { label: l.wayOfDeciding, value: own, sub: l.circlesOwnWay(input.circle.name), isDate: false };
   } else if (input.villageDecidesBy) {
     const village = wayWords(input.villageDecidesBy, input.villageDecidesByGloss);
     if (village) {
       wayOfDeciding = {
-        label: "Way of deciding",
+        label: l.wayOfDeciding,
         value: village,
-        sub: input.circle
-          ? `${SHEET_WORDS.villagesWay} ${input.circle.name} has not set one of its own.`
-          : SHEET_WORDS.villagesWay,
+        sub: input.circle ? l.villagesWayNotCircles(input.circle.name) : W.villagesWay,
         isDate: false,
       };
     }
@@ -803,6 +801,8 @@ function badgeHeld(state: SeatStateWord, hc: number | null, lapse: { read: boole
 }
 
 export function seatSheet(input: SeatInput, ctx: SheetContext): SeatSheetView {
+  const w = ctx.words ?? ROLE_SHEET_WORDS;
+  const W = w.words;
   const proposal = input.mode === "proposal";
   const lapse = lapseReading(input);
   const hc = input.holderCount;
@@ -819,17 +819,18 @@ export function seatSheet(input: SeatInput, ctx: SheetContext): SeatSheetView {
       : rosterFor(input.holders, hc, input.seats, {
           now: ctx.now,
           forming: input.state === "forming",
-          openSub: (n) => (n === 0 ? SHEET_WORDS.nobodyHoldsThis : SHEET_WORDS.waitingForAHand),
+          openSub: (n) => (n === 0 ? W.nobodyHoldsThis : W.waitingForAHand),
+          words: w,
         });
 
-  const action = actionFor(input);
+  const action = actionFor(input, w);
   let rosterNote: string | null = null;
   if (!proposal && hc !== null) {
-    if (!input.namesServed && hc > 0) rosterNote = input.signedIn ? SHEET_WORDS.namesNotShared : SHEET_WORDS.signInToSeeNames;
-    else if (action.kind === "unreachable") rosterNote = SHEET_WORDS.unreachable;
+    if (!input.namesServed && hc > 0) rosterNote = input.signedIn ? W.namesNotShared : W.signInToSeeNames;
+    else if (action.kind === "unreachable") rosterNote = W.unreachable;
   }
 
-  const commitments = commitmentsFor(input);
+  const commitments = commitmentsFor(input, w);
   const written = commitments.filter((c) => c.look === "gilded").length;
   const of = commitments.length;
   const unread = proposal ? [] : COMMITMENT_ORDER.filter((k) => !commitments.some((c) => c.key === k));
@@ -844,9 +845,9 @@ export function seatSheet(input: SeatInput, ctx: SheetContext): SeatSheetView {
     eyebrow: input.circle ? input.circle.name : proposal ? textOrNull(input.circleNameOnly) : null,
     circleColour: input.circle ? cssColourForCircle({ id: input.circle.id, color: input.circle.color }) : null,
     badge: proposal
-      ? { word: "proposed", label: SHEET_WORDS.proposed, held: 0 }
+      ? { word: "proposed", label: W.proposed, held: 0 }
       : input.state
-        ? { word: input.state, label: STATE_WORDS[input.state], held: badgeHeld(input.state, hc, lapse) }
+        ? { word: input.state, label: w.lines.state[input.state], held: badgeHeld(input.state, hc, lapse) }
         : null,
     chips: {
       keySeat: input.criticality === "high",
@@ -854,32 +855,30 @@ export function seatSheet(input: SeatInput, ctx: SheetContext): SeatSheetView {
       speaksFor: input.representsCircle === true && input.circle ? input.circle.name : null,
       suits: suitsKey && suitsName ? { key: suitsKey, name: suitsName } : null,
     },
-    portrait: portraitFor({ id: input.id, name: input.name }, input.archetypes, ctx.classNames),
+    portrait: portraitFor({ id: input.id, name: input.name }, input.archetypes, ctx.classNames, w),
     aim: textOrNull(input.aim),
-    figures: figuresFor(input, lapse),
+    figures: figuresFor(input, lapse, w),
     clock: clockFor(input, lapse, ctx),
-    stateLine: stateLineFor(input, lapse),
+    stateLine: stateLineFor(input, lapse, w),
     spots: roster.spots,
     moreOpen: roster.moreOpen,
-    moreOpenLine: roster.moreOpen > 0 ? moreOpenLine(roster.moreOpen) : null,
+    moreOpenLine: roster.moreOpen > 0 ? w.moreOpenLine(roster.moreOpen) : null,
     rosterNote,
     action,
     commitments,
     tally: { written, of },
-    stillToWrite: stillToWriteLine(commitments),
-    unreadLine: unread.length ? `This page does not carry ${joinList(unread.map((k) => COMMITMENT_PHRASES[k]))}.` : null,
+    stillToWrite: stillToWriteLine(commitments, w),
+    unreadLine: unread.length ? w.lines.notCarried(joinList(unread.map((k) => w.phrases[k]), w)) : null,
     sections: {
       aim: textOrNull(input.aim),
       domain: textOrNull(input.domain),
       accountabilities: input.accountabilities.map((a) => a.trim()).filter(Boolean),
       why: textOrNull(input.whyItMatters),
     },
-    facts: factsFor(input, ctx.now, ctx.season?.timezone ?? null),
+    facts: factsFor(input, ctx.now, ctx.season?.timezone ?? null, w),
     flip: {
-      title: SHEET_WORDS.flipTitle,
-      sub: describesWork
-        ? `What it decides on and answers for. ${written} of ${of} written down.`
-        : `Its commitments. ${written} of ${of} written down.`,
+      title: W.flipTitle,
+      sub: describesWork ? w.lines.flipSubWork(written, of) : w.lines.flipSub(written, of),
       pips: commitments.map((c) => (c.look === "gilded" ? "lit" : c.look === "edged" ? "edged" : "empty")),
     },
   };

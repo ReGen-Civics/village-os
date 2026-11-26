@@ -25,3 +25,13 @@ export async function circleStatusRows(
   );
   return rows;
 }
+
+/**
+ * Every circle's id, name and purpose: the English a translation of the circles is written against
+ * (shared/villageDocTranslation.ts, ref "circles"). Read only by the admin translation routes, which may see
+ * every circle; a reader's routes lay the translation over the circles they already chose to show.
+ */
+export async function circleWordRows(conn: Pool | PoolConnection): Promise<Array<{ id: string; name: string; purpose: string }>> {
+  const [rows] = await conn.query<RowDataPacket[]>("SELECT id, name, purpose FROM circles ORDER BY sort_order, id");
+  return rows.map((r) => ({ id: String(r.id), name: String(r.name ?? ""), purpose: String(r.purpose ?? "") }));
+}

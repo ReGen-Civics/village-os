@@ -22,9 +22,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import {
-  GUIDE_WORDS,
-  MOON_WORDS,
-  MY_MOON_WORDS,
   dayWords,
   recapEditable,
   sendByLine,
@@ -49,6 +46,7 @@ import { GoalsPanel, RoleAuditPanel, ThanksPanel } from "./RecapParts";
 import { ERROR, H2, INPUT, KICKER, LABEL, LINK, MemberOnly, MUTED, PANEL, RoomViewContext, Section, SMALL_BTN, SMALL_BTN_ON } from "./moonUi";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { claimMoment } from "@/lib/celebrated";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 const FernUnfurl = lazy(() => import("@/components/journey/nature/FernUnfurl"));
 
@@ -73,6 +71,7 @@ export interface MyMoonViewProps {
 }
 
 export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomView = false, today = localToday() }: MyMoonViewProps) {
+  const MW = useMoonWords();
   const { i18n } = useLingui();
   const [room, setRoom] = useState(initialRoomView);
   const recap = data.recap;
@@ -108,7 +107,7 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
     const r = await api.sendRecap(cycleId, { ownWords: ownWords.trim() || null, roleAudit: audit, thanks });
     setBusy(false);
     if (!r.ok) return setError(r.error);
-    setLine(MY_MOON_WORDS.sent);
+    setLine(MW.myMoon.sent);
     const sentId = r.data?.recap?.id;
     if (sentId && claimMoment(recapSentMoment(String(sentId)))) setFern(true);
     await reload();
@@ -132,14 +131,14 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className={KICKER}>{MOON_WORDS.thisMoon}</p>
-              <h2 className={H2}>{MOON_WORDS.heading}</h2>
+              <p className={KICKER}>{MW.moon.thisMoon}</p>
+              <h2 className={H2}>{MW.moon.heading}</h2>
             </div>
             <button type="button" aria-pressed={room} onClick={() => setRoom((v) => !v)} className={room ? SMALL_BTN_ON : SMALL_BTN}>
-              {MOON_WORDS.roomView}
+              {MW.moon.roomView}
             </button>
           </div>
-          {room ? <p className={MUTED} aria-live="polite">{MY_MOON_WORDS.roomViewOn}. {MOON_WORDS.roomViewLine}</p> : null}
+          {room ? <p className={MUTED} aria-live="polite">{MW.myMoon.roomViewOn}. {MW.moon.roomViewLine}</p> : null}
           <details className="rounded-lg border border-border bg-muted/40 px-3 py-2" data-testid="accomplished-pay">
             <summary className="cursor-pointer text-sm font-medium text-foreground">
               {accomplishedPayLine("title", i18n)} <span className="font-normal text-muted-foreground">{accomplishedPayLine("show", i18n)}</span>
@@ -153,37 +152,37 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
           <MoonSpiral moon={data.moon} today={today} editable={editable && !noRoles} />
           {data.moons.length > 1 ? (
             <label className={LABEL}>
-              {MY_MOON_WORDS.whichMoon}
+              {MW.myMoon.whichMoon}
               <select value={cycleId} onChange={(e) => onCycle(e.target.value)} className={INPUT}>
                 {data.moons.map((m) => <option key={m.cycleId} value={m.cycleId}>{m.periodWords}: {m.statusWords}</option>)}
               </select>
             </label>
           ) : null}
           <dl className="m-0 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-            <div><dt className={LABEL}>{MOON_WORDS.period}</dt><dd className="m-0 text-foreground">{data.moon.periodWords}</dd></div>
-            <div><dt className={LABEL}>{MY_MOON_WORDS.walkthrough}</dt><dd className="m-0 text-foreground">{dayWords(data.moon.endOfMoonFriday)}</dd></div>
-            <div className="sm:col-span-2"><dt className={LABEL}>{MOON_WORDS.sendBy}</dt><dd className="m-0 text-foreground">{sendByLine(data.moon.sendBy)}</dd></div>
+            <div><dt className={LABEL}>{MW.moon.period}</dt><dd className="m-0 text-foreground">{data.moon.periodWords}</dd></div>
+            <div><dt className={LABEL}>{MW.myMoon.walkthrough}</dt><dd className="m-0 text-foreground">{dayWords(data.moon.endOfMoonFriday)}</dd></div>
+            <div className="sm:col-span-2"><dt className={LABEL}>{MW.moon.sendBy}</dt><dd className="m-0 text-foreground">{sendByLine(data.moon.sendBy)}</dd></div>
             <MemberOnly>
               {data.moonLoad !== null ? (
-                <div data-testid="moon-load"><dt className={LABEL}>{MY_MOON_WORDS.moonLoad}</dt><dd className="m-0 text-foreground">{MY_MOON_WORDS.moonLoadOf(data.moonLoad)}</dd></div>
+                <div data-testid="moon-load"><dt className={LABEL}>{MW.myMoon.moonLoad}</dt><dd className="m-0 text-foreground">{MW.myMoon.moonLoadOf(data.moonLoad)}</dd></div>
               ) : null}
             </MemberOnly>
           </dl>
-          <p className="m-0 text-sm font-semibold text-foreground" data-testid="moon-status">{recap?.statusLine ?? MY_MOON_WORDS.notStarted}</p>
+          <p className="m-0 text-sm font-semibold text-foreground" data-testid="moon-status">{recap?.statusLine ?? MW.myMoon.notStarted}</p>
           {recap?.returnedNote ? <p className="m-0 whitespace-pre-line text-sm text-foreground">{recap.returnedNote}</p> : null}
-          {guide ? <a href={guide} target="_blank" rel="noreferrer" className={`${LINK} text-sm`}>{GUIDE_WORDS.open}</a> : null}
+          {guide ? <a href={guide} target="_blank" rel="noreferrer" className={`${LINK} text-sm`}>{MW.guide.open}</a> : null}
         </header>
 
         {noRoles ? (
-          <p className={MUTED}>{MOON_WORDS.noRecapRoles}</p>
+          <p className={MUTED}>{MW.moon.noRecapRoles}</p>
         ) : (
           <>
             <div id="moon-gather" className="scroll-mt-28">
               <GatherPanel cycleId={cycleId} editable={editable} sera={recap?.sera ?? null} reload={reload} />
             </div>
 
-            <Section title={MY_MOON_WORDS.keepAndTag}>
-              {items.length === 0 ? <p className={MUTED}>{MY_MOON_WORDS.noItems}</p> : null}
+            <Section title={MW.myMoon.keepAndTag}>
+              {items.length === 0 ? <p className={MUTED}>{MW.myMoon.noItems}</p> : null}
               <div className="flex flex-col gap-3">
                 {items.map((i) => (
                   <ItemCard key={i.id} item={i} roles={data.roles} seasonGoals={data.seasonGoals} ownGoals={data.ownGoals} villageRoles={villageRoles} editable={editable} onSave={(f) => saveItem(i.id, f)} />
@@ -197,22 +196,22 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
             <ThanksPanel thanks={thanks} onChange={setThanks} editable={editable} />
             <GoalsPanel cycleId={cycleId} last={data.lastMoonGoals} goalScore={data.goalScore} next={data.nextMoonGoals} seasonGoals={data.seasonGoals} reload={reload} editable />
 
-            <Section title={MOON_WORDS.ownWords} id="moon-own-words">
+            <Section title={MW.moon.ownWords} id="moon-own-words">
               <label className={LABEL}>
-                {MY_MOON_WORDS.ownWordsHint}
+                {MW.myMoon.ownWordsHint}
                 <VoiceArea value={ownWords} onValue={setOwnWords} disabled={!editable}>
                 <textarea value={ownWords} rows={4} maxLength={2000} readOnly={!editable} onChange={(e) => setOwnWords(e.target.value)} className={INPUT} />
                 </VoiceArea>
               </label>
               {editable ? (
                 <>
-                  <button type="button" className={`${SMALL_BTN_ON} self-start`} disabled={busy} onClick={send}>{MOON_WORDS.sendRecap}</button>
-                  <p className={MUTED}>{MOON_WORDS.sendRecapLine}</p>
+                  <button type="button" className={`${SMALL_BTN_ON} self-start`} disabled={busy} onClick={send}>{MW.moon.sendRecap}</button>
+                  <p className={MUTED}>{MW.moon.sendRecapLine}</p>
                 </>
               ) : recap?.status === "waiting" ? (
                 <>
-                  <button type="button" className={`${SMALL_BTN} self-start`} disabled={busy} onClick={takeBack}>{MOON_WORDS.takeBack}</button>
-                  <p className={MUTED}>{MOON_WORDS.takeBackLine}</p>
+                  <button type="button" className={`${SMALL_BTN} self-start`} disabled={busy} onClick={takeBack}>{MW.moon.takeBack}</button>
+                  <p className={MUTED}>{MW.moon.takeBackLine}</p>
                 </>
               ) : null}
               {line ? (
@@ -241,6 +240,7 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
 
 /** The loader: reads `/api/me/moon`, and draws nothing at all while the module is off. */
 export default function MyMoon() {
+  const MW = useMoonWords();
   const [cycle, setCycle] = useState<string | null>(null);
   const [data, setData] = useState<MyMoonData | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "off" | "failed">("loading");
@@ -273,7 +273,7 @@ export default function MyMoon() {
 
   if (state === "off") return null;
   if (state === "loading" || !data) {
-    return state === "failed" ? <p className={ERROR}>{error}</p> : <p className={MUTED}>{MY_MOON_WORDS.loading}</p>;
+    return state === "failed" ? <p className={ERROR}>{error}</p> : <p className={MUTED}>{MW.myMoon.loading}</p>;
   }
   return <MyMoonView key={data.moon.cycleId} data={data} villageRoles={villageRoles} onCycle={setCycle} reload={load} />;
 }

@@ -34,7 +34,11 @@ export interface RosterEntry {
   roles: RosterRole[];
 }
 
-export function rosterOf(filled: readonly { id: string; name: string; holders: readonly string[]; recruiting?: boolean }[]): RosterEntry[] {
+export function rosterOf(
+  filled: readonly { id: string; name: string; holders: readonly string[]; recruiting?: boolean }[],
+  /** The word an agent holder arrives as: the page's own translated "An agent" (orgHolderName). */
+  agentWord: string = SHEET_WORDS.agent,
+): RosterEntry[] {
   const people = new Map<string, RosterEntry>();
   const rest: RosterEntry[] = [];
   for (const f of filled) {
@@ -42,7 +46,7 @@ export function rosterOf(filled: readonly { id: string; name: string; holders: r
     const names: string[] = [];
     let agent = false;
     for (const h of f.holders ?? []) {
-      if (h === SHEET_WORDS.agent) {
+      if (h === agentWord || h === SHEET_WORDS.agent) {
         agent = true;
         continue;
       }

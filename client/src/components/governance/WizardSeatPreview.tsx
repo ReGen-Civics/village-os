@@ -21,8 +21,7 @@
  */
 import { useEffect, useId, useState } from "react";
 import { useSeason } from "@/lib/gameApi";
-import { SHEET_WORDS } from "@shared/roleSheet";
-import { seatPreviewSub } from "@shared/roleSheetWords";
+import { useRoleSheetWords } from "@/components/power/roleSheetMirror";
 import { fromOrgSeat, seasonForSheet } from "@shared/roleSheetInputs";
 import { parseSeatSettings } from "@shared/seatSettings";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
@@ -60,6 +59,8 @@ export default function WizardSeatPreview({
   /** `rail`: the desktop column beside the steps. `inline`: under the fields on a phone. */
   look: "rail" | "inline";
 }) {
+  const RS = useRoleSheetWords();
+  const SHEET_WORDS = RS.words;
   const org = useOrg();
   const season = useSeason();
   const villagePresets = useVillagePresets();
@@ -80,7 +81,7 @@ export default function WizardSeatPreview({
         <span aria-hidden="true" className="size-2 rounded-full bg-open" />
         {SHEET_WORDS.livePreview}
       </p>
-      <p className="mt-1.5 text-xs text-muted-foreground">{seatPreviewSub(picked)}</p>
+      <p className="mt-1.5 text-xs text-muted-foreground">{RS.seatPreviewSub(picked)}</p>
       <div className="mt-3">
         <SeatTradingCard
           input={input}

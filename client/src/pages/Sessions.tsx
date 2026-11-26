@@ -60,16 +60,8 @@
 import type { PickerCircle } from "@shared/circlePicker";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
-import {
-  SESSION_COPY,
-  SESSION_LIMITS,
-  SESSION_LIST_COPY,
-  SESSION_REFUSALS,
-  SESSIONS_API,
-  cleanLine,
-  type SessionListRow,
-} from "@shared/sessions";
-import { LIBRARY_COPY, LIBRARY_REFUSALS, offeredFor, waitsForMeeting, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
+import { SESSION_COPY, SESSION_LIMITS, SESSION_LIST_COPY, SESSION_REFUSALS, SESSIONS_API, cleanLine, type SessionListRow } from "@shared/sessions";
+import { LIBRARY_REFUSALS, offeredFor, waitsForMeeting, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
 import { RHYTHM_COPY, type ComingUpPayload, type ComingUpRow } from "@shared/sessionRhythm";
 import { TEMPLATES_API, type SessionTemplate, type TemplatesPayload } from "@shared/sessionTemplates";
 import Layout from "@/components/Layout";
@@ -91,6 +83,7 @@ import { STAGE_LEDE, STAGE_TITLE } from "@/components/sessions/roomUi";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { useModules } from "@/modules/ModuleProvider";
+import { LIBRARY_COPY } from "@/components/sessions/libraryCopy";
 
 /** How often the list asks whether a room opened or closed, while the tab is visible. */
 const LIST_POLL_MS = 30_000;
@@ -453,7 +446,7 @@ export default function Sessions() {
       </section>
 
       <div className="container max-w-6xl pb-16">
-        <div className={mayStart ? "grid gap-6 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start" : "max-w-2xl"}>
+        <div className={mayStart ? "grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start" : "max-w-2xl"}>
           <div className="space-y-6">
             {gone && (
               <p role="status" className={`${LIST_UI.card} text-foreground`}>

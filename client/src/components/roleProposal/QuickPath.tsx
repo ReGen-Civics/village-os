@@ -12,8 +12,9 @@ import { useGuideName } from "@/hooks/useGuideName";
 import { OWN_WORDS_MAX } from "@shared/roleProposals";
 import type { OrgView } from "./StepRoles";
 import type { SeasonState } from "./StepSeason";
-import { RP_WORDS, STEPS, type StepKey } from "./proposalWords";
+import { STEPS, type StepKey } from "./proposalWords";
 import { H2, LEDE, PANEL, PRIMARY, SECONDARY } from "./parts";
+import { useProposalWords, type ProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export type ProposalPath = "quick" | "full";
 export type FrontScreen = "welcome" | "yours" | "steps";
@@ -99,43 +100,46 @@ export function keepRoleOn(href: string): string {
 }
 
 export function PathToggle({ path, onPath }: { path: ProposalPath; onPath: (next: ProposalPath) => void }) {
+  const RW = useProposalWords();
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={`${RP_WORDS.quickPath} or ${RP_WORDS.fullControl}`}>
+    <div className="flex flex-wrap gap-2" role="group" aria-label={`${RW.quickPath} or ${RW.fullControl}`}>
       <button type="button" className={path === "quick" ? PRIMARY : SECONDARY} aria-pressed={path === "quick"} onClick={() => onPath("quick")}>
-        {RP_WORDS.quickPath}
+        {RW.quickPath}
       </button>
       <button type="button" className={path === "full" ? PRIMARY : SECONDARY} aria-pressed={path === "full"} onClick={() => onPath("full")}>
-        {RP_WORDS.fullControl}
+        {RW.fullControl}
       </button>
     </div>
   );
 }
 
 export function WelcomeScreen({ org, onStart }: { org: OrgView | null | "failed"; onStart: () => void }) {
+  const RW = useProposalWords();
   // The guide is the village's assistant; the Ops role only fills open parts with the member.
   const guide = useGuideName();
   const ops = org === null ? null : opsPartner(operationsRoleName(org !== "failed" ? org.roles : []));
   return (
     <div className="grid gap-4">
-      <h2 id="rp-welcome" tabIndex={-1} className={`${H2} outline-none`}>{RP_WORDS.welcomeTitle}</h2>
-      <p className={LEDE}>{RP_WORDS.welcomeLede}</p>
+      <h2 id="rp-welcome" tabIndex={-1} className={`${H2} outline-none`}>{RW.welcomeTitle}</h2>
+      <p className={LEDE}>{RW.welcomeLede}</p>
       {guide.loaded && ops !== null && (
         <p className={LEDE}>
-          {RP_WORDS.guideHere(guide.name)} {RP_WORDS.opsFillsOpen(ops)}
+          {RW.guideHere(guide.name)} {RW.opsFillsOpen(ops)}
         </p>
       )}
       <button type="button" className={PRIMARY} onClick={onStart}>
-        {RP_WORDS.startQuestions}
+        {RW.startQuestions}
       </button>
     </div>
   );
 }
 
-const QUESTIONS = [
-  { key: "love", label: RP_WORDS.love, hint: RP_WORDS.loveHint },
-  { key: "offer", label: RP_WORDS.offer, hint: "" },
-  { key: "why", label: RP_WORDS.whyHere, hint: "" },
-] as const;
+const questions = (RW: ProposalWords) =>
+  [
+    { key: "love", label: RW.love, hint: RW.loveHint },
+    { key: "offer", label: RW.offer, hint: "" },
+    { key: "why", label: RW.whyHere, hint: "" },
+  ] as const;
 
 export function YourWordsScreen({
   season,
@@ -144,20 +148,21 @@ export function YourWordsScreen({
   season: SeasonState;
   onChange: (next: SeasonState) => void;
 }) {
+  const RW = useProposalWords();
   const set = (key: "love" | "offer" | "why", value: string) => onChange({ ...season, ownWords: { ...season.ownWords, [key]: value } });
   return (
     <div className="grid gap-4">
       <div>
-        <h2 id="rp-your-words" tabIndex={-1} className={`${H2} outline-none`}>{RP_WORDS.yourWordsTitle}</h2>
-        <p className={`${LEDE} mt-1`}>{RP_WORDS.yourWordsLede}</p>
+        <h2 id="rp-your-words" tabIndex={-1} className={`${H2} outline-none`}>{RW.yourWordsTitle}</h2>
+        <p className={`${LEDE} mt-1`}>{RW.yourWordsLede}</p>
       </div>
       <p className="text-sm font-semibold text-notice" data-words-kept="">
-        {RP_WORDS.yourWordsKept}
+        {RW.yourWordsKept}
       </p>
       <p className="text-sm text-foreground" data-any-language="">
-        {RP_WORDS.anyLanguage}
+        {RW.anyLanguage}
       </p>
-      {QUESTIONS.map((q) => (
+      {questions(RW).map((q) => (
         <div key={q.key} className={`${PANEL} grid gap-2`}>
           <GrowingText id={`own-${q.key}`} label={q.label} placeholder={q.hint || undefined} value={season.ownWords[q.key]} onValue={(v) => set(q.key, v)} max={OWN_WORDS_MAX} minRows={3} mic />
         </div>
@@ -168,13 +173,14 @@ export function YourWordsScreen({
 
 /** Back and "Pick the roles", drawn in the sticky step bar so no bar ever hides them. */
 export function YourWordsActions({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+  const RW = useProposalWords();
   return (
     <div className="flex items-center justify-between gap-2" data-yours-actions="">
       <button type="button" className={SECONDARY} onClick={onBack}>
-        {RP_WORDS.back}
+        {RW.back}
       </button>
       <button type="button" className={PRIMARY} onClick={onNext}>
-        {RP_WORDS.onToRoles}
+        {RW.onToRoles}
       </button>
     </div>
   );

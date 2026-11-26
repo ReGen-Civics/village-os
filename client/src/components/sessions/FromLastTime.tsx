@@ -29,7 +29,6 @@
 import { useState } from "react";
 import SendTension from "./SendTension";
 import {
-  AIM_DEFS,
   ROOM_COPY,
   ROOM_ITEM_MINUTES_DEFAULT,
   SESSION_COPY,
@@ -37,10 +36,12 @@ import {
   cleanLine,
   type ItemAim,
 } from "@shared/sessions";
-import { TASK_COPY, groupForCheck, type TaskCard } from "@shared/sessionTasks";
+import { groupForCheck, type TaskCard } from "@shared/sessionTasks";
 import TaskCardView from "@/components/tasks/TaskCard";
 import EntryCard from "./EntryCard";
 import { BTN_QUIET, BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, heldLine, keepsNotes, type StageProps } from "./roomUi";
+import { useTaskWords } from "@/components/tasks/taskWords";
+import { AIM_DEFS } from "./libraryCopy";
 
 /** The room's own day, YYYY-MM-DD, read off the room's clock in this device's zone. */
 export function roomDay(ms: number): string {
@@ -76,6 +77,7 @@ function newestSource(cards: readonly TaskCard[]): number | null {
 }
 
 export default function FromLastTime({ view, actions }: Omit<StageProps, "now">) {
+  const TW = useTaskWords();
   const carried = view.carried;
   const [busy, setBusy] = useState<string | null>(null);
   // A card answered here, until the room's poll brings the same answer or a later one.
@@ -138,15 +140,15 @@ export default function FromLastTime({ view, actions }: Omit<StageProps, "now">)
 
           {useTasks ? (
             <>
-              {keepsNotes(view) && <p className={`${HINT} mt-1`}>{TASK_COPY.checkCue}</p>}
+              {keepsNotes(view) && <p className={`${HINT} mt-1`}>{TW.checkCue}</p>}
               <div className="mt-3 space-y-4">
                 {groups.map((g) => (
                   <section key={g.key} aria-labelledby={`check-${g.key}`} data-check-group={g.key}>
                     <h5 id={`check-${g.key}`} className="text-sm font-semibold text-foreground">
-                      {TASK_COPY.checkGroups[g.key]}
+                      {TW.checkGroups[g.key]}
                     </h5>
                     {/* A count for the whole circle, never for one person. */}
-                    {g.key === "doneSince" && <p className={HINT}>{TASK_COPY.doneSince(g.cards.length)}</p>}
+                    {g.key === "doneSince" && <p className={HINT}>{TW.doneSince(g.cards.length)}</p>}
                     <ul className="mt-2 space-y-2">
                       {g.cards.map((t) => (
                         <li key={t.entryId}>

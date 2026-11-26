@@ -47,7 +47,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const RE = /([a-z]{3,})-(not|it|its|we|you|your|they|and|but|a|an|the|so|then|which|that)(?![a-z-])/gi;
-const OK = new Set(["thank-you", "know-it", "hand-me", "made-to"]);
+// "say-so" is a word (shared/gameVariables.ts writes "a batch's say-so"), mirrored into client/src to translate it.
+const OK = new Set(["thank-you", "know-it", "hand-me", "made-to", "say-so"]);
 
 const walk = (dir, out = []) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

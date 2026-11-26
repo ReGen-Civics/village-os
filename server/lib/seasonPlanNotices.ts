@@ -35,6 +35,7 @@ import {
   type ReminderMark,
 } from "../../shared/seasonPlans";
 import type { PresenceTest } from "./memberPresence";
+import type { NoticeWordsRef } from "../../shared/noticeKeys";
 
 /** `notifications.dedupe_key` is varchar(191), and an over-long key is a lost notice. */
 function fitKey(prefix: string, seasonId: string, rest: string): string {
@@ -60,7 +61,7 @@ export interface PlanNoticeDeps {
   isPresent: PresenceTest;
   /** Who has filed for this season. Asked only when a reminder is due. */
   filed(seasonId: string): Promise<Set<string>>;
-  notify(input: { userId: string; type: string; title: string; body?: string | null; link?: string | null; dedupeKey: string }): Promise<{ fresh: boolean }>;
+  notify(input: { userId: string; type: string; title: string; body?: string | null; link?: string | null; dedupeKey: string; words?: NoticeWordsRef | null }): Promise<{ fresh: boolean }>;
 }
 
 export interface PlanNoticeReport {
@@ -87,10 +88,27 @@ export async function runSeasonPlanNotices(deps: PlanNoticeDeps): Promise<PlanNo
     if (!deps.isPresent(member)) continue;
     const userId = String(member.id);
     try {
-      const r = await deps.notify({ userId, type: "season_plan_open", title: open.title, body: open.body, link: SEASON_PLAN_MINE, dedupeKey: planOpenKey(seasonId, userId) });
+      const r = await deps.notify({
+        userId,
+        type: "season_plan_open",
+        title: open.title,
+        body: open.body,
+        link: SEASON_PLAN_MINE,
+        dedupeKey: planOpenKey(seasonId, userId),
+        // The same words as a key, for the bell to draw in the reader's language (shared/noticeKeys.ts).
+        words: { key: "season_plan.open", params: { season: seasonName, closesOn: target.window.closesOn } },
+      });
       if (r.fresh) report.opened += 1;
       if (mark && due && !filed.has(userId)) {
-        const d = await deps.notify({ userId, type: "season_plan_reminder", title: due.title, body: due.body, link: SEASON_PLAN_MINE, dedupeKey: planDueKey(seasonId, mark, userId) });
+        const d = await deps.notify({
+          userId,
+          type: "season_plan_reminder",
+          title: due.title,
+          body: due.body,
+          link: SEASON_PLAN_MINE,
+          dedupeKey: planDueKey(seasonId, mark, userId),
+          words: { key: "season_plan.reminder", params: { daysLeft: daysLeftIn(target.window, now) } },
+        });
         if (d.fresh) report.reminded += 1;
       }
     } catch (e) {

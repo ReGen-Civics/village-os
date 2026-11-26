@@ -12,8 +12,6 @@
  * alone, so the whole block sits inside `MemberOnly` and Room view removes it.
  */
 import {
-  MOON_WORDS,
-  MY_MOON_WORDS,
   OUTSIDE_MY_ROLES,
   type Coverage,
   type MyMoonResponse,
@@ -23,6 +21,7 @@ import {
 import { CHIP, MemberOnly, MUTED, Section } from "./moonUi";
 import RoleBed from "./RoleBed";
 import { MOON_GARDEN_WORDS, bedFor } from "./moonGarden";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export function RoleCardsBlock({
   coverage,
@@ -33,10 +32,11 @@ export function RoleCardsBlock({
   items: readonly RecapItem[];
   outsideRoles: MyMoonResponse["outsideRoles"];
 }) {
+  const MW = useMoonWords();
   const textOf = (id: string) => items.find(i => i.id === id)?.text ?? "";
   const many = coverage.roles.length > 1;
   return (
-    <Section title={MOON_WORDS.againstMyCards} id="moon-beds">
+    <Section title={MW.moon.againstMyCards} id="moon-beds">
       {/* One bed per role (Phase C, lane C2). A phone swipes between beds; a desktop sets them side by side. */}
       <div
         className={
@@ -71,7 +71,7 @@ export function RoleCardsBlock({
                   {MOON_GARDEN_WORDS.lookAfter}
                 </p>
                 {r.lines.length === 0 ? (
-                  <p className={MUTED}>{MY_MOON_WORDS.noLines}</p>
+                  <p className={MUTED}>{MW.myMoon.noLines}</p>
                 ) : null}
                 <ul className="m-0 flex list-none flex-col gap-2 p-0">
                   {r.lines.map(l => (
@@ -106,7 +106,7 @@ export function RoleCardsBlock({
                   {r.untagged.length > 0 ? (
                     <li className="rounded-lg border border-dashed border-border p-2">
                       <p className="m-0 text-sm font-medium text-foreground">
-                        {MY_MOON_WORDS.none}
+                        {MW.myMoon.none}
                       </p>
                       <ul className="m-0 list-disc pl-5 text-sm text-foreground">
                         {r.untagged.map(id => (
@@ -128,7 +128,7 @@ export function RoleCardsBlock({
       {coverage.seasonGoals.length > 0 ? (
         <div className="flex flex-col gap-2">
           <h4 className="m-0 text-base font-semibold text-foreground">
-            {MOON_WORDS.seasonGoals}
+            {MW.moon.seasonGoals}
           </h4>
           <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
             {coverage.seasonGoals.map(g => (
@@ -143,7 +143,7 @@ export function RoleCardsBlock({
       {coverage.ownGoals.length > 0 ? (
         <div className="flex flex-col gap-2">
           <h4 className="m-0 text-base font-semibold text-foreground">
-            {MOON_WORDS.myGoals}
+            {MW.moon.myGoals}
           </h4>
           <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
             {coverage.ownGoals.map(g => (
@@ -160,7 +160,7 @@ export function RoleCardsBlock({
           {OUTSIDE_MY_ROLES}
         </h4>
         {outsideRoles.items.length === 0 ? (
-          <p className={MUTED}>{MY_MOON_WORDS.noOutside}</p>
+          <p className={MUTED}>{MW.myMoon.noOutside}</p>
         ) : (
           <ul className="m-0 list-disc pl-5 text-sm text-foreground">
             {outsideRoles.items.map(i => (

@@ -11,18 +11,12 @@
  */
 import { useEffect, useState } from "react";
 import {
-  ITEM_KEEP_WORDS,
-  ITEM_ORIGIN_WORDS,
-  ITEM_STATE_WORDS,
   ITEM_VISIBILITIES,
-  ITEM_VISIBILITY_WORDS,
   LET_GO_NEEDS_REASON,
-  MY_MOON_WORDS,
   NO_ROLE_YET,
   OUTSIDE_MY_ROLES,
   REDIRECT_NEEDS_WHO,
   TASK_STATUSES,
-  TASK_STATUS_WORDS,
   type ItemFields,
   type ItemVisibility,
   type RecapItem,
@@ -32,6 +26,7 @@ import {
 } from "@shared/moonRecap";
 import { CHIP, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, SMALL_BTN_ON } from "./moonUi";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export interface ItemCardProps {
   item: RecapItem;
@@ -48,6 +43,7 @@ export interface ItemCardProps {
 const OUTSIDE = "";
 
 export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRoles, editable, onSave }: ItemCardProps) {
+  const MW = useMoonWords();
   const [text, setText] = useState(item.text);
   const [letGo, setLetGo] = useState(item.letGoReason ?? "");
   const [redirect, setRedirect] = useState(item.redirectTo ?? "");
@@ -84,14 +80,14 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
       className={`flex flex-col gap-3 rounded-[14px] border border-dash-edge bg-card p-3 sm:p-4 ${dropped ? "opacity-70" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span>{ITEM_ORIGIN_WORDS[item.origin]}</span>
+        <span>{MW.itemOrigin[item.origin]}</span>
         {item.originNote ? <span>· {item.originNote}</span> : null}
-        {item.state === "suggested" ? <span className={CHIP}>{ITEM_STATE_WORDS.suggested}</span> : null}
+        {item.state === "suggested" ? <span className={CHIP}>{MW.itemState.suggested}</span> : null}
         {item.evidenceOn ? <span>· {item.evidenceOn}</span> : null}
       </div>
 
       <label className={LABEL} htmlFor={`${id}-text`}>
-        {MY_MOON_WORDS.itemWords}
+        {MW.myMoon.itemWords}
         {/* This box saves on blur; spoken words arrive without a blur, so they save as they land. */}
         <VoiceArea value={text} onValue={(v) => { setText(v); saveIfChanged("text", v, item.text); }} disabled={!editable}>
         <textarea
@@ -106,7 +102,7 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
         </VoiceArea>
       </label>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label={ITEM_STATE_WORDS.kept}>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={MW.itemState.kept}>
         {(["kept", "dropped"] as const).map((s) => (
           <button
             key={s}
@@ -116,7 +112,7 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
             onClick={() => void save({ state: s })}
             className={item.state === s ? SMALL_BTN_ON : SMALL_BTN}
           >
-            {ITEM_KEEP_WORDS[s]}
+            {MW.itemKeep[s]}
           </button>
         ))}
       </div>
@@ -124,7 +120,7 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
       {!dropped ? (
         <>
           <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-            <legend className={LABEL}>{MY_MOON_WORDS.howItEnded}</legend>
+            <legend className={LABEL}>{MW.myMoon.howItEnded}</legend>
             <div className="flex flex-wrap gap-2">
               {TASK_STATUSES.map((s: TaskStatus) => (
                 <button
@@ -135,20 +131,20 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
                   onClick={() => void save({ taskStatus: item.taskStatus === s ? null : s })}
                   className={item.taskStatus === s ? SMALL_BTN_ON : SMALL_BTN}
                 >
-                  {TASK_STATUS_WORDS[s]}
+                  {MW.taskStatus[s]}
                 </button>
               ))}
             </div>
             {item.taskStatus === "let_go" ? (
               <label className={LABEL}>
-                {MY_MOON_WORDS.letGoReason}
+                {MW.myMoon.letGoReason}
                 <input value={letGo} readOnly={!editable} onChange={(e) => setLetGo(e.target.value)} onBlur={() => saveIfChanged("letGoReason", letGo, item.letGoReason)} className={INPUT} />
                 {!item.letGoReason ? <span className="mt-1 block text-xs text-muted-foreground">{LET_GO_NEEDS_REASON}</span> : null}
               </label>
             ) : null}
             {item.taskStatus === "redirect" ? (
               <label className={LABEL}>
-                {MY_MOON_WORDS.redirectTo}
+                {MW.myMoon.redirectTo}
                 <input value={redirect} readOnly={!editable} onChange={(e) => setRedirect(e.target.value)} onBlur={() => saveIfChanged("redirectTo", redirect, item.redirectTo)} className={INPUT} />
                 {!item.redirectTo ? <span className="mt-1 block text-xs text-muted-foreground">{REDIRECT_NEEDS_WHO}</span> : null}
               </label>
@@ -157,7 +153,7 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className={LABEL}>
-              {MY_MOON_WORDS.role}
+              {MW.myMoon.role}
               <select
                 value={item.roleId ?? OUTSIDE}
                 disabled={!editable}
@@ -171,15 +167,15 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
 
             {role ? (
               <label className={LABEL}>
-                {MY_MOON_WORDS.accountability}
+                {MW.myMoon.accountability}
                 <select value={item.accountabilityWords ?? ""} disabled={!editable} onChange={(e) => void save({ accountabilityWords: e.target.value || null })} className={INPUT}>
-                  <option value="">{MY_MOON_WORDS.none}</option>
+                  <option value="">{MW.myMoon.none}</option>
                   {lines.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </label>
             ) : (
               <label className={LABEL}>
-                {MY_MOON_WORDS.belongsTo}
+                {MW.myMoon.belongsTo}
                 <select value={item.belongsToRoleId ?? ""} disabled={!editable} onChange={(e) => void save({ belongsToRoleId: e.target.value || null })} className={INPUT}>
                   <option value="">{item.belongsToSeatWords || NO_ROLE_YET}</option>
                   {villageRoles.filter((r) => !roles.some((h) => h.roleId === r.id)).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -188,37 +184,37 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
             )}
 
             <label className={LABEL}>
-              {MY_MOON_WORDS.seasonGoal}
+              {MW.myMoon.seasonGoal}
               <select value={item.seasonGoalId ?? ""} disabled={!editable} onChange={(e) => void save({ seasonGoalId: e.target.value || null })} className={INPUT}>
-                <option value="">{MY_MOON_WORDS.none}</option>
+                <option value="">{MW.myMoon.none}</option>
                 {seasonGoals.map((g) => <option key={g.id} value={g.id}>{g.words}</option>)}
               </select>
             </label>
 
             <label className={LABEL}>
-              {MY_MOON_WORDS.ownGoal}
+              {MW.myMoon.ownGoal}
               <select value={item.ownGoalWords ?? ""} disabled={!editable} onChange={(e) => void save({ ownGoalWords: e.target.value || null })} className={INPUT}>
-                <option value="">{MY_MOON_WORDS.none}</option>
+                <option value="">{MW.myMoon.none}</option>
                 {ownGoals.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
             </label>
 
             <label className={LABEL}>
-              {MY_MOON_WORDS.whoSees}
+              {MW.myMoon.whoSees}
               <select value={item.visibility} disabled={!editable} onChange={(e) => void save({ visibility: e.target.value as ItemVisibility })} className={INPUT}>
-                {ITEM_VISIBILITIES.map((v) => <option key={v} value={v}>{ITEM_VISIBILITY_WORDS[v]}</option>)}
+                {ITEM_VISIBILITIES.map((v) => <option key={v} value={v}>{MW.itemVisibility[v]}</option>)}
               </select>
             </label>
 
             <label className={LABEL}>
-              {MY_MOON_WORDS.proofLink}
+              {MW.myMoon.proofLink}
               <input type="url" inputMode="url" value={proof} readOnly={!editable} onChange={(e) => setProof(e.target.value)} onBlur={() => saveIfChanged("evidenceUrl", proof, item.evidenceUrl)} className={INPUT} />
             </label>
           </div>
         </>
       ) : null}
 
-      {busy ? <p className={MUTED}>{MY_MOON_WORDS.saving}</p> : null}
+      {busy ? <p className={MUTED}>{MW.myMoon.saving}</p> : null}
       {error ? <p role="alert" className={ERROR}>{error}</p> : null}
     </article>
   );

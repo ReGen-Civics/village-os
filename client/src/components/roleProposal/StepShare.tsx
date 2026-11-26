@@ -30,11 +30,12 @@ import {
   type ProposalOut,
   type ShareOut,
 } from "./proposalApi";
-import { RP_WORDS } from "./proposalWords";
+
 import { FOCUS, INPUT, LEDE, PANEL, PRIMARY, QUIET, SECONDARY } from "./parts";
 import DownloadCardText from "./DownloadCardText";
 import { cardTextUrl } from "./roleCardApi";
 import { RC_WORDS } from "./roleCardWords";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 const absolute = (link: string) => (typeof window !== "undefined" ? `${window.location.origin}${link}` : link);
 
@@ -50,6 +51,7 @@ function SharePanel({
   termsOpen?: boolean;
   partner?: string;
 }) {
+  const RW = useProposalWords();
   const share = proposal.share;
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
@@ -73,44 +75,44 @@ function SharePanel({
     if (!share.link) return;
     try {
       await navigator.clipboard.writeText(absolute(share.link));
-      setSaid(RP_WORDS.copied);
+      setSaid(RW.copied);
     } catch {
-      setSaid(RP_WORDS.copyFailed);
+      setSaid(RW.copyFailed);
     }
   };
 
   const audiences: Array<{ key: ShareAudience; label: string; line: string }> = [
-    { key: "members", label: RP_WORDS.membersOnlyTier, line: RP_WORDS.membersOnlyLine },
-    { key: "anyone", label: RP_WORDS.anyoneTier, line: RP_WORDS.anyoneLine },
+    { key: "members", label: RW.membersOnlyTier, line: RW.membersOnlyLine },
+    { key: "anyone", label: RW.anyoneTier, line: RW.anyoneLine },
   ];
 
   return (
     <section aria-labelledby="rp-share" className={`${PANEL} grid gap-3`} data-share={share.on ? share.audience : "off"}>
       <h3 id="rp-share" className="font-semibold text-foreground">
-        {RP_WORDS.shareHeading}
+        {RW.shareHeading}
       </h3>
-      <p className={LEDE}>{RP_WORDS.shareLede}</p>
+      <p className={LEDE}>{RW.shareLede}</p>
       {!share.on ? (
         <>
-          <p className="text-sm text-muted-foreground">{RP_WORDS.shareOff}</p>
-          {termsOpen && partner && <p className={LEDE}>{RP_WORDS.sendOpsLine(partner)}</p>}
+          <p className="text-sm text-muted-foreground">{RW.shareOff}</p>
+          {termsOpen && partner && <p className={LEDE}>{RW.sendOpsLine(partner)}</p>}
           <div className="flex flex-wrap gap-2">
             {termsOpen && partner && (
-              <button type="button" disabled={busy} onClick={() => void run(() => setShare(proposal.id, "members"), RP_WORDS.sentToOps(partner))} className={PRIMARY}>
+              <button type="button" disabled={busy} onClick={() => void run(() => setShare(proposal.id, "members"), RW.sentToOps(partner))} className={PRIMARY}>
                 <Send className="h-4 w-4" aria-hidden="true" />
-                {RP_WORDS.sendToOps(partner)}
+                {RW.sendToOps(partner)}
               </button>
             )}
             <button type="button" disabled={busy} onClick={() => void run(() => setShare(proposal.id, share.audience))} className={termsOpen && partner ? SECONDARY : PRIMARY}>
               <Link2 className="h-4 w-4" aria-hidden="true" />
-              {RP_WORDS.makeLink}
+              {RW.makeLink}
             </button>
           </div>
         </>
       ) : (
         <>
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold text-foreground">{RP_WORDS.whoReads}</legend>
+            <legend className="mb-1 text-sm font-semibold text-foreground">{RW.whoReads}</legend>
             {audiences.map((a) => (
               <label key={a.key} className={`flex min-h-[44px] cursor-pointer items-start gap-3 rounded-lg border p-3 ${share.audience === a.key ? "border-dash-gold bg-dash-gold/10" : "border-border"}`}>
                 <input
@@ -139,26 +141,26 @@ function SharePanel({
           </fieldset>
           {share.link && (
             <label className="grid gap-1 text-sm font-medium text-foreground">
-              {RP_WORDS.theLink}
+              {RW.theLink}
               <input readOnly value={absolute(share.link)} onFocus={(e) => e.currentTarget.select()} className={`min-h-[44px] ${INPUT} text-sm`} data-share-link="" />
             </label>
           )}
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => void copy()} className={SECONDARY}>
               <Copy className="h-4 w-4" aria-hidden="true" />
-              {RP_WORDS.copyLink}
+              {RW.copyLink}
             </button>
-            <button type="button" disabled={busy} onClick={() => void run(() => regenerateShare(proposal.id, share.audience), RP_WORDS.regenerated)} className={SECONDARY}>
+            <button type="button" disabled={busy} onClick={() => void run(() => regenerateShare(proposal.id, share.audience), RW.regenerated)} className={SECONDARY}>
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              {RP_WORDS.regenerate}
+              {RW.regenerate}
             </button>
             <button type="button" disabled={busy} onClick={() => void run(() => shareOff(proposal.id))} className={QUIET}>
-              {RP_WORDS.turnOff}
+              {RW.turnOff}
             </button>
           </div>
           {share.token && (
             <a href={`/role-proposals/shared/${encodeURIComponent(share.token)}`} target="_blank" rel="noopener noreferrer" className={`${QUIET} w-fit px-0`}>
-              {RP_WORDS.openShared}
+              {RW.openShared}
             </a>
           )}
         </>
@@ -173,19 +175,20 @@ function SharePanel({
 }
 
 export function FeedbackList({ comments }: { comments: readonly CommentOut[] | null }) {
+  const RW = useProposalWords();
   return (
     <section aria-labelledby="rp-feedback" className={`${PANEL} grid gap-2`} data-feedback="">
       <h3 id="rp-feedback" className="font-semibold text-foreground">
-        {RP_WORDS.feedbackHeading}
+        {RW.feedbackHeading}
       </h3>
       {comments === null ? null : comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{RP_WORDS.noFeedback}</p>
+        <p className="text-sm text-muted-foreground">{RW.noFeedback}</p>
       ) : (
         <ul className="grid gap-2">
           {comments.map((c) => (
             <li key={c.id} className="rounded-lg border border-border p-3">
               <p className="whitespace-pre-line break-words text-foreground">{c.text}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{c.from ? RP_WORDS.fromWho(c.from, c.writtenOn) : c.writtenOn}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{c.from ? RW.fromWho(c.from, c.writtenOn) : c.writtenOn}</p>
             </li>
           ))}
         </ul>
@@ -205,6 +208,7 @@ function SubmitPanel({
   onSubmitted: (p: ProposalOut | null) => void;
   onSubmitGate?: (gate: { open: () => void; off: boolean }) => void;
 }) {
+  const RW = useProposalWords();
   const [asking, setAsking] = useState(false);
   const [words, setWords] = useState<string | null>(null);
   // Who adopts it in this village, as the server read it from who holds the power (E8).
@@ -219,7 +223,7 @@ function SubmitPanel({
     const saved = await beforeSubmit();
     if (!saved) {
       setBusy(false);
-      setSaid(RP_WORDS.notSaved);
+      setSaid(RW.notSaved);
       return;
     }
     const w = await fetchSubmitWords(proposal.id);
@@ -255,7 +259,7 @@ function SubmitPanel({
   return (
     <section aria-labelledby="rp-submit" className={`${PANEL} grid gap-3`} data-submit="">
       <h3 id="rp-submit" className="font-semibold text-foreground">
-        {RP_WORDS.submitHeading}
+        {RW.submitHeading}
       </h3>
       {blocked && (
         <p className="text-sm font-medium text-foreground" data-submit-blocked="">
@@ -266,15 +270,15 @@ function SubmitPanel({
         <div>
           <button type="button" data-open-submit="" disabled={busy || !!blocked} onClick={() => void open()} className={PRIMARY}>
             <Send className="h-4 w-4" aria-hidden="true" />
-            {RP_WORDS.submit}
+            {RW.submit}
           </button>
         </div>
       ) : (
         <div className="grid gap-3 rounded-lg border border-dash-gold bg-dash-gold/10 p-3" data-submit-confirm="">
-          <p className="font-medium text-foreground">{who ?? RP_WORDS.whoApproves}</p>
+          <p className="font-medium text-foreground">{who ?? RW.whoApproves}</p>
           {words && (
             <div className="grid gap-1">
-              <p className="text-sm text-muted-foreground">{RP_WORDS.youAlign}</p>
+              <p className="text-sm text-muted-foreground">{RW.youAlign}</p>
               <p className="whitespace-pre-line break-words rounded-lg border border-border bg-card p-3 text-sm text-foreground" data-aligned-words="">
                 {words}
               </p>
@@ -282,10 +286,10 @@ function SubmitPanel({
           )}
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={busy} onClick={() => void confirm()} className={PRIMARY}>
-              {RP_WORDS.confirm}
+              {RW.confirm}
             </button>
             <button type="button" disabled={busy} onClick={() => setAsking(false)} className={SECONDARY}>
-              {RP_WORDS.notYet}
+              {RW.notYet}
             </button>
           </div>
         </div>
