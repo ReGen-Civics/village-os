@@ -83,6 +83,8 @@ jobs:
       contents: read
       # For reading ci's verdict on a tagged commit.
       actions: read
+      # For asking the registry whether a version image already exists.
+      packages: read
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
       # true for a version tag, pushed or dispatched. Every job below that
@@ -92,6 +94,9 @@ jobs:
       sha: ${{ steps.decide.outputs.sha }}
       version: ${{ steps.decide.outputs.version }}
       tags: ${{ steps.decide.outputs.tags }}
+      # On the :edge path only: the version tag already holding this commit's
+      # image, so :edge can point at it instead of building it again.
+      reuse_from: ${{ steps.reuse.outputs.from }}
     steps:
       - id: decide
         name: Decide the tags
@@ -173,6 +178,39 @@ jobs:
 
           echo "publish=${publish} sha=${sha}"
           echo "${tags}"
+
+      - name: Is this commit already published under a version
+        # NO SECOND BUILD FOR :edge (26 Nov 2026). A release merge is tagged
+        # within minutes, and its tag release builds, boots, signs and pushes
+        # the image before ci's push run on main finishes. The :edge build that
+        # run then starts used to build the SAME commit again (45856729821
+        # rebuilt 7dac6f1; 45872165204 rebuilt 05131cc), 4 to 5.5 runner-
+        # minutes for an image that already existed. When a version tag points
+        # at this commit AND the registry holds that version, :edge is pointed
+        # at it (job edge-reuse) and the image job is skipped. If the tag
+        # release has not pushed yet, nothing is found and the image job
+        # builds :edge exactly as before.
+        id: reuse
+        if: steps.decide.outputs.publish == 'true' && steps.decide.outputs.tag_release != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ghcr.io/regen-civics/village-os
+          SHA: ${{ steps.decide.outputs.sha }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin > /dev/null
+          for name in $(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" --jq ".[] | select(.commit.sha == \"${SHA}\") | .name"); do
+            case "$name" in v[0-9]*.[0-9]*.[0-9]*) ;; *) continue ;; esac
+            ref="${IMAGE}:${name#v}"
+            if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+              echo "${SHA} is already published as ${ref}; :edge will point at it."
+              echo "from=${ref}" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "${name} points at ${SHA}, but ${ref} is not in the registry yet; building :edge as before."
+          done
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
@@ -403,7 +441,7 @@ jobs:
     #
     # `needs.plan.result == 'success'` is then required explicitly, because
     # `!cancelled()` also stops a failed `plan` from blocking this job.
-    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.rollback.result != 'failure' }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.plan.outputs.reuse_from == '' && needs.rollback.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -669,6 +707,46 @@ jobs:
             echo "commit: ${{ needs.plan.outputs.sha }}"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # :edge for a commit a tag release already built: point at that image, the
+  # same digest (pulled, tagged, pushed; never rebuilt), which that release
+  # already booted, signed and attested. See plan's "already published" step.
+  edge-reuse:
+    needs: plan
+    if: needs.plan.outputs.publish == 'true' && needs.plan.outputs.tag_release != 'true' && needs.plan.outputs.reuse_from != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Point :edge at the released image
+        env:
+          FROM: ${{ needs.plan.outputs.reuse_from }}
+          TAGS: ${{ needs.plan.outputs.tags }}
+          SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          set -euo pipefail
+          want=$(docker buildx imagetools inspect "$FROM" --format '{{json .Manifest}}' | jq -r '.digest')
+          docker pull -q "$FROM"
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            docker tag "$FROM" "$tag"
+            docker push -q "$tag"
+            got=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ "$got" != "$want" ]; then
+              echo "::error::${tag} resolves to ${got}, not ${want} (${FROM}); :edge must name the released image"
+              exit 1
+            fi
+            echo "${tag} -> ${want} (the image ${FROM} shipped for ${SHA})"
+          done <<< "$TAGS"
+          { echo "### :edge reused"; echo; echo "\`$(printf '%s' "$TAGS" | tr '\n' ' ' | sed 's/ *$//')\` now names ${want}, the image already published as \`${FROM}\` for ${SHA}. Nothing was rebuilt."; } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # The GitHub release, and the starter kit attached to it.
