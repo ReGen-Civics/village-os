@@ -32,7 +32,7 @@ import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useVillageName } from "@/hooks/useVillageName";
 import { useVillageLinks } from "@/lib/gameApi";
-import EntranceBackdrop, { FLOATING } from "@/components/EntranceBackdrop";
+import EntranceBackdrop, { GLASS, GLASS_PANEL, HERO, ON_VIDEO, VIDEO_WORLD, useReducedMotion } from "@/components/EntranceBackdrop";
 import type { EntranceBackdrop as EntranceBackdropValue } from "@shared/entrance";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, STATEMENT, WORLD } from "@/components/journey/look";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
@@ -188,6 +188,42 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
   };
 
   const siteHost = hostOf(siteUrl);
+  const reduceMotion = useReducedMotion();
+  /** "Come in": down to the glass card, the first field ready to type in. */
+  const comeIn = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const field = document.getElementById(fieldId("name")) as HTMLInputElement | null;
+    field?.closest("[data-entrance]")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    field?.focus({ preventScroll: true });
+  };
+
+  /** The welcome: on the card, or on the video's first screen when the village set a video. */
+  const intro = (onVideo: boolean) => (
+    <header className="flex flex-col gap-4">
+      <span className={onVideo ? ON_VIDEO.ring : "inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice"} aria-hidden="true">
+        <DoorOpen className="size-6" />
+      </span>
+      <p className={onVideo ? ON_VIDEO.eyebrow : EYEBROW}>{t({ message: "The portal", context: "portal entrance: eyebrow" })}</p>
+      <h1 className={onVideo ? ON_VIDEO.h1 : H1}>{t({ message: `Welcome to ${village}`, context: "portal entrance: heading, with the village's name" })}</h1>
+      <p className={onVideo ? ON_VIDEO.lede : LEDE}>
+        {t({
+          message: 'Just inside are the village\'s roles, its "game" and the work of building it together. We share a lot about who we are and how we co-create, so we\'d like to know a bit about you too!',
+          context: "portal entrance: what is inside, and what is asked",
+        })}
+      </p>
+      {siteHost && (
+        <p className={onVideo ? ON_VIDEO.hint : HINT}>
+          {t({ message: "To know more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
+          <a href={siteUrl} className={onVideo ? ON_VIDEO.link : LINK}>
+            {siteHost}
+          </a>
+          .{" "}
+          {t({ message: "This is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
+        </p>
+      )}
+    </header>
+  );
+
 
   if (goTo) return <KeepInTouch village={village} goTo={goTo} sentTo={sentTo} />;
 
@@ -196,34 +232,23 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
 
   return (
     <Layout>
-      <div className={WORLD}>
+      <div className={backdrop ? `${WORLD} ${VIDEO_WORLD}` : WORLD}>
         {backdrop && <EntranceBackdrop backdrop={backdrop} />}
-        <section className={`container flex max-w-2xl flex-col gap-8 py-12 sm:py-20 ${backdrop ? FLOATING : ""}`} data-entrance="">
-          <header className="flex flex-col gap-4">
-            <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice" aria-hidden="true">
-              <DoorOpen className="size-6" />
-            </span>
-            <p className={EYEBROW}>{t({ message: "The portal", context: "portal entrance: eyebrow" })}</p>
-            <h1 className={H1}>{t({ message: `Welcome to ${village}`, context: "portal entrance: heading, with the village's name" })}</h1>
-            <p className={LEDE}>
-              {t({
-                message: 'Just inside are the village\'s roles, its "game" and the work of building it together. We share a lot about who we are and how we co-create, so we\'d like to know a bit about you too!',
-                context: "portal entrance: what is inside, and what is asked",
-              })}
-            </p>
-            {siteHost && (
-              <p className={HINT}>
-                {t({ message: "To know more about us, visit", context: "portal entrance: before the link to the village's public site" })}{" "}
-                <a href={siteUrl} className={LINK}>
-                  {siteHost}
-                </a>
-                .{" "}
-                {t({ message: "This is our game, where we co-create the village.", context: "portal entrance: what this site is, after the link to the public site" })}
-              </p>
-            )}
-          </header>
+        {backdrop && (
+          <div className={HERO} data-entrance-hero="">
+            <div className="container flex max-w-2xl flex-col gap-6">
+              {intro(true)}
+              <a href={`#${fieldId("name")}`} onClick={comeIn} className={`${BTN_PRIMARY} self-start text-base`} data-entrance-come-in="">
+                {t({ message: "Come in", context: "portal entrance: the first screen's door down to the form, over the village's video" })}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        )}
+        <section className={backdrop ? `container flex max-w-2xl flex-col gap-8 py-12 sm:py-16 ${GLASS}` : "container flex max-w-2xl flex-col gap-8 py-12 sm:py-20"} data-entrance="">
+          {!backdrop && intro(false)}
 
-          <form onSubmit={submit} noValidate className={`${CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-form-heading`}>
+          <form onSubmit={submit} noValidate className={`${backdrop ? GLASS_PANEL : CARD_FEATURED} flex flex-col gap-6`} aria-labelledby={`${ids}-form-heading`}>
             <h2 id={`${ids}-form-heading`} className="sr-only">
               {t({ message: "Enter the portal", context: "portal entrance: the form's name for screen readers" })}
             </h2>
