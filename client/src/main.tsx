@@ -92,8 +92,6 @@ import "@fontsource/jost/latin-700.css";
 import "@fontsource/caveat/latin-400.css";
 import "@fontsource/caveat/latin-700.css";
 import "@fontsource/pinyon-script/latin-400.css";
-// The Sea chart look's old-print headings (seaChart.css). Declared for every page, fetched only where the look is on.
-import "@fontsource/im-fell-english/latin-400.css";
 import { warmFirstScreenFonts } from "./fontWarmup";
 
 /*

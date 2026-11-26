@@ -20,7 +20,9 @@
  *  4. Cards as torn, scorched sheets, on every page (the front door included), and plain white
  *     panels take the chart's panel. The tear is a border image drawn just outside the card (outset),
  *     not a clip, so nothing inside a card (a menu, a focus ring, a tooltip) is ever cut off.
- *  5. Old-print headings (IM Fell English, self-hosted in client/src/fonts, fetched only here).
+ *  5. Old-book headings in Cormorant Garamond, a face the app already ships, so the look adds no
+ *     font bytes (the dist budget is full; IM Fell English, the mock-ups' old-print face, was
+ *     40 KB even subset).
  *  6. Squarer buttons and a double rule under the header band.
  * Anyone who asks for more contrast, and every printed page, gets the plain page instead.
  */
@@ -90,12 +92,12 @@
 }
 
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .sheet-night {
-  --font-display: "IM Fell English", Georgia, "Times New Roman", serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 }
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .font-display {
-  font-family: "IM Fell English", Georgia, "Times New Roman", serif;
-  font-weight: 400;
-  font-synthesis-weight: none;
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: 0.005em;
 }
 
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) .jw-btn {
