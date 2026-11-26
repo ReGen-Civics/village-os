@@ -32,11 +32,11 @@ export const DECLINE_STEPS_DEFAULTS = {
 } as const;
 
 const ES = {
-  intro: "Si quieres seguir cerca, aquí hay tres maneras de entrar.",
-  waitlist: "Otros roles se abrirán pronto. Pide que te avisemos cuando se abra uno:",
+  intro: "Si quiere seguir cerca, aquí hay tres maneras de entrar.",
+  waitlist: "Otros roles se abrirán pronto. Pida que le avisemos cuando se abra uno:",
   quests: "Misiones que cualquiera puede tomar hoy:",
-  seederTitle: "Hazte Sembrador Fundador",
-  seederLine: "¿Quieres vivir aquí algún día? Empieza por el camino de residente.",
+  seederTitle: "Hágase Sembrador Fundador",
+  seederLine: "¿Quiere vivir aquí algún día? Empiece por el camino de residente.",
 } as const;
 
 type Key = Exclude<(typeof DECLINE_STEPS_KEYS)[keyof typeof DECLINE_STEPS_KEYS], "org.decline_next_steps_on"> | (typeof OTHER_WAYS_KEYS)[keyof typeof OTHER_WAYS_KEYS] | "org.stay_close_link";
