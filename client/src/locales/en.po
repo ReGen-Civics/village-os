@@ -244,6 +244,11 @@ msgctxt "open proposal: one role's commitment"
 msgid "No commitment chosen for this role."
 msgstr "No commitment chosen for this role."
 
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Opt-in personal profiles, shown in context only, with every line the member's own to share or hide."
+msgstr "Opt-in personal profiles, shown in context only, with every line the member's own to share or hide."
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Done by {role}"
@@ -360,6 +365,11 @@ msgstr "Your application is for your first long-term role, so references are ask
 msgid "This photo carries no location. Paste the place or tap the map instead."
 msgstr "This photo carries no location. Paste the place or tap the map instead."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: invalid"
+msgid "Part of this pack is not in the moon pack's shape."
+msgstr "Part of this pack is not in the moon pack's shape."
+
 #: client/src/components/admin/NeedsYouNow.tsx
 msgctxt "Admin Today, needs you now"
 msgid "Nothing on the review list is waiting on you."
@@ -374,6 +384,11 @@ msgstr "Raise one from the card of a holder of the role it is about."
 msgctxt "role card tooltip: the word"
 msgid "Founding Seeder"
 msgstr "Founding Seeder"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: noItemsInQueue"
+msgid "The queue did not send this recap's items, so it opens from the member's profile."
+msgstr "The queue did not send this recap's items, so it opens from the member's profile."
 
 #: client/src/components/QuestCard.tsx
 #: client/src/pages/QuestDetail.tsx
@@ -487,6 +502,11 @@ msgstr "{decision} decided this after it arrived."
 msgctxt "hidden map, logging a place"
 msgid "Planted on"
 msgstr "Planted on"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: ownGoal"
+msgid "My seasonal goal"
+msgstr "My seasonal goal"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopted on {adoptedOn} by the village's vote."
@@ -699,6 +719,11 @@ msgctxt "role card rewards explainer: heading"
 msgid "Your agreement"
 msgstr "Your agreement"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: heading"
+msgid "End-of-moon review settings"
+msgstr "End-of-moon review settings"
+
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "ArchetypesPanel, toast"
 msgid "The order did not save. The server did not answer."
@@ -812,6 +837,11 @@ msgstr "About {0} in your display currency."
 msgctxt "about you"
 msgid "Give at least two references. We prefer three, and you can add up to six. Each needs a name, how you know them, and an email or phone number."
 msgstr "Give at least two references. We prefer three, and you can add up to six. Each needs a name, how you know them, and an email or phone number."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: taskScore"
+msgid "Task score"
+msgstr "Task score"
 
 #: client/src/components/comms/GuestRsvpForm.tsx
 msgctxt "GuestRsvpForm, button"
@@ -970,6 +1000,11 @@ msgctxt "NeedsPanel, button"
 msgid "Next: the whole of it"
 msgstr "Next: the whole of it"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: keepAndTag"
+msgid "Keep and tag"
+msgstr "Keep and tag"
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nothing is being weighed right now."
 msgstr "Nothing is being weighed right now."
@@ -1030,6 +1065,11 @@ msgstr "Session Card"
 msgctxt "pay page, an amount converted into the reader's currency"
 msgid "about {aboutText}"
 msgstr "about {aboutText}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: void"
+msgid "Void"
+msgstr "Void"
 
 #: client/src/pages/JourneyToLaunch.tsx
 msgctxt "JourneyToLaunch, Link"
@@ -1217,6 +1257,11 @@ msgstr "The village has not set its goals for this season yet. You can still pro
 msgctxt "module canvas, benefit 4"
 msgid "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
 msgstr "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: externalKey"
+msgid "Electronic invoice key"
+msgstr "Electronic invoice key"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -2131,6 +2176,11 @@ msgstr "Nobody has joined yet. A witness opens this rite on their own phone."
 #~ msgid "Explore Our Circles"
 #~ msgstr "Explore Our Circles"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: noEligible"
+msgid "Nobody else can give this approval. The core circle names a stand-in."
+msgstr "Nobody else can give this approval. The core circle names a stand-in."
+
 #: client/src/pages/JourneyToLaunch.tsx
 msgctxt "JourneyToLaunch, p"
 msgid "Governance Canvas is off. <0>Turn it on in Modules</0> to start your canvas."
@@ -2329,6 +2379,11 @@ msgstr "What harm could this do to the village, or what would it stop us doing?"
 msgctxt "module hypha, promise"
 msgid "Your DAO's real numbers from Base, on your own pages."
 msgstr "Your DAO's real numbers from Base, on your own pages."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: memberNumber"
+msgid "Your invoice number"
+msgstr "Your invoice number"
 
 #: client/src/pages/Bootstrap.tsx
 msgctxt "Bootstrap, p"
@@ -2600,6 +2655,11 @@ msgctxt "hidden map, the moment the map opens"
 msgid "Members who logged"
 msgstr "Members who logged"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: commitment, a percent"
+msgid "{pct}%"
+msgstr "{pct}%"
+
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "quest editor"
 msgid "Posted, priced by the village's rule"
@@ -2614,6 +2674,11 @@ msgstr "{vouched} of {needed} vouched"
 #~ msgctxt "open proposal card"
 #~ msgid "Add a task"
 #~ msgstr "Add a task"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: LINE_BASIS_WORDS: per_month"
+msgid "Fixed per month, prorated by days"
+msgstr "Fixed per month, prorated by days"
 
 #: client/src/components/CycleClock.tsx
 #~ msgctxt "cycle clock: a village on calendar months, the day the month turns"
@@ -2753,6 +2818,11 @@ msgstr "{a} and older"
 #~ msgctxt "open proposal: the pay ask"
 #~ msgid "Their ask"
 #~ msgstr "Their ask"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: roomViewOn"
+msgid "Room view is on"
+msgstr "Room view is on"
 
 #: client/src/components/admin/comms/CommsSettings.tsx
 msgctxt "CommsSettings, h3"
@@ -3139,6 +3209,11 @@ msgstr "Make your map"
 msgctxt "VillageHealth, span"
 msgid "{0} of {1} lunations collected, trends unlock at {2}."
 msgstr "{0} of {1} lunations collected, trends unlock at {2}."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_SKIP_WORDS: seat_unknown"
+msgid "Names a role you do not hold"
+msgstr "Names a role you do not hold"
 
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "ObjectionPanel, button"
@@ -3828,6 +3903,11 @@ msgctxt "open work card: the quest asks more than the reader can give"
 msgid "Harder"
 msgstr "Harder"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Track"
+msgstr "Track"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.consent_after_interviews, description"
 msgid "Off, the circle is asked to consent the moment an applicant confirms their address. On, the circle is only told an application arrived, and the consent round opens once every conversation a role names has been scored, so the circle weighs the whole picture. Roles that name no interviewers are asked at once either way. Nobody's score is shown to the circle's ask or to the applicant."
@@ -4095,10 +4175,20 @@ msgctxt "roles page archetypes, between two examples"
 msgid "or"
 msgstr "or"
 
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "It says what a module may do, what it must never touch, and how a village switches it on and off."
+msgstr "It says what a module may do, what it must never touch, and how a village switches it on and off."
+
 #: client/src/components/admin/comms/WordsEditor.tsx
 msgctxt "WordsEditor, p"
 msgid "Voice check"
 msgstr "Voice check"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: routeNotConfirmed"
+msgid "Not confirmed yet"
+msgstr "Not confirmed yet"
 
 #: client/src/pages/Messages.tsx
 msgctxt "Messages, p"
@@ -4626,6 +4716,11 @@ msgctxt "EventsAdminPanel, span"
 msgid "example"
 msgstr "example"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: THANKS_WORDS: heading"
+msgid "Who helped you this moon?"
+msgstr "Who helped you this moon?"
+
 #: client/src/components/fireflyPath/StartConversation.tsx
 msgctxt "start a conversation: the link's label"
 msgid "My work"
@@ -4855,6 +4950,11 @@ msgctxt "role editor, a field that differs from the role as it stands"
 msgid "Changed"
 msgstr "Changed"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: AUTHORITY_KIND_WORDS: bridge_agreement"
+msgid "Bridge agreement"
+msgstr "Bridge agreement"
+
 #. placeholder {0}: m.demotedBecause.join(", ")
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "module health, demoted module"
@@ -4910,6 +5010,11 @@ msgstr "Preview"
 msgid "The amount must be a number above zero."
 msgstr "The amount must be a number above zero."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.overrides"
+msgid "Moved days"
+msgstr "Moved days"
+
 #: client/src/components/admin/PlayersTab.tsx
 msgctxt "PlayersTab, access refused"
 msgid "Role change failed"
@@ -4928,6 +5033,11 @@ msgstr "Turn on Your list for a member. It shows on their profile under their ta
 msgctxt "Admin, button"
 msgid "Accept and open credit sales"
 msgstr "Accept and open credit sales"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "START_HERE"
+msgstr "START_HERE"
 
 #. placeholder {0}: crossedOn ?? "the day this vote closed"
 #. placeholder {1}: ballot.closedBy ? `, closed by ${ballot.closedBy}` : ""
@@ -4981,6 +5091,11 @@ msgctxt "AttendanceList, aria-label"
 msgid "Who came"
 msgstr "Who came"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: CARRY_FLAG_WORDS"
+msgid "Carried twice. Do it, reshape it, hand it on, or let it go."
+msgstr "Carried twice. Do it, reshape it, hand it on, or let it go."
+
 #: client/src/components/fireflyPath/SaveLater.tsx
 msgctxt "founding application, save and finish later: failed"
 msgid "That did not save. Please try again."
@@ -5025,6 +5140,11 @@ msgstr "Other ways to build the village"
 msgctxt "GameMechanics, h2"
 msgid "Amendment History"
 msgstr "Amendment History"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: weighted"
+msgid "weighted by the days each of your {n} splits held this moon"
+msgstr "weighted by the days each of your {n} splits held this moon"
 
 #: client/src/components/places/PhotoCard.tsx
 #~ msgctxt "PhotoCard, button"
@@ -5214,6 +5334,11 @@ msgstr "Cancel"
 msgid "Apply with your selection"
 msgstr "Apply with your selection"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: preview"
+msgid "Preview"
+msgstr "Preview"
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team view: the team drawn in rings"
 msgid "Formation"
@@ -5345,6 +5470,11 @@ msgstr "Not quite"
 msgctxt "game variable governance.weight_cap_pct, description"
 msgid "While the cap above is on, the largest share of a ballot's vote that one member can carry. It only matters in token mode, and only with the cap switched on. At 20, a member holding 90 beside four members holding 2.5 each carries a fifth of the vote, the same as each of them, and members under the cap keep their balance in full. With fewer than 5 members holding weight at 20, everyone weighs the same, because five shares of 20 is the least that makes a whole vote. Lower spreads power wider and needs more holders before balances count at all. To have no cap, turn the switch off. This number never does that."
 msgstr "While the cap above is on, the largest share of a ballot's vote that one member can carry. It only matters in token mode, and only with the cap switched on. At 20, a member holding 90 beside four members holding 2.5 each carries a fifth of the vote, the same as each of them, and members under the cap keep their balance in full. With fewer than 5 members holding weight at 20, everyone weighs the same, because five shares of 20 is the least that makes a whole vote. Lower spreads power wider and needs more holders before balances count at all. To have no cap, turn the switch off. This number never does that."
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Paste the guide into your agent"
+msgstr "Paste the guide into your agent"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
@@ -5517,6 +5647,11 @@ msgctxt "open proposal decide: adoptWhenASeatOpens"
 msgid "Adopt for when a place opens"
 msgstr "Adopt for when a place opens"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: not_a_pack"
+msgid "This is not a moon pack. Paste the whole pack the deep dive gave you."
+msgstr "This is not a moon pack. Paste the whole pack the deep dive gave you."
+
 #. placeholder {0}: extra!.orphans.join(", ")
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, p"
@@ -5548,6 +5683,11 @@ msgstr "About me for my agent"
 msgctxt "StructureReview, p"
 msgid "{0} in this arrival change no structure and stay in the <0>review queue</0>."
 msgstr "{0} in this arrival change no structure and stay in the <0>review queue</0>."
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Read the contract"
+msgstr "Read the contract"
 
 #: client/src/components/admin/SeatClaimAsks.tsx
 msgctxt "SeatClaimAsks, button"
@@ -5643,6 +5783,11 @@ msgstr "No account needed."
 msgctxt "work with us: an error naming the question left blank"
 msgid "Answer this to continue: {0}."
 msgstr "Answer this to continue: {0}."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: takeBack"
+msgid "Take back"
+msgstr "Take back"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft next"
@@ -5898,6 +6043,11 @@ msgctxt "sera draft mark"
 msgid "Draft from Sera"
 msgstr "Draft from Sera"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GOAL_STATUS_WORDS: done"
+msgid "Done"
+msgstr "Done"
+
 #: client/src/components/calendar/CommunityCalendarCard.tsx
 msgctxt "CommunityCalendarCard, placeholder"
 msgid "The commons"
@@ -5983,6 +6133,11 @@ msgstr "Copying did not work here. The link is selected in the field below."
 msgctxt "talk it out panel"
 msgid "Talk it out: {0}"
 msgstr "Talk it out: {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.hostCode"
+msgid "Host country code (two letters)"
+msgstr "Host country code (two letters)"
 
 #: client/src/components/openProposal/onboardingWords.ts
 msgctxt "applicant onboarding: ownerDefault"
@@ -6171,6 +6326,11 @@ msgctxt "role in one minute: a fact"
 msgid "Commitment"
 msgstr "Commitment"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.remove"
+msgid "Remove this payer"
+msgstr "Remove this payer"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "They agreed to sign the Love Letter before seating, and the NDA once approved."
 #~ msgstr "They agreed to sign the Love Letter before seating, and the NDA once approved."
@@ -6258,6 +6418,11 @@ msgstr "Goal:"
 msgctxt "GameMechanics, p"
 msgid "Every change to the rules is on the permanent record: what moved, from what to what, by whom, and under which passed proposal."
 msgstr "Every change to the rules is on the permanent record: what moved, from what to what, by whom, and under which passed proposal."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: TASK_STATUS_WORDS: carry"
+msgid "Carry"
+msgstr "Carry"
 
 #: client/src/components/MicButton.tsx
 msgctxt "mic button refusal"
@@ -6462,6 +6627,11 @@ msgctxt "review inbox: an org chart draft"
 msgid "Confirm"
 msgstr "Confirm"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Selection criteria"
+msgstr "Selection criteria"
+
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, h2"
 msgid "Keep this for later?"
@@ -6604,6 +6774,11 @@ msgctxt "ArchetypesPanel, p"
 msgid "The name you give a class is <0>always</0> yours: it is never replaced, marked or not. A class marked <1>Your words</1> keeps everything else you wrote here too, through every deploy. On a class with no mark, the subtitle, description, examples and sigil are still refreshed from the platform when this village is redeployed, so an improvement to the shipped wording reaches you."
 msgstr "The name you give a class is <0>always</0> yours: it is never replaced, marked or not. A class marked <1>Your words</1> keeps everything else you wrote here too, through every deploy. On a class with no mark, the subtitle, description, examples and sigil are still refreshed from the platform when this village is redeployed, so an improvement to the shipped wording reaches you."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.addForm"
+msgid "Add a tax form"
+msgstr "Add a tax form"
+
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable category"
 msgid "Forum"
@@ -6622,6 +6797,11 @@ msgstr "The pictures a member picks from when they make their character: two for
 msgctxt "role card fact: a role that can be shared"
 msgid "Full or part time, from {lo}%"
 msgstr "Full or part time, from {lo}%"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: added"
+msgid "{n} to add"
+msgstr "{n} to add"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
@@ -6881,6 +7061,11 @@ msgctxt "module journal, setup"
 msgid "Nothing to set up. The pulse shows from the first answer, and the village can raise that floor."
 msgstr "Nothing to set up. The pulse shows from the first answer, and the village can raise that floor."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: remove"
+msgid "Remove"
+msgstr "Remove"
+
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, dt"
 msgid "Sender"
@@ -7070,6 +7255,11 @@ msgstr "Contributed: work or other"
 msgctxt "Badges, p"
 msgid "What the village recognizes: skills you declare, badges earned from real contribution, honors granted by stewards."
 msgstr "What the village recognizes: skills you declare, badges earned from real contribution, honors granted by stewards."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: seraAdded"
+msgid "{n, plural, one {# suggestion so far.} other {# suggestions so far.}}"
+msgstr "{n, plural, one {# suggestion so far.} other {# suggestions so far.}}"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: confirm"
@@ -7489,6 +7679,11 @@ msgctxt "GeneKeysMoon, p"
 msgid "From {0} · this moon"
 msgstr "From {0} · this moon"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: proposeAmount"
+msgid "The amount you propose, in minor units"
+msgstr "The amount you propose, in minor units"
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Ways of seeing it that count"
 msgstr "Ways of seeing it that count"
@@ -7763,6 +7958,11 @@ msgstr "A flat amount in the redemption's own currency, kept by the village on t
 msgid "The {careShown} role, and the {coverShown} role when they cannot."
 msgstr "The {careShown} role, and the {coverShown} role when they cannot."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: abroad"
+msgid "Lives and works abroad"
+msgstr "Lives and works abroad"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome, what the companion says"
 msgid "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstName}. I'll hatch once you've told me who to be. First: what's my name?"
@@ -7782,6 +7982,11 @@ msgstr "Calling this off"
 msgctxt "the bell: several notices of one kind batched into a line, kind ballot_expired"
 msgid "{n} votes are past their window and waiting for someone to close them."
 msgstr "{n} votes are past their window and waiting for someone to close them."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: skippedItem"
+msgid "Item {n}"
+msgstr "Item {n}"
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, close a path's editor"
@@ -7874,6 +8079,11 @@ msgctxt "ArchetypesPanel, toast"
 msgid "The class was not added. The server did not answer."
 msgstr "The class was not added. The server did not answer."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: addGoal"
+msgid "Add a goal"
+msgstr "Add a goal"
+
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: quick start button"
 msgid "Help me make it clearer"
@@ -7883,6 +8093,16 @@ msgstr "Help me make it clearer"
 msgctxt "a circle's own calendar, change its title filter"
 msgid "Which events count"
 msgstr "Which events count"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_STAGE_WORDS: work"
+msgid "The work"
+msgstr "The work"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: invoiceAfterApproval"
+msgid "Your work summary is ready once both approvals are in."
+msgstr "Your work summary is ready once both approvals are in."
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable ledger.org_accounts_open, description"
@@ -8025,6 +8245,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "They said: {0}"
 msgstr "They said: {0}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: tabs.rhythm"
+msgid "Moon rhythm"
+msgstr "Moon rhythm"
+
 #: client/src/components/admin/AiSetupBanner.tsx
 msgctxt "admin, AI setup banner"
 msgid "Connect an Anthropic key (or Sera, if your village uses it for org memory) and {guide} helps you through the rest of setup: finding settings, explaining them and proposing changes for you to approve. It turns on by itself once the key is saved."
@@ -8115,6 +8340,11 @@ msgctxt "change request note outcome"
 msgid "Taken in"
 msgstr "Taken in"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Who can hold it"
+msgstr "Who can hold it"
+
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
 msgctxt "portal entrance: the keep-in-touch answer yes"
@@ -8151,6 +8381,11 @@ msgstr "It needs something that is itself held."
 msgctxt "funding rounds"
 msgid "{who} pledged {much}, firm"
 msgstr "{who} pledged {much}, firm"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: ownWords"
+msgid "In my own words"
+msgstr "In my own words"
 
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, p"
@@ -8421,6 +8656,11 @@ msgstr "⚘ Setup game"
 msgctxt "priority board, an item's place in the order"
 msgid "Number {0}"
 msgstr "Number {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: doneWhen"
+msgid "Done when"
+msgstr "Done when"
 
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, the calendar read failed"
@@ -8743,6 +8983,11 @@ msgstr "Why you, and why this role, in a few lines"
 msgctxt "game variable governance.window_role_seat, description"
 msgid "The window a proposal that asks somebody to sit in a role opens in, in the same words as the change set window above. Hold this one open while a village is young: a role nobody can be asked to fill is a role that stays empty until the calendar allows it."
 msgstr "The window a proposal that asks somebody to sit in a role opens in, in the same words as the change set window above. Hold this one open while a village is young: a role nobody can be asked to fill is a role that stays empty until the calendar allows it."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: loadFailed"
+msgid "These settings did not load. Try again in a moment."
+msgstr "These settings did not load. Try again in a moment."
 
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
@@ -9518,6 +9763,11 @@ msgctxt "SaberraConfigPanel, title"
 msgid "The connection"
 msgstr "The connection"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: saved"
+msgid "{n, plural, one {Saved. # change recorded.} other {Saved. # changes recorded.}}"
+msgstr "{n, plural, one {Saved. # change recorded.} other {Saved. # changes recorded.}}"
+
 #. placeholder {0}: s.binding.chainName
 #. placeholder {1}: s.binding.chainSymbol
 #. placeholder {2}: new Date(s.binding.readAt).toLocaleDateString()
@@ -9564,6 +9814,11 @@ msgstr "It carries when {0}% of the roll has answered and {1}% of those who take
 msgctxt "shape the role prompt"
 msgid "How would you deliver this piece? What, and by when."
 msgstr "How would you deliver this piece? What, and by when."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: LINE_BASIS_WORDS: range"
+msgid "A range"
+msgstr "A range"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page: required roles beyond the reader's percent, several"
@@ -9629,6 +9884,11 @@ msgctxt "an agenda item's aim: Explore"
 msgid "Gather ideas and understanding, usually in a round."
 msgstr "Gather ideas and understanding, usually in a round."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.formLabel"
+msgid "Name members read"
+msgstr "Name members read"
+
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, step two"
 msgid "Paste this address and save it."
@@ -9649,6 +9909,11 @@ msgstr "Changes by consent. <0>Propose new words on the circle's card</0>"
 msgctxt "GameMechanics, span"
 msgid "village-tuned · default {0}"
 msgstr "village-tuned · default {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: newRole"
+msgid "A role that should exist"
+msgstr "A role that should exist"
 
 #: client/src/components/admin/InvoluntaryExitDialog.tsx
 msgctxt "InvoluntaryExitDialog, DialogDescription"
@@ -9744,6 +10009,11 @@ msgctxt "founding application refusal"
 msgid "Add your name."
 msgstr "Add your name."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: imported"
+msgid "Imported: {added} added, {merged} merged, {skipped} skipped."
+msgstr "Imported: {added} added, {merged} merged, {skipped} skipped."
+
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, button"
 msgid "Add this need"
@@ -9809,6 +10079,11 @@ msgstr "Each place shows the roles that care for it, its open quests and what it
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Your role runs from adoption to the next new moon, {moonEnds}. Each moon you lay out what you will contribute."
 #~ msgstr "Your role runs from adoption to the next new moon, {moonEnds}. Each moon you lay out what you will contribute."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: attestation"
+msgid "This moon's attestation"
+msgstr "This moon's attestation"
 
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms commitment"
@@ -10118,6 +10393,11 @@ msgctxt "game variable guide.voice, description"
 msgid "A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried."
 msgstr "A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: returned"
+msgid "Returned with a note"
+msgstr "Returned with a note"
+
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "Its words name a member here, so they cannot be taken as they are."
@@ -10208,10 +10488,20 @@ msgctxt "game variable org.voice_clips_max, label"
 msgid "Voice clips an applicant may record beside their answers"
 msgstr "Voice clips an applicant may record beside their answers"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: room"
+msgid "From a room"
+msgstr "From a room"
+
 #: client/src/components/admin/comms/CommsOverview.tsx
 msgctxt "CommsOverview, h3"
 msgid "Emails that did not arrive"
 msgstr "Emails that did not arrive"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: seasonGoals"
+msgid "Season goals"
+msgstr "Season goals"
 
 #: client/src/components/admin/GameRolesTab.tsx
 msgctxt "GameRolesTab, h2"
@@ -10278,6 +10568,11 @@ msgctxt "game variable events.rsvp_enabled, label"
 msgid "Let members RSVP"
 msgstr "Let members RSVP"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: taxFormExpiresOn"
+msgid "Tax form expires on"
+msgstr "Tax form expires on"
+
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: what the save bar saves"
 msgid "your words for things"
@@ -10338,6 +10633,11 @@ msgstr "This asks {name} for {what}. It sends the role you are applying for, you
 msgctxt "QuestActions, Link"
 msgid "Sign in to take this Quest"
 msgstr "Sign in to take this Quest"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Review"
+msgstr "Review"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind restorative_intake"
@@ -10470,6 +10770,11 @@ msgstr "Filed as suggestions on {0}. Each waits on its block's Adopt frame."
 msgctxt "Admin, button"
 msgid "Handled"
 msgstr "Handled"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Once it lands, your module appears on this page in every village, off until a village chooses it."
+msgstr "Once it lands, your module appears on this page in every village, off until a village chooses it."
 
 #: client/src/components/reviewInbox/useConnectorDesk.ts
 msgctxt "review inbox: decide"
@@ -10625,6 +10930,11 @@ msgstr "Where the money comes from"
 #: client/src/pages/ProposeARole.tsx
 msgid "Not open right now"
 msgstr "Not open right now"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: heading"
+msgid "My moon"
+msgstr "My moon"
 
 #: client/src/components/calendar/CommunityCalendarCard.tsx
 msgctxt "CommunityCalendarCard, button"
@@ -10885,6 +11195,11 @@ msgstr "What they would deliver"
 msgctxt "game variable calendar.hemisphere, label"
 msgid "Hemisphere"
 msgstr "Hemisphere"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: notStarted"
+msgid "Not started yet. Bring in your tasks to begin."
+msgstr "Not started yet. Bring in your tasks to begin."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -11170,6 +11485,11 @@ msgstr "What are you looking for, in your own words?"
 msgid "Your Ikigai answers are saved in this browser. Nothing has been sent."
 msgstr "Your Ikigai answers are saved in this browser. Nothing has been sent."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: askSera"
+msgid "Ask Sera"
+msgstr "Ask Sera"
+
 #. placeholder {0}: r.name
 #: client/src/components/fireflyPath/reviewExtras.ts
 #~ msgctxt "founding application review, one of several roles"
@@ -11230,6 +11550,11 @@ msgstr "{daysLeft, plural, one {# day left.} other {# days left.}}"
 msgctxt "module resources, benefit 3"
 msgid "Request approval opens a forum decision pre-filled from the rule"
 msgstr "Request approval opens a forum decision pre-filled from the rule"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Run the module facts"
+msgstr "Run the module facts"
 
 #: client/src/components/RedemptionQueue.tsx
 msgctxt "RedemptionQueue, button"
@@ -11635,6 +11960,11 @@ msgctxt "workbook section heading"
 msgid "Key moments"
 msgstr "Key moments"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: LINE_BASIS_WORDS: per_moon"
+msgid "Fixed per moon"
+msgstr "Fixed per moon"
+
 #: client/src/components/admin/ModuleConfigPanels.tsx
 msgctxt "ModuleConfigPanels, h2"
 msgid "<0/> Crowdpool"
@@ -11733,6 +12063,11 @@ msgstr "Discarded. Nothing went live."
 msgctxt "proposed changes: conflict"
 msgid "{0, plural, one {One waiting change was drafted before a later accept.} other {# waiting changes were drafted before a later accept.}}"
 msgstr "{0, plural, one {One waiting change was drafted before a later accept.} other {# waiting changes were drafted before a later accept.}}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.authorityKind"
+msgid "Kind"
+msgstr "Kind"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "The confidentiality agreement is not promised"
@@ -11935,9 +12270,19 @@ msgctxt "label of the season file text box"
 msgid "Season file"
 msgstr "Season file"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_SKIP_WORDS: duplicate"
+msgid "Already on your recap"
+msgstr "Already on your recap"
+
 #: client/src/components/admin/MenuPanel.tsx
 msgid "Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu. Blank keeps the platform's word."
 msgstr "Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu. Blank keeps the platform's word."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_SKIP_WORDS: goal_unknown"
+msgid "Names a season goal this season does not have"
+msgstr "Names a season goal this season does not have"
 
 #: client/src/pages/Places.tsx
 msgctxt "Places, p"
@@ -12025,6 +12370,11 @@ msgctxt "accessible name of the companion button on a canvas block"
 msgid "Ask about {name}"
 msgstr "Ask about {name}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: addItem"
+msgid "Add an item"
+msgstr "Add an item"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
 msgid "https://..., mailto:..., or /visit. Blank shows the contact form"
@@ -12049,6 +12399,11 @@ msgstr "Showing {shownCount}: {shownWords}"
 msgctxt "review inbox: a row, what it is"
 msgid "An application for a role"
 msgstr "An application for a role"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GOAL_STATUS_WORDS: carried"
+msgid "Carry"
+msgstr "Carry"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Edit the name or the why"
@@ -12130,6 +12485,11 @@ msgctxt "admin compare"
 msgid "Move \"{0}\" to"
 msgstr "Move \"{0}\" to"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: none"
+msgid "None"
+msgstr "None"
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk"
 msgid "Cash for role pay and quest pay"
@@ -12171,6 +12531,11 @@ msgstr "this role"
 msgctxt "open proposal, founding application"
 msgid "No ramp-up asked for."
 msgstr "No ramp-up asked for."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: cc"
+msgid "Cc"
+msgstr "Cc"
 
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Closed lunations only. A member's share of the open cycle is unknowable before close, on purpose.{tokenName} and written acknowledgments are never blended into one number."
@@ -12259,6 +12624,11 @@ msgstr "Elected to the finance role this season"
 msgctxt "task board: sheets.done.notePrompt"
 msgid "What came of it? One line the circle will hear."
 msgstr "What came of it? One line the circle will hear."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: result"
+msgid "{approved} approved, {refused} refused, {held} held."
+msgstr "{approved} approved, {refused} refused, {held} held."
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: submit"
@@ -12711,6 +13081,11 @@ msgctxt "game variable org.decline_next_steps_intro, description"
 msgid "One short line that introduces the three ways to stay close."
 msgstr "One short line that introduces the three ways to stay close."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: AUTHORITY_KIND_WORDS: written_authorization"
+msgid "Written authorization"
+msgstr "Written authorization"
+
 #: client/src/components/review/ConsentQueue.tsx
 msgctxt "ConsentQueue, button"
 msgid "Try again"
@@ -12814,6 +13189,11 @@ msgstr "The more needs you take on, the more roles the economy needs to meet the
 msgctxt "InventoryCard, h4"
 msgid "Homes you asked about"
 msgstr "Homes you asked about"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: where"
+msgid "On the land"
+msgstr "On the land"
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -12921,10 +13301,20 @@ msgctxt "TheVessel, placeholder"
 msgid "Their @handle"
 msgstr "Their @handle"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.holds"
+msgid "Holds: invoices Finance decides with the accountant"
+msgstr "Holds: invoices Finance decides with the accountant"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module funding-rounds, for whom"
 msgid "Villages with a budget to share that want the people doing the work to choose where it goes."
 msgstr "Villages with a budget to share that want the people doing the work to choose where it goes."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SERA_STATE_WORDS: failed"
+msgid "Sera did not answer in time. Whatever arrived is below; add the rest by hand."
+msgstr "Sera did not answer in time. Whatever arrived is below; add the rest by hand."
 
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -13090,6 +13480,11 @@ msgctxt "approved writes"
 msgid "Approved agent writes"
 msgstr "Approved agent writes"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_STATE_WORDS: suggested"
+msgid "Suggested"
+msgstr "Suggested"
+
 #. placeholder {0}: s.recordedName
 #: client/src/components/SeatClaimCard.tsx
 msgctxt "SeatClaimCard, span"
@@ -13174,6 +13569,11 @@ msgstr "Save who came"
 msgctxt "Admin, th"
 msgid "Status"
 msgstr "Status"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: note"
+msgid "The note"
+msgstr "The note"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card: a commitment inside a sentence"
@@ -13286,6 +13686,11 @@ msgstr "A decision. It goes into a draft before it is live."
 msgctxt "game variable governance.unity_pct, description"
 msgid "Of the votes cast for or against, the share that must be in favor for a ballot run on the village's own dials to pass. Abstentions help a ballot reach quorum and take no side here. 100 asks for consensus in effect; the Hypha surface this inherits from runs at 80."
 msgstr "Of the votes cast for or against, the share that must be in favor for a ballot run on the village's own dials to pass. Abstentions help a ballot reach quorum and take no side here. 100 asks for consensus in effect; the Hypha surface this inherits from runs at 80."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: howItEnded"
+msgid "How it ended"
+msgstr "How it ended"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable progression.unlock.map.photograph, label"
@@ -13443,6 +13848,11 @@ msgctxt "the bell: several notices of one kind batched into a line, kind message
 msgid "{n} conversations have something new in them."
 msgstr "{n} conversations have something new in them."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: save"
+msgid "Save"
+msgstr "Save"
+
 #: client/src/pages/SetPassword.tsx
 msgctxt "SetPassword, p"
 msgid "This link is incomplete. Open the link from your email again."
@@ -13534,10 +13944,20 @@ msgctxt "role card"
 msgid "Its commitments. {written} of {of} written down."
 msgstr "Its commitments. {written} of {of} written down."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.address"
+msgid "Address"
+msgstr "Address"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module exchange, data"
 msgid "Orders and balances, tied to named members and their payment records."
 msgstr "Orders and balances, tied to named members and their payment records."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: carriedTimes"
+msgid "{n, plural, one {Carried once} other {Carried # times}}"
+msgstr "{n, plural, one {Carried once} other {Carried # times}}"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -13559,6 +13979,11 @@ msgctxt "applicant onboarding: primary.ask_references"
 msgid "Ask for references"
 msgstr "Ask for references"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ROLE_AUDIT_WORDS: hand_back"
+msgid "Hand back"
+msgstr "Hand back"
+
 #: client/src/components/admin/comms/CommsSentMail.tsx
 msgctxt "CommsSentMail, label"
 msgid "Written on or before"
@@ -13573,6 +13998,11 @@ msgstr "Doors open to you"
 msgctxt "admin quest safety"
 msgid "Badges a member needs"
 msgstr "Badges a member needs"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_STAGE_WORDS: invoice"
+msgid "The invoice"
+msgstr "The invoice"
 
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, span"
@@ -13717,6 +14147,11 @@ msgstr "Add a practice"
 msgctxt "SubmissionDesk, button"
 msgid "Done"
 msgstr "Done"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: accountability"
+msgid "Accountability or deliverable"
+msgstr "Accountability or deliverable"
 
 #: client/src/components/yourList/YourListCard.tsx
 msgctxt "YourListCard, button"
@@ -14066,6 +14501,11 @@ msgstr "Type, strategy and authority come from Human Design."
 msgctxt "VillageHealth, p"
 msgid "<0/>Absolute counts only. No leaderboards, no ranks. The village is not a scoreboard."
 msgstr "<0/>Absolute counts only. No leaderboards, no ranks. The village is not a scoreboard."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.empty"
+msgid "Name who you pay first. Until a payer has invoicing on and the routes it pays, members can send their recap and no invoice."
+msgstr "Name who you pay first. Until a payer has invoicing on and the routes it pays, members can send their recap and no invoice."
 
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
@@ -14592,6 +15032,11 @@ msgctxt "game variable governance.window_grace_days, label"
 msgid "How long a proposal coming back may open outside its window"
 msgstr "How long a proposal coming back may open outside its window"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: claude"
+msgid "From the deep dive"
+msgstr "From the deep dive"
+
 #: client/src/components/admin/search/AdminSearch.tsx
 msgctxt "admin search, empty hint"
 msgid "A page, a setting or a button: “mail settings”, “send test”, “who runs comms”."
@@ -14662,6 +15107,11 @@ msgstr "Band at {pct}%: {min} to {max} in total comp"
 msgctxt "founding application check, a box over its limit"
 msgid "Your aim in this role"
 msgstr "Your aim in this role"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: cappedNote"
+msgid "The split gave this role more time than it was priced at, so it pays {ROLE_PAY_CAP_PCT}% of its terms, the most a role pays."
+msgstr "The split gave this role more time than it was priced at, so it pays {ROLE_PAY_CAP_PCT}% of its terms, the most a role pays."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application first day"
@@ -14766,6 +15216,11 @@ msgstr "A failed chain read shows the last true figure with when it was true, an
 msgctxt "review inbox: decide"
 msgid "Accepted: {summary} The other options are recorded as another option chosen."
 msgstr "Accepted: {summary} The other options are recorded as another option chosen."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: draft"
+msgid "Draft"
+msgstr "Draft"
 
 #: client/src/components/journal/PracticePicker.tsx
 msgctxt "PracticePicker, button"
@@ -14977,6 +15432,11 @@ msgstr "{n} applicants wait to talk with you."
 #~ msgid "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
 #~ msgstr "Everything waiting on you, from every queue, in one list. Open one to decide it where it lives today."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: gathered"
+msgid "{n, plural, one {# item brought in.} other {# items brought in.}}"
+msgstr "{n, plural, one {# item brought in.} other {# items brought in.}}"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module messaging, benefit 2"
 msgid "Read state follows you between devices"
@@ -15057,6 +15517,11 @@ msgstr "people"
 #~ msgctxt "open proposal review"
 #~ msgid "Commitment: {commitment}%"
 #~ msgstr "Commitment: {commitment}%"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: sendRecap"
+msgid "Send my recap"
+msgstr "Send my recap"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: open"
@@ -15190,6 +15655,11 @@ msgstr "A circle's working call, held together live, from the first breath to th
 msgid "{0, plural, one {Vouched} other {Vouched by # members}}"
 msgstr "{0, plural, one {Vouched} other {Vouched by # members}}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: scoreHeading"
+msgid "The score"
+msgstr "The score"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.weight_token, label"
 msgid "The weight token"
@@ -15209,6 +15679,11 @@ msgstr "Who might do it?"
 msgctxt "empty thanks wall under the example lines"
 msgid "The lines above marked Example show what a thanks looks like. The first real one lands here."
 msgstr "The lines above marked Example show what a thanks looks like. The first real one lands here."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: signIn"
+msgid "Sign in to read your moon."
+msgstr "Sign in to read your moon."
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card: under the countdown"
@@ -16355,6 +16830,11 @@ msgctxt "admin character classes: replace one stock portrait"
 msgid "Replace"
 msgstr "Replace"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: carry"
+msgid "Carried from last moon"
+msgstr "Carried from last moon"
+
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: adoptedEmailed"
 msgid "Adopted. Their invitation went to them by email. It works once and lasts {days} days. If it does not reach them, make a new one from this page."
@@ -16726,6 +17206,11 @@ msgstr "Opening the map..."
 msgctxt "game variable progression.multiplier.co-creator, label"
 msgid "Sending-budget multiplier: Co-Creator"
 msgstr "Sending-budget multiplier: Co-Creator"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.authorityDate"
+msgid "Date"
+msgstr "Date"
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{openSeats, plural, one {# open} other {# open}}"
@@ -17155,6 +17640,11 @@ msgctxt "open proposal decide: a full role"
 msgid "{name} has room for 1 person, and that place is filled"
 msgstr "{name} has room for 1 person, and that place is filled"
 
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "The repository"
+msgstr "The repository"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Should I talk to you out loud, with your browser's own voice? Or stay quiet and only write?"
@@ -17205,6 +17695,11 @@ msgstr "Who carries the steward role"
 msgid "No round is open yet. When the pot's holder opens one, ideas are welcome here."
 msgstr "No round is open yet. When the pot's holder opens one, ideas are welcome here."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: notOn"
+msgid "The end-of-moon review is not open on this village."
+msgstr "The end-of-moon review is not open on this village."
+
 #: client/src/pages/OpenProposal.tsx
 msgid "Optional. Plain text. They read it on their status page and in our email. It is part of their own application, and nobody else sees it."
 msgstr "Optional. Plain text. They read it on their status page and in our email. It is part of their own application, and nobody else sees it."
@@ -17219,6 +17714,11 @@ msgctxt "admin protocols editor"
 msgid "Add to your phone"
 msgstr "Add to your phone"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: loading"
+msgid "Reading the invoices."
+msgstr "Reading the invoices."
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable redemption.max_village_per_cycle, description"
 msgid "Counted across every member's requests in a lunar cycle, the ones still waiting included. This is the village's own ability to pay, said as a number, and it is the one cap that two members asking at the same moment could otherwise walk through together. Leave it blank for no ceiling. 0 means zero: the village redeems nothing."
@@ -17229,6 +17729,11 @@ msgctxt "MoonsPast, p"
 msgid "Nobody was named this moon."
 msgstr "Nobody was named this moon."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: merged"
+msgid "{n} to merge with items already here"
+msgstr "{n} to merge with items already here"
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: bell.undoLabel"
 msgid "Open it again: {what}"
@@ -17238,6 +17743,11 @@ msgstr "Open it again: {what}"
 msgctxt "calendar page title"
 msgid "Village calendar"
 msgstr "Village calendar"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ROLE_AUDIT_WORDS: keep"
+msgid "Keep"
+msgstr "Keep"
 
 #. placeholder {0}: c.received
 #. placeholder {1}: c.distinctSenders
@@ -17736,6 +18246,11 @@ msgctxt "admin protocols editor"
 msgid "Add a step"
 msgstr "Add a step"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: thanksFind"
+msgid "Find a member, or type a name"
+msgstr "Find a member, or type a name"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Speak aloud"
@@ -17780,6 +18295,11 @@ msgstr "On the calendar"
 msgctxt "PortraitStudio, p"
 msgid "You are using the village art for this path. Upload your own whenever you like."
 msgstr "You are using the village art for this path. Upload your own whenever you like."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: talkRange"
+msgid "Ask to talk"
+msgstr "Ask to talk"
 
 #: client/src/components/modules/TurnOnAction.tsx
 msgctxt "TurnOnAction, button"
@@ -18122,6 +18642,11 @@ msgctxt "role card rewards explainer: heading"
 msgid "How compensation is set"
 msgstr "How compensation is set"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Village goals it serves"
+msgstr "Village goals it serves"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind exit_opened"
 msgid "{n} departure processes opened."
@@ -18217,6 +18742,11 @@ msgstr "Season Shapes"
 msgctxt "bottom tab bar, a path"
 msgid "Resident"
 msgstr "Resident"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: button"
+msgid "Import from Claude"
+msgstr "Import from Claude"
 
 #: client/src/components/roleCard/ComingSoonRoles.tsx
 #: client/src/components/roleCard/FullRoleCard.tsx
@@ -18574,6 +19104,11 @@ msgctxt "PullACard, li"
 msgid "Sun in gate {0}, line {1}"
 msgstr "Sun in gate {0}, line {1}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: taxFormMissing"
+msgid "Tax form not valid on the expected date"
+msgstr "Tax form not valid on the expected date"
+
 #: client/src/components/governance/seatPresetWords.ts
 msgctxt "role term preset platform:no-bonus, blurb"
 msgid "No bonus on top."
@@ -18756,6 +19291,11 @@ msgstr "Loading..."
 msgctxt "SaberraBridgeBoard, p"
 msgid "Key {0}, address {1}."
 msgstr "Key {0}, address {1}."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: task"
+msgid "From my list"
+msgstr "From my list"
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, span"
@@ -19727,6 +20267,11 @@ msgctxt "module moon-review, setup"
 msgid "Seat someone in a power group that approves the work, choose who holds the cash power, and fill in the payers document before the first invoice."
 msgstr "Seat someone in a power group that approves the work, choose who holds the cash power, and fill in the payers document before the first invoice."
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Languages"
+msgstr "Languages"
+
 #. placeholder {0}: TIER_PILL[m.tier as ModuleTier] ?? m.tier
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, span"
@@ -19865,6 +20410,11 @@ msgstr "Nothing comes back out of the cellar. The game sees names and the last f
 #~ msgid "(optional)"
 #~ msgstr "(optional)"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ROLE_AUDIT_WORDS: fill"
+msgid "Fill"
+msgstr "Fill"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "The agent confirms"
@@ -19940,6 +20490,11 @@ msgstr "Quest title <0>(optional)</0>"
 msgctxt "Admin, placeholder"
 msgid "Amount USD (blank = payer chooses)"
 msgstr "Amount USD (blank = payer chooses)"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: who can hold it"
+msgid "An agent"
+msgstr "An agent"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable nav.pinned, label"
@@ -20085,6 +20640,11 @@ msgctxt "SeatPicksField, p"
 msgid "This village has no roles in its org chart yet, so there is nothing to apply for."
 msgstr "This village has no roles in its org chart yet, so there is nothing to apply for."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: tabs.settings"
+msgid "Village settings"
+msgstr "Village settings"
+
 #: client/src/components/modules/ModuleCard.tsx
 msgctxt "ModuleCard, span"
 msgid "Always on"
@@ -20154,6 +20714,11 @@ msgstr "Cover"
 msgctxt "role editor"
 msgid "No pay on offer"
 msgstr "No pay on offer"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: local_employee"
+msgid "Local employee"
+msgstr "Local employee"
 
 #: client/src/components/roleCard/valueExplainerWords.ts
 #~ msgctxt "role card rewards explainer: your agreement"
@@ -20337,6 +20902,11 @@ msgctxt "open work card: in place of the status mark on an example quest"
 msgid "An example of the work to come. It cannot be taken yet."
 msgstr "An example of the work to come. It cannot be taken yet."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: to"
+msgid "To"
+msgstr "To"
+
 #. placeholder {0}: t.toEmail
 #. placeholder {1}: t.delivered ? "reported delivered." : `${t.status}. ${watching ? "Watching for Resend's delivery report." : ""}`
 #: client/src/components/setupGame/SpringPackets.tsx
@@ -20348,6 +20918,11 @@ msgstr "Latest test letter to {0}: {1}"
 msgctxt "JourneyDetail, p"
 msgid "Off. Nobody gets these emails. People who join it wait, and turning it on sends what is still worth sending."
 msgstr "Off. Nobody gets these emails. People who join it wait, and turning it on sends what is still worth sending."
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: where"
+msgid "Remote"
+msgstr "Remote"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
@@ -20701,6 +21276,11 @@ msgctxt "constitution law \"Every mechanic is bounded\", enforcedBy"
 msgid "shared/gameVariables.ts: min/max on every def, validated before every write"
 msgstr "shared/gameVariables.ts: min/max on every def, validated before every write"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: noKey"
+msgid "These settings need the cash power, and this account does not hold it."
+msgstr "These settings need the cash power, and this account does not hold it."
+
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Turn full access off? The Anchor Circle is told."
 msgstr "Turn full access off? The Anchor Circle is told."
@@ -20734,6 +21314,11 @@ msgstr "Leave a question unanswered and it stays off the record. An answer of no
 msgctxt "the bell: why a notice of this kind matters, kind role_proposal_objection"
 msgid "A member of the circle objected to your role proposal, so it goes to the circle's next meeting."
 msgstr "A member of the circle objected to your role proposal, so it goes to the circle's next meeting."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: quiet"
+msgid "Quiet this moon"
+msgstr "Quiet this moon"
 
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, p"
@@ -20771,6 +21356,11 @@ msgstr "How to switch it off"
 msgctxt "founding application compensation, with the village's token names"
 msgid "How your pay is split between cash, {0} and {1}. Your compensation is set above, by your proposal."
 msgstr "How your pay is split between cash, {0} and {1}. Your compensation is set above, by your proposal."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: roleAudit"
+msgid "Role audit"
+msgstr "Role audit"
 
 #: client/src/pages/StewardJourney.tsx
 #~ msgid "Start with the open roles and what each one asks of you."
@@ -20825,6 +21415,11 @@ msgstr "Pages the bottom bar never shows"
 msgctxt "SpringPackets, a"
 msgid "Write your first letter"
 msgstr "Write your first letter"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: who can hold it"
+msgid "A person or an agent"
+msgstr "A person or an agent"
 
 #. placeholder {0}: index + 1
 #. placeholder {1}: asked.length
@@ -20970,6 +21565,11 @@ msgctxt "ReviewStep, h2"
 msgid "Read it back"
 msgstr "Read it back"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: auditPrefilled"
+msgid "From Outside my roles"
+msgstr "From Outside my roles"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
 msgid "Percent you can give"
@@ -20979,6 +21579,11 @@ msgstr "Percent you can give"
 msgctxt "applicant onboarding: primary.none"
 msgid "Nothing to do"
 msgstr "Nothing to do"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: saved"
+msgid "Saved."
+msgstr "Saved."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Every member reads this line beside the vote, and it stays on the record."
@@ -21465,6 +22070,16 @@ msgctxt "AgentsPanel, p"
 msgid "No account is marked as an agent's."
 msgstr "No account is marked as an agent's."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: confirm"
+msgid "Import"
+msgstr "Import"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.formKey"
+msgid "Key (up to 8 letters, digits or dashes)"
+msgstr "Key (up to 8 letters, digits or dashes)"
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "All Voice"
@@ -21921,6 +22536,11 @@ msgctxt "MapChipsPanel, toast"
 msgid "Chips saved. An open map shows them straight away"
 msgstr "Chips saved. An open map shows them straight away"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: review"
+msgid "{days, plural, one {First review after # day} other {First review after # days}}"
+msgstr "{days, plural, one {First review after # day} other {First review after # days}}"
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that closes the closing policy suggestion"
 msgid "Not now"
@@ -21956,6 +22576,11 @@ msgctxt "AI transcript refusal"
 msgid "The village has written down as many recordings as it may today. Try again tomorrow."
 msgstr "The village has written down as many recordings as it may today. Try again tomorrow."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: billTo"
+msgid "Bill to"
+msgstr "Bill to"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable ledger.admin_mint_cycle_cap, description"
 msgid "The most this village can bring into existence of one token in one lunar cycle. It counts what the mint faucet issues: hand-mints, co-signed grants, treasury stocking, stay-credit comps, purchases and adjustments, and the credits a work-exchange quest releases all spend the same number. Pay for quests, roles and accepted proposals, and the gratitude pool, issue from faucets of their own and are not counted. COUNTED IN WHOLE TOKENS, so 100 means a hundred of the token and not a hundred of whatever the ledger stores underneath. It is counted NET, so a credit a member spends back into the faucet inside the same cycle stops counting and can be issued again. Two consequences worth knowing before you set it. A busy month of stays or quests can use the cap up before a steward has minted anything by hand, and the refusal a steward then meets says how much of the lunation's issuance came from those doors. And 0 disables every door of the mint faucet for this token, because a cap of zero means zero."
@@ -21965,6 +22590,11 @@ msgstr "The most this village can bring into existence of one token in one lunar
 msgctxt "game variable org.founding_tour_link, description"
 msgid "Step 1 offers \"Book a land tour\". The next public event titled land tour is linked first; this booking link stands in when there is none. Empty: not offered."
 msgstr "Step 1 offers \"Book a land tour\". The next public event titled land tour is linked first; this booking link stands in when there is none. Empty: not offered."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: capped"
+msgid "Capped at {ROLE_PAY_CAP_PCT}%"
+msgstr "Capped at {ROLE_PAY_CAP_PCT}%"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget edit line button"
@@ -22228,6 +22858,11 @@ msgctxt "Messages, button"
 msgid "Rename"
 msgstr "Rename"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: RECAP_STATUS_WORDS: approved"
+msgid "Approved"
+msgstr "Approved"
+
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: the second act, for members"
 msgid "I have an account: sign in"
@@ -22318,6 +22953,11 @@ msgctxt "Admin, placeholder"
 msgid "Note (required for warnings)"
 msgstr "Note (required for warnings)"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: TASK_STATUS_WORDS: partly"
+msgid "Partly"
+msgstr "Partly"
+
 #: client/src/components/admin/VotingWeightsPanel.tsx
 msgctxt "VotingWeightsPanel, h3"
 msgid "Every member"
@@ -22405,6 +23045,11 @@ msgstr "They're staying"
 msgctxt "SaberraOutboxPanel, p"
 msgid "Nothing would cross yet."
 msgstr "Nothing would cross yet."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: nextGoalsLine"
+msgid "Set three to five. Carried goals come first."
+msgstr "Set three to five. Carried goals come first."
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -22560,6 +23205,11 @@ msgstr "New amount, at most {ceiling}"
 msgctxt "game variable season_places.who, description"
 msgid "Who proposes to take part in a season: each circle, which a live holder of any role in it proposes for, or each member for themselves. Places, the waitlist and seasons served are all counted in this unit."
 msgstr "Who proposes to take part in a season: each circle, which a live holder of any role in it proposes for, or each member for themselves. Places, the waitlist and seasons served are all counted in this unit."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.invoiceCc"
+msgid "Copy invoices to (email addresses, comma separated, up to 5)"
+msgstr "Copy invoices to (email addresses, comma separated, up to 5)"
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
@@ -22893,6 +23543,11 @@ msgctxt "Admin, p"
 msgid "Unticked and never ticked anywhere are different things. Something in no shape at all is permanent; something in another shape is resting."
 msgstr "Unticked and never ticked anywhere are different things. Something in no shape at all is permanent; something in another shape is resting."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: TASK_STATUS_WORDS: done"
+msgid "Done"
+msgstr "Done"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable tokens.equity_address, description"
 msgid "The ERC-20 address for the project's equity token. The platform only ever READS this balance to display it: minting, pricing and governance all happen on Hypha. Leave blank until the token is deployed and nothing is shown."
@@ -23077,6 +23732,11 @@ msgstr "Portal entrance: background video"
 msgctxt "task board: checkGroups.doneSince"
 msgid "Done since last time"
 msgstr "Done since last time"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: LINE_BASIS_WORDS: listed"
+msgid "Listed, no cash"
+msgstr "Listed, no cash"
 
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, h2"
@@ -24338,6 +24998,11 @@ msgctxt "game variable org.public_people, description"
 msgid "On, anyone can read the first names of the people holding each role on the Team, Roles and Circles pages, and a visitor reads members by first name elsewhere. Off, a visitor who is not signed in reads no member's name, handle, address or portrait on any page: the pulse, the decisions, profiles and role cards included. Signed-in members whose role or badge grants map.viewPeople still read who holds each role, and a visitor still sees every circle, every role, and how many of them are filled. This is the secret society setting. It moves names only: the shape of the village stays public at both settings."
 msgstr "On, anyone can read the first names of the people holding each role on the Team, Roles and Circles pages, and a visitor reads members by first name elsewhere. Off, a visitor who is not signed in reads no member's name, handle, address or portrait on any page: the pulse, the decisions, profiles and role cards included. Signed-in members whose role or badge grants map.viewPeople still read who holds each role, and a visitor still sees every circle, every role, and how many of them are filled. This is the secret society setting. It moves names only: the shape of the village stays public at both settings."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: noLines"
+msgid "This role card lists no accountabilities yet."
+msgstr "This role card lists no accountabilities yet."
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module gene-keys, setup"
 msgid "Nothing to set up. Members find their lines from their character page."
@@ -24788,6 +25453,11 @@ msgctxt "proposed changes"
 msgid "Waiting"
 msgstr "Waiting"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: saving"
+msgid "Saving"
+msgstr "Saving"
+
 #: client/src/pages/Wallet.tsx
 #~ msgctxt "Wallet, h1"
 #~ msgid "The Exchange"
@@ -24860,6 +25530,11 @@ msgctxt "StructureReview, b"
 msgid "Accepted into a draft"
 msgstr "Accepted into a draft"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: hiddenInRoom"
+msgid "Hidden in Room view"
+msgstr "Hidden in Room view"
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 #~ msgid "Saved. Members see it on their next look at the map."
 #~ msgstr "Saved. Members see it on their next look at the map."
@@ -24888,6 +25563,11 @@ msgstr "Latest hour a path email is sent"
 msgctxt "companion corner: the panel, read aloud"
 msgid "Your companions"
 msgstr "Your companions"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Open the pull request"
+msgstr "Open the pull request"
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "a live role takes the name an outside service sent"
@@ -25703,6 +26383,11 @@ msgctxt "notification bell: an unread row"
 msgid "New"
 msgstr "New"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.key"
+msgid "Short key (lowercase, used in bill refs)"
+msgstr "Short key (lowercase, used in bill refs)"
+
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, coming-soon roles under the picker"
 msgid "Not open yet. Join a role's waitlist to hear when it opens."
@@ -25949,6 +26634,11 @@ msgctxt "SpringPackets, div"
 msgid "This planting is done. The words above say what it grants and how to undo it."
 msgstr "This planting is done. The words above say what it grants and how to undo it."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ROLE_AUDIT_WORDS: expand"
+msgid "Expand"
+msgstr "Expand"
+
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "How a departing member's contribution is valued"
 msgstr "How a departing member's contribution is valued"
@@ -26142,6 +26832,11 @@ msgstr "Where someone completely new explores first"
 #: client/src/components/admin/MintDesk.tsx
 msgid "Minted: {remaining} left under this cycle's cap"
 msgstr "Minted: {remaining} left under this cycle's cap"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: redirectTo"
+msgid "Who or which role it belongs to"
+msgstr "Who or which role it belongs to"
 
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"A vote is counted against the day it opened\", plain"
@@ -26583,6 +27278,11 @@ msgctxt "Quests, h2"
 msgid "Find your first Quest"
 msgstr "Find your first Quest"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: ownWordsHint"
+msgid "A short note for the room."
+msgstr "A short note for the room."
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module quests, description"
 msgid "The contribution board: post work, claim it, submit it, consent to release recognition."
@@ -26597,6 +27297,11 @@ msgstr "Open the pot"
 msgctxt "settings: the list of groups, read aloud"
 msgid "Settings groups"
 msgstr "Settings groups"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.holdForm"
+msgid "Tax form"
+msgstr "Tax form"
 
 #: client/src/components/comms/TimePollPanel.tsx
 msgctxt "TimePollPanel, p"
@@ -26776,6 +27481,11 @@ msgstr "References and a background check"
 msgctxt "sera compare"
 msgid "Show less"
 msgstr "Show less"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "One command prints every check the pull request will face, read from the workflows themselves."
+msgstr "One command prints every check the pull request will face, read from the workflows themselves."
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board status"
@@ -27086,6 +27796,11 @@ msgstr "Languages"
 #~ msgid "{0} of {1} selected"
 #~ msgstr "{0} of {1} selected"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: period"
+msgid "Period"
+msgstr "Period"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind weight_changed"
 msgid "{n} changes to how much your vote weighs."
@@ -27106,6 +27821,11 @@ msgstr "Total: {totalWords} for the full role"
 msgctxt "pricing desk"
 msgid "Use {0}"
 msgstr "Use {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: noRecapRoles"
+msgid "You held no role this moon, so there is nothing to recap."
+msgstr "You held no role this moon, so there is nothing to recap."
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
@@ -27255,6 +27975,11 @@ msgctxt "task board: checkGroups.letGo"
 msgid "Let go"
 msgstr "Let go"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.add"
+msgid "Add a payer"
+msgstr "Add a payer"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Those could not be discarded. Reload and try again."
@@ -27295,6 +28020,11 @@ msgstr "Fill in the full application instead"
 #~ msgctxt "voice invite"
 #~ msgid "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going."
 #~ msgstr "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going."
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Commitment"
+msgstr "Commitment"
 
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable stage choice quest-seeker"
@@ -27617,6 +28347,11 @@ msgctxt "reviewer's terms panel, one role's price"
 msgid "Their price: {0}"
 msgstr "Their price: {0}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: invoicesView"
+msgid "Invoices"
+msgstr "Invoices"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the reason for a change request"
 msgid "Why"
@@ -27696,6 +28431,11 @@ msgstr "The village decides on-site: staged proposals go to weighted ballots wit
 msgctxt "admin invitation requests"
 msgid "Has an account: promoting admits it"
 msgstr "Has an account: promoting admits it"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: copy"
+msgid "Copy"
+msgstr "Copy"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.review_before_conversations, label"
@@ -27881,6 +28621,11 @@ msgctxt "ProfileImportDoor, h3"
 msgid "Start from your ReGen Civics profile"
 msgstr "Start from your ReGen Civics profile"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: open"
+msgid "Open"
+msgstr "Open"
+
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, p"
 msgid "The village's vital signs, frozen each lunar cycle, and the land's own ledger of regeneration."
@@ -27890,6 +28635,11 @@ msgstr "The village's vital signs, frozen each lunar cycle, and the land's own l
 msgctxt "character count under a box"
 msgid "You have reached the {maxText} character limit."
 msgstr "You have reached the {maxText} character limit."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: routeCheck"
+msgid "Route check"
+msgstr "Route check"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: bell.marked"
@@ -28271,6 +29021,11 @@ msgstr "Newly open to you"
 msgid "This phone could not keep it for later. Try again when you have signal."
 msgstr "This phone could not keep it for later. Try again when you have signal."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.guideEmpty"
+msgid "With no guide set, no guide link shows anywhere."
+msgstr "With no guide set, no guide link shows anywhere."
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable nav.refresh_days, label"
 msgid "How often the bottom bar's village pages are looked at again"
@@ -28330,6 +29085,11 @@ msgstr "Game Mechanics"
 msgctxt "hidden map, the moment the map opens"
 msgid "{0} {plantings}, vouched"
 msgstr "{0} {plantings}, vouched"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: moonLoad"
+msgid "Moon load"
+msgstr "Moon load"
 
 #: client/src/components/playerCard/SignList.tsx
 msgctxt "SignList, p"
@@ -28610,6 +29370,11 @@ msgctxt "ModuleDetail, span"
 msgid "Keystone: a second founder agrees"
 msgstr "Keystone: a second founder agrees"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: hand"
+msgid "Added by hand"
+msgstr "Added by hand"
+
 #: client/src/pages/SeasonalFestivals.tsx
 msgctxt "seasonal festivals page eyebrow"
 msgid "The village year"
@@ -28654,6 +29419,11 @@ msgctxt "Review, p"
 msgid "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
 msgstr "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SELF_APPROVED_WORDS"
+msgid "Approved by the member themselves"
+msgstr "Approved by the member themselves"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
 msgid "{n, plural, one {+# more open place} other {+# more open places}}"
@@ -28668,6 +29438,11 @@ msgstr "Send the lantern"
 msgctxt "pay board"
 msgid "Owed {owed}, sent {sent}"
 msgstr "Owed {owed}, sent {sent}"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Get listed"
+msgstr "Get listed"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable ops.crash_spread_visitors, description"
@@ -28688,6 +29463,11 @@ msgstr "Saving"
 msgctxt "admin venture accounts"
 msgid "Name members read"
 msgstr "Name members read"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: cancel"
+msgid "Cancel"
+msgstr "Cancel"
 
 #. placeholder {0}: d.title
 #. placeholder {1}: d.changes === 1 ? "1 change" : `${d.changes} changes`
@@ -28941,6 +29721,11 @@ msgctxt "WhoIsHereBand, aria-label"
 msgid "Who is here this week"
 msgstr "Who is here this week"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: gatherHeading"
+msgid "Gather"
+msgstr "Gather"
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: duePast"
 msgid "The date was {date}"
@@ -29048,6 +29833,11 @@ msgstr "{0}% {1}"
 msgctxt "Mint, p"
 msgid "Voice gathers all season and formalises in one pass, so a season of contribution becomes a handful of proposals your circle can genuinely sit with. These decide when that happens and how much it takes."
 msgstr "Voice gathers all season and formalises in one pass, so a season of contribution becomes a handful of proposals your circle can genuinely sit with. These decide when that happens and how much it takes."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: whoSees"
+msgid "Who sees it"
+msgstr "Who sees it"
 
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "open proposal sent"
@@ -29455,6 +30245,11 @@ msgstr "Villages with one good drill and eleven people who need it."
 #~ msgid "Saved. New notices carry these words."
 #~ msgstr "Saved. New notices carry these words."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxHint"
+msgid "A sent invoice is emailed here with its PDF. Leave it empty to send nothing. While two or more people hold cash.pay or the steward veto, a new address waits for a second of them to confirm it, and every member is told the new address."
+msgstr "A sent invoice is emailed here with its PDF. Leave it empty to send nothing. While two or more people hold cash.pay or the steward veto, a new address waits for a second of them to confirm it, and every member is told the new address."
+
 #: client/src/components/roleEdit/CharacterTags.tsx
 #~ msgctxt "role editor characters"
 #~ msgid "Characters it suits"
@@ -29811,6 +30606,11 @@ msgctxt "Review, toast"
 msgid "On the board"
 msgstr "On the board"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: track"
+msgid "Paid contractor"
+msgstr "Paid contractor"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
 msgid "Recognition and Hypha tokens can never be listed; a token another module sells can't be listed twice. Prices are append-only and bounded per change; stock comes out of the same per-cycle mint cap as hand-mints. Swapping refuses more still: anything a faucet has paid a member is never swappable, whatever it was earned for."
@@ -29890,6 +30690,11 @@ msgstr "The code could not be sent from this village right now. Try again later,
 #~ msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
 #~ msgstr "At {atPct}%, the role pays up to {0} (the full role: {1})."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: whoReads"
+msgid "Who can read your pay details"
+msgstr "Who can read your pay details"
+
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: profileContinue"
 msgid "Continue your role proposal"
@@ -29946,6 +30751,11 @@ msgstr "That sentence is a description of what you have ticked and saved. The di
 msgctxt "org chart, a sample circle or role"
 msgid "Standing example"
 msgstr "Standing example"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GUIDE_WORDS: open"
+msgid "Open the End of Moon guide"
+msgstr "Open the End of Moon guide"
 
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgctxt "role discover admin"
@@ -30134,6 +30944,11 @@ msgctxt "review inbox: a row, what it is"
 msgid "An org chart draft"
 msgstr "An org chart draft"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "How it is filled"
+msgstr "How it is filled"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "AgentsPanel, p"
 msgid "A path missing from this list stays closed to agents. The paths are grouped by the part of the village they reach; open a group to see, change or remove its paths. For each write, say who confirms it: the agent itself, for routine Operations work, or a person, who makes the change in the app."
@@ -30153,6 +30968,11 @@ msgstr "Turning the card"
 msgctxt "SpringPackets, button"
 msgid "Plant the secret"
 msgstr "Plant the secret"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: how it is filled"
+msgid "First conversation: {words}"
+msgstr "First conversation: {words}"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: statusLabels.done"
@@ -30205,6 +31025,11 @@ msgctxt "ArrangeLens, aria-label"
 msgid "The middle"
 msgstr "The middle"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Where"
+msgstr "Where"
+
 #. placeholder {0}: (detail.transcript.segments ?? []).length
 #. placeholder {1}: detail.recording.durationS ? `, ${fmtTs(detail.recording.durationS * 1000)} long` : ""
 #: client/src/pages/Admin.tsx
@@ -30217,6 +31042,11 @@ msgstr "Transcript<0>{0} segment(s){1}</0>"
 msgctxt "admin compare"
 msgid "Arrived: {0}"
 msgstr "Arrived: {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: statusValidUntil"
+msgid "My status is valid until"
+msgstr "My status is valid until"
 
 #: client/src/components/power/ArrangeLens.tsx
 msgctxt "ArrangeLens, aria-label"
@@ -30253,6 +31083,11 @@ msgstr "Objections answered"
 msgctxt "LookPanel, p"
 msgid "Three decisions; everything else derives. Leave the colour empty to keep the platform's neutral look. Every derived pairing is contrast-checked, so your colour keeps its hue, legibility is non-negotiable."
 msgstr "Three decisions; everything else derives. Leave the colour empty to keep the platform's neutral look. Every derived pairing is contrast-checked, so your colour keeps its hue, legibility is non-negotiable."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_ORIGIN_WORDS: sera"
+msgid "From Sera"
+msgstr "From Sera"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "When to call them"
@@ -30592,6 +31427,11 @@ msgstr "You are setting pay as an admin. This stays open until the launch vote c
 #~ msgid "You drafted roles before you joined."
 #~ msgstr "You drafted roles before you joined."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: authority"
+msgid "Payer authority"
+msgstr "Payer authority"
+
 #. placeholder {0}: own.ask.why
 #: client/src/components/openProposal/CommitmentReview.tsx
 #~ msgctxt "open proposal: one role's price ask"
@@ -30713,6 +31553,11 @@ msgctxt "MapSkinPanel, button"
 msgid "clear"
 msgstr "clear"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.taxForms"
+msgid "Tax forms kept on file"
+msgstr "Tax forms kept on file"
+
 #: client/src/pages/Stay.tsx
 msgctxt "Stay, aria-label"
 msgid "Nights of {stayName} to buy"
@@ -30787,6 +31632,16 @@ msgstr "{usedText} / {maxText} characters"
 #: client/src/components/priorities/RaisedAsksCard.tsx
 msgid "Number {0} on the role's list."
 msgstr "Number {0} on the role's list."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: RECAP_STATUS_WORDS: waiting"
+msgid "Waiting on approval"
+msgstr "Waiting on approval"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SERA_STATE_WORDS: not_linked"
+msgid "Your Sera record is not linked yet. Add your items by hand."
+msgstr "Your Sera record is not linked yet. Add your items by hand."
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module protocols, benefit 1"
@@ -31145,6 +32000,11 @@ msgctxt "LoveLetter, label"
 msgid "Which path(s) are you on? <0>*</0>"
 msgstr "Which path(s) are you on? <0>*</0>"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.addOverride"
+msgid "Move a moon's days"
+msgstr "Move a moon's days"
+
 #: client/src/components/geneKeys/GeneKeysLines.tsx
 msgctxt "GeneKeysLines, button"
 msgid "Remove my Gene Keys"
@@ -31244,6 +32104,11 @@ msgstr "Back"
 msgctxt "OpenProposalsPanel, button"
 msgid "<0/>Copy"
 msgstr "<0/>Copy"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: failed"
+msgid "That did not go through. Try again in a moment."
+msgstr "That did not go through. Try again in a moment."
 
 #. placeholder {0}: link.subjectName
 #. placeholder {1}: drafts[link.needKey]?.label ?? link.needKey
@@ -31489,6 +32354,11 @@ msgstr "The accept did not finish. Reload to see which changes landed, then try 
 msgctxt "TurnOnAction, p"
 msgid "Propose turning on {0}"
 msgstr "Propose turning on {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: moon_mismatch"
+msgid "This pack is for another moon. Its start and end dates do not match this one."
+msgstr "This pack is for another moon. Its start and end dates do not match this one."
 
 #: client/src/components/Layout.tsx
 msgctxt "site header"
@@ -32409,6 +33279,11 @@ msgctxt "PlayersTab, div"
 msgid "Loading..."
 msgstr "Loading..."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: TASK_STATUS_WORDS: redirect"
+msgid "Redirect"
+msgstr "Redirect"
+
 #: client/src/pages/Modules.tsx
 msgctxt "Modules, p"
 msgid "Anyone can build a module for this platform. Every free module earns a share of the builders' pool each lunar cycle, sized by how many members open it. Nothing has been paid out yet."
@@ -32498,6 +33373,11 @@ msgctxt "OwnCalendarPanel, placeholder"
 msgid "https://calendar.google.com/calendar/ical/.../basic.ics"
 msgstr "https://calendar.google.com/calendar/ical/.../basic.ics"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: myGoals"
+msgid "My seasonal goals"
+msgstr "My seasonal goals"
+
 #: client/src/pages/VisitorProfile.tsx
 msgctxt "visitor profile: an application's status"
 msgid "With us, waiting on a decision"
@@ -32586,6 +33466,11 @@ msgstr "Some of this work opens as you walk the {ladder} or step into a role. Ea
 msgctxt "PhotoReportsPanel, button"
 msgid "<0/> Dismiss"
 msgstr "<0/> Dismiss"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: sendInvoice"
+msgid "Send draft invoice for approval"
+msgstr "Send draft invoice for approval"
 
 #: client/src/pages/Login.tsx
 msgctxt "sign in: for someone with no invitation"
@@ -33120,6 +34005,11 @@ msgctxt "a switch setting"
 msgid "Off"
 msgstr "Off"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: seasonGoal"
+msgid "Season goal"
+msgstr "Season goal"
+
 #: client/src/pages/AdminReview.tsx
 msgctxt "review inbox: find a decided code"
 msgid "{code} was decided. It is under Decided."
@@ -33352,6 +34242,11 @@ msgctxt "game variable governance.vote_days, label"
 msgid "How long a ballot stays open"
 msgstr "How long a ballot stays open"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: onlyYou"
+msgid "Only you see these numbers. They never set pay and are never ranked."
+msgstr "Only you see these numbers. They never set pay and are never ranked."
+
 #: client/src/pages/Profile.tsx
 msgctxt "Profile, p"
 msgid "No contributions yet. Propose one through <0>Work With Us</0>."
@@ -33426,6 +34321,11 @@ msgctxt "role card front: the apply-by date said whole, for a screen reader"
 msgid "Applications close {whenLong}"
 msgstr "Applications close {whenLong}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: routeHeading"
+msgid "Your pay route"
+msgstr "Your pay route"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application choose, founding roles heading"
 #~ msgid "Hiring first: the founding team"
@@ -33499,6 +34399,11 @@ msgstr "Download them and email the file to {contactEmail} so nothing is lost."
 #~ msgctxt "price popup lede"
 #~ msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
 #~ msgstr "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.guideUrl"
+msgid "The village's End of Moon guide (https link)"
+msgstr "The village's End of Moon guide (https link)"
 
 #: client/src/components/admin/SeasonTimezoneField.tsx
 msgctxt "SeasonTimezoneField, label"
@@ -33796,6 +34701,11 @@ msgctxt "open proposal decide: invitationSent"
 msgid "The invitation went to them by email on {when}."
 msgstr "The invitation went to them by email on {when}."
 
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "The Module Library contract"
+msgstr "The Module Library contract"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.payout_delay_over, description"
 msgid "A payout the village votes through is sent the moment it passes. Above this amount it waits the steward window first, so somebody can catch a send that would empty a purse or reward the wrong work. The amount is counted in whole tokens of whatever token is being sent, so a village holding several tokens with very different sizes should set this against the one it actually pays people in. Zero makes every payout wait."
@@ -33843,6 +34753,11 @@ msgstr "Governance hub URL"
 msgctxt "Admin, strong"
 msgid "{0} milestone{1} not updated in over {STALE_AFTER_DAYS} days:"
 msgstr "{0} milestone{1} not updated in over {STALE_AFTER_DAYS} days:"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.queueNote"
+msgid "A note Finance reads beside each invoice"
+msgstr "A note Finance reads beside each invoice"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -33909,6 +34824,11 @@ msgstr "What this shape declared, against what the village actually used."
 msgctxt "VillageMap, button"
 msgid "<0/> PNG"
 msgstr "<0/> PNG"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GOAL_STATUS_WORDS: let_go"
+msgid "Let go"
+msgstr "Let go"
 
 #: client/src/components/admin/StageFloorPicker.tsx
 msgctxt "StageFloorPicker, label"
@@ -34045,6 +34965,11 @@ msgctxt "GeneKeys, h1"
 msgid "Who sees your lines?"
 msgstr "Who sees your lines?"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: empty"
+msgid "Nothing is waiting on you this moon."
+msgstr "Nothing is waiting on you this moon."
+
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, p"
 msgid "No payment is taken on this page."
@@ -34098,6 +35023,11 @@ msgstr "e.g. hand-built timber and lime plaster, tropical understory, morning mi
 #~ msgctxt "ProposeQuest, a"
 #~ msgid "<0/>Back to the Quest Board"
 #~ msgstr "<0/>Back to the Quest Board"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: currency"
+msgid "Currency"
+msgstr "Currency"
 
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks: done"
@@ -34299,6 +35229,16 @@ msgstr "Could not load reconciliation."
 msgid "Who is in the room"
 msgstr "Who is in the room"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: given"
+msgid "Your time given to it"
+msgstr "Your time given to it"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: approve"
+msgid "Approve"
+msgstr "Approve"
+
 #: client/src/components/roleDraft/ArchetypeStep.tsx
 #~ msgctxt "roles page archetypes"
 #~ msgid "Choose the root you grow from"
@@ -34397,6 +35337,11 @@ msgstr "Your answer"
 msgctxt "game variable org.start_after_membership, description"
 msgid "When on, an adopted role does not start until its holder has aligned with the village's membership letter. Somebody who aligned when they applied is not asked again. No payment is ever part of it."
 msgstr "When on, an adopted role does not start until its holder has aligned with the village's membership letter. Somebody who aligned when they applied is not asked again. No payment is ever part of it."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: sendRecapLine"
+msgid "Your recap sends without a pay route."
+msgstr "Your recap sends without a pay route."
 
 #: client/src/components/pay/ReceivePanel.tsx
 msgctxt "pay page, button"
@@ -34729,6 +35674,11 @@ msgctxt "the bell: why a notice of this kind matters, kind my_task_due"
 msgid "A task on your own list is due soon. Open your list to see it."
 msgstr "A task on your own list is due soon. Open your list to see it."
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: who can hold it"
+msgid "A person"
+msgstr "A person"
+
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable category"
 msgid "Companions"
@@ -34924,6 +35874,11 @@ msgctxt "task board: cancel"
 msgid "Not now"
 msgstr "Not now"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.ackText"
+msgid "Pilot acknowledgement"
+msgstr "Pilot acknowledgement"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft stat"
 #~ msgid "Roughly: {hours}"
@@ -35084,6 +36039,11 @@ msgctxt "role card"
 msgid "Open place"
 msgstr "Open place"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.circle"
+msgid "Circle day"
+msgstr "Circle day"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
 msgid "Bonus"
@@ -35103,6 +36063,11 @@ msgstr "1 ticked"
 msgctxt "decline a suggestion"
 msgid "Decline"
 msgstr "Decline"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: pastePack"
+msgid "Paste the moon pack Claude gave you"
+msgstr "Paste the moon pack Claude gave you"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -35513,6 +36478,11 @@ msgstr "Every field here is printed at /exit-policy, signed in or not, except th
 msgctxt "health metric members_active_cycle, label"
 msgid "Active this cycle"
 msgstr "Active this cycle"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: noPayerYet"
+msgid "No payer pays your route yet."
+msgstr "No payer pays your route yet."
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "You can also bring it to somebody outside the village"
@@ -36029,6 +36999,11 @@ msgctxt "WalletCard, p"
 msgid "What you hold in the village, what you can carry across to Hypha, and what Base says you hold there. Only you can see this."
 msgstr "What you hold in the village, what you can carry across to Hypha, and what Base says you hold there. Only you can see this."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_KEEP_WORDS: kept"
+msgid "Keep"
+msgstr "Keep"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.window_role_declare, label"
 msgid "When declaring a role can go to the vote"
@@ -36202,6 +37177,11 @@ msgctxt "rites"
 msgid "Email"
 msgstr "Email"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.remove"
+msgid "Remove"
+msgstr "Remove"
+
 #: client/src/components/todayCard/TodayCard.tsx
 msgctxt "today's card: heading"
 msgid "A card for your day"
@@ -36245,6 +37225,11 @@ msgstr "Nobody holds any Voice yet."
 msgid "Currency code, such as CRC"
 msgstr "Currency code, such as CRC"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: goalScoreLine"
+msgid "Goal score"
+msgstr "Goal score"
+
 #. placeholder {0}: NOUN_SLOTS[slot].many
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: a noun's plural field"
@@ -36284,6 +37269,11 @@ msgstr "Each place's name, zone, stage, permits and words. Who holds its roles i
 msgctxt "EventsAdminPanel, p"
 msgid "Nothing on the calendar yet."
 msgstr "Nothing on the calendar yet."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ROLE_AUDIT_WORDS: contract"
+msgid "Contract"
+msgstr "Contract"
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module health, data"
@@ -36665,6 +37655,11 @@ msgctxt "portal entrance: the optional interest question"
 msgid "What draws you here?"
 msgstr "What draws you here?"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: close"
+msgid "Close"
+msgstr "Close"
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: duePassed"
 msgid "The date was {date}. Done, not yet, or let go?"
@@ -36755,6 +37750,11 @@ msgstr "Propose a change to what closing means"
 msgctxt "game variable map.photo_max_mb, label"
 msgid "Largest photograph a member may upload"
 msgstr "Largest photograph a member may upload"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: takeBackLine"
+msgid "Back to Draft. Any approval given is cleared."
+msgstr "Back to Draft. Any approval given is cleared."
 
 #: client/src/components/fireflyPath/SaveLater.tsx
 msgctxt "founding application, save and finish later: copy the link"
@@ -36934,6 +37934,11 @@ msgctxt "CashPayoutsTab, Heading"
 msgid "Cash to pay out"
 msgstr "Cash to pay out"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: AUTHORITY_KIND_WORDS: none"
+msgid "None recorded"
+msgstr "None recorded"
+
 #: client/src/components/roleDraft/ArchetypeStep.tsx
 #: client/src/pages/Roles.tsx
 msgctxt "roles page archetypes"
@@ -37010,6 +38015,16 @@ msgstr "Identity"
 msgctxt "founding application refusal"
 msgid "Add an email address we can reach you at."
 msgstr "Add an email address we can reach you at."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: moonLoadOf"
+msgid "{n} of 5"
+msgstr "{n} of 5"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: returnIt"
+msgid "Return with a note"
+msgstr "Return with a note"
 
 #. placeholder {0}: label[band]
 #: client/src/components/admin/AgeBandCorrection.tsx
@@ -37330,6 +38345,11 @@ msgstr "Shared with {0}."
 #~ msgid "Watching the last recording is the easiest first step."
 #~ msgstr "Watching the last recording is the easiest first step."
 
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "An outside service keeps what an organisation knows, and the module syncs it in with a review step for people."
+msgstr "An outside service keeps what an organisation knows, and the module syncs it in with a review step for people."
+
 #. placeholder {0}: dry.count
 #: client/src/components/yourList/ErasePrepPanel.tsx
 msgctxt "ErasePrepPanel, p"
@@ -37635,6 +38655,11 @@ msgctxt "TurnOnAction, p"
 msgid "{needs}. One press turns on all of them, in order."
 msgstr "{needs}. One press turns on all of them, in order."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.invoicing"
+msgid "Invoicing is on for this payer"
+msgstr "Invoicing is on for this payer"
+
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, pulse lede"
 msgid "How this circle has been doing this season, from what its sessions already wrote down. Counts only, never a name."
@@ -37758,6 +38783,11 @@ msgctxt "PersonalListsPanel, placeholder"
 msgid "Name or email"
 msgstr "Name or email"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: acceptRange"
+msgid "Accept"
+msgstr "Accept"
+
 #. placeholder {0}: count(result.facts, "fact")
 #: client/src/components/admin/SaberraConfigPanel.tsx
 msgctxt "SaberraConfigPanel, p"
@@ -37829,6 +38859,11 @@ msgstr "Each shared piece goes to whoever has the most room for their commitment
 msgctxt "work with us: help under a question"
 msgid "How would this serve the community, the land, the guests, the ecosystem, or the mission?"
 msgstr "How would this serve the community, the land, the guests, the ecosystem, or the mission?"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.invoiceTo"
+msgid "Where invoices go"
+msgstr "Where invoices go"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
@@ -38037,6 +39072,11 @@ msgctxt "role proposal: sharedSignIn"
 msgid "Sign in as a member of the village to read this proposal."
 msgstr "Sign in as a member of the village to read this proposal."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: paymentDetails"
+msgid "Payment goes to the account you have on file with Finance."
+msgstr "Payment goes to the account you have on file with Finance."
+
 #: client/src/pages/Journal.tsx
 msgctxt "Journal, h1"
 msgid "Journal"
@@ -38142,6 +39182,16 @@ msgstr "(required)"
 msgctxt "founding application intro"
 msgid "The value you would bring in your first months, item by item."
 msgstr "The value you would bring in your first months, item by item."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: roomViewOff"
+msgid "Room view is off"
+msgstr "Room view is off"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: gathered"
+msgid "Nothing new to bring in."
+msgstr "Nothing new to bring in."
 
 #: client/src/components/roleCard/rewardWords.ts
 #~ msgctxt "role card rewards: the footnote, the first month"
@@ -38813,6 +39863,11 @@ msgstr "Visit type"
 msgid "No open role carries these characters yet. Every role is still open to you."
 msgstr "No open role carries these characters yet. Every role is still open to you."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: thanksNote"
+msgid "What they did, optional"
+msgstr "What they did, optional"
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Loaded by {savedBy} on {savedOn}."
 msgstr "Loaded by {savedBy} on {savedOn}."
@@ -38840,6 +39895,11 @@ msgstr "What became of it"
 #: client/src/pages/ChangeRequests.tsx
 msgid "Ready for the village to review?"
 msgstr "Ready for the village to review?"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Give START_HERE to the AI you build with. It walks you both through the repository and the first files to write."
+msgstr "Give START_HERE to the AI you build with. It walks you both through the repository and the first files to write."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, a plant"
@@ -38974,6 +40034,11 @@ msgstr "Sign in"
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing this village means"
 msgstr "What closing this village means"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: loading"
+msgid "Reading your moon."
+msgstr "Reading your moon."
 
 #: client/src/components/review/ConsentQueue.tsx
 msgctxt "ConsentQueue, p"
@@ -39118,6 +40183,11 @@ msgstr "Helps you find things and proposes changes for you to approve."
 msgctxt "SaberraBridgeBoard, p"
 msgid "{0}{1} read, {2} {3}, {4} already seen, {5} dropped by Sera for an email{6}.{7}"
 msgstr "{0}{1} read, {2} {3}, {4} already seen, {5} dropped by Sera for an email{6}.{7}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxPending"
+msgid "A new Sera inbox is waiting for a second holder to confirm it: {address}. Until then invoices still go to the current one."
+msgstr "A new Sera inbox is waiting for a second holder to confirm it: {address}. Until then invoices still go to the current one."
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Add a photo of it now"
@@ -39289,6 +40359,11 @@ msgstr "Candidate"
 msgctxt "the bell: why a notice of this kind matters, kind role_tension_reminder"
 msgid "A tension raised with a role you hold has waited 2 business days. Take it, answer it, or bring it to the circle."
 msgstr "A tension raised with a role you hold has waited 2 business days. Take it, answer it, or bring it to the circle."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: role"
+msgid "Role"
+msgstr "Role"
 
 #. placeholder {0}: s.line
 #. placeholder {1}: s.word
@@ -39603,6 +40678,11 @@ msgctxt "TokenMeaningField, button"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: goalText"
+msgid "The goal"
+msgstr "The goal"
+
 #: client/src/pages/ProfileSettings.tsx
 msgctxt "settings: back to the list on a phone"
 msgid "All settings"
@@ -39694,6 +40774,11 @@ msgstr "<0>{0}</0> asked for <1>{1} {2}</1> to become {3}, on {4}.{5}"
 msgctxt "protocols page"
 msgid "optional"
 msgstr "optional"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: RECAP_STATUS_WORDS: draft"
+msgid "Draft"
+msgstr "Draft"
 
 #: client/src/components/geneKeys/GeneKeysPrompt.tsx
 msgctxt "GeneKeysPrompt, p"
@@ -40005,6 +41090,11 @@ msgstr "Anything you want the stewards to know (optional)"
 msgctxt "GameMechanics, Link"
 msgid "see its vote"
 msgstr "see its vote"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: forbidden_key"
+msgid "A moon pack never carries amounts, pay, rates or tax. Ask for the pack again without them."
+msgstr "A moon pack never carries amounts, pay, rates or tax. Ask for the pack again without them."
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.founding_tour_link, label"
@@ -40360,6 +41450,11 @@ msgstr "The lunar table does not cover this date."
 msgctxt "the bell: several notices of one kind batched into a line, kind season_place_placed"
 msgid "{n} season places were confirmed."
 msgstr "{n} season places were confirmed."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: printable"
+msgid "Open printable invoice"
+msgstr "Open printable invoice"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -40751,6 +41846,11 @@ msgctxt "start a conversation: the button"
 msgid "Send"
 msgstr "Send"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: keep"
+msgid "Keep"
+msgstr "Keep"
+
 #. placeholder {0}: handed.fromFirstLine ? "This box now holds your first line from ReGen Civics. A purpose statement says more: who it serves, what they are up against, the move, the means, and what becomes true." : "This box now holds the purpose statement from your ReGen Civics profile."
 #: client/src/components/admin/PurposeStatementPanel.tsx
 msgctxt "PurposeStatementPanel, p"
@@ -40980,6 +42080,11 @@ msgctxt "VillageHealth, tspan"
 msgid "The doughnut draws itself from lunation snapshots."
 msgstr "The doughnut draws itself from lunation snapshots."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: auditNote"
+msgid "A note"
+msgstr "A note"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Nothing here is live until you accept it. Each batch shows what changes and where it lands. Edit any words first; your edits save as you type."
@@ -41068,6 +42173,11 @@ msgctxt "SpringPackets, dt"
 msgid "Harvest"
 msgstr "Harvest"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: thanksSavedOnSend"
+msgid "Saved with your recap when you send it."
+msgstr "Saved with your recap when you send it."
+
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, what it is"
 msgid "A letter waiting to be read"
@@ -41137,6 +42247,11 @@ msgstr "A live vote on a session time, where the time that is winning is the tim
 msgctxt "signing key"
 msgid "Replace the key"
 msgstr "Replace the key"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: total"
+msgid "Total"
+msgstr "Total"
 
 #: client/src/components/fireflyPath/MoreRoles.tsx
 #~ msgctxt "founding application, roles added to one application"
@@ -41217,6 +42332,11 @@ msgctxt "MoonsPast, h2"
 msgid "Moons past"
 msgstr "Moons past"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Nationality"
+msgstr "Nationality"
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup"
 msgid "Your compensation"
@@ -41237,6 +42357,11 @@ msgctxt "module places, benefit 1"
 msgid "One list of every place, by zone, with the stage it has reached and how ready it is"
 msgstr "One list of every place, by zone, with the stage it has reached and how ready it is"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.taxId"
+msgid "Tax number"
+msgstr "Tax number"
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "Opening the role card…"
@@ -41256,6 +42381,11 @@ msgstr "Intake is a mint: awards are capped per member per lunation and high app
 msgctxt "YourCompanions, p"
 msgid "Nothing said yet."
 msgstr "Nothing said yet."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.legalName"
+msgid "Legal name"
+msgstr "Legal name"
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Your suggestion is withdrawn. It is listed under Decided lately on this block."
@@ -41683,6 +42813,11 @@ msgctxt "admin venture accounts"
 msgid "History"
 msgstr "History"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: base"
+msgid "Before the split"
+msgstr "Before the split"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
 msgid "Manage the Common Questions section shown on each journey page."
@@ -41989,6 +43124,11 @@ msgctxt "YourCompanions, p"
 msgid "Nothing moves until you say yes.<0> Each companion asks at most {0} questions a day.</0>"
 msgstr "Nothing moves until you say yes.<0> Each companion asks at most {0} questions a day.</0>"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: expectedOn"
+msgid "Expected payment date"
+msgstr "Expected payment date"
+
 #. placeholder {0}: ask.otherName
 #: client/src/components/asks/AsksPanel.tsx
 msgctxt "AsksPanel, label"
@@ -42038,6 +43178,11 @@ msgstr "server/lib/exchange.ts + shared/modules.ts: the version-stamped legal ca
 msgctxt "hidden map page"
 msgid "Approved"
 msgstr "Approved"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_STATE_WORDS: kept"
+msgid "Kept"
+msgstr "Kept"
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module journal, benefit 1"
@@ -42387,6 +43532,11 @@ msgctxt "Contribute, p"
 msgid "{0}, receipt #{1}"
 msgstr "{0}, receipt #{1}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: taxFormSignedOn"
+msgid "Tax form signed on"
+msgstr "Tax form signed on"
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box heading"
 msgid "Your next step"
@@ -42653,6 +43803,11 @@ msgctxt "companion welcome"
 msgid "Should I speak aloud?"
 msgstr "Should I speak aloud?"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_STATE_WORDS: dropped"
+msgid "Dropped"
+msgstr "Dropped"
+
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"One gate decides every permission\", title"
 msgid "One gate decides every permission"
@@ -42805,6 +43960,11 @@ msgstr "Currency your prices are in"
 msgctxt "role card: a fact's label"
 msgid "Term"
 msgstr "Term"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: roomViewLine"
+msgid "Every amount is hidden while Room view is on."
+msgstr "Every amount is hidden while Room view is on."
 
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: a role, a compact tile"
@@ -43156,6 +44316,11 @@ msgstr "For {title}."
 msgctxt "the agenda library"
 msgid "Remove this item? It stays on the agenda it's on, and the circle won't see it here anymore."
 msgstr "Remove this item? It stays on the agenda it's on, and the circle won't see it here anymore."
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Send it to the upstream repository. A person reads every module before it ships."
+msgstr "Send it to the upstream repository. A person reads every module before it ships."
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -43744,6 +44909,11 @@ msgctxt "game variable governance.voice_weighting, choice equal, hint"
 msgid "Everyone's sensing counts the same, regardless of what they hold. Simplest and most equal."
 msgstr "Everyone's sensing counts the same, regardless of what they hold. Simplest and most equal."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: LINE_BASIS_WORDS: allowance"
+msgid "Allowance"
+msgstr "Allowance"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind ballot_not_yet_in_effect"
 msgid "{n} carried votes have not taken effect yet."
@@ -43866,6 +45036,11 @@ msgctxt "VoteWidget, p"
 msgid "You are not on this ballot's roll"
 msgstr "You are not on this ballot's roll"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.authority"
+msgid "Authority, kept as a note"
+msgstr "Authority, kept as a note"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable uploads.orphan_grace_days, description"
 msgid "The uploads volume holds files from five doors: proposal attachments, brand images, village fonts, investor documents and members' photographs. Admin > Uploaded Files lists the ones no row in the database points at, and this is how long a file is left alone before it can appear on that list. The window protects a picture you have just replaced: swapping an image mints a new address by design, so the old file goes unreferenced the moment the new one lands while every browser and every email already sent still points at it. Nothing is ever removed without somebody pressing the button."
@@ -43975,6 +45150,11 @@ msgctxt "MoonDock, p"
 msgid "Nothing is on the calendar this moon yet."
 msgstr "Nothing is on the calendar this moon yet."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: routeChoice"
+msgid "Where you live and work, and your status"
+msgstr "Where you live and work, and your status"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind stays"
 msgid "Your stay: nights posting, credits arriving, or a balance running low."
@@ -43989,6 +45169,11 @@ msgstr "Build with us"
 msgctxt "applicant onboarding: shortlistDone"
 msgid "This application already has a shortlist answer."
 msgstr "This application already has a shortlist answer."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SERA_STATE_WORDS: running"
+msgid "Sera is drafting your moon."
+msgstr "Sera is drafting your moon."
 
 #: client/src/pages/Characters.tsx
 msgctxt "Characters, p"
@@ -44571,6 +45756,11 @@ msgctxt "role proposal: submitHeading"
 msgid "Submit for next season"
 msgstr "Submit for next season"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: how it is filled"
+msgid "Paid roles are consented by {circle}"
+msgstr "Paid roles are consented by {circle}"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module hypha, data"
 msgid "Contract addresses, what those contracts call themselves, village-level supply and treasury figures, and a log of outcomes that arrived."
@@ -44844,6 +46034,11 @@ msgctxt "Quests, p"
 msgid "Post your own Quest. Anyone can propose one. Tell us what you want to bring and what you'd need to make it real."
 msgstr "Post your own Quest. Anyone can propose one. Tell us what you want to bring and what you'd need to make it real."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: selectAll"
+msgid "Select every invoice"
+msgstr "Select every invoice"
+
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: whoApproves"
 msgid "The circle consents within 2 business days, or a founder or steward role adopts it."
@@ -45022,6 +46217,11 @@ msgstr "This figure is outside the suggestion's band, so pick a reason."
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "That did not work. Try again."
 msgstr "That did not work. Try again."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: taxFormValid"
+msgid "Tax form valid on the expected date"
+msgstr "Tax form valid on the expected date"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable platform.feedback_relay, label"
@@ -45342,6 +46542,11 @@ msgctxt "RedemptionQueue, p"
 msgid "The process this was asked under"
 msgstr "The process this was asked under"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: periodLine"
+msgid "From {fromDay}, {days} days at the terms"
+msgstr "From {fromDay}, {days} days at the terms"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Decided"
@@ -45401,6 +46606,11 @@ msgstr "Waiting for a second signer: another Treasurer or a steward. Until they 
 msgctxt "YourAgentPanel, aria-label"
 msgid "Copy"
 msgstr "Copy"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: too_big"
+msgid "This pack is over 200 KB. Ask for a shorter one."
+msgstr "This pack is over 200 KB. Ask for a shorter one."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece, short"
@@ -45805,6 +47015,11 @@ msgctxt "voice transcription refusal"
 msgid "One recording is too large. Record a shorter one."
 msgstr "One recording is too large. Record a shorter one."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: roleCoverage"
+msgid "Role coverage"
+msgstr "Role coverage"
+
 #: client/src/components/admin/comms/CommsSettings.tsx
 msgctxt "CommsSettings, button"
 msgid "Integrations"
@@ -45928,6 +47143,11 @@ msgctxt "FeedbackGive, label"
 msgid "Exactly what {0} will read"
 msgstr "Exactly what {0} will read"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_KEEP_WORDS: dropped"
+msgid "Drop"
+msgstr "Drop"
+
 #: client/src/components/power/SetupWalk.tsx
 msgctxt "SetupWalk, aria-label"
 msgid "Say your shape in one line"
@@ -45938,6 +47158,11 @@ msgstr "Say your shape in one line"
 msgctxt "after sending a proposal: when you hear back"
 msgid "You'll hear from us within one moon cycle."
 msgstr "You'll hear from us within one moon cycle."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SERA_STATE_WORDS: done"
+msgid "Sera's suggestions are below. They stay private to you until you keep them."
+msgstr "Sera's suggestions are below. They stay private to you until you keep them."
 
 #: client/src/components/admin/SubmissionHandling.tsx
 msgctxt "SubmissionHandling, p"
@@ -46401,6 +47626,11 @@ msgctxt "Admin, span"
 msgid "Signed-in member{0}{1}"
 msgstr "Signed-in member{0}{1}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: RECAP_STATUS_WORDS: returned"
+msgid "Returned with a note"
+msgstr "Returned with a note"
+
 #. placeholder {0}: plural(matchedIn.length, "role", "roles")
 #: client/src/pages/StructureReview.tsx
 msgctxt "StructureReview, p"
@@ -46426,6 +47656,11 @@ msgstr "Remove"
 msgctxt "role editor"
 msgid "per moon"
 msgstr "per moon"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: heading"
+msgid "Moon reviews"
+msgstr "Moon reviews"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable guide.voice, label"
@@ -46670,6 +47905,11 @@ msgstr "A new link is made. The old one no longer opens anything."
 #~ msgid "No quests yet. Quests are another way to take part, alone or with others: find one on the Quest Board."
 #~ msgstr "No quests yet. Quests are another way to take part, alone or with others: find one on the Quest Board."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: from"
+msgid "From"
+msgstr "From"
+
 #: client/src/components/journey/EconomicsView.tsx
 msgid " The platform key is not provisioned here yet, so it answers 503."
 msgstr " The platform key is not provisioned here yet, so it answers 503."
@@ -46703,6 +47943,11 @@ msgstr "When was it taken?"
 msgctxt "OAuthAuthorize, p"
 msgid "It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile."
 msgstr "It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.walkthrough"
+msgid "Walkthrough day"
+msgstr "Walkthrough day"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable payments.donation_max_usd, description"
@@ -46816,6 +48061,11 @@ msgctxt "EventsAdminPanel, label"
 msgid "iCal address (https)"
 msgstr "iCal address (https)"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: confirmed"
+msgid "The split is confirmed."
+msgstr "The split is confirmed."
+
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: page scheme choice"
 msgid "Light"
@@ -46870,6 +48120,11 @@ msgstr "<0/> That is me"
 msgctxt "pay page, button"
 msgid "Scan a code or open a link"
 msgstr "Scan a code or open a link"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: track"
+msgid "Volunteer"
+msgstr "Volunteer"
 
 #. placeholder {0}: army.length
 #: client/src/components/profileDash/YourCompanions.tsx
@@ -47129,10 +48384,20 @@ msgctxt "game variable progression.unlock.exchange.buy, label"
 msgid "Stage that unlocks: exchange.buy"
 msgstr "Stage that unlocks: exchange.buy"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: priced"
+msgid "Priced at"
+msgstr "Priced at"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.role_card_nationality, label"
 msgid "Nationality line on every open role"
 msgstr "Nationality line on every open role"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: sent"
+msgid "Sent."
+msgstr "Sent."
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module profiles, benefit 2"
@@ -47182,6 +48447,11 @@ msgstr "This writes nothing. No balance moves, no recognition is recorded, and n
 msgctxt "CommsOverview, h3"
 msgid "The last {0} days"
 msgstr "The last {0} days"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: approveSelected"
+msgid "Approve selected"
+msgstr "Approve selected"
 
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
@@ -47289,6 +48559,11 @@ msgstr "You play this"
 msgctxt "sera changes"
 msgid "Asking now."
 msgstr "Asking now."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.ackMissing"
+msgid "Write the pilot acknowledgement and its version. A new version asks every member to accept again."
+msgstr "Write the pilot acknowledgement and its version. A new version asks every member to accept again."
 
 #: client/src/components/admin/StageFloorPicker.tsx
 msgctxt "StageFloorPicker, legend"
@@ -47557,6 +48832,11 @@ msgctxt "CarryAcross, p"
 msgid "Move {0} to their suggested role?"
 msgstr "Move {0} to their suggested role?"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: roomView"
+msgid "Room view"
+msgstr "Room view"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "If your village uses Sera for its org memory, connecting Sera also turns the helper on. A village Anthropic key is used first when both are set."
@@ -47628,6 +48908,11 @@ msgstr "Write your own"
 msgctxt "hidden map, one place's details"
 msgid "Choose"
 msgstr "Choose"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: drop"
+msgid "Drop"
+msgstr "Drop"
 
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, p"
@@ -47730,6 +49015,11 @@ msgstr "Honorary"
 msgctxt "YourCompanions, button"
 msgid "Done"
 msgstr "Done"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.hostName"
+msgid "Host country name"
+msgstr "Host country name"
 
 #: client/src/components/admin/SubmissionHandling.tsx
 msgctxt "SubmissionHandling, button"
@@ -48077,6 +49367,11 @@ msgstr "Reference {n}: email or phone"
 msgctxt "follow-ups: eyebrow"
 msgid "Follow-ups"
 msgstr "Follow-ups"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: unknown_key"
+msgid "This pack has a field the moon pack does not have. Ask for the pack again."
+msgstr "This pack has a field the moon pack does not have. Ask for the pack again."
 
 #. placeholder {0}: c.name
 #: client/src/pages/Messages.tsx
@@ -48495,6 +49790,11 @@ msgctxt "module moon-review, benefit 4"
 msgid "Two different people approve, neither of them the member, and amounts stay with the member and Finance"
 msgstr "Two different people approve, neither of them the member, and amounts stay with the member and Finance"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: newRoleWhy"
+msgid "Why it should exist"
+msgstr "Why it should exist"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
 msgid "Nobody holds this yet"
@@ -48905,6 +50205,11 @@ msgctxt "pay board status"
 msgid "Claimed, ready to send"
 msgstr "Claimed, ready to send"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: THANKS_WORDS: sendGratitude"
+msgid "Send gratitude"
+msgstr "Send gratitude"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: close after sending"
 msgid "Back to the wall"
@@ -49277,6 +50582,11 @@ msgctxt "sign in: the button while it works"
 msgid "Signing in…"
 msgstr "Signing in…"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: letGoReason"
+msgid "Why it was let go"
+msgstr "Why it was let go"
+
 #: client/src/components/ExamplesBanner.tsx
 msgctxt "examples banner, several examples"
 msgid "Nobody here made them. They show what this module is for, and nothing you do to one takes effect."
@@ -49437,6 +50747,11 @@ msgstr "Move this question up"
 msgctxt "game variable governance.weight_cap_cash_on, label"
 msgid "Cap the weight one member counts from cash"
 msgstr "Cap the weight one member counts from cash"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: THANKS_WORDS: notice"
+msgid "{name} thanked you in their moon recap."
+msgstr "{name} thanked you in their moon recap."
 
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
@@ -49798,6 +51113,11 @@ msgctxt "admin compare"
 msgid "The role asks for this and nobody offered it: {0}."
 msgstr "The role asks for this and nobody offered it: {0}."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.hostMissing"
+msgid "Name the host country. The route and attestation words say \"the host country\" until you do."
+msgstr "Name the host country. The route and attestation words say \"the host country\" until you do."
+
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, p"
 msgid "What its calls have actually done"
@@ -49964,6 +51284,11 @@ msgctxt "WorkValueEditor, p"
 msgid "Reading which tokens this village pays for work."
 msgstr "Reading which tokens this village pays for work."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.formRoutes"
+msgid "Routes that need a valid tax form"
+msgstr "Routes that need a valid tax form"
+
 #: client/src/pages/Home.tsx
 #~ msgctxt "landing, founding team card body"
 #~ msgid "Lead a whole domain of the village, from the foundation through to completion."
@@ -50090,6 +51415,11 @@ msgstr "Open their proposal"
 msgctxt "Mint, p"
 msgid "Anything from {0} to {1}. The platform default is {2}."
 msgstr "Anything from {0} to {1}. The platform default is {2}."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: periodLine"
+msgid "From {fromDay}, {days} days at {givenPct}%"
+msgstr "From {fromDay}, {days} days at {givenPct}%"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -50592,6 +51922,11 @@ msgctxt "Housing, h1"
 msgid "Housing at {villageName}"
 msgstr "Housing at {villageName}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: paid"
+msgid "Paid"
+msgstr "Paid"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.weight_cap_other_on, label"
 msgid "Cap the weight one member counts from other contributions"
@@ -50732,6 +52067,11 @@ msgctxt "ProfileImport, p"
 msgid "Each one waits for your own tick."
 msgstr "Each one waits for your own tick."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_SKIP_WORDS: outside_moon"
+msgid "Its date is outside this moon"
+msgstr "Its date is outside this moon"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, toast"
 msgid "Circle created"
@@ -50854,6 +52194,11 @@ msgctxt "pay page, receipt"
 msgid "You hold now"
 msgstr "You hold now"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: share"
+msgid "Share of time"
+msgstr "Share of time"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
 msgid "The text below is not valid JSON yet, so there is nothing to preview."
@@ -50863,6 +52208,11 @@ msgstr "The text below is not valid JSON yet, so there is nothing to preview."
 msgctxt "steward question form: sent"
 msgid "Your question is with us"
 msgstr "Your question is with us"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: thisMoon"
+msgid "This moon"
+msgstr "This moon"
 
 #: client/src/components/admin/WorkWithUsTab.tsx
 msgctxt "WorkWithUsTab, p"
@@ -50982,6 +52332,11 @@ msgctxt "PowerGroupDialogs, DialogDescription"
 msgid "{groupName} asks for {stageName} or above.{0}"
 msgstr "{groupName} asks for {stageName} or above.{0}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: againstMyCards"
+msgid "Against my role cards"
+msgstr "Against my role cards"
+
 #: client/src/components/power/SetupWalk.tsx
 msgctxt "SetupWalk, p"
 msgid "Who takes it up?"
@@ -51046,6 +52401,11 @@ msgstr "Loading your next step…"
 msgctxt "Admin, button"
 msgid "Turn swapping off"
 msgstr "Turn swapping off"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: saved"
+msgid "Nothing changed."
+msgstr "Nothing changed."
 
 #: client/src/pages/HiddenMap.tsx
 msgid "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
@@ -51136,6 +52496,11 @@ msgctxt "calendar spiral: this day is today"
 msgid "today"
 msgstr "today"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.overridesHint"
+msgid "Move one moon's walkthrough or circle day, for a holiday or another meeting day. Leave a day empty to keep the usual one."
+msgstr "Move one moon's walkthrough or circle day, for a holiday or another meeting day. Leave a day empty to keep the usual one."
+
 #: client/src/components/yourList/ErasePrepPanel.tsx
 msgctxt "ErasePrepPanel, button"
 msgid "Not now"
@@ -51166,6 +52531,11 @@ msgstr "It becomes credits"
 msgctxt "admin menu: a menu entry label field"
 msgid "Your word for {0}"
 msgstr "Your word for {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: basis"
+msgid "Basis"
+msgstr "Basis"
 
 #: client/src/pages/SetPassword.tsx
 msgctxt "SetPassword, h1"
@@ -51576,6 +52946,11 @@ msgstr "When on, the letter that says no to an application also offers the waitl
 msgctxt "agent paths, a group's summary"
 msgid "{byPerson} a person confirms"
 msgstr "{byPerson} a person confirms"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.addHold"
+msgid "Add a hold"
+msgstr "Add a hold"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: sheets.reopened.confirm"
@@ -52058,6 +53433,11 @@ msgstr "Propose this role for next season"
 #~ msgid "Everyone who reads your application sees a wish to talk about the terms."
 #~ msgstr "Everyone who reads your application sees a wish to talk about the terms."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: itemWords"
+msgid "What was delivered"
+msgstr "What was delivered"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.veto_hours, label"
 msgid "How long a steward has to stop a change"
@@ -52257,6 +53637,11 @@ msgctxt "ModuleSettingsSection, p"
 msgid "The settings could not be read, so this list may be incomplete."
 msgstr "The settings could not be read, so this list may be incomplete."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: whichMoon"
+msgid "Which moon"
+msgstr "Which moon"
+
 #: client/src/components/AccountEmailsPanel.tsx
 msgctxt "account emails: code hint"
 msgid "The code works for 15 minutes. To send a new one, add the address again."
@@ -52397,6 +53782,11 @@ msgstr "{met} of {0} season goal{1} met"
 #~ msgctxt "role card rewards: the cap on a proposal"
 #~ msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
 #~ msgstr "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: TASK_STATUS_WORDS: let_go"
+msgid "Let go"
+msgstr "Let go"
 
 #: client/src/components/WorkPayBlock.tsx
 msgctxt "WorkPayBlock, p"
@@ -52564,6 +53954,11 @@ msgctxt "rites"
 msgid "Asked at your code"
 msgstr "Asked at your code"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: a label"
+msgid "Budget line"
+msgstr "Budget line"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable assistant.account_day_share_floor, label"
 msgid "Fewest guide calls one account may use in a day"
@@ -52597,6 +53992,11 @@ msgstr "A link to your work (optional)"
 msgctxt "Admin, span"
 msgid "(inactive)"
 msgstr "(inactive)"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.newPayer"
+msgid "A new payer"
+msgstr "A new payer"
 
 #: client/src/pages/WorkWithUs.tsx
 msgctxt "WorkWithUs, label"
@@ -52676,6 +54076,11 @@ msgstr "How does this land?"
 msgctxt "Admin, p"
 msgid "Everything you upload stays private. The public request form emails only the documents you tick as in the packet."
 msgstr "Everything you upload stays private. The public request form emails only the documents you tick as in the packet."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxCancelled"
+msgid "The change to Sera's inbox was cancelled."
+msgstr "The change to Sera's inbox was cancelled."
 
 #: client/src/pages/Characters.tsx
 msgctxt "Characters, aria-label"
@@ -53330,6 +54735,11 @@ msgctxt "GatheringEmailSettings, span"
 msgid "Village times: {villageTimes}"
 msgstr "Village times: {villageTimes}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: gather"
+msgid "Bring in my tasks"
+msgstr "Bring in my tasks"
+
 #: client/src/components/QuestCard.tsx
 msgctxt "open work card: how much of a person the quest asks"
 msgid "{commitment}% of you"
@@ -53463,6 +54873,11 @@ msgstr "What changed"
 msgid "Name the one thing you'll put first this week. The team sees it."
 msgstr "Name the one thing you'll put first this week. The team sees it."
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: track"
+msgid "AI"
+msgstr "AI"
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "OrgChartTab, span"
 msgid "· no account yet"
@@ -53516,6 +54931,11 @@ msgstr "Choose what this session takes up. You can add more and reorder them in 
 msgctxt "game variable exchange.price_change_max_pct, label"
 msgid "Largest single price change"
 msgstr "Largest single price change"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "A shared ritual: live sessions"
+msgstr "A shared ritual: live sessions"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "If that does not settle it, we ask the care holder to sit with us. In the room: the two of us and the care holder."
@@ -53605,6 +55025,11 @@ msgctxt "NeedCard, p"
 msgid "Your village has not said what it is for yet. Add a need below and it is still yours."
 msgstr "Your village has not said what it is for yet. Add a need below and it is still yours."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: local_contractor"
+msgid "Local contractor"
+msgstr "Local contractor"
+
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, p"
 msgid "No rules have been changed yet. This Game still plays entirely by its platform defaults."
@@ -53690,6 +55115,11 @@ msgstr "How far into the future the calendar looks. Anything starting beyond thi
 msgctxt "founding application review, several roles"
 msgid "Commitment: {eachRole}. {allPct}% in all"
 msgstr "Commitment: {eachRole}. {allPct}% in all"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "A personal practice: Gene Keys"
+msgstr "A personal practice: Gene Keys"
 
 #: client/src/components/mobile/MoreSheet.tsx
 msgctxt "the phone's More sheet: tile, the credits page"
@@ -54221,6 +55651,11 @@ msgctxt "funding round stage"
 msgid "Ideas welcome until the pot's holder sets the next stage"
 msgstr "Ideas welcome until the pot's holder sets the next stage"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_VISIBILITY_WORDS: approvers"
+msgid "Approvers only"
+msgstr "Approvers only"
+
 #: client/src/components/admin/MemberEmails.tsx
 msgctxt "admin member emails: delivery"
 msgid "Both addresses"
@@ -54276,6 +55711,11 @@ msgctxt "role editor history"
 msgid "Made"
 msgstr "Made"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.cycleId"
+msgid "Moon (cycle id)"
+msgstr "Moon (cycle id)"
+
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "Try again"
@@ -54295,6 +55735,11 @@ msgstr "Also remove their tasks in Sera (dry run)"
 msgctxt "role editor"
 msgid "Booking link"
 msgstr "Booking link"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GOAL_STATUS_WORDS: partly"
+msgid "Partly"
+msgstr "Partly"
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgctxt "hidden map settings"
@@ -54325,6 +55770,11 @@ msgstr "More"
 msgctxt "pricing desk"
 msgid "Opening the pricing desk…"
 msgstr "Opening the pricing desk…"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: approvers"
+msgid "Can approve: {who}"
+msgstr "Can approve: {who}"
 
 #: client/src/components/modules/GoLiveCard.tsx
 msgctxt "GoLiveCard, button"
@@ -54374,6 +55824,11 @@ msgstr "Somebody proposes to hold {head} and {last} next season"
 msgctxt "applicant onboarding: gatheredHeading"
 msgid "Gathered for the final call"
 msgstr "Gathered for the final call"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.holdCountry"
+msgid "Work done in (two-letter code)"
+msgstr "Work done in (two-letter code)"
 
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, what it is"
@@ -54767,6 +56222,11 @@ msgctxt "steward question form: a field to fix"
 msgid "Add your name."
 msgstr "Add your name."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: saving"
+msgid "Saving."
+msgstr "Saving."
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module governance, data"
 msgid "Ballots, who voted what and with what weight, objections and their rulings."
@@ -54842,6 +56302,11 @@ msgctxt "proposed changes"
 msgid "See it live"
 msgstr "See it live"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: newItemPlaceholder"
+msgid "What did you deliver?"
+msgstr "What did you deliver?"
+
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "ProposeQuest, placeholder"
 msgid "your@email.com"
@@ -54877,6 +56342,11 @@ msgstr "See the proposal"
 #~ msgid "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract."
 #~ msgstr "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: countriesHint"
+msgid "Two-letter codes, separated by commas"
+msgstr "Two-letter codes, separated by commas"
+
 #: client/src/pages/SeatApplication.tsx
 msgctxt "SeatApplication, Link"
 msgid "<0/>Every decision"
@@ -54908,6 +56378,11 @@ msgstr "Test run"
 msgctxt "PlaceGallery, aria-label"
 msgid "Photographs of {name}"
 msgstr "Photographs of {name}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: pilotAccept"
+msgid "I have read this and accept it"
+msgstr "I have read this and accept it"
 
 #: client/src/components/admin/PlayersTab.tsx
 msgctxt "PlayersTab, p"
@@ -55113,6 +56588,11 @@ msgctxt "MapVocabularyPanel, legend"
 msgid "Build phases"
 msgstr "Build phases"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: invoice"
+msgid "Invoice"
+msgstr "Invoice"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Show everything waiting"
@@ -55266,6 +56746,11 @@ msgstr "{waiting, plural, one {# change is waiting to send.} other {# changes ar
 msgid "Seat fees go to the village treasury, including for a venture's gatherings."
 msgstr "Seat fees go to the village treasury, including for a venture's gatherings."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.ackVersion"
+msgid "Its version"
+msgstr "Its version"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "a holder"
@@ -55326,6 +56811,11 @@ msgstr "References were already asked for."
 msgctxt "role proposal: youHold"
 msgid "Roles you hold"
 msgstr "Roles you hold"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.filedWhere"
+msgid "Where it is filed"
+msgstr "Where it is filed"
 
 #: client/src/components/WalkEditorPanel.tsx
 msgctxt "WalkEditorPanel, p"
@@ -55442,6 +56932,11 @@ msgstr "The rules of your village's game, live-editable. Only changed values are
 msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
 msgstr "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: prepareBy"
+msgid "Prepare by"
+msgstr "Prepare by"
+
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card: the one act, on a venture"
 msgid "Bring your venture"
@@ -55463,6 +56958,11 @@ msgctxt "module comms, for whom"
 msgid "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
 msgstr "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: too_many_goals"
+msgid "A pack sets five next-moon goals at most."
+msgstr "A pack sets five next-moon goals at most."
+
 #: client/src/components/admin/MapChipsPanel.tsx
 msgctxt "MapChipsPanel, h3"
 msgid "The numbers across the top of the map"
@@ -55481,6 +56981,11 @@ msgstr "Arrived {at}, with {count} proposals."
 msgctxt "RedemptionPanel, p"
 msgid "Before now"
 msgstr "Before now"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: proofLink"
+msgid "Proof link, optional"
+msgstr "Proof link, optional"
 
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgctxt "full access, the role picker"
@@ -55700,6 +57205,11 @@ msgstr "Withdraw my suggestion"
 msgctxt "Decisions, p"
 msgid "The village decides"
 msgstr "The village decides"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: belongsTo"
+msgid "The role it belongs to"
+msgstr "The role it belongs to"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: propose"
@@ -56499,6 +58009,11 @@ msgctxt "a page's data failed to load: read it again"
 msgid "Try again"
 msgstr "Try again"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: saveRoute"
+msgid "Save my pay route"
+msgstr "Save my pay route"
+
 #: client/src/components/governance/GoalsField.tsx
 msgid "Loading your roles' goals…"
 msgstr "Loading your roles' goals…"
@@ -56629,6 +58144,11 @@ msgctxt "Decisions, h3"
 msgid "<0/>How this works<1/>"
 msgstr "<0/>How this works<1/>"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.vat"
+msgid "VAT rate, as a percent"
+msgstr "VAT rate, as a percent"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Remove {rn} from your draft"
 #~ msgstr "Remove {rn} from your draft"
@@ -56677,6 +58197,11 @@ msgstr "Nothing here is recorded or sent, and no quest is claimed. Tick every st
 msgctxt "EventsAdminPanel, label"
 msgid "Repeats"
 msgstr "Repeats"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.country"
+msgid "Country (two-letter code)"
+msgstr "Country (two-letter code)"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -56990,6 +58515,11 @@ msgctxt "voice field label: work with us reciprocity"
 msgid "What you offer in return"
 msgstr "What you offer in return"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: track"
+msgid "Local employee"
+msgstr "Local employee"
+
 #: client/src/components/Layout.tsx
 msgctxt "site header"
 msgid "Main Site"
@@ -57131,6 +58661,11 @@ msgstr "<0>{0}</0>: up to {1}, {2}, paid from {3}{4}"
 msgctxt "CalendarFeedCard, span"
 msgid "You have an address in use{0}. Making a new one retires it."
 msgstr "You have an address in use{0}. Making a new one retires it."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.rateSource"
+msgid "Where the exchange rate comes from"
+msgstr "Where the exchange rate comes from"
 
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "a switch setting"
@@ -57342,6 +58877,11 @@ msgctxt "role proposal: rolesFailed"
 msgid "The roles did not load. Try again in a moment."
 msgstr "The roles did not load. Try again in a moment."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: newRoleName"
+msgid "The role's name"
+msgstr "The role's name"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind ballot_closing"
 msgid "{n} votes close soon and are still waiting on your answer."
@@ -57442,6 +58982,11 @@ msgstr "Keep or untick"
 msgctxt "priority board, the season goal an item serves"
 msgid "Serves: {0}"
 msgstr "Serves: {0}"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: addNewRole"
+msgid "Add a role that should exist"
+msgstr "Add a role that should exist"
 
 #: client/src/components/admin/comms/JourneyDetail.tsx
 msgctxt "JourneyDetail, button"
@@ -58115,6 +59660,11 @@ msgctxt "admin sounds: the village-wide volume"
 msgid "Volume"
 msgstr "Volume"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.ceilingCurrency"
+msgid "Ceiling currency"
+msgstr "Ceiling currency"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "FAQs"
@@ -58124,6 +59674,11 @@ msgstr "FAQs"
 msgctxt "pricing desk"
 msgid "Quest"
 msgstr "Quest"
+
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: where"
+msgid "On the land or remote"
+msgstr "On the land or remote"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -58433,6 +59988,11 @@ msgctxt "proposed changes: kind of change"
 msgid "FAQ"
 msgstr "FAQ"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: GOAL_STATUS_WORDS: open"
+msgid "Open"
+msgstr "Open"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
 msgid "Commitment: {commitmentPct}%"
@@ -58483,6 +60043,11 @@ msgstr "Hold the tokens while a redemption is open"
 msgctxt "CommsOverview, label"
 msgid "Written"
 msgstr "Written"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_REFUSAL_WORDS: too_many_items"
+msgid "A pack holds 300 items at most."
+msgstr "A pack holds 300 items at most."
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft step"
@@ -59077,6 +60642,11 @@ msgctxt "AdminSeraLink, h2"
 msgid "Sera"
 msgstr "Sera"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: noOutside"
+msgid "Nothing outside your roles this moon."
+msgstr "Nothing outside your roles this moon."
+
 #. placeholder {0}: NOUN_SLOTS[slot].one
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: a noun field"
@@ -59093,6 +60663,11 @@ msgctxt "application backup file"
 msgid "Serves"
 msgstr "Serves"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: routeConfirmed"
+msgid "Confirmed by Finance"
+msgstr "Confirmed by Finance"
+
 #: client/src/pages/ToolsHub.tsx
 msgctxt "ToolsHub, p"
 msgid "Agreements, contributions, expenses and membership all live on the village's Hypha DHO. This platform links out, decisions happen there."
@@ -59106,6 +60681,11 @@ msgstr "Not now"
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
 msgstr "Share with the village"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: rolesWithNoItems"
+msgid "Roles with no items this moon"
+msgstr "Roles with no items this moon"
 
 #: client/src/components/modules/starterSetWords.ts
 msgctxt "module starter set village-voice, name"
@@ -59121,6 +60701,11 @@ msgstr "Reading the season."
 msgctxt "review inbox: a conflict card"
 msgid "Discard all options"
 msgstr "Discard all options"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PACK_WORDS: skipped"
+msgid "{n} to skip"
+msgstr "{n} to skip"
 
 #: client/src/components/geneKeys/CircleLines.tsx
 msgctxt "CircleLines, h4"
@@ -59942,6 +61527,16 @@ msgctxt "LetterComposer, button"
 msgid "Schedule it"
 msgstr "Schedule it"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: nextGoals"
+msgid "Next moon's goals"
+msgstr "Next moon's goals"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: scaled"
+msgid "After the split"
+msgstr "After the split"
+
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, p"
 msgid "This season has no posted goals yet."
@@ -60046,6 +61641,11 @@ msgctxt "admin quest safety"
 msgid "Save safety"
 msgstr "Save safety"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.routes"
+msgid "The routes it pays"
+msgstr "The routes it pays"
+
 #: client/src/components/admin/SaberraBridgeBoard.tsx
 msgctxt "SaberraBridgeBoard, summary"
 msgid "Which key each act uses"
@@ -60145,6 +61745,11 @@ msgstr "When granting a power can go to the vote"
 msgctxt "limit help button beside a box"
 msgid "How the limits work"
 msgstr "How the limits work"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: tabs.payers"
+msgid "Payers"
+msgstr "Payers"
 
 #: client/src/components/yourList/LibraryImportPanel.tsx
 msgctxt "LibraryImportPanel, button"
@@ -60815,6 +62420,11 @@ msgstr "More"
 #~ msgid "Next: {nextName}"
 #~ msgstr "Next: {nextName}"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: waiting"
+msgid "A Treasurer confirms the split before this is paid."
+msgstr "A Treasurer confirms the split before this is paid."
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.proposals_per_member_per_cycle, description"
 msgid "How many game-rule change proposals one member may open per cycle. A ceiling on flooding, not on participation: supporting and sponsoring other proposals is never limited."
@@ -61014,6 +62624,11 @@ msgctxt "game variable gratitude.require_message, description"
 msgid "When on, Gratitude cannot be sent silently. The message is what makes recognition mean something to the person receiving it."
 msgstr "When on, Gratitude cannot be sent silently. The message is what makes recognition mean something to the person receiving it."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: saveGoals"
+msgid "Save the goals"
+msgstr "Save the goals"
+
 #. placeholder {0}: pctText(ballot.unity)
 #. placeholder {1}: pctText(ballot.unityPct)
 #. placeholder {2}: pctText(ballot.quorum)
@@ -61108,6 +62723,11 @@ msgstr "this quest's circle"
 msgctxt "open work card: the quest's size beside the reader's own percent"
 msgid "Fits what you can give"
 msgstr "Fits what you can give"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: pilotHeading"
+msgid "The pilot note"
+msgstr "The pilot note"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable stay.grace_nights, description"
@@ -61705,6 +63325,11 @@ msgctxt "module hypha, benefit 5"
 msgid "Outcomes that match no proposal are listed for a steward instead of dropped"
 msgstr "Outcomes that match no proposal are listed for a steward instead of dropped"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SERA_STATE_WORDS: idle"
+msgid "Sera has not drafted this moon yet."
+msgstr "Sera has not drafted this moon yet."
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, hear first: join a call and sign up"
 msgid "and"
@@ -61765,6 +63390,11 @@ msgctxt "GuidePanel, aria-label"
 msgid "Close the guide"
 msgstr "Close the guide"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: approvers"
+msgid "Nobody can approve this yet."
+msgstr "Nobody can approve this yet."
+
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
 msgid "Save"
@@ -61779,6 +63409,11 @@ msgstr "Save"
 msgctxt "InventoryCard, h4"
 msgid "Stays"
 msgstr "Stays"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.holdNote"
+msgid "Note"
+msgstr "Note"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -61998,6 +63633,11 @@ msgctxt "applicant onboarding: ally"
 msgid "Why they might be an ally or partner"
 msgstr "Why they might be an ally or partner"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: askSeraNotOffered"
+msgid "Ask Sera is not open on this village yet. Bring in your tasks, or import from Claude."
+msgstr "Ask Sera is not open on this village yet. Bring in your tasks, or import from Claude."
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module season-places, name"
 msgid "Season places"
@@ -62158,6 +63798,11 @@ msgstr "Moon"
 msgctxt "VillageEmail, h2"
 msgid "Journeys"
 msgstr "Journeys"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.ceiling"
+msgid "Monthly ceiling, in minor units"
+msgstr "Monthly ceiling, in minor units"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -62334,6 +63979,11 @@ msgctxt "GeneKeysMoon, figcaption"
 msgid "Your ladder this season"
 msgstr "Your ladder this season"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: approveWork"
+msgid "Approve the work"
+msgstr "Approve the work"
+
 #: client/src/components/admin/QuestRootsEditor.tsx
 msgctxt "admin quest roots"
 msgid "Save roots"
@@ -62501,6 +64151,11 @@ msgctxt "open proposal decide: forWhenASeatOpens"
 msgid "for when a place opens"
 msgstr "for when a place opens"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: intro"
+msgid "Who the village pays and how, the host country's words and rates, and the moon's days. Every value here is the village's own, and each change is recorded with its old and new value."
+msgstr "Who the village pays and how, the host country's words and rates, and the moon's days. Every value here is the village's own, and each change is recorded with its old and new value."
+
 #: client/src/components/admin/VariablesTab.tsx
 msgctxt "VariablesTab, div"
 msgid "Loading..."
@@ -62554,6 +64209,11 @@ msgctxt "PlanEditor, span"
 msgid "Both"
 msgstr "Both"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: copyEmail"
+msgid "Copy for email"
+msgstr "Copy for email"
+
 #: client/src/components/admin/MapChipsPanel.tsx
 msgctxt "MapChipsPanel, placeholder"
 msgid "/quests"
@@ -62588,6 +64248,11 @@ msgstr "Some cells cannot be saved as written:"
 #~ msgctxt "founding team section lede"
 #~ msgid "We are building our team of people who will lead each domain of the village from the foundation through to completion."
 #~ msgstr "We are building our team of people who will lead each domain of the village from the foundation through to completion."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: taxForm"
+msgid "Tax form"
+msgstr "Tax form"
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
@@ -62769,6 +64434,11 @@ msgctxt "founding application review"
 msgid "If you don't confirm within {OPEN_CONFIRM_HOURS} hours, we delete what you sent. If we say no, or say yes and you never make your account, we remove your name and email {OPEN_ANONYMISE_DAYS} days later."
 msgstr "If you don't confirm within {OPEN_CONFIRM_HOURS} hours, we delete what you sent. If we say no, or say yes and you never make your account, we remove your name and email {OPEN_ANONYMISE_DAYS} days later."
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: how it is filled, the total time"
+msgid "{total} of conversations in all"
+msgstr "{total} of conversations in all"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Choose"
@@ -62939,6 +64609,11 @@ msgstr "You"
 msgctxt "Admin, p"
 msgid "And this happens with it"
 msgstr "And this happens with it"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: confirmHint"
+msgid "These lines are scaled by the member's own split of their time. Check each amount, then confirm before you approve."
+msgstr "These lines are scaled by the member's own split of their time. Check each amount, then confirm before you approve."
 
 #: client/src/components/proposals/Diff.tsx
 msgctxt "proposed changes: a list row"
@@ -63183,6 +64858,11 @@ msgctxt "the bell: why a notice of this kind matters, kind hidden_map_opened"
 msgid "Enough of your places are vouched for, and the whole map is open to you."
 msgstr "Enough of your places are vouched for, and the whole map is open to you."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: basis"
+msgid "Your split gives this {givenPct}% of your time, and it was priced at {pricedPct}%"
+msgstr "Your split gives this {givenPct}% of your time, and it was priced at {pricedPct}%"
+
 #: client/src/components/admin/ModuleConfigPanels.tsx
 msgctxt "ModuleConfigPanels, p"
 msgid "No campaigns linked. /campaigns shows its empty board until one is."
@@ -63375,6 +65055,11 @@ msgstr "Start a venture"
 msgctxt "CloseBeat, p"
 msgid "The record keeps fixed words for a role application, so it never names the member who applied. Members read the application on its own page."
 msgstr "The record keeps fixed words for a role application, so it never names the member who applied. Members read the application on its own page."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInbox"
+msgid "Sera's inbox (email address)"
+msgstr "Sera's inbox (email address)"
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "That suggestion was not kept."
@@ -63841,6 +65526,11 @@ msgstr "A photograph taken down loses its file immediately. What stays is the re
 msgctxt "PathJourneyOptions, aria-label"
 msgid "This path"
 msgstr "This path"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: noItems"
+msgid "No items yet. Bring in your tasks, import from Claude, or add one by hand."
+msgstr "No items yet. Bring in your tasks, import from Claude, or add one by hand."
 
 #. placeholder {0}: agreed.at.slice(0, 10)
 #. placeholder {1}: agreed.provider
@@ -64421,6 +66111,11 @@ msgctxt "HousingTiersPanel, span"
 msgid "Saving."
 msgstr "Saving."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: payers.currencies"
+msgid "Currencies it pays in (three-letter codes, comma separated)"
+msgstr "Currencies it pays in (three-letter codes, comma separated)"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "I can live with this"
@@ -64591,6 +66286,11 @@ msgstr "Applications are closed right now. Your selection stays here, and you ca
 msgctxt "Admin, li"
 msgid "Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market."
 msgstr "Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: routeSaved"
+msgid "Saved. Another person holding the cash power confirms it."
+msgstr "Saved. Another person holding the cash power confirms it."
 
 #. placeholder {0}: slate.proposedBy ? `${slate.proposedBy} opened this vote and chose this list. Voting yes is voting for it as well as for starting the Game.` : "This list was chosen when the vote opened. Voting yes is voting for it as well as for starting the Game."
 #. placeholder {1}: slate.powerCount
@@ -65003,6 +66703,11 @@ msgctxt "Introductions, p"
 msgid "You both said yes. <0>Open the thread</0> and say hello in your own words."
 msgstr "You both said yes. <0>Open the thread</0> and say hello in your own words."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ITEM_VISIBILITY_WORDS: members"
+msgid "Members"
+msgstr "Members"
+
 #: client/src/pages/Circles.tsx
 msgctxt "Circles, div"
 msgid "The circles are catching their breath. Please refresh in a moment."
@@ -65304,6 +67009,11 @@ msgctxt "protocols page"
 msgid "Sign in again to send what you ticked. It stays on this phone until then."
 msgstr "Sign in again to send what you ticked. It stays on this phone until then."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: QUEUE_WORDS: outside"
+msgid "{n, plural, one {# item outside their roles} other {# items outside their roles}}"
+msgstr "{n, plural, one {# item outside their roles} other {# items outside their roles}}"
+
 #: client/src/pages/Wallet.tsx
 msgctxt "Wallet, button"
 msgid "<0/> Buy"
@@ -65333,6 +67043,11 @@ msgstr "Appeal: {appealShown}"
 msgctxt "WorkWithUsTab, label"
 msgid "AI guide's name"
 msgstr "AI guide's name"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: pending"
+msgid "Not chosen yet"
+msgstr "Not chosen yet"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "What you bring to this role"
@@ -65476,6 +67191,11 @@ msgctxt "open proposal attachments: a file over the size limit"
 msgid "Too big"
 msgstr "Too big"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: approved"
+msgid "Approved, waiting to be paid"
+msgstr "Approved, waiting to be paid"
+
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"Value is released by human consent, never by a timer\", enforcedBy"
 msgid "server/lib/scheduler.ts: the scheduler's charter, in code and comments"
@@ -65490,6 +67210,11 @@ msgstr "Collapse menu"
 msgctxt "CommsJourneys, h2"
 msgid "Journeys"
 msgstr "Journeys"
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "Templates for gatherings, with drop-ins like a shared breath or a bell, run together in real time."
+msgstr "Templates for gatherings, with drop-ins like a shared breath or a bell, run together in real time."
 
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
@@ -65596,6 +67321,11 @@ msgstr "Also on your path"
 msgctxt "SubmissionDesk, aria-label"
 msgid "Form type"
 msgstr "Form type"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: lastGoals"
+msgid "Last moon's goals"
+msgstr "Last moon's goals"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card: a chip, the class this role suits"
@@ -65915,6 +67645,16 @@ msgctxt "applicant's application status, terms"
 msgid "Terms"
 msgstr "Terms"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: taxFormNone"
+msgid "None"
+msgstr "None"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: legalName"
+msgid "Your legal name (private: only you, the Treasurer and admins see it, and it never goes to Sera)"
+msgstr "Your legal name (private: only you, the Treasurer and admins see it, and it never goes to Sera)"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card: a role's state"
 msgid "Open"
@@ -65980,6 +67720,11 @@ msgctxt "game variable hypha.founder_base_address, label"
 msgid "Founder Base account address"
 msgstr "Founder Base account address"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: rhythm.sendHour"
+msgid "Hour reminders go out, village time (0 to 23)"
+msgstr "Hour reminders go out, village time (0 to 23)"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card: eyebrow, the village's word for a role"
 msgid "A {roleWord} with powers"
@@ -65994,6 +67739,11 @@ msgstr "Days of cooling before a balance settles"
 msgctxt "shape the role heading"
 msgid "Shape the role (optional)"
 msgstr "Shape the role (optional)"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: save"
+msgid "Save"
+msgstr "Save"
 
 #: client/src/components/GuideChat.tsx
 msgctxt "guide chat, work with us: the guide's first message when the village wrote no greeting of its own"
@@ -66578,6 +68328,11 @@ msgstr "Confirm the code"
 msgid "An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing."
 msgstr "An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: copySummary"
+msgid "Copy work summary"
+msgstr "Copy work summary"
+
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, what deciding it does"
 msgid "Approving it lets it go live. Seatings are listed in the order they arrived."
@@ -66691,6 +68446,11 @@ msgctxt "protocols page"
 msgid "Try again"
 msgstr "Try again"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: walkthrough"
+msgid "Walkthrough day"
+msgstr "Walkthrough day"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "The desk could not be read."
@@ -66744,6 +68504,11 @@ msgstr "The recording stopped before you pressed Stop, perhaps because another a
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "How this was worked out"
 msgstr "How this was worked out"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: visitor"
+msgid "Visitor, or status pending"
+msgstr "Visitor, or status pending"
 
 #. placeholder {0}: i.commitmentPct
 #: client/src/components/admin/CompareTab.tsx
@@ -67250,6 +69015,11 @@ msgctxt "the bell: why a notice of this kind matters, kind role_access"
 msgid "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself."
 msgstr "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MOON_WORDS: sendBy"
+msgid "Send by"
+msgstr "Send by"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Quest a completed run hands in (optional)"
@@ -67279,6 +69049,11 @@ msgstr "Approve"
 msgctxt "portal entrance: eyebrow"
 msgid "The portal"
 msgstr "The portal"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: address"
+msgid "Your address"
+msgstr "Your address"
 
 #. placeholder {0}: supportThreshold === 1 ? "supporter" : "supporters"
 #: client/src/components/governance/ProposalWizard.tsx
@@ -67524,6 +69299,11 @@ msgctxt "VillageMap, button"
 msgid "Walk the setup: roles, methods, shape"
 msgstr "Walk the setup: roles, methods, shape"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: INVOICE_STATUS_WORDS: waiting"
+msgid "Waiting on approval"
+msgstr "Waiting on approval"
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: put back"
 msgid "This change set fields that were not there before, and putting it back cannot take them away. Change them on the page itself."
@@ -67647,6 +69427,11 @@ msgstr "The role in your link is not open any more. These are open now."
 msgctxt "founding card piece, short"
 msgid "Bring me"
 msgstr "Bring me"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: thanksAdd"
+msgid "Add"
+msgstr "Add"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind quest_declined"
@@ -67863,6 +69648,11 @@ msgctxt "partner form: eyebrow"
 msgid "Four ways to build"
 msgstr "Four ways to build"
 
+#: client/src/components/power/cardViewWords.ts
+msgctxt "role card rows: review, the village's own words"
+msgid "First review {words}"
+msgstr "First review {words}"
+
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
 msgid "Your name"
@@ -67951,6 +69741,11 @@ msgstr "Withdrawn"
 msgctxt "game variable comms.time_poll_settle_minutes, description"
 msgid "Minutes a time must lead the vote before the gathering moves to it. Zero follows the vote live, so the time that is winning is the time on the calendar."
 msgstr "Minutes a time must lead the vote before the gathering moves to it. Zero follows the vote live, so the time that is winning is the time on the calendar."
+
+#: client/src/components/modules/builderWords.ts
+msgctxt "module builder journey"
+msgid "A connected tool: organisational memory"
+msgstr "A connected tool: organisational memory"
 
 #. placeholder {0}: keptFor(list?.retentionMonths)
 #: client/src/components/admin/comms/CommsSentMail.tsx
@@ -68146,6 +69941,11 @@ msgstr "Layers"
 msgctxt "venture redemption"
 msgid "Ask to redeem"
 msgstr "Ask to redeem"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxConfirmed"
+msgid "The new Sera inbox is in place, and every member has been told."
+msgstr "The new Sera inbox is in place, and every member has been told."
 
 #: client/src/components/review/StructureDraft.tsx
 msgctxt "StructureDraft, Link"
@@ -68347,6 +70147,11 @@ msgstr "A change request touches what your role looks after. Ask, raise a concer
 msgctxt "founding application refusal"
 msgid "That doesn't look like an email address. Check it, like name@example.com, and try again."
 msgstr "That doesn't look like an email address. Check it, like name@example.com, and try again."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxConfirm"
+msgid "Confirm the new inbox"
+msgstr "Confirm the new inbox"
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
@@ -68676,6 +70481,11 @@ msgstr "the menu"
 #~ msgid "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
 #~ msgstr "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.remove"
+msgid "Remove"
+msgstr "Remove"
+
 #: client/src/pages/VillageMap.tsx
 msgctxt "VillageMap, p"
 msgid "Sign in to see the village map."
@@ -68789,6 +70599,11 @@ msgstr "The village is looking for someone to hold this role."
 msgctxt "role editor card"
 msgid "Link to a Google Doc shared with anyone who has the link"
 msgstr "Link to a Google Doc shared with anyone who has the link"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: PAY_ROUTE_SHORT_WORDS: nomad"
+msgid "Digital nomad"
+msgstr "Digital nomad"
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module resources, benefit 1"
@@ -68952,6 +70767,11 @@ msgstr "Connected"
 msgctxt "role proposal: feedbackHelp"
 msgid "Up to 1000 characters. The member who wrote this proposal reads it."
 msgstr "Up to 1000 characters. The member who wrote this proposal reads it."
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: MY_MOON_WORDS: copied"
+msgid "Copied."
+msgstr "Copied."
 
 #. placeholder {0}: beat + 1
 #. placeholder {1}: WELCOME_BEATS.length
@@ -69276,6 +71096,11 @@ msgctxt "game variable governance.voice_weighting, label"
 msgid "How sensing is weighted"
 msgstr "How sensing is weighted"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxCancel"
+msgid "Cancel the change"
+msgstr "Cancel the change"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths, the box a list is pasted into"
 msgid "Pasted paths"
@@ -69340,6 +71165,11 @@ msgstr "Waiting on a person"
 #~ msgid "Name saved"
 #~ msgstr "Name saved"
 
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: ADMIN_WORDS: settings.currency"
+msgid "Host currency (three-letter code)"
+msgstr "Host currency (three-letter code)"
+
 #: client/src/components/form/LimitSigns.tsx
 msgctxt "limit notice, read aloud"
 msgid "This answer is over its limit. Trim it to send."
@@ -69349,6 +71179,11 @@ msgstr "This answer is over its limit. Trim it to send."
 msgctxt "MapChipsPanel, toast"
 msgid "Could not load the map's chips"
 msgstr "Could not load the map's chips"
+
+#: client/src/components/myMoon/moonWords.ts
+msgctxt "moon recap: SPLIT_PAY_WORDS: confirm"
+msgid "Confirm the split"
+msgstr "Confirm the split"
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "role card tab: decides, bring me, rhythm, holding it well"
