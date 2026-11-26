@@ -24,13 +24,14 @@ import { useModule } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import VoteClock from "./VoteClock";
 import { VoteResultMini } from "./VoteResult";
-import { subjectNoun } from "./wizardConfig";
 import { fetchBallots, type BallotCard } from "./governanceApi";
 import { Trans } from "@lingui/react/macro";
+import { useDecisionNoun } from "@/components/governance/decisionNounWords";
 
 const SHOWN = 3;
 
 export default function LiveDecisionsBand() {
+  const noun = useDecisionNoun();
   const governance = useModule("governance");
   const { user } = useAuth();
   const [ballots, setBallots] = useState<BallotCard[] | null>(null);
@@ -95,7 +96,7 @@ export default function LiveDecisionsBand() {
                 key={b.id}
                 className="flex h-full flex-col rounded-xl border border-stone-200 bg-white p-4 focus-within:border-teal-deep hover:border-teal-deep"
               >
-                <span className="text-xs font-medium text-stone-500">{subjectNoun(b.subjectType)}</span>
+                <span className="text-xs font-medium text-stone-500">{noun(b.subjectType)}</span>
                 <Link
                   href={`/decisions/${b.id}`}
                   className="mt-1 flex min-h-[44px] flex-1 items-start rounded-sm text-sm font-bold leading-snug text-stone-900 hover:text-teal-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
