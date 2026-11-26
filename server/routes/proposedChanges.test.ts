@@ -336,6 +336,17 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(hits.at(-1)!.body).toEqual({ value: "12" });
   });
 
+  it("PAY FOLLOWS THE RIGHT TO READ TERMS, for a setting on the role routes too: its pay fields are cut, and kept from the store", async () => {
+    const { keepStoredPay, payKeysOf, withoutPay } = await import("./proposedChanges");
+    const keys = payKeysOf("setting", { method: "PUT", path: "/api/admin/org/roles/r-1" });
+    const body = { name: "Bookkeeper", valueMinor: 177777, termsOffer: { v: 1, pay: { kind: "fixed", amountMinor: 177777 } } };
+    expect(withoutPay(keys, body)).toEqual({ value: { name: "Bookkeeper" }, had: true });
+    expect(keepStoredPay(keys, { name: "Book keeper", valueMinor: 1 }, body)).toEqual({ name: "Book keeper", valueMinor: 177777, termsOffer: body.termsOffer });
+    // Any other setting, and any other kind but a role card, carries no pay keys.
+    expect(payKeysOf("setting", { method: "PUT", path: "/api/admin/brand" })).toEqual([]);
+    expect(payKeysOf("page_content", { section: "page-home" })).toEqual([]);
+  });
+
   it("PAY FOLLOWS THE RIGHT TO READ TERMS: a storyteller sees that a role's pay changes and no figure, and cannot drop or set it (the coordinator, 26 Nov 2026)", async () => {
     await q("DELETE FROM org_roles WHERE id = 'rc-pay'");
     await q("INSERT INTO org_roles (id, name, seats, active, terms_offer) VALUES ('rc-pay', 'Pay role', 1, 1, ?)", [JSON.stringify({ v: 1, pay: { kind: "range", currency: "USD", minMinor: 101111, maxMinor: 122222, per: "month" } })]);

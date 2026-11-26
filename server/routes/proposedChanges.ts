@@ -84,18 +84,31 @@ type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "
 };
 
 
-/** A copy of a role card body without its pay group, and whether it had one. Any other kind is returned as it is. */
-export function withoutPay(kind: string, v: unknown): { value: unknown; had: boolean } {
-  if (kind !== "role_card" || !v || typeof v !== "object" || Array.isArray(v) || !("pay" in (v as Record<string, unknown>))) return { value: v, had: false };
-  const { pay: _pay, ...rest } = v as Record<string, unknown>;
-  return { value: rest, had: true };
+/** The role routes a `setting` may name, whose bodies can carry a role's pay or terms. */
+const ROLE_ROUTE = /^\/api\/admin\/org\/roles(\/|$)/;
+const ROLE_PAY_KEYS = ["pay", "termsOffer", "terms_offer", "valueMinor", "value_minor", "valueTokens", "value_tokens", "cashMinor", "cash_minor", "cashCurrency", "cash_currency", "valueCurrency", "value_currency"];
+
+/** The keys of a change's body that carry pay or terms: a role card's pay group, and a role route's pay fields. */
+export function payKeysOf(kind: string, target: Record<string, unknown>): readonly string[] {
+  if (kind === "role_card") return ["pay"];
+  if (kind === "setting" && ROLE_ROUTE.test(String(target.path ?? ""))) return ROLE_PAY_KEYS;
+  return [];
 }
 
-/** What a reader who may not read pay saves or accepts: their words, with the stored pay put back exactly as it was. */
-export function keepStoredPay(kind: string, sent: Record<string, unknown>, stored: Record<string, unknown>): Record<string, unknown> {
-  if (kind !== "role_card") return sent;
-  const { pay: _ignored, ...rest } = sent;
-  return "pay" in stored ? { ...rest, pay: stored.pay } : rest;
+/** A copy of a body without its pay and terms keys, and whether it had any. */
+export function withoutPay(keys: readonly string[], v: unknown): { value: unknown; had: boolean } {
+  if (!keys.length || !v || typeof v !== "object" || Array.isArray(v)) return { value: v, had: false };
+  const o = v as Record<string, unknown>;
+  if (!keys.some((k) => k in o)) return { value: v, had: false };
+  return { value: Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k))), had: true };
+}
+
+/** What a reader who may not read pay saves or accepts: their words, with the stored pay and terms put back exactly. */
+export function keepStoredPay(keys: readonly string[], sent: Record<string, unknown>, stored: Record<string, unknown>): Record<string, unknown> {
+  if (!keys.length) return sent;
+  const out: Record<string, unknown> = Object.fromEntries(Object.entries(sent).filter(([k]) => !keys.includes(k)));
+  for (const k of keys) if (k in stored) out[k] = stored[k];
+  return out;
 }
 
 /** An accepted change as the conflict rules read it: what went live, and when. */
@@ -348,7 +361,7 @@ export function register(app: Express, deps: Deps): void {
       if (section && c.target.section !== section) continue;
       for (const l of (c.lessons ?? []) as Array<{ field: string; proposed: unknown; accepted: unknown }>) {
         // A lesson about pay carries its figures: only for a reader who may read terms.
-        if (!mayPay && c.kind === "role_card" && /^pay(\.|$)/.test(l.field)) continue;
+        if (!mayPay && payKeysOf(c.kind, c.target).some((k) => l.field === k || l.field.startsWith(`${k}.`))) continue;
         lessons.push({ proposalId: c.id, kind: c.kind, target: c.targetLabel, summary: c.summary, field: l.field, proposed: l.proposed, accepted: l.accepted, acceptedAt: c.decidedAt ?? "" });
       }
     }
@@ -475,7 +488,8 @@ export function register(app: Express, deps: Deps): void {
     const oldest = changes.reduce<string | null>((m, c) => (!m || c.createdAt < m ? c.createdAt : m), null);
     const acceptedLater = oldest ? (await store.acceptedSince(pool, new Date(oldest))).map(acceptedRecord) : [];
     const mayPay = await readsPay(req);
-    const cut = (kind: string, v: unknown) => (mayPay ? v : withoutPay(kind, v).value);
+    const cut = (c: { kind: string; target: Record<string, unknown> }, v: unknown) => (mayPay ? v : withoutPay(payKeysOf(c.kind, c.target), v).value);
+    const had = (c: { kind: string; target: Record<string, unknown> }, ...vs: unknown[]) => vs.some((v) => withoutPay(payKeysOf(c.kind, c.target), v).had);
     const served = [];
     for (const c of changes) {
       const live = await liveOf(kd, run, c.kind, c.target, c.draft ?? c.body);
@@ -489,11 +503,11 @@ export function register(app: Express, deps: Deps): void {
         targetLabel: c.targetLabel,
         route: { method: c.routeMethod, path: c.routePath },
         summary: c.summary,
-        body: cut(c.kind, c.body),
-        draft: c.draft === null ? null : cut(c.kind, c.draft),
-        live: cut(c.kind, live),
+        body: cut(c, c.body),
+        draft: c.draft === null ? null : cut(c, c.draft),
+        live: cut(c, live),
         // The pay changes, and this reader may not read terms: the card says so and shows no figure.
-        payHidden: !mayPay && (withoutPay(c.kind, c.body).had || withoutPay(c.kind, c.draft).had),
+        payHidden: !mayPay && had(c, c.body, c.draft),
         labels: labelsFor(c.kind, c.target, c.draft ?? c.body),
         where: whereOf(c.kind, c.target),
         status: c.status,
@@ -532,9 +546,9 @@ export function register(app: Express, deps: Deps): void {
           targetLabel: c.targetLabel,
           route: { method: c.routeMethod, path: c.routePath },
           summary: c.summary,
-          body: cut(c.kind, c.body),
-          accepted: c.accepted === null || c.accepted === undefined ? c.accepted : cut(c.kind, c.accepted),
-          payHidden: !mayPay && (withoutPay(c.kind, c.body).had || withoutPay(c.kind, c.accepted).had),
+          body: cut(c, c.body),
+          accepted: c.accepted === null || c.accepted === undefined ? c.accepted : cut(c, c.accepted),
+          payHidden: !mayPay && had(c, c.body, c.accepted),
           labels: labelsFor(c.kind, c.target, c.accepted ?? c.body),
           where: whereOf(c.kind, c.target),
           status: c.status,
@@ -563,7 +577,7 @@ export function register(app: Express, deps: Deps): void {
     let saved = draft;
     if (draft && !(await readsPay(req))) {
       const c = await store.changeById(getPool(), String(req.params.id ?? ""));
-      if (c) saved = keepStoredPay(c.kind, draft, c.draft ?? c.body);
+      if (c) saved = keepStoredPay(payKeysOf(c.kind, c.target), draft, c.draft ?? c.body);
     }
     const ok = await store.saveDraft(getPool(), String(req.params.id ?? ""), saved, uid);
     if (!ok) return res.status(409).json({ error: "not_open", message: REVIEW_WORDS.notProposed });
@@ -574,7 +588,7 @@ export function register(app: Express, deps: Deps): void {
   const finalBody = (c: store.StoredChange, sent: unknown, mayPay = true): Record<string, unknown> => {
     const stored = c.draft ?? c.body;
     const chosen = obj(sent) ?? stored;
-    return withoutApproval(mayPay ? chosen : keepStoredPay(c.kind, chosen, stored));
+    return withoutApproval(mayPay ? chosen : keepStoredPay(payKeysOf(c.kind, c.target), chosen, stored));
   };
 
   app.post("/api/admin/proposals/check", async (req, res) => {
