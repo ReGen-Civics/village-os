@@ -20,6 +20,7 @@ import { authToken } from "@/lib/gameApi";
 import { fetchMine, fileMine, saveCard, saveMine, saveMoonLoad, type CardBody, type MinePayload } from "@/components/seasonPlans/seasonPlansApi";
 import { EDIT_WORDS, type PersonalEditKey, type RoleEditKey } from "@shared/playerCardEdit";
 import type { PlayerCardPayload } from "@shared/playerCardPayload";
+import { readerLanguage } from "@/lib/readerLanguage";
 import type { CardWordKey, CardWords, SeasonalGoal, ServedGoal } from "@shared/seasonPlanWords";
 
 export type Answer<T> = { ok: true; data: T } | { ok: false; status: number; error: string };
@@ -29,9 +30,12 @@ const headers = (): Record<string, string> => {
   return { "Content-Type": "application/json", ...(t ? { Authorization: `Bearer ${t}` } : {}) };
 };
 
-async function call<T>(path: string, method: "GET" | "POST" = "GET", body?: unknown): Promise<Answer<T>> {
+/** The reader's language for a read (client/src/lib/readerLanguage.ts): the server says the card in it. */
+const readIn = (locale?: string): Record<string, string> => (readerLanguage(locale ?? "").headers as Record<string, string> | undefined) ?? {};
+
+async function call<T>(path: string, method: "GET" | "POST" = "GET", body?: unknown, locale?: string): Promise<Answer<T>> {
   try {
-    const res = await fetch(path, { method, headers: headers(), ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
+    const res = await fetch(path, { method, headers: { ...headers(), ...readIn(locale) }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
     const out = await res.json().catch(() => null);
     if (!res.ok) return { ok: false, status: res.status, error: String(out?.message ?? out?.error ?? EDIT_WORDS.failed) };
     return { ok: true, data: out as T };
@@ -48,8 +52,8 @@ export function isCardPayload(v: unknown): v is PlayerCardPayload {
   return !!p && typeof p === "object" && !!p.card && typeof p.card === "object" && !!p.viewer && typeof p.viewer.isSelf === "boolean";
 }
 
-export async function fetchCard(handle: string): Promise<Answer<PlayerCardPayload>> {
-  const r = await call<PlayerCardPayload>(cardPath(handle));
+export async function fetchCard(handle: string, locale?: string): Promise<Answer<PlayerCardPayload>> {
+  const r = await call<PlayerCardPayload>(cardPath(handle), "GET", undefined, locale);
   if (r.ok && !isCardPayload(r.data)) return { ok: false, status: 0, error: EDIT_WORDS.failed };
   return r;
 }
@@ -57,8 +61,8 @@ export async function fetchCard(handle: string): Promise<Answer<PlayerCardPayloa
 export const applicationCardPath = (id: string) => `/api/governance/role-applications/${encodeURIComponent(id)}/card`;
 
 /** The card a role application asks for, in proposal mode, at the reader's tier. */
-export async function fetchApplicationCard(id: string): Promise<Answer<PlayerCardPayload>> {
-  const r = await call<PlayerCardPayload>(applicationCardPath(id));
+export async function fetchApplicationCard(id: string, locale?: string): Promise<Answer<PlayerCardPayload>> {
+  const r = await call<PlayerCardPayload>(applicationCardPath(id), "GET", undefined, locale);
   if (r.ok && !isCardPayload(r.data)) return { ok: false, status: 0, error: EDIT_WORDS.failed };
   return r;
 }

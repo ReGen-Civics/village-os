@@ -20,12 +20,12 @@ const WORDS: Record<ApplicantLanguage, { subject: (role: string) => string; hell
     private: "Keep this link to yourself: anyone with it can open your saved answers.",
   },
   es: {
-    subject: (role) => (role ? `Tu solicitud guardada: ${role}` : "Tu solicitud guardada"),
+    subject: (role) => (role ? `Su solicitud guardada: ${role}` : "Su solicitud guardada"),
     hello: (name) => (name ? `Hola ${name}:` : "Hola:"),
-    body: (role, village) => `Tu solicitud${role ? ` para ${role}` : ""}${village ? ` en ${village}` : ""} está guardada. Abre este enlace para seguir donde lo dejaste, con tus respuestas y archivos tal como estaban:`,
-    link: "Termina tu solicitud",
-    days: (n) => `La guardamos ${n} días después de la última vez que guardes. Nada llega al equipo hasta que la envíes.`,
-    private: "Guarda este enlace solo para ti: quien lo tenga puede abrir tus respuestas guardadas.",
+    body: (role, village) => `Su solicitud${role ? ` para ${role}` : ""}${village ? ` en ${village}` : ""} está guardada. Abra este enlace para seguir donde lo dejó, con sus respuestas y archivos tal como estaban:`,
+    link: "Termine su solicitud",
+    days: (n) => `La guardamos ${n} días después de la última vez que guarde. Nada llega al equipo hasta que la envíe.`,
+    private: "Guarde este enlace solo para usted: quien lo tenga puede abrir sus respuestas guardadas.",
   },
 };
 

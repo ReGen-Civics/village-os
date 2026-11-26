@@ -41,8 +41,11 @@
 import { LUNAR_CLOCK } from "./cycleClock";
 import { walkthroughDay, type RhythmDoc } from "./moonRhythm";
 import { civilDaysBetween, daysOfSpan, fullMoonsBetween, zonedTimeToUtc } from "./lunar";
-import { CARD_WORDS as W, ALLOWANCE_WORDS, APPLICATION_STATUS_WORDS, PAY_WORDS, PER_WORDS } from "./playerCardWords";
-import { formatDay, joinList, type Read } from "./roleSheet";
+import { ALLOWANCE_WORDS, APPLICATION_STATUS_WORDS, PAY_WORDS, PER_WORDS } from "./playerCardWords";
+import { formatDay, type Read } from "./roleSheet";
+import { pruneCardSaid, recordingWords, sayDay, sayList, W } from "./playerCardSay";
+import type { Said } from "./saidWords";
+import type { PlayerCardWords } from "./playerCardSpeak";
 import { cycleWindows, readSign, type SignReading, type SignRows } from "./roleSigns";
 import { roleHandover, roleHealth, type HandoverOut, type HealthOut } from "./playerCardHealth";
 import { roleCcos, roleTerm, type HoldingWellOut, type ListSectionOut, type TextSectionOut } from "./playerCardCcos";
@@ -440,7 +443,11 @@ export interface AcrossOut {
   heading: string;
   doors: { label: string; href: string }[];
   aim: Slot<string>;
-  seasonalGoals: { heading: string; lede: string; items: Slot<{ title: string; doneWhen: string | null }[]> };
+  /**
+   * `doneWhen` is the sentence the card shows; `when` is the owner's own words inside it, which the editor opens
+   * with, so a sentence said in another language is never saved back as theirs.
+   */
+  seasonalGoals: { heading: string; lede: string; items: Slot<{ title: string; doneWhen: string | null; when?: string | null }[]> };
   goals: Slot<{ goal: string; howItHelps: string }[]>;
   tasks: Slot<{ id: string; title: string; roleTitle: string | null; state: string; doneWhen: string | null }[]>;
   /** "October Moon, 10 Oct to 8 Nov": the moon this moon's tasks belong to. */
@@ -606,6 +613,16 @@ export interface PlayerCard {
   howIHold: { heading: string; items: Slot<{ label: string; text: string }[]> };
   applications: ApplicationsOut;
   agreements: AgreementsOut;
+  /**
+   * The table's fixed lines in the reader's language, for the headings the components draw themselves. Sent only
+   * to a reader who asked for another language (server/lib/platformSpeech.ts); absent, the components draw English.
+   */
+  words?: Partial<PlayerCardWords>;
+  /**
+   * What the English above was made from, so the client can say it in the reader's language
+   * (shared/saidWords.ts). Absent from an older server; the English is drawn as sent either way.
+   */
+  said?: Said;
 }
 
 // ── Pieces ──────────────────────────────────────────────────────────────────
@@ -647,8 +664,8 @@ function header(input: PlayerCardInput, roles: PlayerRoleIn[] | undefined): Head
       : roles.length === 0
         ? W.holdsNoRoles
         : notYetAdopted(input)
-          ? W.appliesFor(joinList(roles.map((r) => r.name)))
-          : W.rolesLine(roles.length, joinList(roles.map((r) => r.name)));
+          ? W.appliesFor(sayList(roles.map((r) => r.name)))
+          : W.rolesLine(roles.length, sayList(roles.map((r) => r.name)));
   let day: HeaderOut["day"] = UNREAD;
   if (input.season === null) day = empty(W.seasonNotRead);
   else if (input.season) {
@@ -789,7 +806,7 @@ function roleOut(role: PlayerRoleIn, input: PlayerCardInput): RoleOut {
   if (role.criticality === "high") chips.push(W.keyRole);
   // The circle is drawn as a link to its card, beside these chips.
   const circle = role.circle ? { name: role.circle.name, href: `/circles/${encodeURIComponent(role.circle.id)}`, ...(role.circle.anchor === true ? { anchor: true } : {}) } : null;
-  const held = formatDay(role.termEndsAt ?? null, true, input.timeZone);
+  const held = sayDay(role.termEndsAt ?? null, true, input.timeZone);
   if (held) chips.push(W.heldUntil(held));
   // 0274: the CCOS sections, and the review chip from the role's own terms.
   const terms = input.frameworkTerms === true;
@@ -802,7 +819,7 @@ function roleOut(role: PlayerRoleIn, input: PlayerCardInput): RoleOut {
       : role.powers.length
         ? shown(
             role.powers.map((p) =>
-              p.sharedWith?.length ? W.sharedWith(p.label, joinList(cleanList(p.sharedWith))) : p.label,
+              p.sharedWith?.length ? W.sharedWith(p.label, sayList(cleanList(p.sharedWith))) : p.label,
             ),
           )
         : empty(W.noPowers);
@@ -884,8 +901,8 @@ function across(input: PlayerCardInput, roles: PlayerRoleIn[] | undefined, roleO
     .slice(0, SEASONAL_GOALS_MAX)
     .map((g) => {
       const when = clean(g.doneWhen);
-      const by = formatDay(g.doneBy ?? null, false, input.timeZone);
-      return { title: clean(g.title)!, doneWhen: when ? (by ? W.goalDoneBy(by, when) : W.doneWhen(when)) : null };
+      const by = sayDay(g.doneBy ?? null, false, input.timeZone);
+      return { title: clean(g.title)!, doneWhen: when ? (by ? W.goalDoneBy(by, when) : W.doneWhen(when)) : null, when: when ?? null };
     });
   const seasonalGoals: AcrossOut["seasonalGoals"] = {
     heading: W.seasonalGoals(sgList.length),
@@ -989,7 +1006,7 @@ function timeline(input: PlayerCardInput, roles: PlayerRoleIn[]): TimelineOut {
     if (!at) return;
     const t = at.getTime();
     if (t < from.getTime() || t > to.getTime()) return;
-    markers.push({ kind, at: at.toISOString(), day: formatDay(at.toISOString(), false, tz) ?? "", words, t });
+    markers.push({ kind, at: at.toISOString(), day: sayDay(at.toISOString(), false, tz) ?? "", words, t });
   };
   spans.forEach((s, i) => {
     if (s.starting) return;
@@ -1022,7 +1039,7 @@ function timeline(input: PlayerCardInput, roles: PlayerRoleIn[]): TimelineOut {
   const moons: MoonOut[] = spans.map((s) => {
     const lastDay = new Date(s.end.getTime() - 1);
     return {
-      label: W.moonDates(formatDay(s.start.toISOString(), false, tz) ?? "", formatDay(lastDay.toISOString(), false, tz) ?? ""),
+      label: W.moonDates(sayDay(s.start.toISOString(), false, tz) ?? "", sayDay(lastDay.toISOString(), false, tz) ?? ""),
       title: s.title,
       startsAt: s.start.toISOString(),
       endsAt: s.end.toISOString(),
@@ -1059,7 +1076,7 @@ function applications(input: PlayerCardInput): ApplicationsOut {
     const titles = a.seat_ids.map((id) => names[id]).filter((s): s is string => !!clean(s));
     const status = isStatus(a.status) ? APPLICATION_STATUS_WORDS[a.status] : "";
     const pending = isStatus(a.status) && OPEN_STATUSES.includes(a.status);
-    const filedDay = formatDay(a.created_at, true, tz);
+    const filedDay = sayDay(a.created_at, true, tz);
     groups[
       applicationGroup(
         { candidateUserId: a.candidate_user_id, termSeasonId: a.term_season_id, startsAt: a.starts_at, termEndsAt: a.term_ends_at },
@@ -1068,7 +1085,7 @@ function applications(input: PlayerCardInput): ApplicationsOut {
     ].push({
       id: a.id,
       href: applicationHref(a.id),
-      title: joinList(titles),
+      title: sayList(titles),
       status,
       filed: filedDay ? W.filedOn(filedDay) : null,
       starts: pending ? W.startsOnceAdopted : null,
@@ -1101,7 +1118,7 @@ function applications(input: PlayerCardInput): ApplicationsOut {
 function agreementRows(s: SeatSettings, input: PlayerCardInput): AgreementRow[] {
   const tz = input.timeZone;
   const rows: AgreementRow[] = [];
-  const day = (iso: string | null | undefined) => formatDay(iso ?? null, true, tz);
+  const day = (iso: string | null | undefined) => sayDay(iso ?? null, true, tz);
 
   const term: string[] = [];
   if (s.term) {
@@ -1178,7 +1195,7 @@ function accomplished(input: PlayerCardInput, roles: PlayerRoleIn[]): Accomplish
     .map((m) => {
       const lastDay = new Date(Date.parse(m.endsAt) - 1).toISOString();
       return {
-        label: W.moonDates(formatDay(m.startsAt, false, tz) ?? "", formatDay(lastDay, false, tz) ?? ""),
+        label: W.moonDates(sayDay(m.startsAt, false, tz) ?? "", sayDay(lastDay, false, tz) ?? ""),
         startsAt: m.startsAt,
         items: m.items
           .filter((a) => clean(a.text))
@@ -1186,7 +1203,7 @@ function accomplished(input: PlayerCardInput, roles: PlayerRoleIn[]): Accomplish
             id: String(a.entryId),
             title: clean(a.text)!,
             roleTitle: a.roleId ? (titleOf.get(a.roleId) ?? clean(names[a.roleId]) ?? null) : null,
-            accepted: W.acceptedOn(formatDay(a.acceptedAt, false, tz) ?? ""),
+            accepted: W.acceptedOn(sayDay(a.acceptedAt, false, tz) ?? ""),
             note: clean(a.note),
           })),
       };
@@ -1198,8 +1215,10 @@ function accomplished(input: PlayerCardInput, roles: PlayerRoleIn[]): Accomplish
 // ── The card ───────────────────────────────────────────────────────────────
 
 export function buildPlayerCard(input: PlayerCardInput): PlayerCard {
-  const built = buildCard(input);
-  return fromApplication(input) ? nameOpenRowsOnce(built, openRowLine(input.fillWith)) : built;
+  // The words are read through a recorder (shared/playerCardSay.ts), so the card says what each sentence was made from.
+  const { out: built, said } = recordingWords(() => buildCard(input));
+  const card = fromApplication(input) ? nameOpenRowsOnce(built, openRowLine(input.fillWith)) : built;
+  return { ...card, said: pruneCardSaid(said, card) };
 }
 
 function buildCard(input: PlayerCardInput): PlayerCard {

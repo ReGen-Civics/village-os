@@ -11,7 +11,7 @@
  * WHICH LANGUAGE is decided in shared/applicantLanguage.ts. A language here
  * must also be one the site offers (shared/i18nLocales.ts), which the test pins.
  *
- * Voice: plain, warm, first person plural. Spanish uses "tú".
+ * Voice: plain, warm, first person plural. Spanish uses "usted" (the lead's rule for every Spanish word, 26 Nov 2026).
  * NEEDS A NATIVE EAR: the Spanish below is written carefully and has not been
  * read by a native speaker yet. The lines most worth a second look are marked
  * `// check:` and listed in the lane's report.
@@ -518,131 +518,131 @@ const es: ApplicantMessages = {
   hello: (n) => (n ? `Hola ${n},` : "Hola,"),
   list: esList,
   aRole: "un rol",
-  keepStatusLink: "El enlace a la página del estado de tu propuesta está en el primer correo que te enviamos, para que puedas seguirla cuando quieras.",
-  statusLinkLine: (link) => `La página del estado de tu propuesta, para seguirla cuando quieras: ${link}`, // needs-native-review
+  keepStatusLink: "El enlace a la página del estado de su propuesta está en el primer correo que le enviamos, para que pueda seguirla cuando quiera.",
+  statusLinkLine: (link) => `La página del estado de su propuesta, para seguirla cuando quiera: ${link}`, // needs-native-review
   replyPromise: (moons) =>
     moons === null
-      ? "Primero estamos completando nuestro equipo fundador, así que puede pasar un tiempo antes de que respondamos. Te escribiremos en cuanto estemos listos para conversar." // needs-native-review: new words, 14 Nov 2026
-      : moons === 1 ? "Tendrás noticias nuestras dentro de un ciclo lunar." : `Tendrás noticias nuestras dentro de ${moons} ciclos lunares.`, // needs-native-review: new words, 24 Nov 2026
+      ? "Primero estamos completando nuestro equipo fundador, así que puede pasar un tiempo antes de que respondamos. Le escribiremos en cuanto estemos listos para conversar." // needs-native-review: new words, 14 Nov 2026
+      : moons === 1 ? "Tendrá noticias nuestras dentro de un ciclo lunar." : `Tendrá noticias nuestras dentro de ${moons} ciclos lunares.`, // needs-native-review: new words, 24 Nov 2026
   noteIntro: "Una nota de parte nuestra:",
   day: dayIn("es"),
 
   confirm: {
-    subject: (v) => `Confirma tu propuesta a ${v}`,
-    proposed: (roles, v, when) => `Propusiste ocupar ${roles} en ${v} ${when ? `para ${when}` : "la próxima temporada"}.`, // check: "ocupar" for "hold a role"
+    subject: (v) => `Confirme su propuesta a ${v}`,
+    proposed: (roles, v, when) => `Usted propuso ocupar ${roles} en ${v} ${when ? `para ${when}` : "la próxima temporada"}.`, // check: "ocupar" for "hold a role"
     nextSeason: "la próxima temporada",
     thisMoon: (from, to) => `esta luna, del ${from} al ${to}`,
-    ask: "Confirma que eres tú, y tu propuesta llega a la aldea:", // check: "aldea" for village
-    validFor: (h) => `El enlace funciona durante ${h} horas. Si no fuiste tú, ignóralo y no pasará nada.`,
+    ask: "Confirme que es usted, y su propuesta llega a la aldea:", // check: "aldea" for village
+    validFor: (h) => `El enlace funciona durante ${h} horas. Si no fue usted, ignórelo y no pasará nada.`,
     aiDrafts: "Una IA puede ayudarnos a redactar nuestras respuestas; siempre las lee y las envía una persona, y ninguna IA participa en la elección.", // check
   },
   statusEmail: {
-    subject: "Dónde está tu propuesta",
-    text: (link, promise) => `Tu propuesta está con la aldea. Sigue dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarda este enlace para ti: es la forma en que sabemos que eres tú.`,
+    subject: "Dónde está su propuesta",
+    text: (link, promise) => `Su propuesta está con la aldea. Siga dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarde este enlace para usted: es la forma en que sabemos que es usted.`,
   },
 
   update: {
-    confirmedTitle: (v) => `Tu propuesta está con ${v}`,
-    confirmed: (roles, promise) => `Tu propuesta para ocupar ${roles} ya está con nosotros. ${promise}`,
-    firstReplyTitle: "Hemos recibido tu propuesta",
-    firstReply: (roles) => `El rol que da la bienvenida a las personas ha recibido tu propuesta para ocupar ${roles} y te escribirá para que reserves un momento que te convenga.`, // needs-native-review: new words, 12 Nov 2026
-    conversationTitle: "Nos encantaría conversar contigo",
-    conversation: (roles, withRole, minutes, bookingUrl) => `El siguiente paso de tu propuesta para ocupar ${roles} es una conversación${withRole ? ` con ${withRole}` : ""}${minutes ? `, de unos ${minutes} minutos` : ""}. ${bookingUrl ? `Reserva un horario con ${withRole ?? "esa persona"}: ${bookingUrl}` : "Te escribiremos con horarios."}`, // needs-native-review: new words, 16 Nov 2026
-    consentTitle: "El círculo está considerando tu propuesta", // check: "círculo" is the village's term for circle
-    consent: (roles) => `Las conversaciones ya están escritas, y ahora el círculo sigue su proceso para tu propuesta de ocupar ${roles}. Revisa tu correo o la página de tu estado para los siguientes pasos.`, // needs-native-review: new words, 12 Nov 2026
-    termsTitle: "Cambiaron las condiciones de tu propuesta",
-    terms: (roles) => `Cambiamos las condiciones que sugerimos para tu propuesta de ocupar ${roles}. Abre la página del estado de tu propuesta para leerlas y cuéntanos qué piensas.`,
-    adoptedTitle: (v) => `${v} aceptó tu propuesta`, // needs-native-review: new words, 16 Nov 2026
-    adopted: (v, roles, next) => `${v} aceptó tu propuesta para ocupar ${roles}. ${next}`, // needs-native-review: new words, 16 Nov 2026
-    declinedTitle: (v) => `Tu propuesta a ${v}`,
-    declined: (roles) => `Gracias por proponerte para ocupar ${roles}. Esta vez no podemos decir que sí. Te animamos a explorar misiones, ver otros roles abiertos o volver a proponer la próxima temporada.`, // check: "misión" for quest; needs-native-review: new words, 12 Nov 2026
-    invitedTitle: "Nos encantaría conversar contigo",
-    invited: (roles) => `Leímos con cuidado tu postulación para ocupar ${roles}, y nos encantaría invitarte al siguiente paso para conocer al equipo. Los detalles están en tu correo.`, // check: "postulación" for application; needs-native-review: new words, 12 Nov 2026
-    notInvitedTitle: (v) => `Gracias por postularte a ${v}`,
-    notInvited: (roles) => `Gracias por postularte para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Te animamos a explorar misiones, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 16 Nov 2026
-    referencesTitle: "Estás en nuestra lista corta: ¿podemos escuchar a tus referencias?", // needs-native-review: new words, 19 Nov 2026
-    references: (roles) => `Gracias por tu postulación para ocupar ${roles}. Estás en nuestra lista corta, y el siguiente paso son tus referencias: personas vinculadas con este trabajo, idealmente personas que también podrían ser aliadas o socias de la aldea. Abre la página de tu estado para agregarlas, con cómo contactar a cada una, cómo te conocen y por qué podrían ser aliadas.`, // needs-native-review: new words, 19 Nov 2026
+    confirmedTitle: (v) => `Su propuesta está con ${v}`,
+    confirmed: (roles, promise) => `Su propuesta para ocupar ${roles} ya está con nosotros. ${promise}`,
+    firstReplyTitle: "Hemos recibido su propuesta",
+    firstReply: (roles) => `El rol que da la bienvenida a las personas ha recibido su propuesta para ocupar ${roles} y le escribirá para que reserve un momento que le convenga.`, // needs-native-review: new words, 12 Nov 2026
+    conversationTitle: "Nos encantaría conversar con usted",
+    conversation: (roles, withRole, minutes, bookingUrl) => `El siguiente paso de su propuesta para ocupar ${roles} es una conversación${withRole ? ` con ${withRole}` : ""}${minutes ? `, de unos ${minutes} minutos` : ""}. ${bookingUrl ? `Reserve un horario con ${withRole ?? "esa persona"}: ${bookingUrl}` : "Le escribiremos con horarios."}`, // needs-native-review: new words, 16 Nov 2026
+    consentTitle: "El círculo está considerando su propuesta", // check: "círculo" is the village's term for circle
+    consent: (roles) => `Las conversaciones ya están escritas, y ahora el círculo sigue su proceso para su propuesta de ocupar ${roles}. Revise su correo o la página de su estado para los siguientes pasos.`, // needs-native-review: new words, 12 Nov 2026
+    termsTitle: "Cambiaron las condiciones de su propuesta",
+    terms: (roles) => `Cambiamos las condiciones que sugerimos para su propuesta de ocupar ${roles}. Abra la página del estado de su propuesta para leerlas y cuéntenos qué piensa.`,
+    adoptedTitle: (v) => `${v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
+    adopted: (v, roles, next) => `${v} aceptó su propuesta para ocupar ${roles}. ${next}`, // needs-native-review: new words, 16 Nov 2026
+    declinedTitle: (v) => `Su propuesta a ${v}`,
+    declined: (roles) => `Gracias por proponerse para ocupar ${roles}. Esta vez no podemos decir que sí. Le animamos a explorar misiones, ver otros roles abiertos o volver a proponer la próxima temporada.`, // check: "misión" for quest; needs-native-review: new words, 12 Nov 2026
+    invitedTitle: "Nos encantaría conversar con usted",
+    invited: (roles) => `Leímos con cuidado su postulación para ocupar ${roles}, y nos encantaría invitarle al siguiente paso para conocer al equipo. Los detalles están en su correo.`, // check: "postulación" for application; needs-native-review: new words, 12 Nov 2026
+    notInvitedTitle: (v) => `Gracias por postularse a ${v}`,
+    notInvited: (roles) => `Gracias por postularse para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Le animamos a explorar misiones, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 16 Nov 2026
+    referencesTitle: "Está en nuestra lista corta: ¿podemos escuchar a sus referencias?", // needs-native-review: new words, 19 Nov 2026
+    references: (roles) => `Gracias por su postulación para ocupar ${roles}. Está en nuestra lista corta, y el siguiente paso son sus referencias: personas vinculadas con este trabajo, idealmente personas que también podrían ser aliadas o socias de la aldea. Abra la página de su estado para agregarlas, con cómo contactar a cada una, cómo le conocen y por qué podrían ser aliadas.`, // needs-native-review: new words, 19 Nov 2026
   },
 
   // needs-native-review: the invitation and the not-invited letter
   invite: {
     subject: (v) => `Una invitación a conversar con ${v}`,
-    headline: (roles) => `Gracias por postularte para ocupar ${roles}. Leímos tu postulación con cuidado, y nos encantaría invitarte a reservar horarios para las conversaciones.`, // needs-native-review: new words, 12 Nov 2026
+    headline: (roles) => `Gracias por postularse para ocupar ${roles}. Leímos su postulación con cuidado, y nos encantaría invitarle a reservar horarios para las conversaciones.`, // needs-native-review: new words, 12 Nov 2026
     conversationsIntro: "Las conversaciones, en orden:",
     conversation: (role, minutes) => `${role}, ${minutes} minutos`,
     total: (minutes) => `Unos ${minutes} minutos en total.`,
-    booking: "Reservas cada conversación en los horarios que elijas, en el orden de arriba.", // needs-native-review: new words, 12 Nov 2026
-    bookFirst: (role, url) => `Reserva un horario con ${role} para tu primera conversación: ${url}`, // needs-native-review: new words, 16 Nov 2026
-    writeFirst: (role) => `Te escribiremos con horarios para tu primera conversación, con ${role}.`, // needs-native-review: new words, 12 Nov 2026
-    laterOpen: "Cada conversación siguiente se abre cuando la anterior esté escrita, y la reservas de la misma manera.", // needs-native-review: new words, 12 Nov 2026
-    after: "Después de la última conversación, el círculo decide por consentimiento, y te escribimos con su respuesta.",
+    booking: "Usted reserva cada conversación en los horarios que elija, en el orden de arriba.", // needs-native-review: new words, 12 Nov 2026
+    bookFirst: (role, url) => `Reserve un horario con ${role} para su primera conversación: ${url}`, // needs-native-review: new words, 16 Nov 2026
+    writeFirst: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`, // needs-native-review: new words, 12 Nov 2026
+    laterOpen: "Cada conversación siguiente se abre cuando la anterior esté escrita, y usted la reserva de la misma manera.", // needs-native-review: new words, 12 Nov 2026
+    after: "Después de la última conversación, el círculo decide por consentimiento, y le escribimos con su respuesta.",
   },
 
   notInvited: {
-    subject: (v) => `Gracias por postularte a ${v}`,
-    thanks: (roles, v) => `Gracias por postularte para ocupar ${roles} en ${v}, y por el cuidado que pusiste en ello.`,
-    matched: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por tu tiempo y tu interés.", // needs-native-review: new words, 12 Nov 2026
+    subject: (v) => `Gracias por postularse a ${v}`,
+    thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}, y por el cuidado que puso en ello.`,
+    matched: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés.", // needs-native-review: new words, 12 Nov 2026
     stayClose: "Nos encantaría seguir en contacto, y hay caminos abiertos para ser parte de la aldea:",
     program: (name, url) => `${name}: ${url}`,
-    quest: (url) => `Toma una misión: ${url}`,
-    events: (url) => `Ven a un evento: ${url}`,
-    closing: "Esperamos conocerte pronto.",
+    quest: (url) => `Tome una misión: ${url}`,
+    events: (url) => `Venga a un evento: ${url}`,
+    closing: "Esperamos conocerle pronto.",
   },
 
   // needs-native-review: the closed letter, new words, 15 Nov 2026
   closed: {
-    subject: (v) => `Tu postulación a ${v}`,
-    thanks: (roles, v) => `Gracias por postularte para ocupar ${roles} en ${v}.`,
-    closed: "No pudimos responder a tu postulación a tiempo, así que la cerramos. Gracias por tu tiempo y tu interés.",
-    quest: (url) => `Te animamos a explorar misiones: ${url}`,
-    page: (link) => `La página de tu postulación: ${link}`,
+    subject: (v) => `Su postulación a ${v}`,
+    thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}.`,
+    closed: "No pudimos responder a su postulación a tiempo, así que la cerramos. Gracias por su tiempo y su interés.",
+    quest: (url) => `Le animamos a explorar misiones: ${url}`,
+    page: (link) => `La página de su postulación: ${link}`,
     signed: (team) => `Con cariño,\nEl equipo de ${team}`,
   },
 
 
   adopt: {
-    subject: (v) => `${v} aceptó tu propuesta`, // needs-native-review: new words, 16 Nov 2026
-    headline: (v, roles, forWhen) => `${v} aceptó tu propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
+    subject: (v) => `${v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
+    headline: (v, roles, forWhen) => `${v} aceptó su propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
     forThisMoon: "esta luna",
     forNextSeason: "la próxima temporada",
-    inviteIntro: "Aquí está tu invitación. Usa el botón para crear tu perfil, o abre este enlace:",
+    inviteIntro: "Aquí está su invitación. Use el botón para crear su perfil, o abra este enlace:",
     inviteWorks: (days, when) => `Funciona una sola vez y dura ${days} días. ${when}`,
-    signIn: (when) => `Inicia sesión con este correo para ver tus roles. ${when}`,
-    moonRuns: (from, to) => `Tus roles van del ${from} hasta la próxima luna nueva, el ${to}.`,
-    seasonStarts: (season, startsOn) => `Tus roles comienzan cuando empieza ${season || "la próxima temporada"}, el ${startsOn}.`,
+    signIn: (when) => `Inicie sesión con este correo para ver sus roles. ${when}`,
+    moonRuns: (from, to) => `Sus roles van del ${from} hasta la próxima luna nueva, el ${to}.`,
+    seasonStarts: (season, startsOn) => `Sus roles comienzan cuando empieza ${season || "la próxima temporada"}, el ${startsOn}.`,
     firstDay: "el primer día de la temporada",
     nextSeasonName: "la próxima temporada",
-    nextAfterProfile: "Después revisa tu perfil. Allí aparecen tus tareas cuando empiece tu rol, y es donde hacemos nuestras sesiones y seguimos nuestro trabajo juntos.",
-    button: "Crea tu perfil",
-    signFirst: () => "Antes de ocupar tu rol, alinéate con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearte con ella te hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearte", "membresía"; needs-native-review: new words, 16 Nov 2026
-    headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupes ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
+    nextAfterProfile: "Después revise su perfil. Allí aparecen sus tareas cuando empiece su rol, y es donde hacemos nuestras sesiones y seguimos nuestro trabajo juntos.",
+    button: "Cree su perfil",
+    signFirst: () => "Antes de ocupar su rol, alinéese con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearse con ella le hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearse", "membresía"; needs-native-review: new words, 16 Nov 2026
+    headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
   },
 
   declined: {
-    subject: (v) => `Tu propuesta a ${v}`,
-    thanks: (roles, v) => `Gracias por proponerte para ocupar ${roles} en ${v}. Esta vez no podemos decir que sí.`,
-    stayClose: "Nos alegra que nos hayas encontrado. Si quieres seguir cerca, aquí hay tres maneras de entrar:",
-    quest: (url) => `Toma una misión: ${url}`,
-    roles: (url) => `Mira otros roles abiertos: ${url}`,
-    again: "O vuelve a proponer la próxima temporada. Nos dará gusto leerte.",
-    againOwn: "Puedes volver a proponer la próxima temporada. Nos dará gusto leerte.", // needs-native-review: new words, 16 Nov 2026
+    subject: (v) => `Su propuesta a ${v}`,
+    thanks: (roles, v) => `Gracias por proponerse para ocupar ${roles} en ${v}. Esta vez no podemos decir que sí.`,
+    stayClose: "Nos alegra que nos haya encontrado. Si quiere seguir cerca, aquí hay tres maneras de entrar:",
+    quest: (url) => `Tome una misión: ${url}`,
+    roles: (url) => `Mire otros roles abiertos: ${url}`,
+    again: "O vuelva a proponer la próxima temporada. Nos dará gusto leerle.",
+    againOwn: "Puede volver a proponer la próxima temporada. Nos dará gusto leerle.", // needs-native-review: new words, 16 Nov 2026
   },
 
   page: {
-    declinedHeading: "Gracias por proponerte",
-    declinedLine: "Esta vez no podemos decir que sí, y nos alegra que nos hayas encontrado. Si quieres seguir cerca:",
-    quests: "Toma una misión",
-    roles: "Mira otros roles abiertos",
-    again: "O vuelve a proponer la próxima temporada.",
-    noteHeading: "Una nota para ti",
+    declinedHeading: "Gracias por proponerse",
+    declinedLine: "Esta vez no podemos decir que sí, y nos alegra que nos haya encontrado. Si quiere seguir cerca:",
+    quests: "Tome una misión",
+    roles: "Mire otros roles abiertos",
+    again: "O vuelva a proponer la próxima temporada.",
+    noteHeading: "Una nota para usted",
   },
 
   // needs-native-review: the whole status block below
   status: {
-    heading: "Dónde está tu propuesta",
-    headingApplication: "Dónde está tu postulación",
-    missing: "Ese enlace no corresponde a ninguna propuesta. Revisa el enlace de tu correo.",
+    heading: "Dónde está su propuesta",
+    headingApplication: "Dónde está su postulación",
+    missing: "Ese enlace no corresponde a ninguna propuesta. Revise el enlace de su correo.",
     nextLabel: "Lo que sigue",
     by: (day) => `Para el ${day}`,
     step: {
@@ -670,92 +670,92 @@ const es: ApplicantMessages = {
     stateNow: "ahora",
     stateLater: "después",
     move: {
-      firstReply: "Nos toca a nosotros: el rol que da la bienvenida a las personas te escribe para que reserves un momento para conversar.", // needs-native-review: new words, 12 Nov 2026
-      interview: (role, minutes) => `Nos toca a nosotros: ${role} conversa contigo unos ${minutes} minutos y luego deja una nota.`,
-      interviewWaiting: "Nos toca a nosotros: la siguiente conversación se abre cuando la anterior esté escrita. Tú la reservas en el horario que elijas.", // needs-native-review: new words, 12 Nov 2026
-      consent: "Nos toca a nosotros: el círculo valora tu propuesta y da su consentimiento, o dice qué falta.",
-      adopted: "Te toca a ti: crear tu cuenta. El enlace para hacerlo está en tu correo.",
-      withdrawn: "No hace falta nada más. Retiraste esta propuesta.",
-      declined: "No hace falta nada más de tu parte. Ya respondimos.",
-      review: "Nos toca a nosotros: leemos tu postulación con cuidado, y luego te invitamos a las conversaciones o te escribimos para darte las gracias.",
-      decision: "Nos toca a nosotros: el círculo lo considera todo y decide por consentimiento. Te escribimos con su respuesta.",
-      notInvited: "No hace falta nada más de tu parte. Ya te escribimos.",
-      closed: "No hace falta nada más de tu parte. Esta postulación está cerrada.", // needs-native-review: new words, 15 Nov 2026
+      firstReply: "Nos toca a nosotros: el rol que da la bienvenida a las personas le escribe para que reserve un momento para conversar.", // needs-native-review: new words, 12 Nov 2026
+      interview: (role, minutes) => `Nos toca a nosotros: ${role} conversa con usted unos ${minutes} minutos y luego deja una nota.`,
+      interviewWaiting: "Nos toca a nosotros: la siguiente conversación se abre cuando la anterior esté escrita. Usted la reserva en el horario que elija.", // needs-native-review: new words, 12 Nov 2026
+      consent: "Nos toca a nosotros: el círculo valora su propuesta y da su consentimiento, o dice qué falta.",
+      adopted: "Le toca a usted: crear su cuenta. El enlace para hacerlo está en su correo.",
+      withdrawn: "No hace falta nada más. Usted retiró esta propuesta.",
+      declined: "No hace falta nada más de su parte. Ya respondimos.",
+      review: "Nos toca a nosotros: leemos su postulación con cuidado, y luego le invitamos a las conversaciones o le escribimos para darle las gracias.",
+      decision: "Nos toca a nosotros: el círculo lo considera todo y decide por consentimiento. Le escribimos con su respuesta.",
+      notInvited: "No hace falta nada más de su parte. Ya le escribimos.",
+      closed: "No hace falta nada más de su parte. Esta postulación está cerrada.", // needs-native-review: new words, 15 Nov 2026
     },
     // needs-native-review: the closed card and the new-invitation door, new words, 15 Nov 2026
     closed: {
       step: "Cerrada",
       heading: "Esta postulación está cerrada",
-      line: "No pudimos responderla a tiempo. Gracias por tu tiempo y tu interés. Te invitamos a explorar:",
+      line: "No pudimos responderla a tiempo. Gracias por su tiempo y su interés. Le invitamos a explorar:",
       quests: "Explorar misiones",
       roles: "Ver los roles abiertos",
     },
     newInvitation: {
-      heading: "¿Necesitas una nueva invitación?",
-      line: "Tu invitación para unirte al equipo venció. Pide una nueva, y el equipo que envía las invitaciones te escribirá.",
+      heading: "¿Necesita una nueva invitación?",
+      line: "Su invitación para unirse al equipo venció. Pida una nueva, y el equipo que envía las invitaciones le escribirá.",
       ask: "Envíame una nueva invitación",
-      asked: "Gracias. Ya avisamos al equipo, y te escribirán.",
-      failed: "No se pudo enviar. Inténtalo de nuevo.",
+      asked: "Gracias. Ya avisamos al equipo, y le escribirán.",
+      failed: "No se pudo enviar. Inténtelo de nuevo.",
     },
     notInvited: {
-      heading: "Gracias por postularte",
-      line: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por tu tiempo y tu interés. Nos encantaría que sigas cerca:", // needs-native-review: new words, 16 Nov 2026
+      heading: "Gracias por postularse",
+      line: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés. Nos encantaría que siga cerca:", // needs-native-review: new words, 16 Nov 2026
       program: (name) => name,
-      quests: "Toma una misión",
-      events: "Ven a un evento",
+      quests: "Tome una misión",
+      events: "Venga a un evento",
     },
     booking: {
       label: "Cómo se agendan las conversaciones",
       // needs-native-review: new words, 12 Nov 2026
       order: (roles) =>
         roles.length <= 1
-          ? `Después de la invitación, reservas la conversación${roles[0] ? ` con ${roles[0]}` : ""} en el horario que elijas.`
-          : `Después de la invitación, reservas cada conversación en los horarios que elijas, en este orden: primero ${roles[0]}, luego ${roles.slice(1).join(", luego ")}. Cada una se abre cuando la anterior esté escrita.`,
-      bookNow: (role) => `Reserva un horario con ${role}`, // needs-native-review: new words, 16 Nov 2026
-      writeNow: (role) => `Te escribiremos con horarios para tu conversación con ${role}.`,
+          ? `Después de la invitación, usted reserva la conversación${roles[0] ? ` con ${roles[0]}` : ""} en el horario que elija.`
+          : `Después de la invitación, usted reserva cada conversación en los horarios que elija, en este orden: primero ${roles[0]}, luego ${roles.slice(1).join(", luego ")}. Cada una se abre cuando la anterior esté escrita.`,
+      bookNow: (role) => `Reserve un horario con ${role}`, // needs-native-review: new words, 16 Nov 2026
+      writeNow: (role) => `Le escribiremos con horarios para su conversación con ${role}.`,
     },
     references: {
-      none: "No diste referencias, así que haremos una verificación de antecedentes. Aceptaste cuando enviaste tu propuesta. Nosotros cubrimos su costo y no contactamos a nadie antes de nuestra primera conversación contigo.",
-      some: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Contactamos a las referencias solo después de nuestra primera conversación, y solo con tu visto bueno.`,
+      none: "No dio referencias, así que haremos una verificación de antecedentes. Usted aceptó cuando envió su propuesta. Nosotros cubrimos su costo y no contactamos a nadie antes de nuestra primera conversación con usted.",
+      some: (n) => `Dio ${n} ${n === 1 ? "referencia" : "referencias"}. Contactamos a las referencias solo después de nuestra primera conversación, y solo con su visto bueno.`,
     },
     // needs-native-review: the reference form, new words, 19 Nov 2026
     referenceForm: {
       step: "Referencias",
-      heading: "Tus referencias",
-      line: "Estás en nuestra lista corta. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
-      lineFirstRole: "Este es tu primer rol de largo plazo con nosotros, así que pedimos referencias. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
-      privacy: "Solo las personas que revisan tu postulación, y quien da seguimiento a cada referencia, leen estos datos. Ninguna IA los lee. Se borran con tu postulación.",
+      heading: "Sus referencias",
+      line: "Está en nuestra lista corta. Agregue a las personas vinculadas con este trabajo que le conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
+      lineFirstRole: "Este es su primer rol de largo plazo con nosotros, así que pedimos referencias. Agregue a las personas vinculadas con este trabajo que le conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
+      privacy: "Solo las personas que revisan su postulación, y quien da seguimiento a cada referencia, leen estos datos. Ninguna IA los lee. Se borran con su postulación.",
       name: "Su nombre",
       contact: "Cómo contactarla",
       contactHint: "Un correo electrónico o un número de teléfono.",
-      how: "Cómo te conoce",
+      how: "Cómo le conoce",
       ally: "Por qué podría ser aliada o socia (opcional)",
       allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
-      howMany: "Da al menos dos referencias. Preferimos tres.",
+      howMany: "Dé al menos dos referencias. Preferimos tres.",
       add: "Agregar otra referencia",
       remove: (n) => `Quitar la referencia ${n}`,
       row: (n) => `Referencia ${n}`,
       send: "Enviar mis referencias",
-      sent: "Gracias. Ya tenemos tus referencias.",
-      given: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbenos.`,
-      failed: "No se envió. Inténtalo de nuevo.",
+      sent: "Gracias. Ya tenemos sus referencias.",
+      given: (n) => `Dio ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbanos.`,
+      failed: "No se envió. Inténtelo de nuevo.",
       errors: {
-        none: "Da al menos dos referencias.",
-        too_few: "Da al menos dos referencias. Preferimos tres.",
-        too_many: "Agrega hasta diez referencias.",
-        needs_all: "Da a cada referencia un nombre, cómo contactarla y cómo te conoce. O vacía la fila.",
-        contact: "Da un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
-        twice: "Agregaste la misma referencia dos veces.",
-        too_long: "Una de las respuestas es demasiado larga. Hazla más corta.",
+        none: "Dé al menos dos referencias.",
+        too_few: "Dé al menos dos referencias. Preferimos tres.",
+        too_many: "Agregue hasta diez referencias.",
+        needs_all: "Dé a cada referencia un nombre, cómo contactarla y cómo le conoce. O vacíe la fila.",
+        contact: "Dé un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
+        twice: "Agregó la misma referencia dos veces.",
+        too_long: "Una de las respuestas es demasiado larga. Hágala más corta.",
       },
     },
-    private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan contigo se queda con ellas.",
+    private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan con usted se queda con ellas.",
     wait: {
-      heading: "Mientras esperas",
-      line: "La aldea está abierta para ti. Aquí hay tres formas de conocerla:",
-      quests: "Toma una misión",
-      map: "Mira el mapa vivo",
-      events: "Ven a un evento",
+      heading: "Mientras espera",
+      line: "La aldea está abierta para usted. Aquí hay tres formas de conocerla:",
+      quests: "Tome una misión",
+      map: "Mire el mapa vivo",
+      events: "Venga a un evento",
     },
   },
 };
@@ -789,10 +789,10 @@ export const APPLICANT_STEPS: Record<ApplicantLanguage, Record<ApplicantStepKey,
   },
   // needs-native-review
   es: {
-    received: { name: "Recibida", when: () => "Tu postulación nos llega en cuanto confirmas tu correo." },
-    review: { name: "Nuestra revisión", when: (moons) => moons === null ? "Cuando nuestro equipo fundador esté completo, te invitamos a reservar horarios para las conversaciones o te escribimos para darte las gracias." : `Dentro de ${moons === 1 ? "un ciclo lunar" : `${moons} ciclos lunares`}, te invitamos a reservar horarios para las conversaciones o te escribimos para darte las gracias.` }, // needs-native-review: new words, 24 Nov 2026
+    received: { name: "Recibida", when: () => "Su postulación nos llega en cuanto confirma su correo." },
+    review: { name: "Nuestra revisión", when: (moons) => moons === null ? "Cuando nuestro equipo fundador esté completo, le invitamos a reservar horarios para las conversaciones o le escribimos para darle las gracias." : `Dentro de ${moons === 1 ? "un ciclo lunar" : `${moons} ciclos lunares`}, le invitamos a reservar horarios para las conversaciones o le escribimos para darle las gracias.` }, // needs-native-review: new words, 24 Nov 2026
     invitation: { name: "Invitación", when: () => "Una invitación por correo enumera las conversaciones en orden, con la duración de cada una." },
-    conversations: { name: "Conversaciones", when: () => "Una tras otra con los roles con los que trabajarías, por lo general dentro de las dos semanas siguientes a la invitación." },
+    conversations: { name: "Conversaciones", when: () => "Una tras otra con los roles con los que trabajaría, por lo general dentro de las dos semanas siguientes a la invitación." },
     decision: { name: "Decisión", when: () => "El círculo decide por consentimiento, por lo general dentro de la semana siguiente a la última conversación." },
     first_cycle: { name: "Primer ciclo", when: () => "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí." },
   },

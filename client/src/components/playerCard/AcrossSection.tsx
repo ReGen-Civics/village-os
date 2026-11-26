@@ -12,7 +12,6 @@
 import { useContext, useEffect, useId, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
-  CARD_WORDS as W,
   LOAD_STEPS,
   type AcrossOut,
   type LoadStep,
@@ -22,6 +21,7 @@ import type { SignSheetOut } from "@shared/playerCardPayload";
 import { CardEditContext, EditInPlace, Eyebrow, SlotView, useShows } from "./cardParts";
 import { savePersonalWords } from "./playerCardApi";
 import { SignList } from "./SignList";
+import { useCardWords } from "./cardWords";
 
 const textOf = <T,>(
   slot: { kind: string; value?: T },
@@ -30,10 +30,11 @@ const textOf = <T,>(
 
 /** The seasonal goals back as the editor's lines: "Title: done when". */
 const DONE_WHEN_PREFIX = "Done when ";
-const goalLines = (goals: { title: string; doneWhen: string | null }[]) =>
+const goalLines = (goals: { title: string; doneWhen: string | null; when?: string | null }[]) =>
   goals
     .map(g => {
-      const when = g.doneWhen?.startsWith(DONE_WHEN_PREFIX)
+      // The owner's own words when the server sends them, so a sentence said in another language is never saved.
+      const when = g.when !== undefined ? g.when : g.doneWhen?.startsWith(DONE_WHEN_PREFIX)
         ? g.doneWhen.slice(DONE_WHEN_PREFIX.length)
         : g.doneWhen;
       return when ? `${g.title}: ${when}` : g.title;
@@ -45,6 +46,7 @@ export const LOAD_SAVE_DELAY_MS = 400;
 
 /** The design's two ends under the slider and the bar: Healthy in green, Heavy in amber. */
 function LoadEnds() {
+  const W = useCardWords();
   return (
     <div className="pc-loadends" aria-hidden="true">
       <span>{W.loadEnds[0]}</span>
@@ -58,6 +60,7 @@ function LoadEnds() {
  * once the hand settles, and says so. Every other reader sees the bar.
  */
 function LoadSlider({ step }: { step: number | null }) {
+  const W = useCardWords();
   const { reload } = useContext(CardEditContext);
   const [value, setValue] = useState<number>(step ?? 3);
   const [said, setSaid] = useState<string | null>(null);
@@ -110,6 +113,7 @@ function LoadSlider({ step }: { step: number | null }) {
 }
 
 function LoadRead({ load }: { load: AcrossOut["load"] }) {
+  const W = useCardWords();
   const { owner } = useContext(CardEditContext);
   if (load.own.kind === "unread")
     return <p className="pc-dim pc-f12">{load.caption}</p>;
@@ -165,6 +169,7 @@ export function AcrossSection({
   sheets: Record<string, SignSheetOut>;
   timeZone: string;
 }) {
+  const W = useCardWords();
   const shows = useShows();
   const seasonRead =
     shows(across.aim) ||

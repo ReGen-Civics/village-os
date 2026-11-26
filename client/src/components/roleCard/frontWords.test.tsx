@@ -126,7 +126,9 @@ describe("the team sheet's front", () => {
     expect(frame("a").querySelector('[data-pay-share-zero="credits"]')).toBeTruthy();
     // The last day to apply is a stamp now (the lead, 24 Nov 2026): a seal from 1024px, a ribbon on the painting below.
     expect(frame("a").querySelector("[data-front-apply-by]")).toBeNull();
-    expect(frame("a").querySelector("[data-apply-stamp] .sr-only")?.textContent).toBe("Applications close Monday 30 November. 7 days left.");
+    // From 1024px it is plain, straight text (the lead, 26 Nov 2026), read as shown.
+    expect(frame("a").querySelector("[data-apply-stamp]")?.textContent).toBe("Applications close Monday 30 November · 7 days left");
+    expect(frame("a").querySelector("[data-apply-stamp]")?.className).not.toMatch(/rotate/);
     expect(frame("a").querySelector("[data-apply-ribbon]")?.textContent).toContain("Applications close Mon\u00a030\u00a0Nov");
     expect(frame("b").querySelector("[data-status-pill]")?.textContent).toBe("Open paid role");
     expect(segments("b")).toEqual([["cash", "100%"]]);

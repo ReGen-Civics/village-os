@@ -26,7 +26,6 @@ import Commons from "@/components/commons/Commons";
 import { GoalWords } from "@/components/commons/CommonsPanel";
 import { openWorkFor, useGoalOpenWork } from "@/components/commons/goalOpenWork";
 import { BTN_SECONDARY, CARD_FEATURED, CHIP_SOFT, EYEBROW, HINT, RING } from "@/components/journey/look";
-import Mycelium from "@/components/motion/Mycelium";
 
 /** More goals than this fold behind one button, so a long list never pushes the page down. */
 const SHOWN = 6;
@@ -84,7 +83,7 @@ export default function SeasonGoals() {
               })}
             />
           </div>
-          <Mycelium className="lg:order-1">
+          <div className="lg:order-1">
           <ol className="grid gap-3 sm:grid-cols-2">
             {shown.map((g, i) => (
               <li
@@ -107,7 +106,7 @@ export default function SeasonGoals() {
               </li>
             ))}
           </ol>
-          </Mycelium>
+          </div>
           </div>
           {folded > 0 && (
             <button type="button" aria-expanded={all} onClick={() => setAll((v) => !v)} className={`mt-3 ${BTN_SECONDARY}`}>

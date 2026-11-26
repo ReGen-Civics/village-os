@@ -23,7 +23,7 @@ describe("an application for a role that opens after the founding team (Rye, 14 
     }
     expect(LANGUAGES.en.replyPromise(null)).toMatch(/founding team first/);
     expect(LANGUAGES.en.replyPromise(1)).toBe("You'll hear from us within one moon cycle.");
-    expect(LANGUAGES.es.replyPromise(2)).toBe("Tendrás noticias nuestras dentro de 2 ciclos lunares.");
+    expect(LANGUAGES.es.replyPromise(2)).toBe("Tendrá noticias nuestras dentro de 2 ciclos lunares.");
   });
   it("its letter says the same", () => {
     const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Riverbend", roleNames: ["Village Cook"], replyMoons: null });
@@ -79,7 +79,7 @@ describe("each template, built in each language", () => {
     });
   }
   it("Spanish is Spanish and English is English", () => {
-    expect(declinedLetter({ firstName: null, village: "V", roleNames: ["R"], site: "https://x.test", lang: "es" }).text).toContain("Gracias por proponerte");
+    expect(declinedLetter({ firstName: null, village: "V", roleNames: ["R"], site: "https://x.test", lang: "es" }).text).toContain("Gracias por proponerse");
     expect(declinedLetter({ firstName: null, village: "V", roleNames: ["R"], site: "https://x.test" }).text).toContain("Thank you for proposing");
   });
   it("a notice can drop the status link line in any language", () => {
@@ -213,12 +213,12 @@ describe("the status page's words (statusView)", () => {
     // Several people, each with their own link: "Role (First, First)" above one door per person, by first name.
     const several = statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana, Ben)", url: "https://cal.example.test/ana", links: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] } })).booking!;
     expect(several.book).toEqual({ label: "Book a time with Welcome Role (Ana, Ben)", links: [{ label: "Ana", url: "https://cal.example.test/ana" }, { label: "Ben", url: "https://cal.example.test/ben" }] });
-    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: "https://cal.example.test/welcome" } })).booking!.book).toEqual({ label: "Reserva un horario con Welcome Role (Ana)", links: [{ label: "Reserva un horario con Welcome Role (Ana)", url: "https://cal.example.test/welcome" }] });
+    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: "https://cal.example.test/welcome" } })).booking!.book).toEqual({ label: "Reserve un horario con Welcome Role (Ana)", links: [{ label: "Reserve un horario con Welcome Role (Ana)", url: "https://cal.example.test/welcome" }] });
     expect(statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: null } })).booking!.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome Role (Ana)." });
     const noLink = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: null } })).booking!;
     expect(noLink.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome Role." });
     expect(statusView("en", served(input())).booking!.book, "control: nothing open, nothing to book").toBeNull();
-    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", url: null } })).booking!.book).toEqual({ text: "Te escribiremos con horarios para tu conversación con Welcome Role." });
+    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", url: null } })).booking!.book).toEqual({ text: "Le escribiremos con horarios para su conversación con Welcome Role." });
   });
 
   it("the invitation gives the first interviewer's booking link, and says the later ones open in order", () => {
@@ -234,7 +234,7 @@ describe("the status page's words (statusView)", () => {
     expect(none.text).toContain("We'll write to you with times for your first conversation, with Ops Role.");
     expect(none.text, "control: one conversation has no later ones").not.toContain("Each later conversation");
     const es = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations, statusLink: null, lang: "es" });
-    expect(es.text).toContain("Reserva un horario con Ops Role para tu primera conversación: https://cal.example.test/ops");
+    expect(es.text).toContain("Reserve un horario con Ops Role para su primera conversación: https://cal.example.test/ops");
     // The interviewers' own links come before the role's: several people, one line each.
     const own = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations: [{ role: "Ops Role", label: "Ops Role (Ana, Ben)", minutes: 60, bookingUrl: "https://cal.example.test/ops", bookingLinks: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] }], statusLink: null, lang: "en" });
     expect(own.text).toContain("1. Ops Role (Ana, Ben), 60 minutes");
