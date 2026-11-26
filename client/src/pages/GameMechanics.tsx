@@ -56,12 +56,12 @@ import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdopt
 import { useAuth } from "@/contexts/AuthContext";
 import { useFocusTarget } from "@/lib/useFocusTarget";
 import { dialFromSearch } from "@shared/comms/memberView";
+import { localizeConstitution } from "./gameMechanicsConstitutionWords";
 import InfoTip, { DialFact } from "@/components/InfoTip";
 import LongText from "@/components/LongText";
 import PurposeAlignmentField, { usePurposeAlignment } from "@/components/governance/PurposeAlignmentField";
 import { AskVillageButton, mayAskVillageOn } from "./gameMechanicsAskVillage";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { localizeConstitution } from "./gameMechanicsConstitutionWords";
 
 interface MechanicsVariable {
   key: string;
