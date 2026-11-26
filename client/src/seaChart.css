@@ -149,7 +149,7 @@
   background-color: var(--pal-day-tile-glass) !important;
   color: var(--pal-day-accent);
 }
-:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) button[data-lit] span.rounded-full {
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-lit] [data-lit-dot] {
   border-radius: 0;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M5.5 .6L10.4 5.5L5.5 10.4L.6 5.5Z' fill='none' stroke='%236e4a1e' stroke-width='1'/%3E%3Cpath d='M5.5 3.2L7.8 5.5L5.5 7.8L3.2 5.5Z' fill='%236e4a1e'/%3E%3C/svg%3E") center / contain no-repeat !important;
   width: 11px;
