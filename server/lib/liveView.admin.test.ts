@@ -112,6 +112,18 @@ describe("the admin live view", () => {
     expect((await run(deps(), "GET", "/api/powers/hands")).next).toBe(true);
   });
 
+  it("cannot be stepped round by case or encoding, at the middleware either", async () => {
+    for (const path of ["/API/ADMIN/EXPORT/DATABASE", "/api/admin/Integrations/", "/%61pi/admin/export/database", "/api/agent/key"]) {
+      const r = await run(deps(), "GET", path);
+      expect([path, r.status, r.body?.error, r.next]).toEqual([path, 403, "live_view_admin_refused", false]);
+    }
+    // An upper-case path is still the live view's, so a write there is refused too, for either scope.
+    for (const scopes of [[LIVE_VIEW_ADMIN_SCOPE], ["live.view"]]) {
+      const r = await run(deps({ scopes }), "POST", "/API/ADMIN/VARIABLES");
+      expect([scopes[0], r.status, r.body?.error]).toEqual([scopes[0], 403, "live_view_read_only"]);
+    }
+  });
+
   it("writes its audit line once an hour per token, outside the read-only mark", async () => {
     const d = deps();
     await run(d, "GET", "/api/admin/players");

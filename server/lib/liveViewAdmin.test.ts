@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { EXPORT_WORDS, LIVE_VIEW_ADMIN_REFUSED, LIVE_VIEW_ADMIN_WAIVED, refusedForAdminView } from "./liveViewAdmin";
+import { EXPORT_WORDS, KEY_READS, LIVE_VIEW_ADMIN_REFUSED, LIVE_VIEW_ADMIN_WAIVED, normalizePath, refusedForAdminView } from "./liveViewAdmin";
 
 const SERVER = path.join(__dirname, "..");
 
@@ -18,6 +18,25 @@ function serverFiles(dir: string): string[] {
     if (e.isDirectory()) return e.name === "node_modules" ? [] : serverFiles(p);
     return e.name.endsWith(".ts") && !e.name.includes(".test.") ? [p] : [];
   });
+}
+
+/** Comments out, so a word in a comment is not a call. */
+const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:"'`])\/\/[^\n]*/g, "$1");
+
+/** Every GET handler under /api/ with its body, up to the next registration in the same file. */
+function getHandlers(): Array<{ path: string; body: string }> {
+  const out: Array<{ path: string; body: string }> = [];
+  for (const f of serverFiles(SERVER)) {
+    const src = code(fs.readFileSync(f, "utf8"));
+    const starts = [...src.matchAll(/app\.(get|post|put|patch|delete|use|all)\(/g)].map((m) => m.index ?? 0);
+    for (const m of src.matchAll(/app\.get\(\s*\[?\s*[`"]([^`"]+)[`"]/g)) {
+      if (!m[1].startsWith("/api/")) continue;
+      const at = m.index ?? 0;
+      const next = starts.find((x) => x > at) ?? src.length;
+      out.push({ path: m[1], body: src.slice(at, next) });
+    }
+  }
+  return out;
 }
 
 /** Every path registered with `.get(` in the server, as written. */
@@ -43,6 +62,11 @@ describe("the admin live view's refused list", () => {
     expect(Object.keys(LIVE_VIEW_ADMIN_WAIVED).filter((p) => !paths.has(p))).toEqual([]);
   });
 
+  it("names every GET handler that reads key state, by what it calls, or waives it with a reason", () => {
+    const unlisted = getHandlers().filter((h) => KEY_READS.test(h.body) && !(h.path in LIVE_VIEW_ADMIN_REFUSED) && !(h.path in LIVE_VIEW_ADMIN_WAIVED)).map((h) => h.path);
+    expect(unlisted).toEqual([]);
+  });
+
   it("gives every refusal and every waiver a reason in words", () => {
     for (const [p, why] of [...Object.entries(LIVE_VIEW_ADMIN_REFUSED), ...Object.entries(LIVE_VIEW_ADMIN_WAIVED)]) {
       expect([p, why.trim().length > 5]).toEqual([p, true]);
@@ -58,5 +82,21 @@ describe("the admin live view's refused list", () => {
     expect(refusedForAdminView("/api/admin/players")).toBeNull();
     expect(refusedForAdminView("/api/powers/hands")).toBeNull();
     expect(refusedForAdminView("/api/admin/member-tasks/u-1")).toBeNull();
+  });
+
+  it("cannot be stepped round the way the router matches: case, a trailing slash, a sub-path, a percent-encoded letter", () => {
+    expect(refusedForAdminView("/API/ADMIN/EXPORT/DATABASE")).toBe("/api/admin/export/database");
+    expect(refusedForAdminView("/api/admin/Integrations")).toBe("/api/admin/integrations");
+    expect(refusedForAdminView("/api/admin/integrations/")).toBe("/api/admin/integrations");
+    expect(refusedForAdminView("/api/admin/integrations/resend")).toBe("/api/admin/integrations");
+    expect(refusedForAdminView("/%61pi/admin/export/database")).toBe("/api/admin/export/database");
+    expect(refusedForAdminView("/api//admin/export/database")).toBe("/api/admin/export/database");
+    expect(refusedForAdminView("/api/admin/comms/settings/domain")).toBe("/api/admin/comms/settings/domain");
+    expect(refusedForAdminView("/api/admin/comms/settings/anything-else")).toBe("/api/admin/comms/settings");
+    // A segment boundary, never a bare prefix: a sibling path that only starts the same stays open.
+    expect(refusedForAdminView("/api/admin/integrations-help")).toBeNull();
+    expect(refusedForAdminView("/api/admin/exports-guide")).toBeNull();
+    expect(normalizePath("/API/Agent/%7Ex/")).toBe("/api/agent/~x");
+    expect(normalizePath("/api/%E0%A4%A")).toBe("/api/%e0%a4%a");
   });
 });

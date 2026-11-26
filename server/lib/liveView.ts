@@ -39,7 +39,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { isAgentBearer, LIVE_VIEW_ADMIN_SCOPE, LIVE_VIEW_SCOPE, type AgentTokenRow } from "./agentTokens";
 import { READ_AS_MEMBER_HEADER, READ_AS_MEMBER_VALUE } from "./readAsMember";
-import { refusedForAdminView } from "./liveViewAdmin";
+import { normalizePath, refusedForAdminView } from "./liveViewAdmin";
 import { outsideReadOnly, runReadOnly } from "../db/readOnlyRequest";
 
 /** Reads a browser crawl may make in an hour on one token. A page draws ten or twenty. */
@@ -81,7 +81,9 @@ const READS = new Set(["GET", "HEAD"]);
 export function liveViewMiddleware(deps: LiveViewDeps) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const header = req.headers.authorization;
-    if (!isAgentBearer(header) || !req.path.startsWith("/api/")) return next();
+    // Judged the way the router matches (case-insensitive, decoded), so /API/... cannot step round the live view.
+    const where = normalizePath(req.path);
+    if (!isAgentBearer(header) || !where.startsWith("/api/")) return next();
     let verified: Awaited<ReturnType<LiveViewDeps["verify"]>>;
     try {
       verified = await deps.verify(String(header).slice(7));
@@ -98,7 +100,7 @@ export function liveViewMiddleware(deps: LiveViewDeps) {
       res.status(403).json({ error: "live_view_read_only", message: "A live view token only reads. Sign in by hand to change anything." });
       return;
     }
-    if (LIVE_VIEW_SKIPS.some((p) => req.path === p || req.path.startsWith(`${p}/`))) return next();
+    if (LIVE_VIEW_SKIPS.some((p) => where === p || where.startsWith(`${p}/`))) return next();
     try {
       const user = await deps.userById(row.userId);
       if (!user || !deps.stands(user)) {

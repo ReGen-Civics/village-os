@@ -6,7 +6,9 @@
  * refused rather than guessed at, and a write made deliberately outside the mark (the audit line) still lands.
  */
 import { describe, expect, it } from "vitest";
+import { EventEmitter } from "node:events";
 import { guardPool, isWriteSql, outsideReadOnly, ReadOnlyRequestError, runReadOnly } from "./readOnlyRequest";
+import { pinSessionZone } from "./sessionZone";
 
 function fakePool() {
   const ran: string[] = [];
@@ -57,6 +59,32 @@ describe("a read-only request", () => {
   });
 });
 
+describe("a pool that grows during a read-only request", () => {
+  it("still pins each new connection's zone: the SET on connect is not the request's, and is never refused", async () => {
+    // The shape mysql2's promise pool has: a fresh connection is announced on "connection" with a wrapper of its own,
+    // and the pin (server/db/sessionZone.ts) sends SET time_zone through it.
+    const ran: string[] = [];
+    const pool = Object.assign(new EventEmitter(), {
+      query: async (sql: string) => { ran.push(`pool:${sql}`); return [[], []]; },
+      execute: async (sql: string) => { ran.push(`exec:${sql}`); return [[], []]; },
+      getConnection: async () => {
+        const fresh = { query: async (sql: string) => { ran.push(`conn:${sql}`); return [[], []]; }, on() {}, release() {} };
+        pool.emit("connection", { query: async (sql: string) => { ran.push(`pin:${sql}`); return [[], []]; }, on() {} });
+        return fresh;
+      },
+    });
+    pinSessionZone(guardPool(pool) as any, "test");
+    await runReadOnly("the admin live view", async () => {
+      const conn = await pool.getConnection();
+      await conn.query("SELECT 1");
+      await expect(conn.query("SET @x = 1")).rejects.toBeInstanceOf(ReadOnlyRequestError);
+    });
+    expect(ran.some((r) => r.startsWith("pin:SET") && /time_zone/i.test(r))).toBe(true);
+    expect(ran).toContain("conn:SELECT 1");
+    expect(ran.some((r) => r.includes("@x"))).toBe(false);
+  });
+});
+
 describe("isWriteSql", () => {
   it("reads only what only reads", () => {
     for (const sql of ["SELECT 1", "  select * from x", "/* c */ SELECT 1", "-- c\nSELECT 1", "SHOW TABLES", "WITH a AS (SELECT 1) SELECT * FROM a", "(SELECT 1) UNION (SELECT 2)", "START TRANSACTION", "COMMIT", { sql: "SELECT 1" }]) {
@@ -65,7 +93,7 @@ describe("isWriteSql", () => {
   });
 
   it("treats every other statement as a write, an unknown one included", () => {
-    for (const sql of ["INSERT INTO x VALUES (1)", "update x set a=1", "DELETE FROM x", "REPLACE INTO x VALUES (1)", "CREATE TABLE x (a int)", "DROP TABLE x", "TRUNCATE x", "SET @a = 1", "CALL p()", "SELECT * FROM x FOR UPDATE", "SELECT 1 INTO OUTFILE '/tmp/x'", "", { sql: "DELETE FROM x" }, 42]) {
+    for (const sql of ["INSERT INTO x VALUES (1)", "update x set a=1", "DELETE FROM x", "REPLACE INTO x VALUES (1)", "CREATE TABLE x (a int)", "DROP TABLE x", "TRUNCATE x", "SET @a = 1", "CALL p()", "SELECT * FROM x FOR UPDATE", "WITH a AS (SELECT id FROM x) UPDATE y JOIN a ON a.id = y.id SET y.n = 1", "with a as (select 1) delete from y", "WITH a AS (SELECT 1) INSERT INTO y SELECT * FROM a", "SELECT 1 INTO OUTFILE '/tmp/x'", "", { sql: "DELETE FROM x" }, 42]) {
       expect([sql, isWriteSql(sql)]).toEqual([sql, true]);
     }
   });

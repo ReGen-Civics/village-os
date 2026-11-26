@@ -51,6 +51,8 @@ export function isWriteSql(sql: unknown): boolean {
     .replace(/^\(+\s*/, "")
     .toLowerCase();
   if (!READS.test(bare)) return true;
+  // MySQL 8 lets a WITH lead an UPDATE, a DELETE, an INSERT or a REPLACE: a CTE is only a read when none follows.
+  if (/^with\b/.test(bare) && /\b(update|delete|insert|replace)\b/.test(bare)) return true;
   // SELECT ... FOR UPDATE / LOCK IN SHARE MODE take locks a look should never take.
   return /\bfor\s+update\b|\block\s+in\s+share\s+mode\b|\binto\s+(outfile|dumpfile)\b/.test(bare);
 }
