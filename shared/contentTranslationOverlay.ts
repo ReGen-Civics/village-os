@@ -20,6 +20,8 @@ export interface PageTranslationWire {
   fields: Record<string, string>;
   machine: string[];
   locale: string;
+  /** A binding page's reading copy: the English stays the binding text (shared/contentTranslation.ts). */
+  readingCopy?: boolean;
 }
 
 const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === "string");
@@ -41,7 +43,7 @@ export function readPageTranslation(v: unknown): PageTranslationWire | null {
   if (typeof t.locale !== "string" || !t.fields || typeof t.fields !== "object") return null;
   const fields: Record<string, string> = {};
   for (const [k, x] of Object.entries(t.fields as Record<string, unknown>)) if (typeof x === "string") fields[k] = x;
-  return { fields, machine: isStrings(t.machine) ? t.machine : [], locale: t.locale };
+  return { fields, machine: isStrings(t.machine) ? t.machine : [], locale: t.locale, ...(t.readingCopy === true ? { readingCopy: true } : {}) };
 }
 
 /** The role as the card draws it, in the reader's language where it is translated. */

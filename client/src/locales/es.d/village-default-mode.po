@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, label"
+msgid "Light or dark on a first visit"
+msgstr "Claro u oscuro en la primera visita"
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, description"
+msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
+msgstr "El modo que una persona ve la primera vez que llega, antes de haber elegido uno. Cualquiera puede cambiarlo en la cabecera, y su elección se mantiene a partir de entonces. Carta náutica solo se muestra en el modo claro."
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice light, label"
+msgid "Light"
+msgstr "Claro"
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice light, hint"
+msgid "The day page, and Sea chart where the village chose it."
+msgstr "La página de día, y Carta náutica donde la aldea la eligió."
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice dark, label"
+msgid "Dark"
+msgstr "Oscuro"
+
+# needs-native-review: game mechanics dials, 2026-11-26
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice dark, hint"
+msgid "The night page."
+msgstr "La página de noche."

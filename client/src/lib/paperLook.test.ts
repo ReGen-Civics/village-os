@@ -8,8 +8,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { MODE_KEY } from "./colourMode";
-import { PAPER_KEY, applyPaper, isPaper } from "./paperLook";
+import { MODE_KEY, VILLAGE_MODE_ATTR } from "./colourMode";
+import { PAPER_KEY, VILLAGE_PAPER_ATTR, applyPaper, isPaper } from "./paperLook";
 
 const shell = readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
 const sheet = readFileSync(path.resolve(__dirname, "../seaChart.css"), "utf8");
@@ -26,6 +26,8 @@ beforeEach(() => {
   localStorage.clear();
   html().removeAttribute("data-paper");
   html().removeAttribute("data-mode");
+  html().removeAttribute(VILLAGE_MODE_ATTR);
+  html().removeAttribute(VILLAGE_PAPER_ATTR);
   html().removeAttribute("style");
 });
 
@@ -74,6 +76,53 @@ describe("the first-paint script", () => {
     html().removeAttribute("style");
     runFirstPaint();
     expect(html().style.backgroundColor).not.toBe(hexToRgb("#e8d3a3"));
+  });
+});
+
+describe("the village's word from the server, on <html>", () => {
+  it("gives a FIRST visit the village's mode and paper, with nothing on the device", () => {
+    html().setAttribute(VILLAGE_MODE_ATTR, "light");
+    html().setAttribute(VILLAGE_PAPER_ATTR, "sea-chart");
+    runFirstPaint();
+    expect(html().getAttribute("data-mode")).toBe("light");
+    expect(html().getAttribute("data-paper")).toBe("sea-chart");
+    expect(html().style.backgroundColor).toBe(hexToRgb("#e8d3a3"));
+  });
+
+  it("opens a first visit dark where the village chose dark, on the night ground", () => {
+    html().setAttribute(VILLAGE_MODE_ATTR, "dark");
+    html().setAttribute(VILLAGE_PAPER_ATTR, "sea-chart");
+    runFirstPaint();
+    expect(html().getAttribute("data-mode")).toBe("dark");
+    expect(html().style.backgroundColor).not.toBe(hexToRgb("#e8d3a3"));
+  });
+
+  it("wins over the device's memory, so a village back on plain never flashes the chart", () => {
+    localStorage.setItem(MODE_KEY, "light");
+    localStorage.setItem(PAPER_KEY, "sea-chart");
+    html().setAttribute(VILLAGE_PAPER_ATTR, "plain");
+    runFirstPaint();
+    expect(html().hasAttribute("data-paper")).toBe(false);
+  });
+
+  it("leaves the visitor's own mode alone", () => {
+    localStorage.setItem(MODE_KEY, "light");
+    html().setAttribute(VILLAGE_MODE_ATTR, "dark");
+    runFirstPaint();
+    expect(html().getAttribute("data-mode")).toBe("light");
+  });
+
+  it("falls back to the device's memory for a shell that carries no village word", () => {
+    localStorage.setItem(MODE_KEY, "light");
+    localStorage.setItem(PAPER_KEY, "sea-chart");
+    html().setAttribute(VILLAGE_PAPER_ATTR, "parchment");
+    runFirstPaint();
+    expect(html().getAttribute("data-paper")).toBe("sea-chart");
+  });
+
+  it("names the same attributes the script reads", () => {
+    expect(firstPaint).toContain(`d.getAttribute("${VILLAGE_MODE_ATTR}")`);
+    expect(firstPaint).toContain(`d.getAttribute("${VILLAGE_PAPER_ATTR}")`);
   });
 });
 

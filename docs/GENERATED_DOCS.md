@@ -54,9 +54,15 @@ each time, for hours. The documents were the most common reason a pull request w
 3. **The merge.** The integrator composes and lands without regenerating anything.
 4. **Main regenerates.** `.github/workflows/generated-docs.yml` runs every generator on the push to
    main and, when anything changed, makes ONE bot commit (author `github-actions[bot]`). It checks the
-   generators are idempotent before it commits, and then runs every doc guard in strict mode.
-5. **A generator fails.** The job goes red, nothing is committed, and ONE issue titled "Generated docs
-   failed on main" is opened or updated naming the generator. Close it when a run is green.
+   generators are idempotent, then runs every doc guard in strict mode and `scripts/check-post-fold.mjs`
+   (the catalogs in strict mode and every test that reads a catalog) on that tree, and only then
+   pushes. Until 26 Nov 2026 the checks ran after the push, and the bot's commit turned main red twice
+   that day.
+5. **A generator fails, or a check fails on the regenerated tree.** The job goes red, nothing reaches
+   main (main stays green with stale docs), and ONE issue titled "Generated docs failed on main" is
+   opened or updated naming what failed. A tree held back by a failed check is pushed to the branch
+   `bot/generated-docs`, overwritten each time, so a lane can check it out and reproduce. Close the
+   issue when a run is green.
 
 ## Modes
 

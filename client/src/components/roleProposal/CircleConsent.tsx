@@ -28,12 +28,12 @@
  */
 import { useEffect, useId, useState, type ComponentType } from "react";
 import { Check, MessageSquareWarning } from "lucide-react";
-import { CONSENT_WORDS, OBJECTION_MAX, TALLY_WORDS, tallyWords, type ConsentAnswer } from "@shared/roleProposalConsent";
+import { OBJECTION_MAX, type ConsentAnswer } from "@shared/roleProposalConsent";
 import { answerConsent, type ConsentAnswerOut, type ConsentOut } from "./proposalApi";
-import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
+import { stateLine, tallyLine, useConsentHeadings, useConsentWords } from "./consentWords";
 import { H2, INPUT, LEDE, PANEL, PRIMARY, SECONDARY } from "./parts";
 
-/** What a screen reader hears for the two circles meeting. */
+/** What a screen reader hears for the two circles meeting, in English (the drawn label is `useConsentWords().seal`). */
 export const CONSENT_SEAL = "The circle consented";
 
 /**
@@ -48,19 +48,20 @@ const NO_ROLES = { asked: [] as string[], consented: [] as string[], objected: [
 /** Who the circle asked, who consented and who objected: counts and role titles, never a name. */
 export function ConsentTally({ consent }: { consent: ConsentOut }) {
   // A circle nobody else holds a role in asked nobody, and its sentence already says so.
+  const { tally } = useConsentWords();
   if (consent.asked <= 0) return null;
   const roles = consent.roles ?? NO_ROLES;
   const rows = [
-    { key: "asked", label: TALLY_WORDS.asked, n: consent.asked, titles: roles.asked },
-    { key: "consented", label: TALLY_WORDS.consented, n: consent.consented, titles: roles.consented },
-    { key: "objected", label: TALLY_WORDS.objected, n: consent.objected, titles: roles.objected },
+    { key: "asked", label: tally.asked, n: consent.asked, titles: roles.asked },
+    { key: "consented", label: tally.consented, n: consent.consented, titles: roles.consented },
+    { key: "objected", label: tally.objected, n: consent.objected, titles: roles.objected },
   ];
   return (
     <dl className="grid gap-1 text-sm" data-consent-tally="">
       {rows.map((r) => (
         <div key={r.key} className="flex flex-wrap gap-x-2" data-tally={r.key}>
           <dt className="font-semibold text-muted-foreground">{r.label}</dt>
-          <dd className="min-w-0 break-words text-foreground">{tallyWords(r.n, r.titles)}</dd>
+          <dd className="min-w-0 break-words text-foreground">{tallyLine(r.n, r.titles, tally)}</dd>
         </div>
       ))}
     </dl>
@@ -85,20 +86,22 @@ export function ConsentSummary({
 }) {
   const own = useId();
   const id = headingId ?? `${own}-consent`;
+  const { words: CW, seal: sealLabel } = useConsentWords();
+  const H = useConsentHeadings();
   // The vesica means a consent reached (sitewide plan): only the state where the circle consented, never one still open.
   const Seal = consent.state === "consented" ? seal : undefined;
   return (
     <section aria-labelledby={id} className={`${PANEL} grid gap-3`} data-consent-summary={decided ? "adopted" : consent.state}>
       <h2 id={id} className={H2}>
-        {CONSENT_WORDS.heading}
+        {CW.heading}
       </h2>
       <div className={Seal ? "flex items-start gap-4" : "grid gap-1"}>
-        {Seal && <Seal label={CONSENT_SEAL} />}
+        {Seal && <Seal label={sealLabel} />}
         <div className="grid gap-1">
           <p className="font-semibold text-foreground" data-state-heading="">
-            {decided ? ADOPTED_HEADING : STATE_HEADINGS[consent.state]}
+            {decided ? H.adopted : H.states[consent.state]}
           </p>
-          <p className="text-foreground">{decided ?? consent.words}</p>
+          <p className="text-foreground">{decided ?? stateLine(consent.state, consent.closesOn, CW)}</p>
         </div>
       </div>
       <ConsentTally consent={consent} />
@@ -131,6 +134,7 @@ export interface CircleConsentProps {
 
 /** The summary, and the asked holder's Consent and Object. */
 export default function CircleConsent({ applicationId, consent: given, decided, waiting, onAnswered, answer: answerWith, seal }: CircleConsentProps) {
+  const { words: CW } = useConsentWords();
   const [consent, setConsent] = useState(given);
   const [objecting, setObjecting] = useState(false);
   const [reason, setReason] = useState("");
@@ -155,7 +159,7 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
     const said = reason.trim();
     // The route refuses an objection with no reason; say so here before asking it.
     if (answer === "object" && !said) {
-      setError(CONSENT_WORDS.reasonNeeded);
+      setError(CW.reasonNeeded);
       return;
     }
     setBusy(true);
@@ -163,7 +167,7 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
     const out = await (answerWith ?? ((a: ConsentAnswer, r?: string) => answerConsent(applicationId, a, r)))(answer, answer === "object" ? said : undefined);
     setBusy(false);
     if (!out.ok) {
-      setError(out.error || CONSENT_WORDS.failed);
+      setError(out.error || CW.failed);
       return;
     }
     setConsent(out.data.consent);
@@ -179,11 +183,11 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
 
       {mayAnswer && !objecting && (
         <div className={`${PANEL} grid gap-3`} data-consent-ask="">
-          <p className="text-foreground">{CONSENT_WORDS.askedYou(consent.closesOn ?? "")}</p>
+          <p className="text-foreground">{CW.askedYou(consent.closesOn ?? "")}</p>
           <div className="grid gap-2 sm:flex sm:flex-wrap">
             <button type="button" disabled={busy} onClick={() => void send("consent")} className={PRIMARY}>
               <Check className="size-4" aria-hidden="true" />
-              {CONSENT_WORDS.consentButton}
+              {CW.consentButton}
             </button>
             <button
               type="button"
@@ -195,7 +199,7 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
               className={SECONDARY}
             >
               <MessageSquareWarning className="size-4" aria-hidden="true" />
-              {CONSENT_WORDS.objectButton}
+              {CW.objectButton}
             </button>
           </div>
         </div>
@@ -212,10 +216,10 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
           }}
         >
           <label htmlFor={reasonId} className="font-semibold text-foreground">
-            {CONSENT_WORDS.reasonLabel}
+            {CW.reasonLabel}
           </label>
           <p id={goesId} className="text-foreground">
-            {CONSENT_WORDS.objectionGoes}
+            {CW.objectionGoes}
           </p>
           <textarea
             id={reasonId}
@@ -223,14 +227,14 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
             maxLength={OBJECTION_MAX}
             aria-required="true"
             aria-describedby={`${goesId} ${helpId}${error ? ` ${errorId}` : ""}`}
-            aria-invalid={error === CONSENT_WORDS.reasonNeeded ? true : undefined}
+            aria-invalid={error === CW.reasonNeeded ? true : undefined}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className={INPUT}
             autoFocus
           />
           <p id={helpId} className={LEDE}>
-            {CONSENT_WORDS.reasonHelp}
+            {CW.reasonHelp}
           </p>
           {/* The refusal sits under the box it is about. */}
           {error && (
@@ -240,7 +244,7 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
           )}
           <div className="grid gap-2 sm:flex sm:flex-wrap">
             <button type="submit" disabled={busy} className={PRIMARY}>
-              {CONSENT_WORDS.sendObjection}
+              {CW.sendObjection}
             </button>
             <button
               type="button"
@@ -251,7 +255,7 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
               }}
               className={SECONDARY}
             >
-              {CONSENT_WORDS.notNow}
+              {CW.notNow}
             </button>
           </div>
         </form>
@@ -259,8 +263,8 @@ export default function CircleConsent({ applicationId, consent: given, decided, 
 
       {answered && (
         <div role="status" className={`${PANEL} grid gap-1`} data-your-answer={answered}>
-          <p className="font-semibold text-foreground">{answered === "object" ? CONSENT_WORDS.youObjected : CONSENT_WORDS.youConsented}</p>
-          <p className={LEDE}>{CONSENT_WORDS.answerStands}</p>
+          <p className="font-semibold text-foreground">{answered === "object" ? CW.youObjected : CW.youConsented}</p>
+          <p className={LEDE}>{CW.answerStands}</p>
           {where && <p className={LEDE}>{where}</p>}
         </div>
       )}

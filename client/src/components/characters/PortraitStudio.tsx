@@ -241,6 +241,15 @@ export default function PortraitStudio({
                 ? "It shows on your public sheet."
                 : "Only you can see it. It stays that way until you show it."}
             </p>
+          ) : null}
+          {/* Said before the choice, so showing a portrait is a yes to where it goes (the lead, 26 Nov 2026: faces
+              on the Roles page). Roles reads only what is shown here (server/lib/holderFaces.ts). */}
+          {mine?.url ? (
+            <p className="mt-1 text-xs text-sage" data-portrait-roles-note="">
+              <Trans context="PortraitStudio, the note beside Show it on my profile: where a shown portrait also appears">
+                While you hold a role on the founding team, a shown portrait also appears beside your name on the Roles page, which visitors can see.
+              </Trans>
+            </p>
           ) : preview ? (
             <p className="text-sm text-sage"><Trans context="PortraitStudio, p">This is how it will be cropped. Save it to keep it.</Trans></p>
           ) : (

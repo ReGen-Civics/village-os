@@ -14,11 +14,12 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { trackWords } from "@/components/roleCard/cardWordsT";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { ROLE_CARD_FIELDS } from "@shared/roleCardText";
-import { CONVERSATION_MODES, interviewMinutesTotal, TRACKS, TRACK_WORDS, WHERE_WORKED, type Interviewer } from "@shared/roleParameters";
+import { CONVERSATION_MODES, interviewMinutesTotal, TRACKS, WHERE_WORKED, type Interviewer } from "@shared/roleParameters";
 import { PAY_KINDS, type PaySettings } from "@shared/seatSettings";
 import { payTbdLine } from "@/lib/payTbdWords";
 import type { HeldBy } from "@shared/agentHolders";
@@ -427,7 +428,7 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
               <Frame label={t({ message: "Track", context: "role editor" })} changed={form.track !== start.track}>
                 <select className={INPUT} value={form.track} onChange={(e) => set("track", e.target.value)} aria-label={t({ message: "Track", context: "role editor" })}>
                   <option value="">{"-"}</option>
-                  {TRACKS.map((k) => <option key={k} value={k}>{TRACK_WORDS[k]}</option>)}
+                  {TRACKS.map((k) => <option key={k} value={k}>{trackWords(i18n, k)}</option>)}
                 </select>
               </Frame>
             )}

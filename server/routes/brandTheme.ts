@@ -29,6 +29,7 @@
  * in one file.
  */
 import type { Express, Request, Response } from "express";
+import { stringVar } from "../lib/variables";
 import { THEME_HREF, buildThemeCss, darkScheme, themeCssVersion, villageFontOrigins, withScheme, withThemeVersion, type BrandThemeFields } from "../lib/themeCss";
 
 /** The brand document, read as it stands on each request. Only its `theme` is used here. */
@@ -77,7 +78,39 @@ function currentTheme(getBrand: GetBrand): { css: string; version: string; schem
  */
 export function shellWithTheme(shell: string, getBrand: GetBrand): string {
   const t = currentTheme(getBrand);
-  return withScheme(withThemeVersion(shell, t.version), t.scheme);
+  return withVillageLook(withScheme(withThemeVersion(shell, t.version), t.scheme), villageLook());
+}
+
+/**
+ * THE VILLAGE'S OWN DEFAULT MODE AND PAPER, ON <html> BEFORE ANYTHING RUNS
+ * (the lead, 26 Nov 2026: a village dial for the default mode, with no flash).
+ *
+ * The first-paint script in client/index.html runs before any request could
+ * ask the server what the village chose, so the server tells it in the page
+ * itself: `data-village-mode` (the dial look.default_mode) and
+ * `data-village-paper` (look.light_paper) on the <html> tag. They are
+ * attributes and not script, so the script's CSP hash is unchanged. The script
+ * reads them under the visitor's own choice (client/src/lib/colourMode.ts holds
+ * the order), so a first visit opens in the village's mode and, in light, on
+ * its paper. Only the known values are written; anything else writes nothing
+ * and the platform default stands.
+ */
+export function withVillageLook(html: string, look: { mode: string; paper: string }): string {
+  if (typeof html !== "string") return html;
+  const mode = look.mode === "light" || look.mode === "dark" ? look.mode : null;
+  const paper = look.paper === "plain" || look.paper === "sea-chart" ? look.paper : null;
+  const attrs = (mode ? ` data-village-mode="${mode}"` : "") + (paper ? ` data-village-paper="${paper}"` : "");
+  if (!attrs) return html;
+  return html.replace(/<html(?![^>]*data-village-)([^>]*)>/i, `<html$1${attrs}>`);
+}
+
+/** The two dials as they stand now. A read that fails (dials not loaded yet) writes nothing. */
+function villageLook(): { mode: string; paper: string } {
+  try {
+    return { mode: stringVar("look.default_mode"), paper: stringVar("look.light_paper") };
+  } catch {
+    return { mode: "", paper: "" };
+  }
 }
 
 export function register(app: Express, deps: { getBrand: GetBrand }): void {

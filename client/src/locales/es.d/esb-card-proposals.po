@@ -1,0 +1,106 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, heading"
+msgid "Proposed, waiting for consent"
+msgstr "Propuesto, en espera de consentimiento"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, proposed on"
+msgid "Proposed on {day}"
+msgstr "Propuesto el {day}"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, clears the words"
+msgid "Clears what is written now"
+msgstr "Borra lo que está escrito ahora"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, adopt"
+msgid "Adopt these words"
+msgstr "Adoptar estas palabras"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, adopt confirm"
+msgid "Adopt now? The role's words change for everyone."
+msgstr "¿Adoptar ahora? Las palabras del rol cambian para todas las personas."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, adopt yes"
+msgid "Yes, adopt them"
+msgstr "Sí, adoptarlas"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, put to the village"
+msgid "Put it to the village"
+msgstr "Llevarlo a la aldea"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, put confirm"
+msgid "Open a village vote on these words?"
+msgstr "¿Abrir una votación de la aldea sobre estas palabras?"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, put yes"
+msgid "Yes, open the vote"
+msgstr "Sí, abrir la votación"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, voting until"
+msgid "The village is voting on this until {day}."
+msgstr "La aldea está votando esto hasta el {day}."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, waiting on the holder"
+msgid "The role that holds the power to change the structure decides this."
+msgstr "Lo decide el rol que tiene el poder de cambiar la estructura."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, waiting on the village"
+msgid "The village decides this by vote."
+msgstr "La aldea decide esto por votación."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, blocked"
+msgid "This cannot be adopted as it stands:"
+msgstr "Esto no se puede adoptar tal como está:"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, adopted"
+msgid "Adopted. The role now has the new words."
+msgstr "Adoptado. El rol ya tiene las palabras nuevas."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, put done"
+msgid "Put to the village. Members are asked to vote."
+msgstr "Se llevó a la aldea. Se pide a las personas miembro que voten."
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, cancel"
+msgid "Cancel"
+msgstr "Cancelar"
+
+# needs-native-review: player card role proposal, 26 Nov 2026
+#: client/src/components/playerCard/playerCardProposalMessages.ts
+msgctxt "player card role proposal, failed"
+msgid "That did not go through. Try again."
+msgstr "Eso no se completó. Inténtelo de nuevo."

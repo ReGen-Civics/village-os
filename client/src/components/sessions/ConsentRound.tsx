@@ -25,7 +25,6 @@
  */
 import { useState } from "react";
 import {
-  CONSENT_LABELS,
   CONSENT_VALUES,
   SESSION_LIMITS,
   SLEEP_LIMITS,
@@ -56,6 +55,7 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { useConsentLabels } from "@/components/sessions/consentLabels";
 
 /**
  * "Waiting for Ana, Luz", in small muted words under a tally, so the
@@ -65,6 +65,7 @@ import { useRoomWords } from "@/components/sessions/roomWords";
  */
 export function WaitingLine({ view, target, className = "" }: { view: StageProps["view"]; target: ResponseTarget; className?: string }) {
   const RC = useRoomWords();
+  const CL = useConsentLabels();
   const names = seesAnswers(view) && view.status === "open" ? waitingNames(view, target) : [];
   if (!names.length) return null;
   return <p className={`text-sm text-muted-foreground ${className}`}>{RC.waitingFor(names)}</p>;
@@ -81,6 +82,7 @@ export interface ConsentRoundProps extends Omit<StageProps, "now"> {
 
 export default function ConsentRound({ view, actions, target, ask, readOnly, now = Date.now() }: ConsentRoundProps) {
   const RC = useRoomWords();
+  const CL = useConsentLabels();
   const mine = myResponse(view, target);
   const [choice, setChoice] = useState<ConsentValue | null>(mine && isConsentValue(mine.value) ? mine.value : null);
   const draft = useDraft(`${view.id}:${target}:words`, mine?.text ?? "");
@@ -145,7 +147,7 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
                   setNote(null);
                 }}
               >
-                {CONSENT_LABELS[v]}
+                {CL[v]}
               </button>
             ))}
           </div>
@@ -224,7 +226,7 @@ export default function ConsentRound({ view, actions, target, ask, readOnly, now
           {heard.map((r) => (
             <li key={`${r.userId}`} className="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
               <span className="font-semibold">{nameOf(view, r.userId) ?? ""}</span>{" "}
-              <span className="text-muted-foreground">{isConsentValue(r.value) ? CONSENT_LABELS[r.value] : ""}:</span> {r.text}
+              <span className="text-muted-foreground">{isConsentValue(r.value) ? CL[r.value] : ""}:</span> {r.text}
             </li>
           ))}
         </ul>
