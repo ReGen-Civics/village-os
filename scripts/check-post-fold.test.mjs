@@ -103,4 +103,11 @@ check("generated-docs.yml runs this BEFORE it pushes to main, and pushes only wh
   assert.match(commitStep, /if: steps\.gate\.outcome == 'success'/, "the push to main no longer waits for the gate");
 });
 
-console.log(`check-post-fold.test: ${passed}/8 checks passed`);
+check("ci.yml folds and checks every pull request, after the build and the budget", () => {
+  const ci = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", ".github", "workflows", "ci.yml"), "utf8");
+  const step = ci.indexOf("node scripts/check-post-fold.mjs --fold");
+  assert.ok(step > 0, "ci.yml no longer simulates the fold");
+  assert.ok(step > ci.indexOf("node scripts/check-dist-budget.mjs"), "the in-place fold now runs before the budget, which would measure a folded tree");
+});
+
+console.log(`check-post-fold.test: ${passed}/9 checks passed`);

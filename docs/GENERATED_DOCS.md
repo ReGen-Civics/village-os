@@ -69,9 +69,14 @@ each time, for hours. The documents were the most common reason a pull request w
 `GENERATED_DOCS_MODE` is `strict` only inside `generated-docs.yml`. Everything else is PR mode, the
 default, including a lane's machine, so a lane never has to think about it.
 
-`ci.yml` never sets strict. The merge commit of a pull request is one bot commit older than its docs,
-so a strict check there would be red on every merge. "Main's docs equal the code" is a claim that can
-only be made after the bot has written, which is where strict runs.
+`ci.yml` never sets strict on the tree as committed. The merge commit of a pull request is one bot
+commit older than its docs, so a strict check there would be red on every merge. "Main's docs equal the
+code" is a claim that can only be made after the bot has written, which is where strict runs.
+
+The one exception is a simulation of that write. `ci.yml`'s step "Main stays green after the docs bot
+folds this tree" runs `scripts/check-post-fold.mjs --fold`: it folds and re-extracts the catalogs on the
+runner's throwaway checkout, exactly as the bot will, and checks the catalogs in strict mode there. A
+pull request that would turn main red after its merge goes red itself instead.
 
 To check a tree strictly by hand (for example to see what the bot will do): `GENERATED_DOCS_MODE=strict node scripts/check-governance-doc.mjs`.
 To see what changes locally, run the generator, read `git diff`, and then `git checkout -- docs client/src/locales`
