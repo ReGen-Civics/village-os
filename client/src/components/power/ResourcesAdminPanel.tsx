@@ -541,7 +541,7 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                   </Trans></button>
                   <button
                     type="button"
-                    className="text-xs text-red-600 font-medium"
+                    className="text-xs text-red-700 font-medium"
                     onClick={() => act(`/api/admin/resources/rules/${r.id}`, "DELETE")}
                   >
                     <Trans context="ResourcesAdminPanel, button">Remove
@@ -644,7 +644,7 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                   {s.sharePct !== null ? `, about ${s.sharePct}% of the whole` : ""}
                   {s.amountMinorPerYear !== null && s.unit ? `, about ${money(s.amountMinorPerYear, s.unit)} a year` : ""}
                 </span>
-                <button type="button" className="text-xs text-red-600 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/sources/${s.id}`, "DELETE")}>
+                <button type="button" className="text-xs text-red-700 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/sources/${s.id}`, "DELETE")}>
                   <Trans context="ResourcesAdminPanel, button">Remove
                 </Trans></button>
               </div>
@@ -711,7 +711,7 @@ export default function ResourcesAdminPanel({ password }: { password: string }) 
                       </>
                     )}
                   </span>
-                  <button type="button" className="text-xs text-red-600 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/budgets/${b.id}`, "DELETE")}>
+                  <button type="button" className="text-xs text-red-700 font-medium shrink-0 max-w-full" onClick={() => act(`/api/admin/resources/budgets/${b.id}`, "DELETE")}>
                     <Trans context="ResourcesAdminPanel, button">Remove
                   </Trans></button>
                 </div>
