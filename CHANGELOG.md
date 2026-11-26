@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.84 (2026-11-26)
+
+### What changed for your village
+
+- **Dark is the first-visit default.** Someone arriving for the first time sees the night look; the switch in the header still changes it, and their choice is remembered.
+- **The entrance video plays on iPhone.** Safari now starts it, and if a phone still refuses, the still picture shows instead of the browser's play button.
+- **Sea chart's paper shows.** The texture, grid and torn edges now load, and a sheet's torn edge is its own edge.
+- **Calmer pages.** The mycelium threads are gone, the apply-by date is a plain line, and the macaw in the corner button is larger.
+- **A lighter download.** More small pieces of the site now travel together.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.83 still works.
+
+---
+
 ## 1.3.83 (2026-11-26)
 
 ### What changed for your village
