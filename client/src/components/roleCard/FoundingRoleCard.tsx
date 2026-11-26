@@ -16,7 +16,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { BadgeCheck, CalendarDays, Clock, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, Sprout, UserRound} from "lucide-react";
 import { Canopy, MushroomNetwork, SeedPin, SeedPod, SunLeaf } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
-import { CARD_WORDS as W } from "@shared/playerCardWords";
+import { useCardHeadings } from "@/components/playerCard/cardHeadings";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
@@ -163,6 +163,7 @@ function useTabs(): PieceTab[] {
 }
 
 export default function FoundingRoleCard(p: FoundingRoleCardProps) {
+  const W = useCardHeadings();
   const { t, i18n } = useLingui();
   const { seat, lifted } = p;
   const tabs = useTabs();
