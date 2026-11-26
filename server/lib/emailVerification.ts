@@ -52,6 +52,8 @@
 import crypto from "node:crypto";
 import { signTokenPayload } from "./memberTokens";
 import { holdsUnprovenPassword, isUnclaimable } from "./oauthAccounts";
+import { accountMailWords } from "../../shared/accountMailWords";
+import { languageOfMember } from "./mailLanguage";
 
 /** A day. A letter is often opened the next morning, and asking again costs one press. */
 export const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -193,20 +195,22 @@ async function post(deps: LetterDeps, to: string, letter: { origin: string; subj
  * unproved. The link is never returned to the caller, because the caller is
  * the one party who must not be able to prove an address by asking.
  */
-export async function sendVerifyLetter(deps: LetterDeps, member: { id: string; email: string }): Promise<{ sent: boolean; reason?: string }> {
+export async function sendVerifyLetter(deps: LetterDeps, member: { id: string; email: string; prefs?: unknown }): Promise<{ sent: boolean; reason?: string }> {
   const url = `${deps.origin()}/verify-email?token=${encodeURIComponent(makeEmailVerifyToken(deps.authSecret, member.id, member.email))}`;
   const safe = deps.escapeHtml(url);
   const village = deps.escapeHtml(deps.projectName());
+  // In the member's language (shared/mailLanguage.ts), English when they have none.
+  const W = accountMailWords(languageOfMember(member)).verify;
   return post(
     deps,
     member.email,
     {
       origin: "auth.verify_email",
-      subject: "Confirm your email address",
-      html: `<p>An account on ${village} was made with this address.</p>
-<p>If you made it, <a href="${safe}">confirm this address</a> (the link works for a day). You will be asked to sign in, or for the account's password, so a link opened by somebody else confirms nothing.</p>
-<p>If the button does nothing, paste this into your browser:<br>${safe}</p>
-<p>If you did not make this account, do not use the link. Nothing has changed, and you can ignore this message.</p>`,
+      subject: W.subject,
+      html: `<p>${W.made(village)}</p>
+<p>${W.ifYouMadeIt(`<a href="${safe}">${W.linkWords}</a>`)}</p>
+<p>${W.paste(safe)}</p>
+<p>${W.notYou}</p>`,
     },
     `address-proof letter for ${member.id}`,
   );
@@ -218,18 +222,19 @@ export async function sendVerifyLetter(deps: LetterDeps, member: { id: string; e
  * address, which on that path is the one Google just verified or the one the
  * account was linked under.
  */
-export async function sendPasswordEndedLetter(deps: Omit<LetterDeps, "authSecret">, member: { id: string; email: string }): Promise<{ sent: boolean; reason?: string }> {
+export async function sendPasswordEndedLetter(deps: Omit<LetterDeps, "authSecret">, member: { id: string; email: string; prefs?: unknown }): Promise<{ sent: boolean; reason?: string }> {
   const village = deps.escapeHtml(deps.projectName());
   const forgot = deps.escapeHtml(`${deps.origin()}/forgot-password`);
+  const W = accountMailWords(languageOfMember(member)).googleEnded;
   return post(
     deps as LetterDeps,
     member.email,
     {
       origin: "auth.google_ended_password",
-      subject: "You signed in with Google",
-      html: `<p>You signed in to ${village} with Google.</p>
-<p>This account also had a password, and nobody had ever confirmed this email address for it. So that password has been removed and every other device signed out, because whoever set it might not have been you.</p>
-<p>If you set that password yourself, you can choose a new one here: <a href="${forgot}">${forgot}</a></p>`,
+      subject: W.subject,
+      html: `<p>${W.signedIn(village)}</p>
+<p>${W.removed}</p>
+<p>${W.newOne(`<a href="${forgot}">${forgot}</a>`)}</p>`,
     },
     `password-ended letter for ${member.id}`,
   );

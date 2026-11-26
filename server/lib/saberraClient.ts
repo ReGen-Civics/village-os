@@ -293,18 +293,44 @@ async function request(
   } catch (e) {
     return { ok: false, why: "refused", detail: clip(e instanceof Error ? e.message : String(e)) };
   }
-  const stream = readEventStream(body);
-  if (stream.messages.length === 0) {
-    const n = stream.unparsed.length;
-    const chars = stream.unparsed.reduce((sum, p) => sum + p.length, 0);
-    const detail =
-      n > 0
-        ? `the reply carried ${plural(n, "payload")} that ${n === 1 ? "was" : "were"} not JSON, ${plural(chars, "character")} in all`
-        : "the reply carried no message";
-    return { ok: false, why: "unreadable", detail };
+
+  // Their server used to always frame replies as server-sent events (what
+  // saberraStream.ts was built for). As of their 2026-11-03 change it instead
+  // answers application/json whenever the session was opened with Accept
+  // headers offering both (which we always send) — a plain body, one message,
+  // no `data:` lines to find. Measured against their live service 2026-11-26:
+  // every real reply now carries `Content-Type: application/json`, and
+  // readEventStream() finds no "data" field in it, so every call came back
+  // "the reply carried no message" from 2026-11-10 on. Branch on their
+  // declared Content-Type rather than guessing from the body, so this keeps
+  // working either way if they ever switch back.
+  const contentType = res.headers.get("content-type") ?? "";
+  let messages: unknown[];
+  let unreadableDetail: string | null = null;
+  if (contentType.includes("application/json")) {
+    try {
+      messages = [JSON.parse(body)];
+    } catch {
+      unreadableDetail = `the reply was declared application/json but did not parse, ${plural(body.length, "character")} in all`;
+      messages = [];
+    }
+  } else {
+    const stream = readEventStream(body);
+    messages = stream.messages;
+    if (stream.messages.length === 0) {
+      const n = stream.unparsed.length;
+      const chars = stream.unparsed.reduce((sum, p) => sum + p.length, 0);
+      unreadableDetail =
+        n > 0
+          ? `the reply carried ${plural(n, "payload")} that ${n === 1 ? "was" : "were"} not JSON, ${plural(chars, "character")} in all`
+          : "the reply carried no message";
+    }
+  }
+  if (messages.length === 0) {
+    return { ok: false, why: "unreadable", detail: unreadableDetail ?? "the reply carried no message" };
   }
 
-  const first = stream.messages[0];
+  const first = messages[0];
   if (!first || typeof first !== "object" || Array.isArray(first)) {
     return { ok: false, why: "unreadable", detail: `the first message was ${shape(first)}` };
   }

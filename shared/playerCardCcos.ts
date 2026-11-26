@@ -26,8 +26,9 @@
  * Pure: no pool, no clock.
  */
 import { termLabel } from "./circleCardWords";
-import { CARD_WORDS as W, ROLE_CCOS_TERMS, type RoleTermKey } from "./playerCardWords";
-import { formatDay, type Read } from "./roleSheet";
+import { ROLE_CCOS_TERMS, type RoleTermKey } from "./playerCardWords";
+import type { Read } from "./roleSheet";
+import { sayDay, W } from "./playerCardSay";
 import type { SeatSettings } from "./seatSettings";
 // Types only, so the model importing this file makes no cycle at run time.
 import type { Slot } from "./playerCard";
@@ -117,7 +118,7 @@ export function reviewChip(settings: Read<SeatSettings | null>): string | null {
   if (settings === undefined) return null;
   const monday = weekStartOf(settings?.term?.reviewOn ?? null);
   if (!monday) return W.noReviewDate;
-  return W.reviewWeekOf(formatDay(monday, false) ?? monday);
+  return W.reviewWeekOf(sayDay(monday, false) ?? monday);
 }
 
 /** The CCOS sections of one role, every heading with its term when `terms` is on. */
