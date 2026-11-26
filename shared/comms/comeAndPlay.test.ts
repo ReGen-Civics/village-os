@@ -87,7 +87,7 @@ describe("the come-and-play block", () => {
         if (door !== "stayClose") expect(w.cards[door].title, `${lang} ${door}`).not.toBe("");
       }
     }
-    expect(renderComeAndPlay({ ...facts(), lang: "es" }).text).toContain("¡Ven a jugar!");
+    expect(renderComeAndPlay({ ...facts(), lang: "es" }).text).toContain("¡Venga a jugar!");
   });
 
   it("keeps the house voice: no dashes, no contrast framing, nothing that names a date or a count", () => {
