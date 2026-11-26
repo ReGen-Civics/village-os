@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.79 (2026-11-26)
+
+### What changed for your village
+
+- **Much more of the site in Spanish.** The notification bell, the visitor pages, role cards, task boards, role proposals and decisions, onboarding, the module library, health measures, constitution laws, role term presets, the game rules page and the living map's labels now follow the reader's language. Spanish drafts are marked for a native speaker's review.
+- **One save bar across Admin.** Tokens, the org chart's role editors and Players/Members now wait for Save; changing someone's access no longer happens on a single tap.
+- **Admin's night look reads clearly**, and warning red is a shade deeper so it reads on grey and on its own tint.
+- **The entrance on iPhone.** "Come in" sits above the tab bar, and the name field stays below the header after it.
+- **Governance, groundwork.** The data behind the coming Governance page (what waits for your voice, your voice and rights), with nothing visible yet.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.78 still works.
+
+---
+
 ## 1.3.78 (2026-11-26)
 
 ### What changed for your village
