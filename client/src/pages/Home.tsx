@@ -34,7 +34,6 @@ import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
 import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
-import Mycelium from "@/components/motion/Mycelium";
 import { airWelcomeHere } from "@/lib/airWelcome";
 
 const Air = lazy(() => import("@/components/motion/Air"));
@@ -325,52 +324,50 @@ export default function Home() {
               {t({ message: "Ways in", context: "landing, the ways in heading when the paths are hidden" })}
             </h2>
           )}
-          <Mycelium>
-          <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
-            {pathsShown && pathCards.map((card) => {
-              const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
-              if (!look) return null;
-              const art = brand[look.imageKey];
-              // Option B (the lead, 24 Nov 2026): "the Village Steward IS the core team and we
-              // should make this clearer". While the village has its founding team on, the
-              // steward card is that team's door: a Paid role label, one plain line, and the
-              // button opens the founding team on /roles. Off, it is the steward path as before.
-              const coreTeam = founding && card.id === "steward";
-              return (
-                <li key={card.id} className="m-germ min-w-0">
-                  <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
-                    {/* The village's own art for this way in, when it has added
-                        some; a card without art is a quiet card, never a frame. */}
-                    {art ? (
-                      <span className={JOURNEY_FRAME}>
-                        <JourneyArt src={art} alt={altOr(brand[look.altKey], card.title)} focus={artFocusOr(brand[look.focusKey])} />
-                      </span>
-                    ) : null}
-                    {coreTeam ? (
-                      <span className="mb-2 inline-flex items-center self-start rounded-full border border-notice/60 bg-muted px-2.5 py-0.5 text-xs font-semibold text-notice" data-paid-role="">
-                        {t({ message: "Paid role", context: "landing, the steward card's label while the founding team is on" })}
-                      </span>
-                    ) : null}
-                    <span className="flex flex-wrap items-baseline gap-x-2">
-                      <h3 className="font-display text-2xl leading-tight text-foreground">{card.title}</h3>
-                      <span className="text-sm text-muted-foreground">{card.subtitle}</span>
+        <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
+          {pathsShown && pathCards.map((card) => {
+            const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
+            if (!look) return null;
+            const art = brand[look.imageKey];
+            // Option B (the lead, 24 Nov 2026): "the Village Steward IS the core team and we
+            // should make this clearer". While the village has its founding team on, the
+            // steward card is that team's door: a Paid role label, one plain line, and the
+            // button opens the founding team on /roles. Off, it is the steward path as before.
+            const coreTeam = founding && card.id === "steward";
+            return (
+              <li key={card.id} className="m-germ min-w-0">
+                <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
+                  {/* The village's own art for this way in, when it has added
+                      some; a card without art is a quiet card, never a frame. */}
+                  {art ? (
+                    <span className={JOURNEY_FRAME}>
+                      <JourneyArt src={art} alt={altOr(brand[look.altKey], card.title)} focus={artFocusOr(brand[look.focusKey])} />
                     </span>
-                    {coreTeam ? (
-                      <span className="mt-2 block text-sm font-semibold leading-relaxed text-foreground sm:text-base">
-                        {t({ message: "The founding team who hold the village's core domains.", context: "landing, the steward card's line while the founding team is on" })}
-                      </span>
-                    ) : null}
-                    <span className={`mt-2 block ${WAY_BODY}`}>{card.description}</span>
-                    <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
-                      <span><Trans context="Home, span">Choose {card.title}</Trans></span>
-                      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  ) : null}
+                  {coreTeam ? (
+                    <span className="mb-2 inline-flex items-center self-start rounded-full border border-notice/60 bg-muted px-2.5 py-0.5 text-xs font-semibold text-notice" data-paid-role="">
+                      {t({ message: "Paid role", context: "landing, the steward card's label while the founding team is on" })}
                     </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          </Mycelium>
+                  ) : null}
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <h3 className="font-display text-2xl leading-tight text-foreground">{card.title}</h3>
+                    <span className="text-sm text-muted-foreground">{card.subtitle}</span>
+                  </span>
+                  {coreTeam ? (
+                    <span className="mt-2 block text-sm font-semibold leading-relaxed text-foreground sm:text-base">
+                      {t({ message: "The founding team who hold the village's core domains.", context: "landing, the steward card's line while the founding team is on" })}
+                    </span>
+                  ) : null}
+                  <span className={`mt-2 block ${WAY_BODY}`}>{card.description}</span>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
+                    <span><Trans context="Home, span">Choose {card.title}</Trans></span>
+                    <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
           {paths && pathsShown && paths.fields.intro ? (
             <p lang={langOf("paths.intro")} className={`mt-6 max-w-2xl ${NOTE}`}>
               <Emphasized text={paths.fields.intro} />
@@ -592,54 +589,52 @@ function FourWaysToBuild({ founding }: { founding: boolean }) {
         <h2 id="four-ways-h" className="mb-5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
           {heading}
         </h2>
-        <Mycelium>
-        <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <li className="m-germ min-w-0" data-route="team">
-            <Link href={`/roles#${ROLES_SECTIONS.team}`} className={`${WAY_CARD} ${founding ? "border-2 border-notice/60" : "border border-border"}`} data-way={founding ? "founding" : "team"} data-route-door="team">
+      <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <li className="m-germ min-w-0" data-route="team">
+          <Link href={`/roles#${ROLES_SECTIONS.team}`} className={`${WAY_CARD} ${founding ? "border-2 border-notice/60" : "border border-border"}`} data-way={founding ? "founding" : "team"} data-route-door="team">
+            <span className={JOURNEY_FRAME}>
+              <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
+            </span>
+            {founding ? (
+              <>
+                <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
+                <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{t({ message: "Founding team", context: "landing, founding team card title" })}</h3>
+                <span className={`mt-2 block ${WAY_BODY}`}>
+                  {t({ message: "Hold a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className={EYEBROW}>{t({ message: "A role on the team", context: "landing, four ways: the team card's eyebrow" })}</span>
+                <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words.team.verb}</h3>
+                <span className={`mt-2 block ${WAY_BODY}`}>{words.team.line}</span>
+                {bringBack(words.team)}
+              </>
+            )}
+            <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-notice">
+              {founding ? t({ message: "See the open roles", context: "landing, founding team card door" }) : words.team.verb}
+              <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        </li>
+        {others.map((o) => (
+          <li key={o.key} className="m-germ min-w-0" data-route={o.key}>
+            <Link href={o.href} className={`${WAY_CARD} border border-border`} data-route-door={o.key}>
               <span className={JOURNEY_FRAME}>
-                <JourneyArt src={FOUNDING_CARD_ART.src} srcSet={FOUNDING_CARD_ART.srcSet} alt="" focus={FOUNDING_CARD_ART.focus} />
+                <JourneyArt src={o.art.src} srcSet={o.art.srcSet} alt="" focus={o.art.focus} />
               </span>
-              {founding ? (
-                <>
-                  <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
-                  <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{t({ message: "Founding team", context: "landing, founding team card title" })}</h3>
-                  <span className={`mt-2 block ${WAY_BODY}`}>
-                    {t({ message: "Hold a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className={EYEBROW}>{t({ message: "A role on the team", context: "landing, four ways: the team card's eyebrow" })}</span>
-                  <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words.team.verb}</h3>
-                  <span className={`mt-2 block ${WAY_BODY}`}>{words.team.line}</span>
-                  {bringBack(words.team)}
-                </>
-              )}
-              <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-notice">
-                {founding ? t({ message: "See the open roles", context: "landing, founding team card door" }) : words.team.verb}
+              <span className={EYEBROW}>{o.eyebrow}</span>
+              <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words[o.key].verb}</h3>
+              <span className={`mt-2 block ${WAY_BODY}`}>{words[o.key].line}</span>
+              {bringBack(words[o.key])}
+              <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
+                {words[o.key].verb}
                 <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
           </li>
-          {others.map((o) => (
-            <li key={o.key} className="m-germ min-w-0" data-route={o.key}>
-              <Link href={o.href} className={`${WAY_CARD} border border-border`} data-route-door={o.key}>
-                <span className={JOURNEY_FRAME}>
-                  <JourneyArt src={o.art.src} srcSet={o.art.srcSet} alt="" focus={o.art.focus} />
-                </span>
-                <span className={EYEBROW}>{o.eyebrow}</span>
-                <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{words[o.key].verb}</h3>
-                <span className={`mt-2 block ${WAY_BODY}`}>{words[o.key].line}</span>
-                {bringBack(words[o.key])}
-                <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-foreground group-hover:text-notice">
-                  {words[o.key].verb}
-                  <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        </Mycelium>
+        ))}
+      </ul>
       </div>
     </section>
   );
