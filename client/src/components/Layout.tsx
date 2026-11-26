@@ -14,7 +14,8 @@ const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavEntry, type NavLink, type NavGroup } from "@/config/nav";
+import { bearingsFor, currentFor, type Lit } from "@/config/navBearings";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
@@ -120,6 +121,16 @@ export default function Layout({ children }: LayoutProps) {
   const navEntries = NAV.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
     isGroup(e) ? { ...e, label: menu.groups[e.label] || navWord(e.label, i18n) } : withTokenLabel(e),
   );
+  // WHERE THE PAGE SITS IN THE MENU (the lead's team call, 26 Nov 2026), read from the menu this reader sees, so the
+  // village's hidden entries and renames carry through (config/navBearings.ts). Its group is named as it is drawn.
+  const bearings = bearingsFor(
+    location,
+    NAV.flatMap((e): NavEntry[] => (isGroup(e) ? [{ ...e, items: e.items.filter(visible) }] : visible(e) ? [e] : [])),
+    menu.hidden,
+  );
+  const lit: Lit | null = bearings
+    ? { group: bearings.group ? menu.groups[bearings.group] || navWord(bearings.group, i18n) : null, href: bearings.item.href, exact: bearings.exact }
+    : null;
   const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
@@ -177,6 +188,11 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
   // The bar's More button reads this for its aria-expanded (lib/mobileMenuState.ts).
   useEffect(() => announceMobileMenu(mobileMenuOpen), [mobileMenuOpen]);
+  // The drawer opens on the branch the page belongs to, as the phone's More sheet does.
+  const litGroup = lit?.group ?? null;
+  useEffect(() => {
+    if (mobileMenuOpen && litGroup) setOpenMobileGroup((g) => g ?? litGroup);
+  }, [mobileMenuOpen, litGroup]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     focusDrawerIfAsked();
@@ -289,14 +305,17 @@ export default function Layout({ children }: LayoutProps) {
                   open={openGroup === entry.label}
                   setOpen={(v) => setOpenGroup(v ? entry.label : null)}
                   lifecycleOf={lifecycleOf}
+                  lit={lit}
                 />
               ) : (
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className="inline-flex min-h-6 items-center gap-1.5 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+                  aria-current={currentFor(lit, entry.href)}
+                  className={`relative inline-flex min-h-6 items-center gap-1.5 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep ${currentFor(lit, entry.href) ? "font-semibold" : ""}`}
                 >
                   <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
+                  {currentFor(lit, entry.href) ? <LitRule /> : null}
                 </Link>
               )
             )}
@@ -446,9 +465,10 @@ export default function Layout({ children }: LayoutProps) {
                         type="button"
                         onClick={() => setOpenMobileGroup(openMobileGroup === entry.label ? null : entry.label)}
                         aria-expanded={openMobileGroup === entry.label}
-                        className="flex items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2"
+                        aria-current={lit?.group === entry.label ? "true" : undefined}
+                        className={`flex items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2 ${lit?.group === entry.label ? "font-semibold" : ""}`}
                       >
-                        <span>{entry.label}</span>
+                        <span className="relative">{entry.label}{lit?.group === entry.label ? <LitRule /> : null}</span>
                         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openMobileGroup === entry.label ? "rotate-180" : ""}`} />
                       </button>
                       <AnimatePresence>
@@ -463,7 +483,8 @@ export default function Layout({ children }: LayoutProps) {
                               <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"}`}
+                                aria-current={currentFor(lit, item.href)}
+                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"} ${currentFor(lit, item.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
                                 onClick={() => { setMobileMenuOpen(false); setOpenMobileGroup(null); }}
                               >
                                 <MenuIcon href={item.href} fallback={item.icon} />{item.label}
@@ -478,7 +499,8 @@ export default function Layout({ children }: LayoutProps) {
                     <Link
                       key={entry.href}
                       href={entry.href}
-                      className="flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
+                      aria-current={currentFor(lit, entry.href)}
+                      className={`flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2 ${currentFor(lit, entry.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
@@ -901,8 +923,8 @@ export default function Layout({ children }: LayoutProps) {
           entirely on the routes that render no bar. */}
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
-      <MobileTabBar />
-      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} /></Suspense>}
+      <MobileTabBar inMenu={!!lit} />
+      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} lit={lit} /></Suspense>}
       <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
@@ -924,19 +946,37 @@ export default function Layout({ children }: LayoutProps) {
  * a mouse user whose pointer is still inside the wrapper fires no fresh
  * mouseenter and could not otherwise reopen it.
  */
+/**
+ * The gold rule under the branch the page belongs to: the band's own active colour (index.css, `--band-active`, the
+ * focus colour there, measured at 3:1 on the band in modePalettes.test.ts and seaChartPalette.test.ts).
+ */
+function LitRule() {
+  return (
+    <span
+      aria-hidden="true"
+      data-lit-rule=""
+      className="pointer-events-none absolute inset-x-0 -bottom-1.5 h-0.5 rounded-full"
+      style={{ background: "var(--band-active, var(--color-amber-on-band))" }}
+    />
+  );
+}
+
 function NavDropdown({
   group,
   items,
   open,
   setOpen,
   lifecycleOf,
+  lit,
 }: {
   group: NavGroup;
   items: readonly NavLink[];
   open: boolean;
   setOpen: (open: boolean) => void;
   lifecycleOf: (id?: string) => string | undefined;
+  lit: Lit | null;
 }) {
+  const here = lit?.group === group.label;
   // The join paths carry a second line; the rest are one word. A single width
   // for both leaves either the paths cramped or the short menus floating.
   const wide = items.some((i) => i.subtitle);
@@ -955,9 +995,11 @@ function NavDropdown({
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls={menuId}
-        className="flex min-h-6 items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+        aria-current={here ? "true" : undefined}
+        className={`relative flex min-h-6 items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep ${here ? "font-semibold" : ""}`}
       >
         {group.label}
+        {here ? <LitRule /> : null}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
@@ -974,7 +1016,8 @@ function NavDropdown({
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group"
+                aria-current={currentFor(lit, item.href)}
+                className={`flex items-start gap-3 border-l-2 px-4 py-2.5 hover:bg-gray-50 transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
                 onClick={() => setOpen(false)}
               >
                 <MenuIcon href={item.href} fallback={item.icon} chip />

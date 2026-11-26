@@ -65,6 +65,10 @@ function pairs(mode: "day" | "night"): Pair[] {
   // Focus on the band and the tab bar takes the band's accent (index.css, "Focus on the band").
   out.push(["the focus ring on the header band", c("accent"), c("band"), EDGE]);
   out.push(["the focus ring on the tab bar", c("accent"), mode === "day" ? c("panel") : c("band"), EDGE]);
+  // The branch the page belongs to (Layout.tsx LitRule, MoreSheet.tsx LIT_ON): a rule on the band, an edge on the menu's panel.
+  out.push(["the lit branch's rule on the header band", c("accent"), c("band"), EDGE]);
+  out.push(["the lit entry's edge on a menu panel", c("accent"), c("panel"), EDGE]);
+  out.push(["the lit entry's edge on a menu tile", c("accent"), c("panel-raised"), EDGE]);
   out.push(["a tab's label on the tab bar", mode === "day" ? c("band-ink") : c("ink"), mode === "day" ? c("panel") : c("band"), TEXT]);
   if (mode === "day") {
     out.push(["page titles on the ground", c("heading"), c("ground"), TEXT]);
