@@ -50,3 +50,14 @@ describe("a dropdown's id survives the reader's language", () => {
     expect(navMenuId("Community")).toBe("nav-menu-community");
   });
 });
+
+describe("a story page's menu name that only repeats the platform's default is translated (live config, 26 Nov 2026)", () => {
+  it("translates the default, keeps a name the village really changed", async () => {
+    const { ownWord, NAV_WORDS: W } = await import("./navWords");
+    const es = setupI18n({ locale: "es", messages: { es: { [W["Our Team"].id]: "Nuestro equipo" } } });
+    expect(ownWord("Our Team", "Our Team", es)).toBe("Nuestro equipo");
+    expect(ownWord("  ", "Our Team", es)).toBe("Nuestro equipo");
+    expect(ownWord(undefined, "Our Team", es)).toBe("Nuestro equipo");
+    expect(ownWord("The Founders", "Our Team", es)).toBe("The Founders");
+  });
+});

@@ -14,7 +14,7 @@ const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
@@ -106,13 +106,13 @@ export default function Layout({ children }: LayoutProps) {
     if (link.token) return { ...link, label: tokenName };
     // A story page carries the village's own name for it (Admin, Pages, Whole site).
     const named = link.brochure ? cfg?.site?.menu?.[link.href] : undefined;
-    return named?.label ? { ...link, label: named.label, subtitle: named.subtitle || undefined } : platformWords(link, i18n, named?.subtitle);
+    return platformWords(link, i18n, named?.subtitle, named?.label);
   };
   // The footer keeps its own wording for a story page until the village
   // renames that page; the commitment page always follows the village's word.
   const storyName = (href: string) => cfg?.site?.menu?.[href]?.label ?? "";
   const footerName = (href: string, fallback: string) =>
-    cfg?.site?.menuChanged?.includes(href) ? storyName(href) || navWord(fallback, i18n) : navWord(fallback, i18n);
+    cfg?.site?.menuChanged?.includes(href) ? ownWord(storyName(href), fallback, i18n) : navWord(fallback, i18n);
 
   // Groups collapse to nothing when every child is filtered out, so a fork with
   // its optional modules off never renders an empty dropdown.

@@ -104,9 +104,19 @@ export function navWord(label: string, i18n: I18n = appI18n): string {
   return (i18n.locale ? i18n : ENGLISH)._(d);
 }
 
-/** A menu entry in the platform's own words, in the reader's language; a village's own subtitle is kept as written. */
-export function platformWords<L extends { label: string; subtitle?: string }>(link: L, i18n: I18n = appI18n, ownSubtitle?: string): L {
-  return { ...link, label: navWord(link.label, i18n), subtitle: ownSubtitle || (link.subtitle ? navWord(link.subtitle, i18n) : undefined) };
+/**
+ * The village's name for an entry when it gave one, else the platform's word in the reader's language. The
+ * server fills a story page's menu name with the platform's English default (site.menu), so a name that only
+ * repeats that default is the platform's word, not the village's, and is translated like any other.
+ */
+export function ownWord(own: string | undefined, platform: string, i18n: I18n = appI18n): string {
+  const mine = own?.trim();
+  return mine && mine !== platform ? mine : navWord(platform, i18n);
+}
+
+/** A menu entry in the platform's own words, in the reader's language; a village's own label and subtitle are kept as written. */
+export function platformWords<L extends { label: string; subtitle?: string }>(link: L, i18n: I18n = appI18n, ownSubtitle?: string, ownLabel?: string): L {
+  return { ...link, label: ownWord(ownLabel, link.label, i18n), subtitle: ownSubtitle || (link.subtitle ? navWord(link.subtitle, i18n) : undefined) };
 }
 
 /** A dropdown's element id from its drawn name, which is the reader's own word ("Acerca de"): no space, no accent. */
