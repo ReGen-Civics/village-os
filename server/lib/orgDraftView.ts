@@ -184,7 +184,13 @@ export async function draftView(pool: Pool, draft: Draft, deps: ViewDeps): Promi
     const before = r.payloadBefore ?? {};
     const after = r.payloadAfter ?? {};
     const keys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)])).filter((k) => JSON.stringify(before[k] ?? null) !== JSON.stringify(after[k] ?? null));
-    return pick({ number: r.number, at: r.createdAt, by: who(r.revisedBy), note: r.note, changeId: r.changeIdAfter, fields: keys.map((k) => fieldView(k, before[k], after[k], deps.readsTerms)) }, DRAFT_REVISION_KEYS);
+    if (r.payloadAfter === null) {
+      // Left out: what it was about, by the role's name as the draft gave it or as it stands.
+      const target = String(before.orgRoleId ?? "");
+      const leftOut = (typeof before.name === "string" && before.name) || roleNames.get(target) || target || "a change";
+      return pick({ number: r.number, at: r.createdAt, by: who(r.revisedBy), note: r.note, changeId: r.changeIdBefore, leftOut, fields: [] }, DRAFT_REVISION_KEYS);
+    }
+    return pick({ number: r.number, at: r.createdAt, by: who(r.revisedBy), note: r.note, changeId: r.changeIdAfter, leftOut: null, fields: keys.map((k) => fieldView(k, before[k], after[k], deps.readsTerms)) }, DRAFT_REVISION_KEYS);
   });
   const overlapping = new Set(overlappingOpenDrafts(draft, open));
   const otherOpenDrafts = open.filter((d) => overlapping.has(d.id)).map((d) => pick({ id: d.id, title: d.title }, DRAFT_OTHER_KEYS));

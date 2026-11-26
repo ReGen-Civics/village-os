@@ -59,6 +59,27 @@ export async function reviseInTransaction(
   return number;
 }
 
+/** Take one change out of an open draft, and record it as a revision whose words after are none. */
+export async function leaveOutInTransaction(
+  conn: PoolConnection,
+  r: { id: string; draftId: string; changeId: string; payloadBefore: unknown; note: string | null; revisedBy: string },
+): Promise<number> {
+  await conn.query("DELETE FROM org_draft_changes WHERE id = ? AND draft_id = ?", [r.changeId, r.draftId]);
+  const [[n]] = await conn.query<RowDataPacket[]>("SELECT COALESCE(MAX(number), 1) + 1 AS next FROM org_draft_revisions WHERE draft_id = ?", [r.draftId]);
+  const number = Number(n?.next ?? 2);
+  await conn.query(
+    "INSERT INTO org_draft_revisions (id, draft_id, number, change_id_before, change_id_after, payload_before, payload_after, note, revised_by) VALUES (?,?,?,?,?,?,NULL,?,?)",
+    [r.id, r.draftId, number, r.changeId, "", JSON.stringify(r.payloadBefore), r.note, r.revisedBy],
+  );
+  return number;
+}
+
+/** How many changes an open draft holds, under its lock. */
+export async function changeCount(conn: PoolConnection, draftId: string): Promise<number> {
+  const [[n]] = await conn.query<RowDataPacket[]>("SELECT COUNT(*) AS n FROM org_draft_changes WHERE draft_id = ?", [draftId]);
+  return Number(n?.n ?? 0);
+}
+
 /** A draft's revisions, oldest first. Revision 1 is the draft as it was made, which has no row. */
 export async function revisionsOf(pool: Pool, draftId: string): Promise<RevisionRow[]> {
   const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM org_draft_revisions WHERE draft_id = ? ORDER BY number, id", [draftId]);

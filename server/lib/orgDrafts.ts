@@ -1211,7 +1211,8 @@ export function previewLoadedDraft(
        * need no circle first, joined into the one sentence a line carries.
        */
       const reasons: string[] = [];
-      if (existing) reasons.push("A role with that id already exists");
+      // A retired role keeps its id, and the chart lists only live roles, so say which it is.
+      if (existing) reasons.push(`A role with that id already exists${Number(existing.active) === 0 ? " (a retired role)" : ""}`);
       reasons.push(...seatShapeBlocks(c.payload));
       // 0268: the handover words, through the one parser the publish uses again.
       const handover = roleHandoverProblem(c.payload);

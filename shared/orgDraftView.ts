@@ -21,7 +21,7 @@ export type DraftFieldShape = "text" | "list" | "terms";
 export type DraftChangeKind = "edit" | "new" | "removed" | "other";
 
 export const DRAFT_VIEW_KEYS = ["id", "title", "rationale", "status", "createdAt", "publishedAt", "source", "proposer", "changeIds", "changes", "otherOpenDrafts", "mayEdit", "revisions"] as const;
-export const DRAFT_REVISION_KEYS = ["number", "at", "by", "note", "changeId", "fields"] as const;
+export const DRAFT_REVISION_KEYS = ["number", "at", "by", "note", "changeId", "leftOut", "fields"] as const;
 export const DRAFT_SOURCE_KEYS = ["kind", "moduleId", "fromProposal"] as const;
 export const DRAFT_PROPOSER_KEYS = ["firstName", "roles"] as const;
 export const DRAFT_CHANGE_KEYS = ["id", "op", "kind", "targetId", "target", "reads", "blocked", "baseKnown", "fields", "unchanged", "holders"] as const;
@@ -95,7 +95,7 @@ export interface DraftView {
    * Each edit since the draft was made (0437), oldest first. Revision 1 is the draft as made and has no entry;
    * each entry is the next number, with what that edit changed, field by field.
    */
-  revisions: Array<{ number: number; at: string | null; by: { firstName: string | null; roles: string[] } | null; note: string | null; changeId: string; fields: DraftFieldView[] }>;
+  revisions: Array<{ number: number; at: string | null; by: { firstName: string | null; roles: string[] } | null; note: string | null; changeId: string; /** The change was taken out of the draft: its name, or what it was about. Null for an edit. */ leftOut: string | null; fields: DraftFieldView[] }>;
 }
 
 /** A copy of `o` holding only `keys`. The allowlist every object in the answer is built through. */

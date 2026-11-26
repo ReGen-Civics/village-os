@@ -435,6 +435,39 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
       expect(rows).toEqual([{ revised_by: "anon-1", note: "Kept note" }]);
     });
 
+    it("leaves out one change that cannot be applied, so the rest publish, and keeps it in the revisions", async () => {
+      holders = new Set(["holder-1"]);
+      seq += 1;
+      const retired = `social-media-steward-${seq}`;
+      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'An old role', 1, 0)", [retired]); // module-review-ok: the test seeds a retired role whose id a new role collides with, the case the lead hit
+      const made = await createDraft(pool, { title: `Roles opening ${seq}`, rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
+      if (!made.ok) throw new Error(made.error);
+      await addChange(pool, made.id, { op: "create_circle", orgRoleId: `circle:sales-${seq}`, payload: { name: `Sales ${seq}` } });
+      await addChange(pool, made.id, { op: "create_seat", orgRoleId: `sales-steward-${seq}`, payload: { name: `Sales Steward ${seq}`, circleId: `sales-${seq}` } });
+      const bad = await addChange(pool, made.id, { op: "create_seat", orgRoleId: retired, payload: { name: "Social Media Steward", circleId: `sales-${seq}` } });
+      if (!bad.ok) throw new Error(bad.error);
+      const before = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
+      expect(before.changes.find((c: any) => c.id === bad.id).blocked).toBe("A role with that id already exists (a retired role)");
+
+      const r = await call("POST", `/api/org/drafts/${made.id}/revise`, "holder-1", { changeId: bad.id, leaveOut: true, note: "That id belongs to a retired role" });
+      expect(r.status).toBe(200);
+      const v = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
+      expect(v.changes.map((c: any) => c.op)).toEqual(["create_circle", "create_seat"]);
+      expect(v.changes.every((c: any) => c.blocked === null)).toBe(true);
+      expect(v.revisions[0]).toMatchObject({ number: 2, leftOut: "Social Media Steward", note: "That id belongs to a retired role", fields: [] });
+      // A publisher who read it before is refused; the ids the page shows now publish the rest.
+      expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: before.changeIds })).status).not.toBe(200);
+      expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: v.changeIds })).status).toBe(200);
+    });
+
+    it("will not leave out the last change: that is a withdraw", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit("admin-1", false);
+      const r = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, leaveOut: true });
+      expect(r.status).toBe(409);
+      expect(r.json.message).toContain("Withdraw the draft instead");
+    });
+
     it("carries only the allowlisted keys, at every level", async () => {
       const { draftId, changeId } = await roleAndEdit();
       expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "admin-1", { changeId, words: { domain: "Revised." }, note: "A note" })).status).toBe(200);

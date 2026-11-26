@@ -30,7 +30,7 @@ import { draftUnderAVote, newOrgDraftId } from "./orgDrafts";
 import { listOrgRoles } from "./orgChart";
 import { ROLE_WORD_FIELDS } from "./roleProposals";
 import { lockDraftRow } from "../repos/orgDrafts";
-import { changeForRevision, reviseInTransaction } from "../repos/orgDraftRevisions";
+import { changeCount, changeForRevision, leaveOutInTransaction, reviseInTransaction } from "../repos/orgDraftRevisions";
 
 export const NOTE_MAX = 280;
 
@@ -41,6 +41,7 @@ export const REVISE_WORDS = {
   nothing: "Nothing changed, so there is nothing to save.",
   noteLong: `Keep the note to ${NOTE_MAX} characters.`,
   emptied: "This would leave the change proposing nothing. Withdraw the draft instead.",
+  lastOne: "This is the only change left in the draft. Withdraw the draft instead.",
 } as const;
 
 export type ReviseOutcome =
@@ -50,10 +51,11 @@ export type ReviseOutcome =
 /** The ops whose words can be edited: an edit of a role, and a new role. */
 const EDITABLE = new Set(["update_seat", "create_seat"]);
 
-export async function reviseChange(pool: Pool, draftId: string, changeId: string, body: { words?: unknown; note?: unknown }, userId: string): Promise<ReviseOutcome> {
+export async function reviseChange(pool: Pool, draftId: string, changeId: string, body: { words?: unknown; note?: unknown; leaveOut?: unknown }, userId: string): Promise<ReviseOutcome> {
   const note = typeof body.note === "string" ? body.note.trim() : "";
   if (note.length > NOTE_MAX) return { ok: false, status: 400, error: REVISE_WORDS.noteLong, field: "note" };
-  if (!body.words || typeof body.words !== "object" || Array.isArray(body.words)) return { ok: false, status: 400, error: "A role's words arrive as a set of fields.", field: "words" };
+  const leaveOut = body.leaveOut === true;
+  if (!leaveOut && (!body.words || typeof body.words !== "object" || Array.isArray(body.words))) return { ok: false, status: 400, error: "A role's words arrive as a set of fields.", field: "words" };
 
   const conn = await pool.getConnection();
   try {
@@ -70,6 +72,15 @@ export async function reviseChange(pool: Pool, draftId: string, changeId: string
     if (await openBallotFor(conn, ORG_DRAFT, draftId)) return fail(409, draftUnderAVote());
     const change = await changeForRevision(conn, draftId, changeId);
     if (!change) return fail(404, REVISE_WORDS.noChange);
+    // LEAVE THIS ONE OUT: any change may be taken out, so one line that cannot be applied (a role id already used,
+    // a circle not made yet) no longer holds back the rest. The rest publish; the one left out is kept in the
+    // revision, words and all, so nothing is lost. The change ids move, so a stale publish is refused.
+    if (leaveOut) {
+      if ((await changeCount(conn, draftId)) <= 1) return fail(409, REVISE_WORDS.lastOne);
+      const revision = await leaveOutInTransaction(conn, { id: newOrgDraftId("drev"), draftId, changeId, payloadBefore: { op: change.op, orgRoleId: change.orgRoleId, ...change.payload }, note: note || null, revisedBy: userId });
+      await conn.commit();
+      return { ok: true, changeId: "", revision };
+    }
     if (!EDITABLE.has(change.op)) return fail(409, REVISE_WORDS.notWords);
 
     // Judged against the card as it stands, so a word equal to the live card is no longer a change.

@@ -265,7 +265,7 @@ export function register(app: Express, deps: Deps): void {
     if (!draft || !(await mayWorkOn(req, draft, userId))) return res.status(404).json({ error: "no_such_draft", message: "There is no draft by that id." });
     if (await askedTooOften(req, "org-draft-revise", userId)) return res.status(429).json({ error: "too_many", message: "That is a lot of edits at once. Wait a few minutes and try again." });
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const r = await reviseChange(pool, draft.id, String(body.changeId ?? ""), { words: body.words, note: body.note }, userId);
+    const r = await reviseChange(pool, draft.id, String(body.changeId ?? ""), { words: body.words, note: body.note, leaveOut: body.leaveOut }, userId);
     if (!r.ok) return res.status(r.status).json({ error: "not_revised", message: r.error, ...(r.field ? { field: r.field } : {}) });
     res.json({ ok: true, changeId: r.changeId, revision: r.revision });
   });
