@@ -14,3 +14,13 @@ msgstr "Tu trabajo"
 msgctxt "Layout, Link"
 msgid "Your work"
 msgstr "Tu trabajo"
+
+# needs-native-review: governance rename, the menu's own words, 2026-11-26
+msgctxt "site menu"
+msgid "Governance"
+msgstr "Gobernanza"
+
+# needs-native-review: governance rename, the menu's own words, 2026-11-26
+msgctxt "site menu"
+msgid "Your work"
+msgstr "Tu trabajo"
