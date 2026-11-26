@@ -28,19 +28,12 @@
  */
 import { useState } from "react";
 import SendTension from "./SendTension";
-import {
-  AIM_DEFS,
-  ROOM_COPY,
-  ROOM_ITEM_MINUTES_DEFAULT,
-  SESSION_COPY,
-  SESSION_LIMITS,
-  cleanLine,
-  type ItemAim,
-} from "@shared/sessions";
+import { ROOM_COPY, ROOM_ITEM_MINUTES_DEFAULT, SESSION_COPY, SESSION_LIMITS, cleanLine, type ItemAim } from "@shared/sessions";
 import { TASK_COPY, groupForCheck, type TaskCard } from "@shared/sessionTasks";
 import TaskCardView from "@/components/tasks/TaskCard";
 import EntryCard from "./EntryCard";
 import { BTN_QUIET, BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, heldLine, keepsNotes, type StageProps } from "./roomUi";
+import { AIM_DEFS } from "./libraryCopy";
 
 /** The room's own day, YYYY-MM-DD, read off the room's clock in this device's zone. */
 export function roomDay(ms: number): string {

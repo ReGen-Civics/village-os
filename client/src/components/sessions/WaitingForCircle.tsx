@@ -39,25 +39,14 @@ import { useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { ChevronDown } from "lucide-react";
-import { AIM_DEFS } from "@shared/sessions";
-import {
-  LIBRARY_API,
-  LIBRARY_COPY,
-  LIBRARY_SOURCE_LINE,
-  LIBRARY_STATUS_LINE,
-  broughtAnchor,
-  broughtIdFromHash,
-  groupByCircle,
-  libraryAgainUrl,
-  libraryItemUrl,
-  type LibraryCard,
-  type LibraryPayload,
-} from "@shared/sessionLibrary";
+
+import { LIBRARY_API, LIBRARY_SOURCE_LINE, LIBRARY_STATUS_LINE, broughtAnchor, broughtIdFromHash, groupByCircle, libraryAgainUrl, libraryItemUrl, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
 import { gameFetch } from "@/lib/gameApi";
 import BroughtForm, { type BroughtValues, type CircleMeetings } from "./BroughtForm";
 import ClampedNote from "./ClampedNote";
 import { useHash } from "./useHash";
 import { BTN_DANGER, BTN_QUIET, BTN_SECONDARY, CHIP, HINT, LABEL_CAPS, PANEL } from "./roomUi";
+import { AIM_DEFS, LIBRARY_COPY } from "./libraryCopy";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
