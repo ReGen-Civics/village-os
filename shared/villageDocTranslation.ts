@@ -24,10 +24,19 @@
  * "archetypes" is the village's five classes as /api/archetypes serves them, `{ archetypes: Archetype[] }`. Both
  * are public already, which is why their words can be served to any reader.
  *
+ *                 ref_key = "circles"       field = "<circleId>.name" | "<circleId>.purpose"
+ *
+ * "circles" IS NOT PUBLIC AS A SET. Which circles a reader may see depends on who they are (circlesToShow,
+ * shared/roleListing.ts), so its translation is never served on its own (PRIVATE_VILLAGE_DOCS): the routes that
+ * already filter circles by viewer lay the accepted translation over what they serve (server/lib/circleWords.ts).
+ *
  * Links, ids, ordering and prices that are amounts never take one: only the words a reader reads.
  */
 
-export const VILLAGE_DOC_REFS = ["brand", "visit-config", "paths", "season", "archetypes"] as const;
+export const VILLAGE_DOC_REFS = ["brand", "visit-config", "paths", "season", "archetypes", "circles"] as const;
+
+/** Documents whose translation is laid only by the routes that already decide who may read them, never served whole. */
+export const PRIVATE_VILLAGE_DOCS: readonly VillageDocRef[] = ["circles"];
 export type VillageDocRef = (typeof VILLAGE_DOC_REFS)[number];
 
 export const isVillageDocRef = (v: unknown): v is VillageDocRef => (VILLAGE_DOC_REFS as readonly string[]).includes(String(v));
@@ -52,6 +61,7 @@ const ROW_LISTS: Readonly<Record<string, RowList>> = {
   paths: { list: "paths", id: "id", fields: ["label", "role", "description"], lines: {} },
   season: { list: "seasons", id: "id", fields: ["name", "theme", "focus"], lines: { goals: (g) => obj(g).text }, also: ["current", "upcoming"] },
   archetypes: { list: "archetypes", id: "key", fields: ["name", "subtitle", "blurb"], lines: { examples: null } },
+  circles: { list: "circles", id: "id", fields: ["name", "purpose"], lines: {} },
 };
 const PLACE = /^(0|[1-9][0-9]{0,2})$/;
 const rowsOf = (d: Record<string, unknown>, spec: RowList): Record<string, unknown>[] => (Array.isArray(d[spec.list]) ? (d[spec.list] as unknown[]) : []).map(obj);
