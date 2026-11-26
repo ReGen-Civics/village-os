@@ -14,8 +14,9 @@ import { cardWordsWith, fixedCardWords, sayCardIn, type PlayerCardWords } from "
 import { CARD_MESSAGES, type CardMessageKey } from "../../shared/playerCardMessages";
 import type { PlayerCardPayload } from "../../shared/playerCardPayload";
 import { HEALTH_MESSAGES, healthWordsWith, type HealthMessageKey } from "../../shared/playerCardHealthMessages";
+import { noteSignWords, plainSheets, saySheetsIn, signWordsWith } from "../../shared/roleSignMessages";
 import { PROPOSAL_MESSAGES, fixedProposalWords, proposalWordsWith, type ProposalMessageKey } from "../../shared/playerCardProposalMessages";
-import { sayerFor, speakerFor } from "./catalogSpeech";
+import { messageSay, sayerFor, speakerFor } from "./catalogSpeech";
 import { noSharedCache, readerLocale } from "./contentTranslationRead";
 
 // The catalog reader lives in server/lib/catalogSpeech.ts, which imports no model; these were first written here.
@@ -34,21 +35,30 @@ export function playerCardWordsFor(locale: string, dirs?: string[]): PlayerCardW
  */
 export function cardForReader(req: Parameters<typeof readerLocale>[0], res: Parameters<typeof noSharedCache>[0], payload: PlayerCardPayload, dirs?: string[]): PlayerCardPayload {
   const { said: _said, ...plain } = payload.card;
+  const asBuilt = { ...payload, card: plain, sheets: plainSheets(payload.sheets) };
   const locale = readerLocale(req);
-  if (!locale) return { ...payload, card: plain };
+  if (!locale) return asBuilt;
   noSharedCache(res);
   const words = playerCardWordsFor(locale, dirs);
-  if (!words) return { ...payload, card: plain };
+  if (!words) return asBuilt;
   const i18n = speakerFor(locale, dirs);
   const health = i18n ? healthWordsWith(sayerFor<HealthMessageKey>(i18n, HEALTH_MESSAGES)) : undefined;
   const proposalSay = i18n ? sayerFor<ProposalMessageKey>(i18n, PROPOSAL_MESSAGES) : undefined;
-  const extras = { ...health, ...(proposalSay ? { proposal: proposalWordsWith(proposalSay) } : {}) };
+  const signSay = i18n ? messageSay(i18n) : undefined;
+  const extras = {
+    ...health,
+    ...(proposalSay ? { proposal: proposalWordsWith(proposalSay) } : {}),
+    ...(signSay ? { sign: signWordsWith(signSay) } : {}),
+  };
+  // The signs are counted once for the village, outside the card's recorder: their lines are noted here.
+  const card = payload.card.said ? { ...payload.card, said: noteSignWords(payload.card.said) } : payload.card;
   return {
     ...payload,
     card: {
-      ...sayCardIn(payload.card, words, locale, extras),
+      ...sayCardIn(card, words, locale, extras),
       words: fixedCardWords(words),
       ...(proposalSay ? { proposalWords: fixedProposalWords(proposalSay) } : {}),
     },
+    sheets: signSay ? saySheetsIn(payload.sheets, signSay) : plainSheets(payload.sheets),
   };
 }

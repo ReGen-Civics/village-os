@@ -88,3 +88,12 @@ export function noticeSayFor(locale: string, dirs?: string[]): NoticeSay | null 
     return i18n._(id, values);
   };
 }
+
+/** One message, given as its English and context, in a catalog's language. Throws when the catalog lacks it. */
+export function messageSay(i18n: I18n) {
+  return (m: { message: string; context: string }, values?: Record<string, unknown>): string => {
+    const id = messageId(m.message, m.context);
+    if (!(id in i18n.messages)) throw new Error(`no words for "${m.context}"`);
+    return i18n._(id, values);
+  };
+}

@@ -466,9 +466,11 @@ export interface CardExtraWords {
   health?: object;
   handover?: object;
   proposal?: object;
+  /** The signs' own lines (shared/roleSignMessages.ts), noted on the record by the server. */
+  sign?: object;
 }
 
-const EXTRA_PREFIXES: readonly string[] = [HEALTH_PREFIX, HANDOVER_PREFIX, PROPOSAL_PREFIX];
+const EXTRA_PREFIXES: readonly string[] = [HEALTH_PREFIX, HANDOVER_PREFIX, PROPOSAL_PREFIX, "sign"];
 
 /** A day the server formatted, in the reader's language. */
 function dayIn(d: SaidDay, locale: string): string | null {
