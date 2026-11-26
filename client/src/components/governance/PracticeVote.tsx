@@ -51,6 +51,7 @@ import { openAdvisory } from "./governanceApi";
 import { subjectNoun, type WizardType } from "./wizardConfig";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /**
  * The methods a practice vote may run, in the order a member meets them.
@@ -102,9 +103,10 @@ export default function PracticeVote({
   /** Present when the module library opened this with the question written. */
   asking?: FixedAsk;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const Heading = asking ? "h2" : "h3";
-  const noun = about ? subjectNoun(about) : "";
+  const noun = about ? ww(subjectNoun(about)) : "";
   const [question, setQuestion] = useState(asking?.question ?? "");
   const [detail, setDetail] = useState("");
   const [method, setMethod] = useState("");

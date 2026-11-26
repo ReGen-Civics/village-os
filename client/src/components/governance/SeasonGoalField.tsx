@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { FieldSpec } from "./wizardConfig";
 import { NO_SEASON_GOALS } from "./roleApplicationType";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 type Goal = { id: string; text: string };
 
@@ -32,6 +33,7 @@ export default function SeasonGoalField({
   onChange: (next: unknown) => void;
   problem?: string | null;
 }) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const [goals, setGoals] = useState<Goal[] | null>(null);
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function SeasonGoalField({
   }
   return (
     <fieldset className="grid gap-1" data-season-goal="">
-      <legend className="mb-1 text-sm font-semibold text-foreground">{field.label}</legend>
+      <legend className="mb-1 text-sm font-semibold text-foreground">{ww(field.label)}</legend>
       {goals.map((g) => (
         <label key={g.id} className="flex min-h-11 items-start gap-2 text-sm text-foreground">
           <input

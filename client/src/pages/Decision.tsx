@@ -76,6 +76,7 @@ import {
   type StewardSlate as StewardSlateData,
   type WeightRecord as WeightRecordData,
 } from "@/components/governance/governanceApi";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /**
  * WHAT EACH METHOD MEANS, and its authority is `BALLOT_METHODS` in
@@ -141,6 +142,7 @@ export const DECISION_METHOD_TIPS = METHOD_TIP;
 export const DECISION_WEIGHT_TIPS = WEIGHT_MODE_TIP;
 
 export default function Decision() {
+  const ww = useWizardWords();
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   // The village's own word for whoever runs it. A LABEL and nothing more:
@@ -373,7 +375,7 @@ export default function Decision() {
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-            {subjectNoun(ballot.subjectType)}
+            {ww(subjectNoun(ballot.subjectType))}
           </span>
           <span className="text-xs text-muted-foreground">
             <Trans context="Decision, span">Decided by {ballot.method}

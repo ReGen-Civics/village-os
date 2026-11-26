@@ -19,6 +19,7 @@ import { StoryAssist } from "./SeraDraftFields";
 import { AboutYouFacts, ReferencesBlock, aboutYouOf, aboutYouProblem } from "@/components/openProposal/AboutYou";
 import { loadOrg } from "./pickSources";
 import { pickedSeats } from "./SeatPicksField";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 /** Whether any role picked is always background-checked, from the org chart's roles. */
 export function alwaysCheckedIn(roles: ReadonlyArray<Record<string, any>> | null | undefined, ids: readonly string[]): boolean {
@@ -63,13 +64,14 @@ export default function AboutYouField({
   problem?: string | null;
   setAnswer?: (key: string, value: unknown) => void;
 }) {
+  const ww = useWizardWords();
   const v = aboutYouOf(value);
   const always = useAlwaysChecked(pickedSeats(answers.seatIds ?? answers.seatId));
   const { t } = useLingui();
   const { contactEmail } = useVillageLinks();
   return (
     <div className="grid gap-5" data-about-field="">
-      {field.help && <p className="text-sm text-muted-foreground">{field.help}</p>}
+      {field.help && <p className="text-sm text-muted-foreground">{ww(field.help)}</p>}
       {contactEmail && (
         <p className="text-sm text-muted-foreground" data-door-files-line="">
           {t`Send links, a CV or any other files to ${contactEmail} with your name in the subject line.`}
