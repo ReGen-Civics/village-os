@@ -254,7 +254,7 @@ describe("open ventures: what a venture is, the pitch, and the ones open now fir
     expect(four.querySelector("[data-contributor-routes]")?.getAttribute("data-contributor-routes")).toBe("tiles");
     const doors = Array.from(four.querySelectorAll("[data-route-door]"));
     expect(doors.map((a) => a.textContent)).toEqual([
-      "Join the teamA role on the team, with its own terms.",
+      "Join the Core TeamA role on the team, with its own terms.",
       "Start a ventureYour own business on the land.",
       "Become a partnerPartner with us, thrive together.",
       "Propose a questA one-off piece of work, rewarded.",

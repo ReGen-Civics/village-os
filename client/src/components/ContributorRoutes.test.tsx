@@ -43,7 +43,7 @@ describe("the four cards", () => {
     expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     // Compensation for a role; "rewarded" is for quests only.
     expect(within(cards[0] as HTMLElement).getByText("The compensation the role's terms set out, agreed together.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles#founding-team");
+    expect(screen.getByRole("link", { name: "Join the Core Team" }).getAttribute("href")).toBe("/roles#founding-team");
     // Start a venture lands on the proposal form set up for a venture (the lead, 24 Nov 2026).
     expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/work-with-us?kind=venture");
     expect(screen.getByRole("link", { name: "Become a partner" }).getAttribute("href")).toBe("/partner");
@@ -152,7 +152,7 @@ describe("the compact tiles, the application's register and the nonprofit line",
   it("draws the tiles with the verb and a few words only, no promise", () => {
     render(<ContributorRoutes variant="tiles" />);
     expect(Array.from(document.querySelectorAll("[data-route-door]")).map((a) => a.textContent)).toEqual([
-      "Join the teamA role on the team, with its own terms.",
+      "Join the Core TeamA role on the team, with its own terms.",
       "Start a ventureYour own business on the land.",
       "Become a partnerPartner with us, thrive together.",
       "Propose a questA one-off piece of work, rewarded.",
@@ -184,7 +184,7 @@ describe("the other three, beside a role", () => {
     expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     cleanup();
     render(<ContributorRoutes hrefs={{ team: "/roles/select" }} />);
-    expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles/select");
+    expect(screen.getByRole("link", { name: "Join the Core Team" }).getAttribute("href")).toBe("/roles/select");
   });
 });
 
