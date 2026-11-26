@@ -25,8 +25,15 @@
  * is a production write a person decides to make (coordinator, 15 Nov). Pay
  * words and binding pages are never drafted, whatever the switch says.
  */
-import { isVillageDocRef } from "../../shared/villageDocTranslation";
+import { PRIVATE_VILLAGE_DOCS, isVillageDocRef } from "../../shared/villageDocTranslation";
+import { circleWordRows } from "../repos/circles";
 import { noSharedCache, readerLocale, villageDocTranslation } from "../lib/contentTranslationRead";
+import { villagePaths } from "../lib/villagePaths";
+import { listArchetypes } from "../lib/characters";
+import { villageId } from "../lib/economy";
+import { readConfigDocument } from "../repos/appConfigDocs";
+import { normalizeSeasonConfig } from "../lib/seasonCalendar";
+import { GAME_CONFIG } from "../../shared/gameConfig";
 import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { CONTENT_KINDS, contentTranslationProblem, translatableLocales, type ContentKind } from "../../shared/contentTranslation";
@@ -124,7 +131,16 @@ export async function savePersonTranslation(
 }
 
 export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, deps: ContentTranslationDeps): void {
-  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc: deps.villageDoc });
+  // Three of the documents are read here from their own stores: the path names (server/lib/villagePaths.ts),
+  // the season calendar (the "season" config document, read as /api/season reads it) and the five classes.
+  const villageDoc = async (ref: string): Promise<unknown> => {
+    if (ref === "paths") return { paths: villagePaths() };
+    if (ref === "season") return { seasons: normalizeSeasonConfig((await readConfigDocument(deps.getPool(), "season")) ?? GAME_CONFIG.season).seasons };
+    if (ref === "archetypes") return { archetypes: await listArchetypes(deps.getPool(), villageId()) };
+    if (ref === "circles") return { circles: await circleWordRows(deps.getPool()) }; // admin routes only: see below
+    return deps.villageDoc?.(ref) ?? null;
+  };
+  const readers = (): SourceReaders => ({ pool: deps.getPool(), contentSection: deps.contentSection, villageDoc });
   const BASE = "/api/admin/content-translations";
 
   /**
@@ -137,8 +153,9 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     const ref = String(req.params.ref ?? "");
     const locale = readerLocale(req);
     noSharedCache(res);
-    if (!locale || !isVillageDocRef(ref) || !deps.villageDoc) return res.json({ translation: null });
-    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, deps.villageDoc(ref), locale) });
+    // A private document is laid only by the routes that choose who may read it (PRIVATE_VILLAGE_DOCS).
+    if (!locale || !isVillageDocRef(ref) || PRIVATE_VILLAGE_DOCS.includes(ref)) return res.json({ translation: null });
+    res.json({ translation: await villageDocTranslation(deps.getPool(), ref, await villageDoc(ref), locale) });
   });
 
   app.get(BASE, async (req, res) => {

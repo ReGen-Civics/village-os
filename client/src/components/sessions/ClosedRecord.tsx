@@ -40,7 +40,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { Copy } from "lucide-react";
-import { AIM_DEFS, ENTRY_LABELS, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
+import { ENTRY_LABELS, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
 import { taskDateWords, taskRecordUrl, type TaskCard, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
@@ -51,6 +51,7 @@ import NightAfterCall from "./NightAfterCall";
 import type { RoomActions } from "./useSessionRoom";
 import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
+import { AIM_DEFS } from "./libraryCopy";
 
 /** What the record may do: answer a night, and mark a round decided after it. */
 type RecordActions = Pick<RoomActions, "answerNight" | "decideAfterNight">;

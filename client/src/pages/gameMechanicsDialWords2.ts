@@ -505,4 +505,18 @@ export const DIAL_WORDS_2: Readonly<Record<string, DialWords>> = {
     label: msg({ message: "Which forum category the feed shows", context: "game variable feed.category_slug, label" }),
     description: msg({ message: "The feed is a LENS over one forum category plus the village's system events. It is not a second content store. Point it at the category where everyday village life gets posted.", context: "game variable feed.category_slug, description" }),
   },
+  "look.light_paper": {
+    label: msg({ message: "Light mode's paper", context: "game variable look.light_paper, label" }),
+    description: msg({ message: "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are.", context: "game variable look.light_paper, description" }),
+    choices: {
+      "plain": {
+        label: msg({ message: "Plain", context: "game variable look.light_paper, choice plain, label" }),
+        hint: msg({ message: "The clean Golden Hour page.", context: "game variable look.light_paper, choice plain, hint" }),
+      },
+      "sea-chart": {
+        label: msg({ message: "Sea chart", context: "game variable look.light_paper, choice sea-chart, label" }),
+        hint: msg({ message: "Aged paper, torn cards and Garamond headings.", context: "game variable look.light_paper, choice sea-chart, hint" }),
+      },
+    },
+  },
 };

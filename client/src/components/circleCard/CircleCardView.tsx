@@ -23,7 +23,7 @@ import { Pencil } from "lucide-react";
 import InfoTip, { WORDED_TAP } from "@/components/InfoTip";
 import { BOX, EYEBROW, LINK, QUIET_BUTTON, SECTION, SlotView } from "@/components/playerCard/cardParts";
 import type { CircleCard, CircleSection, RoleRowOut, SignOut, Slot } from "@shared/circleCard";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
+import { useCircleWords } from "./circleWords";
 import type { CircleValue } from "@shared/circleCharter";
 import type { CircleWordKey } from "@shared/circleCharterParse";
 import { CircleEditContext, PendingWords, ProposeWords } from "./ProposeWords";
@@ -298,6 +298,7 @@ export default function CircleCardView({
    */
   arrange?: (parts: { header: ReactNode; proposals: ReactNode; rest: ReactNode }) => ReactNode;
 }) {
+  const W = useCircleWords();
   const [editing, setEditing] = useState(false);
   // A decided proposal's confirmation, kept here: adopting the last one empties the panel.
   const [decided, setDecided] = useState<string | null>(null);

@@ -41,6 +41,8 @@
       written out because this cannot import; colourMode.test.ts holds the two
       together, and modePalettes.test.ts holds `light` and `dark` to the two grounds
       in index.css's palette block (--pal-day-ground, --pal-night-ground).
+      It also puts down the village's light-mode paper (data-paper), kept on the
+      device by client/src/lib/paperLook.ts, so a Sea chart village never flashes plain.
       The CSP hashes this script from the built shell, so it needs no nonce.
     -->
     <script>
@@ -61,7 +63,13 @@
         if (!m) return;
         d.setAttribute("data-mode", m);
         d.style.colorScheme = m;
-        var g = m === "light" ? light : dark;
+        // The village's light-mode paper (client/src/lib/paperLook.ts, which names the
+        // key and value; paperLook.test.ts holds this script to them). The chart's ground
+        // is seaChart.css's --pal-day-ground.
+        var chart = "#e8d3a3", p = null;
+        try { p = localStorage.getItem("village-paper"); } catch (e) {}
+        if (p === "sea-chart") d.setAttribute("data-paper", p);
+        var g = m === "light" ? (p === "sea-chart" ? chart : light) : dark;
         d.style.backgroundColor = g;
         var t = document.querySelector('meta[name="theme-color"]');
         if (t) t.setAttribute("content", g);

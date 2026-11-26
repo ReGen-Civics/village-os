@@ -35,17 +35,7 @@
  */
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import {
-  AIM_DEFS,
-  SESSION_COPY,
-  SESSION_LIMITS,
-  SESSION_REFUSALS,
-  cleanLine,
-  cleanText,
-  itemSectionsOn,
-  timebox,
-  type SessionItem,
-} from "@shared/sessions";
+import { SESSION_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, cleanText, itemSectionsOn, timebox, type SessionItem } from "@shared/sessions";
 import { ActionRow, AddAction } from "./ActionRow";
 import EditableText from "./EditableText";
 import EntryCard from "./EntryCard";
@@ -72,6 +62,7 @@ import {
   type StageProps,
 } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { AIM_DEFS } from "./libraryCopy";
 
 /**
  * A box to add one thing to the item: the proposal, a line on what we

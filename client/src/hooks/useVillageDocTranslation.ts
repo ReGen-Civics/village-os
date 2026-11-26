@@ -4,6 +4,29 @@ import { markMachineTranslated } from "@/i18n/machineTranslation";
 import { readPageTranslation } from "@shared/contentTranslationOverlay";
 import { overlayVillageDoc, type VillageDocRef } from "@shared/villageDocTranslation";
 
+type DocFields = { fields: Record<string, string>; machine: boolean };
+// One read per document and language: the menu, the bottom bar and a page all draw the path names at once.
+const cache = new Map<string, Promise<DocFields>>();
+
+function readDocFields(ref: VillageDocRef, locale: string): Promise<DocFields> {
+  const key = `${ref}\u0000${locale}`;
+  let p = cache.get(key);
+  if (!p) {
+    p = fetch(`/api/village-doc/${encodeURIComponent(ref)}/translation`, { headers: { "X-Village-Locale": locale } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const t = readPageTranslation(d?.translation);
+        return { fields: t && t.locale === locale ? t.fields : {}, machine: !!t && t.machine.length > 0 };
+      })
+      .catch(() => {
+        cache.delete(key);
+        return { fields: {}, machine: false };
+      });
+    cache.set(key, p);
+  }
+  return p;
+}
+
 /**
  * The village's words outside its pages (the homepage words in Identity, the visit page) in the reader's
  * language, where the village has translated them (shared/villageDocTranslation.ts). English asks nothing;
@@ -15,15 +38,7 @@ export function useVillageDocFields(ref: VillageDocRef): Readonly<Record<string,
   useEffect(() => {
     if (locale === "en" || locale.startsWith("en-")) return;
     let alive = true;
-    fetch(`/api/village-doc/${encodeURIComponent(ref)}/translation`, { headers: { "X-Village-Locale": locale } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const t = readPageTranslation(d?.translation);
-        if (alive) setGot({ locale, fields: t && t.locale === locale ? t.fields : {}, machine: !!t && t.machine.length > 0 });
-      })
-      .catch(() => {
-        if (alive) setGot({ locale, fields: {}, machine: false });
-      });
+    void readDocFields(ref, locale).then((r) => alive && setGot({ locale, ...r }));
     return () => {
       alive = false;
     };

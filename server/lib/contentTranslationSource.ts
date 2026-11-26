@@ -23,6 +23,9 @@ export interface SourceField {
   protection: Protection;
 }
 
+/** The row ids an address takes, as shared/contentTranslation.ts reads them. */
+const ROW_ID = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
+
 const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v : null);
 
 /** The API's name for each org_roles column a translation names. */
@@ -47,8 +50,8 @@ export interface SourceReaders {
   pool: Pool;
   /** The `content` document's section, for a page. */
   contentSection: (section: string) => unknown;
-  /** One of the village's own documents outside its pages, by name ("brand", "visit-config"). Absent: none is read. */
-  villageDoc?: (ref: string) => unknown;
+  /** One of the village's own documents outside its pages, by name ("brand", "season"). Absent: none is read. */
+  villageDoc?: (ref: string) => unknown | Promise<unknown>;
 }
 
 /**
@@ -81,7 +84,7 @@ export async function translatableFields(r: SourceReaders, kind: ContentKind, re
   }
   if (kind === "village_doc") {
     if (!isVillageDocRef(refKey) || !r.villageDoc) return null;
-    for (const f of villageDocFields(refKey, r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
+    for (const f of villageDocFields(refKey, await r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
     return out;
   }
   // page_section
@@ -93,7 +96,9 @@ export async function translatableFields(r: SourceReaders, kind: ContentKind, re
     for (const f of s.fields) keep(out, kind, refKey, `${s.id}.${f.key}`, raw[s.id]?.fields[f.key]);
     for (const l of s.lists ?? []) {
       (raw[s.id]?.lists[l.key] ?? []).forEach((row, i) => {
-        const at = row.id ?? String(i);
+        // A row is addressed by its id when the id is an address (shared/contentTranslation.ts), else by its place:
+        // the site menu's rows carry their page's path ("/investor"), and a path is not an address.
+        const at = typeof row.id === "string" && ROW_ID.test(row.id) ? row.id : String(i);
         for (const f of l.fields) keep(out, kind, refKey, `${s.id}.${l.key}.${at}.${f.key}`, row[f.key]);
       });
     }

@@ -16,6 +16,7 @@
  * Returns a key -> name map, or null while unread or failed.
  */
 import { useEffect, useState } from "react";
+import { useClassNamesInLanguage } from "@/hooks/useArchetypeWords";
 
 let cache: Promise<Record<string, string> | null> | null = null;
 
@@ -57,7 +58,7 @@ export function useClassNames(): Record<string, string> | null {
       alive = false;
     };
   }, []);
-  return names;
+  return useClassNamesInLanguage(names); // the village's class names in the reader's language
 }
 
 export default useClassNames;

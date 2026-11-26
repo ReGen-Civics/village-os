@@ -20,11 +20,11 @@
  * Words come from shared/sessionLibrary.ts, the contract.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AIM_DEFS } from "@shared/sessions";
-import { LIBRARY_COPY, LIBRARY_MINUTES, LIBRARY_SOURCE_LINE, agendaAimFor, broughtFor, type LibraryCard } from "@shared/sessionLibrary";
+import { LIBRARY_MINUTES, LIBRARY_SOURCE_LINE, agendaAimFor, type LibraryCard } from "@shared/sessionLibrary";
 import ClampedNote from "./ClampedNote";
 import { BTN_SECONDARY, CARD, CHIP, H3, HINT, type StageProps } from "./roomUi";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { AIM_DEFS, LIBRARY_COPY, broughtFor } from "./libraryCopy";
 
 /** "14 October", in the reader's own locale. */
 function shortDay(iso: string): string {

@@ -32,11 +32,12 @@
 import { useState, type FormEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { PickerCircle } from "@shared/circlePicker";
-import { AIM_DEFS, cleanLine, type ItemAim } from "@shared/sessions";
-import { LIBRARY_AIMS, LIBRARY_COPY, LIBRARY_LIMITS } from "@shared/sessionLibrary";
+import { cleanLine, type ItemAim } from "@shared/sessions";
+import { LIBRARY_AIMS, LIBRARY_LIMITS } from "@shared/sessionLibrary";
 import CirclePicker from "@/components/circles/CirclePicker";
 import GrowingText from "./GrowingText";
 import { BTN_PRIMARY, BTN_QUIET, HINT, INPUT, LABEL, UNDER_BOX } from "./roomUi";
+import { AIM_DEFS, LIBRARY_COPY } from "./libraryCopy";
 
 /** The value the circle select sends for "No circle in particular". "" is "not chosen yet". */
 const NO_CIRCLE = "none";

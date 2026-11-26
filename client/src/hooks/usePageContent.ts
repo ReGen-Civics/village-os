@@ -10,6 +10,7 @@ import { markMachineTranslated } from "@/i18n/machineTranslation";
 import { pageVarsFrom } from "@shared/pageContent/vars";
 import { withPathNames } from "@shared/pageContent/pathNames";
 import { servedPathsFrom } from "@/hooks/useVillagePaths";
+import { translatedPaths, usePathFields } from "@/hooks/usePathWords";
 
 /**
  * The `{words}` a page field may use, from the village's own settings. The
@@ -143,6 +144,7 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
     };
   }, [spec, locale]);
   const translation = translated && translated.locale === locale ? translated.t : null;
+  const pathFields = usePathFields();
   // Words a machine drafted are marked (machineTranslation.tsx): the layout's note shows while any are on the page.
   const machine = (translation?.machine.length ?? 0) > 0;
   useEffect(() => {
@@ -155,7 +157,7 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
   return useMemo(() => {
     if (!vars || !stored || !translation) return null;
     const raw = overlayPageRaw(resolvePageRaw(spec, stored.doc), translation.fields);
-    const page = withPathNames(spec, stored.doc, fillPage(raw, vars), servedPathsFrom(config));
+    const page = withPathNames(spec, stored.doc, fillPage(raw, vars), translatedPaths(servedPathsFrom(config), pathFields));
     return withoutLinksToHiddenPages(spec, page, (href) => !storyPageOffAlone(config, href));
-  }, [spec, stored, vars, config, translation]);
+  }, [spec, stored, vars, config, translation, pathFields]);
 }

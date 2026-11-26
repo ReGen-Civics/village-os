@@ -16,8 +16,8 @@ import { createContext, useContext, useId, useState } from "react";
 import { Pencil } from "lucide-react";
 import { QUIET_BUTTON, TAP } from "@/components/playerCard/cardParts";
 import { gameFetch } from "@/lib/gameApi";
-import { CIRCLE_CARD_WORDS as W } from "@shared/circleCardWords";
-import { circleWordLabel, parseCircleWord, type CircleWordKey } from "@shared/circleCharterParse";
+import { circleWordLabelIn, circleWordsIn, useCircleWords } from "./circleWords";
+import { parseCircleWord, type CircleWordKey } from "@shared/circleCharterParse";
 
 export interface CircleEditState {
   /** The proposer has "Propose new words" switched on. */
@@ -40,15 +40,16 @@ export async function proposeCircleWords(circleId: string, key: CircleWordKey, t
     });
     if (res.ok) return { ok: true };
     const out = await res.json().catch(() => null);
-    return { ok: false, error: String(out?.message ?? W.proposeFailed) };
+    return { ok: false, error: String(out?.message ?? circleWordsIn().proposeFailed) };
   } catch {
-    return { ok: false, error: W.proposeFailed };
+    return { ok: false, error: circleWordsIn().proposeFailed };
   }
 }
 
 /** "Proposed, waiting for consent", beside a word an open draft would change. */
 export function PendingWords({ wordKey }: { wordKey: CircleWordKey }) {
   const { pending } = useContext(CircleEditContext);
+  const W = useCircleWords();
   if (!pending.includes(wordKey)) return null;
   return <p className="mt-1 text-sm font-medium text-notice">{W.pending}</p>;
 }
@@ -56,13 +57,14 @@ export function PendingWords({ wordKey }: { wordKey: CircleWordKey }) {
 /** The proposer's control beside one word. Draws nothing until "Propose new words" is on. */
 export function ProposeWords({ wordKey, initial }: { wordKey: CircleWordKey; initial: string }) {
   const { editing, circleId, reload } = useContext(CircleEditContext);
+  const W = useCircleWords();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   const id = useId();
   if (!editing) return null;
-  const label = circleWordLabel(wordKey);
+  const label = circleWordLabelIn(wordKey);
   const single = wordKey === "purpose" || wordKey === "existsWhile";
   const hint = wordKey === "values" ? W.valuesHint : single ? null : W.oneLine;
 

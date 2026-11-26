@@ -33,16 +33,7 @@
  */
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ThumbsDown, ThumbsUp } from "lucide-react";
-import {
-  AIM_DEFS,
-  ITEM_AIMS,
-  SESSION_COPY,
-  SESSION_LIMITS,
-  cleanLine,
-  type ItemAim,
-  type SessionItem,
-} from "@shared/sessions";
-import { LIBRARY_COPY } from "@shared/sessionLibrary";
+import { ITEM_AIMS, SESSION_COPY, SESSION_LIMITS, cleanLine, type ItemAim, type SessionItem } from "@shared/sessions";
 import { VOTE_COPY, nextVote, voteScore } from "@shared/sessionVotes";
 import GrowingText from "./GrowingText";
 import FilledInNote from "./FilledInNote";
@@ -66,6 +57,7 @@ import {
 } from "./roomUi";
 import type { ItemPatch } from "./useSessionRoom";
 import { useRoomWords } from "@/components/sessions/roomWords";
+import { AIM_DEFS, LIBRARY_COPY } from "./libraryCopy";
 
 const clampMinutes = (n: number) =>
   Math.min(SESSION_LIMITS.minutesMax, Math.max(SESSION_LIMITS.minutesMin, Math.round(Number.isFinite(n) ? n : SESSION_LIMITS.minutesMin)));
