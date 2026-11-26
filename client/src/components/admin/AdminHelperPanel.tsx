@@ -8,8 +8,8 @@
  * the page name or the corner menu.
  *
  * Three states, and the component test walks each one:
- *   off        the village has not switched the helper on (the dial
- *              `platform.admin_helper`, off by default), or has no key of its
+ *   off        the village switched the helper off (the dial
+ *              `platform.admin_helper`, on by default), or has no key of its
  *              own yet: plain steps for whichever is missing.
  *   ready      a conversation. The guide answers, and may offer a page to open.
  *   proposing  the guide's answer carries ONE change, drawn as a card with the
