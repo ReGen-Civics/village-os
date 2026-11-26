@@ -110,7 +110,10 @@ describe("the corner, drawn", () => {
     const visitor = screen.getByRole("button", { name: "Open help" }).className.split(/\s+/);
     expect(visitor).toContain("items-center");
     expect(visitor).not.toContain("items-end");
-    expect(screen.getByRole("button", { name: "Open help" }).querySelector("svg.living-scarlet-macaw")).not.toBeNull();
+    const bird = screen.getByRole("button", { name: "Open help" }).querySelector("svg.living-scarlet-macaw");
+    expect(bird).not.toBeNull();
+    // A bit bigger in its circle (the lead, 26 Nov 2026): 40px of the 56.
+    expect(bird?.getAttribute("class")).toContain("size-10");
     cleanup();
     session.user = { id: "u1", name: "Ana" };
     session.companions = [companion("1", "Scarlet")];
