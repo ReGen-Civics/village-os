@@ -1,6 +1,6 @@
 import { compileMessage } from "@lingui/message-utils/compileMessage";
 import { describe, expect, it } from "vitest";
-import { precompileMessages } from "./precompileEnglish";
+import { mirrorSpans, precompileMessages, stripMirrorMessages } from "./precompileEnglish";
 
 describe("precompileMessages: English compiled at build, so no compiler ships (spec §8 R5, R8)", () => {
   it("replaces each macro descriptor's message with Lingui's own compiled form", () => {
@@ -70,5 +70,60 @@ describe("precompileMessages: English compiled at build, so no compiler ships (s
 
   it("refuses a message that does not compile, naming it", () => {
     expect(() => precompileMessages(`t({ id: "AbCdEf", message: "{count, plural, one {x}" })`)).toThrow(/AbCdEf/);
+  });
+});
+
+describe("stripMirrorMessages: a word-table mirror ships its ids, the shared table ships the English", () => {
+  // The macro's output for a mirror file (client/src/i18n/wordTable.ts), with a descriptor outside the mirror too.
+  const code = [
+    `const NOT_SENT = { gone: { id: "Out0aa", message: "It was not sent." } };`,
+    `export const M = mirrorOf(() => SHARED, { heading: { id: "In00aa", message: "Your task board" },`,
+    `  count: (n) => ({ id: "In00bb", values: { n }, message: "{n, plural, one {# task} other {# tasks}}" }),`,
+    `  long: { id: "In00cc", message: "A sentence long enough that the split would otherwise move it out of the chunk." } });`,
+  ].join("\n");
+
+  it("drops every message inside mirrorOf(...) and keeps the id and values", () => {
+    const long: string[] = [];
+    const out = stripMirrorMessages(code, (id) => long.push(id));
+    expect(out).toContain(`heading: { id: "In00aa" }`);
+    expect(out).toContain(`({ id: "In00bb", values: { n } })`);
+    expect(out).toContain(`long: { id: "In00cc" }`);
+    expect(out).not.toContain("Your task board");
+    expect(out).not.toContain("plural");
+    // Dropped English is not moved to a part either: the shared table already ships it.
+    expect(long).toEqual([]);
+  });
+
+  it("keeps and compiles a descriptor outside the mirror, which has no shared entry behind it", () => {
+    const out = stripMirrorMessages(code);
+    expect(out).toContain(`{ id: "Out0aa", message: ${JSON.stringify(compileMessage("It was not sent."))} }`);
+  });
+
+  it("finds each mirrorOf call's span and nothing else", () => {
+    const spans = mirrorSpans(code);
+    expect(spans).toHaveLength(1);
+    const [a, b] = spans[0];
+    expect(code[a]).toBe("(");
+    expect(code[b]).toBe(")");
+    expect(code.slice(a + 1)).toMatch(/^\(\) => SHARED, \{ heading/);
+    expect(b).toBe(code.lastIndexOf(")"));
+    expect(code.indexOf("Out0aa")).toBeLessThan(a);
+  });
+
+  it("drops the messages of a map keyed by its English, whose keys ship them", () => {
+    const keyed = `export const W = englishKeyed({ "Roles": { id: "Key0aa", message: "Roles" }, "The terms on offer": { id: "Key0bb", message: "The terms on offer" } });`;
+    const out = stripMirrorMessages(keyed);
+    expect(out).toContain(`"Roles": { id: "Key0aa" }`);
+    expect(out).toContain(`"The terms on offer": { id: "Key0bb" }`);
+    expect(out).not.toContain("message");
+  });
+
+  it("still refuses a mirror message that does not compile, naming it", () => {
+    expect(() => stripMirrorMessages(`mirrorOf(() => S, { x: { id: "Bad0aa", message: "{n, plural, one" } })`)).toThrow(/Bad0aa/);
+  });
+
+  it("leaves a file without a mirror exactly as precompileMessages does", () => {
+    const plain = `t({ id: "L2CVk3", message: "Skip to content" })`;
+    expect(stripMirrorMessages(plain)).toBe(precompileMessages(plain));
   });
 });

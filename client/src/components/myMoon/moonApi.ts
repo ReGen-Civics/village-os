@@ -23,7 +23,6 @@ import { gameFetch } from "@/lib/gameApi";
 import {
   EMPTY_SETTINGS,
   MOON_ROUTES,
-  PACK_REFUSAL_WORDS,
   attestationWords,
   type AskSeraResponse,
   type SeenAmounts,
@@ -52,8 +51,8 @@ import {
   type TakeBackResponse,
   type ThanksEntry,
   type WorkReviewRequest,
-  MY_MOON_WORDS,
 } from "@shared/moonRecap";
+import { moonWords } from "@/components/myMoon/moonWords";
 
 export type Answer<T> = { ok: true; data: T } | { ok: false; status: number; error: string; code: string | null };
 
@@ -68,13 +67,13 @@ export type QueueRowView = QueueRow & {
 };
 export type QueueData = Omit<QueueResponse, "rows"> & { rows: QueueRowView[] };
 
-const isPackCode = (v: unknown): v is PackRefusalCode => typeof v === "string" && v in PACK_REFUSAL_WORDS;
+const isPackCode = (v: unknown): v is PackRefusalCode => typeof v === "string" && v in moonWords().packRefusal;
 
 /** A refusal as a sentence: the server's `message`, a pack code's words, or the page's fallback. Never a bare code. */
-export function refusalWords(body: unknown, fallback: string = MY_MOON_WORDS.failed): string {
+export function refusalWords(body: unknown, fallback: string = moonWords().myMoon.failed): string {
   const b = (body ?? {}) as { message?: unknown; error?: unknown };
   if (typeof b.message === "string" && b.message.trim()) return b.message.trim();
-  if (isPackCode(b.error)) return PACK_REFUSAL_WORDS[b.error];
+  if (isPackCode(b.error)) return moonWords().packRefusal[b.error];
   // A sentence the server sent as `error` (the contract's words carry a space and end in a stop).
   if (typeof b.error === "string" && /\s/.test(b.error) && /[.!?]$/.test(b.error.trim())) return b.error.trim();
   return fallback;
@@ -92,7 +91,7 @@ export async function call<T>(path: string, method: Method = "GET", body?: unkno
     }
     return { ok: true, data: out as T };
   } catch {
-    return { ok: false, status: 0, error: MY_MOON_WORDS.failed, code: null };
+    return { ok: false, status: 0, error: moonWords().myMoon.failed, code: null };
   }
 }
 
@@ -150,7 +149,7 @@ export function normalizeMyMoon(raw: Partial<MyMoonData> & Pick<MyMoonData, "moo
 export async function fetchMyMoon(cycle: string | null): Promise<Answer<MyMoonData>> {
   const r = await call<MyMoonData>(withCycle(MOON_ROUTES.myMoon, cycle));
   if (!r.ok) return r;
-  if (!r.data || typeof r.data !== "object" || !r.data.moon) return { ok: false, status: 0, error: MY_MOON_WORDS.failed, code: null };
+  if (!r.data || typeof r.data !== "object" || !r.data.moon) return { ok: false, status: 0, error: moonWords().myMoon.failed, code: null };
   return { ok: true, data: normalizeMyMoon(r.data) };
 }
 export const gather = (cycle: string) => call<GatherResponse>(door(MOON_ROUTES.gather, { cycle }), "POST", {});
@@ -192,7 +191,7 @@ export async function fetchVillageRoles(): Promise<Array<{ id: string; name: str
 export async function fetchQueue(cycle: string | null, init: RequestInit = {}): Promise<Answer<QueueData>> {
   const r = await call<QueueData>(withCycle(MOON_ROUTES.queue, cycle), "GET", undefined, init);
   if (!r.ok) return r;
-  if (!r.data || typeof r.data !== "object" || !r.data.moon) return { ok: false, status: 0, error: MY_MOON_WORDS.failed, code: null };
+  if (!r.data || typeof r.data !== "object" || !r.data.moon) return { ok: false, status: 0, error: moonWords().myMoon.failed, code: null };
   return { ok: true, data: { ...r.data, rows: r.data.rows ?? [], rolesWithNoItems: r.data.rolesWithNoItems ?? [], noEligible: r.data.noEligible ?? [] } };
 }
 export const reviewWork = (recap: string, body: WorkReviewRequest, init: RequestInit = {}) => call<unknown>(door(MOON_ROUTES.work, { recap }), "POST", body, init);

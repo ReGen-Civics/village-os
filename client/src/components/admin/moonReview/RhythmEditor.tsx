@@ -8,13 +8,13 @@
  * Light-only, like the rest of this folder.
  */
 import { useEffect, useState } from "react";
-import { ADMIN_WORDS } from "@shared/moonRecap";
+
 import type { RhythmDoc } from "@shared/moonRhythm";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
 import { buttonClass, inputClass, labelClass, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
-const W = ADMIN_WORDS.rhythm;
 
 interface Draft {
   sendHour: string;
@@ -39,6 +39,7 @@ export const fromDraft = (d: Draft): RhythmDoc => ({
 });
 
 export default function RhythmEditor({ password }: { password: string }) {
+  const W = useMoonWords().admin.rhythm;
   const { state, save, saving, message } = useSettingsDocument<RhythmDoc>("rhythm", password);
   const [d, setD] = useState<Draft | null>(null);
 
