@@ -16,7 +16,7 @@
  * motion asked for, the lights hold still and the words carry it.
  */
 import { useEffect, useRef, useState } from "react";
-import { ROOM_COPY, SIT_MINUTES, SIT_SETTLE_SECS, sitAt, type SessionState, type SitMoment } from "@shared/sessions";
+import { SIT_MINUTES, SIT_SETTLE_SECS, sitAt, type SessionState, type SitMoment } from "@shared/sessions";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import { radioArrows } from "@/lib/radioArrows";
 import { ringBell, unlockBell } from "@/lib/bowlBell";
@@ -24,6 +24,7 @@ import { isMuted } from "@/lib/sound";
 import ChakraFigure, { chakraLight } from "./ChakraFigure";
 import { BTN_PRIMARY, BTN_SECONDARY, H3, HINT, LABEL, tile } from "./roomUi";
 import { useRoomNow, type RoomActions } from "./useSessionRoom";
+import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
 
 /** A late screen still hears the start this many seconds in, and the end this many after. */
 const START_BELL_WINDOW = 15;
@@ -38,8 +39,8 @@ export function bellFor(before: SitMoment["state"], now: SitMoment): "start" | "
 
 /** What a screen reader hears: the start and the end, once each. */
 export function sitAnnouncement(m: SitMoment, minutes: number): string {
-  if (m.state === "sitting") return ROOM_COPY.sitStartedSay(minutes);
-  if (m.state === "done") return ROOM_COPY.sitEndedSay;
+  if (m.state === "sitting") return roomWords().sitStartedSay(minutes);
+  if (m.state === "done") return roomWords().sitEndedSay;
   return "";
 }
 
@@ -51,6 +52,7 @@ export interface SharedSitProps {
 }
 
 export default function SharedSit({ sit, offset, facilitates, actions }: SharedSitProps) {
+  const RC = useRoomWords();
   const reduced = useReducedMotion();
   const probe = sitAt(sit, Date.now() + offset);
   // Four beats a second while the lights move, once a second otherwise.
@@ -94,7 +96,7 @@ export default function SharedSit({ sit, offset, facilitates, actions }: SharedS
   return (
     <section aria-labelledby="sit-title" className="space-y-4">
       <h3 id="sit-title" className={H3}>
-        {ROOM_COPY.sitTitle}
+        {RC.sitTitle}
       </h3>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {sitAnnouncement(moment, sit.minutes)}
@@ -103,25 +105,25 @@ export default function SharedSit({ sit, offset, facilitates, actions }: SharedS
         <ChakraFigure light={chakraLight(moment, reduced)} motion={!reduced} />
         {moment.state === "sitting" && (
           <div className="text-center">
-            <p className="font-display text-4xl tabular-nums text-foreground">{ROOM_COPY.sitLeft(moment.secondsLeft)}</p>
-            <p className={HINT}>{ROOM_COPY.sitLeftHint}</p>
-            <p className={`${HINT} mt-2 max-w-sm`}>{ROOM_COPY.sitSitting}</p>
+            <p className="font-display text-4xl tabular-nums text-foreground">{RC.sitLeft(moment.secondsLeft)}</p>
+            <p className={HINT}>{RC.sitLeftHint}</p>
+            <p className={`${HINT} mt-2 max-w-sm`}>{RC.sitSitting}</p>
           </div>
         )}
-        {moment.state === "done" && <p className="text-center font-display text-2xl text-foreground">{ROOM_COPY.sitDone}</p>}
-        {moment.state === "idle" && <p className={`${HINT} max-w-sm text-center`}>{ROOM_COPY.sitIdle}</p>}
+        {moment.state === "done" && <p className="text-center font-display text-2xl text-foreground">{RC.sitDone}</p>}
+        {moment.state === "idle" && <p className={`${HINT} max-w-sm text-center`}>{RC.sitIdle}</p>}
         <button type="button" className={tile(bell)} aria-pressed={bell} onClick={() => void toggleBell()}>
-          {bell ? ROOM_COPY.bellOn : ROOM_COPY.bellOff}
+          {bell ? RC.bellOn : RC.bellOff}
         </button>
-        {!bell && !muted && <p className={`${HINT} max-w-sm text-center`}>{ROOM_COPY.bellHint}</p>}
-        {muted && <p className={`${HINT} max-w-sm text-center`}>{ROOM_COPY.bellMuted}</p>}
+        {!bell && !muted && <p className={`${HINT} max-w-sm text-center`}>{RC.bellHint}</p>}
+        {muted && <p className={`${HINT} max-w-sm text-center`}>{RC.bellMuted}</p>}
       </div>
 
       {facilitates && (
         <div className="flex flex-wrap items-end justify-center gap-4">
           <div>
             <p id="sit-minutes" className={LABEL}>
-              {ROOM_COPY.sitMinutes}
+              {RC.sitMinutes}
             </p>
             <div role="radiogroup" aria-labelledby="sit-minutes" className="mt-1 flex gap-2">
               {SIT_MINUTES.map((m) => (
@@ -130,7 +132,7 @@ export default function SharedSit({ sit, offset, facilitates, actions }: SharedS
                   type="button"
                   role="radio"
                   aria-checked={minutes === m}
-                  aria-label={ROOM_COPY.sitMinutesWord(m)}
+                  aria-label={RC.sitMinutesWord(m)}
                   tabIndex={minutes === m ? 0 : -1}
                   className={`${tile(minutes === m)} min-w-11 tabular-nums`}
                   disabled={busy}
@@ -144,11 +146,11 @@ export default function SharedSit({ sit, offset, facilitates, actions }: SharedS
           </div>
           {moment.state === "sitting" ? (
             <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void run(false)}>
-              {ROOM_COPY.sitStop}
+              {RC.sitStop}
             </button>
           ) : (
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void run(true)}>
-              {moment.state === "done" ? ROOM_COPY.sitAgain : ROOM_COPY.sitStart}
+              {moment.state === "done" ? RC.sitAgain : RC.sitStart}
             </button>
           )}
         </div>

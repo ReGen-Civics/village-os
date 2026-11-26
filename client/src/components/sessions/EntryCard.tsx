@@ -26,7 +26,7 @@
 import { useState, type ReactNode } from "react";
 import FilledInNote from "./FilledInNote";
 import { X } from "lucide-react";
-import { ENTRY_LABELS, ROOM_COPY, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, cleanText, type SessionEntry } from "@shared/sessions";
+import { ENTRY_LABELS, SESSION_LIMITS, SESSION_REFUSALS, cleanLine, cleanText, type SessionEntry } from "@shared/sessions";
 import EditableText from "./EditableText";
 import {
   BTN_ICON,
@@ -42,6 +42,7 @@ import {
   nameOf,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export interface EntryCardProps extends Omit<StageProps, "now"> {
   entry: SessionEntry;
@@ -68,6 +69,7 @@ export interface EntryCardProps extends Omit<StageProps, "now"> {
 const TILE_OPEN = "has-[textarea]:border-notice/60 has-[textarea]:ring-1 has-[textarea]:ring-notice/30";
 
 export default function EntryCard({ view, actions, entry, label, singleLine = false, extra, quote = false, readOnly = false, muted = false }: EntryCardProps) {
+  const RC = useRoomWords();
   const [removing, setRemoving] = useState(false);
   const rights = entryRightsFor(view, entry);
   const decided = entry.kind === "decision" && entry.status === "done";
@@ -113,7 +115,7 @@ export default function EntryCard({ view, actions, entry, label, singleLine = fa
           bare
           tools={
             mayRemove ? (
-              <button type="button" className={BTN_ICON} aria-label={ROOM_COPY.remove} disabled={removing} onClick={() => void remove()}>
+              <button type="button" className={BTN_ICON} aria-label={RC.remove} disabled={removing} onClick={() => void remove()}>
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             ) : null

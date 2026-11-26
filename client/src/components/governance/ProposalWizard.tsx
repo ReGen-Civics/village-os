@@ -50,6 +50,7 @@ import { pickedSeats } from "./SeatPicksField";
 import { offerPrefill, renewalPrefill } from "./roleApplicationType";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useWizardWords } from "@/components/governance/wizardWords";
 
 const AUTOSAVE_PAUSE_MS = 1500;
 
@@ -87,6 +88,7 @@ export interface WizardStart {
 }
 
 export default function ProposalWizard({ start = null, leaveTo = "/governance/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
+  const ww = useWizardWords();
   const { t } = useLingui();
   const [, navigate] = useLocation();
 
@@ -431,7 +433,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
     if (draftIdRef.current) await apiDeleteDraft(draftIdRef.current);
     draftIdRef.current = null;
     setDirty(false);
-    setPublished({ id: answer.data?.id, title: String(answers.title ?? cfg.title) });
+    setPublished({ id: answer.data?.id, title: String(answers.title ?? ww(cfg.title)) });
     setBusy(false);
   };
 
@@ -505,12 +507,12 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
 
         {stepMeta && step !== "type" && step !== "review" && (
           <h2 ref={stepHeadingRef} tabIndex={-1} className="mb-2 font-display text-xl font-bold text-foreground focus:outline-none">
-            {stepMeta.label}
+            {ww(stepMeta.label)}
           </h2>
         )}
 
         {stepMeta?.intro && step !== "type" && (
-          <p className="mb-4 text-foreground leading-relaxed">{stepMeta.intro}</p>
+          <p className="mb-4 text-foreground leading-relaxed">{ww(stepMeta.intro)}</p>
         )}
 
         {step === "type" && (
@@ -624,7 +626,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
                             : String(v ?? "");
                   return (
                     <div key={field.key} className="flex flex-wrap gap-x-4 gap-y-1 p-3">
-                      <dt className="w-40 shrink-0 text-sm font-medium text-muted-foreground">{field.label}</dt>
+                      <dt className="w-40 shrink-0 text-sm font-medium text-muted-foreground">{ww(field.label)}</dt>
                       <dd className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground">
                         {shown || <span className="text-muted-foreground"><Trans context="ProposalWizard, span">Left blank</Trans></span>}
                       </dd>
@@ -634,7 +636,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
                         className="min-h-[44px] shrink-0 rounded-lg px-3 text-sm font-medium text-notice hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Trans context="ProposalWizard, button">Change
-                        <span className="sr-only"> {field.label}</span></Trans>
+                        <span className="sr-only"> {ww(field.label)}</span></Trans>
                       </button>
                     </div>
                   );
@@ -654,7 +656,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
                         onClick={() => void goTo(p.step)}
                         className="min-h-[44px] w-full rounded-lg px-2 text-left text-sm text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <strong>{p.label}:</strong> {p.message}
+                        <strong>{ww(p.label)}:</strong> {p.message}
                         <span className="sr-only"><Trans context="ProposalWizard, span">. Go to this step</Trans></span>
                       </button>
                     </li>
@@ -667,7 +669,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
 
             <div className="rounded-xl border border-border bg-muted p-4">
               <p className="text-sm font-semibold text-foreground"><Trans context="ProposalWizard, p">What publishing does</Trans></p>
-              <p className="mt-1 text-sm text-foreground leading-relaxed">{cfg.consequence}</p>
+              <p className="mt-1 text-sm text-foreground leading-relaxed">{ww(cfg.consequence)}</p>
               {/* A type whose route opens the ballot itself says so in its
                   consequence, and this sentence would contradict it. */}
               {!cfg.opensVote && (
@@ -718,7 +720,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/governance/de
               className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {busy ? <BreathingLoader decorative size={16} /> : <Send className="w-4 h-4" aria-hidden="true" />}
-              {cfg?.publishLabel ?? "Put it in front of the village"}
+              {ww(cfg?.publishLabel) ?? "Put it in front of the village"}
             </button>
           ) : (
             nextStep(type, step, answers) && (
