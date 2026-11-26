@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.81 (2026-11-26)
+
+### What changed for your village
+
+- **More Spanish:** a role card's parameter rows, the module builder's steps, and the moon recap.
+- **A lighter download.** Words that already ship in English are no longer sent a second time.
+- **Fix:** the macaw in the corner button sits in the centre of its circle.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.80 still works.
+
+---
+
 ## 1.3.80 (2026-11-26)
 
 ### What changed for your village

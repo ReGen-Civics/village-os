@@ -10,19 +10,12 @@
  */
 import { useEffect, useState } from "react";
 import {
-  CARRY_FLAG_WORDS,
-  GOAL_STATUS_WORDS,
   GOALS_MAX,
   GOALS_MIN,
   ITEM_VISIBILITIES,
-  ITEM_VISIBILITY_WORDS,
   LET_GO_NEEDS_REASON,
   LIMITS,
-  MOON_WORDS,
-  MY_MOON_WORDS,
-  ROLE_AUDIT_WORDS,
   THANKS_MAX,
-  THANKS_WORDS,
   carriedTooOften,
   fillSignalWords,
   scoreWords,
@@ -37,6 +30,7 @@ import {
 } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import { ERROR, INPUT, LABEL, LINK, MemberOnly, MUTED, SMALL_BTN, SMALL_BTN_ON, Section } from "./moonUi";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 // ── The role audit ──────────────────────────────────────────────────────────
 
@@ -50,6 +44,7 @@ export function RoleAuditPanel({ roles, audit, onChange, outsideRoles, villageRo
   villageRoles: ReadonlyArray<{ id: string; name: string }>;
   editable: boolean;
 }) {
+  const MW = useMoonWords();
   const entry = (roleId: string) => audit.roles.find((r) => r.roleId === roleId) ?? null;
   const setEntry = (roleId: string, patch: Partial<{ choice: RoleAuditChoice; note: string | null }> | null) => {
     const rest = audit.roles.filter((r) => r.roleId !== roleId);
@@ -70,13 +65,13 @@ export function RoleAuditPanel({ roles, audit, onChange, outsideRoles, villageRo
         <div className="flex flex-wrap gap-2">
           {choices.map((c) => (
             <button key={c} type="button" disabled={!editable} aria-pressed={e?.choice === c} className={e?.choice === c ? SMALL_BTN_ON : SMALL_BTN} onClick={() => (e?.choice === c && c === "fill" ? setEntry(roleId, null) : setEntry(roleId, { choice: c }))}>
-              {ROLE_AUDIT_WORDS[c]}
+              {MW.roleAudit[c]}
             </button>
           ))}
         </div>
         {e ? (
           <label className={LABEL}>
-            {MY_MOON_WORDS.auditNote}
+            {MW.myMoon.auditNote}
             <input value={e.note ?? ""} readOnly={!editable} maxLength={LIMITS.roleAuditNote} onChange={(ev) => setEntry(roleId, { note: ev.target.value || null })} className={INPUT} />
           </label>
         ) : null}
@@ -85,31 +80,31 @@ export function RoleAuditPanel({ roles, audit, onChange, outsideRoles, villageRo
   };
 
   return (
-    <Section title={MOON_WORDS.roleAudit}>
+    <Section title={MW.moon.roleAudit}>
       {roles.map((r) => choiceRow(r.roleId, HELD_CHOICES, r.name))}
       {outsideRoles.fill.map((f) => <p key={f.roleId} className={MUTED}>{fillSignalWords(f.name, f.count)}</p>)}
       {fillRoles.map((id) => choiceRow(id, ["fill"], nameOf(id)))}
 
       <div className="flex flex-col gap-2">
-        <h4 className="m-0 text-base font-semibold text-foreground">{MOON_WORDS.newRole}</h4>
+        <h4 className="m-0 text-base font-semibold text-foreground">{MW.moon.newRole}</h4>
         {unplaced.length > 0 ? (
           <p className={MUTED}>
-            {MY_MOON_WORDS.auditPrefilled}: {unplaced.map((i) => i.text).join("; ")}
+            {MW.myMoon.auditPrefilled}: {unplaced.map((i) => i.text).join("; ")}
           </p>
         ) : null}
         {audit.newRoles.map((n, idx) => (
           <div key={idx} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_2fr_auto]">
-            <input aria-label={MY_MOON_WORDS.newRoleName} placeholder={MY_MOON_WORDS.newRoleName} value={n.name} readOnly={!editable} maxLength={LIMITS.newRoleName} className={INPUT}
+            <input aria-label={MW.myMoon.newRoleName} placeholder={MW.myMoon.newRoleName} value={n.name} readOnly={!editable} maxLength={LIMITS.newRoleName} className={INPUT}
               onChange={(e) => onChange({ ...audit, newRoles: audit.newRoles.map((x, i) => (i === idx ? { ...x, name: e.target.value } : x)) })} />
-            <input aria-label={MY_MOON_WORDS.newRoleWhy} placeholder={MY_MOON_WORDS.newRoleWhy} value={n.why ?? ""} readOnly={!editable} maxLength={LIMITS.roleAuditNote} className={INPUT}
+            <input aria-label={MW.myMoon.newRoleWhy} placeholder={MW.myMoon.newRoleWhy} value={n.why ?? ""} readOnly={!editable} maxLength={LIMITS.roleAuditNote} className={INPUT}
               onChange={(e) => onChange({ ...audit, newRoles: audit.newRoles.map((x, i) => (i === idx ? { ...x, why: e.target.value || null } : x)) })} />
-            <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => onChange({ ...audit, newRoles: audit.newRoles.filter((_, i) => i !== idx) })}>{MY_MOON_WORDS.remove}</button>
+            <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => onChange({ ...audit, newRoles: audit.newRoles.filter((_, i) => i !== idx) })}>{MW.myMoon.remove}</button>
           </div>
         ))}
         {audit.newRoles.length < LIMITS.newRoles ? (
           <button type="button" className={`${SMALL_BTN} self-start`} disabled={!editable}
             onClick={() => onChange({ ...audit, newRoles: [...audit.newRoles, { name: unplaced[audit.newRoles.length]?.text.slice(0, LIMITS.newRoleName) ?? "", why: null }] })}>
-            {MY_MOON_WORDS.addNewRole}
+            {MW.myMoon.addNewRole}
           </button>
         ) : null}
       </div>
@@ -123,6 +118,7 @@ export function RoleAuditPanel({ roles, audit, onChange, outsideRoles, villageRo
 export const gratitudeHref = (handle: string | null) => (handle ? `/gratitude?to=${encodeURIComponent(`@${handle}`)}` : "/gratitude");
 
 export function ThanksPanel({ thanks, onChange, editable }: { thanks: ThanksEntry[]; onChange: (t: ThanksEntry[]) => void; editable: boolean }) {
+  const MW = useMoonWords();
   const [q, setQ] = useState("");
   const [found, setFound] = useState<Array<{ userId: string; name: string; handle: string | null }>>([]);
   const [known, setKnown] = useState<Record<string, { name: string; handle: string | null }>>({});
@@ -147,24 +143,24 @@ export function ThanksPanel({ thanks, onChange, editable }: { thanks: ThanksEntr
   const set = (idx: number, patch: Partial<ThanksEntry>) => onChange(thanks.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
 
   return (
-    <Section title={THANKS_WORDS.heading}>
+    <Section title={MW.thanks.heading}>
       {thanks.length > 0 ? (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {thanks.map((t, idx) => {
-            const who = t.userId ? known[t.userId]?.name ?? t.name ?? MY_MOON_WORDS.none : t.name ?? "";
+            const who = t.userId ? known[t.userId]?.name ?? t.name ?? MW.myMoon.none : t.name ?? "";
             return (
               <li key={`${t.userId ?? t.name}-${idx}`} className="flex flex-col gap-2 rounded-lg border border-border p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="m-0 text-sm font-semibold text-foreground">{who}</p>
                   <div className="flex flex-wrap gap-2">
-                    {t.userId ? <a className={`${LINK} text-sm`} href={gratitudeHref(known[t.userId]?.handle ?? null)}>{THANKS_WORDS.sendGratitude}</a> : null}
-                    <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => onChange(thanks.filter((_, i) => i !== idx))}>{MY_MOON_WORDS.remove}</button>
+                    {t.userId ? <a className={`${LINK} text-sm`} href={gratitudeHref(known[t.userId]?.handle ?? null)}>{MW.thanks.sendGratitude}</a> : null}
+                    <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => onChange(thanks.filter((_, i) => i !== idx))}>{MW.myMoon.remove}</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-[2fr_1fr]">
-                  <input aria-label={MY_MOON_WORDS.thanksNote} placeholder={MY_MOON_WORDS.thanksNote} value={t.note ?? ""} maxLength={200} readOnly={!editable} onChange={(e) => set(idx, { note: e.target.value || null })} className={INPUT} />
-                  <select aria-label={MY_MOON_WORDS.whoSees} value={t.visibility} disabled={!editable} onChange={(e) => set(idx, { visibility: e.target.value as ItemVisibility })} className={INPUT}>
-                    {ITEM_VISIBILITIES.map((v) => <option key={v} value={v}>{ITEM_VISIBILITY_WORDS[v]}</option>)}
+                  <input aria-label={MW.myMoon.thanksNote} placeholder={MW.myMoon.thanksNote} value={t.note ?? ""} maxLength={200} readOnly={!editable} onChange={(e) => set(idx, { note: e.target.value || null })} className={INPUT} />
+                  <select aria-label={MW.myMoon.whoSees} value={t.visibility} disabled={!editable} onChange={(e) => set(idx, { visibility: e.target.value as ItemVisibility })} className={INPUT}>
+                    {ITEM_VISIBILITIES.map((v) => <option key={v} value={v}>{MW.itemVisibility[v]}</option>)}
                   </select>
                 </div>
               </li>
@@ -175,7 +171,7 @@ export function ThanksPanel({ thanks, onChange, editable }: { thanks: ThanksEntr
       {!full ? (
         <div className="flex flex-col gap-2">
           <label className={LABEL}>
-            {MY_MOON_WORDS.thanksFind}
+            {MW.myMoon.thanksFind}
             <input value={q} readOnly={!editable} onChange={(e) => setQ(e.target.value)} className={INPUT} />
           </label>
           {found.length > 0 ? (
@@ -187,10 +183,10 @@ export function ThanksPanel({ thanks, onChange, editable }: { thanks: ThanksEntr
               ))}
             </ul>
           ) : null}
-          <button type="button" className={`${SMALL_BTN} self-start`} disabled={!editable || !q.trim()} onClick={addName}>{MY_MOON_WORDS.thanksAdd}</button>
+          <button type="button" className={`${SMALL_BTN} self-start`} disabled={!editable || !q.trim()} onClick={addName}>{MW.myMoon.thanksAdd}</button>
         </div>
       ) : null}
-      <p className={MUTED}>{MY_MOON_WORDS.thanksSavedOnSend}</p>
+      <p className={MUTED}>{MW.myMoon.thanksSavedOnSend}</p>
     </Section>
   );
 }
@@ -210,6 +206,7 @@ export function GoalsPanel({ cycleId, last, goalScore, next, seasonGoals, reload
   reload: () => Promise<unknown>;
   editable: boolean;
 }) {
+  const MW = useMoonWords();
   const fromServer = (): DraftGoal[] =>
     [...next].sort((a, b) => Number(!!b.carriedFromId) - Number(!!a.carriedFromId) || a.position - b.position)
       .map((g) => ({ text: g.text, doneWhen: g.doneWhen ?? "", seasonGoalId: g.seasonGoalId ?? "", carriedFromId: g.carriedFromId, carryCount: g.carryCount }));
@@ -234,7 +231,7 @@ export function GoalsPanel({ cycleId, last, goalScore, next, seasonGoals, reload
     const goals = draft.filter((g) => g.text.trim()).map((g) => ({ text: g.text.trim(), doneWhen: g.doneWhen.trim() || null, seasonGoalId: g.seasonGoalId || null, carriedFromId: g.carriedFromId }));
     const r = await api.saveNextGoals(cycleId, goals);
     if (!r.ok) return setError(r.error);
-    setLine(MY_MOON_WORDS.saved);
+    setLine(MW.myMoon.saved);
     await reload();
   };
   const set = (idx: number, patch: Partial<DraftGoal>) => setDraft(draft.map((g, i) => (i === idx ? { ...g, ...patch } : g)));
@@ -243,25 +240,25 @@ export function GoalsPanel({ cycleId, last, goalScore, next, seasonGoals, reload
   return (
     <>
       {last.length > 0 ? (
-        <Section title={MY_MOON_WORDS.lastGoals}>
+        <Section title={MW.myMoon.lastGoals}>
           <MemberOnly>
-            <p className={MUTED}>{MY_MOON_WORDS.goalScoreLine}: {scoreWords(goalScore)}</p>
+            <p className={MUTED}>{MW.myMoon.goalScoreLine}: {scoreWords(goalScore)}</p>
           </MemberOnly>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {last.map((g) => (
               <li key={g.id} className="flex flex-col gap-2 rounded-lg border border-border p-3">
                 <p className="m-0 text-sm font-medium text-foreground">{g.text}</p>
-                {g.doneWhen ? <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.doneWhen}: {g.doneWhen}</p> : null}
-                {g.flagged ? <p className="m-0 text-xs text-destructive">{CARRY_FLAG_WORDS}</p> : null}
+                {g.doneWhen ? <p className="m-0 text-xs text-muted-foreground">{MW.myMoon.doneWhen}: {g.doneWhen}</p> : null}
+                {g.flagged ? <p className="m-0 text-xs text-destructive">{MW.carryFlag}</p> : null}
                 <div className="flex flex-wrap gap-2">
                   {SCORE_CHOICES.map((s) => (
                     <button key={s} type="button" disabled={!editable} aria-pressed={g.status === s} className={g.status === s ? SMALL_BTN_ON : SMALL_BTN} onClick={() => void score(g.id, s)}>
-                      {GOAL_STATUS_WORDS[s]}
+                      {MW.goalStatus[s]}
                     </button>
                   ))}
                 </div>
                 {g.status !== "let_go" ? (
-                  <input aria-label={MY_MOON_WORDS.letGoReason} placeholder={MY_MOON_WORDS.letGoReason} value={reasons[g.id] ?? g.letGoReason ?? ""} readOnly={!editable}
+                  <input aria-label={MW.myMoon.letGoReason} placeholder={MW.myMoon.letGoReason} value={reasons[g.id] ?? g.letGoReason ?? ""} readOnly={!editable}
                     onChange={(e) => setReasons({ ...reasons, [g.id]: e.target.value })} className={INPUT} />
                 ) : g.letGoReason ? <p className="m-0 text-xs text-muted-foreground">{g.letGoReason}</p> : null}
               </li>
@@ -270,37 +267,37 @@ export function GoalsPanel({ cycleId, last, goalScore, next, seasonGoals, reload
         </Section>
       ) : null}
 
-      <Section title={MY_MOON_WORDS.nextGoals}>
-        <p className={MUTED}>{MY_MOON_WORDS.nextGoalsLine}</p>
+      <Section title={MW.myMoon.nextGoals}>
+        <p className={MUTED}>{MW.myMoon.nextGoalsLine}</p>
         <ol className="m-0 flex list-none flex-col gap-3 p-0">
           {draft.map((g, idx) => (
             <li key={idx} className="flex flex-col gap-2 rounded-lg border border-border p-3" data-testid="next-goal">
-              {g.carriedFromId ? <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.carriedTimes(g.carryCount)}</p> : null}
-              {carriedTooOften(g) ? <p className="m-0 text-xs text-destructive">{CARRY_FLAG_WORDS}</p> : null}
+              {g.carriedFromId ? <p className="m-0 text-xs text-muted-foreground">{MW.myMoon.carriedTimes(g.carryCount)}</p> : null}
+              {carriedTooOften(g) ? <p className="m-0 text-xs text-destructive">{MW.carryFlag}</p> : null}
               <label className={LABEL}>
-                {MY_MOON_WORDS.goalText}
+                {MW.myMoon.goalText}
                 <input value={g.text} maxLength={LIMITS.goalText} readOnly={!editable} onChange={(e) => set(idx, { text: e.target.value })} className={INPUT} />
               </label>
               <label className={LABEL}>
-                {MY_MOON_WORDS.doneWhen}
+                {MW.myMoon.doneWhen}
                 <input value={g.doneWhen} maxLength={LIMITS.goalDoneWhen} readOnly={!editable} onChange={(e) => set(idx, { doneWhen: e.target.value })} className={INPUT} />
               </label>
               <label className={LABEL}>
-                {MY_MOON_WORDS.seasonGoal}
+                {MW.myMoon.seasonGoal}
                 <select value={g.seasonGoalId} disabled={!editable} onChange={(e) => set(idx, { seasonGoalId: e.target.value })} className={INPUT}>
-                  <option value="">{MY_MOON_WORDS.none}</option>
+                  <option value="">{MW.myMoon.none}</option>
                   {seasonGoals.map((s) => <option key={s.id} value={s.id}>{s.words}</option>)}
                 </select>
               </label>
-              <button type="button" className={`${SMALL_BTN} self-start`} disabled={!editable} onClick={() => setDraft(draft.filter((_, i) => i !== idx))}>{MY_MOON_WORDS.remove}</button>
+              <button type="button" className={`${SMALL_BTN} self-start`} disabled={!editable} onClick={() => setDraft(draft.filter((_, i) => i !== idx))}>{MW.myMoon.remove}</button>
             </li>
           ))}
         </ol>
         <div className="flex flex-wrap gap-2">
           {draft.length < GOALS_MAX ? (
-            <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => setDraft([...draft, { text: "", doneWhen: "", seasonGoalId: "", carriedFromId: null, carryCount: 0 }])}>{MY_MOON_WORDS.addGoal}</button>
+            <button type="button" className={SMALL_BTN} disabled={!editable} onClick={() => setDraft([...draft, { text: "", doneWhen: "", seasonGoalId: "", carriedFromId: null, carryCount: 0 }])}>{MW.myMoon.addGoal}</button>
           ) : null}
-          <button type="button" className={SMALL_BTN} disabled={!editable || filled < GOALS_MIN || filled > GOALS_MAX} onClick={save}>{MY_MOON_WORDS.saveGoals}</button>
+          <button type="button" className={SMALL_BTN} disabled={!editable || filled < GOALS_MIN || filled > GOALS_MAX} onClick={save}>{MW.myMoon.saveGoals}</button>
         </div>
         {line ? <p className={MUTED} aria-live="polite">{line}</p> : null}
         {error ? <p role="alert" className={ERROR}>{error}</p> : null}

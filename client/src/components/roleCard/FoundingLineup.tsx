@@ -45,6 +45,7 @@ import type { FoundingRole } from "./FoundingTeam";
 import { Domains, FillMeter, OpenPill } from "./lineupParts";
 import FoundingRow from "./FoundingRow";
 import type { FilledRole, LineupView } from "./RosterCards";
+import { cardViewWords } from "@/components/power/cardViewWords";
 
 export type { FilledRole, LineupView };
 
@@ -160,7 +161,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               // The card's own words for where (sections.where) win over the fixed label, as on the opened card.
               const whereWords = r.sections?.where?.trim();
               const tileSeat = whereWords ? { ...r.seat, card: { ...(r.seat.card ?? {}), whereText: whereWords } } : r.seat;
-              const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
+              const where = roleCardView(tileSeat, undefined, cardViewWords(i18n)).rows.find((row) => row.id === "where")?.lines[0] ?? null;
               // The front's kind (its pill) and pay split, never an amount, and the last day to apply (the lead, 23 Nov 2026).
               const kind = frontKind(r.seat, r.sections);
               const applyBy = applyByParts(i18n, r.sections?.applyBy);

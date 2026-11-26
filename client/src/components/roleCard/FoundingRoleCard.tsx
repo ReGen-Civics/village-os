@@ -31,6 +31,7 @@ import RolePieces, { type PieceTab, type RolePiece } from "./RolePieces";
 import { NO_SHARED, onboardingFor, type RoleCardShared } from "@shared/roleCardShared";
 import { TipText } from "./CardTips";
 import RoleOneMinute, { type OneMinuteProps } from "./RoleOneMinute";
+import { cardViewWords } from "@/components/power/cardViewWords";
 
 // The timeline loads when a card has dated deliverables, off the first view of /roles (route-first-view.json).
 const DeliverablesGantt = lazy(() => import("./DeliverablesGantt"));
@@ -174,7 +175,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
 
   // The four quick facts, from the same view model every card host reads.
   // Read from the params, which carry the card's own words for where (sections.where) when it has them.
-  const rows = roleCardView(p.params ?? seat).rows;
+  const rows = roleCardView(p.params ?? seat, undefined, cardViewWords(i18n)).rows;
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
   // Commitment and where come back as tiles beside track and languages (the Amora operations role, 20 Nov 2026,
   // reversing 1.3.38's "said once" on purpose): the seat column had two tiles and empty space under them. Each tile

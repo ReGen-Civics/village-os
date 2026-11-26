@@ -11,7 +11,8 @@
  */
 import { createContext, useContext, type ReactNode } from "react";
 import { formatMoney } from "@shared/money";
-import { MY_MOON_WORDS, SPLIT_PAY_WORDS, type LineSplit } from "@shared/moonRecap";
+import { type LineSplit } from "@shared/moonRecap";
+import { useMoonWords } from "@/components/myMoon/moonWords";
 
 export { BTN_GOLD, BTN_LINE, CHIP, H2, KICKER, LINK, PANEL, RAISED } from "@/components/profileDash/dashUi";
 
@@ -31,9 +32,10 @@ export const useRoomView = () => useContext(RoomViewContext);
 
 /** An amount, or the hidden line while Room view is on. */
 export function Amount({ minor, currency }: { minor: number | null; currency: string | null }) {
+  const MW = useMoonWords();
   const room = useRoomView();
-  if (room) return <span data-hidden-amount="">{MY_MOON_WORDS.hiddenInRoom}</span>;
-  if (minor === null || !currency) return <span>{MY_MOON_WORDS.none}</span>;
+  if (room) return <span data-hidden-amount="">{MW.myMoon.hiddenInRoom}</span>;
+  if (minor === null || !currency) return <span>{MW.myMoon.none}</span>;
   return <span data-amount="">{formatMoney(minor, currency)}</span>;
 }
 
@@ -59,29 +61,30 @@ export function Section({ title, kicker, children, id }: { title: string; kicker
  * confirmed it. The member and Finance read the same three numbers.
  */
 export function SplitBreakdown({ split, currency }: { split: LineSplit; currency: string | null }) {
+  const MW = useMoonWords();
   return (
     <div className="flex flex-col gap-0.5 rounded-lg bg-muted/60 px-2 py-1.5 text-xs text-muted-foreground" data-testid="line-split">
       <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-        <dt>{SPLIT_PAY_WORDS.base}</dt>
+        <dt>{MW.splitPay.base}</dt>
         <dd className="m-0 text-right text-foreground"><Amount minor={split.baseMinor} currency={currency} /></dd>
-        <dt>{SPLIT_PAY_WORDS.share}</dt>
+        <dt>{MW.splitPay.share}</dt>
         <dd className="m-0 text-right text-foreground">{split.sharePct}%</dd>
         {split.givenPct !== undefined && split.pricedPct !== undefined ? (
           <>
-            <dt>{SPLIT_PAY_WORDS.given}</dt>
+            <dt>{MW.splitPay.given}</dt>
             <dd className="m-0 text-right text-foreground">{split.givenPct}%</dd>
-            <dt>{SPLIT_PAY_WORDS.priced}</dt>
+            <dt>{MW.splitPay.priced}</dt>
             <dd className="m-0 text-right text-foreground">{split.pricedPct}%</dd>
           </>
         ) : null}
-        <dt>{SPLIT_PAY_WORDS.scaled}</dt>
+        <dt>{MW.splitPay.scaled}</dt>
         <dd className="m-0 text-right font-semibold text-foreground"><Amount minor={split.scaledMinor} currency={currency} /></dd>
       </dl>
       {split.periods && split.periods.length > 1 ? (
         <ul className="m-0 flex list-none flex-col gap-0.5 p-0" data-testid="line-split-periods">
           {split.periods.map((p) => (
             <li key={p.fromDay} className="flex justify-between gap-3">
-              <span>{SPLIT_PAY_WORDS.periodLine(p.fromDay, p.days, p.givenPct)}</span>
+              <span>{MW.splitPay.periodLine(p.fromDay, p.days, p.givenPct)}</span>
               <span className="text-foreground"><Amount minor={p.scaledMinor} currency={currency} /></span>
             </li>
           ))}
@@ -89,10 +92,10 @@ export function SplitBreakdown({ split, currency }: { split: LineSplit; currency
       ) : null}
       {split.capped ? (
         <p className="m-0 font-semibold text-foreground" data-testid="line-split-capped">
-          {SPLIT_PAY_WORDS.capped}. {SPLIT_PAY_WORDS.cappedNote}
+          {MW.splitPay.capped}. {MW.splitPay.cappedNote}
         </p>
       ) : null}
-      <p className="m-0">{split.confirmedAt ? SPLIT_PAY_WORDS.confirmed : SPLIT_PAY_WORDS.waiting}</p>
+      <p className="m-0">{split.confirmedAt ? MW.splitPay.confirmed : MW.splitPay.waiting}</p>
     </div>
   );
 }
