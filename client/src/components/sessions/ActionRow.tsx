@@ -34,7 +34,6 @@ import { useEffect, useRef, useState } from "react";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import { ON_BEHALF_COPY } from "@shared/sessionOnBehalf";
 import {
-  ROOM_COPY,
   SESSION_COPY,
   SESSION_LIMITS,
   cleanDueOn,
@@ -59,6 +58,7 @@ import {
   useDraft,
   type StageProps,
 } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 /** A date field as wide as its date, so it sits beside the holder and never takes the row. */
 const DATE_INPUT = INPUT.replace("w-full", "w-auto");
@@ -69,6 +69,7 @@ export function ActionRow({
   entry,
   highlight = false,
 }: Omit<StageProps, "now"> & { entry: SessionEntry; highlight?: boolean }) {
+  const RC = useRoomWords();
   const [busy, setBusy] = useState(false);
   const [seatSaving, setSeatSaving] = useState<string | null>(null);
   const [due, setDue] = useState(entry.dueOn ?? "");
@@ -129,9 +130,9 @@ export function ActionRow({
     <>
       <p className={`mt-1 text-sm ${held ? "text-muted-foreground" : "font-semibold text-notice"}`}>
         {heldLine(entry)}
-        {entry.dueOn ? ` · ${ROOM_COPY.dueLabel} ${entry.dueOn}` : ""}
-        {parked && <span className={`${CHIP} ml-2`}>{ROOM_COPY.parkedLabel}</span>}
-        {entry.status === "done" && <span className={`${CHIP} ml-2`}>{ROOM_COPY.doneLabel}</span>}
+        {entry.dueOn ? ` · ${RC.dueLabel} ${entry.dueOn}` : ""}
+        {parked && <span className={`${CHIP} ml-2`}>{RC.parkedLabel}</span>}
+        {entry.status === "done" && <span className={`${CHIP} ml-2`}>{RC.doneLabel}</span>}
       </p>
       {controls && (
         <div className={`${UNDER_BOX} mt-2`}>
@@ -177,7 +178,7 @@ export function ActionRow({
                 aria-busy={seatSaving != null}
                 onChange={(e) => nameSeat(e.target.value)}
               >
-                <option value="">{ROOM_COPY.noSeat}</option>
+                <option value="">{RC.noSeat}</option>
                 {seats.map((s) => (
                   <option key={s.id} value={s.id}>
                     {roleWithHolders(s.name, s.holders)}
@@ -188,7 +189,7 @@ export function ActionRow({
           )}
           {may.dueOn && !parked && (
             <label htmlFor={`${fieldBase}-due`} className="block">
-              <span className={`${LABEL} text-xs`}>{ROOM_COPY.dueLabel}</span>
+              <span className={`${LABEL} text-xs`}>{RC.dueLabel}</span>
               <input
                 id={`${fieldBase}-due`}
                 type="date"
@@ -212,7 +213,7 @@ export function ActionRow({
               disabled={busy}
               onClick={() => void run(() => actions.patchEntry(entry.id, { status: parked ? "open" : "parked" }))}
             >
-              {parked ? ROOM_COPY.bringBack : SESSION_COPY.park}
+              {parked ? RC.bringBack : SESSION_COPY.park}
             </button>
           )}
         </div>
@@ -230,6 +231,7 @@ export function ActionRow({
 
 /** Catch an action as it comes: what, and if the room knows it, which seat and by when. */
 export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & { itemId: number | null }) {
+  const RC = useRoomWords();
   const draftBase = `${view.id}:${itemId ?? "loose"}:action`;
   const textDraft = useDraft(`${draftBase}:text`);
   const seatDraft = useDraft(`${draftBase}:seat`);
@@ -275,7 +277,7 @@ export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & {
           value={text}
           onValue={textDraft.set}
           onSubmit={() => void add()}
-          label={ROOM_COPY.actionPlaceholder}
+          label={RC.actionPlaceholder}
           max={SESSION_LIMITS.text}
           minRows={2}
           singleLine
@@ -286,9 +288,9 @@ export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & {
       <div className={UNDER_BOX} data-action-under="">
         {seats.length > 0 && (
           <label htmlFor={`${base}-seat`} className="block min-w-0">
-            <span className={`${LABEL} text-xs`}>{ROOM_COPY.actionHolderLabel}</span>
+            <span className={`${LABEL} text-xs`}>{RC.actionHolderLabel}</span>
             <select id={`${base}-seat`} className={`${SELECT_CAPPED} mt-1`} value={seat} onChange={(e) => seatDraft.set(e.target.value)}>
-              <option value="">{ROOM_COPY.noSeat}</option>
+              <option value="">{RC.noSeat}</option>
               {seats.map((s) => (
                 <option key={s.id} value={s.id}>
                   {roleWithHolders(s.name, s.holders)}
@@ -298,11 +300,11 @@ export function AddAction({ view, actions, itemId }: Omit<StageProps, "now"> & {
           </label>
         )}
         <label htmlFor={`${base}-due`} className="block">
-          <span className={`${LABEL} text-xs`}>{ROOM_COPY.dueLabel}</span>
+          <span className={`${LABEL} text-xs`}>{RC.dueLabel}</span>
           <input id={`${base}-due`} type="date" className={`${DATE_INPUT} mt-1`} value={due} onChange={(e) => dueDraft.set(e.target.value)} />
         </label>
         <button type="submit" className={BTN_PRIMARY} disabled={busy || !text.trim()}>
-          {ROOM_COPY.add}
+          {RC.add}
         </button>
       </div>
     </form>

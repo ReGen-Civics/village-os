@@ -9,14 +9,16 @@
  * agenda becomes the circle's, so it wears the same frame the item page and
  * the role card wear.
  */
-import { ROOM_COPY, SESSION_COPY, STAGE_DEFS, agendaFit } from "@shared/sessions";
+import { SESSION_COPY, STAGE_DEFS, agendaFit } from "@shared/sessions";
 import AgendaList, { AddItem } from "./AgendaList";
 import ConsentRound from "./ConsentRound";
 import FromLastTime from "./FromLastTime";
 import RoomBrought from "./RoomBrought";
 import { CARD, H3, HERO_CONTENT, HERO_INNER, HERO_SHELL, HINT, type StageProps } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export default function StageAgenda({ view, now, actions }: StageProps) {
+  const RC = useRoomWords();
   const fit = agendaFit(view.items, view.durationMin, view.state.startedAt, now);
   return (
     <div className="space-y-5">
@@ -30,7 +32,7 @@ export default function StageAgenda({ view, now, actions }: StageProps) {
             {STAGE_DEFS.agenda.short}
           </h3>
           <p className={`text-sm tabular-nums ${fit.over ? "font-semibold text-notice" : "text-muted-foreground"}`}>
-            {ROOM_COPY.agendaFitLine(fit.planned, fit.left)}
+            {RC.agendaFitLine(fit.planned, fit.left)}
           </p>
         </div>
         {fit.over && (
@@ -43,7 +45,7 @@ export default function StageAgenda({ view, now, actions }: StageProps) {
         </div>
         <div className="mt-5 border-t border-border pt-5">
           <AddItem view={view} actions={actions} />
-          {!view.me.joined && <p className={HINT}>{ROOM_COPY.joinFirst}</p>}
+          {!view.me.joined && <p className={HINT}>{RC.joinFirst}</p>}
         </div>
       </section>
 

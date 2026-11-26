@@ -45,9 +45,10 @@
  */
 import { useState, type ReactNode } from "react";
 import { Pencil } from "lucide-react";
-import { ROOM_COPY } from "@shared/sessions";
+
 import GrowingText from "./GrowingText";
 import { BTN_ICON, BTN_PRIMARY, BTN_QUIET, ENTRY_TILE_EDITING, ENTRY_TOOLS, HINT, useDraft } from "./roomUi";
+import { useRoomWords } from "@/components/sessions/roomWords";
 
 export interface EditableTextProps {
   /** what the room holds */
@@ -87,6 +88,7 @@ export default function EditableText({
   bare = false,
   tools,
 }: EditableTextProps) {
+  const RC = useRoomWords();
   const draft = useDraft(draftKey);
   // The words the editor opened on, so a poll that changes `value` while it
   // is open is never mistaken for an edit made here.
@@ -134,9 +136,9 @@ export default function EditableText({
         draft.clear();
         base.clear();
         setOpen(false);
-        setSaid(ROOM_COPY.saved);
+        setSaid(RC.saved);
       } else {
-        setError(r.error || ROOM_COPY.writeFailed);
+        setError(r.error || RC.writeFailed);
       }
     } finally {
       setSaving(false);
@@ -170,7 +172,7 @@ export default function EditableText({
             disabled={saving}
           />
           {warn && <p className="text-sm font-medium text-notice">{warn}</p>}
-          <p className={`${HINT} text-xs`}>{singleLine ? ROOM_COPY.editKeysOneLine : ROOM_COPY.editKeys}</p>
+          <p className={`${HINT} text-xs`}>{singleLine ? RC.editKeysOneLine : RC.editKeys}</p>
           {error && (
             <p role="alert" className="text-sm font-medium text-destructive">
               {error}
@@ -178,10 +180,10 @@ export default function EditableText({
           )}
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={BTN_PRIMARY} disabled={saving} onClick={() => void save()}>
-              {saving ? ROOM_COPY.saving : ROOM_COPY.save}
+              {saving ? RC.saving : RC.save}
             </button>
             <button type="button" className={BTN_QUIET} disabled={saving} onClick={cancel}>
-              {ROOM_COPY.cancel}
+              {RC.cancel}
             </button>
           </div>
         </div>
@@ -196,7 +198,7 @@ export default function EditableText({
           {(may || tools) && (
             <div className={ENTRY_TOOLS}>
               {may && (
-                <button type="button" className={BTN_ICON} aria-label={ROOM_COPY.editThis(label)} onClick={openEdit}>
+                <button type="button" className={BTN_ICON} aria-label={RC.editThis(label)} onClick={openEdit}>
                   <Pencil className="h-4 w-4" aria-hidden="true" />
                 </button>
               )}
