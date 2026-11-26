@@ -10,7 +10,7 @@
  * Run: node scripts/flake-report.test.mjs
  */
 import assert from "node:assert";
-import { attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank, tableCell, withRetry } from "./flake-report.mjs";
+import { attemptAt, attribute, findFlakeEvents, keyOf, markdown, outcomeOf, parseFailLines, rank, tableCell, whenCell, withRetry } from "./flake-report.mjs";
 
 let passed = 0;
 async function check(name, fn) {
@@ -111,6 +111,23 @@ await check("ranked worst first, by events then by distinct code", () => {
   assert.match(md, /A retry, a skip or a looser assertion is not a fix/);
 });
 
+await check("each row says when it was LAST seen and links that newest run, so a flake fixed inside the window reads as history", () => {
+  const r = rank([
+    { culprit: "a", key: "k1", url: "old", at: "2026-11-24T21:51:40Z" },
+    { culprit: "a", key: "k2", url: "new", at: "2026-11-25T08:53:45Z" },
+    { culprit: "a", key: "k3", url: "mid", at: "2026-11-25T01:00:00Z" },
+  ]);
+  assert.strictEqual(r[0].lastSeen, "2026-11-25T08:53:45Z");
+  assert.strictEqual(r[0].example, "new", "CONTROL: the example is the newest event, not the first one read");
+  const md = markdown(r, { days: 3, runs: 3, attempts: 3, events: 3, unkeyed: 0 });
+  assert.match(md, /\| 1 \| `a` \| 3 \| 3 \| 2026-11-25 08:53 \| \[run\]\(new\) \|/);
+  assert.match(md, /a row whose every event came before a fix is already done/);
+  assert.strictEqual(whenCell(undefined), "?");
+  // The attempt's own time: its earliest job, else the run's creation.
+  assert.strictEqual(attemptAt([{ started_at: "2026-11-25T09:00:00Z" }, { started_at: "2026-11-25T08:59:00Z" }, { started_at: null }], { created_at: "x" }), "2026-11-25T08:59:00Z");
+  assert.strictEqual(attemptAt([], { created_at: "2026-11-24T13:00:57Z" }), "2026-11-24T13:00:57Z");
+});
+
 await check("a test name from a log cannot break out of its table cell", () => {
   assert.strictEqual(tableCell("a\\|b"), "a\\\\\\|b", "a backslash before a pipe must not unescape it");
   assert.strictEqual(tableCell("x | y"), "x \\| y");
@@ -118,7 +135,7 @@ await check("a test name from a log cannot break out of its table cell", () => {
   assert.strictEqual(tableCell("one\ntwo"), "one two");
   const md = markdown([{ culprit: "t.test.ts > a\\|b", events: 1, codes: 1, example: "u" }], { days: 1, runs: 1, attempts: 1, events: 1, unkeyed: 0 });
   const row = md.split("\n").find((l) => l.startsWith("| 1 |"));
-  assert.strictEqual(row.split(/(?<!\\)\|/).length, 7, `the row has extra cells: ${row}`);
+  assert.strictEqual(row.split(/(?<!\\)\|/).length, 8, `the row has extra cells: ${row}`);
 });
 
 await check("GitHub's transient answers are retried a bounded number of times, and nothing else is", async () => {
@@ -132,4 +149,4 @@ await check("GitHub's transient answers are retried a bounded number of times, a
   assert.strictEqual((await withRetry(seq([404, 200]), opts)).status, 404, "a 404 is an answer, not retried");
 });
 
-console.log(`flake-report.test: ${passed}/10 checks passed`);
+console.log(`flake-report.test: ${passed} checks passed`);
