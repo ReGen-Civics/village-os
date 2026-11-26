@@ -49,6 +49,17 @@
  *   node scripts/check-dist-budget.mjs --report  # measure only, always exit 0
  *   node scripts/check-dist-budget.mjs --json    # machine readable
  *
+ * THE SAFETY MARGIN (26 Nov 2026, the coordinator's ruling, Option A). On a
+ * lane's machine this fails inside the last SAFETY_MARGIN_KB of the ceiling, not
+ * only above it. `du -sk` on the CI runner is the gate (CLAUDE.md names it the
+ * authority), and on ea9a3a1 it read 8004 KB where this model read 7996 KB: the
+ * ext4 directory layout depends on the hashed file names, so two near-identical
+ * trees land a couple of blocks apart. A tree inside the margin can therefore
+ * pass here and fail there, and a local number should err safe. On the runner
+ * (GITHUB_ACTIONS=true) du gates, so this script fails only above the ceiling
+ * there, as before, and prints a warning inside the margin. `--no-margin` turns
+ * the margin off for a what-if. The ceiling itself is not moved by this.
+ *
  * Read the exit code. A failing run prints `::error::` lines that GitHub lifts
  * into the run summary, and those are not reliably the last line on a
  * terminal.
@@ -66,6 +77,10 @@ const BLOCK = 4096;
 
 const args = process.argv.slice(2);
 const asJson = args.includes("--json");
+/** du's drift from this model seen on a runner (8 KB on ea9a3a1), plus a block. */
+const SAFETY_MARGIN_KB = 12;
+const onRunner = process.env.GITHUB_ACTIONS === "true";
+const marginApplies = !onRunner && !args.includes("--no-margin");
 const reportOnly = args.includes("--report");
 
 /** Reads a budget off the workflow so this script and CI cannot disagree. */
@@ -203,6 +218,8 @@ const result = {
   directories: scan.dirs,
   realKb,
   blockChargedKb: totalKb,
+  headroomKb: MAX_TOTAL.value - totalKb,
+  safetyMarginKb: SAFETY_MARGIN_KB,
   overheadKb: kb(overheadBytes),
   subBlockFiles: subBlock.length,
   subBlockPaddingKb: kb(subBlockPadding),
@@ -247,6 +264,7 @@ say(`Main JS: ${mainKb} KB of ${MAX_MAIN.value} KB, measured in REAL bytes (${MA
 say(`First-page JS: ${bootKb} KB of ${MAX_BOOT.value} KB across the ${bootFiles.length} scripts index.html loads, in REAL bytes (${MAX_BOOT.source})`);
 say(`Total dist/public: ${totalKb} KB of ${MAX_TOTAL.value} KB, measured in BLOCK-CHARGED bytes (${MAX_TOTAL.source})`);
 say(`  the same tree is ${realKb} KB in real bytes, so ${kb(overheadBytes)} KB of the ceiling pays for 4 KB block rounding`);
+say(`  headroom ${MAX_TOTAL.value - totalKb} KB; the last ${SAFETY_MARGIN_KB} KB below the ceiling is a safety margin, because du on the CI runner can read a couple of blocks above this model`);
 say("");
 say("Splitting a chunk lowers main JS and RAISES the block-charged total.");
 say("Merging small chunks lowers the total. Watch both numbers on any chunking change.");
@@ -283,5 +301,14 @@ if (totalKb > MAX_TOTAL.value) {
     `::error::dist/public is ${totalKb} KB block-charged (${realKb} KB of real bytes plus ${kb(overheadBytes)} KB of 4 KB block padding), over the ${MAX_TOTAL.value} KB budget. Check whether something large landed in client/public and belongs in the uploads volume, and whether a crop of sub-4 KB chunks can merge into their parents.`,
   );
   fail = 1;
+}
+if (totalKb <= MAX_TOTAL.value && totalKb > MAX_TOTAL.value - SAFETY_MARGIN_KB) {
+  const why = `dist/public is ${totalKb} KB block-charged, inside the ${SAFETY_MARGIN_KB} KB safety margin below the ${MAX_TOTAL.value} KB budget. du on the CI runner, which is the gate, has read 8 KB above this model on a near-identical tree (ea9a3a1), so this tree can pass here and fail there. Make room (merge sub-4 KB chunks into their parents, or move art to the uploads volume) instead of hoping.`;
+  if (marginApplies) {
+    console.error(`::error::${why}`);
+    fail = 1;
+  } else {
+    console.error(`::warning::${why}`);
+  }
 }
 process.exit(fail);
