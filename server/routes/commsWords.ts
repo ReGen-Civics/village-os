@@ -267,12 +267,18 @@ export function register(app: Express, deps: Deps): void {
     res.json(await detailFor(key));
   });
 
-  /** The email as it would arrive, from the saved words or the editor's draft, with sample values. */
-  app.post("/api/admin/comms/words/:key/preview", moduleGate, async (req, res) => {
-    if (!(await mayLook(req, res))) return;
+  /**
+   * The email as it would arrive, from the saved words or the editor's draft, with sample values.
+   * Each route asks mayLook first, in its own body.
+   *
+   * GET draws the saved words, which is what opening the editor asks for: a look needs no
+   * write-shaped request, and a read-only view (the live view refuses every non-GET) can then
+   * draw it (admin live pass A7, 25 Nov 2026). POST carries an unsaved draft in its body.
+   */
+  const preview = async (req: Request, res: Response, body: unknown) => {
     const key = await keyFrom(req, res);
     if (!key) return;
-    const { draft, problems } = previewDraft(key, req.body);
+    const { draft, problems } = previewDraft(key, body);
     const email = await renderForEditor(req, key, draft);
     const words = draft ?? (await wordsDetail(getPool(), key))?.live ?? null;
     res.json({
@@ -289,6 +295,14 @@ export function register(app: Express, deps: Deps): void {
       problems,
       voice: words ? voiceLintWords(words) : [],
     });
+  };
+  app.get("/api/admin/comms/words/:key/preview", moduleGate, async (req, res) => {
+    if (!(await mayLook(req, res))) return;
+    await preview(req, res, {});
+  });
+  app.post("/api/admin/comms/words/:key/preview", moduleGate, async (req, res) => {
+    if (!(await mayLook(req, res))) return;
+    await preview(req, res, req.body);
   });
 
   /** The same email, sent to the signed-in admin's own address. */

@@ -105,6 +105,7 @@ describe.skipIf(!configured)("the Words routes", () => {
       "GET /api/admin/comms/letter-previews",
       "GET /api/admin/comms/words",
       "GET /api/admin/comms/words/:key",
+      "GET /api/admin/comms/words/:key/preview",
       "POST /api/admin/comms/letter-previews/send",
       "POST /api/admin/comms/words/:key/adopt",
       "POST /api/admin/comms/words/:key/preview",
@@ -177,6 +178,16 @@ describe.skipIf(!configured)("the Words routes", () => {
     expect((await refused.call("POST", "/api/admin/comms/letter-previews/send")).status).toBe(403);
     expect(refused.sent).toHaveLength(0);
     expect(sent).toHaveLength(0);
+  });
+
+  it("draws the saved words on a GET, the same email a POST with no draft draws", async () => {
+    const { call } = setup();
+    const got = await call("GET", "/api/admin/comms/words/:key/preview", { params: { key: "gathering.confirm" } });
+    expect(got.status, JSON.stringify(got.body)).toBe(200);
+    const posted = await call("POST", "/api/admin/comms/words/:key/preview", { params: { key: "gathering.confirm" }, body: {} });
+    expect(got.body.subject).toBe(posted.body.subject);
+    expect(got.body.html).toBe(posted.body.html);
+    expect(got.body.problems).toEqual([]);
   });
 
   it("sends the test with exactly the subject, HTML and text the preview showed", async () => {
