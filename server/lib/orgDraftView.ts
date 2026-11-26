@@ -13,6 +13,9 @@ import { listOrgAssignments, listOrgRoles } from "./orgChart";
 import { BEFORE_COLUMN, labelOf } from "./roleEdit";
 import { DRAFT_PAY_KEYS } from "./draftRolePay";
 import { firstNames } from "../repos/roleEditHistory";
+import { revisionsOf } from "../repos/orgDraftRevisions";
+import { openBallotFor } from "./ballots";
+import { ORG_DRAFT } from "../../shared/ballotSubjects";
 import { overlappingOpenDrafts } from "../../shared/orgDraftOverlap";
 import { lineDiff, wordDiff } from "../../shared/orgDraftDiff";
 import { ROLE_CCOS_FIELDS } from "../../shared/roleCcos";
@@ -22,6 +25,7 @@ import {
   DRAFT_FIELD_KEYS,
   DRAFT_OTHER_KEYS,
   DRAFT_PROPOSER_KEYS,
+  DRAFT_REVISION_KEYS,
   DRAFT_SOURCE_KEYS,
   DRAFT_VIEW_KEYS,
   pick,
@@ -162,12 +166,26 @@ export async function draftView(pool: Pool, draft: Draft, deps: ViewDeps): Promi
   const changes: DraftChangeView[] = [];
   for (const c of draft.changes) changes.push(await changeView(pool, draft.status === "open", c, roleNames, lines.get(c.id), deps, holdersOf));
 
-  let proposer: DraftView["proposer"] = null;
-  if (draft.createdBy) {
-    const first = (await firstNames(pool, [draft.createdBy])).get(draft.createdBy) || null;
-    const held = Array.from(new Set(assignments.filter((a) => a.holderKind === "member" && a.userId === draft.createdBy).map((a) => roleNames.get(a.orgRoleId)).filter((n): n is string => !!n)));
-    proposer = pick({ firstName: first, roles: held }, DRAFT_PROPOSER_KEYS);
-  }
+  const [revs, voting] = await Promise.all([revisionsOf(pool, draft.id), draft.status === "open" ? openBallotFor(pool, ORG_DRAFT, draft.id) : Promise.resolve(null)]);
+  const people = await firstNames(pool, [draft.createdBy ?? "", ...revs.map((r) => r.revisedBy ?? "")]);
+  /** A person as the page shows them: the roles they hold now, and their first name. */
+  const who = (userId: string | null) =>
+    userId
+      ? pick(
+          {
+            firstName: people.get(userId) || null,
+            roles: Array.from(new Set(assignments.filter((a) => a.holderKind === "member" && a.userId === userId).map((a) => roleNames.get(a.orgRoleId)).filter((n): n is string => !!n))),
+          },
+          DRAFT_PROPOSER_KEYS,
+        )
+      : null;
+  const proposer = who(draft.createdBy);
+  const revisions = revs.map((r) => {
+    const before = r.payloadBefore ?? {};
+    const after = r.payloadAfter ?? {};
+    const keys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)])).filter((k) => JSON.stringify(before[k] ?? null) !== JSON.stringify(after[k] ?? null));
+    return pick({ number: r.number, at: r.createdAt, by: who(r.revisedBy), note: r.note, changeId: r.changeIdAfter, fields: keys.map((k) => fieldView(k, before[k], after[k], deps.readsTerms)) }, DRAFT_REVISION_KEYS);
+  });
   const overlapping = new Set(overlappingOpenDrafts(draft, open));
   const otherOpenDrafts = open.filter((d) => overlapping.has(d.id)).map((d) => pick({ id: d.id, title: d.title }, DRAFT_OTHER_KEYS));
 
@@ -184,6 +202,8 @@ export async function draftView(pool: Pool, draft: Draft, deps: ViewDeps): Promi
       changeIds: draft.changes.map((c) => c.id),
       changes,
       otherOpenDrafts,
+      mayEdit: draft.status === "open" && !voting,
+      revisions,
     },
     DRAFT_VIEW_KEYS,
   );

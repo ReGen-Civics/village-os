@@ -36,6 +36,7 @@
  * is lossy, and an archive may not be.
  */
 import { isAgentAccount } from "../repos/agentAccounts";
+import { forgetReviser } from "../repos/orgDraftRevisions";
 import { raiseRevokeForEnded } from "./roleAccess";
 import { liveAssignmentIdsForHolder } from "../repos/roleAccess";
 import type { Pool, PoolConnection } from "mysql2/promise";
@@ -259,7 +260,8 @@ export async function forgetMemberInDrafts(pool: Pool, userId: string, anon: str
     await rewriteDraftChangePeople(pool, String(r.id), JSON.stringify(payload), r.before_json === null || r.before_json === undefined ? null : typeof r.before_json === "string" ? r.before_json : JSON.stringify(r.before_json));
     touched += 1;
   }
-  return touched;
+  // And the revisions they made (0437): their id leaves, the words stay.
+  return touched + (await forgetReviser(pool, userId, anon));
 }
 
 /*
@@ -410,6 +412,12 @@ function newId(prefix: string): string {
   seq += 1;
   return `${prefix}-${Date.now().toString(36)}-${seq.toString(36)}`;
 }
+
+/** An id in the draft tables' own form, for a revision and the change id it gives (server/lib/orgDraftRevise.ts). */
+export const newOrgDraftId = (prefix: string): string => newId(prefix);
+
+/** The refusal an edit meets while the village votes on the draft. */
+export const draftUnderAVote = (): string => UNDER_A_VOTE;
 
 function asJson(v: unknown): any {
   if (v === null || v === undefined) return null;
