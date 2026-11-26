@@ -69,17 +69,34 @@ import { fullAccessFor } from "../lib/agentFullAccess";
 import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
 import { footprintOf, overlaps, staleAgainst, staleVersionOf, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
 import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
+import { capabilityDecision } from "../../shared/capabilities";
+import { readsAsPlainMember } from "../lib/readAsMember";
 import { seatTermsRead } from "../../shared/seatTermsProposal";
 import { listOrgRoles } from "../lib/orgChart";
 import { recordChangeOutcome, recordStagedOutcome } from "../lib/suggestionOutcome";
 import { closeStaged, closeStagedForChange, heldOf, markPublished, releaseReconsider, stagedById, type StagedRow } from "../repos/suggestionStaging";
 import { afterRelease, HELD_FOR_FILER, readReconsider, sameAsLive, stageAndSort, type Filing } from "../lib/connectorStaging";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState" | "capabilityCtx"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
   port: () => number;
   clientIp: (req: express.Request) => string;
 };
+
+
+/** A copy of a role card body without its pay group, and whether it had one. Any other kind is returned as it is. */
+export function withoutPay(kind: string, v: unknown): { value: unknown; had: boolean } {
+  if (kind !== "role_card" || !v || typeof v !== "object" || Array.isArray(v) || !("pay" in (v as Record<string, unknown>))) return { value: v, had: false };
+  const { pay: _pay, ...rest } = v as Record<string, unknown>;
+  return { value: rest, had: true };
+}
+
+/** What a reader who may not read pay saves or accepts: their words, with the stored pay put back exactly as it was. */
+export function keepStoredPay(kind: string, sent: Record<string, unknown>, stored: Record<string, unknown>): Record<string, unknown> {
+  if (kind !== "role_card") return sent;
+  const { pay: _ignored, ...rest } = sent;
+  return "pay" in stored ? { ...rest, pay: stored.pay } : rest;
+}
 
 /** An accepted change as the conflict rules read it: what went live, and when. */
 const acceptedRecord = (c: store.StoredChange): AcceptedRecord => ({
@@ -128,6 +145,20 @@ const PUT_BACK_REFUSED: Record<import("../../shared/proposalPutBack").PutBackBlo
 
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, isAdmin, overLimit, members, liveHoldersOf, port, clientIp } = deps;
+
+  /**
+   * PAY FOLLOWS THE READER'S RIGHT TO READ TERMS (the coordinator, 26 Nov 2026). This page is open to holders of
+   * story.tell, org.decide, org.seat and dial.set, none of which is `terms.read`, and a role card change that carries
+   * pay was served with the role's LIVE pay group beside the proposed one. For a reader without `terms.read` the pay is
+   * taken out of what is live, what was proposed, the draft and what was accepted, and the change says only that its
+   * pay changes (`payHidden`). Such a reader also cannot drop or set pay by accident: what they save or accept keeps
+   * the pay that was stored (`keepStoredPay`).
+   */
+  const readsPay = async (req: express.Request): Promise<boolean> => {
+    if (readsAsPlainMember(req)) return false;
+    const user = await authedUser(req);
+    return !!user && capabilityDecision("terms.read", await deps.capabilityCtx(user)).allowed;
+  };
   const routeExists = routeExistsIn(app);
   const kindDeps = (): KindDeps => ({
     pool: getPool(),
@@ -310,11 +341,14 @@ export function register(app: Express, deps: Deps): void {
     const kind = alias ? alias.kind : asked;
     const section = alias ? alias.target.section : null;
     const limit = Math.max(1, Math.min(200, Number(req.query.limit ?? 100) || 100));
+    const mayPay = await readsPay(req);
     const lessons: Lesson[] = [];
     for (const c of await store.listDecided(getPool(), 200, true)) {
       if (kind && c.kind !== kind) continue;
       if (section && c.target.section !== section) continue;
       for (const l of (c.lessons ?? []) as Array<{ field: string; proposed: unknown; accepted: unknown }>) {
+        // A lesson about pay carries its figures: only for a reader who may read terms.
+        if (!mayPay && c.kind === "role_card" && /^pay(\.|$)/.test(l.field)) continue;
         lessons.push({ proposalId: c.id, kind: c.kind, target: c.targetLabel, summary: c.summary, field: l.field, proposed: l.proposed, accepted: l.accepted, acceptedAt: c.decidedAt ?? "" });
       }
     }
@@ -440,8 +474,11 @@ export function register(app: Express, deps: Deps): void {
     // that wrote the same thing is stale, and says so on its card.
     const oldest = changes.reduce<string | null>((m, c) => (!m || c.createdAt < m ? c.createdAt : m), null);
     const acceptedLater = oldest ? (await store.acceptedSince(pool, new Date(oldest))).map(acceptedRecord) : [];
+    const mayPay = await readsPay(req);
+    const cut = (kind: string, v: unknown) => (mayPay ? v : withoutPay(kind, v).value);
     const served = [];
     for (const c of changes) {
+      const live = await liveOf(kd, run, c.kind, c.target, c.draft ?? c.body);
       served.push({
         id: c.id,
         code: c.code,
@@ -452,9 +489,11 @@ export function register(app: Express, deps: Deps): void {
         targetLabel: c.targetLabel,
         route: { method: c.routeMethod, path: c.routePath },
         summary: c.summary,
-        body: c.body,
-        draft: c.draft,
-        live: await liveOf(kd, run, c.kind, c.target, c.draft ?? c.body),
+        body: cut(c.kind, c.body),
+        draft: c.draft === null ? null : cut(c.kind, c.draft),
+        live: cut(c.kind, live),
+        // The pay changes, and this reader may not read terms: the card says so and shows no figure.
+        payHidden: !mayPay && (withoutPay(c.kind, c.body).had || withoutPay(c.kind, c.draft).had),
         labels: labelsFor(c.kind, c.target, c.draft ?? c.body),
         where: whereOf(c.kind, c.target),
         status: c.status,
@@ -493,8 +532,9 @@ export function register(app: Express, deps: Deps): void {
           targetLabel: c.targetLabel,
           route: { method: c.routeMethod, path: c.routePath },
           summary: c.summary,
-          body: c.body,
-          accepted: c.accepted,
+          body: cut(c.kind, c.body),
+          accepted: c.accepted === null || c.accepted === undefined ? c.accepted : cut(c.kind, c.accepted),
+          payHidden: !mayPay && (withoutPay(c.kind, c.body).had || withoutPay(c.kind, c.accepted).had),
           labels: labelsFor(c.kind, c.target, c.accepted ?? c.body),
           where: whereOf(c.kind, c.target),
           status: c.status,
@@ -520,13 +560,22 @@ export function register(app: Express, deps: Deps): void {
     const draft = req.body?.body === null ? null : obj(req.body?.body);
     if (req.body?.body !== null && !draft) return res.status(400).json({ error: "bad_request", message: "Send body: the edited change, or null to drop the edits." });
     if (draft && JSON.stringify(draft).length > PROPOSAL_LIMITS.bodyBytes) return res.status(400).json({ error: "bad_request", message: "That is longer than a proposal can carry." });
-    const ok = await store.saveDraft(getPool(), String(req.params.id ?? ""), draft, uid);
+    let saved = draft;
+    if (draft && !(await readsPay(req))) {
+      const c = await store.changeById(getPool(), String(req.params.id ?? ""));
+      if (c) saved = keepStoredPay(c.kind, draft, c.draft ?? c.body);
+    }
+    const ok = await store.saveDraft(getPool(), String(req.params.id ?? ""), saved, uid);
     if (!ok) return res.status(409).json({ error: "not_open", message: REVIEW_WORDS.notProposed });
     res.json({ success: true, savedAt: new Date().toISOString() });
   });
 
   /** The body a person accepts: what they sent, else their saved draft, else what was proposed. */
-  const finalBody = (c: store.StoredChange, sent: unknown): Record<string, unknown> => withoutApproval(obj(sent) ?? c.draft ?? c.body);
+  const finalBody = (c: store.StoredChange, sent: unknown, mayPay = true): Record<string, unknown> => {
+    const stored = c.draft ?? c.body;
+    const chosen = obj(sent) ?? stored;
+    return withoutApproval(mayPay ? chosen : keepStoredPay(c.kind, chosen, stored));
+  };
 
   app.post("/api/admin/proposals/check", async (req, res) => {
     const user = await person(req, res);
@@ -535,6 +584,7 @@ export function register(app: Express, deps: Deps): void {
     const items = Array.isArray(req.body?.items) ? (req.body.items as unknown[]).slice(0, 100) : [];
     const pool = getPool();
     const kd = kindDeps();
+    const mayPay = await readsPay(req);
     const results = [];
     for (const it of items) {
       const id = String(obj(it)?.id ?? "");
@@ -543,7 +593,7 @@ export function register(app: Express, deps: Deps): void {
         results.push({ id, ok: false, error: REVIEW_WORDS.gone });
         continue;
       }
-      const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body: finalBody(c, obj(it)?.body), summary: c.summary });
+      const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body: finalBody(c, obj(it)?.body, mayPay), summary: c.summary });
       results.push(checked.ok ? { id, ok: true, ...(c.kind === "setting" ? { note: "This setting's own route checks it when you accept." } : {}) } : { id, ok: false, error: checked.error, field: checked.field ?? null });
     }
     res.json({ results });
@@ -575,7 +625,7 @@ export function register(app: Express, deps: Deps): void {
     const checked = obj(it)?.checked === true;
     if (store.needsACheck(c) && !checked) return { id, ok: false, error: REVIEW_WORDS.checkFirst, field: null, code: "check_target" };
     if (c.status !== "proposed" && c.status !== "failed" && !store.needsACheck(c)) return { id, ok: false, error: REVIEW_WORDS.notProposed };
-    const body = finalBody(c, obj(it)?.body);
+    const body = finalBody(c, obj(it)?.body, await readsPay(req));
     // Read again now, so the page's warning is never itself out of date: the accepts since this change was proposed
     // that wrote what it writes, an earlier item of this same accept included. It informs; it never stops the accept.
     const stale = staleOf(c, body, (await store.acceptedSince(pool, new Date(c.createdAt))).map(acceptedRecord));
