@@ -107,7 +107,7 @@ check("ci.yml folds and checks every pull request, after the build and the budge
   const ci = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", ".github", "workflows", "ci.yml"), "utf8");
   const step = ci.indexOf("node scripts/check-post-fold.mjs --fold");
   assert.ok(step > 0, "ci.yml no longer simulates the fold");
-  assert.ok(step > ci.indexOf("node scripts/check-dist-budget.mjs"), "the in-place fold now runs before the budget, which would measure a folded tree");
+  assert.ok(step > ci.indexOf("scripts/check-dist-budget"), "the in-place fold now runs before the budget, which would measure a folded tree");
 });
 
 console.log(`check-post-fold.test: ${passed}/9 checks passed`);
