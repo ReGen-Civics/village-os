@@ -86,7 +86,9 @@ import {
   previewDraft,
   revertDraft,
   setDraftVision,
+  withdrawDraft,
 } from "../lib/orgDrafts";
+import { reopenProposalsFor } from "../lib/externalProposals";
 import {
   createRelation,
   deleteRelation,
@@ -99,7 +101,7 @@ import { captureIntoCurrentPattern } from "../lib/seasonPatterns";
 import { submissionStatusNotice } from "../lib/submissionNotices";
 import { isTombstone } from "../lib/oauthAccounts";
 import { SEAT_JOURNAL_LINE } from "../repos/orgSeatErasure";
-import { BALLOT_OPEN_REFUSAL, holderMayPublish, launchedByVote, openDraftBallot, publishOrgDraft } from "../lib/orgDraftDecide";
+import { BALLOT_OPEN_REFUSAL, holderMayPublish, launchedByVote, openDraftBallot, publishOrgDraft, withdrawDraftBallot } from "../lib/orgDraftDecide";
 import { expectedChangesOf } from "./orgDraftDecide";
 import { resolveSeatTerm } from "../../shared/seatTerms";
 import { payLineProblem, rolePayRules } from "../lib/workPay";
@@ -407,6 +409,33 @@ export function register(app: Express, deps: Deps): void {
     if (!r.ok) return res.status(409).json({ error: r.error });
     // After the commit, the same as publish: a reverted circle move is raw SQL too.
     res.json({ success: true, reverted: r.reverted, reloaded: await reloadCircles() });
+  });
+
+  /*
+   * Withdraw an open draft: it is kept, marked withdrawn, and can no longer be published (the coordinator, 26 Nov
+   * 2026: stale drafts on one role would overwrite live sections if published, and no door took them down). For an
+   * admin or a holder of org.decide (ROUTE_POWERS), the same people who publish one. A vote running on it is called
+   * off first, and a vote with cast ballots only by someone who may discard them, exactly as the review queue's own
+   * withdraw does (server/routes/review.ts); refusing that leaves the draft as it was.
+   */
+  app.post("/api/admin/org/drafts/:id/withdraw", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const actor = await authedUser(req);
+    if (!actor || !(req as any).adminUser) return res.status(401).json({ error: "auth_required", message: "Withdrawing a draft needs a named person" });
+    const draftId = String(req.params.id);
+    const mayDiscardVotes = hasCapability("proposal.decide", await capabilityCtx(actor));
+    const vote = await withdrawDraftBallot(getPool(), draftId, String(actor.id), mayDiscardVotes);
+    if (!vote.ok) return res.status(409).json({ error: vote.error, ballotId: vote.ballotId });
+    const r = await withdrawDraft(getPool(), draftId);
+    if (!r.ok) return res.status(r.status === null ? 404 : 409).json({ error: r.error, draftStatus: r.status });
+    const reopened = await reopenProposalsFor(getPool(), draftId);
+    await recordEvent(getPool(), {
+      kind: "org",
+      text: "a proposed reorganisation was withdrawn" + (reopened ? `, ${reopened} proposal(s) back in the queue` : ""),
+      actorUserId: String(actor.id),
+      audience: "admin",
+    });
+    res.json({ success: true, reopened, ballotWithdrawn: vote.ballotId });
   });
 
   app.post("/api/admin/org/relations", async (req, res) => {

@@ -90,7 +90,7 @@ function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: 
       if (/^\/api\/org\/drafts\/[^/]+\/decide$/.test(url)) return json(200, { status: "open", changes: 2, blocked: 0, blockedLines: [], youMayPublish: false, adminMayPublish: false, youMayPutToVillage: false, ballot: null, ...(opts.decide ?? {}) });
       if (/^\/api\/admin\/org\/drafts\/[^/]+\/preview$/.test(url))
         return opts.preview === 401 ? json(401, { error: "auth_required" }) : json(200, { lines: [{ changeId: "c1", reads: "Make the role Seed Keeper in the Garden circle", blocked: null }, { changeId: "c2", reads: "Give Seed Keeper one seat", blocked: null }], blocked: 0 });
-      if (url.includes("/publish") || url.endsWith("/put-to-village")) return json(200, { success: true });
+      if (url.includes("/publish") || url.endsWith("/put-to-village") || url.endsWith("/withdraw")) return json(200, { success: true });
       return json(404, {});
     }),
   );
@@ -260,6 +260,30 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     expect((await within(row).findByText(/The village is voting on this draft/)).textContent).toBe("The village is voting on this draft. The vote closes Nov 30.");
     expect(within(row).queryByTestId("draft-publish-dr_1")).toBeNull();
     expect(within(row).getByRole("link").textContent).toBe("Read the draft");
+  });
+
+  it("a decider may withdraw a draft, after a confirm, and is told when another open draft changes the same role", async () => {
+    const calls = stub({ changes: [], extra: [draft], decide: { adminMayPublish: true, youMayWithdraw: true, otherOpenDrafts: 1 } });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_1");
+    expect((await within(row).findByTestId("draft-overlap-dr_1")).textContent).toBe(
+      "Another open draft also changes this role. Read both before you publish, and withdraw the one that is out of date.",
+    );
+    fireEvent.click(within(row).getByTestId("draft-withdraw-dr_1"));
+    expect(row.textContent).toContain("Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes.");
+    expect(calls.some((c) => c.method === "POST")).toBe(false);
+    fireEvent.click(within(row).getByTestId("draft-yes-dr_1"));
+    await waitFor(() => expect(calls.find((c) => c.method === "POST")?.url).toBe("/api/admin/org/drafts/dr_1/withdraw"));
+    expect((await screen.findByTestId("row-notice")).textContent).toBe("Withdrawn. It can no longer be published.");
+  });
+
+  it("control: somebody who may not decide gets no Withdraw and no overlap line", async () => {
+    stub({ changes: [], extra: [draft], decide: {} });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_1");
+    await within(row).findByRole("link");
+    expect(within(row).queryByTestId("draft-withdraw-dr_1")).toBeNull();
+    expect(within(row).queryByTestId("draft-overlap-dr_1")).toBeNull();
   });
 
   it("?kind= shows one kind, says so, and offers everything back", async () => {

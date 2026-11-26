@@ -46,7 +46,8 @@ import { readsAsPlainMember } from "../lib/readAsMember";
 import type { AppDeps } from "../lib/appDeps";
 import type { SubjectCloser } from "../lib/applyDue";
 import type { RollNotice } from "../lib/ballotNotices";
-import { addChange, createDraft, getDraft, withdrawDraft } from "../lib/orgDrafts";
+import { addChange, createDraft, getDraft, listDrafts, withdrawDraft } from "../lib/orgDrafts";
+import { overlappingOpenDrafts } from "../../shared/orgDraftOverlap";
 import { parseArrangement } from "../lib/circlePlacement";
 import {
   BALLOT_OPEN_REFUSAL,
@@ -191,6 +192,10 @@ export function register(app: Express, deps: Deps): void {
     ]);
     const ready = draft.status === "open" ? await draftReadiness(pool, draft) : { blocked: 0, blockedLines: [], changes: draft.changes.length };
     const publishable = draft.status === "open" && !open && ready.blocked === 0 && ready.changes > 0;
+    // Another open draft changing the same role, seat or circle: told to whoever may decide drafts, so nobody publishes
+    // a stale one over a newer one. Counted, never named, and nothing for a reader who may decide neither.
+    const decides = admin || standing.holders.includes(userId);
+    const otherOpenDrafts = decides && draft.status === "open" ? overlappingOpenDrafts(draft, await listDrafts(pool, { status: "open" })).length : 0;
     res.json({
       draftId: draft.id,
       status: draft.status,
@@ -209,6 +214,10 @@ export function register(app: Express, deps: Deps): void {
       youMayPutToVillage: publishable && governanceOn() && putToVillageRefusal(standing, userId) === null,
       /** The admin panel's own door, which stands until a launch vote carries. */
       adminMayPublish: publishable && admin && !launched,
+      /** How many other open drafts change something this one changes (deciders only; 0 for everybody else). */
+      otherOpenDrafts,
+      /** Whoever may decide drafts may withdraw an open one (POST /api/admin/org/drafts/:id/withdraw). */
+      youMayWithdraw: decides && draft.status === "open",
       governanceOn: governanceOn(),
       ballot: open ? { id: open.id, status: open.status, closesAt: open.closesAt } : null,
       lastBallot: latest && latest.id !== open?.id ? { id: latest.id, status: latest.status, closesAt: latest.closesAt } : null,
