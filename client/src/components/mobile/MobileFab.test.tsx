@@ -104,6 +104,22 @@ describe("the corner, drawn", () => {
     expect(row(/about Admin/)).toBeNull();
   });
 
+  it("centres the macaw in the circle, and stands companions on its floor: one alignment each (the lead, 26 Nov 2026)", async () => {
+    // Both alignments on one button let the stylesheet's order choose, and it chose the floor: the bird sat 12px low.
+    await renderAt();
+    const visitor = screen.getByRole("button", { name: "Open help" }).className.split(/\s+/);
+    expect(visitor).toContain("items-center");
+    expect(visitor).not.toContain("items-end");
+    expect(screen.getByRole("button", { name: "Open help" }).querySelector("svg.living-scarlet-macaw")).not.toBeNull();
+    cleanup();
+    session.user = { id: "u1", name: "Ana" };
+    session.companions = [companion("1", "Scarlet")];
+    await renderAt();
+    const member = screen.getByRole("button", { name: /Your companions: Scarlet/ }).className.split(/\s+/);
+    expect(member).toContain("items-end");
+    expect(member).not.toContain("items-center");
+  });
+
   it("is the companions standing for a member who has them, with what waits, and carries the tour's id", async () => {
     session.user = { id: "u1", name: "Ana" };
     session.companions = [companion("1", "Scarlet", 2), companion("2", "Morpho")];
