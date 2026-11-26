@@ -30,9 +30,8 @@
  * hero centred, the tiles two to a row, every control at least 44px, and no
  * row wider than the screen.
  */
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Pencil } from "lucide-react";
-import { CARD_WORDS as W } from "@shared/playerCard";
 import { EDIT_WORDS } from "@shared/playerCardEdit";
 import type { PlayerCardPayload } from "@shared/playerCardPayload";
 import {
@@ -56,6 +55,7 @@ import {
 import { AccomplishedSection } from "./AccomplishedSection";
 import { fetchApplicationCard, fetchCard } from "./playerCardApi";
 import "./playerCard.css";
+import { CardWordsContext, cardWordsFor } from "./cardWords";
 
 export const CARD_LOAD_WORDS = {
   failed: "This card did not load.",
@@ -110,6 +110,9 @@ export function PlayerRoleCardView({
   /** A role proposal's changed words by role id, drawn in gold (role proposals PR C). */
   changed?: Readonly<Record<string, ChangedWords>>;
 }) {
+  // The fixed lines the server sent for a reader in another language; this card's components read them too.
+  const { i18n } = useLingui();
+  const W = useMemo(() => cardWordsFor(data.card.words, i18n), [data.card.words, i18n, i18n.locale]);
   const [editing, setEditing] = useState(false);
   const { card, sheets, links, viewer, timeZone } = data;
   const mayEdit = viewer.isSelf && mode === "live";
@@ -142,6 +145,7 @@ export function PlayerRoleCardView({
       </>
     ) : null;
   return (
+    <CardWordsContext.Provider value={data.card.words}>
     <CardEditContext.Provider
       value={{ editing: mayEdit && editing, owner: mayEdit, reload, quiet: mode !== "proposal" && !(mayEdit && editing) }}
     >
@@ -197,6 +201,7 @@ export function PlayerRoleCardView({
         </div>
       </NightContext.Provider>
     </CardEditContext.Provider>
+    </CardWordsContext.Provider>
   );
 }
 
@@ -224,11 +229,14 @@ export default function PlayerRoleCard({
   const [data, setData] = useState<PlayerCardPayload | null>(null);
   const [failed, setFailed] = useState(false);
 
+  // The card is said in the reader's language on the server, so a change of language reads it again.
+  const { i18n } = useLingui();
+  const locale = i18n.locale;
   const load = useCallback(() => {
     let alive = true;
     setFailed(false);
     void (
-      applicationId ? fetchApplicationCard(applicationId) : fetchCard(handle)
+      applicationId ? fetchApplicationCard(applicationId, locale) : fetchCard(handle, locale)
     ).then(r => {
       if (!alive) return;
       if (r.ok) setData(r.data);
@@ -237,7 +245,7 @@ export default function PlayerRoleCard({
     return () => {
       alive = false;
     };
-  }, [handle, applicationId]);
+  }, [handle, applicationId, locale]);
   useEffect(() => load(), [load]);
 
   // Arriving by a link to one role (`/profile/:handle#role-<id>`, from /roles):

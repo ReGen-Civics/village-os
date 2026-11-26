@@ -159,6 +159,6 @@ describe("the adoption letters say true days (verify B153, 11 Nov 2026)", () => 
 
   it("the conversation's subject says what we want, in our own voice", () => {
     expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyMoons: 3 }).title).toBe("We would love to talk with you");
-    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyMoons: 3, lang: "es" }).title).toBe("Nos encantaría conversar contigo");
+    expect(applicantUpdate("conversation", { firstName: "Ana", village: "V", roleNames: ["Cook"], replyMoons: 3, lang: "es" }).title).toBe("Nos encantaría conversar con usted");
   });
 });
