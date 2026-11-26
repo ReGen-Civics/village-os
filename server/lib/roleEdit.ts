@@ -408,7 +408,8 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
 
 // ── History and revert ──────────────────────────────────────────────────────
 
-const BEFORE_COLUMN: Record<string, string> = {
+/** The `org_roles` column each role-card payload key writes. Read by the history below and the draft page (orgDraftView.ts). */
+export const BEFORE_COLUMN: Record<string, string> = {
   name: "name",
   circleId: "circle_id",
   aim: "aim",

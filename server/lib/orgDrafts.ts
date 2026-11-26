@@ -98,6 +98,8 @@ export interface Draft {
   status: DraftStatus;
   threadId: string | null;
   createdBy: string | null;
+  /** When it was made (the draft page reads it; optional so a hand-built draft in a test needs none). */
+  createdAt?: string | null;
   publishedAt: string | null;
   revertedAt: string | null;
   changes: DraftChange[];
@@ -557,6 +559,7 @@ function rowsToDrafts({ drafts, changes }: DraftBodyRows): Draft[] {
   return (drafts as any[]).map((d) => ({
     id: d.id, title: d.title, rationale: d.rationale ?? null,
     status: d.status, threadId: d.thread_id ?? null, createdBy: d.created_by ?? null,
+    createdAt: d.created_at ? new Date(d.created_at).toISOString() : null,
     publishedAt: d.published_at ? new Date(d.published_at).toISOString() : null,
     revertedAt: d.reverted_at ? new Date(d.reverted_at).toISOString() : null,
     changes: byDraft.get(d.id) ?? [],
@@ -1549,6 +1552,15 @@ async function captureBefore(conn: PoolConnection, c: DraftChange): Promise<any>
   );
   // And the listing details of the role card, when this database has their columns (roleParameterColumns.ts).
   return row ? { ...row, ...(c.op === "update_seat" ? await parametersBefore(conn, c.orgRoleId) : {}) } : null;
+}
+
+/**
+ * What a change's target holds NOW, in the shape a publish captures as `before_json`. The draft page
+ * (server/lib/orgDraftView.ts) reads it on the pool, outside any transaction: it is a picture of the
+ * live chart for a reader, never revert data, and nothing is written from it.
+ */
+export function readLiveBefore(pool: Pool, c: DraftChange): Promise<any> {
+  return captureBefore(pool as unknown as PoolConnection, c);
 }
 
 /** Column names are a fixed map, never interpolated from a payload key. */
