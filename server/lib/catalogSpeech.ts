@@ -19,6 +19,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { setupI18n, type I18n } from "@lingui/core";
 import type { NoticeSay } from "../../shared/noticeKeyMessages";
+import { NOTIFICATION_KIND_WORDS } from "../../shared/notificationKindWords";
+import { PLAIN_WORDS } from "../../shared/notificationKinds";
 
 /**
  * The id Lingui gives a message: the first six characters of the base64url SHA-256 of the message, a unit
@@ -96,4 +98,20 @@ export function messageSay(i18n: I18n) {
     if (!(id in i18n.messages)) throw new Error(`no words for "${m.context}"`);
     return i18n._(id, values);
   };
+}
+
+/**
+ * The bell's batched line for `n` notices of one kind ("4 canvas answers are worth another look."), in a language:
+ * the same message the bell says (client/src/lib/noticeKindWordsI18n.ts), found by the English in
+ * shared/notificationKindWords.ts and the bell's context for it. Null when the language has no catalog or no words
+ * for the line, and the caller keeps the English.
+ */
+export function manyLineIn(locale: string, type: string, n: number, dirs?: string[]): string | null {
+  const i18n = speakerFor(locale, dirs);
+  if (!i18n) return null;
+  const known = Object.prototype.hasOwnProperty.call(NOTIFICATION_KIND_WORDS, type) ? NOTIFICATION_KIND_WORDS[type] : null;
+  const id = known
+    ? messageId(known.many, `the bell: several notices of one kind batched into a line, kind ${type}`)
+    : messageId(PLAIN_WORDS.many, "the bell: several notices of an unknown kind batched into a line");
+  return id in i18n.messages ? i18n._(id, { n }) : null;
 }
