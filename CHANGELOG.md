@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.77 (2026-11-26)
+
+### What changed for your village
+
+- **Org chart drafts are for those who decide them.** A plain member could read open org chart drafts, and saw them listed on the review page. Drafts are now read only by an admin or by someone holding the power to decide org changes. On the seats-ending list, a holder's name and focus show only to someone the village lets see people.
+- **Admin reads clearly in every mode.** Admin's panels and search no longer draw dark ink on a dark ground in dark mode; faint grey hints and red "Remove" text across Admin are now readable; every icon-only button has a name for screen readers; Admin › Words no longer sends a preview when it opens.
+- **A quiet entrance.** A visitor on the entrance no longer triggers refused reads in the background, and the corner button waits until they are past it.
+- **For QA:** a separate, read-only admin live view for a QA holder who is also an admin. Its token is minted on its own, lives one day, refuses every write at the database, refuses exports, secrets and tokens, and writes one audit line an hour. The live QA script gains a matching admin mode that blurs people's details in screenshots.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database changes. Going back to 1.3.76 still works.
+
+---
+
 ## 1.3.76 (2026-11-25)
 
 ### What changed for your village
