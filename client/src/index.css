@@ -3096,3 +3096,18 @@ html:has(#sera-changes [data-sera-strip-on]) {
   scroll-margin-top: 7rem;
   scroll-margin-bottom: calc(var(--tabbar-h, 0px) + 1rem);
 }
+
+/*
+ * The entrance's background video is decoration: when a browser will not start it, Safari and Chrome draw their own
+ * play button in its middle, over the welcome. Never show one; the still image stays until the video can play
+ * (client/src/components/EntranceBackdrop.tsx starts it, and tries again on the visitor's first touch).
+ */
+.entrance-video::-webkit-media-controls,
+.entrance-video::-webkit-media-controls-panel,
+.entrance-video::-webkit-media-controls-overlay-play-button,
+.entrance-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0;
+}
+

@@ -67,6 +67,14 @@ describe("the Sea chart's palette", () => {
     expect(contrastRatio(c("band-ink"), c("band"))).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("draws its paper and torn edges: no raw # inside an SVG data URL", () => {
+    // A raw # ends a data URL and starts its fragment, so the browser gets a cut-off SVG, refuses it,
+    // and the card falls back to a plain border. That shipped in 1.3.81 with every texture missing.
+    const uris = [...css.matchAll(/url\("(data:image\/svg\+xml,[^"]+)"\)/g)].map((m) => m[1]);
+    expect(uris.length).toBeGreaterThanOrEqual(4);
+    for (const u of uris) expect(u).not.toContain("#");
+  });
+
   it("is scoped to light mode on a village that chose it, and steps aside for Admin", () => {
     const selectors = css.replace(/\/\*[\s\S]*?\*\//g, "").match(/(^|[{};])\s*([^{}@;]+)\{/g) ?? [];
     const lists = selectors.map((s) => s.replace(/^[{};]/, "").replace(/\{$/, "").trim()).filter(Boolean);

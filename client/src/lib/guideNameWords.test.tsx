@@ -5,11 +5,12 @@
  * Spanish, and a name a village typed is never translated: Amora's guide stays "Maia" in Spanish (the lead,
  * 24 Nov 2026). The names here other than that one are invented.
  */
-import fs from "node:fs";
 import path from "node:path";
 import { i18n as appI18n, setupI18n, type I18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
+// @ts-expect-error - scripts/ is untyped JavaScript, deliberately outside tsconfig
+import { mergedPoText } from "../../../scripts/lib/poFragments.mjs";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -24,9 +25,9 @@ vi.mock("@/lib/guideApi", () => ({ fetchGuide: async () => guideAnswer.value }))
 import GuideChat from "@/components/GuideChat";
 import { useGuideName } from "@/hooks/useGuideName";
 
-/** Every single-line entry of es.po, by the id Lingui gives it at runtime. */
+/** Every single-line entry of es.po, with the pending es.d fragments folded in as the build folds them, by the id Lingui gives it at runtime. */
 function spanishMessages(): Record<string, string> {
-  const po = fs.readFileSync(path.resolve(__dirname, "../locales/es.po"), "utf8");
+  const po = mergedPoText(path.resolve(__dirname, "../locales"), "es");
   const messages: Record<string, string> = {};
   const entry = /(?:^msgctxt "((?:[^"\\]|\\.)*)"\n)?^msgid "((?:[^"\\]|\\.)+)"\nmsgstr "((?:[^"\\]|\\.)+)"$/gm;
   const unquote = (s: string) => JSON.parse(`"${s}"`) as string;
@@ -52,15 +53,15 @@ describe("the unnamed guide's label", () => {
   it("in Spanish comes from es.po, for each reader", () => {
     expect(guideNameIn("", "public", es)).toEqual({ name: "la guía de la aldea", named: false });
     expect(guideNameIn("  ", "member", es)).toEqual({ name: "la guía de la aldea", named: false });
-    expect(guideNameIn(null, "founder", es)).toEqual({ name: "tu guía de la aldea", named: false });
-    expect(guideNameIn(null, "admin", es)).toEqual({ name: "tu guía de la aldea", named: false });
+    expect(guideNameIn(null, "founder", es)).toEqual({ name: "su guía de la aldea", named: false });
+    expect(guideNameIn(null, "admin", es)).toEqual({ name: "su guía de la aldea", named: false });
   });
 
   it("a name the server already resolved: the English label is said in Spanish, keeping its capital", () => {
     expect(guideLabelIn("the village guide", es)).toBe("la guía de la aldea");
     expect(guideLabelIn("The village guide", es)).toBe("La guía de la aldea");
-    expect(guideLabelIn("your village guide", es)).toBe("tu guía de la aldea");
-    expect(guideLabelIn("Your village guide", es)).toBe("Tu guía de la aldea");
+    expect(guideLabelIn("your village guide", es)).toBe("su guía de la aldea");
+    expect(guideLabelIn("Your village guide", es)).toBe("Su guía de la aldea");
     expect(guideLabelIn("the village guide", en)).toBe("the village guide");
   });
 });
@@ -86,7 +87,7 @@ describe("the guide's first message, in Spanish", () => {
   it("an unnamed guide says Hola, soy la guía de la aldea, never the English label", () => {
     Element.prototype.scrollTo = (() => {}) as typeof Element.prototype.scrollTo;
     chat(guideNameIn("", "public", es).name, { venture: true });
-    expect(screen.getByText(/^Hola, soy la guía de la aldea\. Demos forma juntos a tu emprendimiento/)).toBeTruthy();
+    expect(screen.getByText(/^Hola, soy la guía de la aldea\. Demos forma juntos a su emprendimiento/)).toBeTruthy();
     expect(document.body.textContent).not.toContain("the village guide");
   });
 
@@ -137,9 +138,9 @@ describe("the founder's Name your guide note, in Spanish", () => {
         <NameYourGuide guide={guideNameIn("", "founder", es)} audience="founder" ready />
       </Router>,
     );
-    expect(screen.getByText("Tu guía de la aldea todavía no tiene nombre")).toBeTruthy();
-    expect(screen.getByText(/ven “la guía de la aldea” hasta que le pongas nombre/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Ponle nombre a tu guía/ })).toBeTruthy();
+    expect(screen.getByText("Su guía de la aldea todavía no tiene nombre")).toBeTruthy();
+    expect(screen.getByText(/ven “la guía de la aldea” hasta que le ponga nombre/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Póngale nombre a su guía/ })).toBeTruthy();
   });
 
   it("CONTROL: a named guide shows no note at all", async () => {

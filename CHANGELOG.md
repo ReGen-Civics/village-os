@@ -40,6 +40,46 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.84 (2026-11-26)
+
+### What changed for your village
+
+- **Dark is the first-visit default.** Someone arriving for the first time sees the night look; the switch in the header still changes it, and their choice is remembered.
+- **The entrance video plays on iPhone.** Safari now starts it, and if a phone still refuses, the still picture shows instead of the browser's play button.
+- **Sea chart's paper shows.** The texture, grid and torn edges now load, and a sheet's torn edge is its own edge.
+- **Calmer pages.** The mycelium threads are gone, the apply-by date is a plain line, and the macaw in the corner button is larger.
+- **A lighter download.** More small pieces of the site now travel together.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.83 still works.
+
+---
+
+## 1.3.83 (2026-11-26)
+
+### What changed for your village
+
+- **Emails in the reader's language.** The mail the platform already sends (the sign-in code, confirming an address, setting a password, adding an address, the welcome, a reservation received, and notice emails) now goes out in Spanish to a member who reads in Spanish. Anyone with no language set gets exactly the English they got before. No new emails, and nobody new receives one.
+- **The player card in Spanish.** It is translated on the server, so the download does not grow.
+- **Spanish speaks with usted everywhere,** including the applicant mails and the sentences written in code.
+- **Sync with Sera works again.** Sera changed how it replies on 3 November, and the village could no longer read the replies. It now reads both forms, so the sync history fills again with the key already saved in Integrations.
+- **Fix:** in Sea chart, the band on the Governance page matches the chart paper.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.82 still works.
+
+---
+
 ## 1.3.82 (2026-11-26)
 
 ### What changed for your village
