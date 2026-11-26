@@ -20,9 +20,8 @@
 #   - at that commit, package.json, PLATFORM_VERSION, a `## X.Y.Z` section in
 #     CHANGELOG.md and docker-compose.yml's default image all name the version;
 #   - no tag vX.Y.Z exists yet;
-#   - ci concluded success on a push run at exactly that commit, OR the
-#     commit is a merge whose tree equals its second parent's, and that parent
-#     passed a ci push run with every job present and green (the tested twin).
+#   - ci concluded success on a push run at exactly that commit. (The tested
+#     twin, a second way through, was retired on 26 Nov 2026: RELEASING.md.)
 #
 # THEN release.yml HAS TO RUN, and it decides whether anything publishes. It
 # asks ci again, runs the rollback check, builds, boots, and only then pushes.
@@ -125,21 +124,6 @@ jobs:
           # The same question release.yml asks before it builds, narrowed to
           # push runs: a pull_request run tests a merge that main never held.
           gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&per_page=100" > runs.json
-          # THE TESTED TWIN. A batch merged with --merge is a merge commit whose
-          # tree is often byte-identical to the batch head's, which already passed
-          # a push run. Gather that parent's push runs and each green run's jobs;
-          # the guard decides whether the trees match and the run was whole.
-          echo '{"workflow_runs":[]}' > twin-runs.json
-          echo '{}' > twin-jobs.json
-          if parent=$(git rev-parse --verify --quiet "${sha}^2^{commit}"); then
-            gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${parent}&event=push&per_page=100" > twin-runs.json
-            for id in $(jq -r '.workflow_runs[] | select(.status == "completed" and .conclusion == "success") | .id' twin-runs.json); do
-              gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs?filter=latest&per_page=100" > "twin-jobs-${id}.json"
-              jq --arg id "$id" --slurpfile j "twin-jobs-${id}.json" '. + {($id): $j[0].jobs}' twin-jobs.json > twin-jobs.next
-              mv twin-jobs.next twin-jobs.json
-            done
-            echo "second parent ${parent}"
-          fi
           git ls-remote --tags origin > tags.txt
           echo "commit ${sha}"
 
@@ -150,8 +134,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/tag-release-check.mjs --version "$VERSION" --sha "$SHA" \
-            --main-ref origin/main --ci-runs runs.json --remote-tags tags.txt \
-            --twin-runs twin-runs.json --twin-jobs twin-jobs.json
+            --main-ref origin/main --ci-runs runs.json --remote-tags tags.txt
 
       - name: Tag and push
         id: push
