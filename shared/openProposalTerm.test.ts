@@ -58,7 +58,7 @@ describe("the words", () => {
     const at = (replyMoons: number | null | undefined, lang?: "es") => confirmLetter({ firstName: null, village: "Willowmere", roleNames: ["Cook"], link: "https://x", replyMoons, lang }).text;
     expect(at(1)).toContain("You'll hear from us within one moon cycle.");
     expect(at(2)).toContain("You'll hear from us within 2 moon cycles.");
-    expect(at(1, "es")).toContain("Tendrás noticias nuestras dentro de un ciclo lunar.");
+    expect(at(1, "es")).toContain("Tendrá noticias nuestras dentro de un ciclo lunar.");
     expect(at(1)).not.toMatch(/days/);
     // The founding team first: the wait said in words, never a number.
     expect(at(null)).toContain("We're filling our founding team first");
