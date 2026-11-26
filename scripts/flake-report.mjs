@@ -108,6 +108,16 @@ export function rank(attributed) {
     .sort((a, b) => b.events - a.events || b.codes - a.codes || (a.culprit < b.culprit ? -1 : 1));
 }
 
+/**
+ * A test name read from a log, made safe inside a code span in a table cell:
+ * backslashes first (or an escaped pipe could be unescaped by the name itself),
+ * then pipes, which would end the cell; a backtick would end the code span, so
+ * it becomes a plain quote, and a line break would end the row.
+ */
+export function tableCell(text) {
+  return String(text).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/`/g, "'").replace(/[\r\n]+/g, " ");
+}
+
 export function markdown(ranked, { days, runs, attempts, events, unkeyed }) {
   const lines = [
     `## Flaky CI, last ${days} day(s)`,
@@ -121,7 +131,7 @@ export function markdown(ranked, { days, runs, attempts, events, unkeyed }) {
     return lines.join("\n");
   }
   lines.push("| # | Fails, then passes on the same code | Events | Distinct code | Example |", "|---|---|---|---|---|");
-  ranked.forEach((r, i) => lines.push(`| ${i + 1} | \`${r.culprit.replace(/\|/g, "\\|")}\` | ${r.events} | ${r.codes} | [run](${r.example}) |`));
+  ranked.forEach((r, i) => lines.push(`| ${i + 1} | \`${tableCell(r.culprit)}\` | ${r.events} | ${r.codes} | [run](${r.example}) |`));
   lines.push("", "Fix the cause. A retry, a skip or a looser assertion is not a fix.");
   return lines.join("\n");
 }
