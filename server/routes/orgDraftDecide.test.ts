@@ -333,6 +333,38 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
       expect(n.json.changes.find((c: any) => c.op === "seat_holder").kind).toBe("other");
     });
 
+    it("shows the three versions when the live card moved on a field after the draft was written (0436)", async () => {
+      const { draftId, roleId } = await roleAndEdit();
+      await pool.query("UPDATE org_roles SET aim = ? WHERE id = ?", ["Steward the land so the project grows gently within what the watershed can carry.", roleId]); // module-review-ok: the test edits the live card behind the draft's back, the case this read exists to show
+      const r = await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1");
+      const [c] = r.json.changes;
+      expect(c.baseKnown).toBe(true);
+      const aim = c.fields.find((f: any) => f.field === "aim");
+      expect(aim).toMatchObject({ moved: true, base: "Steward the land so the project grows within what the watershed can carry." });
+      expect(aim.before).toContain("grows gently");
+      expect(aim.movedRuns.filter((x: any) => x.op !== "same")).toEqual([{ op: "add", text: "gently " }]);
+      expect(c.fields.find((f: any) => f.field === "accountabilities")).toMatchObject({ moved: false, movedRuns: [] });
+    });
+
+    it("a change written before 0436 says it has no base, and nothing reads as moved", async () => {
+      const { draftId, changeId, roleId } = await roleAndEdit();
+      await pool.query("UPDATE org_draft_changes SET base_json = NULL WHERE id = ?", [changeId]); // module-review-ok: the test makes a change as the release before 0436 wrote it
+      await pool.query("UPDATE org_roles SET aim = 'Moved on.' WHERE id = ?", [roleId]); // module-review-ok: the live card moves, which an unknown base cannot see
+      const [c] = (await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1")).json.changes;
+      expect(c.baseKnown).toBe(false);
+      expect(c.fields.every((f: any) => f.moved === false && f.base === null)).toBe(true);
+    });
+
+    it("never captures a base for a change about who holds a role", async () => {
+      const d = await makeDraft();
+      const draft = await getDraft(pool, d.id);
+      expect(draft?.changes.find((c) => c.op === "seat_holder")?.baseJson).toBeNull();
+      const edit = await roleAndEdit();
+      const base = (await getDraft(pool, edit.draftId))?.changes[0].baseJson;
+      expect(base).toMatchObject({ id: edit.roleId });
+      expect(base).not.toHaveProperty("terms_offer_by");
+    });
+
     it("carries only the allowlisted keys, at every level", async () => {
       const { draftId } = await roleAndEdit();
       const r = await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1");

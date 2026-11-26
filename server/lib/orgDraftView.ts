@@ -61,14 +61,31 @@ export function asShown(v: unknown): string | string[] | null {
 const asLines = (v: string | string[] | null): string[] => (v === null ? [] : Array.isArray(v) ? v : [v]);
 
 /** One field, before and after, diffed, or hidden when it is terms the reader may not read. */
-export function fieldView(field: string, beforeRaw: unknown, afterRaw: unknown, readsTerms: boolean): DraftFieldView {
+export function fieldView(field: string, beforeRaw: unknown, afterRaw: unknown, readsTerms: boolean, baseRaw?: unknown): DraftFieldView {
   const terms = TERMS_KEYS.includes(field);
-  if (terms && !readsTerms) return pick({ field, label: labelOf(field), shape: "terms" as const, before: null, after: null, runs: [], hidden: true }, DRAFT_FIELD_KEYS);
   const before = asShown(beforeRaw);
+  const base = baseRaw === undefined ? null : asShown(baseRaw);
+  // Moved: the draft knows its base and the live card no longer says it.
+  const moved = baseRaw !== undefined && JSON.stringify(base) !== JSON.stringify(before);
+  if (terms && !readsTerms) return pick({ field, label: labelOf(field), shape: "terms" as const, before: null, after: null, runs: [], hidden: true, base: null, moved, movedRuns: [] }, DRAFT_FIELD_KEYS);
   const after = asShown(afterRaw);
-  const list = Array.isArray(before) || Array.isArray(after);
-  const runs = list ? lineDiff(asLines(before), asLines(after)) : wordDiff(before as string | null, after as string | null);
-  return pick({ field, label: labelOf(field), shape: terms ? ("terms" as const) : list ? ("list" as const) : ("text" as const), before, after, runs, hidden: false }, DRAFT_FIELD_KEYS);
+  const list = Array.isArray(before) || Array.isArray(after) || Array.isArray(base);
+  const diff = (a: string | string[] | null, b: string | string[] | null) => (list ? lineDiff(asLines(a), asLines(b)) : wordDiff(a as string | null, b as string | null));
+  return pick(
+    {
+      field,
+      label: labelOf(field),
+      shape: terms ? ("terms" as const) : list ? ("list" as const) : ("text" as const),
+      before,
+      after,
+      runs: diff(before, after),
+      hidden: false,
+      base,
+      moved,
+      movedRuns: moved ? diff(base, before) : [],
+    },
+    DRAFT_FIELD_KEYS,
+  );
 }
 
 const KIND: Partial<Record<string, DraftChangeKind>> = { update_seat: "edit", create_seat: "new", rest_seat: "removed" };
@@ -99,10 +116,12 @@ async function changeView(pool: Pool, open: boolean, c: DraftChange, names: Map<
   // captured, so the page keeps saying what that publish changed after later edits moved the card on.
   const before = async (op: DraftChange["op"]) =>
     (open ? await readLiveBefore(pool, { ...c, op }) : c.beforeJson && typeof c.beforeJson === "object" ? c.beforeJson : null) as Record<string, unknown> | null;
+  // The base is read only for an open draft: a published one compares against its publish's own capture.
+  const base = open && c.baseJson && typeof c.baseJson === "object" ? (c.baseJson as Record<string, unknown>) : null;
   if (kind === "edit") {
     const live = await before("update_seat");
     const keys = Object.keys(payload).filter((k) => k in BEFORE_COLUMN || k in PAY_COLUMN);
-    fields = keys.map((k) => fieldView(k, liveValue(live, k), payload[k], deps.readsTerms));
+    fields = keys.map((k) => fieldView(k, liveValue(live, k), payload[k], deps.readsTerms, base ? liveValue(base, k) : undefined));
     unchanged = CARD_FIELD_KEYS.filter((k) => !keys.includes(k));
   } else if (kind === "new") {
     const keys = Object.keys(payload).filter((k) => k in BEFORE_COLUMN || k in PAY_COLUMN);
@@ -120,6 +139,7 @@ async function changeView(pool: Pool, open: boolean, c: DraftChange, names: Map<
       target,
       reads: line?.reads ?? "",
       blocked: line?.blocked ?? null,
+      baseKnown: !!base,
       fields,
       unchanged,
       holders: kind === "removed" ? holdersOf(c.orgRoleId) : null,
