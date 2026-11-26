@@ -23,31 +23,46 @@ import type { Widened } from "@shared/wordTableTypes";
 /** The drawn table's type: every literal string widened to `string`, functions keep their arguments. */
 export type Drawn<T> = Widened<T>;
 
-/** The mirror of a shared table: a descriptor for each string, a function returning one for each function. */
+/**
+ * What a function entry returns in the mirror: one descriptor, or for a sentence built from optional parts, a
+ * list of descriptors drawn one by one and joined (a null or false part is left out). A function the shared
+ * table lets return null may return null here too.
+ */
+export type MirrorLine = MessageDescriptor | readonly (MessageDescriptor | null | false)[];
+
+/**
+ * The mirror of a shared table: a descriptor for each string, a function returning one for each function, and
+ * each other value (a null, a boolean, a number) exactly as the shared table has it.
+ */
 export type WordMirror<T> = {
   [K in keyof T]: T[K] extends string
     ? MessageDescriptor
     : T[K] extends (...args: infer A) => infer R
-      ? (...args: A) => R extends string ? MessageDescriptor : MessageDescriptor | Extract<R, null>
-      : T[K] extends object
-        ? WordMirror<T[K]>
-        : never;
+      ? (...args: A) => R extends string ? MirrorLine : MirrorLine | Extract<R, null>
+      : T[K] extends readonly unknown[]
+        ? T[K]
+        : T[K] extends object
+          ? WordMirror<T[K]>
+          : T[K];
 };
 
 function isDescriptor(v: unknown): v is MessageDescriptor {
   return typeof v === "object" && v !== null && typeof (v as MessageDescriptor).id === "string";
 }
 
-/** The table in `i18n`'s language. A function entry translates whatever descriptor it returns, and passes a null through. */
+/** One function entry's result in `i18n`'s language: a list of parts is drawn part by part and joined. */
+function drawLine(line: MirrorLine | null | undefined, i18n: I18n): string | null | undefined {
+  if (line === null || line === undefined) return line;
+  if (Array.isArray(line)) return line.map((d) => (d ? i18n._(d) : "")).join("");
+  return i18n._(line as MessageDescriptor);
+}
+
+/** The table in `i18n`'s language. A function entry translates whatever it returns, and passes a null through. */
 export function drawWords<T>(mirror: WordMirror<T>, i18n: I18n = appI18n): Drawn<T> {
   const draw = (node: unknown): unknown => {
     if (isDescriptor(node)) return i18n._(node);
-    if (typeof node === "function") {
-      return (...args: unknown[]) => {
-        const d = (node as (...a: unknown[]) => unknown)(...args);
-        return d === null || d === undefined ? d : i18n._(d as MessageDescriptor);
-      };
-    }
+    if (typeof node === "function") return (...args: unknown[]) => drawLine((node as (...a: unknown[]) => MirrorLine)(...args), i18n);
+    if (node === null || typeof node !== "object" || Array.isArray(node)) return node;
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(node as Record<string, unknown>)) out[k] = draw(v);
     return out;

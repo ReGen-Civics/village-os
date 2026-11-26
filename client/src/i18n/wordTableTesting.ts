@@ -10,7 +10,13 @@
  */
 import { setupI18n, type MessageDescriptor } from "@lingui/core";
 import { expect } from "vitest";
-import { drawWords, type WordMirror } from "./wordTable";
+import { drawWords, type MirrorLine, type WordMirror } from "./wordTable";
+
+/** Every id a function entry's result carries: one descriptor, or each part of a list. */
+function idsOf(line: MirrorLine | null): string[] {
+  if (!line) return [];
+  return Array.isArray(line) ? line.flatMap((d) => (d ? [d.id] : [])) : [(line as MessageDescriptor).id];
+}
 
 /** For each function entry, by its dotted path, the argument lists to try it with. */
 export type Samples = Record<string, readonly (readonly unknown[])[]>;
@@ -18,7 +24,7 @@ export type Samples = Record<string, readonly (readonly unknown[])[]>;
 type Leaf = { path: string; english: unknown; mirror: unknown };
 
 function leaves(english: unknown, mirror: unknown, path = ""): Leaf[] {
-  if (typeof english === "string" || typeof english === "function") return [{ path, english, mirror }];
+  if (english === null || typeof english !== "object" || Array.isArray(english)) return [{ path, english, mirror }];
   const out: Leaf[] = [];
   for (const k of Object.keys(english as object)) {
     out.push(...leaves((english as Record<string, unknown>)[k], (mirror as Record<string, unknown> | undefined)?.[k], path ? `${path}.${k}` : k));
@@ -40,6 +46,10 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
       ids.add((l.mirror as MessageDescriptor).id);
       continue;
     }
+    if (typeof l.english !== "function") {
+      expect(l.mirror, `${l.path} is the shared table's own value`).toEqual(l.english);
+      continue;
+    }
     expect(typeof l.mirror, `${l.path} is a function in the mirror too`).toBe("function");
     const runs = samples[l.path];
     if (!runs?.length) {
@@ -47,8 +57,7 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
       continue;
     }
     for (const args of runs) {
-      const d = (l.mirror as (...a: unknown[]) => MessageDescriptor | null)(...args);
-      if (d) ids.add(d.id);
+      for (const id of idsOf((l.mirror as (...a: unknown[]) => MirrorLine | null)(...args))) ids.add(id);
     }
   }
   expect(noSamples, "give these function entries sample arguments").toEqual([]);
@@ -61,11 +70,12 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
       expect(pick(marked, l.path), `${l.path} goes through the catalog`).toBe("XX");
       continue;
     }
+    if (typeof l.english !== "function") continue;
     for (const args of samples[l.path]) {
       const want = (l.english as (...a: unknown[]) => unknown)(...args);
       expect((pick(en, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) in English`).toBe(want);
       if (want !== null && want !== undefined) {
-        expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toBe("XX");
+        expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toMatch(/^(XX)+$/);
       }
     }
   }
