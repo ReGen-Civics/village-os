@@ -10,7 +10,7 @@
  *   - the status pill says the kind ("Open paid role", "Open role"), and the pay split shows as a thin bar with a
  *     one-line legend in place of the old "Open paid role ·" line (PaySplitMini.tsx); a volunteer role says so.
  *   - b2: circle, commitment and place on one line with their signs. The apply-by date left its small gold tile for a
- *     stamp (the lead, 24 Nov 2026, ApplyByStamp.tsx): a tilted seal under "Read the card" from 1024px, and a ribbon
+ *     stamp (the lead, 24 Nov 2026, ApplyByStamp.tsx): a line of plain text under "Read the card" from 1024px (26 Nov 2026: once a tilted seal), and a ribbon
  *     across the painting's top edge below that, both in the village's true gold (the dash gold, never `notice`, which a village may tint the colour
  *     of its buttons).
  *   - b1: the related roles as wrapping chips (lineupParts.tsx).
@@ -122,7 +122,7 @@ export default function FoundingRow(p: FoundingRowProps) {
             <span className="sr-only">{`: ${p.name}`}</span>
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>
-          {/* From 1024px the card's right column is empty under the button: the seal stands there. */}
+          {/* From 1024px the card's right column is empty under the button: the last day to apply, as plain text, stands there. */}
           {p.applyBy && <ApplyByStamp parts={p.applyBy} className="hidden lg:block" />}
           </div>
         </div>
