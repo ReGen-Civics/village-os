@@ -199,7 +199,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
 
   /** The welcome: on the card, or on the video's first screen when the village set a video. */
   const intro = (onVideo: boolean) => (
-    <header className="flex flex-col gap-4">
+    <header className={onVideo ? "flex flex-col gap-3 sm:gap-4" : "flex flex-col gap-4"}>
       <span className={onVideo ? ON_VIDEO.ring : "inline-flex size-12 items-center justify-center rounded-full border-2 border-notice text-notice"} aria-hidden="true">
         <DoorOpen className="size-6" />
       </span>
@@ -236,7 +236,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
         {backdrop && <EntranceBackdrop backdrop={backdrop} />}
         {backdrop && (
           <div className={HERO} data-entrance-hero="">
-            <div className="container flex max-w-2xl flex-col gap-6">
+            <div className="container flex max-w-2xl flex-col gap-4 sm:gap-6">
               {intro(true)}
               <a href={`#${fieldId("name")}`} onClick={comeIn} className={`${BTN_PRIMARY} self-start text-base`} data-entrance-come-in="">
                 {t({ message: "Come in", context: "portal entrance: the first screen's door down to the form, over the village's video" })}

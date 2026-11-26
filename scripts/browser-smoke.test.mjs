@@ -13,7 +13,7 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { DEFAULT_ROUTES, applyBoxProblems, longAnswer, parseArgs } from "./browser-smoke.mjs";
+import { DEFAULT_ROUTES, applyBoxProblems, entranceDoorProblems, longAnswer, parseArgs } from "./browser-smoke.mjs";
 
 const SMOKE = path.resolve(import.meta.dirname, "browser-smoke.mjs");
 let checks = 0;
@@ -38,6 +38,18 @@ expect("a whole, uncovered Apply passes", applyBoxProblems(clear).length === 0, 
 // 1.3.42 exactly: top edge at 606, inside the 664 screen, under the tab bar. The box alone passes; the hit test does not.
 const under = applyBoxProblems({ ...clear, top: 606, bottom: 654, covered: true, hit: "<nav>" });
 expect("the 1.3.42 Apply under the tab bar fails as covered", under.length === 1 && /covers the Apply/.test(under[0]) && /<nav>/.test(under[0]), JSON.stringify(under));
+
+// The entrance's Come in on an iPhone 13 (1.3.77): the door at 580 to 624 of 664, the tab bar from 599.
+const doorOk = { vh: 664, barTop: 599, headerBottom: 97, door: { top: 470, bottom: 514, covered: false, hit: "" }, field: null };
+expect("a door above the tab bar passes", entranceDoorProblems(doorOk).length === 0, JSON.stringify(entranceDoorProblems(doorOk)));
+const doorUnder = entranceDoorProblems({ ...doorOk, door: { top: 580, bottom: 624, covered: true, hit: "<nav> at 195,602" } });
+expect("the 1.3.77 door under the tab bar fails", doorUnder.some((p) => p.includes("runs under the tab bar")) && doorUnder.some((p) => p.includes("covers Come in")), JSON.stringify(doorUnder));
+const fieldOk = { ...doorOk, field: { name: "name", top: 160, bottom: 204, covered: false, hit: "" } };
+expect("a focused name field below the header passes", entranceDoorProblems(fieldOk).length === 0, JSON.stringify(entranceDoorProblems(fieldOk)));
+const fieldUnder = entranceDoorProblems({ ...doorOk, field: { name: "name", top: 40, bottom: 84, covered: true, hit: "<header>" } });
+expect("a focused field under the sticky header fails", fieldUnder.some((p) => p.includes("under the sticky header")), JSON.stringify(fieldUnder));
+expect("focus left elsewhere fails", entranceDoorProblems({ ...doorOk, field: { name: "email", top: 160, bottom: 204, covered: false, hit: "" } }).some((p) => p.includes("not the name field")));
+expect("no door drawn fails", entranceDoorProblems(null).length === 1);
 expect("an Apply cut off at the foot fails", /not whole/.test(applyBoxProblems({ ...clear, top: 640, bottom: 688 }).join()));
 expect("an Apply that is only the bar along the foot fails", /bar along the foot/.test(applyBoxProblems({ ...clear, inBar: true }).join()));
 expect("no Apply fails", /no Apply/.test(applyBoxProblems(null).join()));
