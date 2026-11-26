@@ -1,0 +1,12 @@
+-- 0435: a notice can carry its words as a key and the values they name, so the bell draws it in the reader's
+-- language (the lead, 26 Nov 2026: the whole site in Spanish; the design approved by the coordinator the same day).
+--
+-- A notice's `title` and `body` are written in English when it is stored, and stay exactly as they are: the email,
+-- the digest, an older client and every notice before this one read them. `words` sits beside them, as JSON:
+-- { "key": a key in shared/noticeKeys.ts, "params": the raw values, "own": the parts the village wrote itself,
+--   "title": the title it was stored with }. The bell translates only where the stored title still matches, so a
+-- notice the erasure rewrote, by this release or an older one, never shows a translation of what it used to say.
+--
+-- Expand only: one nullable column, no default. The previous release names its own columns on every INSERT and
+-- never reads this one.
+ALTER TABLE `notifications` ADD COLUMN `words` text NULL;

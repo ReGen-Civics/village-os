@@ -36,7 +36,8 @@
  *      (`forgetNoticesByKey`, below; round 2, findings 6 and 12).
  *
  * WHAT HAPPENS TO A ROW FOUND. It stays, on the bell it was rung on, with the
- * sweep's constant title and no body, which is the treatment the actor match
+ * sweep's constant title, no body and no `words` (its key and values, which can
+ * name the member: shared/noticeKeys.ts), which is the treatment the actor match
  * always gave. Its EMAILED COPIES go blank first, while the row can still find
  * them: the immediate email the spine sent under `notify:<id>`, and the daily
  * digest that listed its title, found by the digest's own key and the second
@@ -221,7 +222,9 @@ async function rewriteNotices(
   }
   for (let i = 0; i < notices.length; i += CHUNK) {
     const [res] = await pool.query<ResultSetHeader>(
-      `UPDATE notifications SET actor_user_id = NULL, title = ?, body = NULL${opts.link ? ", link = NULL" : ""} WHERE id IN (?)`,
+      // `words` goes too: its values can name the member (shared/noticeKeys.ts), and a stored key must never
+      // outlive the words it translated. The read also drops it once the title changes, for an older release's sweep.
+      `UPDATE notifications SET actor_user_id = NULL, title = ?, body = NULL, words = NULL${opts.link ? ", link = NULL" : ""} WHERE id IN (?)`,
       [DEPARTED_NOTICE_TITLE, notices.slice(i, i + CHUNK).map((n) => n.id)],
     );
     counts.rewritten += Number(res.affectedRows ?? 0);
