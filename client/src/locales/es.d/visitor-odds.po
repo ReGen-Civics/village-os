@@ -144,14 +144,9 @@ msgid "You asked us to stop every email to this address."
 msgstr "Usted nos pidió detener todo correo a esta dirección."
 
 # needs-native-review: visitor pages, 26 Nov 2026
-msgctxt "master plan: the land tile's default unit"
-msgid "Acres"
-msgstr "acres"
-
-# needs-native-review: visitor pages, 26 Nov 2026
 msgctxt "master plan: the land tile, the village's unit after it"
-msgid "Total {unit}"
-msgstr "Total de {unit}"
+msgid "Total {0}"
+msgstr "Total de {0}"
 
 # needs-native-review: visitor pages, 26 Nov 2026
 msgctxt "work with us: an error"

@@ -80,8 +80,7 @@ function statShapes(page: ResolvedPage | null) {
 function withStatedUnit<T extends { key: string; label: string; note: string }>(stat: T, i18n: I18n = appI18n): T {
   if (stat.key !== "acres") return stat;
   // The unit is the village's own word (Admin); "Total" is the platform's, in the reader's language.
-  const unit = stat.note || i18n._(msg({ message: "Acres", context: "master plan: the land tile's default unit" }));
-  return { ...stat, label: i18n._(msg({ message: `Total ${unit}`, context: "master plan: the land tile, the village's unit after it" })) };
+  return { ...stat, label: i18n._(msg({ message: `Total ${stat.note || "Acres"}`, context: "master plan: the land tile, the village's unit after it" })) };
 }
 
 /** Icons for the zone cards, handed out in order. The words are the village's (Admin, Pages, Master Plan). */
