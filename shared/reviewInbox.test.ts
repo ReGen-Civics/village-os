@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromReviewQueue, fromSeraDifferences, mergeSections, searchedCode, stateOfStatus } from "./reviewInbox";
+import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromOrgDrafts, fromReviewQueue, fromSeraDifferences, mergeSections, searchedCode, stateOfStatus } from "./reviewInbox";
 import type { InboxItem } from "./reviewInbox";
 
 const connector = {
@@ -44,8 +44,10 @@ describe("reading each queue's answer", () => {
   it("files the approvals read's seatings and role-change drafts under the agent, as the agent read names them", () => {
     const fromApproval = fromApprovals({ waiting: [{ id: "ap_1", kind: "setting", title: "Turn a dial", at: "2026-11-20T00:00:00.000Z" }, { id: "ap_2", kind: "seating", title: "Seat someone", at: "2026-11-20T00:00:01.000Z" }, { id: "draft:d1", kind: "role_change", title: "Move a role", at: null }] });
     const fromAgent = fromAgentWaiting({ roleChanges: [{ draftId: "d1", title: "Move a role" }], seatings: [{ id: "ap_2", title: "Seat someone", createdAt: "2026-11-20T00:00:01.000Z" }] });
-    expect(fromApproval.map((i) => i.key)).toEqual(["approval:ap_1", "agent:seating:ap_2", "agent:draft:d1"]);
-    expect(fromAgent.map((i) => i.key).sort()).toEqual(["agent:draft:d1", "agent:seating:ap_2"]);
+    expect(fromApproval.map((i) => i.key)).toEqual(["approval:ap_1", "agent:seating:ap_2", "structure:d1"]);
+    expect(fromAgent.map((i) => i.key).sort()).toEqual(["agent:seating:ap_2", "structure:d1"]);
+    // An agent's role draft is the same draft the org drafts read lists: one key, so it is listed once.
+    expect(fromOrgDrafts([{ id: "d1", title: "Add a role", status: "open", changes: [{}] }]).map((i) => i.key)).toEqual(["structure:d1"]);
     expect(fromApproval.find((i) => i.kind === "seating")?.touchesPerson).toBe(true);
   });
 
@@ -70,7 +72,7 @@ describe("one list", () => {
 
   it("lists an item two queues share once, oldest first, untimed last, keeps what a half-failed queue did read, and nothing from one that refused or is off", () => {
     const seat = { key: "agent:seating:s1", source: "agent" as const, kind: "seating", code: null, summary: "Seat", filedAt: "2026-11-20T00:00:00.000Z", batch: null, decideAt: "/review", touchesPerson: true };
-    const draft = { ...seat, key: "agent:draft:d1", kind: "role_change", filedAt: null, touchesPerson: false };
+    const draft = { ...seat, key: "structure:d1", kind: "role_change", filedAt: null, touchesPerson: false };
     const old = { ...seat, key: "connector:pc_0", source: "connector" as const, filedAt: "2026-11-01T00:00:00.000Z", touchesPerson: false };
     const merged = mergeSections([
       { source: "approval", state: "ok", items: [seat] },
@@ -80,7 +82,7 @@ describe("one list", () => {
       { source: "quest", state: "refused", items: [{ ...seat, key: "quest:r" }] },
       { source: "sera", state: "off", items: [{ ...seat, key: "sera:o" }] },
     ]);
-    expect(merged.map((i) => i.key)).toEqual(["connector:pc_0", "agent:seating:s1", "claim:x", "agent:draft:d1"]);
+    expect(merged.map((i) => i.key)).toEqual(["connector:pc_0", "agent:seating:s1", "claim:x", "structure:d1"]);
   });
 
   it("finds a batch by its code, one change by its code, and nothing for a code it does not hold", () => {
