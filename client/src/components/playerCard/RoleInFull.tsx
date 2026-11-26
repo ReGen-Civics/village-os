@@ -29,7 +29,7 @@
  * control at least 44px, long words wrap, nothing wider than the screen.
  */
 import CircleName from "@/components/circles/CircleName";
-import { useContext, useState, type ReactNode } from "react";
+import { useContext, useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { type RoleOut, type Slot } from "@shared/playerCard";
 import type { RoleEditKey } from "@shared/playerCardEdit";
@@ -41,12 +41,12 @@ import type { HoldingKey } from "@shared/playerCardCcos";
 import { TASK_BOARD_PATH } from "@shared/sessionTasks";
 import RaiseTension from "@/components/roleTension/RaiseTension";
 import DecideDoors, { type DecideDoorWords } from "@/components/review/DecideDoors";
-import { ROLE_PROPOSAL_WORDS as PW } from "@shared/playerCardProposals";
+import { ROLE_PROPOSAL_WORDS } from "@shared/playerCardProposals";
 import { CardEditContext, ChangedContext, ChangedMark, EditInPlace, Eyebrow, GOLD_FRAME, isChanged, ListSlot, PendingNote, SlotView, useChanged } from "./cardParts";
 import { CardTerm } from "./CcosTerm";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import { useLingui } from "@lingui/react/macro";
-import { useCardWords } from "./cardWords";
+import { useCardWords, useProposalWords } from "./cardWords";
 
 /** The hint under each "Holding this role well" line's edit control. */
 const HOLDING_HINTS: Record<HoldingKey, string> = {
@@ -472,23 +472,25 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
   );
 }
 
-/** The player card's words for the doors every org draft has. */
-const DOOR_WORDS: DecideDoorWords = {
-  adopt: PW.adopt,
-  adoptConfirm: PW.adoptConfirm,
-  adoptYes: PW.adoptYes,
-  putToVillage: PW.putToVillage,
-  putConfirm: PW.putConfirm,
-  putYes: PW.putYes,
-  voting: PW.voting,
-  waitingHolder: PW.waitingHolder,
-  waitingVillage: PW.waitingVillage,
-  blocked: PW.blocked,
-  adopted: PW.adopted,
-  putDone: PW.putDone,
-  cancel: PW.cancel,
-  failed: PW.failed,
-};
+/** The player card's words for the doors every org draft has, in the reader's language. */
+function doorWords(PW: typeof ROLE_PROPOSAL_WORDS): DecideDoorWords {
+  return {
+    adopt: PW.adopt,
+    adoptConfirm: PW.adoptConfirm,
+    adoptYes: PW.adoptYes,
+    putToVillage: PW.putToVillage,
+    putConfirm: PW.putConfirm,
+    putYes: PW.putYes,
+    voting: PW.voting,
+    waitingHolder: PW.waitingHolder,
+    waitingVillage: PW.waitingVillage,
+    blocked: PW.blocked,
+    adopted: PW.adopted,
+    putDone: PW.putDone,
+    cancel: PW.cancel,
+    failed: PW.failed,
+  };
+}
 
 /**
  * The open proposals for this role's words, each with the words it would put
@@ -497,6 +499,8 @@ const DOOR_WORDS: DecideDoorWords = {
  */
 function RoleProposals({ role, onDone }: { role: RoleOut; onDone: (said: string) => void }) {
   const { reload } = useContext(CardEditContext);
+  const PW = useProposalWords();
+  const DOOR_WORDS = useMemo(() => doorWords(PW), [PW]);
   return (
     <div className="pc-box pc-proposals" data-role-proposals={role.id}>
       <Eyebrow gold>{PW.heading}</Eyebrow>

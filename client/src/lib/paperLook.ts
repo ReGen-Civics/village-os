@@ -17,6 +17,15 @@
  */
 export const PAPER_KEY = "village-paper";
 
+/**
+ * The attribute the server puts on <html> carrying the village's paper as it
+ * stands now (server/routes/brandTheme.ts). The first-paint script prefers it
+ * to the device's memory, so a first visit gets the paper too, and a village
+ * that went back to plain never flashes the chart. paperLook.test.ts holds the
+ * script to this name.
+ */
+export const VILLAGE_PAPER_ATTR = "data-village-paper";
+
 export type Paper = "plain" | "sea-chart";
 
 export const PAPERS: readonly Paper[] = ["plain", "sea-chart"];

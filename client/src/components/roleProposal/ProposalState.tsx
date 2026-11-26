@@ -13,15 +13,17 @@ import { Link } from "wouter";
 import { civilDayWords } from "@shared/seasonPlans";
 import type { ProposalOut } from "./proposalApi";
 import { ConsentTally } from "./CircleConsent";
-import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
+import { stateLine, useConsentHeadings, useConsentWords } from "./consentWords";
 import { LEDE, PANEL, QUIET } from "./parts";
 import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export default function ProposalState({ proposal }: { proposal: ProposalOut }) {
   const RW = useProposalWords();
+  const H = useConsentHeadings();
+  const { words: CW } = useConsentWords();
   const consent = proposal.consent;
   const adopted = !!proposal.decided;
-  const heading = adopted ? ADOPTED_HEADING : consent ? STATE_HEADINGS[consent.state] : null;
+  const heading = adopted ? H.adopted : consent ? H.states[consent.state] : null;
   return (
     <section aria-labelledby="rp-state" className={`${PANEL} grid gap-2`} data-proposal-state={adopted ? "adopted" : consent?.state ?? "submitted"}>
       <h2 id="rp-state" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -32,7 +34,7 @@ export default function ProposalState({ proposal }: { proposal: ProposalOut }) {
         <p className="text-foreground">{proposal.decided}</p>
       ) : consent ? (
         <>
-          <p className="text-foreground">{consent.words}</p>
+          <p className="text-foreground">{stateLine(consent.state, consent.closesOn, CW)}</p>
           {/* Who was asked, who consented, who objected: counts and role titles, never a name (PR D). */}
           <ConsentTally consent={consent} />
           {consent.objections.length > 0 && (

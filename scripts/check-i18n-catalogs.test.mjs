@@ -87,4 +87,24 @@ check("end to end: a missing translation inside the reviewed scope fails; outsid
   assert.equal(ok.status, 0, ok.stdout + ok.stderr);
 });
 
+check("end to end: a fragment's translation of a message en.po does not hold yet is checked on its own pull request", () => {
+  // The player card's count word (26 Nov 2026): the English names its numbers with exact matches and no `one`, the
+  // Spanish copied that shape, and Spanish needs `one`. The message was new, so en.po did not hold it yet.
+  const COUNT = "{n, plural, =0 {No} =1 {One} other {#}}";
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-cat-frag-"));
+  fs.writeFileSync(path.join(dir, "en.po"), po("en", [{ id: "Read the guide before you start", str: "Read the guide before you start" }]));
+  fs.writeFileSync(path.join(dir, "es.po"), po("es", []));
+  fs.mkdirSync(path.join(dir, "es.d"));
+  const frag = (str) => fs.writeFileSync(path.join(dir, "es.d", "new.po"), po("es", [{ id: COUNT, ctx: "a count word", str }]));
+  const runIt = () => spawnSync(process.execPath, [SCRIPT, "--locales-dir", dir, "--scope", "none.tsx", "--skip-extract"], { encoding: "utf8" });
+  frag("{n, plural, =0 {Ningún} =1 {Un} other {#}}");
+  const bad = runIt();
+  assert.equal(bad.status, 1, bad.stdout + bad.stderr);
+  assert.match(bad.stdout + bad.stderr, /es\.d\/new\.po, new message.*lacks "one"/);
+  // CONTROL: the same entry with the `one` case Spanish needs passes.
+  frag("{n, plural, =0 {Ningún} =1 {Un} one {#} other {#}}");
+  const ok = runIt();
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+});
+
 console.log(`check-i18n-catalogs: ${run} checks passed`);

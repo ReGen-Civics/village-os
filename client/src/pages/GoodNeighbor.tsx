@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
+import ReadingCopyNote from "@/components/ReadingCopyNote";
 import { useVillageLinks } from "@/lib/gameApi";
 import { usePageContent } from "@/hooks/usePageContent";
 import { fillPageWords } from "@/hooks/useGoodNeighborName";
@@ -83,6 +84,8 @@ export default function GoodNeighbor() {
         {/* No glow behind the words (DESIGN_RULE: fireflies only around the next act); the blurred blobs went with the light ground. */}
         <div className="container relative z-10">
           <div className="max-w-3xl mx-auto text-center">
+            {/* A reading copy in the reader's language says so, and that the English is binding. */}
+            <ReadingCopyNote spec={GOOD_NEIGHBOR_PAGE} />
             {hero.fields.eyebrow && (
               <m.span
                 initial={{ opacity: 0 }}

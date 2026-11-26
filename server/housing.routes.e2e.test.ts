@@ -141,6 +141,31 @@ async function settle(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
 
+/**
+ * Wait until the server has stopped sending: no new RESEND_SKIP line for `quietMs`.
+ *
+ * The count is the server's whole stdout, shared by every test in this file, and the
+ * reservation route sends after it answers (the acknowledgement first looks up the
+ * person's language, shared/mailLanguage.ts). A baseline taken while an earlier
+ * request's mail is still on its way counts that mail as this test's own, which read
+ * as "expected 2 to be 1" with every person getting one email. Take every baseline
+ * after this.
+ */
+async function mailQuiet(quietMs = 800, ms = 15_000): Promise<void> {
+  const deadline = Date.now() + ms;
+  let seen = resendAttempts();
+  let since = Date.now();
+  for (;;) {
+    await settle(100);
+    const now = resendAttempts();
+    if (now !== seen) {
+      seen = now;
+      since = Date.now();
+    } else if (Date.now() - since >= quietMs) return;
+    if (Date.now() > deadline) throw new Error("timed out waiting for the server's mail to go quiet");
+  }
+}
+
 /** Poll a fire-and-forget effect into existence, or fail saying what was missing. */
 async function waitUntil(what: string, ok: () => Promise<boolean> | boolean, ms = 15_000): Promise<void> {
   const deadline = Date.now() + ms;
@@ -670,6 +695,8 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
      */
     const ip = "10.2.0.7";
     const email = `flood-${PORT}@example.test`;
+    await mailQuiet();
+    const sentBefore = resendAttempts();
     const post = () =>
       call("POST", "/api/housing/reservations", {
         body: { homeType: "villa", name: "Flood", email },
@@ -696,6 +723,13 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
     });
     expect(ok.status, "another address is unaffected").toBe(200);
     expect(await reservationsFor(other)).toHaveLength(1);
+
+    // Each accepted request is acknowledged once: six to the flood address and one to
+    // the neighbour, and none for the refusal. Waiting for them here also keeps this
+    // test's mail out of the next test's count.
+    await waitUntil("the seven acknowledgements", () => resendAttempts() >= sentBefore + 7);
+    await mailQuiet();
+    expect(resendAttempts() - sentBefore, "one email per accepted request, none for the refused one").toBe(7);
   });
 
   it("tells the person and tells the village, and puts it in the history", async () => {
@@ -713,6 +747,7 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
      *   resident inbox set   -> 2  (the pathway inbox, and the person)
      * Deleting either half changes one of those counts.
      */
+    await mailQuiet();
     const before = resendAttempts();
     const soloEmail = `notify-solo-${PORT}@example.test`;
     const solo = await call("POST", "/api/housing/reservations", {
@@ -753,6 +788,7 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
       (await call("PUT", "/api/admin/email-config", { body: { resident: `resident-${PORT}@example.test` } })).status,
     ).toBe(200);
 
+    await mailQuiet();
     const withInbox = resendAttempts();
     const pairEmail = `notify-pair-${PORT}@example.test`;
     expect(
@@ -812,7 +848,7 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
       ip: "10.6.0.1",
     });
     expect(made.status).toBe(200);
-    await settle(1200); // let the create route's own sends land and be counted
+    await mailQuiet(); // let the create route's own sends land and be counted
 
     // `contacted` is a founder recording a conversation they already had.
     // A letter saying "we have contacted you" arrives after the human one it
@@ -871,7 +907,7 @@ describe.skipIf(!DB_CONFIGURED)("housing routes: the guards nothing was testing"
       ip: "10.6.0.9",
     });
     expect(made.status).toBe(200);
-    await settle(1200); // let the create route's own sends land and be counted
+    await mailQuiet(); // let the create route's own sends land and be counted
     const address = `deleted-hs-gone-${PORT}@anonymized.invalid`;
     // One request, matched by the address it was sent under, and the admin audit line the route wrote for it.
     expect(await scrubReservationsOf(pool, { userId: `hs-gone-${PORT}`, emailKey: askEmail, name: "A departed member", address })).toEqual({

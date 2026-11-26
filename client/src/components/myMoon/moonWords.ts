@@ -13,7 +13,7 @@
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg, plural } from "@lingui/core/macro";
 import { ROLE_PAY_CAP_PCT } from "@shared/rolePayMath";
-import { ADMIN_WORDS, AUTHORITY_KIND_WORDS, CARRY_FLAG_WORDS, GOAL_STATUS_WORDS, GUIDE_WORDS, INVOICE_STATUS_WORDS, ITEM_KEEP_WORDS, ITEM_ORIGIN_WORDS, ITEM_STATE_WORDS, ITEM_VISIBILITY_WORDS, LINE_BASIS_WORDS, MOON_WORDS, MY_MOON_WORDS, PACK_REFUSAL_WORDS, PACK_SKIP_WORDS, PACK_WORDS, PAY_ROUTE_SHORT_WORDS, QUEUE_STAGE_WORDS, QUEUE_WORDS, RECAP_STATUS_WORDS, ROLE_AUDIT_WORDS, SELF_APPROVED_WORDS, SERA_STATE_WORDS, SPLIT_PAY_WORDS, TASK_STATUS_WORDS, THANKS_WORDS } from "@shared/moonRecap";
+import { ADMIN_WORDS, AUTHORITY_KIND_WORDS, CARRY_FLAG_WORDS, GOAL_STATUS_WORDS, GUIDE_WORDS, INVOICE_STATUS_WORDS, ITEM_KEEP_WORDS, ITEM_ORIGIN_WORDS, ITEM_STATE_WORDS, ITEM_VISIBILITY_WORDS, LET_GO_NEEDS_REASON, LINE_BASIS_WORDS, MOON_WORDS, MY_MOON_WORDS, PACK_REFUSAL_WORDS, PACK_SKIP_WORDS, PACK_WORDS, PAY_ROUTE_SHORT_WORDS, QUEUE_STAGE_WORDS, QUEUE_WORDS, RECAP_STATUS_WORDS, ROLE_AUDIT_WORDS, SELF_APPROVED_WORDS, SERA_STATE_WORDS, SPLIT_PAY_WORDS, TASK_STATUS_WORDS, THANKS_WORDS } from "@shared/moonRecap";
 import { drawWords, useWords, type Drawn, type WordMirror } from "@/i18n/wordTable";
 
 /** The client-drawn moon recap tables, by the name each is drawn under. */
@@ -44,6 +44,7 @@ export const MOON_RECAP_WORDS = {
   payRouteShort: PAY_ROUTE_SHORT_WORDS,
   authorityKind: AUTHORITY_KIND_WORDS,
   recapStatus: RECAP_STATUS_WORDS,
+  letGoNeedsReason: LET_GO_NEEDS_REASON,
 };
 
 export type MoonWords = Drawn<typeof MOON_RECAP_WORDS>;
@@ -464,6 +465,7 @@ export const MOON_RECAP_MIRROR: WordMirror<typeof MOON_RECAP_WORDS> = {
     approved: msg({ message: "Approved", context: "moon recap: RECAP_STATUS_WORDS: approved" }),
   }
   ,
+  letGoNeedsReason: msg({ message: "Say why it was let go, in a few words.", context: "moon recap: LET_GO_NEEDS_REASON" }),
 };
 
 let last: { i18n: I18n; locale: string; messages: unknown; words: MoonWords } | null = null;
