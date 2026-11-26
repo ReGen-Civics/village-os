@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error: a plain .mjs script, no declarations
-import { parseArgs, startProblem, whoAmI, pageFetch, readOnlyRoute, stoppedHere, TOKEN_KEY, LIVE_VIEW_HEADER, PROXY_PLACEHOLDER } from "../../scripts/live-qa-session.mjs";
+import { parseArgs, startProblem, whoAmI, pageFetch, readOnlyRoute, stoppedHere, TOKEN_KEY, LIVE_VIEW_HEADER, PROXY_PLACEHOLDER, ADMIN_MASK_CSS, ADMIN_VIEW_MARK, MEMBER_VIEW_MARK } from "../../scripts/live-qa-session.mjs";
 import { TOKEN_KEY as APP_TOKEN_KEY } from "../../client/src/lib/gameApi";
 
 const TOKEN = "vat_" + "y".repeat(43);
@@ -90,6 +90,26 @@ describe("the live QA probe", () => {
     expect(stoppedHere(stopped, "https://v.example/api/nav/visit")).toBe(true);
     expect(stoppedHere(stopped, "https://v.example/api/season")).toBe(false);
     expect(stoppedHere(stopped, undefined)).toBe(false);
+  });
+
+  it("takes the admin view only when asked, and asks for it only on an admin token", async () => {
+    expect(parseArgs(["--admin", "/admin"], {}).admin).toBe(true);
+    expect(parseArgs([], { LIVE_QA_ADMIN: "1" }).admin).toBe(true);
+    expect(parseArgs([], {}).admin).toBe(false);
+    const asAdmin = answer(200, { displayName: "Ana" }, { "x-live-view": ADMIN_VIEW_MARK });
+    const asMember = answer(200, { displayName: "Ana" }, { "x-live-view": MEMBER_VIEW_MARK });
+    await expect(whoAmI("https://v.example", TOKEN, asAdmin, { admin: true })).resolves.toMatchObject({ displayName: "Ana" });
+    await expect(whoAmI("https://v.example", TOKEN, asAdmin)).rejects.toThrow(/Run with --admin/);
+    await expect(whoAmI("https://v.example", TOKEN, asMember, { admin: true })).rejects.toThrow(/--admin needs a live.view.admin token/);
+    await expect(whoAmI("https://v.example", TOKEN, answer(200, { displayName: "Ana" }), { admin: true })).rejects.toThrow(/did not mark this as a read-only live view/);
+  });
+
+  it("blurs where people's details live in an admin screenshot, and leaves the layout's words sharp", () => {
+    for (const sel of ["main td", "main input", "main textarea", "main li", "main p"]) expect(ADMIN_MASK_CSS).toContain(sel);
+    expect(ADMIN_MASK_CSS).toMatch(/filter: blur\(\d+px\) !important/);
+    // The holder's own name on the account button is masked; no other button, heading or tab is.
+    expect(ADMIN_MASK_CSS).toContain("button[aria-label^='Your account']");
+    expect(ADMIN_MASK_CSS.replace(/button\[aria-label\^='Your (settings|account)'\]/g, "")).not.toMatch(/\bh1\b|\bbutton\b|\[role=tab\] \{/);
   });
 
   it("goes on only for a signed-in read marked read-only", async () => {
