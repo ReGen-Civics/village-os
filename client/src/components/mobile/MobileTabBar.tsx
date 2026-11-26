@@ -29,6 +29,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useNewcomerShows } from "@/lib/newcomer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGameConfig } from "@/lib/gameApi";
+import { usePathFields } from "@/hooks/usePathWords";
 import { GAME_CONFIG } from "@shared/gameConfig";
 import { routeIcon, useRouteIcons } from "@/config/routeIcons";
 import { useEffect, useState } from "react";
@@ -209,9 +210,13 @@ export default function MobileTabBar() {
     resident: t({ message: "Resident", context: "bottom tab bar, a path" }),
     "prosperity-creator": t({ message: "Prosperity", context: "bottom tab bar, a path" }),
   };
+  const pathFields = usePathFields();
   const nameOf = (id: string) => {
     const own = config?.paths?.find((p) => p.id === id)?.label?.trim();
     const platform = GAME_CONFIG.paths.find((p) => p.id === id)?.label;
+    // A name the village gave the path, translated where the village has (usePathWords.ts).
+    const translated = own && own !== platform ? pathFields[`${id}.label`]?.trim() : undefined;
+    if (translated) return translated;
     return own && own !== platform ? own : shortName[id] ?? own ?? platform ?? id;
   };
   const mine = pathTab(user?.paths, !!user, nameOf, t({ message: "Your path", context: "bottom tab bar, no path chosen yet" }));

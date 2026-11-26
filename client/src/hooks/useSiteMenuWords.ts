@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { readPageTranslation } from "@shared/contentTranslationOverlay";
 import { PAGE_SECTION_PREFIX } from "@shared/pageContent/types";
+import { translatedPathRows, usePathFields } from "@/hooks/usePathWords";
 
 /**
  * THE VILLAGE'S OWN MENU NAMES, IN THE READER'S LANGUAGE (the lead's Spanish audit, 26 Nov 2026).
@@ -53,8 +54,13 @@ export function overlaySiteMenu<M extends MenuWords | undefined>(menu: M, fields
   return (out ?? menu) as M;
 }
 
-export function useSiteMenuWords<M extends MenuWords | undefined>(menu: M): M {
+/**
+ * `paths` is the village's path words as the config serves them, in English: a journey row still showing them
+ * takes the paths' translation (usePathWords.ts), and the site page's own translation is laid over that.
+ */
+export function useSiteMenuWords<M extends MenuWords | undefined>(menu: M, paths?: readonly { id: string; label: string; role?: string }[]): M {
   const { locale } = useLocale();
+  const pathFields = usePathFields();
   const [got, setGot] = useState<{ locale: string; fields: Record<string, string> } | null>(null);
   useEffect(() => {
     if (locale === "en" || locale.startsWith("en-")) return;
@@ -64,5 +70,6 @@ export function useSiteMenuWords<M extends MenuWords | undefined>(menu: M): M {
       alive = false;
     };
   }, [locale]);
-  return got && got.locale === locale ? overlaySiteMenu(menu, got.fields) : menu;
+  const named = translatedPathRows(menu, paths, pathFields);
+  return got && got.locale === locale ? overlaySiteMenu(named, got.fields) : named;
 }

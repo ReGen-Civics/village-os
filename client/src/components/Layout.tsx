@@ -85,7 +85,7 @@ export default function Layout({ children }: LayoutProps) {
   const storyShown = (href: string) => storyPageShown(cfg, href);
   // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden flag per entry, its group names. Gates still decide who sees what.
   const menu = useVillageMenu();
-  const siteMenu = useSiteMenuWords(cfg?.site?.menu); // the village's story-page names, translated where it has
+  const siteMenu = useSiteMenuWords(cfg?.site?.menu, cfg?.paths); // the village's story-page names, translated where it has
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
   const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();
   const visible = (item: NavLink) =>

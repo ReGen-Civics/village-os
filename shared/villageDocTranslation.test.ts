@@ -54,3 +54,19 @@ describe("the village's words outside its pages take a translation", () => {
     expect(translationTarget("village_doc", "page-home", "hero.title").ok).toBe(false);
   });
 });
+
+describe("the village's path names take a translation (the lead's Spanish audit, 26 Nov 2026)", () => {
+  const doc = { paths: [{ id: "investor", label: "Guardian", role: "Hold the land", description: "Fund it.", route: "/investor" }] };
+  it("addresses a path's name, second line and sentence, and nothing else", () => {
+    expect(villageDocFieldOk("paths", "investor.label")).toBe(true);
+    expect(villageDocFieldOk("paths", "investor.role")).toBe(true);
+    expect(villageDocFieldOk("paths", "investor.description")).toBe(true);
+    expect(villageDocFieldOk("paths", "investor.route")).toBe(false);
+    expect(villageDocFieldOk("paths", "investor")).toBe(false);
+  });
+  it("reads the English the village wrote, and lists every path's words", () => {
+    expect(villageDocEnglishAt("paths", doc, "investor.role")).toBe("Hold the land");
+    expect(villageDocFields("paths", doc).map((f) => f.field)).toEqual(["investor.label", "investor.role", "investor.description"]);
+    expect(overlayVillageDoc("paths", doc, { "investor.label": "Guardiana" }).paths[0].label).toBe("Guardiana");
+  });
+});
