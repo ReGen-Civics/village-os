@@ -28,7 +28,8 @@ import { ROLE_WORD_FIELD, type RoleEditKey } from "@shared/playerCardEdit";
 import { ROLE_CCOS_WORDS } from "@shared/roleCcos";
 import { ROLE_HANDOVER_WORDS } from "@shared/roleHandover";
 import { normalWord, parseRoleWords, PROPOSAL_WORDS, type WordFieldsContext, type WordValue } from "@shared/roleProposals";
-import { RP_WORDS } from "./proposalWords";
+import { proposalWords } from "@/components/roleProposal/proposalWordsMirror";
+
 
 export interface EditField {
   /** The `update_seat` field name the server keys the diff by. */
@@ -50,7 +51,7 @@ export const EDIT_FIELDS: readonly EditField[] = [
   { field: "existsWhile", key: "existsWhile", label: W.existsWhile, term: "existsWhile", list: false, multiline: true, hint: ROLE_CCOS_WORDS.existsWhileHint },
   { field: "domain", key: "decide", label: W.decide, term: "decide", list: false, multiline: true },
   { field: "authorities", key: "authorities", label: W.authorities, term: "authorities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.authoritiesHint },
-  { field: "accountabilities", key: "countOnMe", label: W.countOnMe, term: "countOnMe", list: true, multiline: true, hint: RP_WORDS.countOnMeHint },
+  { field: "accountabilities", key: "countOnMe", label: W.countOnMe, term: "countOnMe", list: true, multiline: true, hint: proposalWords().countOnMeHint },
   { field: "responsibilities", key: "responsibilities", label: W.responsibilities, term: "responsibilities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.responsibilitiesHint },
   { field: "bringMe", key: "bringMe", label: W.bringMe, term: null, list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.bringMeHint },
   { field: "notMine", key: "notMine", label: W.notMine, term: "notMine", list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.notMineHint },
