@@ -10,10 +10,10 @@
 // that only uses `msg` (client/src/components/roleCard/payBandWords.ts says the same).
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg, plural } from "@lingui/core/macro";
-import type { ROLE_SHEET_WORDS, RoleSheetWords } from "@shared/roleSheetWords";
-import { drawWords, useWords, type WordMirror } from "@/i18n/wordTable";
+import { ROLE_SHEET_WORDS, type RoleSheetWords } from "@shared/roleSheetWords";
+import { drawWords, mirrorOf, useWords } from "@/i18n/wordTable";
 
-export const ROLE_SHEET_MIRROR: WordMirror<typeof ROLE_SHEET_WORDS> = {
+export const ROLE_SHEET_MIRROR = mirrorOf(() => ROLE_SHEET_WORDS, {
   words: {
     figuresName: msg({ message: "Right now", context: "role card" }),
     aimLabel: msg({ message: "Aim", context: "role card" }),
@@ -153,7 +153,7 @@ export const ROLE_SHEET_MIRROR: WordMirror<typeof ROLE_SHEET_WORDS> = {
   notReadLine: (keys) => (keys.length ? msg({ message: `Not read: ${keys.join(", ")}.`, context: "role card: the proposal preview" }) : null),
   rungLine: (stageName) => msg({ message: `Asks for ${stageName} or above. The vote turns away anyone on a lower rung.`, context: "role card" }),
   keptByLine: (keeper) => msg({ message: `Kept by ${keeper}`, context: "role card: under an agent, the member who keeps it" }),
-};
+});
 
 /** The role card's words in `i18n`'s language, for code outside a component. */
 export function roleSheetWords(i18n: I18n = appI18n): RoleSheetWords {

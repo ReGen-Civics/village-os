@@ -96,7 +96,11 @@ export const LONG_MESSAGE_CHARS = 40;
  * its compiled form as JSON. The runtime then finds it by id in the English
  * the chunk loads before it runs.
  */
-export function precompileMessages(code: string, onLong?: (id: string, compiledJson: string) => void): string {
+export function precompileMessages(
+  code: string,
+  onLong?: (id: string, compiledJson: string) => void,
+  dropAt?: (index: number) => boolean,
+): string {
   let out = "";
   let last = 0;
   ID.lastIndex = 0;
@@ -117,11 +121,14 @@ export function precompileMessages(code: string, onLong?: (id: string, compiledJ
     if (!msg) continue;
     const literalStart = at + msg[0].length - msg[1].length;
     const literalEnd = literalStart + msg[1].length;
+    // Compiled even when dropped, so a message that does not compile still fails the build.
     const compiled = compiledLiteral(msg[1], head);
-    if (onLong && literalText(msg[1]).length >= LONG_MESSAGE_CHARS) {
+    const drop = dropAt?.(m.index) ?? false;
+    if (drop || (onLong && literalText(msg[1]).length >= LONG_MESSAGE_CHARS)) {
       // `head` matched ID, so it holds Lingui's 6-character hashed id. An
       // explicit `id:` of another shape never matches ID and is never split.
-      onLong(/"([A-Za-z0-9_-]{6})"/.exec(head)![1], compiled);
+      // A dropped message goes nowhere: its shared English table ships it.
+      if (!drop) onLong!(/"([A-Za-z0-9_-]{6})"/.exec(head)![1], compiled);
       // Drop `message: <literal>` and one comma beside it: the one after when
       // another field follows, else the one before it.
       const after = /^\s*,\s*/.exec(code.slice(literalEnd));
@@ -140,6 +147,37 @@ export function precompileMessages(code: string, onLong?: (id: string, compiledJ
     ID.lastIndex = last;
   }
   return last === 0 ? code : out + code.slice(last);
+}
+
+/**
+ * The spans of every `mirrorOf(...)` and `englishKeyed(...)` call in `code`,
+ * from its `(` to its `)`.
+ *
+ * Inside them each descriptor repeats English that already ships: a mirror's
+ * shared table, or the map's own keys (client/src/i18n/wordTable.ts, THE
+ * ENGLISH SHIPS ONCE), and `drawWords` / `drawKeyed` fall back to it for any
+ * id the catalog lacks. So the production build drops each `message` inside
+ * these spans and keeps only the id. Only inside them: a descriptor anywhere
+ * else in the same file has nothing behind it and keeps its English.
+ */
+export function mirrorSpans(code: string): Array<[number, number]> {
+  const spans: Array<[number, number]> = [];
+  const call = /\b(?:mirrorOf|englishKeyed)\s*\(/g;
+  for (let m = call.exec(code); m; m = call.exec(code)) {
+    const open = m.index + m[0].length - 1;
+    const close = closeOf(code, open);
+    if (close < 0) continue;
+    spans.push([open, close]);
+    call.lastIndex = close;
+  }
+  return spans;
+}
+
+/** Drop every macro message inside a `mirrorOf(...)` or `englishKeyed(...)` call, compile the rest (see mirrorSpans). */
+export function stripMirrorMessages(code: string, onLong?: (id: string, compiledJson: string) => void): string {
+  const spans = mirrorSpans(code);
+  if (spans.length === 0) return precompileMessages(code, onLong);
+  return precompileMessages(code, onLong, (at) => spans.some(([a, b]) => at > a && at < b));
 }
 
 /** Where the build's split English is collected, per module (copySplit.ts). */
@@ -170,7 +208,9 @@ export function precompileEnglish(split?: LongCopySink): Plugin {
       if (!/from\s*["'](?:@lingui\/core|@\/i18n\/runtime)["']/.test(code)) return null;
       const sink = building ? split : undefined;
       sink?.forget(id);
-      const out = precompileMessages(code, sink ? (msgId, compiled) => sink.record(id, msgId, compiled) : undefined);
+      const onLong = sink ? (msgId: string, compiled: string) => sink.record(id, msgId, compiled) : undefined;
+      // A production build drops a mirror's English (mirrorSpans); dev and vitest keep it.
+      const out = building ? stripMirrorMessages(code, onLong) : precompileMessages(code, onLong);
       return out === code ? null : { code: out, map: null };
     },
   };

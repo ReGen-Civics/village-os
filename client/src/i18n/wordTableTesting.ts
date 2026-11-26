@@ -7,10 +7,36 @@
  *    entry ships drawn in English only, and a new key in the shared table that has no `msg()` fails the
  *    compiler first and this second.
  * 3. Every function entry has samples, so a new function cannot slip past the first two.
+ * 4. A mirror declared with `mirrorOf` is declared against this very table, and with every `message` taken out
+ *    (what a production build ships, see stripMirrorMessages in precompileEnglish.ts) and no catalog at all, it
+ *    still draws EXACTLY the shared English, while a catalog that has the ids still wins. A plain `WordMirror`
+ *    constant keeps its English in the build, so it has nothing to fall back to and is drawn once.
  */
 import { setupI18n, type MessageDescriptor } from "@lingui/core";
 import { expect } from "vitest";
-import { drawWords, type MirrorLine, type WordMirror } from "./wordTable";
+import { drawKeyed, drawWords, englishOf, mirrorOf, type MirrorLine, type WordMirror } from "./wordTable";
+
+/** A descriptor as the production build ships it from a mirror: its id and values, no English. */
+function stripped(d: MessageDescriptor): MessageDescriptor {
+  const { message: _dropped, ...rest } = d;
+  return rest;
+}
+
+/** The mirror as a production build ships it: every descriptor, returned or held, without its `message`. */
+function stripMirror(node: unknown): unknown {
+  if (node !== null && typeof node === "object" && !Array.isArray(node) && typeof (node as MessageDescriptor).id === "string") {
+    return stripped(node as MessageDescriptor);
+  }
+  if (typeof node === "function") {
+    return (...args: unknown[]) => {
+      const line = (node as (...a: unknown[]) => MirrorLine | null)(...args);
+      if (!line) return line;
+      return Array.isArray(line) ? line.map((d) => (d && typeof d === "object" ? stripped(d as MessageDescriptor) : d)) : stripped(line as MessageDescriptor);
+    };
+  }
+  if (node === null || typeof node !== "object" || Array.isArray(node)) return node;
+  return Object.fromEntries(Object.entries(node as Record<string, unknown>).map(([k, v]) => [k, stripMirror(v)]));
+}
 
 /** Every id a function entry's result carries: one descriptor, or each part of a list. */
 function idsOf(line: MirrorLine | null): string[] {
@@ -62,23 +88,48 @@ export function expectMirrorMatches<T>(english: T, mirror: WordMirror<T>, sample
   }
   expect(noSamples, "give these function entries sample arguments").toEqual([]);
 
-  const en = drawWords(mirror, setupI18n({ locale: "en", messages: { en: {} } }));
-  const marked = drawWords(mirror, setupI18n({ locale: "xx", messages: { xx: Object.fromEntries(Array.from(ids).map((id) => [id, "XX"])) } }));
-  for (const l of all) {
-    if (typeof l.english === "string") {
-      expect(pick(en, l.path), `${l.path} in English`).toBe(l.english);
-      expect(pick(marked, l.path), `${l.path} goes through the catalog`).toBe("XX");
-      continue;
-    }
-    if (typeof l.english !== "function") continue;
-    for (const args of samples[l.path]) {
-      const want = (l.english as (...a: unknown[]) => unknown)(...args);
-      expect((pick(en, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) in English`).toBe(want);
-      // A line with nothing to translate (only a name the village wrote) is drawn as it is.
-      const carries = idsOf((l.mirror as (...a: unknown[]) => MirrorLine | null)(...args)).length > 0;
-      if (want !== null && want !== undefined && carries) {
-        expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog`).toContain("XX");
+  const declared = englishOf(mirror as object);
+  if (declared !== undefined) expect(declared, "the mirror is declared with mirrorOf(() => this table, ...)").toBe(english);
+  const shipped = declared === undefined ? null : mirrorOf(() => english, stripMirror(mirror) as WordMirror<T>);
+  const noCatalog = () => setupI18n({ locale: "en", messages: { en: {} } });
+  const catalog = () => setupI18n({ locale: "xx", messages: { xx: Object.fromEntries(Array.from(ids).map((id) => [id, "XX"])) } });
+  const runs: Array<[string, WordMirror<T>]> = shipped ? [["", mirror], [" with its English stripped", shipped]] : [["", mirror]];
+  for (const [how, m] of runs) {
+    const en = drawWords(m, noCatalog());
+    const marked = drawWords(m, catalog());
+    for (const l of all) {
+      if (typeof l.english === "string") {
+        expect(pick(en, l.path), `${l.path} in English${how}`).toBe(l.english);
+        expect(pick(marked, l.path), `${l.path} goes through the catalog${how}`).toBe("XX");
+        continue;
+      }
+      if (typeof l.english !== "function") continue;
+      for (const args of samples[l.path]) {
+        const want = (l.english as (...a: unknown[]) => unknown)(...args);
+        expect((pick(en, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) in English${how}`).toBe(want);
+        // A line with nothing to translate (only a name the village wrote) is drawn as it is.
+        const carries = idsOf((l.mirror as (...a: unknown[]) => MirrorLine | null)(...args)).length > 0;
+        if (want !== null && want !== undefined && carries) {
+          expect((pick(marked, l.path) as (...a: unknown[]) => unknown)(...args), `${l.path}(${JSON.stringify(args)}) goes through the catalog${how}`).toContain("XX");
+        }
       }
     }
   }
+}
+
+/**
+ * The test every map declared with `englishKeyed` passes: each entry's English is exactly its key, and with every
+ * `message` taken out (what a production build ships) and no catalog, `drawKeyed` still draws the key, while a
+ * catalog that has the id wins.
+ */
+export function expectKeyedMatches(map: Readonly<Record<string, MessageDescriptor>>): void {
+  const en = setupI18n({ locale: "en", messages: { en: {} } });
+  const marked = setupI18n({ locale: "xx", messages: { xx: Object.fromEntries(Object.values(map).map((d) => [d.id, "XX"])) } });
+  const shipped = Object.fromEntries(Object.entries(map).map(([k, d]) => [k, stripped(d)]));
+  for (const [k, d] of Object.entries(map)) {
+    expect(en._(d), `"${k}" is its own English`).toBe(k);
+    expect(drawKeyed(shipped, k, en), `"${k}" with its English stripped`).toBe(k);
+    expect(drawKeyed(shipped, k, marked), `"${k}" goes through the catalog`).toBe("XX");
+  }
+  expect(drawKeyed(shipped, "A string the map has never heard of", marked), "an unknown string is drawn as it is").toBe("A string the map has never heard of");
 }
