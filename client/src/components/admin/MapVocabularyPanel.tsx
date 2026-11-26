@@ -115,7 +115,7 @@ export default function MapVocabularyPanel() {
           aria-label={label}
           aria-describedby={hintId}
           className="w-full mt-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep" />
-        <span id={hintId} className="block text-[11px] text-gray-400 mt-0.5">{hint}</span>
+        <span id={hintId} className="block text-[11px] text-muted-foreground mt-0.5">{hint}</span>
       </label>
     );
   };
@@ -137,7 +137,7 @@ export default function MapVocabularyPanel() {
 
       <fieldset className="mt-4 border-0 p-0 m-0">
         <legend className="text-xs font-medium text-gray-700"><Trans context="MapVocabularyPanel, legend">Build phases</Trans></legend>
-        <p className="text-[11px] text-gray-400 mb-2">
+        <p className="text-[11px] text-muted-foreground mb-2">
           <Trans context="MapVocabularyPanel, p">The map keeps the numbers for its export; these are the words a person reads.
         </Trans></p>
         <div className="space-y-2">
@@ -165,7 +165,7 @@ export default function MapVocabularyPanel() {
           onClick={() => setPhases([...phases, [String(phases.length + 1), ""]])}><Trans context="MapVocabularyPanel, button">Add a phase</Trans></button>
       </fieldset>
 
-      <p className="text-[11px] text-gray-400 mt-4">
+      <p className="text-[11px] text-muted-foreground mt-4">
         {Array.isArray(vocab.media) && vocab.media.length
           ? `${vocab.media.length} named medium(s) travel with this document and are edited on the map itself. Saving here keeps them.`
           : "Media types are named on the map itself and travel with this document."}

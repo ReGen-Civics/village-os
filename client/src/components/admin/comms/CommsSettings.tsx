@@ -212,7 +212,7 @@ export default function CommsSettings({ password, openIntegrations }: { password
             {failed}
           </p>
         ) : (
-          <div className="text-center py-12 text-gray-400"><Trans context="CommsSettings, div">Loading...</Trans></div>
+          <div className="text-center py-12 text-muted-foreground"><Trans context="CommsSettings, div">Loading...</Trans></div>
         )}
       </div>
     );

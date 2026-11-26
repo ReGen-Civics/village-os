@@ -370,7 +370,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400"><Trans context="ContentEditorTab, div">Loading...</Trans></div>
+        <div className="text-center py-12 text-muted-foreground"><Trans context="ContentEditorTab, div">Loading...</Trans></div>
       ) : (
         <>
           {/*
@@ -485,7 +485,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                         onClick={() => mutateCards((a) => { if (idx > 0) { const [c] = a.splice(idx, 1); a.splice(idx - 1, 0, c); } })}
                         disabled={idx === 0}
                         title={t({ message: "Move up", context: "ContentEditorTab, title" })}
-                        className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                        className="p-1 text-muted-foreground hover:text-gray-700 disabled:opacity-30"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
                       </button>
@@ -493,13 +493,13 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
                         onClick={() => mutateCards((a) => { if (idx < a.length - 1) { const [c] = a.splice(idx, 1); a.splice(idx + 1, 0, c); } })}
                         disabled={idx === cardsData.length - 1}
                         title={t({ message: "Move down", context: "ContentEditorTab, title" })}
-                        className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                        className="p-1 text-muted-foreground hover:text-gray-700 disabled:opacity-30"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => { if (window.confirm(`Remove "${card.name || "this entry"}"?`)) mutateCards((a) => a.splice(idx, 1)); }}
-                        className="text-xs text-gray-400 hover:text-red-600"
+                        className="text-xs text-muted-foreground hover:text-red-600"
                       >
                         <Trans context="ContentEditorTab, button">Remove
                       </Trans></button>
@@ -562,7 +562,7 @@ function SectionEditorTab({ password, sectionKey, sectionLabel }: {
               >
                 <Trans context="ContentEditorTab, button">+ Add a team member
               </Trans></button>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 <Trans context="ContentEditorTab, p">Edits here go live once you press Save in the bar at the bottom.
               </Trans></p>
             </div>

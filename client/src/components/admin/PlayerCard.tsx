@@ -155,7 +155,7 @@ function PathRows({ chosen, paths, ladders }: { chosen: string[]; paths: PathOpt
           <li key={id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <span className="min-w-[9rem] text-sm font-medium text-gray-900">{label}</span>
             {ladders === undefined ? (
-              <span className="text-xs text-gray-400"><Trans context="PlayerCard, span">Loading...</Trans></span>
+              <span className="text-xs text-muted-foreground"><Trans context="PlayerCard, span">Loading...</Trans></span>
             ) : !ladder ? (
               <span className="text-xs text-gray-500"><Trans context="PlayerCard, span">This path has no steps tracked yet.</Trans></span>
             ) : (
@@ -192,7 +192,7 @@ function PathRows({ chosen, paths, ladders }: { chosen: string[]; paths: PathOpt
 /** Every token they hold, formatted at its own scale. */
 function Holdings({ holdings }: { holdings: Holding[] | undefined }) {
   const { t } = useLingui();
-  if (holdings === undefined) return <p className="text-xs text-gray-400"><Trans context="PlayerCard, p">Loading...</Trans></p>;
+  if (holdings === undefined) return <p className="text-xs text-muted-foreground"><Trans context="PlayerCard, p">Loading...</Trans></p>;
   if (holdings.length === 0) return <p className="text-xs text-gray-500"><Trans context="PlayerCard, p">Holds no tokens yet</Trans></p>;
   return (
     <ul aria-label={t({ message: "Tokens they hold", context: "PlayerCard, aria-label" })} className="flex flex-wrap gap-1.5">
@@ -245,7 +245,7 @@ export function PlayersFilters({
     <div role="search" id={ADMIN_FILTERS_ID} className="mb-3 flex scroll-mt-32 flex-wrap items-center gap-2">
       <label className="relative min-w-[12rem] flex-1">
         <span className="sr-only"><Trans context="PlayerCard, span">Search players</Trans></span>
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input type="search" value={value.text} onChange={set("text")} placeholder={t({ message: "Name, handle or email", context: "PlayerCard, placeholder" })} className={`${field} w-full pl-8`} />
       </label>
       <select aria-label={t({ message: "Filter by access", context: "PlayerCard, aria-label" })} value={value.access} onChange={set("access")} className={field}>

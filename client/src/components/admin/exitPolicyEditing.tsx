@@ -48,7 +48,7 @@ export function StepListEditor({
       <ol className="space-y-2">
         {steps.map((s, i) => (
           <li key={i} className="flex items-start gap-2">
-            <span className="text-xs text-gray-400 mt-3 w-4 text-right shrink-0">{i + 1}.</span>
+            <span className="text-xs text-muted-foreground mt-3 w-4 text-right shrink-0">{i + 1}.</span>
             <label className="sr-only" htmlFor={`step-${slug}-${i}`}>{`Step ${i + 1} of ${label}`}</label>
             <textarea id={`step-${slug}-${i}`} rows={2} value={s} onChange={(e) => set(i, e.target.value)}
               className="flex-1 min-h-[44px] border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-deep" />

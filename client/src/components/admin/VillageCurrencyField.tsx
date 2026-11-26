@@ -157,7 +157,7 @@ export default function VillageCurrencyField({
           amounts unconverted. Prices themselves are unaffected.
         </p>
       ) : (
-        <p id="project-fiat-currency-note" className="text-[11px] text-gray-400 mt-0.5">
+        <p id="project-fiat-currency-note" className="text-[11px] text-muted-foreground mt-0.5">
           <Trans context="VillageCurrencyField, p">{platformDefault ? `Platform default: ${platformDefault}. ` : ""}This sets what every price on the
           site is quoted in, and what a member sees before choosing their own display currency.
         </Trans></p>

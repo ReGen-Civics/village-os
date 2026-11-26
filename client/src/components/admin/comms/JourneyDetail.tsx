@@ -189,7 +189,7 @@ export default function JourneyDetail({ password, journeyKey, onChanged }: { pas
   }, [load]);
 
   if (error) return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  if (!detail) return <p className="py-12 text-center text-sm text-gray-400"><Trans context="JourneyDetail, p">Loading...</Trans></p>;
+  if (!detail) return <p className="py-12 text-center text-sm text-muted-foreground"><Trans context="JourneyDetail, p">Loading...</Trans></p>;
 
   const toggle = async () => {
     setBusy(true);
