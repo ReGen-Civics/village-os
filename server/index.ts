@@ -263,6 +263,7 @@ import { register as registerAgentMcpRoutes } from "./routes/agentMcp";
 import { register as registerAgentProposalsRoutes } from "./routes/agentProposals";
 import { register as registerLetterDraftsRoutes } from "./routes/letterDrafts";
 import { register as registerApprovalInboxRoutes } from "./routes/approvalInbox";
+import { registerApprovalLapseNotice } from "./lib/approvalLapseNotice";
 import { register as registerProposedChangesRoutes } from "./routes/proposedChanges";
 import { register as registerReviewInboxRoutes } from "./routes/reviewInbox";
 import { post as postToOffice } from "./lib/comms/postOffice";
@@ -10960,6 +10961,7 @@ async function startServer() {
   app.use("/api/events", requireModule("events"));
   app.use("/api/admin/events", requireModule("events"));
   registerApprovalInboxRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10), today: () => villageDayKey(new Date(), getSeasonConfig().timezone), filing: () => ({ variable: (key) => { const v = allVariables().find((x) => x.key === key); return v ? { key: v.key, label: v.label, value: String(v.value) } : null; }, module: (id) => { const d = MODULES_BY_ID[id]; return d ? { id: d.id, name: d.name, core: !!d.core, lifecycle: d.core ? "public" : storedLifecycle(d.id), sellsToken: !!d.sellsToken } : null; }, openTerm: async () => { const d = dbDocument(getPool(), "open-proposals", {} as any); await d.load(); const t = (d.get() as any)?.term; return t === "moon" ? "moon" : "season"; }, content: (section) => contentRepo.get()[section], contentVersion, pageProblem: pageContentProblem }) }); // role journey L13: the one-tap approval inbox and the filing routes behind the connector's propose tools (server/routes/approvalInbox.ts)
+  registerApprovalLapseNotice({ getPool, members, liveHoldersOf, notify }); // a word on the bell a day before an agent's proposal lapses (server/lib/approvalLapseNotice.ts)
   registerProposedChangesRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, contentRepo, faqsRepo, seasonState, liveHoldersOf, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10) }); // proposed changes, reviewed on /admin/proposals (server/routes/proposedChanges.ts)
   registerReviewInboxRoutes(app, { authedUser, overLimit, clientIp, port: () => parseInt(String(process.env.PORT || 3000), 10), isMember: async (u) => stageIndex(await stageOf(u)) >= stageIndex("member") && !(await leftTheVillage(getPool(), u)) }); // the deciders' one list and the members' governance reads, each read as the person (server/routes/reviewInbox.ts)
   registerLetterDraftsRoutes(app, { authedUser, getPool, isAdmin, overLimit, members, escapeHtml, postEmail: (email) => postToOffice(commsPostOffice, email) }); // role journey L13: a person reads, edits and sends a drafted letter (server/routes/letterDrafts.ts)
