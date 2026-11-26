@@ -398,6 +398,36 @@ function guardRouteFirstViews(): Plugin {
  *   importer's chunk, so grouping it saves nothing and only grows the group.
  */
 const SMALL_MODULE_BYTES = 12000;
+/*
+ * WHAT A MODULE SHIPS, NOT ITS SOURCE (headroom pass, 26 Nov 2026). The build
+ * moves long English out of every lazy chunk (client/src/i18n/copySplit.ts:
+ * string literals of SHORT_LITERAL_CHARS and up with a space in them), so a
+ * word table such as shared/sessionTasks.ts is 28 KB of source and 3 KB once
+ * built. Measured by its source it stayed out of every group, and so did each
+ * module that imports it, because a member may import only members: on
+ * db159d5 that chain left sessionTasks, applicantOnboarding, openProposalDecide
+ * and their importers as files of 0.5 to 3 KB, a whole block each.
+ * `shippedBytes` is the source without those literals: an estimate, used only
+ * to choose a group, never to measure anything.
+ *
+ * Measured on ea9a3a1 with scripts/check-dist-budget.mjs: 7996 KB of 8000
+ * block-charged before, 7936 after, with main JS 295 to 292 KB and first-page
+ * JS 687 to 682 KB. "smalls" is unchanged (142 KB raw), the new "tables" group
+ * is 140 KB raw and 45 KB gzipped, "smallui" went from 296 to 310 KB raw. Tried
+ * on the way, so nobody has to again: the same rule with the tables inside
+ * "smalls" measured 7932 KB but made "smalls" 282 KB raw (96 KB gzipped) for
+ * every page that imports one helper; admitting only modules that ship under
+ * 4 KB measured 7976 KB, because the padding sat in the tables and in the
+ * chain of importers they held back.
+ */
+const MOVED_LITERAL = /"(?:[^"\\\n]|\\.){20,}"|'(?:[^'\\\n]|\\.){20,}'|`(?:[^`$\\]|\\.){20,}`/g;
+function shippedBytes(code: string): number {
+  let bytes = code.length;
+  for (const lit of code.matchAll(MOVED_LITERAL)) if (lit[0].includes(" ")) bytes -= lit[0].length;
+  return bytes;
+}
+/** A component joins "smallui" by its source as before, or when it ships under this many bytes. */
+const SHIPPED_SMALL_BYTES = 4096;
 /**
  * The modules the entry imports statically, worked out on the first call and
  * kept for the rest of the build. `vite build` is one build per process here;
@@ -446,14 +476,31 @@ const SHOPFRONT_PAGES = /client[\\/]src[\\/]pages[\\/](Team|MasterPlan|Visit|Wor
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
 /**
- * The two merged groups and where their members live. A "smalls" member is a
- * plain module; a "smallui" member is a component. "smallui" may import
- * "smalls" and never the reverse, so the two can never import each other.
+ * The three merged groups and where their members live. A "smalls" or
+ * "tables" member is a plain module; a "smallui" member is a component. Each
+ * may import only the groups listed before it and itself ("smalls", then
+ * "tables", then "smallui"), so no two of them can ever import each other.
  */
 // "smalls" also takes shared/comms/ and client/src/i18n/ since the dist headroom pass (23 Nov 2026): the same plain modules, one folder down.
+const PLAIN_HOME = /[\\/]shared[\\/](?:comms[\\/])?[^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks|i18n)[\\/].+\.ts$/;
+/*
+ * "tables" (headroom pass, 26 Nov 2026): a plain module that is big in source
+ * and small once built (see shippedBytes), usually a word or data table, and
+ * any plain module that imports one. They were each a file of their own. In
+ * "smalls" they doubled it, to 282 KB raw and 96 KB gzipped, fetched by every
+ * page that imports any one small helper; in a group of their own they cost a
+ * page only when it uses a table. A module joins the first group it fits, so
+ * "smalls" holds exactly what it held before.
+ */
 const SMALL_GROUPS = [
-  { name: "smalls", home: /[\\/]shared[\\/](?:comms[\\/])?[^\\/]+\.ts$|client[\\/]src[\\/](lib|hooks|i18n)[\\/].+\.ts$/, mayImport: ["smalls"] },
-  { name: "smallui", home: /client[\\/]src[\\/]components[\\/].+\.tsx?$/, mayImport: ["smalls", "smallui"] },
+  { name: "smalls", home: PLAIN_HOME, mayImport: ["smalls"], fits: (code: string) => code.length < SMALL_MODULE_BYTES },
+  { name: "tables", home: PLAIN_HOME, mayImport: ["smalls", "tables"], fits: (code: string) => shippedBytes(code) < SMALL_MODULE_BYTES },
+  {
+    name: "smallui",
+    home: /client[\\/]src[\\/]components[\\/].+\.tsx?$/,
+    mayImport: ["smalls", "tables", "smallui"],
+    fits: (code: string) => code.length < SMALL_MODULE_BYTES || shippedBytes(code) < SHIPPED_SMALL_BYTES,
+  },
 ] as const;
 type SmallGroup = (typeof SMALL_GROUPS)[number]["name"];
 /** Each module's group, worked out once per build like `eagerModules`. */
@@ -520,11 +567,10 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
   // Provisionally none, so an import cycle settles as "not small" instead of looping.
   smallVerdicts.set(id, null);
   const m = info(id);
-  const group = SMALL_GROUPS.find((g) => g.home.test(id));
+  const homes = SMALL_GROUPS.filter((g) => g.home.test(id));
   const ok =
-    !!group &&
+    homes.length > 0 &&
     !!m?.code &&
-    m.code.length < SMALL_MODULE_BYTES &&
     !eager.has(id) &&
     !key.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
@@ -532,14 +578,11 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
-    !m.importers.some((by) => NATURAL_KIT.test(by)) &&
-    m.importedIds.every((dep) => {
-      // What a key page reaches is a static closure, so none of it can import this module back.
-      if (dep.includes("node_modules") || eager.has(dep) || key.has(dep)) return true;
-      const of = smallGroupOf(dep, info, eager, key);
-      return of !== null && (group.mayImport as readonly string[]).includes(of);
-    });
-  const verdict = ok ? group.name : null;
+    !m.importers.some((by) => NATURAL_KIT.test(by));
+  // What a key page reaches is a static closure, so none of it can import this module back.
+  const deps = ok ? m.importedIds.filter((dep) => !(dep.includes("node_modules") || eager.has(dep) || key.has(dep))).map((dep) => smallGroupOf(dep, info, eager, key)) : [];
+  const group = ok ? homes.find((g) => g.fits(m.code as string) && deps.every((of) => of !== null && (g.mayImport as readonly string[]).includes(of))) : undefined;
+  const verdict = group ? group.name : null;
   smallVerdicts.set(id, verdict);
   return verdict;
 }
@@ -626,7 +669,7 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
       keySet.has(id) &&
       !base.has(id) &&
       !!m?.code &&
-      m.code.length < SMALL_MODULE_BYTES &&
+      shippedBytes(m.code) < SMALL_MODULE_BYTES && // what it ships (see shippedBytes); key routes already load every member
       !id.includes("node_modules") &&
       !id.startsWith("\0") &&
       !eager.has(id) &&
