@@ -28,7 +28,7 @@ import SharedProposal from "@/components/roleProposal/SharedProposal";
 import { fetchMine, fetchProposal, fetchShared, startFromCard, type ProposalOut, type SharedOut } from "@/components/roleProposal/proposalApi";
 import { proposalHref } from "@shared/roleProposals";
 import { keepRoleOn } from "@/components/roleProposal/QuickPath";
-import { RP_WORDS } from "@/components/roleProposal/proposalWords";
+
 import AgentProposalForm from "@/components/roleProposal/AgentProposalForm";
 import { AGENT_PROPOSAL_WORDS } from "@shared/agentHolders";
 import { useLingui } from "@lingui/react/macro";
@@ -37,6 +37,7 @@ import { termOf } from "@shared/openProposalTerm";
 import { civilDayWords } from "@shared/seasonPlans";
 import { openProposalHref } from "@shared/openProposals";
 import { BTN_PRIMARY, CARD, DOOR, EYEBROW, HINT } from "@/components/journey/look";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 const GATE_LINE = "Each member's proposal for the roles they will hold next season, shared for feedback before it goes to the circle.";
 
@@ -83,11 +84,12 @@ function agentAsked(): { roleId: string } | null {
 }
 
 function NewAgentProposal({ roleId }: { roleId: string }) {
+  const RW = useProposalWords();
   const gate = useGate(AGENT_PROPOSAL_WORDS.title);
   const { user, loading } = useAuth();
   if (gate) return <>{gate}</>;
   if (!user && !loading) return <Notice heading={AGENT_PROPOSAL_WORDS.signIn} next={`/role-proposals/new?agent=1&role=${encodeURIComponent(roleId)}`} />;
-  if (!user) return <Page><div className="flex justify-center py-16"><BreathingLoader label={RP_WORDS.starting} /></div></Page>;
+  if (!user) return <Page><div className="flex justify-center py-16"><BreathingLoader label={RW.starting} /></div></Page>;
   return (
     <Page>
       {/* The compass steps out while the agent form is up: on a phone it sat over the fields (verify, 11 Nov). */}
@@ -178,8 +180,9 @@ function MoonOrSeason({ offer, onSeason }: { offer: MoonOffer; onSeason: () => v
 }
 
 function NewOwnRoleProposal() {
+  const RW = useProposalWords();
   const { t } = useLingui();
-  const gate = useGate(RP_WORDS.title);
+  const gate = useGate(RW.title);
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [error, setError] = useState<{ status: number; text: string } | null>(null);
@@ -212,7 +215,7 @@ function NewOwnRoleProposal() {
   // Signed out: this moon, and the open form beside the sign-in, so a visitor is never walled off (final verification).
   if (!user && !loading)
     return (
-      <Notice heading={RP_WORDS.signIn} line={t`Members sign in here to propose the roles they will hold this moon.`} next="/role-proposals/new">
+      <Notice heading={RW.signIn} line={t`Members sign in here to propose the roles they will hold this moon.`} next="/role-proposals/new">
         <p className="mt-4">
           <Link href={openProposalHref()} className="inline-flex min-h-11 items-center gap-2 font-semibold text-foreground underline underline-offset-4" data-open-form-door="">
             {t`Propose a role for this moon without an account`}
@@ -221,12 +224,12 @@ function NewOwnRoleProposal() {
         </p>
       </Notice>
     );
-  if (error) return <Notice heading={error.status === 403 ? RP_WORDS.membersOnly : error.text} />;
+  if (error) return <Notice heading={error.status === 403 ? RW.membersOnly : error.text} />;
   if (user && !season && moon && moon !== "asking") return <MoonOrSeason offer={moon} onSeason={() => setSeason(true)} />;
   return (
     <Page>
       <div className="flex justify-center py-16">
-        <BreathingLoader label={RP_WORDS.starting} />
+        <BreathingLoader label={RW.starting} />
       </div>
     </Page>
   );
@@ -234,7 +237,8 @@ function NewOwnRoleProposal() {
 
 /** `/role-proposals/:id`: the member's own proposal. */
 export default function RoleProposalPage() {
-  const gate = useGate(RP_WORDS.title);
+  const RW = useProposalWords();
+  const gate = useGate(RW.title);
   const { user, loading } = useAuth();
   const { id = "" } = useParams<{ id: string }>();
   const [proposal, setProposal] = useState<ProposalOut | null>(null);
@@ -254,13 +258,13 @@ export default function RoleProposalPage() {
     };
   }, [id, user, gate]);
   if (gate) return <>{gate}</>;
-  if (!user && !loading) return <Notice heading={RP_WORDS.signIn} line={RP_WORDS.signInLine} next={`/role-proposals/${encodeURIComponent(id)}`} />;
-  if (error) return <Notice heading={error.status === 403 ? RP_WORDS.membersOnly : error.status === 404 ? RP_WORDS.missing : error.text} />;
+  if (!user && !loading) return <Notice heading={RW.signIn} line={RW.signInLine} next={`/role-proposals/${encodeURIComponent(id)}`} />;
+  if (error) return <Notice heading={error.status === 403 ? RW.membersOnly : error.status === 404 ? RW.missing : error.text} />;
   if (!proposal || !user) {
     return (
       <Page>
         <div className="flex justify-center py-16">
-          <BreathingLoader label={RP_WORDS.reading} />
+          <BreathingLoader label={RW.reading} />
         </div>
       </Page>
     );
@@ -274,7 +278,8 @@ export default function RoleProposalPage() {
 
 /** `/role-proposals/shared/:token`: the shared view. */
 export function SharedRoleProposal() {
-  const gate = useGate(RP_WORDS.sharedTitle);
+  const RW = useProposalWords();
+  const gate = useGate(RW.sharedTitle);
   const { user, loading } = useAuth();
   const { token = "" } = useParams<{ token: string }>();
   const [shared, setShared] = useState<SharedOut | null>(null);
@@ -295,13 +300,13 @@ export function SharedRoleProposal() {
     };
   }, [token, gate, loading, signedIn]);
   if (gate) return <>{gate}</>;
-  if (error?.status === 401) return <Notice heading={RP_WORDS.sharedSignIn} next={signedIn ? undefined : `/role-proposals/shared/${encodeURIComponent(token)}`} />;
-  if (error) return <Notice heading={error.status === 404 ? RP_WORDS.linkOff : error.text} />;
+  if (error?.status === 401) return <Notice heading={RW.sharedSignIn} next={signedIn ? undefined : `/role-proposals/shared/${encodeURIComponent(token)}`} />;
+  if (error) return <Notice heading={error.status === 404 ? RW.linkOff : error.text} />;
   if (!shared) {
     return (
       <Page>
         <div className="flex justify-center py-16">
-          <BreathingLoader label={RP_WORDS.reading} />
+          <BreathingLoader label={RW.reading} />
         </div>
       </Page>
     );

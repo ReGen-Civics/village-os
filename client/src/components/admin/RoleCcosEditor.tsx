@@ -19,6 +19,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import {
   CCOS_LIST_MAX_ITEMS,
   ROLE_CCOS_FIELDS,
@@ -39,6 +40,8 @@ export const CCOS_EDITOR_WORDS = {
   saved: "Saved through a draft",
   written: (n: number, of: number) => `${n} of ${of} written`,
   draftTitle: (role: string) => `Role words: ${role}`,
+  what: (role: string) => `the role words for ${role}`,
+  fix: "Fix the role words marked above first.",
 } as const;
 
 const HINTS: Record<RoleCcosField, string> = {
@@ -88,8 +91,6 @@ export default function RoleCcosEditor({
   const [boxes, setBoxes] = useState<Record<RoleCcosField, string>>(
     () => Object.fromEntries(ROLE_CCOS_FIELDS.map((f) => [f, asBox(role, f)])) as Record<RoleCcosField, string>,
   );
-  const [busy, setBusy] = useState(false);
-
   const parsed = Object.fromEntries(ROLE_CCOS_FIELDS.map((f) => [f, parseRoleCcosField(f, boxes[f])])) as Record<
     RoleCcosField,
     ReturnType<typeof parseRoleCcosField>
@@ -98,19 +99,15 @@ export default function RoleCcosEditor({
   const changed = ROLE_CCOS_FIELDS.filter((f) => boxes[f] !== asBox(role, f));
   const written = ROLE_CCOS_FIELDS.filter((f) => asBox(role, f).trim() !== "").length;
 
-  const save = async () => {
-    if (!ok || !changed.length) return;
-    setBusy(true);
-    try {
-      // Only the words that changed, so the draft says exactly what moved.
-      const payload = Object.fromEntries(changed.map((f) => [f, (parsed[f] as { ok: true; value: unknown }).value]));
-      if (await publishWords(call, String(role.id), String(role.name ?? role.id), payload)) {
-        toast.success(CCOS_EDITOR_WORDS.saved);
-        onSaved();
-      }
-    } finally {
-      setBusy(false);
-    }
+  /** Saved from the page's one save bar (components/SaveBar.tsx), through a one-change draft. */
+  const save = async (): Promise<SaveResult> => {
+    if (!changed.length) return { ok: true };
+    if (!ok) return { ok: false, reason: CCOS_EDITOR_WORDS.fix };
+    // Only the words that changed, so the draft says exactly what moved.
+    const payload = Object.fromEntries(changed.map((f) => [f, (parsed[f] as { ok: true; value: unknown }).value]));
+    if (!(await publishWords(call, String(role.id), String(role.name ?? role.id), payload))) return { ok: false, reason: "That did not save. The reason is in the note above." };
+    onSaved();
+    return { ok: true };
   };
 
   const box = "w-full mt-1 rounded-lg border border-gray-200 px-2 py-1.5 text-sm";
@@ -186,18 +183,14 @@ export default function RoleCcosEditor({
             {field("stepBack", 3)}
           </div>
           {field("timeCommitment", 1)}
-          <div>
-            <button
-              type="button"
-              disabled={busy || !ok || !changed.length}
-              onClick={() => void save()}
-              className="min-h-[44px] rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-teal-deep"
-            >
-              {CCOS_EDITOR_WORDS.save}
-            </button>
-          </div>
         </div>
       )}
+      <SaveBar
+        count={changed.length}
+        onSave={save}
+        onDiscard={() => setBoxes(Object.fromEntries(ROLE_CCOS_FIELDS.map((f) => [f, asBox(role, f)])) as Record<RoleCcosField, string>)}
+        what={CCOS_EDITOR_WORDS.what(String(role.name ?? role.id))}
+      />
     </div>
   );
 }

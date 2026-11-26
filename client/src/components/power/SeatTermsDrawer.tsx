@@ -45,6 +45,8 @@ import { OFFER_WORDS } from "@shared/seatTermsOffer";
 import type { AlignmentState } from "@shared/alignments";
 import AlignmentMarks, { type ChipParty } from "@/components/alignment/AlignmentMarks";
 import { useOpsPartner } from "@/components/governance/useOpsPartner";
+import { useLingui } from "@lingui/react/macro";
+import { presetWords } from "@/components/governance/seatPresetWords";
 
 const GROUP_ICONS: Record<SettingsGroup, LucideIcon> = {
   term: CalendarClock,
@@ -117,6 +119,7 @@ function Row({
   /** Lit: this group differs from the terms on offer now (a proposed change). */
   changed: boolean;
 }) {
+  const { i18n } = useLingui();
   const [open, setOpen] = useState(false);
   const Icon = GROUP_ICONS[row.group];
   const preset = presetFor(settings, row.group, villagePresets);
@@ -171,7 +174,7 @@ function Row({
           )}
           {preset && (
             <p className="mt-1.5 text-xs text-muted-foreground">
-              {DRAWER_WORDS.fromPreset} {preset.label}
+              {DRAWER_WORDS.fromPreset} {presetWords(preset, i18n).label}
               {customised && (
                 <span className="ml-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold text-notice">
                   {DRAWER_WORDS.customised}

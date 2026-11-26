@@ -12,8 +12,8 @@
  * Pure and node-tested, beside `shared/roleSheet.ts`.
  */
 import { CAPABILITY_LABELS } from "./capabilities";
-import { countLabel, nameScaleFor, rosterFor, textOrNull, type SheetFigure, type Spot } from "./roleSheet";
-import { SHEET_WORDS, moreOpenLine, rungLine } from "./roleSheetWords";
+import { nameScaleFor, rosterFor, textOrNull, type SheetFigure, type Spot } from "./roleSheet";
+import { ROLE_SHEET_WORDS, type RoleSheetWords } from "./roleSheetWords";
 
 /** A permission role as `/api/roles` serves it. */
 export interface RoleInput {
@@ -60,50 +60,59 @@ export interface PermissionSheetView {
 }
 
 /** A power's label, never its raw key. */
-export function powerLabel(key: string): string {
+export function powerLabel(key: string, w: RoleSheetWords = ROLE_SHEET_WORDS): string {
   return Object.prototype.hasOwnProperty.call(CAPABILITY_LABELS, key)
     ? CAPABILITY_LABELS[key as keyof typeof CAPABILITY_LABELS]
-    : SHEET_WORDS.unknownPower;
+    : w.words.unknownPower;
 }
 
 export function permissionSheet(
   input: RoleInput,
-  ctx: { stages: Array<{ id: string; name: string }> | null; roleWord: string; now: Date },
+  ctx: {
+    stages: Array<{ id: string; name: string }> | null;
+    roleWord: string;
+    now: Date;
+    /** The card's words in the reader's language; absent = the English original. */
+    words?: RoleSheetWords;
+  },
 ): PermissionSheetView {
+  const w = ctx.words ?? ROLE_SHEET_WORDS;
+  const W = w.words;
+  const l = w.lines;
   const hc = input.holderCount;
   const open = Math.max(0, input.seats - hc);
   const roster = rosterFor(
     input.holders.map((h) => ({ name: h.name, userId: h.userId ?? null })),
     hc,
     input.seats,
-    { now: ctx.now, forming: false, openSub: () => SHEET_WORDS.aVoteFillsThis },
+    { now: ctx.now, forming: false, openSub: () => W.aVoteFillsThis, words: w },
   );
   const figures: SheetFigure[] = [
-    { key: "places", label: countLabel(input.seats, "Place", "Places"), value: input.seats, tone: null, source: "seats" },
+    { key: "places", label: l.places(input.seats), value: input.seats, tone: null, source: "seats" },
     // `holderCount` here counts rows whose term has passed, so it is never "Held now".
-    { key: "seated", label: "Taken", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" },
-    { key: "open", label: countLabel(open, "Open place", "Open places"), value: open, tone: open > 0 ? "living" : null, source: "seats - holderCount" },
-    { key: "powers", label: countLabel(input.capabilities.length, "Power", "Powers"), value: input.capabilities.length, tone: null, source: "capabilities.length" },
+    { key: "seated", label: l.taken, value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" },
+    { key: "open", label: l.openPlaces(open), value: open, tone: open > 0 ? "living" : null, source: "seats - holderCount" },
+    { key: "powers", label: l.powers(input.capabilities.length), value: input.capabilities.length, tone: null, source: "capabilities.length" },
   ];
 
   let rungs: Rung[] | null = null;
   let line: string;
   if (!input.minStage) {
-    line = SHEET_WORDS.noRung;
+    line = W.noRung;
   } else if (!ctx.stages) {
-    line = rungLine(input.minStage);
+    line = w.rungLine(input.minStage);
   } else {
     const at = ctx.stages.findIndex((s) => s.id === input.minStage);
     if (at < 0) {
-      line = SHEET_WORDS.unknownRung;
+      line = W.unknownRung;
     } else {
-      line = rungLine(ctx.stages[at].name);
+      line = w.rungLine(ctx.stages[at].name);
       rungs = ctx.stages.map((s, i) =>
         i < at
-          ? { id: s.id, name: s.name, look: "plain" as const, current: false, srWords: ", below the rung it asks for" }
+          ? { id: s.id, name: s.name, look: "plain" as const, current: false, srWords: l.srBelowRung }
           : i === at
-            ? { id: s.id, name: s.name, look: "inverted" as const, current: true, srWords: ", the rung it asks for" }
-            : { id: s.id, name: s.name, look: "lit" as const, current: false, srWords: ", also qualifies" },
+            ? { id: s.id, name: s.name, look: "inverted" as const, current: true, srWords: l.srAtRung }
+            : { id: s.id, name: s.name, look: "lit" as const, current: false, srWords: l.srAlsoQualifies },
       );
     }
   }
@@ -115,16 +124,16 @@ export function permissionSheet(
     name: input.name,
     nameScale: nameScaleFor(input.name),
     isExample: input.isExample,
-    eyebrow: `A ${word} with powers`,
-    whatItDoes: description ?? SHEET_WORDS.roleUnwritten,
+    eyebrow: l.withPowers(word),
+    whatItDoes: description ?? W.roleUnwritten,
     whatItDoesWritten: !!description,
     figures,
     spots: roster.spots,
     moreOpen: roster.moreOpen,
-    moreOpenLine: roster.moreOpen > 0 ? moreOpenLine(roster.moreOpen) : null,
+    moreOpenLine: roster.moreOpen > 0 ? w.moreOpenLine(roster.moreOpen) : null,
     rosterNote:
-      !input.namesServed && hc > 0 ? (input.signedIn ? SHEET_WORDS.namesNotShared : SHEET_WORDS.signInToSeeNames) : null,
-    powers: input.capabilities.map(powerLabel),
+      !input.namesServed && hc > 0 ? (input.signedIn ? W.namesNotShared : W.signInToSeeNames) : null,
+    powers: input.capabilities.map((k) => powerLabel(k, w)),
     rungs,
     rungLine: line,
   };

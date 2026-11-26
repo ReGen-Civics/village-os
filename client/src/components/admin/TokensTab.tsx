@@ -39,6 +39,7 @@ import VillageTokensWordField from "./VillageTokensWordField";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { takePrefill } from "@/lib/profilePrefill";
 import { Trans, useLingui } from "@lingui/react/macro";
+import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
 /**
  * THE ONE PAGE WHERE A TOKEN IS NAMED.
@@ -122,8 +123,10 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
     } catch (e: any) { toast.error(e?.message || "Create failed"); }
   };
 
-  const rename = async () => {
-    if (!renaming || !renaming.name.trim()) return;
+  /** The rename, saved from the page's one save bar (components/SaveBar.tsx). */
+  const rename = async (): Promise<SaveResult> => {
+    if (!renaming) return { ok: true };
+    if (!renaming.name.trim()) return { ok: false, reason: t({ message: "A token needs a name.", context: "TokensTab, rename refused" }) };
     try {
       const res = await fetch(`${API_BASE}/admin/tokens/${renaming.slug}`, {
         method: "PUT",
@@ -131,13 +134,14 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
         body: JSON.stringify({ name: renaming.name.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success(`Renamed to "${data.token?.name}". Every page follows`);
+      if (!res.ok) return { ok: false, reason: refusal(data, t({ message: "Rename failed", context: "TokensTab, rename refused" })) };
       setRenaming(null);
       setHanded(null);
       load();
-    } catch (e: any) { toast.error(e?.message || "Rename failed"); }
+      return { ok: true };
+    } catch { return { ok: false, reason: t({ message: "Rename failed", context: "TokensTab, rename refused" }) }; }
   };
+  const renamingFrom = renaming ? tokens.find((x) => x.slug === renaming.slug)?.name ?? "" : "";
 
   /**
    * Show or hide a token for members. VISIBILITY ONLY: balances, history and
@@ -210,7 +214,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
       {handed && (
         <p className="mb-4 text-sm text-gray-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2">
           {handed.found
-            ? `The rename box on your recognition token now holds "${handed.name}", from your ReGen Civics profile. Nothing is saved until you press Save beside it.`
+            ? `The rename box on your recognition token now holds "${handed.name}", from your ReGen Civics profile. Nothing is saved until you save it from the bar at the bottom.`
             : `Your ReGen Civics profile names your recognition token "${handed.name}". No recognition token here can take a new name yet, so nothing was put in a box.`}
         </p>
       )}
@@ -237,6 +241,12 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
           </span></Trans>
         </p>
       </div>
+      <SaveBar
+        count={renaming && renaming.name.trim() !== renamingFrom ? 1 : 0}
+        onSave={rename}
+        onDiscard={() => { setRenaming(null); setHanded(null); }}
+        what={t({ message: "the token's new name", context: "TokensTab, what the save bar saves" })}
+      />
       <VillageTokensWordField password={password} />
       <TokenJobsPanel password={password} />
       <OrgAccountsPanel password={password} />
@@ -263,12 +273,10 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                           <input
                             value={renaming.name}
                             onChange={(e) => setRenaming({ slug: t.slug, name: e.target.value })}
-                            onKeyDown={(e) => { if (e.key === "Enter") rename(); if (e.key === "Escape") setRenaming(null); }}
+                            onKeyDown={(e) => { if (e.key === "Escape") setRenaming(null); }}
                             autoFocus
                             className="text-sm border border-gray-200 rounded-lg px-2 py-1 w-40"
                           />
-                          <button onClick={rename} disabled={!renaming.name.trim()}
-                            className="text-xs bg-teal-deep text-white rounded-lg px-2 py-1 disabled:opacity-40"><Trans context="TokensTab, button">Save</Trans></button>
                           <button onClick={() => setRenaming(null)} className="text-xs text-muted-foreground"><Trans context="TokensTab, button">Cancel</Trans></button>
                         </span>
                       ) : (

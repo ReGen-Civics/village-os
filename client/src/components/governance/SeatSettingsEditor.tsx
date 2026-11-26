@@ -52,7 +52,8 @@ import {
   type SeatPreset,
 } from "@shared/seatPresets";
 import SeatSettingsFields from "./SeatSettingsFields";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { presetWords } from "@/components/governance/seatPresetWords";
 
 export const EDITOR_WORDS = {
   wholeLead: "Start from a whole role",
@@ -97,6 +98,7 @@ function GroupRow({
   /** Who fills an open row. */
   partner: string;
 }) {
+  const { i18n } = useLingui();
   const [panel, setPanel] = useState<"none" | "presets" | "fields">("none");
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const headId = `${uid}-head`;
@@ -200,11 +202,11 @@ function GroupRow({
                     {presetTag(group, partner)}
                   </span>
                   <span id={labelId} className="flex items-center gap-1.5 break-words text-sm font-semibold text-foreground">
-                    {o.label}
+                    {presetWords(o, i18n).label}
                     {current && <Check className="size-4 text-notice" aria-hidden="true" />}
                   </span>
                   <span className="text-[13px] font-semibold uppercase tracking-wide text-foreground">{GROUP_LABELS[group]}</span>
-                  <span className="mt-0.5 break-words text-[13px] leading-snug text-foreground">{o.blurb}</span>
+                  <span className="mt-0.5 break-words text-[13px] leading-snug text-foreground">{presetWords(o, i18n).blurb}</span>
                   <span className="mt-1 break-words text-[13px] font-medium leading-snug text-foreground">{presetExample(o, previewOf(o))}</span>
                   {MONEY_GROUPS.includes(group) && <span className="mt-1 break-words text-[13px] font-medium leading-snug text-foreground">{MONEY_PROMISE}</span>}
                 </button>

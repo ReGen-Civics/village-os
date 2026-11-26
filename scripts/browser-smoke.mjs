@@ -383,6 +383,93 @@ async function checkRolesListApply(context, opts) {
   }
 }
 
+/**
+ * The entrance's first screen on a phone, over the village's video (1.3.77): "Come in" must sit whole above the tab
+ * bar with nothing over it, and after it the focused field must sit below the sticky header and above the bar. On an
+ * iPhone 13 the door sat at 580 to 624 of 664 with the bar from 599, so a tap on its centre hit the bar, and the field
+ * Come in focused scrolled up under the header. `m` is what `measureEntranceDoor` read; null means it was not drawn.
+ */
+export function entranceDoorProblems(m) {
+  if (!m) return ["no Come in was drawn"];
+  const out = [];
+  const d = m.door;
+  const box = `door ${d.top} to ${d.bottom} of ${m.vh}, tab bar from ${m.barTop ?? "none"}`;
+  if (d.top < m.headerBottom || d.bottom > m.vh) out.push(`Come in is not whole on the first screen (${box})`);
+  if (m.barTop !== null && d.bottom > m.barTop) out.push(`Come in runs under the tab bar (${box})`);
+  if (d.covered) out.push(`something covers Come in: ${d.hit} (${box})`);
+  if (m.field) {
+    const f = m.field;
+    const where = `field ${f.top} to ${f.bottom}, header to ${m.headerBottom}, tab bar from ${m.barTop ?? "none"}`;
+    if (f.name !== "name") out.push(`Come in left the focus on ${JSON.stringify(f.name)}, not the name field`);
+    if (f.top < m.headerBottom) out.push(`the focused field is under the sticky header (${where})`);
+    if (m.barTop !== null && f.bottom > m.barTop) out.push(`the focused field is under the tab bar (${where})`);
+    if (f.covered) out.push(`something covers the focused field: ${f.hit} (${where})`);
+  }
+  return out;
+}
+
+/** Read the door, the bars and, after Come in, the focused field, inside the page. `after` measures the field. */
+function measureEntranceDoor(page, after = false) {
+  return page.evaluate((after) => {
+    const name = (n) => (n ? `<${n.tagName.toLowerCase()}${n.getAttribute("class") ? ` class="${String(n.getAttribute("class")).slice(0, 60)}"` : ""}>` : "nothing");
+    const r = (x) => Math.round(x);
+    const hits = (el) => {
+      const b = el.getBoundingClientRect();
+      // Corners sampled inside the element's rounding: a browser does not hit a rounded box outside its curve.
+      const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+      const k = Math.min(b.height / 2, 2 + radius * 0.3);
+      const pts = [[b.left + b.width / 2, b.top + b.height / 2], [b.left + k, b.top + k], [b.right - k, b.top + k], [b.left + k, b.bottom - k], [b.right - k, b.bottom - k]];
+      for (const [x, y] of pts) {
+        const n = document.elementFromPoint(x, y);
+        if (n && (n === el || el.contains(n))) continue;
+        return { covered: true, hit: `${name(n)} at ${r(x)},${r(y)}` };
+      }
+      return { covered: false, hit: "" };
+    };
+    const bar = document.querySelector("[data-mobile-tabbar]");
+    const barBox = bar && bar.getClientRects().length ? bar.getBoundingClientRect() : null;
+    const header = document.querySelector("header.sticky, body header");
+    const headerBottom = header ? r(Math.max(0, header.getBoundingClientRect().bottom)) : 0;
+    const door = document.querySelector("[data-entrance-come-in]");
+    if (!door) return null;
+    const db = door.getBoundingClientRect();
+    const out = { vh: window.innerHeight, barTop: barBox ? r(barBox.top) : null, headerBottom, door: { top: r(db.top), bottom: r(db.bottom), ...hits(door) }, field: null };
+    if (after) {
+      const f = document.activeElement;
+      if (f && f !== document.body) {
+        const fb = f.getBoundingClientRect();
+        out.field = { name: f.getAttribute("name"), top: r(fb.top), bottom: r(fb.bottom), ...hits(f) };
+      } else out.field = { name: null, top: 0, bottom: 0, covered: false, hit: "" };
+    }
+    return out;
+  }, after);
+}
+
+/** The door and the field on the phone, for a visitor who has not entered. Skipped where the village sets no video. */
+async function checkEntranceDoor(context, opts) {
+  const page = await context.newPage();
+  try {
+    await page.goto(`${opts.baseUrl}/roles`, { waitUntil: "load", timeout: opts.timeoutMs });
+    const shown = await page.waitForSelector("[data-entrance-come-in]", { state: "visible", timeout: Math.min(15000, opts.timeoutMs) }).then(() => true, () => false);
+    if (!shown) return { status: "skipped", detail: "no first screen of video here (the village sets no entrance video, or keeps no entrance)" };
+    await page.waitForTimeout(750);
+    const before = await measureEntranceDoor(page);
+    const first = entranceDoorProblems(before);
+    if (first.length) return { status: "failed", detail: first.join("; "), box: before };
+    await page.locator("[data-entrance-come-in]").click();
+    await page.waitForTimeout(1500);
+    const after = await measureEntranceDoor(page, true);
+    // The door has scrolled away by now, so only the field's problems count from this reading.
+    const bad = entranceDoorProblems({ ...after, door: before.door, vh: before.vh, barTop: after.barTop, headerBottom: after.headerBottom });
+    if (bad.length) return { status: "failed", detail: bad.join("; "), box: after };
+    return { status: "passed", detail: `Come in at ${before.door.top} to ${before.door.bottom} of ${before.vh}, above the tab bar (${before.barTop ?? "none"}); the name field then at ${after.field.top} to ${after.field.bottom}, below the header (${after.headerBottom})` };
+  } catch (e) {
+    return { status: "failed", detail: `the entrance did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}` };
+  } finally {
+    await page.close();
+  }
+}
+
 export async function main(argv = process.argv.slice(2), env = process.env) {
   const opts = parseArgs(argv, env);
   const log = (s) => console.log(`browser-smoke: ${s}`);
@@ -403,7 +490,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     return EXIT.missing;
   }
 
-  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], entrance: [], apply: [], rolePage: [] };
+  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], entrance: [], apply: [], rolePage: [], entranceDoor: [] };
   let failed = false;
   let ran = 0;
   for (const engine of opts.browsers) {
@@ -492,6 +579,16 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       results.rolePage.push({ engine, device: PHONE, page: "/roles", ...l });
       if (l.status === "failed") failed = true;
       log(`/roles card Apply (${engine}, ${PHONE}): ${l.status === "passed" ? "ok" : l.status.toUpperCase()}, ${l.detail}`);
+    }
+    {
+      // The entrance's first screen on the phone, for a visitor who has not entered: no pass header, no cookie.
+      const { defaultBrowserType: _ignoredDoor, ...doorPhone } = pw.devices[PHONE] ?? {};
+      const doorContext = await browser.newContext(doorPhone);
+      const e = await checkEntranceDoor(doorContext, opts);
+      await doorContext.close();
+      results.entranceDoor.push({ engine, device: PHONE, ...e });
+      if (e.status === "failed") failed = true;
+      log(`entrance Come in (${engine}, ${PHONE}): ${e.status === "passed" ? "ok" : e.status.toUpperCase()}, ${e.detail}`);
     }
     await browser.close();
   }

@@ -83,8 +83,8 @@ export function orgRowIsAgent(h: any): boolean {
  * tier, so an agent reads "An agent" here exactly as it does on the card and
  * on the public tier. Null for a row with no name.
  */
-export function orgHolderName(h: any): string | null {
-  return orgRowIsAgent(h) ? SHEET_WORDS.agent : str(h?.name);
+export function orgHolderName(h: any, agentWord: string = SHEET_WORDS.agent): string | null {
+  return orgRowIsAgent(h) ? agentWord : str(h?.name);
 }
 
 /**
@@ -272,7 +272,7 @@ export function fromPermissionRole(role: any, opts: { signedIn?: boolean } = {})
  * this page has not placed is shown by name; one given by id is named from
  * `circles` when the host has them.
  */
-export function fromProposedSeat(norm: any, opts: { circles?: any[] } = {}): SeatInput {
+export function fromProposedSeat(norm: any, opts: { circles?: any[]; unnamed?: string } = {}): SeatInput {
   const p: any = norm && typeof norm === "object" && has(norm, "payload") ? norm.payload : norm;
   const crit = p?.criticality;
   const byId = str(p?.circleId) ? (opts.circles ?? []).find((c) => c?.id === p.circleId) : null;
@@ -280,7 +280,7 @@ export function fromProposedSeat(norm: any, opts: { circles?: any[] } = {}): Sea
   return {
     mode: "proposal",
     id: `proposed:${name ?? ""}`,
-    name: name ?? SHEET_WORDS.seatNeedsAName,
+    name: name ?? opts.unnamed ?? SHEET_WORDS.seatNeedsAName,
     isExample: false,
     circle: null,
     circleNameOnly: str(p?.circleName) ?? str(byId?.name),

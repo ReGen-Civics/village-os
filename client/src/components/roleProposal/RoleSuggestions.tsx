@@ -9,8 +9,9 @@
 import { useEffect, useState } from "react";
 import { fetchGuide } from "@/lib/guideApi";
 import { suggestRoles, type OwnAnswers, type SuggestRoleIn } from "@shared/roleSuggestions";
-import { RP_WORDS } from "./proposalWords";
+
 import { FOCUS, PANEL } from "./parts";
+import { useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 export function RoleSuggestions({
   answers,
@@ -25,6 +26,7 @@ export function RoleSuggestions({
   atMost: boolean;
   onToggle: (roleId: string) => void;
 }) {
+  const RW = useProposalWords();
   const [guideOn, setGuideOn] = useState(false);
   const [checked, setChecked] = useState(false);
 
@@ -45,14 +47,14 @@ export function RoleSuggestions({
   if (list.length === 0)
     return checked ? (
       <p className="text-sm text-muted-foreground" data-role-suggestions="none">
-        {RP_WORDS.noSuggestions}
+        {RW.noSuggestions}
       </p>
     ) : null;
 
   return (
     <section className={`${PANEL} grid gap-2`} aria-labelledby="rp-suggested-roles" data-role-suggestions="">
       <h3 id="rp-suggested-roles" className="font-semibold text-foreground">
-        {RP_WORDS.suggestionsHeading}
+        {RW.suggestionsHeading}
       </h3>
       <ul className="grid gap-2">
         {list.map((s) => {
@@ -71,12 +73,12 @@ export function RoleSuggestions({
               >
                 <span className="flex max-w-full flex-wrap items-center gap-2">
                   <span className="rounded-full bg-dash-gold/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-dash-gold-lit">
-                    {RP_WORDS.suggested}
+                    {RW.suggested}
                   </span>
                   <span className="break-words font-semibold text-foreground">{s.name}</span>
                 </span>
                 <span className="break-words text-sm text-muted-foreground">
-                  {RP_WORDS.fromYourWords} <q>{s.source}</q>
+                  {RW.fromYourWords} <q>{s.source}</q>
                 </span>
               </button>
             </li>

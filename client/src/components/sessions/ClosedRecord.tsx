@@ -41,7 +41,7 @@ import Celebration from "@/components/natural/Celebration";
 import { useMomentWindow } from "@/components/natural/moments";
 import { Copy } from "lucide-react";
 import { AIM_DEFS, ENTRY_LABELS, SESSIONS_API, SESSION_COPY, type SessionEntry, type SessionItem, type SessionView } from "@shared/sessions";
-import { TASK_COPY, taskDateWords, taskRecordUrl, type TaskCard, type TaskRecordPayload } from "@shared/sessionTasks";
+import { taskDateWords, taskRecordUrl, type TaskCard, type TaskRecordPayload } from "@shared/sessionTasks";
 import { gameFetch } from "@/lib/gameApi";
 import { roomDay } from "./FromLastTime";
 import { BTN_SECONDARY, CARD, CHIP, H3, HINT, LABEL_CAPS, LEARNED_QUOTE, agendaOrder, consentOn, heldLine } from "./roomUi";
@@ -50,6 +50,7 @@ import TaskMailButton from "./TaskMailButton";
 import NightAfterCall from "./NightAfterCall";
 import type { RoomActions } from "./useSessionRoom";
 import { roomWords, useRoomWords } from "@/components/sessions/roomWords";
+import { taskWords, useTaskWords } from "@/components/tasks/taskWords";
 
 /** What the record may do: answer a night, and mark a round decided after it. */
 type RecordActions = Pick<RoomActions, "answerNight" | "decideAfterNight">;
@@ -71,13 +72,13 @@ type TaskBook = ReadonlyMap<number, TaskCard>;
  * when the date moved since the call, and the latest answer's own words.
  */
 export function taskStanding(t: TaskCard, said: Pick<SessionEntry, "dueOn">, today: string): { chip: string; moved: string | null; note: string | null } {
-  const L = TASK_COPY.statusLabels;
+  const L = taskWords().statusLabels;
   const movedDate = t.status === "open" && t.dueOn && t.dueOn !== said.dueOn ? taskDateWords(t.dueOn, today) : "";
   const chip =
     t.status === "done" ? L.done : t.status === "let_go" ? L.let_go : t.heldAs === "circle" ? L.circle : movedDate ? L.newDate : L.open;
   const words = t.latest?.note?.trim();
-  const note = words ? (t.latest?.byFacilitator ? TASK_COPY.latestByFacilitator(words) : TASK_COPY.latest(words)) : null;
-  return { chip, moved: movedDate ? TASK_COPY.newDate(movedDate) : null, note };
+  const note = words ? (t.latest?.byFacilitator ? taskWords().latestByFacilitator(words) : taskWords().latest(words)) : null;
+  return { chip, moved: movedDate ? taskWords().newDate(movedDate) : null, note };
 }
 
 function TaskStanding({ task, said, today }: { task: TaskCard; said: SessionEntry; today: string }) {
@@ -252,6 +253,7 @@ export default function ClosedRecord({
   now?: number;
 }) {
   const RC = useRoomWords();
+  const TW = useTaskWords();
   // What a round's write landed, read out from a line that outlives the round,
   // with the focus on the proposal it landed on.
   const [nightSaid, setNightSaid] = useState("");
@@ -376,7 +378,7 @@ export default function ClosedRecord({
       )}
 
       {record?.mail.canSend && (
-        <section className={CARD} aria-label={TASK_COPY.mail.button}>
+        <section className={CARD} aria-label={TW.mail.button}>
           <TaskMailButton sessionId={view.id} today={today} lastSend={record.mail.lastSend} onSent={() => setReads((n) => n + 1)} />
         </section>
       )}
