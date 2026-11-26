@@ -38,8 +38,9 @@ export function Domains({ seat, center = false }: { seat: Record<string, any>; c
 
 /**
  * THE STATUS PILL SAYS THE KIND (the lead, 23 Nov 2026): "Open paid role" for a role on a paid track, "Open role" for a
- * volunteer role or one whose kind is not said, "Upcoming paid role" on an upcoming role that will be paid. One line
- * always (`whitespace-nowrap`): the Spanish "Rol remunerado abierto" still fits a 320px card.
+ * volunteer role or one whose kind is not said, "Upcoming paid role" on an upcoming role that will be paid. It wraps
+ * when it must (the Spanish crawl, 26 Nov 2026): "Próximo rol remunerado" in wide capitals ran past a phone card's
+ * edge while it was held to one line. `max-w-full` keeps it inside the card, and the dot sits on the first line.
  */
 export function OpenPill({ kind = "open" }: { kind?: PillKind }) {
   const { t } = useLingui();
@@ -50,8 +51,8 @@ export function OpenPill({ kind = "open" }: { kind?: PillKind }) {
   };
   const live = kind !== "upcomingPaid";
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-notice bg-background/80 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest text-notice" data-status-pill={kind}>
-      <span className={`size-1.5 rounded-full bg-notice ${live ? "motion-safe:animate-pulse" : ""}`} aria-hidden="true" />
+    <span className="inline-flex max-w-full items-start gap-1.5 rounded-xl border border-notice bg-background/80 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase leading-snug tracking-widest text-notice" data-status-pill={kind}>
+      <span className={`mt-[0.45em] size-1.5 shrink-0 rounded-full bg-notice ${live ? "motion-safe:animate-pulse" : ""}`} aria-hidden="true" />
       {words[kind]}
     </span>
   );

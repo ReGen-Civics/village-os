@@ -16,9 +16,10 @@
  *
  * Nothing is offered: the checklist draws nothing.
  */
-import { AIM_DEFS, ROOM_COPY } from "@shared/sessions";
-import { LIBRARY_COPY, LIBRARY_MINUTES, agendaAimFor, broughtFor, offeredFor, type LibraryCard } from "@shared/sessionLibrary";
+import { ROOM_COPY } from "@shared/sessions";
+import { LIBRARY_MINUTES, agendaAimFor, offeredFor, type LibraryCard } from "@shared/sessionLibrary";
 import { CHIP, HINT, LABEL } from "./roomUi";
+import { AIM_DEFS, LIBRARY_COPY, broughtFor } from "./libraryCopy";
 
 /** "14 October", in the reader's own locale. */
 function shortDay(iso: string): string {
