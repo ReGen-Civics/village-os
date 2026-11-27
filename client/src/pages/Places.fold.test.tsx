@@ -243,6 +243,16 @@ describe("one place", () => {
     vi.restoreAllMocks();
   });
 
+  it("tells the reader where they are in the set: 2 of 7 on the second photo, Cover on the first", async () => {
+    kitchen = [photo(0, "community-kitchen", { heroAt: "2026-11-02T00:00:00Z" }), ...[1, 2, 3, 4, 5, 6].map((i) => photo(i))];
+    at("/places/community-kitchen");
+    fireEvent.click(await screen.findByRole("button", { name: /Open the photo: The north wall, view 1$/ }));
+    expect(await screen.findByText("2 of 7")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "The photo before" }));
+    expect(await screen.findByText("1 of 7")).toBeTruthy();
+    expect(screen.getByRole("dialog").textContent).toContain("Cover");
+  });
+
   it("hands focus back to the button that asked when the answer is Keep it", async () => {
     curate = true;
     at("/places/community-kitchen");

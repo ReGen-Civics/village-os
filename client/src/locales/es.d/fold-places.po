@@ -449,6 +449,11 @@ msgid "Yes, take it down"
 msgstr "Sí, retirarla"
 
 # needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "{position} of {total}"
+msgstr "{position} de {total}"
+
+# needs-native-review: the places fold, 26 Nov 2026
 msgctxt "places page"
 msgid "All photos"
 msgstr "Todas las fotos"

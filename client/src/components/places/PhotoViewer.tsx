@@ -46,6 +46,8 @@ const ACT = `${BTN_SECONDARY} aria-disabled:opacity-50`;
 export interface PhotoViewerProps {
   /** The open photo, or null when the viewer is shut. */
   photo: PlacePhoto | null;
+  /** Where the open photo sits in the set (1-based), and how many there are: the reader's "2 of 7". */
+  position: number;
   total: number;
   onStep: (delta: number) => void;
   onClose: () => void;
@@ -67,6 +69,7 @@ export interface PhotoViewerProps {
 
 export default function PhotoViewer({
   photo,
+  position,
   total,
   onStep,
   onClose,
@@ -215,6 +218,11 @@ export default function PhotoViewer({
               </Link>
             ) : (
               <p className={EYEBROW}>{where}</p>
+            )}
+            {many && (
+              <span className={CHIP_SOFT}>
+                <Trans context="place photo viewer">{position} of {total}</Trans>
+              </span>
             )}
             {photo.heroAt && (
               <span className={CHIP_SOFT}>
