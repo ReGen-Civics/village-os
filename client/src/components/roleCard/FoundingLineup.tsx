@@ -26,7 +26,7 @@
  * the open roles), and each role one framed panel, its card opening inside its own frame, so a reader always
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
-import GlossaryTip from "@/components/GlossaryTip";
+import { useGlossary } from "@/hooks/useGlossary";
 import { lazy, Suspense, type ReactNode } from "react";
 import { LayoutList} from "lucide-react";
 import { GrowthRings } from "@/components/sacred/living";
@@ -92,6 +92,10 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
   const { t, i18n } = useLingui();
   const shareNames = useShareNames();
   const circle = roles[0]?.circleName ?? null;
+  // What Formation means, when the village wrote it (shared/glossary.ts). The word is this switch's own label, and a
+  // tip never sits inside a button, so it rides on the button as its title: a mouse sees it on hover, a screen reader
+  // hears it as the button's description.
+  const formationMeaning = useGlossary()?.formation || undefined;
 
   const toggle = (
     <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={t({ message: "How to show the team", context: "founding team view switch" })}>
@@ -105,6 +109,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
           key={v}
           type="button"
           aria-pressed={view === v}
+          title={v === "formation" ? formationMeaning : undefined}
           onClick={() => onView(v)}
           className={`inline-flex min-h-11 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
         >
@@ -143,11 +148,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
       {heading}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {tally}
-        {/* The view switch, and the mark that says what Formation means (shared/glossary.ts). */}
-        <span className="inline-flex items-center">
-          {toggle}
-          <GlossaryTip slot="formation" word={t({ message: "Formation", context: "glossary: the word a tip explains" })} />
-        </span>
+        {toggle}
       </div>
       {view === "sheet" ? (
         <div className="flex flex-col gap-3" data-testid="team-sheet">

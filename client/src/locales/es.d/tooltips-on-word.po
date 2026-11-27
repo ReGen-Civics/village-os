@@ -1,0 +1,133 @@
+# The word is the tip: tooltips on the word, not beside it (the lead, 27 Nov 2026).
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, h2"
+msgid "<0/><1>How this serves the village's purpose</1>"
+msgstr "<0/><1>Cómo sirve esto al propósito de la aldea</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, h2"
+msgid "<0/><1>What is being voted on</1>"
+msgstr "<0/><1>Qué se está votando</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, span"
+msgid "Decided by <0>{0}</0>"
+msgstr "Decidido por <0>{0}</0>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, span"
+msgid "{0} on the roll, {1} <0>weight</0> between them"
+msgstr "{0} en la lista, {1} de <0>peso</0> entre todos"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decisions.tsx
+msgctxt "Decisions, h3"
+msgid "<0/><1>How this works</1>"
+msgstr "<0/><1>Cómo funciona</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/MyStanding.tsx
+msgctxt "MyStanding, h3"
+msgid "<0/><1>Your weight</1>"
+msgstr "<0/><1>Su peso</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/ObjectionPanel.tsx
+msgctxt "ObjectionPanel, h3"
+msgid "<0/><1>Objections</1>"
+msgstr "<0/><1>Objeciones</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/modules/PoolStatement.tsx
+msgctxt "PoolStatement, h2"
+msgid "<0>The builders’ pool this cycle</0>"
+msgstr "<0>El fondo de constructores en este ciclo</0>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Quests.tsx
+msgctxt "Quests, p"
+msgid "Take a <0>Quest</0>, do the work, turn it in."
+msgstr "Tome una <0>misión</0>, haga el trabajo, entréguelo."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/VoteWidget.tsx
+msgctxt "VoteWidget, span"
+msgid "<0>weighs {0}</0>"
+msgstr "<0>pesa {0}</0>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/VoterRoll.tsx
+msgctxt "VoterRoll, h3"
+msgid "<0/><1>Who may vote</1>"
+msgstr "<0/><1>Quién puede votar</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Wallet.tsx
+msgctxt "Wallet, p"
+msgid "<0>Buy tokens</0>"
+msgstr "<0>Comprar tokens</0>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Wallet.tsx
+msgctxt "Wallet, p"
+msgid "<0>Hypha holdings</0>"
+msgstr "<0>Tenencias en Hypha</0>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/WeightRecord.tsx
+msgctxt "WeightRecord, h3"
+msgid "<0/><1>The weight record</1>"
+msgstr "<0/><1>El registro del peso</1>"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Events.tsx
+msgctxt "calendar page lede"
+msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the <0>moons</0> the land turns by."
+msgstr "Elija un día para ver lo que hay. La aldea lleva dos relojes: los doce meses que todos compartimos y las <0>lunas</0> con que gira la tierra."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: a village on calendar months, the day the month turns"
+msgid "<0>Allowances</0> refill when this calendar month turns, on {date}."
+msgstr "<0>Las asignaciones</0> se renuevan cuando cambia este mes del calendario, el {date}."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: the moon that turns and the day it turns"
+msgid "<0>Allowances</0> refill when the <1>{month} Moon</1> turns, on {date}."
+msgstr "<0>Las asignaciones</0> se renuevan cuando cambia la <1>Luna de {month}</1>, el {date}."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team section lede"
+msgid "We're forming the founding roles who will hold critical <0>domains</0> from foundation building through to completion."
+msgstr "Estamos formando los roles fundadores que sostendrán los <0>dominios</0> esenciales, desde la construcción de los cimientos hasta el final."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Quests.tsx
+msgctxt "quests board: the line that names the two rewards"
+msgid "Quests pay in <0>{credits}</0> and <1>{voice}</1>."
+msgstr "Las misiones pagan en <0>{credits}</0> y <1>{voice}</1>."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/roleDraft/ArchetypeStep.tsx
+msgctxt "roles page archetypes"
+msgid "Choose the <0>root</0> you grow from"
+msgstr "Elige la <0>raíz</0> de la que creces"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, other ways to join: the game's door"
+msgid "Choose the <0>root</0> you grow from, see this season's goals, and pick the roles you play."
+msgstr "Elija la <0>raíz</0> de la que crece, mire las metas de esta temporada y escoja los roles que juega."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "thanks composer: the plain allowance line"
+msgid "Each cycle every member receives an <0>allowance</0> to send."
+msgstr "En cada ciclo, cada miembro recibe una <0>asignación</0> para enviar."

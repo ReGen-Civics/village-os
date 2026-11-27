@@ -2983,8 +2983,14 @@ html:has(#sera-changes [data-sera-strip-on]) {
   border-radius: 0.5rem;
   cursor: help;
   text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, currentColor 50%, transparent);
   text-underline-offset: 4px;
   -webkit-tap-highlight-color: transparent;
+}
+.moon > [tabindex]:hover,
+.tip-word > [tabindex]:hover {
+  text-decoration-color: currentColor;
 }
 .moon > [tabindex]:focus,
 .tip-word > [tabindex]:focus {
@@ -3020,6 +3026,67 @@ html:has(#sera-changes [data-sera-strip-on]) {
     bottom: auto;
     width: 14rem;
   }
+}
+
+/*
+ * THE WORD AS THE TRIGGER (client/src/components/InfoTip.tsx; the lead, 27 Nov 2026: "tooltips should be on the word
+ * not next to it"). The word stays inline and keeps the sentence's own font, size, colour and line, so a paragraph
+ * wraps exactly as it does with no tip. A thin dotted underline in a muted share of the text's own colour says it
+ * opens, and firms up on hover, while open and on focus. The 44px touch target is the `::before`, centred on the word
+ * and absolutely placed, so it takes no room in the line. The open plaque (`.info-plaque`) wears the page's tokens, as
+ * the moon word's tip does, so it follows the light page, the Weathered map's paper and the dark.
+ */
+.info-word {
+  position: relative;
+  cursor: help;
+  border-radius: 0.125rem;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, currentColor 50%, transparent);
+  text-underline-offset: 0.25em;
+  -webkit-tap-highlight-color: transparent;
+}
+.info-word:hover,
+.info-word:focus-visible,
+.info-word[aria-expanded="true"] {
+  text-decoration-color: currentColor;
+}
+.info-word:focus {
+  outline: none;
+}
+.info-word:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.info-word::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100% + 0.5rem, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+.info-plaque {
+  display: block;
+  position: fixed;
+  z-index: 80;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.625;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  text-decoration: none;
+  white-space: normal;
 }
 
 

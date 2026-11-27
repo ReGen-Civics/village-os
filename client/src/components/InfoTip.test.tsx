@@ -2,8 +2,8 @@
 /**
  * THE DEFECT THIS PINS: the closed plaque was read MID-SENTENCE.
  *
- * `InfoTip`'s wrapper is `relative inline-block`, so the plaque node sits in
- * the HOST PARAGRAPH'S INLINE FLOW. While closed it used to be `sr-only`,
+ * `InfoTip`'s plaque node sits in the HOST PARAGRAPH'S INLINE FLOW, right
+ * after the word that is its trigger. While closed it used to be `sr-only`,
  * which is out of the VISUAL flow and fully inside the reading order, so on
  * /campaigns a screen reader read the definition in the middle of the
  * sentence, let the host sentence resume as a fragment after a full stop, and
@@ -23,10 +23,10 @@
  * already changed once.
  */
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import InfoTip, { BARE_TAP_BOX, TAP_MIN, widenStyle } from "./InfoTip";
+import InfoTip from "./InfoTip";
 
 // The real sentence from client/src/pages/Crowdpool.tsx, so this test names
 // the copy that produced the reported defect rather than a stand-in.
@@ -119,32 +119,15 @@ describe("InfoTip, closed", () => {
       "Weight is how much a vote counts. It is read when a ballot opens and frozen there, so a later change never rewrites a vote in flight.";
     render(
       <h3>
-        Your weight
-        <InfoTip tip={weightTip} label="What voting weight is" />
+        <InfoTip tip={weightTip}>Your weight</InfoTip>
       </h3>,
     );
     const heading = screen.getByRole("heading", { level: 3 });
-    // Asserted as "the tip is not in the name" and not as an exact string:
-    // Chromium names this heading "Your weight What voting weight is" (it
-    // folds the nested button's label in, as accname says to), while the
-    // jsdom-side implementation stops at "Your weight". Either is fine. What
-    // is never fine is the tip in the heading.
-    expect(heading).toHaveAccessibleName(/^Your weight\b/);
+    // With the words as the trigger the heading is named by its words alone,
+    // and no mark's label is folded in either.
+    expect(heading).toHaveAccessibleName("Your weight");
     expect(heading).not.toHaveAccessibleName(/Weight is how much a vote counts/);
-    expect(screen.getByRole("button", { name: "What voting weight is" })).toHaveAccessibleDescription(weightTip);
-  });
-
-  it("names the bare trigger for screen readers without putting a mark in the sentence", () => {
-    render(
-      <p data-testid="bare">
-        Voice decays each moon
-        <InfoTip tip={TIP} label="What is voice decay?" />.
-      </p>,
-    );
-    const host = screen.getByTestId("bare");
-    const trigger = screen.getByRole("button", { name: "What is voice decay?" });
-    expect(trigger).toHaveAccessibleDescription(TIP);
-    expect(readingOrder(host)).toBe("Voice decays each moon.");
+    expect(screen.getByRole("button", { name: "Your weight" })).toHaveAccessibleDescription(weightTip);
   });
 });
 
@@ -257,72 +240,116 @@ describe("InfoTip, keyboard", () => {
   });
 });
 
-describe("a short worded trigger's own box reaches 44px wide (rehearsal, /roles at 390)", () => {
-  it("grows a 35px word to at least 44px and gives the space back, so the words do not move", () => {
-    const s = widenStyle(35)!;
-    const side = s.paddingLeft as number;
-    expect(35 + 2 * side).toBeGreaterThanOrEqual(TAP_MIN);
-    expect(s.paddingRight).toBe(side);
-    expect(s.marginLeft).toBe(-side);
-    expect(s.marginRight).toBe(-side);
-    // A word that short never wraps, so the padding cannot stack it one letter per line.
-    expect(s.whiteSpace).toBe("nowrap");
-    // The class max-w-full would clamp the grown box back to the words' width.
-    expect(s.maxWidth).toBe("none");
+describe("the word is the trigger (the lead, 27 Nov 2026: tooltips on the word, not next to it)", () => {
+  it("names the button with the word itself", () => {
+    renderInParagraph();
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    expect(trigger).toHaveTextContent(/^crowdpool$/);
   });
 
-  it("leaves a wide trigger, and one not laid out yet, exactly as it was", () => {
-    expect(widenStyle(TAP_MIN)).toBeUndefined();
-    expect(widenStyle(120)).toBeUndefined();
-    expect(widenStyle(0)).toBeUndefined();
-  });
-});
-
-describe("the bare mark's own box reaches 44px when asked (rehearsal, /quests at 390)", () => {
-  /** Tailwind's spacing step is 4px; `size-11` is 44, `-my-3.5` is 14. */
-  const px = (cls: string, re: RegExp) => Number((cls.match(re) ?? [])[1]) * 4;
-
-  it("draws a 44px box and gives the space back, so the 16px circle keeps its place in the sentence", () => {
-    render(<p>Value set<InfoTip tip="What a value is." label="What a value is" tapBox /></p>);
-    const button = screen.getByRole("button", { name: "What a value is" });
-    const box = px(button.className, /\bsize-(\d+(?:\.\d+)?)\b/);
-    expect(box).toBeGreaterThanOrEqual(TAP_MIN);
-    // What the margins give back leaves the footprint the bare mark always had: ml-1 plus a 16px circle.
-    const y = px(button.className, /-my-(\d+(?:\.\d+)?)\b/);
-    const left = px(button.className, /-ml-(\d+(?:\.\d+)?)\b/);
-    const right = px(button.className, /-mr-(\d+(?:\.\d+)?)\b/);
-    expect(box - 2 * y).toBe(16);
-    expect(box - left - right).toBe(20);
-    expect(button.firstElementChild?.className).toMatch(/\bw-4\b.*\bh-4\b/);
-    expect(button.className).toBe(BARE_TAP_BOX);
+  it("describes the word with the tip", () => {
+    renderInParagraph();
+    expect(screen.getByRole("button", { name: "crowdpool" })).toHaveAccessibleDescription(TIP);
   });
 
-  it("leaves every other bare mark the 16px circle it was", () => {
-    render(<p>Value set<InfoTip tip="What a value is." label="What a value is" /></p>);
-    const button = screen.getByRole("button", { name: "What a value is" });
-    expect(button.className).toMatch(/\bw-4\b/);
-    expect(button.className).not.toMatch(/\bsize-11\b/);
+  it("draws no mark: the host's text is its own sentence and nothing more", () => {
+    const { host } = renderInParagraph();
+    // Every character a reader sees is the sentence's own: no "i", no "?", no circle.
+    expect(readingOrder(host)).toBe(HOST_SENTENCE);
+    expect(within(host).queryByText(/^[i?]$/)).toBeNull();
+    expect(host.querySelector("svg")).toBeNull();
+    // One button, and it is the word.
+    expect(within(host).getAllByRole("button")).toHaveLength(1);
   });
-});
 
-describe("the focus ring follows the theme (a11y sweep P2-7)", () => {
-  // `ring-teal-deep/60` was the brand tone at 60%, near invisible on the night
-  // pages. `ring-ring` reads --ring, which `.sheet-night` sets to a gold that
-  // clears 7:1 there and the light theme keeps at its own value.
-  it("draws every trigger's ring, and the bare mark's, in --ring", () => {
+  it("stays inline text, so a phrase wraps as the sentence would", () => {
+    // A <button> lays out as an inline-block and cannot break across lines;
+    // the trigger is an inline span carrying the button role instead, with no
+    // box of its own to push the words around.
     render(
       <p>
-        <InfoTip tip={TIP}>a value</InfoTip>
-        <InfoTip tip={TIP} label="bare" />
-        <InfoTip tip={TIP} label="boxed" tapBox />
+        Every card <InfoTip tip={TIP}>wears its pills</InfoTip> so you can read it.
       </p>,
     );
-    const worded = screen.getByRole("button", { name: "a value" });
-    const bare = screen.getByRole("button", { name: "bare" });
-    const mark = screen.getByRole("button", { name: "boxed" }).querySelector("span")!;
-    for (const el of [worded, bare, mark]) {
-      expect(el.className).toMatch(/ring-ring\b/);
-      expect(el.className).not.toMatch(/ring-teal-deep/);
-    }
+    const trigger = screen.getByRole("button", { name: "wears its pills" });
+    expect(trigger.tagName).toBe("SPAN");
+    expect(trigger).toHaveAttribute("tabindex", "0");
+    expect(trigger.getAttribute("style")).toBeNull();
+    expect(trigger.parentElement?.tagName).toBe("SPAN");
+  });
+
+  it("opens on a tap and closes on a second tap", async () => {
+    const user = userEvent.setup();
+    const { host } = renderInParagraph();
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    await user.pointer({ keys: "[TouchA]", target: trigger });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(within(host).getByRole("tooltip")).toBeVisible();
+    await user.pointer({ keys: "[TouchA]", target: trigger });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(within(host).queryByRole("tooltip")).toBeNull();
+  });
+
+  it("closes on a tap anywhere else", async () => {
+    const user = userEvent.setup();
+    render(
+      <div>
+        <p data-testid="host">
+          A <InfoTip tip={TIP}>crowdpool</InfoTip> here.
+        </p>
+        <p data-testid="elsewhere">Elsewhere.</p>
+      </div>,
+    );
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByTestId("elsewhere"));
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("opens from the keyboard and closes on Escape and on blur", async () => {
+    const user = userEvent.setup();
+    render(
+      <p>
+        A <InfoTip tip={TIP}>crowdpool</InfoTip> and <a href="#next">a link</a>.
+      </p>,
+    );
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    await user.tab();
+    expect(trigger).toHaveFocus();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.tab();
+    expect(trigger).not.toHaveFocus();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("closes when the page scrolls, so a fixed plaque never floats over the wrong words", async () => {
+    const user = userEvent.setup();
+    renderInParagraph();
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    act(() => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("inside a field's label, a click opens the tip and leaves the field alone", async () => {
+    const user = userEvent.setup();
+    render(
+      <label>
+        <InfoTip tip={TIP}>Quorum</InfoTip>
+        <input type="checkbox" />
+      </label>,
+    );
+    const box = screen.getByRole("checkbox") as HTMLInputElement;
+    await user.click(screen.getByRole("button", { name: "Quorum" }));
+    expect(screen.getByRole("button", { name: "Quorum" })).toHaveAttribute("aria-expanded", "true");
+    expect(box.checked).toBe(false);
   });
 });

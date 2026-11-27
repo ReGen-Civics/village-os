@@ -5,13 +5,29 @@
  * three of these where three concepts genuinely live on it; a plaque never
  * contains another trigger.
  *
+ * THE WORD IS THE TRIGGER (the lead, 27 Nov 2026, over a screenshot of
+ * "domains" with a circled mark after it: "tooltips should be on the word not
+ * next to it like this. fix this for all tooltips across the site, should be
+ * something subtle and not disrupt the whole paragraph text like this."). A
+ * call site passes the word or phrase the tip explains as `children`, and
+ * that word becomes the trigger where it stands in the sentence. There is no
+ * mark, no circle and no extra width: the word wears a thin dotted underline
+ * in a muted tone that firms up on hover (the `.info-word` rules in
+ * client/src/index.css, which cost the first view no JS). The trigger is an
+ * INLINE span, so a phrase wraps exactly as the plain text would, line for
+ * line; a <button> is always laid out as an inline-block, which cannot break
+ * across lines and would move the paragraph. Its 44px touch target is an
+ * absolutely placed `::before` centred on the word, which adds no layout.
+ *
  * Why not the shadcn/Radix tooltip two doors down: Radix tooltips never open
  * on touch, and mobile is most of this audience. This trigger is a real
- * button, so tap toggles it, Tab reaches it, Enter and Space toggle it,
- * Escape dismisses it, and hover still works for mouse visitors.
+ * button to every reader and every key: role="button" with tabIndex 0, so a
+ * tap toggles it, Tab reaches it, Enter and Space toggle it, Escape dismisses
+ * it, and hover still works for mouse visitors. Its accessible name is the
+ * word itself.
  *
  * Accessibility contract:
- * - The trigger is a <button> with aria-expanded and a focus-visible ring.
+ * - The trigger has role="button", aria-expanded and a focus-visible ring.
  * - The plaque is aria-describedby-linked and stays in the DOM while closed,
  *   so a screen reader hears the mechanics on focus without needing the
  *   visual open state. It is `hidden` while closed, NOT `sr-only`: see below.
@@ -19,18 +35,19 @@
  * - The plaque positions FIXED from the trigger's measured rect, so an
  *   overflow-hidden card ancestor never clips it; scrolling closes it
  *   instead of letting it drift.
+ * - A click on the word never reaches a <label>'s field or a link around it.
  *
- * WHY THE CLOSED PLAQUE IS `hidden` AND NOT `sr-only`. This wrapper is
- * `relative inline-block`, so the plaque node sits in the HOST PARAGRAPH'S
- * INLINE FLOW. An `sr-only` node is out of the VISUAL flow and fully inside
- * the reading order, so every one of these read its definition MID-SENTENCE
- * and then let the host sentence resume as a fragment after a full stop, and
- * then read the same words AGAIN when the trigger took focus. On /campaigns
- * that was: "...through the hub's crowdpool A crowdpool gathers pledges of
- * money, goods, tools and hands for one build. Nothing moves through this
- * page; every claim finishes on the hub's own page. . Each ring fills as the
- * pool does". It renders perfectly for sighted visitors, which is why no
- * screenshot, contrast pass or overflow sweep could ever have caught it.
+ * WHY THE CLOSED PLAQUE IS `hidden` AND NOT `sr-only`. The plaque node sits in
+ * the HOST PARAGRAPH'S INLINE FLOW, right after the word. An `sr-only` node is
+ * out of the VISUAL flow and fully inside the reading order, so every one of
+ * these read its definition MID-SENTENCE and then let the host sentence
+ * resume as a fragment after a full stop, and then read the same words AGAIN
+ * when the trigger took focus. On /campaigns that was: "...through the hub's
+ * crowdpool A crowdpool gathers pledges of money, goods, tools and hands for
+ * one build. Nothing moves through this page; every claim finishes on the
+ * hub's own page. . Each ring fills as the pool does". It renders perfectly
+ * for sighted visitors, which is why no screenshot, contrast pass or overflow
+ * sweep could ever have caught it.
  *
  * `hidden` (display:none) takes the node out of the accessibility tree
  * altogether, and accname (Accessible Name and Description Computation 1.2,
@@ -49,8 +66,8 @@
  * way: the governance "Your weight" h3 was named "Your weight What voting
  * weight is Weight is how much a vote counts. It is read when a ballot opens
  * and frozen there, so a later change never rewrites a vote in flight." in a
- * screen reader's list of headings. Under `hidden` it is "Your weight What
- * voting weight is".
+ * screen reader's list of headings. Under `hidden` it was "Your weight What
+ * voting weight is", and with the word as the trigger it is "Your weight".
  *
  * A portal was the other candidate, and the probe ruled it out: a portalled
  * `sr-only` description was still a static-text node, merely relocated to the
@@ -65,93 +82,29 @@
  * DOM position for role="tooltip", and the open state is always
  * user-initiated.
  *
- * The plaque wears the map's parchment look (the cp-plaque palette from the
- * crowdpool pieces), so the two tooltip families read as one voice.
+ * The plaque takes the page's own colours (`.info-plaque`: --card,
+ * --card-foreground, --border), the same tokens the moon word's tip wears, so
+ * it reads as the page in the light, on the Weathered map's paper and in the
+ * dark, and the two tooltip families read as one voice.
  */
 import { decayReachSentence } from "@shared/tokenScale";
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { useLingui } from "@lingui/react/macro";
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 
 const PLAQUE_MAX_W = 264;
-
-/**
- * THE WORDED TRIGGER'S 44px TAP AREA (nightly rehearsal, 11 Nov 2026). The
- * rehearsal measured worded triggers at 16 to 22px tall on a 390px phone (a
- * role card's "Commitment", a card's eyebrow headings). Padding grows the
- * button's own box, so the area a thumb hits IS the box every measurement
- * reads, and an equal negative margin gives the same space back, so the line
- * the words sit on keeps its height and nothing around it moves. A 16px line
- * becomes a 44px target; a taller line only grows. The width grows by an
- * invisible inset either side: horizontal padding with a matching negative
- * margin was measured wrapping a short word one letter per line ("rol" became
- * 24 by 116 on /roles at 390), because the trigger may break anywhere. It is
- * the default for a worded trigger; a caller passing `triggerClassName`
- * chooses its own.
- */
-export const WORDED_TAP = "relative py-3.5 -my-3.5 before:absolute before:inset-y-0 before:-inset-x-2.5 before:content-['']";
-/** How far WORDED_TAP grows the box on each side vertically, so the plaque still opens beside the words. */
-const WORDED_PAD_Y = 14;
-/** The smallest box a thumb is asked to hit, in CSS pixels (WCAG 2.5.5). */
-export const TAP_MIN = 44;
-
-/**
- * How far a worded trigger narrower than TAP_MIN grows on each side, and the
- * style that does it. The rehearsal (11 Nov 2026) measured "role" at 35px wide
- * on /roles at 390: WORDED_TAP's inset widens the hit area, and a measurement
- * of the button's own box cannot see a pseudo-element. Padding with an equal
- * negative margin grows the box and gives the space back, so the words stay
- * where they were. A word that short never needs to wrap, and `nowrap` with no
- * max width is what stops the padding wrapping it one letter per line.
- */
-export function widenStyle(naturalWidth: number): React.CSSProperties | undefined {
-  if (!(naturalWidth > 0) || naturalWidth >= TAP_MIN) return undefined;
-  // One pixel spare: offsetWidth rounds, and a 23.6px word read as 24 fell 0.4px short.
-  const side = Math.ceil((TAP_MIN + 1 - naturalWidth) / 2);
-  // maxWidth: the trigger's `max-w-full` is measured against its wrapper, which
-  // the negative margins keep at the words' own width, so it would clamp the
-  // grown box straight back to the words (measured: "role" stayed 35px).
-  return { paddingLeft: side, paddingRight: side, marginLeft: -side, marginRight: -side, whiteSpace: "nowrap", maxWidth: "none" };
-}
 
 interface InfoTipProps {
   /** The plain mechanics, one to three short sentences. Text only. */
   tip: string;
-  /** The visible trigger. Omit it for the small circled question mark. */
-  children?: React.ReactNode;
-  /** Names the bare-mark trigger for screen readers. Default "What is this?" */
-  label?: string;
+  /** The word or phrase the tip explains, as the sentence has it. It is the trigger and its accessible name. */
+  children: ReactNode;
+  /** Extra classes for the word. */
   className?: string;
-  /**
-   * Extra classes for a worded trigger's button, such as the 44px tap target a
-   * heading needs on a phone (the circle card's headings). The bare mark keeps
-   * its own fixed size.
-   */
-  triggerClassName?: string;
-  /**
-   * The bare mark's own box at 44px (TAP_MIN), for a page whose phone layout
-   * is measured box by box (the /quests board, 12 Nov 2026). The circle stays
-   * 16px and sits in the middle; negative margins give the extra space back,
-   * so the sentence around it keeps its line and nothing moves.
-   */
-  tapBox?: boolean;
-  /** The bare mark's glyph: "?" (the default) or "i" for a word the village explains (GlossaryTip.tsx). */
-  mark?: "?" | "i";
 }
 
-/** The bare mark grown to a 44px box with its 16px footprint kept (`tapBox`). */
-export const BARE_TAP_BOX =
-  "group relative inline-flex items-center justify-center align-middle size-11 -my-3.5 -ml-2.5 -mr-3.5 rounded-full cursor-help select-none focus-visible:outline-none";
-/** The 16px circle drawn inside BARE_TAP_BOX. */
-const BARE_TAP_MARK =
-  "inline-flex items-center justify-center w-4 h-4 rounded-full border border-current/40 text-[10px] leading-none opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-ring";
-
-export default function InfoTip({ tip, children, label, className = "", triggerClassName = "", tapBox = false, mark = "?" }: InfoTipProps) {
-  const { t } = useLingui();
-  const tap = triggerClassName || WORDED_TAP;
-  const padded = children != null && tap.includes(WORDED_TAP);
+export default function InfoTip({ tip, children, className = "" }: InfoTipProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number; above: boolean } | null>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLSpanElement | null>(null);
   // True while a pointer interaction is underway, so the focus that a tap or
   // click raises does not pre-open the plaque the click is about to toggle.
   const pointerDown = useRef(false);
@@ -159,32 +112,12 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
   // ignores mouseleave and closes on outside tap, Escape, or a second tap.
   const pinned = useRef(false);
   const id = useId();
-  // A short worded trigger's natural width, measured once it is laid out.
-  const [natural, setNatural] = useState(0);
-  useLayoutEffect(() => {
-    const el = triggerRef.current;
-    if (!padded || !el) return;
-    // offsetWidth is the laid-out box, untouched by an entrance animation's
-    // transform, and the observer measures again whenever the words change
-    // size (a web font arriving, a language switch).
-    const measure = () => {
-      const pad = (parseFloat(el.style.paddingLeft) || 0) * 2;
-      setNatural(el.offsetWidth - pad);
-    };
-    measure();
-    if (typeof ResizeObserver === "undefined") return;
-    const watch = new ResizeObserver(measure);
-    watch.observe(el);
-    return () => watch.disconnect();
-  }, [padded, children]);
 
   const place = () => {
     const el = triggerRef.current;
     if (!el) return;
-    const box = el.getBoundingClientRect();
-    // The padded tap area is not where the words are: open beside the words.
-    const pad = padded ? WORDED_PAD_Y : 0;
-    const r = { left: box.left, width: box.width, top: box.top + pad, bottom: box.bottom - pad };
+    // The word's first line: a phrase that wraps opens beside where it starts.
+    const r = el.getClientRects?.()[0] ?? el.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const w = Math.min(PLAQUE_MAX_W, vw - 16);
@@ -200,6 +133,14 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
   const hide = () => {
     setOpen(false);
     pinned.current = false;
+  };
+  const toggle = () => {
+    if (open && pinned.current) {
+      hide();
+    } else {
+      pinned.current = true;
+      show();
+    }
   };
 
   useEffect(() => {
@@ -225,28 +166,30 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
     };
   }, [open]);
 
-  const bare = children == null;
   const w = typeof window !== "undefined" ? Math.min(PLAQUE_MAX_W, window.innerWidth - 16) : PLAQUE_MAX_W;
 
   return (
-    <span className={`relative inline-block max-w-full ${className}`}>
-      <button
-        type="button"
+    <span>
+      <span
+        role="button"
+        tabIndex={0}
         ref={triggerRef}
         aria-expanded={open}
         aria-describedby={id}
-        aria-label={bare ? (label ?? t({ message: "What is this?", context: "InfoTip, aria-label" })) : undefined}
         onPointerDown={() => {
           pointerDown.current = true;
         }}
-        onClick={() => {
+        onClick={(e: ReactMouseEvent) => {
+          // Inside a <label> a click would also focus its field, inside a link it would follow it.
+          e.preventDefault();
           pointerDown.current = false;
-          if (open && pinned.current) {
-            hide();
-          } else {
-            pinned.current = true;
-            show();
-          }
+          toggle();
+        }}
+        onKeyDown={(e: ReactKeyboardEvent) => {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          // Space would scroll the page, Enter would submit a form around it.
+          e.preventDefault();
+          if (!e.repeat) toggle();
         }}
         onFocus={() => {
           if (!pointerDown.current) show();
@@ -256,24 +199,10 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
         onMouseLeave={() => {
           if (!pinned.current) setOpen(false);
         }}
-        style={padded ? widenStyle(natural) : undefined}
-        className={
-          bare && tapBox
-            ? BARE_TAP_BOX
-            : bare
-            // `before:-inset-1.5` grows the TOUCH TARGET and nothing else.
-            // Measured on a real 390px phone: this control is 16 by 16 CSS
-            // pixels, and WCAG 2.5.8 asks 24 by 24 at AA, so a thumb was being
-            // asked to hit two thirds of the minimum. The circle is 16px by
-            // design and is in twenty-six files, so growing the VISUAL would
-            // reflow every one of them; an invisible inset pseudo-element
-            // takes the hit area to 28 by 28 and moves no layout anywhere.
-            ? "relative inline-flex items-center justify-center align-middle w-4 h-4 ml-1 rounded-full border border-current/40 text-[10px] leading-none opacity-70 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-help select-none before:absolute before:-inset-1.5 before:content-['']"
-            : `underline decoration-dotted decoration-1 underline-offset-4 cursor-help rounded-sm max-w-full text-left [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tap}`
-        }
+        className={className ? `info-word ${className}` : "info-word"}
       >
-        {bare ? <span aria-hidden="true" className={tapBox ? BARE_TAP_MARK : undefined}>{mark}</span> : children}
-      </button>
+        {children}
+      </span>
       <span
         id={id}
         role="tooltip"
@@ -284,25 +213,17 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
         style={
           open && pos
             ? {
+                // Fixed and above the page here as well as in the stylesheet, so no ancestor's overflow clips it.
                 position: "fixed",
+                zIndex: 80,
                 top: pos.above ? undefined : pos.top,
                 bottom: pos.above ? window.innerHeight - pos.top : undefined,
                 left: pos.left,
                 width: w,
-                zIndex: 80,
-                background: "linear-gradient(180deg,#fdf3d7,#efdcae)",
-                border: "1px solid #8a6a33",
-                borderRadius: 10,
-                color: "#241a10",
-                boxShadow: "0 2px 10px rgba(0,0,0,.25)",
               }
             : undefined
         }
-        className={
-          open && pos
-            ? "block px-3 py-2 text-xs font-normal leading-relaxed text-left normal-case tracking-normal"
-            : undefined
-        }
+        className={open && pos ? "info-plaque" : undefined}
       >
         {tip}
       </span>

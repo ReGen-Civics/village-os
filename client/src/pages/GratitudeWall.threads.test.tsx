@@ -182,12 +182,15 @@ describe("the wall on a phone", () => {
     await waitFor(() => expect(screen.getByTestId("composer").getAttribute("data-sheet")).toBe("open"));
   });
 
-  it("gives the allowance's ? a 44px box", async () => {
+  it("puts the allowance's tip on the word allowance itself, with no mark beside it", async () => {
     page();
     await waitFor(() => expect(screen.getAllByTestId("thread-card")).toHaveLength(3));
     fireEvent.click(screen.getAllByRole("button", { name: "Carry a thanks" })[0]);
-    const mark = await screen.findByRole("button", { name: "How the allowance works" });
-    expect(mark.className).toMatch(/(min-)?(h|size)-11\b/);
+    const word = await screen.findByRole("button", { name: "allowance" });
+    expect(word).toHaveAccessibleDescription(/Your allowance refills when the cycle turns/);
+    // The 44px touch target is the word's invisible hit area (`.info-word::before` in client/src/index.css).
+    expect(word.className).toMatch(/\binfo-word\b/);
+    expect(screen.queryByRole("button", { name: "How the allowance works" })).toBeNull();
   });
 
   it("on a phone, the open sheet rides above the keyboard (M9, batch 158)", async () => {
@@ -221,7 +224,10 @@ describe("the allowance beside the hearts (D-24)", () => {
       expect(el).not.toBeNull();
       return el as HTMLElement;
     });
-    expect(line.textContent).toContain("Each cycle every member receives an allowance to send.");
+    // Read as a reader sees it: the closed tip after the word is hidden, so it is not part of the line.
+    const seen = line.cloneNode(true) as HTMLElement;
+    seen.querySelectorAll("[hidden]").forEach((n) => n.remove());
+    expect(seen.textContent?.replace(/\s+/g, " ").trim()).toContain("Each cycle every member receives an allowance to send.");
     // CONTROL: putting the meter back ("60 of 100 left") fails here by name.
     expect(document.body.textContent).not.toMatch(/\d+ of \d+ left/);
   });

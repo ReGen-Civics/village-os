@@ -257,8 +257,7 @@ export default function Quests() {
             {/* R47: the Trail line leads, the reward word keeps its tooltip,
                 and the Lore line comes last, after the numbers. */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
-              <Trans context="Quests, p">Take a Quest, do the work, turn it in.
-            </Trans><GlossaryTip slot="quest" word={t({ message: "Quest", context: "glossary: the word a tip explains" })} /></p>
+              <Trans context="Quests, p">Take a <GlossaryTip slot="quest">Quest</GlossaryTip>, do the work, turn it in.</Trans></p>
             {/* The two rewards a quest names on its card, each explained once here: a mark cannot sit inside a card's
                 link, and the village's own token names come from its config (the lead, 25 Nov 2026). */}
             <RewardWords />
@@ -742,7 +741,7 @@ function RewardWords() {
   return (
     <p className="text-sm text-muted-foreground max-w-2xl mx-auto mb-4" data-reward-words="">
       <Trans context="quests board: the line that names the two rewards">
-        Quests pay in {credits}<GlossaryTip slot="credits" word={credits} /> and {voice}<GlossaryTip slot="voice" word={voice} />.
+        Quests pay in <GlossaryTip slot="credits">{credits}</GlossaryTip> and <GlossaryTip slot="voice">{voice}</GlossaryTip>.
       </Trans>
     </p>
   );

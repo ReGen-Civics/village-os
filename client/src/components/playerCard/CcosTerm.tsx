@@ -10,8 +10,8 @@
  * `.pc-ccostip` in playerCard.css). Hover, Tab and a tap all open it; Escape,
  * a tap elsewhere and leaving close it.
  *
- * `CcosTerm` is the light pages' (the proposal's words step), an `InfoTip`
- * trigger, the circle card's own pattern
+ * `CcosTerm` is the light pages' (the proposal's words step): the words are
+ * an `InfoTip` trigger, the circle card's own pattern
  * (client/src/components/circleCard/CircleCardView.tsx).
  *
  * Both keep the same accessibility contract: the words are a button with
@@ -22,27 +22,15 @@
  * (`org.ccos_terms`), the words draw exactly as they are and nothing is
  * underlined.
  *
- * TAP TARGETS, 44px on a phone without moving any layout: padding grows the
- * button's own box and an equal negative margin gives the space back
- * (WORDED_TAP in InfoTip.tsx).
+ * TAP TARGETS, 44px on a phone without moving any layout: an invisible hit
+ * area centred on the words (`.info-word::before` in client/src/index.css).
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import InfoTip, { WORDED_TAP } from "@/components/InfoTip";
+import InfoTip from "@/components/InfoTip";
 
-/** An eyebrow heading: text-xs, so a 16px line grown to 44px. */
-export const EYEBROW_TAP = `uppercase ${WORDED_TAP}`;
-/** A phrase inside a text-sm sentence, as the circle card's "This circle exists while". */
-export const INLINE_TAP = WORDED_TAP;
-/** A bold label inside a text-sm block, its own 44px row like the circle card's headings. */
-export const LABEL_TAP = "inline-flex min-h-11 items-center text-left";
-
-export function CcosTerm({ term, children, tap = EYEBROW_TAP }: { term: string | null | undefined; children: ReactNode; tap?: string }) {
+export function CcosTerm({ term, children }: { term: string | null | undefined; children: ReactNode }) {
   if (!term) return <>{children}</>;
-  return (
-    <InfoTip tip={term} triggerClassName={tap}>
-      {children}
-    </InfoTip>
-  );
+  return <InfoTip tip={term}>{children}</InfoTip>;
 }
 
 /** The player card's term: the design's dotted underline and its night tooltip. */
