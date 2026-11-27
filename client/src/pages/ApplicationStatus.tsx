@@ -66,6 +66,8 @@ interface Served {
   objections?: string[];
   /** Declined at our review: when the roles open again (ruling 12). */
   nextSeason?: { name: string | null; startsOn: string } | null;
+  /** Made from an account here: adopted, they sign in to their roles (QA pass 1: no invitation is coming). */
+  hasAccount?: boolean;
   /** Our review comes before the conversations on this application (Phase A). */
   reviewFirst?: boolean;
   /** Our review ended it with the not-invited letter. */
@@ -281,6 +283,7 @@ export default function ApplicationStatus() {
   const view = s ? statusView(lang, s) : null;
   // The review window, 1 to 2 weeks after the role's deadline (a week after it, as the server counts): not yet open.
   const windowAhead = !!s?.reviewAfter && Date.now() < Date.parse(`${s.reviewAfter}T00:00:00Z`) + 7 * 86_400_000;
+  const promiseShown = !!s && s.outcome == null && (windowAhead || (!view?.applicantActs && (!!s.afterFounding || typeof s.replyMoons === "number")));
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -345,7 +348,8 @@ export default function ApplicationStatus() {
   const termsWait = !!s?.offer && s.offer.mayAnswer && s.offer.open > 0;
   /** A founding application: our review comes before the conversations (Phase A). Its page is the quiet register. */
   const founding = !!s?.reviewFirst;
-  const hints = founding && s?.outcome == null && view ? stepHints(view.path.map((p) => p.label), w.status, applicantSteps(lang, s?.afterFounding ? null : typeof s?.replyMoons === "number" ? s.replyMoons : 1)).map((h, i) => (view.path[i].state === "done" ? null : h)) : null;
+  // The six stages carry their own line; the older steps' hints would add a second and third promise (QA pass 1).
+  const hints = founding && s?.outcome == null && view && !view.six ? stepHints(view.path.map((p) => p.label), w.status, applicantSteps(lang, s?.afterFounding ? null : typeof s?.replyMoons === "number" ? s.replyMoons : 1)).map((h, i) => (view.path[i].state === "done" ? null : h)) : null;
 
   /** The path as stepping stones, drawn once: first in the right column on the six-stage page, where it stood before otherwise. */
   const trail = view ? (
@@ -427,7 +431,8 @@ export default function ApplicationStatus() {
                   {!(founding && s.outcome === "adopted") && <p className="mt-1 text-lg text-foreground">{view.move}</p>}
                   {/* The village's real average for this step, once enough have passed it (the lead, 27 Nov 2026). */}
                   {view.average && <p className="mt-1 text-sm text-muted-foreground" data-stage-average="">{view.average}</p>}
-                  {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
+                  {/* ONE PROMISE (QA pass 1 saw three): the reply promise or the review window when either shows, else the day. */}
+                  {byDay && !view.applicantActs && !promiseShown && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
                   {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
                   {s.outcome == null && !view.applicantActs && !windowAhead && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{s.reviewAfter ? w.reviewWindow(w.day(s.reviewAfter)) : w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
                   {/* Ruling 17: until the review window opens, the line stays, whatever else the card offers (QA pass 1 saw it hide). */}
@@ -464,10 +469,18 @@ export default function ApplicationStatus() {
                   )}
                   {s.outcome === "adopted" && (
                     <p className="mt-2 font-medium text-notice" data-adopted-line="">
-                      {founding
-                        ? t({ message: `The circle said yes. We'd love you on the team. Your invitation to make your account is in your email.`, context: "applicant's application status, adoption" })
-                        : t({ message: `The circle said yes. We'd love you on the team.`, context: "applicant's application status, adoption" })}
+                      {s.hasAccount
+                        ? t({ message: `The circle said yes. We'd love you on the team. Sign in to see your roles.`, context: "applicant's application status, adoption, an account holder" })
+                        : founding
+                          ? t({ message: `The circle said yes. We'd love you on the team. Your invitation to make your account is in your email.`, context: "applicant's application status, adoption" })
+                          : t({ message: `The circle said yes. We'd love you on the team.`, context: "applicant's application status, adoption" })}
                     </p>
+                  )}
+                  {s.outcome === "adopted" && s.hasAccount && (
+                    <a className={`mt-2 ${DOOR}`} href="/profile" data-adopted-sign-in="">
+                      {t({ message: "Sign in to see your roles", context: "applicant's application status, adoption, the sign-in door" })}
+                      <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                    </a>
                   )}
                 </section>
               </div>

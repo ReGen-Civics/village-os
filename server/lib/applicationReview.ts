@@ -711,7 +711,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { nextSeason: { name: string | null; startsOn: string } | null; roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; objections: string[]; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { hasAccount: boolean; nextSeason: { name: string | null; startsOn: string } | null; roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; objections: string[]; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -792,6 +792,8 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     // "the anchor circle members and the applicant can see this but not anyone else").
     objections: kindOfRef(ref) === "open" ? ((await asksFor(pool, [ref])).get(ref) ?? []).filter((a) => a.answer === "object" && a.reason).map((a) => a.reason as string) : [],
     reviewFirst: stage !== null,
+    // An application made from an account here: adopted, it signs in to its roles, never waits for an invitation.
+    hasAccount: !!d?.applicantUserId,
     notInvited: stage === "not_invited",
     stayClose: stage === "not_invited" ? stayCloseProgram() : null,
     // Closed by the tidy job because nobody answered in time (server/lib/applicantFollowups.ts): the page says closed, never "you withdrew".
