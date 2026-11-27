@@ -68,8 +68,9 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // /role-measures redirect to /circles#role-measures (folded into Circles & Roles, 27 Nov 2026), the
     // /game-mechanics redirect to /governance/how#game-mechanics (Game Mechanics folded into How we work together,
     // 26 Nov 2026), and the /approvals, /changes, /changes/:id and /governance/decisions/changes redirects into Your
-    // work and Decisions (the lead, 27 Nov 2026: the folds) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 18);
+    // work and Decisions (the lead, 27 Nov 2026: the folds), and the /feedback redirect into the guide's panel (the
+    // feedback fold, 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 19);
     expect(routes.length).toBeGreaterThan(60);
   });
 
