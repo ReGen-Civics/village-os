@@ -263,7 +263,6 @@ const ToolsHub = lazyPage(() => import("./pages/ToolsHub"));
 const VillageMap = lazyPage(() => import("./pages/VillageMapForMembers"));
 const LivingMap = lazyPage(() => import("./pages/LivingMapForMembers"));
 const Events = lazyPage(() => import("./pages/Events"));
-const FirstWalk = lazyPage(() => import("./pages/FirstWalk"));
 const Forum = lazyPage(() => import("./pages/Forum"));
 const Messages = lazyPage(() => import("./pages/Messages"));
 const Introductions = lazyPage(() => import("./pages/Introductions"));
@@ -414,7 +413,8 @@ function Router() {
       <Route path="/photographs">{() => <Redirect to="/places#photos" replace />}</Route>
       <Route path="/map/circles" component={VillageMap} />
       <Route path="/events" component={Events} />
-      <Route path="/first-walk" component={FirstWalk} />
+      {/* Your First Walk is gone (the lead, 27 Nov 2026: "Let's get rid of this"); an old link lands on the home page, which every village has. */}
+      <Route path="/first-walk">{() => <Redirect to="/" replace />}</Route>
       <Route path="/feed" component={Feed} />
       <Route path="/stay" component={Stay} />
       {/* The Exchange's old address: one page called Wallet now (the lead, 25 Nov 2026). The query and hash ride along. */}

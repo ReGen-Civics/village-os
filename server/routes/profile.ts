@@ -7,6 +7,8 @@
  *   GET  /api/profile/leaving-notices  what deleting their account will cancel
  *   GET  /api/profile/booking-link     their own booking page link, or null
  *   PUT  /api/profile/booking-link     save it (https only), or clear it with ""
+ *   GET  /api/profile/speed-cards      their own six quick cards on the phone's More sheet, or null
+ *   PUT  /api/profile/speed-cards      save them (shared/speedCards.ts), or clear them with null
  *
  * Lifted out of server/index.ts with the handlers unchanged apart from the
  * path validation named below. `HANDLE_RE` came with them: server/index.ts
@@ -46,6 +48,7 @@
 import type { Express } from "express";
 import { claimPaths } from "../../shared/gameConfig";
 import { MEMBER_BOOKING_PREF, memberBookingUrl, parseMemberBookingInput } from "../../shared/interviewBooking";
+import { SPEED_CARDS_PREF, parseSpeedCardSlots, readSpeedCards } from "../../shared/speedCards";
 import type { AppDeps } from "../lib/appDeps";
 import { isTombstone } from "../lib/oauthAccounts";
 import { subscriptionsState } from "../lib/exit";
@@ -220,5 +223,35 @@ export function register(app: Express, deps: Deps): void {
     if (gone) return res.status(401).json({ error: "auth_required" });
     if (!updated) return res.status(404).json({ error: "User not found" });
     res.json({ bookingUrl: memberBookingUrl(updated.prefs) });
+  });
+
+  /**
+   * THE MEMBER'S OWN SPEED CARDS (shared/speedCards.ts): the six quick cards on the phone's More sheet, kept in
+   * their own prefs so the cards follow them to every device. Only the shape is checked here; which pages the member
+   * may open is the menu's rule, and the client draws a saved card only while the menu offers it. Answers only for
+   * the signed-in member, and writes only their own row.
+   */
+  app.get("/api/profile/speed-cards", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    res.set("Cache-Control", "no-store").json({ slots: readSpeedCards(authed.prefs) });
+  });
+
+  app.put("/api/profile/speed-cards", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    const parsed = parseSpeedCardSlots(req.body?.slots);
+    if (!parsed.ok) return res.status(400).json({ error: parsed.problem });
+    let gone = false;
+    const updated = await members.update(authed.id, (u: any) => {
+      if ((gone = sessionGone(u, authed))) return;
+      const prefs = { ...(u.prefs ?? {}) };
+      if (parsed.value) prefs[SPEED_CARDS_PREF] = parsed.value;
+      else delete prefs[SPEED_CARDS_PREF];
+      u.prefs = prefs;
+    });
+    if (gone) return res.status(401).json({ error: "auth_required" });
+    if (!updated) return res.status(404).json({ error: "User not found" });
+    res.json({ slots: readSpeedCards(updated.prefs) });
   });
 }

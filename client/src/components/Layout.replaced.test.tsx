@@ -36,18 +36,32 @@ const at = (path: string) => {
   );
 };
 
-describe("a role page while the map runs", () => {
-  it("marks Circles & Roles in the open Village menu, as the way there and not as the page", () => {
-    at("/roles/gardener");
-    fireEvent.click(screen.getByRole("button", { name: /^Village/ }));
-    const menu = within(document.getElementById("nav-menu-village")!);
-    expect(menu.getByRole("link", { name: /Circles & Roles/ }).getAttribute("aria-current")).toBe("true");
+describe("a circle page while the map runs", () => {
+  // Since round 2 (27 Nov 2026) Circles & Roles is a folder of Govern; the fold that remains is the plain Circles page
+  // into the map's view of the circles (config/nav.ts, unlessModule). The folder holding the page opens with the menu.
+  it("marks the map's Circles in the open Govern menu, as the way there and not as the page", () => {
+    at("/circles/water");
+    fireEvent.click(screen.getByRole("button", { name: /^Govern/ }));
+    const menu = within(document.getElementById("nav-menu-govern")!);
+    const link = menu.getAllByRole("link", { name: /Circles/ }).find((a) => a.getAttribute("href") === "/map/circles")!;
+    expect(link.getAttribute("aria-current")).toBe("true");
   });
 
   it("keeps the trail on the page's own entry", () => {
+    at("/circles/water");
+    const trail = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles");
+    expect(within(trail).getByRole("link", { name: "Circles" }).getAttribute("href")).toBe("/circles");
+  });
+});
+
+describe("a role page while the map runs", () => {
+  it("lights Open Roles under Join, its own entry, with no fold in between", () => {
     at("/roles/gardener");
     const trail = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Village / Roles");
-    expect(within(trail).getByRole("link", { name: "Roles" }).getAttribute("href")).toBe("/roles");
+    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Join / Open Roles");
+    fireEvent.click(screen.getByRole("button", { name: /^Join/ }));
+    const menu = within(document.getElementById("nav-menu-join")!);
+    expect(menu.getByRole("link", { name: /Open Roles/ }).getAttribute("aria-current")).toBe("true");
   });
 });

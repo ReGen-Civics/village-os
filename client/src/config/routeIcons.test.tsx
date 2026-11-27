@@ -102,13 +102,16 @@ describe("a menu entry's icon", () => {
     expect(bare.container.innerHTML).toBe("");
   });
 
-  it("the header's sheet draws it in its chip, and no chip without an icon", async () => {
+  it("the header's sheet draws it in its chip, and an empty slot of the chip's width without an icon", async () => {
     await act(async () => {
       await loadRouteIcons();
     });
     const chip = render(<MenuIcon href="/governance/decisions" chip />);
     expect(chip.container.querySelector("span[data-menu-icon] svg")).not.toBeNull();
     chip.unmount();
-    expect(render(<MenuIcon href="/nowhere" chip />).container.innerHTML).toBe("");
+    // No chip, but the chip's width kept, so the entry's words start where its siblings' do (the menu's QA, 27 Nov 2026).
+    const none = render(<MenuIcon href="/nowhere" chip />).container;
+    expect(none.querySelector("[data-menu-icon]")).toBeNull();
+    expect(none.querySelector("[data-menu-gutter]")?.className).toContain("w-8");
   });
 });

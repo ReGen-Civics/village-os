@@ -84,7 +84,7 @@ export const SITE_PAGE: PageSpec = {
             { label: "Master Plan", subtitle: "" },
             { label: "Our Team", subtitle: "" },
             { label: "How We Create", subtitle: "" },
-            { label: "Good Neighbor", subtitle: "" },
+            { label: "Good Neighbor Criteria", subtitle: "" },
             { label: "Co-Creators Guide", subtitle: "" },
             { label: "Resident Rights", subtitle: "" },
             { label: "Steward Rights", subtitle: "" },
