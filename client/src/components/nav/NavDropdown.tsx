@@ -65,6 +65,7 @@ export default function NavDropdown({
         {open && (
           <m.div
             id={menuId}
+            data-nav-dropdown=""
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}

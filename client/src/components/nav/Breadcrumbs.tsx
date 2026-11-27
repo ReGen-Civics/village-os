@@ -25,27 +25,27 @@ export interface Trail {
 }
 
 function Sep() {
-  return <span aria-hidden="true" className="text-muted-foreground">/</span>;
+  return <span aria-hidden="true" data-crumb-sep="" className="text-muted-foreground">/</span>;
 }
 
 export default function Breadcrumbs({ group, groupHref, item, leaf }: Trail) {
   const { t } = useLingui();
   return (
-    <nav aria-label={t({ message: "Breadcrumb", context: "the trail at the top of a page: where it sits in the menu, read aloud" })} className="container pt-4" data-breadcrumbs="">
+    <nav aria-label={t({ message: "Breadcrumb", context: "the trail at the top of a page: where it sits in the menu, read aloud" })} className="container pt-4" data-breadcrumbs="" data-wayfinding="breadcrumb">
       <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
         {group ? (
           <li className="inline-flex items-center gap-2">
-            {groupHref ? <Link href={groupHref} className={CRUMB_LINK}>{group}</Link> : <span>{group}</span>}
+            {groupHref ? <Link href={groupHref} className={CRUMB_LINK} data-crumb="group">{group}</Link> : <span data-crumb="group">{group}</span>}
             <Sep />
           </li>
         ) : null}
         <li className="inline-flex items-center gap-2">
-          <Link href={item.href} className={CRUMB_LINK}>{item.label}</Link>
+          <Link href={item.href} className={CRUMB_LINK} data-crumb="entry">{item.label}</Link>
           {leaf ? <Sep /> : null}
         </li>
         {leaf ? (
           <li className="min-w-0">
-            <span aria-current="page" className="block max-w-[14rem] truncate font-semibold text-foreground sm:max-w-md">{leaf}</span>
+            <span aria-current="page" data-crumb="leaf" className="block max-w-[14rem] truncate font-semibold text-foreground sm:max-w-md">{leaf}</span>
           </li>
         ) : null}
       </ol>
