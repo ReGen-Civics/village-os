@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 /**
- * MORE, THE PHONE'S ONE MENU (phone doors v4). The tiles come from the account
- * entries Layout already gated, Pay shows once credits are in use
- * (shared/payGate.ts), the sixth tile is the member's own most visited page,
- * and Roles never appears: it is a tab.
+ * MORE, THE PHONE'S ONE MENU (phone doors v4). The member's six speed cards
+ * (SpeedCards.tsx; their own tests are SpeedCards.test.tsx) come from the
+ * entries Layout already gated, Pay joins them once credits are in use
+ * (shared/payGate.ts), the list under them holds the account entries not on a
+ * card, and Roles never appears: it is a tab.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import type { NavGroup, NavLink } from "@/config/nav";
@@ -24,11 +25,11 @@ const session = vi.hoisted(() => ({
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: session.user, logout: vi.fn() }) }));
 vi.mock("@/lib/gameApi", () => ({
   gameFetch: vi.fn(async (path: string) => {
-    const body = path === "/api/pay" ? session.pay : path === "/api/pay/recent" ? session.recent : null;
+    const body = path === "/api/pay" ? session.pay : path === "/api/pay/recent" ? session.recent : path === "/api/profile/speed-cards" ? { slots: null } : null;
     return body ? new Response(JSON.stringify(body), { status: 200 }) : new Response("{}", { status: 404 });
   }),
 }));
-vi.mock("@/lib/navVisits", () => ({ personalFor: () => session.most }));
+vi.mock("@/lib/navVisits", () => ({ mostVisited: () => (session.most ? [session.most] : []) }));
 vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: session.modules, loaded: true, failed: false }) }));
 vi.mock("@/lib/newcomer", () => ({ useNewcomer: () => false }));
 vi.mock("@/i18n/LanguagePicker", () => ({ LanguagePicker: () => <span>language</span> }));
@@ -65,6 +66,7 @@ async function draw() {
 const tiles = (c: HTMLElement) => Array.from(c.querySelectorAll<HTMLElement>("[data-more-tile]")).map((t) => t.getAttribute("data-more-tile"));
 
 beforeEach(() => {
+  window.localStorage.clear();
   session.user = { id: "u1", name: "Ana" };
   session.pay = { tokens: [{ balance: 4 }] };
   session.recent = { people: [] };
@@ -75,9 +77,10 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("the More sheet", () => {
-  it("draws the tiles in order: Profile, Pay, Messages, My tasks, Journal", async () => {
+  it("draws the cards in order: Profile, Messages, My tasks, Journal, then Pay once credits are in use", async () => {
     const { container } = await draw();
-    expect(tiles(container)).toEqual(["/profile", "/pay", "/messages", TASK_BOARD_PATH, "/journal"]);
+    expect(tiles(container)).toEqual(["/profile", "/messages", TASK_BOARD_PATH, "/journal", "/pay"]);
+    expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute("href", "/profile");
   });
 
   it("keeps Pay away until credits are in use for this member", async () => {
@@ -87,17 +90,57 @@ describe("the More sheet", () => {
     expect(tiles(container)).not.toContain("/pay");
   });
 
-  it("adds the member's most visited page as the sixth tile, named from the menu", async () => {
+  it("leaves the open slots as +, and offers the member's most visited page first in the picker", async () => {
+    session.pay = { tokens: [{ balance: 0 }] };
     session.most = "/events";
-    const { container } = await draw();
-    expect(tiles(container).at(-1)).toBe("/events");
-    expect(screen.getByText("you visit most")).toBeInTheDocument();
+    await draw();
+    expect(screen.getAllByRole("button", { name: "Add a card" })).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    const picker = await screen.findByRole("dialog", { name: "Add a card" });
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    expect(within(within(picker).getByRole("region", { name: "You open most" })).getByText("Events")).toBeInTheDocument();
   });
 
-  it("lists the other account entries under the tiles, and never Roles", async () => {
+  it("lists the account entries not on a card under them, and never Roles", async () => {
     await draw();
-    expect(within(screen.getByRole("list", { name: "Also yours" })).getByText("Badges")).toBeInTheDocument();
+    const also = screen.getByRole("list", { name: "Also yours" });
+    expect(within(also).getByText("Badges")).toBeInTheDocument();
+    expect(within(also).queryByText("Journal")).toBeNull();
     expect(screen.queryByText("Roles")).toBeNull();
+  });
+
+  it("puts a card's page back in the list once the member takes it off the cards", async () => {
+    session.pay = { tokens: [{ balance: 0 }] };
+    await draw();
+    fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove Journal" }));
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    expect(within(screen.getByRole("list", { name: "Also yours" })).getByText("Journal")).toBeInTheDocument();
+  });
+
+  it("keeps the sheet open when Escape leaves edit mode, and closes it on the next", async () => {
+    const onClose = vi.fn();
+    window.matchMedia = ((q: string) => ({ matches: session.phone, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    const { hook } = memoryLocation({ path: "/quests" });
+    render(
+      <Router hook={hook}>
+        <MoreSheet entries={[COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={onClose} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
+    fireEvent.keyDown(screen.getByRole("button", { name: "Done" }), { key: "Escape" });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Edit your cards" })).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("button", { name: "Edit your cards" }), { key: "Escape" });
+    expect(onClose).toHaveBeenCalled();
   });
 
   it("keeps the hidden map a tap away while its module is on (the lotus's row, logging a place in the field)", async () => {

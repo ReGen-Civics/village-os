@@ -11,14 +11,12 @@
  * up nothing here draws: there is no bar, and the header keeps its drawer
  * (Layout.tsx).
  *
- *   Yours         six tiles: Profile, Pay (once credits are in use,
- *                 shared/payGate.ts), Messages and My tasks with their counts,
- *                 Journal, and the one page this member visits most that is
- *                 not already a tab or a tile (chosen on the phone from its
- *                 own history, client/src/lib/navVisits.ts). Each tile is an
- *                 account entry Layout already gated by module and role, so a
- *                 tile shows exactly when its menu entry would.
- *   Also yours    the rest of the account entries, in their folders (config/navNest.ts).
+ *   Yours         six speed cards, the member's own to choose (SpeedCards.tsx, 27 Nov 2026): by default Profile,
+ *                 Messages and My tasks with their counts, Journal, then Pull a card once Human Design or Gene Keys
+ *                 is on and Pay once credits are in use, and "+" slots for the rest. Any page the menu offers this
+ *                 member can be a card (lib/speedCards/registry.ts), so a card shows exactly when its menu entry
+ *                 would. Hold a card, right-click it, or press Edit to rearrange them.
+ *   Also yours    the account entries that are not on the cards, in their folders (config/navNest.ts).
  *   The village   the menu's sections, as Layout filtered them.
  *   Foot          language, light or dark, and sign out (or sign in).
  *
@@ -27,44 +25,29 @@
  * DIALOGUE IS SAND), and it is modal, so the corner button steps aside while it
  * is open (index.css hides [data-mobile-fab] under an md:hidden aria-modal).
  */
-import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ChevronDown, Coins, ListChecks, NotebookPen, UserRound, MessagesSquare, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import { useNewcomer } from "@/lib/newcomer";
-import { gameFetch } from "@/lib/gameApi";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import MenuIcon from "@/components/nav/MenuIcon";
 import MenuRows from "@/components/nav/MenuRows";
 import { isGroup, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
-import { TAB_SLOTS } from "@/config/mobileNav";
 import { currentFor, type Lit } from "@/config/navBearings";
-import { TASK_BOARD_PATH } from "@shared/taskMenu";
-import { creditsInUse, type PayRead, type PayRecentRead } from "@shared/payGate";
-
-const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
-const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
+import { DEFAULT_ORDER } from "@/lib/speedCards/registry";
+import SpeedCards from "./SpeedCards";
 
 type AccountLink = NavLink & { count?: "tasks" | "messages" };
 
-/** The account entries that become tiles, in the order the sheet draws them. Pay sits second, added in between. */
-const TILE_HREFS = ["/profile", "/messages", TASK_BOARD_PATH, "/journal"] as const;
-const PAY_HREF = "/pay";
 /**
  * The hidden map, a tap away on the phone (it was the lotus's row): logging a place happens out where
  * the place is. Shown to an admitted member while its module is on; its other door is the Village menu.
  */
 const HIDDEN_MAP = { href: "/hidden-map", module: "hidden-map" } as const;
-/** A tile's glyph where the page icons (config/routeIcons.ts) have none for its address. */
-const TILE_FALLBACK: Record<string, ComponentType<{ className?: string }>> = {
-  "/profile": UserRound,
-  "/messages": MessagesSquare,
-  [TASK_BOARD_PATH]: ListChecks,
-  "/journal": NotebookPen,
-};
 
 export interface MoreSheetProps {
   /** The menu, as Layout filtered it (modules, roles, the brochure switch). */
@@ -79,43 +62,7 @@ export interface MoreSheetProps {
   lit?: Lit | null;
 }
 
-/** Credits are in use for this member (shared/payGate.ts): read once per opening. */
-function usePayShown(signedIn: boolean): boolean {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    if (!signedIn) return;
-    let live = true;
-    const read = (path: string) => gameFetch(path).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-    Promise.all([read("/api/pay") as Promise<PayRead | null>, read("/api/pay/recent") as Promise<PayRecentRead | null>]).then(([pay, recent]) => {
-      if (live) setShown(creditsInUse(pay, recent));
-    });
-    return () => {
-      live = false;
-    };
-  }, [signedIn]);
-  return shown;
-}
-
-/** The page this member visits most that is not a tab or a tile, from the phone's own history. */
-function useMostVisited(taken: readonly string[], known: ReadonlyMap<string, NavLink>, signedIn: boolean): NavLink | null {
-  const [path, setPath] = useState<string | null>(null);
-  const key = taken.join("|");
-  useEffect(() => {
-    if (!signedIn) return;
-    let live = true;
-    void import("@/lib/navVisits")
-      .then((m) => m.personalFor(taken, []))
-      .then((p) => live && setPath(p))
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-    // `taken` is read through its key: a new array with the same pages is the same question.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, signedIn]);
-  return path ? (known.get(path) ?? null) : null;
-}
-
+/** A visitor's tile. A member's are their speed cards (SpeedCards.tsx). */
 function Tile({ href, label, onGo, children, Icon }: { href: string; label: string; onGo: () => void; children?: React.ReactNode; Icon?: ComponentType<{ className?: string }> }) {
   return (
     <Link
@@ -124,7 +71,7 @@ function Tile({ href, label, onGo, children, Icon }: { href: string; label: stri
       data-more-tile={href}
       className="relative flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl bg-muted px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted/80 focus-visible:outline-2 focus-visible:outline-ring"
     >
-      {Icon ? <Icon aria-hidden="true" className="size-6 shrink-0" /> : <MenuIcon href={href} fallback={TILE_FALLBACK[href]} className="size-6 shrink-0" />}
+      {Icon ? <Icon aria-hidden="true" className="size-6 shrink-0" /> : <MenuIcon href={href} className="size-6 shrink-0" />}
       <span className="leading-tight">{label}</span>
       {children}
     </Link>
@@ -184,21 +131,13 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
     if (location !== first.current) closeRef.current();
   }, [location]);
 
-  const byHref = new Map(account.map((a) => [a.href, a] as const));
-  const known = new Map<string, NavLink>();
-  for (const e of entries) for (const l of isGroup(e) ? itemsOf(e) : [e]) known.set(l.href, l);
-  for (const a of account) known.set(a.href, a);
-
-  const payShown = usePayShown(!!user);
-  const tiles = TILE_HREFS.map((h) => byHref.get(h)).filter((a): a is AccountLink => !!a);
-  const tabs = TAB_SLOTS.map((s) => s.path).filter((p): p is string => !!p);
-  const taken = [...tabs, ...TILE_HREFS, PAY_HREF];
-  const most = useMostVisited(taken, known, !!user);
+  // The addresses on the member's cards, so the list under them leaves those out (SpeedCards reports them).
+  const [onCards, setOnCards] = useState<readonly string[]>(DEFAULT_ORDER);
   const { modules } = useModules();
   const newcomer = useNewcomer();
   const hiddenMapOn = !!user && !newcomer && Array.isArray(modules) && modules.some((m) => m.id === HIDDEN_MAP.module && m.lifecycle !== "off");
-  const rest: AccountLink[] = account.filter((a) => !(TILE_HREFS as readonly string[]).includes(a.href));
-  if (hiddenMapOn && !rest.some((a) => a.href === HIDDEN_MAP.href)) rest.push({ href: HIDDEN_MAP.href, label: t({ message: "Hidden map", context: "the phone's More sheet: the hidden map, for logging places out on the land" }) });
+  const rest: AccountLink[] = account.filter((a) => !onCards.includes(a.href));
+  if (hiddenMapOn && !onCards.includes(HIDDEN_MAP.href) && !rest.some((a) => a.href === HIDDEN_MAP.href)) rest.push({ href: HIDDEN_MAP.href, label: t({ message: "Hidden map", context: "the phone's More sheet: the hidden map, for logging places out on the land" }) });
 
   const eyebrow = "text-xs font-semibold uppercase tracking-widest text-notice";
   return (
@@ -222,22 +161,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
 
         {user ? (
           <section aria-labelledby="more-yours" className="mt-2">
-            <h2 id="more-yours" className={eyebrow}><Trans context="the phone's More sheet: heading">Yours</Trans></h2>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {tiles[0] ? <Tile href={tiles[0].href} label={t({ message: "Profile", context: "the phone's More sheet: tile" })} onGo={close} /> : null}
-              {payShown ? <Tile href={PAY_HREF} label={t({ message: "Pay", context: "the phone's More sheet: tile, the credits page" })} onGo={close} Icon={Coins} /> : null}
-              {tiles.slice(1).map((a) => (
-                <Tile key={a.href} href={a.href} label={a.label} onGo={close}>
-                  {a.count === "tasks" ? <Suspense fallback={null}><span className="absolute right-2 top-1.5"><TaskCountBadge who={user.id} /></span></Suspense> : null}
-                  {a.count === "messages" ? <Suspense fallback={null}><span className="absolute right-2 top-1.5"><MessageCountBadge who={user.id} /></span></Suspense> : null}
-                </Tile>
-              ))}
-              {most ? (
-                <Tile href={most.href} label={most.label} onGo={close}>
-                  <span className="text-xs font-normal text-muted-foreground"><Trans context="the phone's More sheet: under the tile for the member's most visited page">you visit most</Trans></span>
-                </Tile>
-              ) : null}
-            </div>
+            <SpeedCards who={String(user.id)} entries={entries} itemsOf={itemsOf} account={account} here={location} onClose={close} onShown={setOnCards} />
             {rest.length ? (
               <ul className="mt-3 divide-y divide-border/60" aria-label={t({ message: "Also yours", context: "the phone's More sheet: the rest of the account links" })}>
                 <MenuRows
