@@ -33,7 +33,7 @@ import { HOME_PAGE } from "@shared/pageContent/home";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
-import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
+import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr } from "@shared/pathCardArt";
 import { airWelcomeHere } from "@/lib/airWelcome";
 import { isCoreTeamCard, pathCardHref, useFoundingOn, visiblePathCards } from "@/lib/pathCards";
 
@@ -64,14 +64,16 @@ const Air = lazy(() => import("@/components/motion/Air"));
  * the server cut around the centre: a portrait cut to 3:1 kept a quarter of
  * its height, and the cards showed sky or cut people off at the eyes.
  * `focus` is the village's own focal point or the top-weighted default
- * (shared/pathCardArt.ts), and a picture far from the frame's shape is shown
- * whole on the panel's soft ground instead of being cut.
+ * (shared/pathCardArt.ts). Every picture FILLS its frame (the lead, 27 Nov
+ * 2026: "Fix the cropping in the resident picture"): a portrait shown whole sat
+ * as a narrow column with bands of the panel's colour each side, so the frame
+ * always covers now, and the focal point (Admin, Make This Yours, Pictures)
+ * keeps the faces and the horizon in it.
  */
 const JOURNEY_ART_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 const JOURNEY_FRAME = "relative -mx-5 -mt-5 mb-4 block aspect-square overflow-hidden rounded-t-2xl bg-muted lg:aspect-[4/5]";
 function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcSet?: string; alt: string; focus: string }) {
   const [failed, setFailed] = useState(false);
-  const [whole, setWhole] = useState(false);
   if (!src || failed) {
     return (
       <div
@@ -96,13 +98,9 @@ function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcS
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      onLoad={(e) => {
-        const img = e.currentTarget;
-        setWhole(shouldShowWhole(img.naturalWidth, img.naturalHeight, img.clientWidth, img.clientHeight));
-      }}
-      style={{ objectPosition: whole ? "50% 50%" : focus }}
-      data-art-fit={whole ? "whole" : "cover"}
-      className={`absolute inset-0 h-full w-full ${whole ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-105`}
+      style={{ objectPosition: focus }}
+      data-art-fit="cover"
+      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
   );
 }
@@ -416,9 +414,57 @@ export default function Home() {
       {/* Seeing the place, after the ways in. */}
       <MapPeek />
 
-      {/* Who comes to this village */}
+      {/* CTA Section */}
+      {cta && !cta.hidden && (
+      <section className="border-t border-border/60 bg-card/40 py-24">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 lang={langOf("cta.heading")}
+              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-6"
+            >
+              {cta.fields.heading}
+            </h2>
+            <p lang={langOf("cta.body")}
+              className="m-germ text-xl text-muted-foreground mb-8"
+            >
+              <Emphasized text={cta.fields.body} />
+            </p>
+            <div
+              className="m-germ flex flex-wrap justify-center gap-4"
+            >
+              {eventsUrl && (
+                <a
+                  href={eventsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={BTN_SECONDARY}
+                >
+                  <Calendar className="w-5 h-5" />
+                  {cta.fields.primaryLabel}
+                </a>
+              )}
+              {eventsUrl && cta.fields.secondaryLabel && (
+                <a lang={langOf("cta.secondaryLabel")}
+                  href={eventsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={BTN_SECONDARY}
+                >
+                  {cta.fields.secondaryLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      )}
+
+      <FourWaysToBuild founding={founding} />
+
+      {/* WHO COMES TO THIS VILLAGE, LAST (the lead, 27 Nov 2026: "Put The Who comes to Amora at the end of the
+          page"): after every other section, just before the footer. */}
       {personas && !personas.hidden && (
-      <section className="py-24">
+      <section className="border-t border-border/60 py-24" data-landing-personas="">
         <div className="container">
           <div className="text-center mb-16">
             <span lang={langOf("personas.eyebrow")}
@@ -485,53 +531,6 @@ export default function Home() {
         </div>
       </section>
       )}
-
-      {/* CTA Section */}
-      {cta && !cta.hidden && (
-      <section className="border-t border-border/60 bg-card/40 py-24">
-        <div className="container">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 lang={langOf("cta.heading")}
-              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-6"
-            >
-              {cta.fields.heading}
-            </h2>
-            <p lang={langOf("cta.body")}
-              className="m-germ text-xl text-muted-foreground mb-8"
-            >
-              <Emphasized text={cta.fields.body} />
-            </p>
-            <div
-              className="m-germ flex flex-wrap justify-center gap-4"
-            >
-              {eventsUrl && (
-                <a
-                  href={eventsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={BTN_SECONDARY}
-                >
-                  <Calendar className="w-5 h-5" />
-                  {cta.fields.primaryLabel}
-                </a>
-              )}
-              {eventsUrl && cta.fields.secondaryLabel && (
-                <a lang={langOf("cta.secondaryLabel")}
-                  href={eventsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={BTN_SECONDARY}
-                >
-                  {cta.fields.secondaryLabel}
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-      )}
-
-      <FourWaysToBuild founding={founding} />
       </>
       ) : null}
       </div>
