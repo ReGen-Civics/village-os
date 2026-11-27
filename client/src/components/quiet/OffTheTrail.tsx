@@ -88,10 +88,11 @@ export default function OffTheTrail() {
           {t`There is no page at this address. It may have moved, or it may never have existed. The land is still here, and the way home is short.`}
         </p>
         {/* The nearest real pages by name (the helpful not-found page, 27 Nov 2026), then the door home and search. */}
-        <div className="mt-6 flex w-full justify-center lg:justify-start">
+        {/* Tighter on a phone, so the gold door stays on the first screen under three suggestions (QA round 1, 375x812). */}
+        <div className="mt-4 flex w-full justify-center sm:mt-6 lg:justify-start">
           <NearestPageList />
         </div>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-8 lg:justify-start">
           <Fireflies count={7}>
             <Link href="/" className={BTN_PRIMARY}>
               {t`Back to the village`}

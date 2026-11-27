@@ -13,18 +13,6 @@ msgstr "Quizás buscaba"
 
 # needs-native-review: the helpful not-found page, 27 Nov 2026
 #: client/src/components/quiet/NearestPages.tsx
-msgctxt "404 page: the menu group a suggested page lives in"
-msgid "In {where}"
-msgstr "En {where}"
-
-# needs-native-review: the helpful not-found page, 27 Nov 2026
-#: client/src/components/quiet/NearestPages.tsx
-msgctxt "404 page: where a page sits in the menu"
-msgid "Your account"
-msgstr "Su cuenta"
-
-# needs-native-review: the helpful not-found page, 27 Nov 2026
-#: client/src/components/quiet/NearestPages.tsx
 msgctxt "404 page: a link to search"
 msgid "Search the village"
 msgstr "Buscar en la aldea"
@@ -244,3 +232,51 @@ msgstr "Ahora no aparecen en el menú, así que no se juzgan: {notJudged}."
 msgctxt "admin, how the menu is used: the account menu"
 msgid "Your account"
 msgstr "Su cuenta"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: where a page sits"
+msgid "In {first}"
+msgstr "En {first}"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: one more place the page sits"
+msgid "{line}, and in {where}"
+msgstr "{line}, y en {where}"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: a folder inside a group"
+msgid "{group} under {folder}"
+msgstr "{group}, en {folder}"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: the account menu"
+msgid "Your account"
+msgstr "Su cuenta"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "No one opened {name} in {seasonName}: consider folding it."
+msgstr "Nadie abrió {name} en {seasonName}: considere plegarla."
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "No one opened these in {seasonName} ({unopenedCount})"
+msgstr "Nadie abrió estas en {seasonName} ({unopenedCount})"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: the window's dates"
+msgid "{windowFrom} to {windowTo}, counted in UTC days"
+msgstr "Del {windowFrom} al {windowTo}, contado en días UTC"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
+msgstr "Solo {visits} visitas en {days} días. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."

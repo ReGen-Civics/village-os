@@ -4,7 +4,7 @@
  * what is not recorded, and words the suggestions. Invented counts; no person anywhere.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 
 vi.mock("@/lib/gameApi", () => ({
   fetchSeasonCached: async () => ({}),
@@ -63,6 +63,38 @@ describe("MenuUseTab", () => {
     const suggestions = screen.getByTestId("menu-use-suggestions");
     expect(suggestions.textContent).toMatch(/No one opened Gratitude this season: consider folding it\./);
     expect(screen.getByTestId("menu-use-unopened").textContent).toContain("Gratitude");
+    expect(screen.getByTestId("menu-use-window").textContent).toBe("1 Nov 2026 to 31 Jan 2027, counted in UTC days");
+    // Places in one line, in the menu's order: "In Village, and in Govern under This season".
+    expect(rows[0].textContent).toContain("In Village, and in Govern under This season");
+  });
+
+  it("reads a past season by its name, with its dates, and drops \"so far\" once it has ended", async () => {
+    const asked: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      asked.push(url);
+      const past = url.includes("from=2026-08-01");
+      return new Response(
+        JSON.stringify({
+          from: past ? "2026-08-01" : "2026-11-01",
+          to: past ? "2026-11-01" : "2027-02-01",
+          today: "2026-11-30",
+          recordedSince: "2026-08-01",
+          totals: [{ path: "/quests", count: 4 }],
+        }),
+        { status: 200 },
+      );
+    });
+    render(<MenuUseTab password="admin-token" />);
+    await screen.findByTestId("menu-use-suggestions");
+    expect(screen.getByTestId("menu-use-suggestions").textContent).toContain("so far");
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "s1" } });
+    await screen.findByText(/No one opened these in Season of Seeds \(\d+\)/);
+    expect(asked.at(-1)).toBe("/api/admin/nav/usage?from=2026-08-01&to=2026-11-01");
+    expect(screen.getByTestId("menu-use-window").textContent).toBe("1 Aug to 31 Oct 2026, counted in UTC days");
+    const said = screen.getByTestId("menu-use-suggestions").textContent ?? "";
+    expect(said).toContain("Only 4 visits over 92 days.");
+    expect(said).not.toContain("so far");
+    expect(said).not.toContain("this season");
   });
 
   it("says in words when the counts cannot be read", async () => {

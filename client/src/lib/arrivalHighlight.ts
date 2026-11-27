@@ -9,7 +9,8 @@
  *   - A soft ring in the page's own colour (`--ring`: deep teal on the Weathered map's paper, gold on the night
  *     sheet, each world's own in dark) for ARRIVAL_MS, then a fade.
  *   - Under prefers-reduced-motion, no animation at all: a still outline for ARRIVAL_MS, then gone.
- *   - Nothing moves. A box-shadow and an outline take no room, so no layout shifts. On the Weathered map a card's
+ *   - Nothing moves. A box-shadow and an outline take no room, so no layout shifts. A section with no radius of its
+ *     own is rounded to 1rem while it glows, so the ring follows the rounded cards inside it. On the Weathered map a card's
  *     torn edge is a mask that would cut the ring off, so the mask lifts while it glows, as it already does on focus.
  *   - Focus is never touched. A page that moves focus to its section (lib/sectionAnchor.ts) keeps doing so.
  *   - The Living Map's hash is an address, not an anchor, so /map is left alone (components/ScrollToTop.tsx).
@@ -31,6 +32,8 @@ const FIND_EVERY_MS = 100;
 const SETTLE_MS = 150;
 
 export const ARRIVED_ATTR = "data-arrived";
+/** Set while it glows on a section that has no radius of its own, so the ring rounds with the cards inside it. */
+export const ROUND_ATTR = "data-arrived-round";
 const STYLE_ID = "arrival-highlight";
 const OWN_SHADOW = "--arrival-own-shadow";
 
@@ -41,6 +44,7 @@ const HOLD = Math.round((ARRIVAL_MS / (ARRIVAL_MS + FADE_MS)) * 100);
 /** The rules, written once into the head. Tokens only: each world's `--ring` is its own colour. */
 export const ARRIVAL_CSS = [
   `[${ARRIVED_ATTR}]{-webkit-mask-box-image:none!important;mask-border:none!important}`,
+  `[${ROUND_ATTR}]{border-radius:1rem}`,
   `[${ARRIVED_ATTR}="glow"]{animation:arrival-glow ${ARRIVAL_MS + FADE_MS}ms ease-out both}`,
   `@keyframes arrival-glow{`,
   `0%{box-shadow:var(${OWN_SHADOW},0 0 #0000),0 0 0 0 transparent,0 0 0 0 transparent}`,
@@ -86,8 +90,11 @@ export function highlight(el: HTMLElement, { reduced = prefersReducedMotion() }:
   const doc = el.ownerDocument;
   ensureStyle(doc);
   const view = doc.defaultView;
-  const own = view?.getComputedStyle ? view.getComputedStyle(el).boxShadow : "";
+  const style = view?.getComputedStyle ? view.getComputedStyle(el) : null;
+  const own = style?.boxShadow ?? "";
   if (own && own !== "none") el.style.setProperty(OWN_SHADOW, own);
+  // A square section (Treasury's #cash) would cut its ring across the rounded cards inside it (QA round 1).
+  if (!style || /^(0px\s*)+$/.test((style.borderRadius || "0px").trim())) el.setAttribute(ROUND_ATTR, "");
   el.setAttribute(ARRIVED_ATTR, reduced ? "still" : "glow");
   let done = false;
   const clear = () => {
@@ -95,6 +102,7 @@ export function highlight(el: HTMLElement, { reduced = prefersReducedMotion() }:
     done = true;
     clearTimeout(timer);
     el.removeAttribute(ARRIVED_ATTR);
+    el.removeAttribute(ROUND_ATTR);
     el.style.removeProperty(OWN_SHADOW);
   };
   const timer = setTimeout(clear, reduced ? ARRIVAL_MS : ARRIVAL_MS + FADE_MS);

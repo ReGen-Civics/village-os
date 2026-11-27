@@ -4,7 +4,7 @@
  * still outline for ARRIVAL_MS; nothing moves and focus is never touched.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ARRIVAL_CSS, ARRIVAL_MS, ARRIVED_ATTR, FADE_MS, FIND_FOR_MS, arrivalTarget, arrive, highlight } from "./arrivalHighlight";
+import { ARRIVAL_CSS, ARRIVAL_MS, ARRIVED_ATTR, FADE_MS, FIND_FOR_MS, ROUND_ATTR, arrivalTarget, arrive, highlight } from "./arrivalHighlight";
 
 function motion(reduce: boolean) {
   vi.stubGlobal("matchMedia", (q: string) => ({ matches: reduce && q.includes("reduce"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
@@ -86,6 +86,20 @@ describe("highlight", () => {
     expect(el.style.getPropertyValue("--arrival-own-shadow")).toBe("0 1px 2px black");
     vi.advanceTimersByTime(ARRIVAL_MS + FADE_MS);
     expect(el.style.getPropertyValue("--arrival-own-shadow")).toBe("");
+  });
+
+  it("rounds a square section to 1rem while it glows, and leaves a rounded one as it is", () => {
+    const square = section("cash");
+    const spy = vi.spyOn(window, "getComputedStyle").mockReturnValue({ boxShadow: "none", borderRadius: "0px" } as CSSStyleDeclaration);
+    highlight(square);
+    expect(square.hasAttribute(ROUND_ATTR)).toBe(true);
+    expect(ARRIVAL_CSS).toContain(`[${ROUND_ATTR}]{border-radius:1rem}`);
+    vi.advanceTimersByTime(ARRIVAL_MS + FADE_MS);
+    expect(square.hasAttribute(ROUND_ATTR)).toBe(false);
+    spy.mockReturnValue({ boxShadow: "none", borderRadius: "16px" } as CSSStyleDeclaration);
+    const card = section("prices");
+    highlight(card);
+    expect(card.hasAttribute(ROUND_ATTR)).toBe(false);
   });
 
   it("writes its rules into the head once", () => {

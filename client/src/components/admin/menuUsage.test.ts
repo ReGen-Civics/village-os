@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import type { NavLink } from "@/config/nav";
 import type { MenuPage } from "@/lib/nearestPages";
-import { daysCounted, MIN_VISITS, menuUsage, UNOPENED_NAMED, type PathCount } from "./menuUsage";
+import { daysCounted, LIFT_FLOOR_GROUP, LIFT_FLOOR_PAGE, MIN_VISITS, menuUsage, UNOPENED_NAMED, type PathCount } from "./menuUsage";
 
 const row = (href: string, group: string | null, folder: string | null = null, extra: Partial<NavLink> = {}): MenuPage => ({
   href,
@@ -122,6 +122,28 @@ describe("what this suggests", () => {
     // Stay: 40 >= 80 / 4 and 40 >= 2 x 10, so it is lifted out. Places, in the same folder, is not.
     const u = use([{ path: "/map", count: 10 }, { path: "/quests", count: 10 }, { path: "/stay", count: 40 }, { path: "/places", count: 10 }, { path: "/library", count: 10 }, { path: "/rights", count: 10 }]);
     expect(u.suggestions.filter((s) => s.rule === "lift-out")).toEqual([{ rule: "lift-out", path: "/stay", values: { pct: 50, group: "Village", folder: "Homes" } }]);
+  });
+
+  it("lifts nothing out on a handful of visits: the group needs thirty, or the page five", () => {
+    // One group, Gatherings-like: /stay (in Homes) has every visit there is, but only 4, in a group of 4.
+    const small: MenuPage[] = [row("/a", "Community", "Gatherings"), row("/b", "Community"), row("/c", "Community"), row("/busy", "Elsewhere")];
+    const window = { live: allLive, ...WINDOW };
+    const few = menuUsage(small, [{ path: "/a", count: LIFT_FLOOR_PAGE - 1 }, { path: "/busy", count: 100 }], window);
+    expect(few.suggestions.filter((s) => s.rule === "lift-out")).toEqual([]);
+    // Five on the page clears the floor, though the group is still under thirty.
+    const page = menuUsage(small, [{ path: "/a", count: LIFT_FLOOR_PAGE }, { path: "/busy", count: 100 }], window);
+    expect(page.suggestions.filter((s) => s.rule === "lift-out").map((s) => s.path)).toEqual(["/a"]);
+    expect(LIFT_FLOOR_GROUP).toBe(30);
+  });
+
+  it("names and places a page by the rows the menu shows, never a hidden row's", () => {
+    // /rights#leaving-well sits in Govern; a Village chapter row of the same page is switched off.
+    const menu: MenuPage[] = [row("/rights#good-neighbor", "Village", "Places and homes", { module: "off" }), row("/rights", "Govern", "Guides"), row("/rights#leaving-well", "Govern", "Guides")];
+    const v = menuUsage(menu, [{ path: "/rights", count: 3 }], { live: (l) => l.module !== "off", ...WINDOW });
+    const rights = v.pages[0];
+    expect(rights.places).toEqual([{ group: "Govern", folder: "Guides" }]);
+    expect(rights.shown.map((l) => l.href)).toEqual(["/rights", "/rights#leaving-well"]);
+    expect(rights.links).toHaveLength(3);
   });
 
   it("folds a quiet top-level row into a folder", () => {

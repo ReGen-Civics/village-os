@@ -24,7 +24,11 @@ export interface PathCount {
 /** One page the menu opens, with every row that opens it. */
 export interface UsagePage {
   path: string;
+  /** Every row that opens it, shown or not. */
   links: NavLink[];
+  /** The rows that open it and are shown in the menu now: what it is named by. */
+  shown: NavLink[];
+  /** Where its shown rows sit, in menu order (a hidden row's place is never listed). */
   places: Array<{ group: string | null; folder: string | null }>;
   count: number;
   /** Its share of every visit to a page the menu lists, 0 to 1. */
@@ -64,6 +68,9 @@ export const MIN_VISITS = 30;
 export const RANK_SHOWN = 5;
 /** The unopened pages named one by one before "and N more". */
 export const UNOPENED_NAMED = 5;
+/** The lift-out rule waits for this many visits in the group, or this many on the page (QA round 1). */
+export const LIFT_FLOOR_GROUP = 30;
+export const LIFT_FLOOR_PAGE = 5;
 
 const DAY_MS = 86_400_000;
 const pathOf = (href: string) => href.split("#")[0] || "/";
@@ -105,10 +112,13 @@ export function menuUsage(
   const byPath = new Map<string, UsagePage>();
   for (const m of menu) {
     const path = pathOf(m.href);
-    const page = byPath.get(path) ?? { path, links: [], places: [], count: counts.get(path) ?? 0, share: 0, live: false };
-    if (!page.links.some((l) => l.href === m.link.href)) page.links.push(m.link);
-    if (!page.places.some((p) => p.group === m.group && p.folder === m.folder)) page.places.push({ group: m.group, folder: m.folder });
-    page.live ||= live(m.link);
+    const page = byPath.get(path) ?? { path, links: [], shown: [], places: [], count: counts.get(path) ?? 0, share: 0, live: false };
+    if (!page.links.some((l) => l.href === m.link.href && l.label === m.link.label)) page.links.push(m.link);
+    if (live(m.link)) {
+      page.live = true;
+      if (!page.shown.some((l) => l.href === m.link.href && l.label === m.link.label)) page.shown.push(m.link);
+      if (!page.places.some((p) => p.group === m.group && p.folder === m.folder)) page.places.push({ group: m.group, folder: m.folder });
+    }
     byPath.set(path, page);
   }
   const pages = Array.from(byPath.values());
@@ -138,7 +148,8 @@ export function menuUsage(
  *   0. too-few     under MIN_DAYS of counting or MIN_VISITS visits, nothing else is said: the window is too thin.
  *   1. unopened    a page in the menu that nobody opened all window: consider folding it.
  *   2. lift-out    a page inside a folder that draws at least a quarter of its group's visits and twice the group's
- *                  median: consider giving it a row of its own.
+ *                  median, once there is enough to read (LIFT_FLOOR_GROUP visits in the group, or LIFT_FLOOR_PAGE
+ *                  on the page): consider giving it a row of its own. One visit is not "100% of the group".
  *   3. fold-in     a page with a row of its own whose visits are at most a quarter of its group's median (a median of
  *                  at least four): consider moving it into a folder.
  *   4. add-entry   a page the menu does not list, opened at least five times and at least as often as the median page
@@ -160,7 +171,8 @@ function suggest({ shown, total, days, unopened, unlisted }: { shown: UsagePage[
     const mid = median(members.map((p) => p.count));
     for (const p of members) {
       const folder = p.places[0]?.folder;
-      if (folder && groupTotal > 0 && p.count >= groupTotal / 4 && p.count >= mid * 2 && p.count > 0) {
+      const enough = groupTotal >= LIFT_FLOOR_GROUP || p.count >= LIFT_FLOOR_PAGE;
+      if (folder && enough && p.count >= groupTotal / 4 && p.count >= mid * 2 && p.count > 0) {
         out.push({ rule: "lift-out", path: p.path, values: { pct: Math.round((p.count / groupTotal) * 100), group, folder } });
       } else if (!folder && mid >= 4 && p.count > 0 && p.count <= mid / 4) {
         out.push({ rule: "fold-in", path: p.path, values: { visits: p.count, group, median: mid } });

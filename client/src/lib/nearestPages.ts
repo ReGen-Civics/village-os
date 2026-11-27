@@ -25,6 +25,8 @@ export interface MenuPage {
   group: string | null;
   /** The folder inside the group (`sub`), when it has one. */
   folder: string | null;
+  /** In the account menu, which only someone signed in is shown. */
+  account?: boolean;
 }
 
 export interface NearPage extends MenuPage {
@@ -40,7 +42,7 @@ export function menuPages(nav: readonly NavEntry[] = NAV, account: readonly NavL
     if (isGroup(e)) for (const link of e.items) out.push({ href: link.href, link, group: e.label, folder: link.sub ?? null });
     else out.push({ href: e.href, link: e, group: null, folder: e.sub ?? null });
   }
-  for (const link of account) out.push({ href: link.href, link, group: null, folder: link.sub ?? null });
+  for (const link of account) out.push({ href: link.href, link, group: null, folder: link.sub ?? null, account: true });
   return out;
 }
 
@@ -147,12 +149,18 @@ export function nearestPages(
     pages = menuPages(),
     titles = PAGE_TITLES,
     limit = 3,
+    signedIn = true,
   }: {
     visible: (link: NavLink) => boolean;
     label?: (link: NavLink) => string;
     pages?: readonly MenuPage[];
     titles?: Readonly<Record<string, string>>;
     limit?: number;
+    /**
+     * False for a visitor. The account menu (My Profile, Journal, Wallet...) is drawn only for someone
+     * signed in (Layout.tsx), and its entries carry no `signedIn` flag of their own, so a visitor is never offered one.
+     */
+    signedIn?: boolean;
   },
 ): NearPage[] {
   const here = location.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
@@ -160,6 +168,7 @@ export function nearestPages(
   if (!typed.length) return [];
   const byHref = new Map<string, NearPage>();
   for (const page of pages) {
+    if (page.account && !signedIn) continue;
     if (!visible(page.link)) continue;
     if (page.href.split("#")[0] === here && !page.href.includes("#")) continue; // the page that just refused them
     const score = scorePage(typed, namesOf(page, label(page.link), titles));

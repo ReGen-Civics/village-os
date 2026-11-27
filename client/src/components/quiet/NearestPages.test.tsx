@@ -5,7 +5,7 @@
  * an admin, with modules on and off, and read what the page offers each of them.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
@@ -35,7 +35,7 @@ vi.mock("@/lib/newcomer", () => ({
   }),
 }));
 
-import { NearestPageList, SearchLink, FIND_ANYTHING_HREF } from "./NearestPages";
+import { FIND_ANYTHING_EVENT, FIND_ANYTHING_READY, FIND_ANYTHING_READY_EVENT, NearestPageList, SearchLink } from "./NearestPages";
 
 function at(path: string) {
   const { hook } = memoryLocation({ path });
@@ -58,7 +58,8 @@ describe("the nearest pages, as the reader's menu would draw them", () => {
     at("/quets");
     const link = screen.getByRole("link", { name: /Quests/ });
     expect(link.getAttribute("href")).toBe("/quests");
-    expect(link.textContent).toContain("In Village; Govern, This season");
+    // Places in the menu's own order (config/nav.ts), each folder under its group (QA round 1).
+    expect(link.textContent).toContain("In Village, and in Govern under This season");
   });
 
   it("offers a stranger no page whose module is off", () => {
@@ -106,9 +107,65 @@ describe("the nearest pages, as the reader's menu would draw them", () => {
     expect(offered()).not.toContain("/gratitude");
   });
 
-  it("draws no list at all when nothing is near, and still offers search", () => {
+  it("draws no list at all when nothing is near", () => {
     at("/xyzzy-plugh");
     expect(screen.queryByTestId("nearest-pages")).toBeNull();
-    expect(screen.getByRole("link", { name: "Search the village" }).getAttribute("href")).toBe(FIND_ANYTHING_HREF);
+  });
+
+  it("offers a visitor none of the account menu's pages, which only someone signed in is shown", () => {
+    // Journal's module on, so it is the sign-in rule that keeps it out and nothing else.
+    who.modules = ["journal"];
+    at("/profle");
+    expect(screen.queryByTestId("nearest-pages")).toBeNull();
+    cleanup();
+    at("/jornal");
+    expect(screen.queryByTestId("nearest-pages")).toBeNull();
+    cleanup();
+    Object.assign(who, { newcomer: false, user: { role: "member" } });
+    at("/profle");
+    expect(offered()).toContain("/profile");
+    cleanup();
+    at("/jornal");
+    expect(offered()).toContain("/journal");
+  });
+});
+
+describe("Search the village opens Find anything", () => {
+  afterEach(() => {
+    delete (window as unknown as Record<string, unknown>)[FIND_ANYTHING_READY];
+  });
+
+  it("is not drawn until Find anything says it is listening, then asks it to open", () => {
+    at("/quets");
+    expect(screen.queryByTestId("search-link")).toBeNull();
+    act(() => {
+      (window as unknown as Record<string, unknown>)[FIND_ANYTHING_READY] = true;
+      window.dispatchEvent(new Event(FIND_ANYTHING_READY_EVENT));
+    });
+    const asked = vi.fn();
+    window.addEventListener(FIND_ANYTHING_EVENT, asked);
+    fireEvent.click(screen.getByRole("button", { name: "Search the village" }));
+    window.removeEventListener(FIND_ANYTHING_EVENT, asked);
+    expect(asked).toHaveBeenCalledTimes(1);
+    // Search unmounted: it says so, and the button goes.
+    act(() => {
+      (window as unknown as Record<string, unknown>)[FIND_ANYTHING_READY] = false;
+      window.dispatchEvent(new Event(FIND_ANYTHING_READY_EVENT));
+    });
+    expect(screen.queryByTestId("search-link")).toBeNull();
+  });
+
+  it("is not drawn on the ready event alone while the flag says search is not there", () => {
+    at("/quets");
+    act(() => {
+      window.dispatchEvent(new Event(FIND_ANYTHING_READY_EVENT));
+    });
+    expect(screen.queryByTestId("search-link")).toBeNull();
+  });
+
+  it("is drawn at once when Find anything was listening before the page drew", () => {
+    (window as unknown as Record<string, unknown>)[FIND_ANYTHING_READY] = true;
+    at("/quets");
+    expect(screen.getByRole("button", { name: "Search the village" })).toBeTruthy();
   });
 });

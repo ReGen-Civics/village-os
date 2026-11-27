@@ -30,6 +30,8 @@ export interface MenuView {
   label: (link: NavLink) => string;
   /** A group's or a folder's name as this reader's menu draws it. */
   place: (platformLabel: string) => string;
+  /** Someone is signed in, so the account menu is drawn for them. */
+  signedIn: boolean;
 }
 
 export function useMenuVisible(): MenuView {
@@ -61,5 +63,5 @@ export function useMenuVisible(): MenuView {
     return platformWords(link, i18n, named?.subtitle, named?.label).label;
   };
   const place = (platformLabel: string) => menu.groups[platformLabel] || navWord(platformLabel, i18n);
-  return { visible, label, place };
+  return { visible, label, place, signedIn: !!user };
 }

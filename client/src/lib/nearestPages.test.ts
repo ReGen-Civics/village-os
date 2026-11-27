@@ -81,6 +81,14 @@ describe("nearestPages", () => {
 });
 
 describe("only pages the reader may open", () => {
+  it("offers a visitor no account-menu page, and a member the same page", () => {
+    // Profile and Journal carry no sign-in flag; the account menu is drawn only for someone signed in.
+    expect(nearestPages("/profle", { visible: () => true, signedIn: false })).toEqual([]);
+    expect(nearestPages("/jornal", { visible: () => true, signedIn: false })).toEqual([]);
+    expect(hrefs("/profle")).toContain("/profile");
+    expect(hrefs("/jornal")).toContain("/journal");
+  });
+
   it("leaves out an entry the reader's menu hides, by the menu's own test", () => {
     const staysOff = (l: NavLink) => member(l) && l.module !== "stays";
     expect(hrefs("/stays", member)).toContain("/stay");

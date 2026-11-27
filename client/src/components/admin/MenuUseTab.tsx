@@ -19,6 +19,7 @@ import { useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { navWord, type NavLink } from "@/config/nav";
 import { menuPages } from "@/lib/nearestPages";
+import { usePlaceLine } from "@/lib/placeLine";
 import { fetchSeasonCached, useGameConfig, useSeason } from "@/lib/gameApi";
 import { useModules } from "@/modules/ModuleProvider";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
@@ -63,9 +64,18 @@ export default function MenuUseTab({ password }: { password: string }) {
   const today = season?.today ?? new Date().toISOString().slice(0, 10);
   const seasons = (season?.seasons ?? []).filter((s) => s.startsOn && s.startsOn <= today);
   const picked = choice === "current" ? season?.current ?? null : seasons.find((s) => s.id === choice) ?? null;
+  // "current": this season; "past": a season that has ended or is not the running one; "days": the last 90 days.
   const span = picked
-    ? { from: picked.startsOn, to: picked.endsOn || addDays(today, 1), season: true }
-    : { from: addDays(today, -89), to: addDays(today, 1), season: false };
+    ? { from: picked.startsOn, to: picked.endsOn || addDays(today, 1), kind: picked.id === season?.current?.id ? ("current" as const) : ("past" as const), name: picked.name }
+    : { from: addDays(today, -89), to: addDays(today, 1), kind: "days" as const, name: "" };
+  const seasonName = span.name;
+  // The window has ended once its last day (the day before `to`) is behind today: nothing more will be counted in it.
+  const ended = span.to <= today;
+  // The window's days, in the reader's language and in UTC, since the counts are UTC days ("1 Aug to 31 Oct 2026" in English).
+  const day = (d: string, withYear: boolean) =>
+    new Intl.DateTimeFormat(!i18n.locale || i18n.locale === "en" ? "en-GB" : i18n.locale, { day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
+  const windowFrom = day(span.from, span.from.slice(0, 4) !== addDays(span.to, -1).slice(0, 4));
+  const windowTo = day(addDays(span.to, -1), true);
 
   useEffect(() => {
     if (!calendarRead) return; // wait for the calendar, so the first read is the season's
@@ -105,13 +115,16 @@ export default function MenuUseTab({ password }: { password: string }) {
   const countedDays = usage?.daysCounted ?? 0;
   const menuVisits = usage?.total ?? 0;
   const unopenedCount = usage?.unopened.length ?? 0;
-  // A page by its own row's name ("Rights and agreements", not its chapters too); the first row's when it has none.
+  // A page by the row the menu shows for it: its own row ("Rights and agreements", not its chapters too) when that is
+  // shown, else the first shown row (/circles with the map on reads "How roles are going"), else its first row.
   const nameOf = (p: UsagePage) => {
-    const own = p.links.find((l) => l.href === p.path) ?? p.links[0];
+    const rows = p.shown.length ? p.shown : p.links;
+    const own = rows.find((l) => l.href === p.path) ?? rows[0];
     return menu.labels[own.href] || navWord(own.label, i18n);
   };
   const placeWord = (w: string | null) => (w ? menu.groups[w] || navWord(w, i18n) : t({ message: "Your account", context: "admin, how the menu is used: the account menu" }));
-  const whereOf = (p: UsagePage) => p.places.map((at) => [placeWord(at.group), at.folder ? navWord(at.folder, i18n) : ""].filter(Boolean).join(", ")).join("; ");
+  const placeLine = usePlaceLine((w) => menu.groups[w] || navWord(w, i18n));
+  const whereOf = (p: UsagePage) => placeLine(p.places);
   const byPath = new Map((usage?.pages ?? []).map((p) => [p.path, p]));
   const pageName = (path: string) => (byPath.has(path) ? nameOf(byPath.get(path)!) : pageTitleFor(path) || path);
   const notJudged = usage ? usage.notInMenu.map((p) => nameOf(p)).join(", ") : "";
@@ -123,12 +136,14 @@ export default function MenuUseTab({ password }: { password: string }) {
     const folder = navWord(String(s.values.folder ?? ""), i18n);
     switch (s.rule) {
       case "too-few":
-        return t({ message: `Only ${visits} visits over ${days} days so far. Suggestions start once there are ${minDays} days and ${minVisits} visits to read.`, context: "admin, how the menu is used: suggestion" });
+        return ended
+          ? t({ message: `Only ${visits} visits over ${days} days. Suggestions need ${minDays} days and ${minVisits} visits to read.`, context: "admin, how the menu is used: suggestion" })
+          : t({ message: `Only ${visits} visits over ${days} days so far. Suggestions start once there are ${minDays} days and ${minVisits} visits to read.`, context: "admin, how the menu is used: suggestion" });
       case "unopened":
         if (!s.path) return t({ message: `And ${more} more pages nobody opened.`, context: "admin, how the menu is used: suggestion" });
-        return span.season
-          ? t({ message: `No one opened ${name} this season: consider folding it.`, context: "admin, how the menu is used: suggestion" })
-          : t({ message: `No one opened ${name} in the last 90 days: consider folding it.`, context: "admin, how the menu is used: suggestion" });
+        if (span.kind === "current") return t({ message: `No one opened ${name} this season: consider folding it.`, context: "admin, how the menu is used: suggestion" });
+        if (span.kind === "past") return t({ message: `No one opened ${name} in ${seasonName}: consider folding it.`, context: "admin, how the menu is used: suggestion" });
+        return t({ message: `No one opened ${name} in the last 90 days: consider folding it.`, context: "admin, how the menu is used: suggestion" });
       case "lift-out":
         return t({ message: `${name} draws ${pct}% of the visits in ${group} from inside the ${folder} folder: consider giving it a row of its own.`, context: "admin, how the menu is used: suggestion" });
       case "fold-in":
@@ -187,6 +202,9 @@ export default function MenuUseTab({ password }: { password: string }) {
               ))}
               {!currentName && <option value="current">{t({ message: "The last 90 days", context: "admin, how the menu is used: picker" })}</option>}
             </select>
+            <span className="mt-1 block text-xs text-muted-foreground" data-testid="menu-use-window">
+              {t({ message: `${windowFrom} to ${windowTo}, counted in UTC days`, context: "admin, how the menu is used: the window's dates" })}
+            </span>
           </label>
         </div>
         <ul className="mt-4 list-disc space-y-1 rounded-lg border border-notice/40 bg-amber-light py-2 pl-8 pr-3 text-sm text-foreground" data-testid="menu-use-limits">
@@ -239,7 +257,9 @@ export default function MenuUseTab({ password }: { password: string }) {
 
           <div className={BOX}>
             <h3 className={H3}>
-              {span.season
+              {span.kind === "past"
+                ? t({ message: `No one opened these in ${seasonName} (${unopenedCount})`, context: "admin, how the menu is used: h3" })
+                : span.kind === "current"
                 ? t({ message: `No one opened these this season (${unopenedCount})`, context: "admin, how the menu is used: h3" })
                 : t({ message: `No one opened these in the last 90 days (${unopenedCount})`, context: "admin, how the menu is used: h3" })}
             </h3>

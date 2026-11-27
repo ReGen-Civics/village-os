@@ -59,9 +59,8 @@ const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
 const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
 const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
 const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
-// Compare proposals side by side (the lead, 20 Nov 2026), lazy so the first page never pays for it.
-const CompareTab = lazy(() => import("@/components/admin/CompareTab"));
-const MenuUseTab = lazy(() => import("@/components/admin/MenuUseTab")); // how the menu is used, opened rarely: off the Admin chunk
+// Compare proposals side by side (the lead, 20 Nov 2026) and How the menu is used, each lazy so the first page never pays for it.
+import LazyAdminTab from "@/components/admin/LazyAdminTabs";
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 const ArtLibraryTab = lazy(() => import("@/components/admin/ArtLibraryTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
@@ -8006,7 +8005,7 @@ export default function Admin() {
           {activeTab === "needs-admin" && <NeedsPanel password={password} onOpenTab={setActiveTab} />}
           {activeTab === "housing" && <HousingAdminPanel password={password} />}
           {activeTab === "org-chart" && <OrgChartTab password={password} />}
-          {activeTab === "compare" && <Suspense fallback={null}><CompareTab password={password} /></Suspense>}
+          <LazyAdminTab tab={activeTab} password={password} />
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
           {activeTab === "art-library" && <Suspense fallback={null}><ArtLibraryTab password={password} /></Suspense>}
           {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
@@ -8014,7 +8013,6 @@ export default function Admin() {
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
           {activeTab === "brain" && <VillageBrainTab password={password} />}
           {activeTab === "failures" && <FailuresTab password={password} />}
-          {activeTab === "menu-use" && <Suspense fallback={null}><MenuUseTab password={password} /></Suspense>}
           {activeTab === "portal-visitors" && <PortalVisitorsTab password={password} />}
           {activeTab === "drafts" && <DraftQueueTab password={password} />}
           {activeTab === "seasons-patterns" && <SeasonPatternsTab password={password} />}
