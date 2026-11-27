@@ -132,7 +132,7 @@ No other table stores a balance. Wallet balances = SUM(token_ledger) per (user, 
 
 **Capability gating** extends `shared/capabilities.ts`, never bypasses it: new keys `exchange.buy` (STAGE_UNLOCKS default: `member`), `exchange.swap` (default: `member`), `exchange.manage` (role-granted only, no stage unlock). Per-currency `minStageToBuy` may LOWER the gate for specific currencies (event tickets sellable to guests) but the check still runs through `hasCapability` + stage index.
 
-**Maia (v2).** One new entry in the existing `PROPOSAL_KINDS` map (`server/index.ts:1536`): kind `credit-purchase-intent` — a guided intake for 'I want to pay cash for stay credits', producing a submission the admin converts to an `admin_credit` order. Reuses the injection guard and caps; no second AI plumbing.
+**The village guide (v2).** One new entry in the existing `PROPOSAL_KINDS` map (`server/index.ts:1536`): kind `credit-purchase-intent` — a guided intake for 'I want to pay cash for stay credits', producing a submission the admin converts to an `admin_credit` order. Reuses the injection guard and caps; no second AI plumbing.
 
 ## Game variables
 
@@ -178,7 +178,7 @@ Ship first, useful alone (4 sessions): **S1** — currencies registry table + se
 
 ## v2 (the rest of the design)
 
-The rest of the swap design, minus the part that correctly lives on Hypha (3 sessions): **S5** — SwapCard (Uniswap-homage UI), quote endpoint with receive-driven even-pair rounding, QUOTE_STALE handling, 4-leg swap settlement, swap spread variable, RateHistorySheet as member-facing governance surface. **S6** — crypto purchases (instructions panel + tx-hash submission + admin explorer-verify flow; optionally Coinbase Commerce webhook if a real demand signal appears), refunds (Stripe reversal + reversing ledger entries within the window, unspent-credits check), order-expiry sweep on the Phase-3 scheduler. **S7** — governance integration: price changes and limit changes executable via the Phase-4 decision primitive (execution.kind 'variable_change' + a 'price_change' execution mapping to an appended price row, attributed to the bot user per F8), Maia PROPOSAL_KINDS 'credit-purchase-intent' for cash-purchase intake, statement CSV export, F13 instrumentation review (orders + price rows already emit everything the health dashboard will want).
+The rest of the swap design, minus the part that correctly lives on Hypha (3 sessions): **S5** — SwapCard (Uniswap-homage UI), quote endpoint with receive-driven even-pair rounding, QUOTE_STALE handling, 4-leg swap settlement, swap spread variable, RateHistorySheet as member-facing governance surface. **S6** — crypto purchases (instructions panel + tx-hash submission + admin explorer-verify flow; optionally Coinbase Commerce webhook if a real demand signal appears), refunds (Stripe reversal + reversing ledger entries within the window, unspent-credits check), order-expiry sweep on the Phase-3 scheduler. **S7** — governance integration: price changes and limit changes executable via the Phase-4 decision primitive (execution.kind 'variable_change' + a 'price_change' execution mapping to an appended price row, attributed to the bot user per F8), the village guide PROPOSAL_KINDS 'credit-purchase-intent' for cash-purchase intake, statement CSV export, F13 instrumentation review (orders + price rows already emit everything the health dashboard will want).
 
 ## As shipped — swap v2 (S57–S61, 2026-07-27)
 

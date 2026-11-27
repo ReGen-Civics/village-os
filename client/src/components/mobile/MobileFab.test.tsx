@@ -33,19 +33,22 @@ vi.mock("@/lib/gameApi", () => ({
 }));
 vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
 
-import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows } from "./MobileFab";
+import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows, guideDoors } from "./MobileFab";
 
 const t = ({ message }: { message: string }) => message;
-const companion = (id: string, name: string, open = 0) =>
+/** A companion; the first a member has is their personal one, which the guide's row stands for. */
+const companion = (id: string, name: string, open = 0, scope: "personal" | "role" = "role", art = "scarlet-macaw") =>
   ({
     id,
     name,
+    scope,
     status: "active",
     sortOrder: Number(id),
-    look: { source: "nature", art: "scarlet-macaw" },
+    look: { source: "nature", art },
     lookUrl: null,
     drafts: Array.from({ length: open }, (_, i) => ({ id: `${id}-${i}`, status: "open" })),
   }) as unknown as CompanionView;
+const personal = (open = 0) => companion("1", "Scarlet", open, "personal");
 
 async function renderAt(path = "/") {
   const { hook } = memoryLocation({ path });
@@ -71,25 +74,48 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+/*
+ * ONE GUIDE ROW (the lead, 27 Nov 2026): "Scarlet is Maia and Maia admin all 3 can be scarlet ... So I should only
+ * see (4 my companions + scarlet) and members without Companions would only see Scarlet."
+ */
 describe("cornerRows", () => {
-  it("is the companions first, then the guide, for a member", () => {
-    const rows = cornerRows({ signedIn: true, admin: false, army: [companion("1", "Scarlet", 2), companion("2", "Morpho")], guide: "Ceiba", t });
-    expect(rows.map((r) => r.key)).toEqual(["companion-1", "companion-2", "ask-guide"]);
-    expect(rows[0].sub).toBe("2 drafts wait for your yes");
-    expect(rows[1].sub).toBeUndefined();
-    expect(rows[2]).toMatchObject({ label: "Ask Ceiba", href: ASK_GUIDE_HREF });
+  it("is the member's other companions, then ONE guide row that stands for the personal companion", () => {
+    const army = [personal(2), companion("2", "Morpho", 0, "role", "blue-morpho"), companion("3", "Kinkajou", 1, "role", "kinkajou")];
+    const rows = cornerRows({ signedIn: true, admin: false, army, guide: "Ceiba", t });
+    expect(rows.map((r) => r.key)).toEqual(["companion-2", "companion-3", "guide"]);
+    expect(rows[1].sub).toBe("One draft waits for your yes");
+    // The guide is named by the village's guide setting, never by the companion, and wears the personal companion's face.
+    expect(rows[2]).toMatchObject({ label: "Ceiba", sub: "2 drafts wait for your yes", guidePanel: true, face: { look: { art: "scarlet-macaw" } } });
+    expect(rows[2].href).toBeUndefined();
+    // The personal companion is never drawn twice.
+    expect(rows.filter((r) => r.label === "Scarlet")).toHaveLength(0);
+    // No "Ask ... about Admin", no "Ask ..." row: one guide.
+    expect(rows.some((r) => /^Ask /.test(r.label))).toBe(false);
   });
 
-  it("adds the Admin helper for an admin, tagged, by the address that opens it inside Admin", () => {
+  it("is the guide alone for a member with no companions, straight to the guide's help, in the village's macaw", () => {
+    const rows = cornerRows({ signedIn: true, admin: false, army: [], guide: "Ceiba", t });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ key: "guide", label: "Ceiba", sub: "How things work here, and who to ask", href: ASK_GUIDE_HREF, face: { look: { source: "nature", art: "scarlet-macaw" } } });
+    expect(rows[0].guidePanel).toBeUndefined();
+  });
+
+  it("is one guide row for an admin too, and Admin's helper is a door inside the guide's panel", () => {
     const rows = cornerRows({ signedIn: true, admin: true, army: null, guide: "Ceiba", t });
-    expect(rows.at(-1)).toMatchObject({ key: "ask-admin", label: "Ask Ceiba about Admin", href: ADMIN_HELPER_HREF, admin: true });
+    expect(rows.map((r) => r.key)).toEqual(["guide"]);
+    expect(rows[0].guidePanel).toBe(true);
+    expect(guideDoors({ admin: true, t }).map((d) => [d.key, d.href, !!d.admin])).toEqual([
+      ["ask", ASK_GUIDE_HREF, false],
+      ["admin", ADMIN_HELPER_HREF, true],
+    ]);
+    expect(guideDoors({ admin: false, t }).map((d) => d.key)).toEqual(["ask"]);
     expect(ADMIN_HELPER_HREF).toBe("/admin?helper=open");
   });
 
-  it("sends a visitor's question to the guide on Work with us, and offers sign in", () => {
+  it("sends a visitor to the guide on Work with us, and offers sign in", () => {
     const rows = cornerRows({ signedIn: false, admin: false, army: null, guide: "the village guide", t });
     expect(rows.map((r) => [r.key, r.href])).toEqual([
-      ["ask-guide", "/work-with-us"],
+      ["guide", "/work-with-us"],
       ["signin", "/login"],
     ]);
   });
@@ -99,9 +125,9 @@ describe("the corner, drawn", () => {
   it("is the guide's spiral for a visitor, opening help", async () => {
     await renderAt();
     fireEvent.click(screen.getByRole("button", { name: "Open help" }));
-    expect(row(/Ask Ceiba/)).not.toBeNull();
+    expect(row(/Ceiba/)).toHaveAttribute("href", "/work-with-us");
     expect(row(/Sign in/)).not.toBeNull();
-    expect(row(/about Admin/)).toBeNull();
+    expect(row(/Admin/)).toBeNull();
   });
 
   it("centres the macaw in the circle, and stands companions on its floor: one alignment each (the lead, 26 Nov 2026)", async () => {
@@ -125,31 +151,63 @@ describe("the corner, drawn", () => {
 
   it("is the companions standing for a member who has them, with what waits, and carries the tour's id", async () => {
     session.user = { id: "u1", name: "Ana" };
-    session.companions = [companion("1", "Scarlet", 2), companion("2", "Morpho")];
+    session.companions = [personal(2), companion("2", "Morpho")];
     await renderAt();
     const trigger = screen.getByRole("button", { name: /Your companions: Scarlet, Morpho\. 2 waiting/ });
     expect(trigger.id).toBe("companions");
     fireEvent.click(trigger);
-    expect(row(/Scarlet/)).not.toBeNull();
-    expect(row(/Ask Ceiba/)).toHaveAttribute("href", ASK_GUIDE_HREF);
+    // Morpho, then the guide standing for Scarlet: two rows, never three.
+    expect(screen.getAllByRole("menuitem").map((m) => m.textContent)).toEqual(["Morpho", "Ceiba2 drafts wait for your yes"]);
   });
 
   it("opens the companions panel from a companion's row", async () => {
     session.user = { id: "u1", name: "Ana" };
-    session.companions = [companion("1", "Scarlet")];
+    session.companions = [personal(), companion("2", "Morpho")];
     await renderAt();
     fireEvent.click(screen.getByRole("button", { name: /Your companions: Scarlet/ }));
-    fireEvent.click(row(/Scarlet/)!);
+    fireEvent.click(row(/Morpho/)!);
     expect(await screen.findByRole("dialog", { name: "Your companions" })).toBeInTheDocument();
     expect(await screen.findByText("the companions panel")).toBeInTheDocument();
   });
 
-  it("shows an admin the Admin helper's row, by the address that opens it", async () => {
+  it("opens the guide's panel from the guide's row: the chat and the guide's help, no Admin door for a member", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    session.companions = [personal()];
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Your companions: Scarlet/ }));
+    fireEvent.click(row(/Ceiba/)!);
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(await screen.findByText("the companions panel")).toBeInTheDocument();
+    expect(document.querySelector('[data-guide-door="ask"]')).toHaveAttribute("href", ASK_GUIDE_HREF);
+    expect(document.querySelector('[data-guide-door="admin"]')).toBeNull();
+  });
+
+  it("gives an admin with no companions the guide's panel, with Admin's helper inside it", async () => {
     session.user = { id: "u1", name: "Ana", role: "admin" };
     session.admin = true;
     await renderAt();
     fireEvent.click(screen.getByRole("button", { name: "Open help" }));
-    expect(row(/Ask Ceiba about Admin/)).toHaveAttribute("href", "/admin?helper=open");
+    expect(screen.getAllByRole("menuitem")).toHaveLength(1);
+    fireEvent.click(row(/Ceiba/)!);
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(document.querySelector('[data-guide-door="admin"]')).toHaveAttribute("href", "/admin?helper=open");
+    // No chats to show: the panel is the guide's doors alone.
+    expect(screen.queryByText("the companions panel")).toBeNull();
+  });
+
+  it("draws every animal as a circle, in the menu and standing beside the button (the lead, 27 Nov 2026)", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    session.companions = [personal(), companion("2", "Morpho")];
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: /Your companions: Scarlet/ }));
+    const faces = Array.from(document.querySelectorAll("[data-companion-face]"));
+    // Two standing beside the button and two in the menu.
+    expect(faces.length).toBe(4);
+    for (const f of faces) {
+      expect(f.className).toContain("rounded-full");
+      expect(f.className).not.toMatch(/rounded-t-full|rounded-b-xl/);
+      expect(f.querySelector("img")?.className).toContain("object-cover");
+    }
   });
 
   it("draws nothing inside Admin, where Admin's own Ask holds the corner", async () => {
@@ -173,7 +231,7 @@ describe("the corner, drawn", () => {
     fireEvent.click(trigger, { detail: 0 }); // detail 0 is a keyboard's Enter
     expect(document.activeElement).toBe(row(/Sign in/));
     fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
-    expect(document.activeElement).toBe(row(/Ask Ceiba/));
+    expect(document.activeElement).toBe(row(/Ceiba/));
     fireEvent.keyDown(document, { key: "Escape" });
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(document.activeElement).toBe(trigger);
